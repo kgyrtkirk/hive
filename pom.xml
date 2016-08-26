@@ -1295,6 +1295,12 @@
       </properties>
     </profile>
     <profile>
+      <id>itests</id>
+      <modules>
+        <module>itests</module>
+      </modules>
+    </profile>
+    <profile>
       <id>ide</id>
       <properties>
         <shadePhase>none</shadePhase>
