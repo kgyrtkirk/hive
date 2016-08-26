@@ -60,7 +60,7 @@ public class CliConfigs {
         setInitScript("q_test_init.sql");
         setCleanupScript("q_test_cleanup.sql");
 
-        setHiveConfDir("");
+        setHiveConfDir("data/conf");
         setClusterType(MiniClusterType.none);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -102,7 +102,7 @@ public class CliConfigs {
         setInitScript("q_test_init_for_minimr.sql");
         setCleanupScript("q_test_cleanup.sql");
 
-        setHiveConfDir("");
+        setHiveConfDir("data/conf");
         setClusterType(MiniClusterType.mr);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -228,7 +228,7 @@ public class CliConfigs {
         setInitScript("q_test_init_contrib.sql");
         setCleanupScript("q_test_cleanup_contrib.sql");
 
-        setHiveConfDir("");
+        setHiveConfDir("data/conf");
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -271,7 +271,7 @@ public class CliConfigs {
         setInitScript("q_test_init_compare.sql");
         setCleanupScript("q_test_cleanup_compare.sql");
 
-        setHiveConfDir("");
+        setHiveConfDir("data/conf");
         setClusterType(MiniClusterType.none);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -294,7 +294,7 @@ public class CliConfigs {
         setInitScript("q_test_init.sql");
         setCleanupScript("q_test_cleanup.sql");
 
-        setHiveConfDir("");
+        setHiveConfDir("data/conf");
         setClusterType(MiniClusterType.none);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -316,7 +316,7 @@ public class CliConfigs {
         setInitScript("q_test_init_src.sql");
         setCleanupScript("q_test_cleanup_src.sql");
 
-        setHiveConfDir("");
+        setHiveConfDir("data/conf");
         setClusterType(MiniClusterType.mr);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -336,7 +336,7 @@ public class CliConfigs {
         setInitScript("q_test_init_src_with_stats.sql");
         setCleanupScript("q_test_cleanup_src.sql");
 
-        setHiveConfDir("");
+        setHiveConfDir("data/conf");
         setClusterType(MiniClusterType.none);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -356,7 +356,7 @@ public class CliConfigs {
         setInitScript("q_test_init_compare.sql");
         setCleanupScript("q_test_cleanup_compare.sql");
 
-        setHiveConfDir("");
+        setHiveConfDir("data/conf");
         setClusterType(MiniClusterType.none);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -376,7 +376,7 @@ public class CliConfigs {
         setInitScript("q_test_init_src.sql");
         setCleanupScript("q_test_cleanup_src.sql");
 
-        setHiveConfDir("");
+        setHiveConfDir("data/conf");
         setClusterType(MiniClusterType.none);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -396,7 +396,7 @@ public class CliConfigs {
         setInitScript("q_test_init.sql");
         setCleanupScript("q_test_cleanup.sql");
 
-        setHiveConfDir("");
+        setHiveConfDir("data/conf");
         setClusterType(MiniClusterType.none);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -420,7 +420,7 @@ public class CliConfigs {
         setInitScript("q_test_init.sql");
         setCleanupScript("q_test_cleanup.sql");
 
-        setHiveConfDir("");
+        setHiveConfDir("data/conf");
         setClusterType(MiniClusterType.none);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -442,7 +442,7 @@ public class CliConfigs {
         setInitScript("q_test_init_src_with_stats.sql");
         setCleanupScript("q_test_cleanup_src.sql");
 
-        setHiveConfDir("");
+        setHiveConfDir("data/conf");
         setClusterType(MiniClusterType.none);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);

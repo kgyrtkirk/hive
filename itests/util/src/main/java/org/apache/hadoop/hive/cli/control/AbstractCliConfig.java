@@ -77,6 +77,21 @@ public abstract class AbstractCliConfig {
     queryFile = getSysPropValue("qfile");
     queryFileRegex = getSysPropValue("qfile_regex");
     runDisabled = getSysPropValue("run_disabled");
+
+    // set defaults to enable tests from ide
+    setDefaultSysPropValue("test.tmp.dir", getAbsolutePath("itests/qtest/target/tmp"));
+    setDefaultSysPropValue("test.tmp.dir.uri", "file://" + System.getProperty("test.tmp.dir"));
+    setDefaultSysPropValue("hive.root", getAbsolutePath(""));
+    setDefaultSysPropValue("test.warehouse.dir", getAbsolutePath("itests/qtest/target/warehouse"));
+    setDefaultSysPropValue("test.src.tables",
+        "src,src1,srcbucket,srcbucket2,src_json,src_thrift,src_sequencefile,srcpart,alltypesorc,src_hbase,cbo_t1,cbo_t2,cbo_t3,src_cbo,part,lineitem");
+  }
+
+  private void setDefaultSysPropValue(String key, String defaultValue) {
+    if (getSysPropValue(key) == null) {
+      System.out.println("setting: " + key + " to:" + defaultValue);
+      System.setProperty(key, defaultValue);
+    }
   }
 
   private static String getHiveRoot() {
