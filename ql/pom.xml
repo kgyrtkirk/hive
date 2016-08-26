@@ -825,7 +825,7 @@
         <executions>
           <execution>
             <id>build-exec-bundle</id>
-            <phase>package</phase>
+            <phase>${shadePhase}</phase>
             <goals>
               <goal>shade</goal>
             </goals>
@@ -881,6 +881,7 @@
                   <shadedPattern>org.apache.hive.org.objenesis</shadedPattern>
                 </relocation>
               </relocations>
+              <skip>true</skip>
             </configuration>
           </execution>
         </executions>

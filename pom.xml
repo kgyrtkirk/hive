@@ -200,6 +200,8 @@
     <jsr305.version>3.0.0</jsr305.version>
     <tephra.version>0.6.0</tephra.version>
     <gson.version>2.2.4</gson.version>
+    <!-- this will enable by default the shade plugin -->
+    <shadePhase>package</shadePhase>
   </properties>
 
   <repositories>
@@ -1293,10 +1295,10 @@
       </properties>
     </profile>
     <profile>
-      <id>itests</id>
-      <modules>
-        <module>itests</module>
-      </modules>
+      <id>ide</id>
+      <properties>
+        <shadePhase>none</shadePhase>
+      </properties>
     </profile>
   </profiles>
 </project>
