@@ -33,20 +33,18 @@ import org.apache.hadoop.security.UserGroupInformation;
  */
 public class EnforceReadOnlyTables implements ExecuteWithHookContext {
 
-  private static final Set<String> READ_ONLY_TABLES = getSrcTables();
+  private static final Set<String> READ_ONLY_TABLES = new HashSet<String>();
 
-  static HashSet<String> getSrcTables() {
-    HashSet<String> srcTables = new HashSet<>();
-    for (String srcTable : System.getProperty("test.src.tables").trim().split(",")) {
+  static {
+    for (String srcTable : System.getProperty("test.src.tables", "").trim().split(",")) {
       srcTable = srcTable.trim();
       if (!srcTable.isEmpty()) {
-        srcTables.add(srcTable);
+        READ_ONLY_TABLES.add(srcTable);
       }
     }
-    if (srcTables.isEmpty()) {
-      throw new RuntimeException("Source tables cannot be empty");
+    if (READ_ONLY_TABLES.isEmpty()) {
+      throw new AssertionError("Source tables cannot be empty");
     }
-    return srcTables;
   }
 
   @Override
