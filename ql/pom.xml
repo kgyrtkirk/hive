@@ -881,7 +881,6 @@
                   <shadedPattern>org.apache.hive.org.objenesis</shadedPattern>
                 </relocation>
               </relocations>
-              <skip>true</skip>
             </configuration>
           </execution>
         </executions>
