@@ -78,7 +78,7 @@
         <version>2.2</version>
         <executions>
           <execution>
-            <phase>package</phase>
+            <phase>${shadePhase}</phase>
             <goals>
               <goal>shade</goal>
             </goals>
