@@ -200,7 +200,7 @@
     <jsr305.version>3.0.0</jsr305.version>
     <tephra.version>0.6.0</tephra.version>
     <gson.version>2.2.4</gson.version>
-    <!-- this will enable by default the shade plugin -->
+    <!-- Used for enabling/disabling the shade plugin where it is relevant. Enabled by default. -->
     <shadePhase>package</shadePhase>
   </properties>
 
