@@ -2180,8 +2180,8 @@ skewedColumnValues
 skewedColumnValue
 @init { pushMsg("column value", state); }
 @after { popMsg(state); }
-    :
-      constant
+    : (intervalLiteral) => intervalLiteral
+    | constant
     ;
 
 skewedValueLocationElement

@@ -314,11 +314,10 @@ timeQualifiers
 constant
 @init { gParent.pushMsg("constant", state); }
 @after { gParent.popMsg(state); }
-    :
-    Number
+    : (intervalLiteral)=>intervalLiteral
+    | Number
     | dateLiteral
     | timestampLiteral
-    | intervalLiteral
     | StringLiteral
     | stringLiteralSequence
     | IntegralLiteral
@@ -366,6 +365,11 @@ intervalLiteral
     KW_INTERVAL StringLiteral qualifiers=intervalQualifiers ->
     {
       adaptor.create(((CommonTree)qualifiers.getTree()).getType(), $StringLiteral.text)
+    }
+    |
+    LPAREN k=expression RPAREN qualifiers=intervalQualifiers ->
+    {
+      adaptor.create(qualifiers.tree.token.getType(), $k.text)
     }
     ;
 
