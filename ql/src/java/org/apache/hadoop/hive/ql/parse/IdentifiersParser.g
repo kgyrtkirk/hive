@@ -314,8 +314,7 @@ timeQualifiers
 constant
 @init { gParent.pushMsg("constant", state); }
 @after { gParent.popMsg(state); }
-    : (intervalLiteral)=>intervalLiteral
-    | Number
+    : Number
     | dateLiteral
     | timestampLiteral
     | StringLiteral
@@ -367,7 +366,7 @@ intervalLiteral
       adaptor.create(((CommonTree)qualifiers.getTree()).getType(), $StringLiteral.text)
     }
     |
-    LPAREN k=expression RPAREN qualifiers=intervalQualifiers ->
+    LPAREN (PLUS|MINUS)? k=Number RPAREN qualifiers=intervalQualifiers ->
     {
       adaptor.create(qualifiers.tree.token.getType(), $k.text)
     }
@@ -396,6 +395,7 @@ atomExpression
     :
     (KW_NULL) => KW_NULL -> TOK_NULL
     | (constant) => constant
+    | (intervalLiteral)=>intervalLiteral
     | castExpression
     | extractExpression
     | floorExpression
@@ -404,6 +404,7 @@ atomExpression
     | (functionName LPAREN) => function
     | tableOrColumn
     | LPAREN! expression RPAREN!
+//    |  expression 
     ;
 
 

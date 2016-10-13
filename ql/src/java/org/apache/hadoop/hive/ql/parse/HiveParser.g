@@ -2174,14 +2174,13 @@ skewedColumnValuePair
 skewedColumnValues
 @init { pushMsg("column values", state); }
 @after { popMsg(state); }
-    : skewedColumnValue (COMMA skewedColumnValue)* -> ^(TOK_TABCOLVALUE skewedColumnValue+)
+    : skewedColumnValue (COMMA skewedColumnValue)* -> ^(TOK_TABCOLVALUE skewedColumnValue+) 
     ;
 
 skewedColumnValue
 @init { pushMsg("column value", state); }
 @after { popMsg(state); }
-    : (intervalLiteral) => intervalLiteral
-    | constant
+    : constant
     ;
 
 skewedValueLocationElement
