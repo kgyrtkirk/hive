@@ -20,7 +20,7 @@ create table t (dt int);
 insert into t values (1),(2);
 
 select
-	date '2012-01-01' + ( -dt*dt ) day,
-	date '2012-01-01' - ( -dt*dt ) day
+	date '2012-01-01' +          ( -dt*dt ) day,
+	date '2012-01-01' - interval ( -dt*dt ) day
 	from t;
 
