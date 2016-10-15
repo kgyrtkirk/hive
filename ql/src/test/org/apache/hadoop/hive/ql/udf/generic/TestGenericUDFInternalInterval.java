@@ -85,8 +85,8 @@ public class TestGenericUDFInternalInterval {
 
       PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
       Assert.assertEquals(TypeInfoFactory.intervalDayTimeTypeInfo, oi.getTypeInfo());
-      HiveIntervalDayTimeWritable res = (HiveIntervalDayTimeWritable) udf.evaluate(args);
-      Assert.assertEquals(8, res.getHiveIntervalDayTime().getDays());
+      // should emit an exception
+      udf.evaluate(args);
     }
   }
 
