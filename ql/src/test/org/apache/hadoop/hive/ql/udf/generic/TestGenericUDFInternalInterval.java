@@ -91,7 +91,7 @@ public class TestGenericUDFInternalInterval {
   }
 
   @Test
-  public void testNullByPass() throws Exception {
+  public void testNullBypass() throws Exception {
     try (GenericUDFInternalInterval udf = new GenericUDFInternalInterval()) {
 
       ObjectInspector[] inputOIs =
