@@ -144,6 +144,9 @@ public class GenericUDFInternalInterval extends GenericUDF {
   }
 
   private static class IntervalDayLiteralProcessor implements IntervalProcessor {
+    protected transient HiveIntervalDayTimeWritable intervalDayTimeResult =
+        new HiveIntervalDayTimeWritable();
+    
     @Override
     public Integer getKey() {
       return HiveParser.TOK_INTERVAL_DAY_LITERAL;
@@ -156,7 +159,9 @@ public class GenericUDFInternalInterval extends GenericUDF {
 
     @Override
     public Object evaluate(String arg) {
-      return new HiveIntervalDayTime(Integer.parseInt(arg), 0, 0, 0, 0);
+      HiveIntervalDayTime time = new HiveIntervalDayTime(Integer.parseInt(arg), 0, 0, 0, 0);
+      intervalDayTimeResult.set(time);
+      return intervalDayTimeResult;
     }
   }
   private static class IntervalHourLiteralProcessor implements IntervalProcessor {
@@ -169,10 +174,14 @@ public class GenericUDFInternalInterval extends GenericUDF {
     public PrimitiveTypeInfo getTypeInfo() {
       return TypeInfoFactory.intervalDayTimeTypeInfo;
     }
+    protected transient HiveIntervalDayTimeWritable intervalDayTimeResult =
+        new HiveIntervalDayTimeWritable();
 
     @Override
     public Object evaluate(String arg) {
-      return new HiveIntervalDayTime(0,Integer.parseInt(arg), 0, 0, 0);
+      HiveIntervalDayTime time = new HiveIntervalDayTime(0,Integer.parseInt(arg), 0, 0, 0);
+      intervalDayTimeResult.set(time);
+      return intervalDayTimeResult;
     }
   }
   
