@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.junit.Assert;
@@ -66,11 +65,8 @@ public class TestGenericUDFInternalInterval {
                   TypeInfoFactory.intTypeInfo,
                   new IntWritable(HiveParser.TOK_INTERVAL_DAY_LITERAL)) };
 
-      DeferredObject[] args = { new DeferredJavaObject(new DoubleWritable(8.0)),
-          new DeferredJavaObject(new ByteWritable((byte) 4)) };
-
       // should detect double
-      PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
+      udf.initialize(inputOIs);
     }
   }
 
