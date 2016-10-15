@@ -374,7 +374,7 @@ intervalExpression
   //    adaptor.create(qualifiers.tree.token.getType(), $k.text)
     //}
 // next:   
-		^(TOK_FUNCTION Identifier["internal_interval"] $k)
+		^(TOK_FUNCTION Identifier["internal_interval"] $k NumberLiteral[Integer.toString(qualifiers.tree.token.getType())])
     ;
 
 intervalQualifiers

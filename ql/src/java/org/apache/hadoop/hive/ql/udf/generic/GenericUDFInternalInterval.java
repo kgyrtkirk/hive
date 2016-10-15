@@ -18,18 +18,29 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils.ReturnObjectInspectorResolver;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveWritableObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
@@ -41,75 +52,180 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
     extended = "Example:\n "
         + "probably later I may write something here...")
 
+
 public class GenericUDFInternalInterval extends GenericUDF {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
   private AbstractPrimitiveWritableObjectInspector resultOI;
 
-  @Override
-  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-
-    argumentOIs = arguments;
-//    checkArgsSize(arguments, 2, 2);
-
-//    returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
-//    returnOIResolver.update(arguments[0]);
-    
-    resultOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-        TypeInfoFactory.intervalDayTimeTypeInfo);
-
-//    boolean isPrimitive = (arguments[0] instanceof PrimitiveObjectInspector);
-//    if (isPrimitive)
-//    {
-//      PrimitiveObjectInspector primitive0 = (PrimitiveObjectInspector) arguments[0];
-//      PrimitiveObjectInspector primitive1 = (PrimitiveObjectInspector) arguments[1];
-//      PrimitiveGrouping pcat0 =
-//          PrimitiveObjectInspectorUtils.getPrimitiveGrouping(primitive0.getPrimitiveCategory());
-//      PrimitiveGrouping pcat1 =
-//          PrimitiveObjectInspectorUtils.getPrimitiveGrouping(primitive1.getPrimitiveCategory());
-//
-//      if (pcat0 == PrimitiveGrouping.VOID_GROUP) {
-//        throw new UDFArgumentTypeException(0,
-//            "NULLIF may not accept types belonging to " + pcat0 + " as first argument");
-//      }
-//
-//      if (pcat1 != PrimitiveGrouping.VOID_GROUP && pcat0 != pcat1) {
-//        throw new UDFArgumentTypeException(1,
-//            "The expressions after NULLIF should belong to the same category: \"" + pcat0
-//                + "\" is expected but \"" + pcat1 + "\" is found");
-//      }
-//    } else {
-//      String typeName0 = arguments[0].getTypeName();
-//      String typeName1 = arguments[1].getTypeName();
-//      if (!typeName0.equals(typeName1)) {
-//        throw new UDFArgumentTypeException(1,
-//            "The expressions after NULLIF should all have the same type: \"" + typeName0
-//                + "\" is expected but \"" + typeName1 + "\" is found");
-//      }
-//    }
-//
-    return resultOI;
-  }
 
   protected transient HiveIntervalDayTimeWritable intervalDayTimeResult =
       new HiveIntervalDayTimeWritable();
+  private Integer operationMode;
+  private IntervalProcessor processor;
+  private PrimitiveObjectInspector inputOI;
+  
+  @Override
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
+    
+    argumentOIs = arguments;
+    
+    // read operation mode
+    if (!(arguments[1] instanceof ConstantObjectInspector)) {
+      throw new UDFArgumentTypeException(1,
+          getFuncName() + ": may only accept constant as second argument");
+    }
+    operationMode = getConstantIntValue(arguments, 1);
+    if (operationMode == null) {
+      throw new UDFArgumentTypeException(1, "must supply operationmode");
+    }
+    
+    processor = getProcessorMap().get(operationMode);
+    if(processor==null){
+      throw new UDFArgumentTypeException(1,
+          getFuncName() + ": unsupported operationMode: "+operationMode);
+    }
+    
+    // FIXME: check arg0
+    if (arguments[0].getCategory() != Category.PRIMITIVE) {
+      throw new UDFArgumentTypeException(0, "The first argument to "+getFuncName()+" must be primitive");
+    }
 
+    inputOI = (PrimitiveObjectInspector) arguments[0];
+
+    if (PrimitiveGrouping.STRING_GROUP != PrimitiveObjectInspectorUtils
+        .getPrimitiveGrouping(inputOI.getPrimitiveCategory())) {
+      throw new UDFArgumentTypeException(0,
+          "The first argument to "+getFuncName()+" must be fromstring group");
+    }
+    
+    resultOI = PrimitiveObjectInspectorFactory
+        .getPrimitiveWritableObjectInspector(processor.getTypeInfo());
+    
+    return resultOI;
+  }
+
+  
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-//    Object arg0 = arguments[0].get();
-//    Object arg1 = arguments[1].get();
-//    if (arg0 == null || arg1 == null) {
-//      return arg0;
-//    }
-//    PrimitiveObjectInspector compareOI = (PrimitiveObjectInspector) returnOIResolver.get();
+    String argString=PrimitiveObjectInspectorUtils.getString(arguments[0].get(),inputOI);
+    return processor.evaluate(argString);
+//    stringResolver.convertIfNecessary(arguments[0], TypeInfoFactory.stringTypeInfo, false);
+//
 //    if (PrimitiveObjectInspectorUtils.comparePrimitiveObjects(
 //        arg0, compareOI,
-//        returnOIResolver.convertIfNecessary(arg1, argumentOIs[1], false), compareOI)) {
+//        ) {
 //      return null;
 //    }
-    HiveIntervalDayTime hidt = new HiveIntervalDayTime(100000,0);
-    intervalDayTimeResult.set(hidt);
-    return intervalDayTimeResult;
+//
+////    Object arg0 = arguments[0].get();
+////    Object arg1 = arguments[1].get();
+////    if (arg0 == null || arg1 == null) {
+////      return arg0;
+////    }
+////    PrimitiveObjectInspector compareOI = (PrimitiveObjectInspector) returnOIResolver.get();
+////    if (PrimitiveObjectInspectorUtils.comparePrimitiveObjects(
+////        arg0, compareOI,
+////        returnOIResolver.convertIfNecessary(arg1, argumentOIs[1], false), compareOI)) {
+////      return null;
+////    }
+//    HiveIntervalDayTime hidt = new HiveIntervalDayTime(100000,0);
+//    intervalDayTimeResult.set(hidt);
+//    return intervalDayTimeResult;
+  }
+
+  
+  
+  private static interface IntervalProcessor {
+
+    Integer getKey();
+    PrimitiveTypeInfo getTypeInfo();
+    Object evaluate(String arg);
+  }
+
+  private static class IntervalDayLiteralProcessor implements IntervalProcessor {
+    @Override
+    public Integer getKey() {
+      return HiveParser.TOK_INTERVAL_DAY_LITERAL;
+    }
+
+    @Override
+    public PrimitiveTypeInfo getTypeInfo() {
+      return TypeInfoFactory.intervalDayTimeTypeInfo;
+    }
+
+    @Override
+    public Object evaluate(String arg) {
+      return new HiveIntervalDayTime(Integer.parseInt(arg), 0, 0, 0, 0);
+    }
+  }
+  private static class IntervalHourLiteralProcessor implements IntervalProcessor {
+    @Override
+    public Integer getKey() {
+      return HiveParser.TOK_INTERVAL_HOUR_LITERAL;
+    }
+
+    @Override
+    public PrimitiveTypeInfo getTypeInfo() {
+      return TypeInfoFactory.intervalDayTimeTypeInfo;
+    }
+
+    @Override
+    public Object evaluate(String arg) {
+      return new HiveIntervalDayTime(0,Integer.parseInt(arg), 0, 0, 0);
+    }
+  }
+  
+  private Map<Integer,IntervalProcessor> getProcessorMap() {
+    Map<Integer, IntervalProcessor> ret=new HashMap<>();
+    {
+      IntervalDayLiteralProcessor p = new IntervalDayLiteralProcessor();
+      ret.put(p.getKey(), p);
+    }
+//  case HiveParser.TOK_INTERVAL_HOUR_LITERAL:
+//  return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+//      new HiveIntervalDayTime(0, Integer.parseInt(intervalString), 0, 0, 0));
+    {
+      IntervalHourLiteralProcessor p = new IntervalHourLiteralProcessor();
+      ret.put(p.getKey(), p);
+    }
+    
+    
+//    switch (expr.getType()) {
+//    case HiveParser.TOK_INTERVAL_YEAR_MONTH_LITERAL:
+//      return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
+//          HiveIntervalYearMonth.valueOf(intervalString));
+//    case HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL:
+//      return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+//          HiveIntervalDayTime.valueOf(intervalString));
+//    case HiveParser.TOK_INTERVAL_YEAR_LITERAL:
+//      return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
+//          new HiveIntervalYearMonth(Integer.parseInt(intervalString), 0));
+//    case HiveParser.TOK_INTERVAL_MONTH_LITERAL:
+//      return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
+//          new HiveIntervalYearMonth(0, Integer.parseInt(intervalString)));
+//    case HiveParser.TOK_INTERVAL_DAY_LITERAL:
+//      return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+//          // FIXME HIVE-13557 remove this hoax
+//          new HiveIntervalDayTime(Integer.parseInt("42"), 0, 0, 0, 0));
+//    case HiveParser.TOK_INTERVAL_HOUR_LITERAL:
+//      return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+//          new HiveIntervalDayTime(0, Integer.parseInt(intervalString), 0, 0, 0));
+//    case HiveParser.TOK_INTERVAL_MINUTE_LITERAL:
+//      return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+//          new HiveIntervalDayTime(0, 0, Integer.parseInt(intervalString), 0, 0));
+//    case HiveParser.TOK_INTERVAL_SECOND_LITERAL:
+//      BigDecimal bd = new BigDecimal(intervalString);
+//      BigDecimal bdSeconds = new BigDecimal(bd.toBigInteger());
+//      BigDecimal bdNanos = bd.subtract(bdSeconds);
+//      return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+//          new HiveIntervalDayTime(0, 0, 0, bdSeconds.intValueExact(),
+//              bdNanos.multiply(NANOS_PER_SEC_BD).intValue()));
+//    default:
+//      throw new IllegalArgumentException("Invalid time literal type " + expr.getType());
+//  }
+
+    return ret;
   }
 
   @Override
