@@ -370,7 +370,7 @@ intervalLiteral
 
 intervalExpression
     :
-    LPAREN k=expression RPAREN qualifiers=intervalQualifiers ->
+    KW_INTERVAL? LPAREN k=expression RPAREN qualifiers=intervalQualifiers ->
 		^(TOK_FUNCTION Identifier["internal_interval"] $k NumberLiteral[Integer.toString(qualifiers.tree.token.getType())])
     ;
 
