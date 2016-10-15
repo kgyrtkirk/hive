@@ -96,7 +96,15 @@ public class GenericUDFInternalInterval extends GenericUDF {
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     String argString = PrimitiveObjectInspectorUtils.getString(arguments[0].get(), inputOI);
-    return processor.evaluate(argString);
+    if (argString == null) {
+      return null;
+    }
+    try {
+      return processor.evaluate(argString);
+    } catch (Exception e) {
+      throw new UDFArgumentTypeException(0, "Error parsing interval " + argString + " using:"
+          + processor.getClass().getSimpleName());
+    }
   }
 
   private static interface IntervalProcessor {
