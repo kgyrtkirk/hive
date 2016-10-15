@@ -202,10 +202,8 @@ public class GenericUDFInternalInterval extends GenericUDF {
       BigDecimal bd = new BigDecimal(arg);
       BigDecimal bdSeconds = new BigDecimal(bd.toBigInteger());
       BigDecimal bdNanos = bd.subtract(bdSeconds);
-      new HiveIntervalDayTime(0, 0, 0, bdSeconds.intValueExact(),
+      return new HiveIntervalDayTime(0, 0, 0, bdSeconds.intValueExact(),
           bdNanos.multiply(NANOS_PER_SEC_BD).intValue());
-
-      return new HiveIntervalDayTime(0, 0, Integer.parseInt(arg), 0, 0);
     }
   }
 
