@@ -370,10 +370,11 @@ intervalLiteral
 intervalExpression
     :
     LPAREN k=expression RPAREN qualifiers=intervalQualifiers ->
-    {
-      adaptor.create(qualifiers.tree.token.getType(), $k.text)
-    }
-// next:   	^(TOK_FUNCTION Identifier["internal_interval"] qualifiers.tree.token.getType() $k)
+//    {
+  //    adaptor.create(qualifiers.tree.token.getType(), $k.text)
+    //}
+// next:   
+		^(TOK_FUNCTION Identifier["internal_interval"] $k)
     ;
 
 intervalQualifiers
