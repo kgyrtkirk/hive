@@ -47,7 +47,7 @@ import org.apache.hive.common.util.DateUtils;
  * GenericUDF Class for support of "INTERVAL (expression) (DAY|YEAR|...)".
  */
 @Description(name = "internal_interval", value = "_FUNC_(intervalArg,intervalType)",
-  extended = "this method is not designed to be used be directly calling it - it provides internale support for 'INTERVAL (intervalArg) intervalType' constructs")
+  extended = "this method is not designed to be used by directly calling it - it provides internal support for 'INTERVAL (intervalArg) intervalType' constructs")
 
 public class GenericUDFInternalInterval extends GenericUDF {
   private transient AbstractPrimitiveWritableObjectInspector resultOI;
