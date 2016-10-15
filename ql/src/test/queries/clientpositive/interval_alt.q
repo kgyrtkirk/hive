@@ -19,8 +19,11 @@ select date '2012-01-01' + (-30) days;
 create table t (dt int);
 insert into t values (1),(2);
 
+-- expressions/columnref
 select
 	date '2012-01-01' +          ( -dt*dt ) day,
 	date '2012-01-01' - interval ( -dt*dt ) day
 	from t;
 
+-- null
+select interval (null) day;
