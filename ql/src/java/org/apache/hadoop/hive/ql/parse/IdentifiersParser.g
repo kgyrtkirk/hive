@@ -317,6 +317,7 @@ constant
     : Number
     | dateLiteral
     | timestampLiteral
+    | intervalLiteral
     | StringLiteral
     | stringLiteralSequence
     | IntegralLiteral
@@ -365,8 +366,11 @@ intervalLiteral
     {
       adaptor.create(((CommonTree)qualifiers.getTree()).getType(), $StringLiteral.text)
     }
-    |
-    LPAREN (PLUS|MINUS)? k=Number RPAREN qualifiers=intervalQualifiers ->
+    ;
+
+intervalExpression:
+    :
+    LPAREN k=expression RPAREN qualifiers=intervalQualifiers ->
     {
       adaptor.create(qualifiers.tree.token.getType(), $k.text)
     }
@@ -395,7 +399,7 @@ atomExpression
     :
     (KW_NULL) => KW_NULL -> TOK_NULL
     | (constant) => constant
-    | (intervalLiteral)=>intervalLiteral
+    | (intervalExpression)=>intervalExpression
     | castExpression
     | extractExpression
     | floorExpression
@@ -404,7 +408,6 @@ atomExpression
     | (functionName LPAREN) => function
     | tableOrColumn
     | LPAREN! expression RPAREN!
-//    |  expression 
     ;
 
 
