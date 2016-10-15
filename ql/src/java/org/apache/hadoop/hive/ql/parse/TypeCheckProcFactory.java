@@ -551,8 +551,7 @@ public class TypeCheckProcFactory {
                 new HiveIntervalYearMonth(0, Integer.parseInt(intervalString)));
           case HiveParser.TOK_INTERVAL_DAY_LITERAL:
             return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
-                // FIXME HIVE-13557 remove this hoax
-                new HiveIntervalDayTime(Integer.parseInt("42"), 0, 0, 0, 0));
+                new HiveIntervalDayTime(Integer.parseInt(intervalString), 0, 0, 0, 0));
           case HiveParser.TOK_INTERVAL_HOUR_LITERAL:
             return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
                 new HiveIntervalDayTime(0, Integer.parseInt(intervalString), 0, 0, 0));

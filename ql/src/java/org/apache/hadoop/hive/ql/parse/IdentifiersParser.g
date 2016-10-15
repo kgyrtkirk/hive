@@ -367,13 +367,10 @@ intervalLiteral
       adaptor.create(((CommonTree)qualifiers.getTree()).getType(), $StringLiteral.text)
     }
     ;
+
 intervalExpression
     :
     LPAREN k=expression RPAREN qualifiers=intervalQualifiers ->
-//    {
-  //    adaptor.create(qualifiers.tree.token.getType(), $k.text)
-    //}
-// next:   
 		^(TOK_FUNCTION Identifier["internal_interval"] $k NumberLiteral[Integer.toString(qualifiers.tree.token.getType())])
     ;
 
@@ -400,9 +397,7 @@ atomExpression
     :
     (KW_NULL) => KW_NULL -> TOK_NULL
     | (constant) => constant
-//    | (intervalExpression)=>intervalExpression
     | (intervalExpression)=>intervalExpression
-//    | intervalExpression
     | castExpression
     | extractExpression
     | floorExpression
@@ -411,7 +406,6 @@ atomExpression
     | (functionName LPAREN) => function
     | tableOrColumn
     | LPAREN! expression RPAREN!
-//    |  expression 
     ;
 
 

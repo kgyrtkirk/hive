@@ -29,14 +29,12 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils.ReturnObjectInspectorResolver;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveWritableObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
@@ -48,12 +46,10 @@ import org.apache.hive.common.util.DateUtils;
 /**
  * GenericUDF Class for support of "INTERVAL (expression) (DAY|YEAR|...)".
  */
-@Description(name = "internal_interval", value = "_FUNC_(a1,a2) - later", extended = "Example:\n "
-    + "probably later I may write something here...")
+@Description(name = "internal_interval", value = "_FUNC_(intervalArg,intervalType)",
+  extended = "this method is not designed to be used be directly calling it - it provides internale support for 'INTERVAL (intervalArg) intervalType' constructs")
 
 public class GenericUDFInternalInterval extends GenericUDF {
-  private transient ObjectInspector[] argumentOIs;
-  private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
   private transient AbstractPrimitiveWritableObjectInspector resultOI;
 
   protected transient HiveIntervalDayTimeWritable intervalDayTimeResult =
@@ -64,8 +60,6 @@ public class GenericUDFInternalInterval extends GenericUDF {
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-
-    argumentOIs = arguments;
 
     // read operation mode
     if (!(arguments[1] instanceof ConstantObjectInspector)) {
@@ -91,11 +85,14 @@ public class GenericUDFInternalInterval extends GenericUDF {
 
     inputOI = (PrimitiveObjectInspector) arguments[0];
 
-    // if (PrimitiveGrouping.STRING_GROUP != PrimitiveObjectInspectorUtils
-    // .getPrimitiveGrouping(inputOI.getPrimitiveCategory())) {
-    // throw new UDFArgumentTypeException(0,
-    // "The first argument to "+getFuncName()+" must be fromstring group");
-    // }
+    PrimitiveGrouping inputOIGroup =
+        PrimitiveObjectInspectorUtils.getPrimitiveGrouping(inputOI.getPrimitiveCategory());
+
+    if (PrimitiveGrouping.NUMERIC_GROUP != inputOIGroup
+        && PrimitiveGrouping.STRING_GROUP != inputOIGroup) {
+      throw new UDFArgumentTypeException(0,
+     "The first argument to "+getFuncName()+" must be from the string group or numberic group");
+     }
 
     resultOI = PrimitiveObjectInspectorFactory
         .getPrimitiveWritableObjectInspector(processor.getTypeInfo());
@@ -107,28 +104,6 @@ public class GenericUDFInternalInterval extends GenericUDF {
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     String argString = PrimitiveObjectInspectorUtils.getString(arguments[0].get(), inputOI);
     return processor.evaluate(argString);
-    // stringResolver.convertIfNecessary(arguments[0], TypeInfoFactory.stringTypeInfo, false);
-    //
-    // if (PrimitiveObjectInspectorUtils.comparePrimitiveObjects(
-    // arg0, compareOI,
-    // ) {
-    // return null;
-    // }
-    //
-    //// Object arg0 = arguments[0].get();
-    //// Object arg1 = arguments[1].get();
-    //// if (arg0 == null || arg1 == null) {
-    //// return arg0;
-    //// }
-    //// PrimitiveObjectInspector compareOI = (PrimitiveObjectInspector) returnOIResolver.get();
-    //// if (PrimitiveObjectInspectorUtils.comparePrimitiveObjects(
-    //// arg0, compareOI,
-    //// returnOIResolver.convertIfNecessary(arg1, argumentOIs[1], false), compareOI)) {
-    //// return null;
-    //// }
-    // HiveIntervalDayTime hidt = new HiveIntervalDayTime(100000,0);
-    // intervalDayTimeResult.set(hidt);
-    // return intervalDayTimeResult;
   }
 
   private static interface IntervalProcessor {
@@ -175,7 +150,7 @@ public class GenericUDFInternalInterval extends GenericUDF {
 
     abstract protected HiveIntervalYearMonth getIntervalYearMonth(String arg);
   }
-  
+
   private static class IntervalDayLiteralProcessor extends AbstractDayTimeIntervalProcessor {
 
     @Override
@@ -200,6 +175,7 @@ public class GenericUDFInternalInterval extends GenericUDF {
       return new HiveIntervalDayTime(0, Integer.parseInt(arg), 0, 0, 0);
     }
   }
+
   private static class IntervalMinuteLiteralProcessor extends AbstractDayTimeIntervalProcessor {
     @Override
     public Integer getKey() {
@@ -211,10 +187,11 @@ public class GenericUDFInternalInterval extends GenericUDF {
       return new HiveIntervalDayTime(0, 0, Integer.parseInt(arg), 0, 0);
     }
   }
+
   private static class IntervalSecondLiteralProcessor extends AbstractDayTimeIntervalProcessor {
-    
+
     private static final BigDecimal NANOS_PER_SEC_BD = new BigDecimal(DateUtils.NANOS_PER_SEC);
-    
+
     @Override
     public Integer getKey() {
       return HiveParser.TOK_INTERVAL_SECOND_LITERAL;
@@ -222,18 +199,18 @@ public class GenericUDFInternalInterval extends GenericUDF {
 
     @Override
     protected HiveIntervalDayTime getIntervalDayTime(String arg) {
-       BigDecimal bd = new BigDecimal(arg);
-       BigDecimal bdSeconds = new BigDecimal(bd.toBigInteger());
-       BigDecimal bdNanos = bd.subtract(bdSeconds);
-       new HiveIntervalDayTime(0, 0, 0, bdSeconds.intValueExact(),
-       bdNanos.multiply(NANOS_PER_SEC_BD).intValue());
+      BigDecimal bd = new BigDecimal(arg);
+      BigDecimal bdSeconds = new BigDecimal(bd.toBigInteger());
+      BigDecimal bdNanos = bd.subtract(bdSeconds);
+      new HiveIntervalDayTime(0, 0, 0, bdSeconds.intValueExact(),
+          bdNanos.multiply(NANOS_PER_SEC_BD).intValue());
 
       return new HiveIntervalDayTime(0, 0, Integer.parseInt(arg), 0, 0);
     }
   }
 
   private static class IntervalDayTimeLiteralProcessor extends AbstractDayTimeIntervalProcessor {
-    
+
     @Override
     public Integer getKey() {
       return HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL;
@@ -244,10 +221,10 @@ public class GenericUDFInternalInterval extends GenericUDF {
       return HiveIntervalDayTime.valueOf(arg);
     }
   }
-  
-  
-  private static class IntervalYearMonthLiteralProcessor extends AbstractYearMonthIntervalProcessor {
-    
+
+  private static class IntervalYearMonthLiteralProcessor
+      extends AbstractYearMonthIntervalProcessor {
+
     @Override
     public Integer getKey() {
       return HiveParser.TOK_INTERVAL_YEAR_MONTH_LITERAL;
@@ -258,8 +235,9 @@ public class GenericUDFInternalInterval extends GenericUDF {
       return HiveIntervalYearMonth.valueOf(arg);
     }
   }
+
   private static class IntervalYearLiteralProcessor extends AbstractYearMonthIntervalProcessor {
-    
+
     @Override
     public Integer getKey() {
       return HiveParser.TOK_INTERVAL_YEAR_LITERAL;
@@ -267,7 +245,7 @@ public class GenericUDFInternalInterval extends GenericUDF {
 
     @Override
     protected HiveIntervalYearMonth getIntervalYearMonth(String arg) {
-      return new HiveIntervalYearMonth(Integer.parseInt(arg),0);
+      return new HiveIntervalYearMonth(Integer.parseInt(arg), 0);
     }
   }
 
@@ -285,59 +263,25 @@ public class GenericUDFInternalInterval extends GenericUDF {
   }
 
   private static Map<Integer, IntervalProcessor> getProcessorMap() {
-    
+
     Map<Integer, IntervalProcessor> ret = new HashMap<>();
     IntervalProcessor ips[]=new IntervalProcessor[]{
         new IntervalDayTimeLiteralProcessor(),
-        
+
         new IntervalDayLiteralProcessor(),
         new IntervalHourLiteralProcessor(),
         new IntervalMinuteLiteralProcessor(),
         new IntervalSecondLiteralProcessor(),
-        
+
         new IntervalYearMonthLiteralProcessor(),
-        
+
         new IntervalYearLiteralProcessor(),
         new IntervalMonthLiteralProcessor(),
     };
-    
+
     for (IntervalProcessor ip : ips) {
       ret.put(ip.getKey(), ip);
     }
-
-    // switch (expr.getType()) {
-//    // case HiveParser.TOK_INTERVAL_YEAR_MONTH_LITERAL:
-    // return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
-    // HiveIntervalYearMonth.valueOf(intervalString));
-//    // case HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL:
-    // return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
-    // HiveIntervalDayTime.valueOf(intervalString));
-  //  // case HiveParser.TOK_INTERVAL_YEAR_LITERAL:
-    // return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
-    // new HiveIntervalYearMonth(Integer.parseInt(intervalString), 0));
-//    // case HiveParser.TOK_INTERVAL_MONTH_LITERAL:
-    // return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
-    // new HiveIntervalYearMonth(0, Integer.parseInt(intervalString)));
-//    // case HiveParser.TOK_INTERVAL_DAY_LITERAL:
-    // return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
-    // // FIXME HIVE-13557 remove this hoax
-    // new HiveIntervalDayTime(Integer.parseInt("42"), 0, 0, 0, 0));
-//    // case HiveParser.TOK_INTERVAL_HOUR_LITERAL:
-    // return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
-    // new HiveIntervalDayTime(0, Integer.parseInt(intervalString), 0, 0, 0));
-//    // case HiveParser.TOK_INTERVAL_MINUTE_LITERAL:
-    // return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
-    // new HiveIntervalDayTime(0, 0, Integer.parseInt(intervalString), 0, 0));
-    // case HiveParser.TOK_INTERVAL_SECOND_LITERAL:
-    // BigDecimal bd = new BigDecimal(intervalString);
-    // BigDecimal bdSeconds = new BigDecimal(bd.toBigInteger());
-    // BigDecimal bdNanos = bd.subtract(bdSeconds);
-    // return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
-    // new HiveIntervalDayTime(0, 0, 0, bdSeconds.intValueExact(),
-    // bdNanos.multiply(NANOS_PER_SEC_BD).intValue()));
-    // default:
-//    // throw new IllegalArgumentException("Invalid time literal type " + expr.getType());
-    // }
 
     return ret;
   }
