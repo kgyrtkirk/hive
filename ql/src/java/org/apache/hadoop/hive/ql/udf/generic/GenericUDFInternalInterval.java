@@ -93,11 +93,11 @@ public class GenericUDFInternalInterval extends GenericUDF {
 
     inputOI = (PrimitiveObjectInspector) arguments[0];
 
-    if (PrimitiveGrouping.STRING_GROUP != PrimitiveObjectInspectorUtils
-        .getPrimitiveGrouping(inputOI.getPrimitiveCategory())) {
-      throw new UDFArgumentTypeException(0,
-          "The first argument to "+getFuncName()+" must be fromstring group");
-    }
+//    if (PrimitiveGrouping.STRING_GROUP != PrimitiveObjectInspectorUtils
+//        .getPrimitiveGrouping(inputOI.getPrimitiveCategory())) {
+//      throw new UDFArgumentTypeException(0,
+//          "The first argument to "+getFuncName()+" must be fromstring group");
+//    }
     
     resultOI = PrimitiveObjectInspectorFactory
         .getPrimitiveWritableObjectInspector(processor.getTypeInfo());
