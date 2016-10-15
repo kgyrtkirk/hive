@@ -50,11 +50,6 @@ import org.apache.hive.common.util.DateUtils;
   extended = "this method is not designed to be used by directly calling it - it provides internal support for 'INTERVAL (intervalArg) intervalType' constructs")
 
 public class GenericUDFInternalInterval extends GenericUDF {
-  private transient AbstractPrimitiveWritableObjectInspector resultOI;
-
-  protected transient HiveIntervalDayTimeWritable intervalDayTimeResult =
-      new HiveIntervalDayTimeWritable();
-  private transient Integer operationMode;
   private transient IntervalProcessor processor;
   private transient PrimitiveObjectInspector inputOI;
 
@@ -66,7 +61,7 @@ public class GenericUDFInternalInterval extends GenericUDF {
       throw new UDFArgumentTypeException(1,
           getFuncName() + ": may only accept constant as second argument");
     }
-    operationMode = getConstantIntValue(arguments, 1);
+    Integer operationMode = getConstantIntValue(arguments, 1);
     if (operationMode == null) {
       throw new UDFArgumentTypeException(1, "must supply operationmode");
     }
@@ -77,7 +72,7 @@ public class GenericUDFInternalInterval extends GenericUDF {
           getFuncName() + ": unsupported operationMode: " + operationMode);
     }
 
-    // FIXME: check arg0
+    // check argument
     if (arguments[0].getCategory() != Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(0,
           "The first argument to " + getFuncName() + " must be primitive");
@@ -94,10 +89,8 @@ public class GenericUDFInternalInterval extends GenericUDF {
      "The first argument to "+getFuncName()+" must be from the string group or numberic group");
      }
 
-    resultOI = PrimitiveObjectInspectorFactory
+    return PrimitiveObjectInspectorFactory
         .getPrimitiveWritableObjectInspector(processor.getTypeInfo());
-
-    return resultOI;
   }
 
   @Override
