@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveWritableObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
@@ -80,17 +81,33 @@ public class GenericUDFInternalInterval extends GenericUDF {
 
     inputOI = (PrimitiveObjectInspector) arguments[0];
 
-    PrimitiveGrouping inputOIGroup =
-        PrimitiveObjectInspectorUtils.getPrimitiveGrouping(inputOI.getPrimitiveCategory());
+    PrimitiveCategory inputCategory = inputOI.getPrimitiveCategory();
 
-    if (PrimitiveGrouping.NUMERIC_GROUP != inputOIGroup
-        && PrimitiveGrouping.STRING_GROUP != inputOIGroup) {
-      throw new UDFArgumentTypeException(0,
-     "The first argument to "+getFuncName()+" must be from the string group or numberic group");
-     }
+    if (!isValidInputCategory(inputCategory)) {
+      throw new UDFArgumentTypeException(0, "The first argument to " + getFuncName()
+          + " must be from the string group or numeric group (except:float/double)");
+    }
 
     return PrimitiveObjectInspectorFactory
         .getPrimitiveWritableObjectInspector(processor.getTypeInfo());
+  }
+
+  private boolean isValidInputCategory(PrimitiveCategory cat) throws UDFArgumentTypeException {
+    PrimitiveGrouping inputOIGroup = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(cat);
+
+    if (inputOIGroup == PrimitiveGrouping.STRING_GROUP) {
+      return true;
+    }
+    if (inputOIGroup == PrimitiveGrouping.NUMERIC_GROUP) {
+      switch (cat) {
+      case DOUBLE:
+      case FLOAT:
+        return false;
+      default:
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override

@@ -24,6 +24,3 @@ select
 	date '2012-01-01' +          ( -dt*dt ) day,
 	date '2012-01-01' - interval ( -dt*dt ) day
 	from t;
-
--- null
-select interval (null) day;
