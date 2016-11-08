@@ -200,9 +200,9 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     for (Map.Entry<String, Metric> metric : metricRegistry.getMetrics().entrySet()) {
       metricRegistry.remove(metric.getKey());
     }
-    if (reporterList.contains(MetricsReporting.HADOOP2)) {
-      DefaultMetricsSystem.shutdown();
-    }
+//    if (reporterList.contains(MetricsReporting.HADOOP2)) {
+//      DefaultMetricsSystem.shutdown();
+//    }
 
     timers.invalidateAll();
     counters.invalidateAll();
