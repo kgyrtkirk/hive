@@ -194,11 +194,12 @@ public class StatsSetupConst {
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @JsonProperty(COLUMN_STATS)
+    @JsonSerialize(contentUsing = BooleanSerializer.class)
+    @JsonDeserialize(contentUsing = BooleanDeserializer.class)
     Map<String, Boolean> columnStats = new TreeMap<>();
 
-  };  
+  };
 
-  
   public static boolean areBasicStatsUptoDate(Map<String, String> params) {
     if (params == null) {
       return false;
