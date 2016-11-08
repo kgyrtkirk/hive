@@ -49,6 +49,7 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +71,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import javax.management.ObjectName;
 
 /**
  * Codahale-backed Metrics implementation.
@@ -99,6 +102,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
       return new HashMap<String, CodahaleMetricsScope>();
     }
   };
+  private MetricsSystem msss;
 
   public class CodahaleMetricsScope implements MetricsScope {
 
@@ -207,6 +211,11 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     for (Map.Entry<String, Metric> metric : metricRegistry.getMetrics().entrySet()) {
       metricRegistry.remove(metric.getKey());
     }
+    String applicationName = conf.get(HiveConf.ConfVars.HIVE_METRICS_HADOOP2_COMPONENT_NAME.varname);
+    msss.unregisterSource(applicationName);
+
+//    DefaultMetricsSystem.INSTANCE.removeSourceName(applicationName);
+//    DefaultMetricsSystem.INSTANCE.removeMBeanName(ObjectName.getInstance(applicationName));
     timers.invalidateAll();
     counters.invalidateAll();
   }
@@ -390,14 +399,16 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
           long reportingInterval = HiveConf.toTime(
               conf.get(HiveConf.ConfVars.HIVE_METRICS_HADOOP2_INTERVAL.varname),
               TimeUnit.SECONDS, TimeUnit.SECONDS);
-          final HadoopMetrics2Reporter metrics2Reporter = HadoopMetrics2Reporter.forRegistry(metricRegistry)
+        msss = DefaultMetricsSystem.initialize(applicationName);
+        final HadoopMetrics2Reporter metrics2Reporter = HadoopMetrics2Reporter.forRegistry(metricRegistry)
               .convertRatesTo(TimeUnit.SECONDS)
               .convertDurationsTo(TimeUnit.MILLISECONDS)
-              .build(DefaultMetricsSystem.initialize(applicationName), // The application-level name
+              .build(msss, // The application-level name
                   applicationName, // Component name
                   applicationName, // Component description
                   "General"); // Name for each metric record
           metrics2Reporter.start(reportingInterval, TimeUnit.SECONDS);
+          reporters.add(metrics2Reporter);
           break;
       }
     }
