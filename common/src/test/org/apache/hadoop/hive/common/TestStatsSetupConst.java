@@ -23,7 +23,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.fs.Stat;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
