@@ -102,6 +102,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
       return new HashMap<String, CodahaleMetricsScope>();
     }
   };
+  private Set<MetricsReporting> reporterList;
   public class CodahaleMetricsScope implements MetricsScope {
 
     private final String name;
@@ -181,21 +182,17 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     registerAll("classLoading", new ClassLoadingGaugeSet());
 
     //Metrics reporter
-    Set<MetricsReporting> finalReporterList = new HashSet<MetricsReporting>();
-    List<String> metricsReporterNames = Lists.newArrayList(
-      Splitter.on(",").trimResults().omitEmptyStrings().split(conf.getVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER)));
+    reporterList = new HashSet<MetricsReporting>();
 
-    if(metricsReporterNames != null) {
-      for (String metricsReportingName : metricsReporterNames) {
-        try {
-          MetricsReporting reporter = MetricsReporting.valueOf(metricsReportingName.trim().toUpperCase());
-          finalReporterList.add(reporter);
-        } catch (IllegalArgumentException e) {
-          LOGGER.warn("Metrics reporter skipped due to invalid configured reporter: " + metricsReportingName);
-        }
+    for (String metricsReportingName : Splitter.on(",").trimResults().omitEmptyStrings().split(conf.getVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER))) {
+      try {
+        MetricsReporting reporter = MetricsReporting.valueOf(metricsReportingName.trim().toUpperCase());
+        reporterList.add(reporter);
+      } catch (IllegalArgumentException e) {
+        LOGGER.warn("Metrics reporter skipped due to invalid configured reporter: " + metricsReportingName);
       }
     }
-    initReporting(finalReporterList);
+    initReporting(reporterList);
   }
 
 
@@ -207,7 +204,9 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     for (Map.Entry<String, Metric> metric : metricRegistry.getMetrics().entrySet()) {
       metricRegistry.remove(metric.getKey());
     }
-    DefaultMetricsSystem.shutdown();
+    if (reporterList.contains(MetricsReporting.HADOOP2)) {
+      DefaultMetricsSystem.shutdown();
+    }
 
     timers.invalidateAll();
     counters.invalidateAll();
