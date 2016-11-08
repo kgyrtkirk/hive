@@ -102,8 +102,6 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
       return new HashMap<String, CodahaleMetricsScope>();
     }
   };
-  private MetricsSystem msss;
-
   public class CodahaleMetricsScope implements MetricsScope {
 
     private final String name;
@@ -203,19 +201,14 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
 
   @Override
   public void close() throws Exception {
-    if (reporters != null) {
-      for (Closeable reporter : reporters) {
-        reporter.close();
-      }
+    for (Closeable reporter : reporters) {
+      reporter.close();
     }
     for (Map.Entry<String, Metric> metric : metricRegistry.getMetrics().entrySet()) {
       metricRegistry.remove(metric.getKey());
     }
-    String applicationName = conf.get(HiveConf.ConfVars.HIVE_METRICS_HADOOP2_COMPONENT_NAME.varname);
-    msss.unregisterSource(applicationName);
+    DefaultMetricsSystem.shutdown();
 
-//    DefaultMetricsSystem.INSTANCE.removeSourceName(applicationName);
-//    DefaultMetricsSystem.INSTANCE.removeMBeanName(ObjectName.getInstance(applicationName));
     timers.invalidateAll();
     counters.invalidateAll();
   }
@@ -399,11 +392,10 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
           long reportingInterval = HiveConf.toTime(
               conf.get(HiveConf.ConfVars.HIVE_METRICS_HADOOP2_INTERVAL.varname),
               TimeUnit.SECONDS, TimeUnit.SECONDS);
-        msss = DefaultMetricsSystem.initialize(applicationName);
-        final HadoopMetrics2Reporter metrics2Reporter = HadoopMetrics2Reporter.forRegistry(metricRegistry)
+          final HadoopMetrics2Reporter metrics2Reporter = HadoopMetrics2Reporter.forRegistry(metricRegistry)
               .convertRatesTo(TimeUnit.SECONDS)
               .convertDurationsTo(TimeUnit.MILLISECONDS)
-              .build(msss, // The application-level name
+              .build(DefaultMetricsSystem.initialize(applicationName), // The application-level name
                   applicationName, // Component name
                   applicationName, // Component description
                   "General"); // Name for each metric record
