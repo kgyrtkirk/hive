@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.common;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,6 +52,14 @@ public class TestStatsSetupConst {
     Map<String, String> params=new HashMap<>();
     StatsSetupConst.setBasicStatsState(params, String.valueOf(true));
     assertEquals("{\"BASIC_STATS\":\"true\"}",params.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
+  }
+
+  @Test
+  public void testSetBasicStatsState_falseIsAbsent() {
+    Map<String, String> params=new HashMap<>();
+    StatsSetupConst.setBasicStatsState(params, String.valueOf(true));
+    StatsSetupConst.setBasicStatsState(params, String.valueOf(false));
+    assertNull(params.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
   }
 
   // earlier implementation have quoted boolean values...so the new implementation should preserve this
@@ -88,5 +97,14 @@ public class TestStatsSetupConst {
 
     System.out.println(params0.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
     assertEquals(params0.get(StatsSetupConst.COLUMN_STATS_ACCURATE),params1.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
+  }
+
+  // FIXME: current objective is to keep the previous outputs...but this is possibly bad..
+  @Test
+  public void testColumnEntries_areKept_whenBasicIsAbsent() {
+    Map<String, String> params=new HashMap<>();
+    StatsSetupConst.setBasicStatsState(params, String.valueOf(false));
+    StatsSetupConst.setColumnStatsState(params, Lists.newArrayList("Foo"));
+    assertEquals("{\"COLUMN_STATS\":{\"Foo\":\"true\"}}",params.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
   }
 }

@@ -187,6 +187,7 @@ public class StatsSetupConst {
       }
     }
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     @JsonSerialize(using = BooleanSerializer.class)
     @JsonDeserialize(using = BooleanDeserializer.class)
     @JsonProperty(BASIC_STATS)
