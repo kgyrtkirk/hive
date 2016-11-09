@@ -196,7 +196,7 @@ public class StatsSetupConst {
     @JsonProperty(COLUMN_STATS)
     @JsonSerialize(contentUsing = BooleanSerializer.class)
     @JsonDeserialize(contentUsing = BooleanDeserializer.class)
-    Map<String, Boolean> columnStats = new TreeMap<>();
+    TreeMap<String, Boolean> columnStats = new TreeMap<>();
 
   };
 

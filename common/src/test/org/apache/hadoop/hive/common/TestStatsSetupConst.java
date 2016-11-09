@@ -74,4 +74,19 @@ public class TestStatsSetupConst {
 
     assertEquals(params0.get(StatsSetupConst.COLUMN_STATS_ACCURATE),params1.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
   }
+
+  @Test
+  public void testColumnEntries_orderIndependence2() {
+    Map<String, String> params0=new HashMap<>();
+    // in case jackson is able to deserialize...it may use a different implementation for the map - which may not preserve order
+    StatsSetupConst.setBasicStatsState(params0, String.valueOf(true));
+    StatsSetupConst.setColumnStatsState(params0, Lists.newArrayList("year"));
+    StatsSetupConst.setColumnStatsState(params0, Lists.newArrayList("year","month"));
+    Map<String, String> params1=new HashMap<>();
+    StatsSetupConst.setColumnStatsState(params1, Lists.newArrayList("month","year"));
+    StatsSetupConst.setBasicStatsState(params1, String.valueOf(true));
+
+    System.out.println(params0.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
+    assertEquals(params0.get(StatsSetupConst.COLUMN_STATS_ACCURATE),params1.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
+  }
 }
