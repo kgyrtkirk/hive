@@ -220,14 +220,14 @@ public class StatsSetupConst {
   // has duplicate key, which is not possible
   // note that set basic stats false will wipe out column stats too.
   public static void setBasicStatsState(Map<String, String> params, String setting) {
-    if (params == null) {
-      throw new RuntimeException("params are null...cant set columnstatstate!");
-    }
     if (setting.equals(FALSE)) {
-      if (params.containsKey(COLUMN_STATS_ACCURATE)) {
+      if (params!=null && params.containsKey(COLUMN_STATS_ACCURATE)) {
         params.remove(COLUMN_STATS_ACCURATE);
       }
       return;
+    }
+    if (params == null) {
+      throw new RuntimeException("params are null...cant set columnstatstate!");
     }
     ColumnStatsAccurate stats = parseStatsAcc2(params.get(COLUMN_STATS_ACCURATE));
     stats.basicStats = true;
