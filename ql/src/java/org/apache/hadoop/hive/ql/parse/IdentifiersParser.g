@@ -317,7 +317,6 @@ constant
     : Number
     | dateLiteral
     | timestampLiteral
-    | intervalLiteral
     | StringLiteral
     | stringLiteralSequence
     | IntegralLiteral
@@ -360,18 +359,14 @@ timestampLiteral
     KW_CURRENT_TIMESTAMP -> ^(TOK_FUNCTION KW_CURRENT_TIMESTAMP)
     ;
 
-intervalLiteral
-    :
-    KW_INTERVAL StringLiteral qualifiers=intervalQualifiers ->
-    {
-      adaptor.create(((CommonTree)qualifiers.getTree()).getType(), $StringLiteral.text)
-    }
-    ;
-
 intervalExpression
     :
-    KW_INTERVAL? LPAREN k=expression RPAREN qualifiers=intervalQualifiers ->
+    (KW_INTERVAL? constant)=>
+    KW_INTERVAL? k=constant qualifiers=intervalQualifiers ->
 		^(TOK_FUNCTION Identifier["internal_interval"] $k NumberLiteral[Integer.toString(qualifiers.tree.token.getType())])
+    |
+    KW_INTERVAL k2=expression qualifiers=intervalQualifiers ->
+		^(TOK_FUNCTION Identifier["internal_interval"] $k2 NumberLiteral[Integer.toString(qualifiers.tree.token.getType())])
     ;
 
 intervalQualifiers
