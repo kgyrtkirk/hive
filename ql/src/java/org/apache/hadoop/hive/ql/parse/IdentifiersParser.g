@@ -363,10 +363,10 @@ intervalExpression
     :
     (KW_INTERVAL? constant)=>
     KW_INTERVAL? k=constant qualifiers=intervalQualifiers ->
-		^(TOK_FUNCTION Identifier["internal_interval"] $k NumberLiteral[Integer.toString(qualifiers.tree.token.getType())])
+		^(TOK_FUNCTION Identifier["internal_interval"] $k NumberLiteral[Integer.toString(((CommonTree)qualifiers.getTree()).token.getType())])
     |
     KW_INTERVAL k2=expression qualifiers=intervalQualifiers ->
-		^(TOK_FUNCTION Identifier["internal_interval"] $k2 NumberLiteral[Integer.toString(qualifiers.tree.token.getType())])
+		^(TOK_FUNCTION Identifier["internal_interval"] $k2 NumberLiteral[Integer.toString(((CommonTree)qualifiers.getTree()).token.getType())])
     ;
 
 intervalQualifiers
