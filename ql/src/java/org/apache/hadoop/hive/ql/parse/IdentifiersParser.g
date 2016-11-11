@@ -361,8 +361,8 @@ timestampLiteral
 
 intervalExpression
     :
-    (KW_INTERVAL? constant)=>
-    KW_INTERVAL? k=constant qualifiers=intervalQualifiers ->
+    (KW_INTERVAL? (StringLiteral|Number))=>
+    KW_INTERVAL? k=(StringLiteral|Number) qualifiers=intervalQualifiers ->
 		^(TOK_FUNCTION Identifier["internal_interval"] $k NumberLiteral[Integer.toString(((CommonTree)qualifiers.getTree()).token.getType())])
     |
     KW_INTERVAL k2=expression qualifiers=intervalQualifiers ->
