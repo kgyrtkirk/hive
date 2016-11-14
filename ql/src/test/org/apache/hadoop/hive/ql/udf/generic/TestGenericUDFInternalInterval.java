@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -52,6 +53,25 @@ public class TestGenericUDFInternalInterval {
       Assert.assertEquals(TypeInfoFactory.intervalDayTimeTypeInfo, oi.getTypeInfo());
       HiveIntervalDayTimeWritable res = (HiveIntervalDayTimeWritable) udf.evaluate(args);
       Assert.assertEquals(8, res.getHiveIntervalDayTime().getDays());
+    }
+  }
+
+  @Test
+  public void testDayIntervalConstant() throws Exception {
+    try (GenericUDFInternalInterval udf = new GenericUDFInternalInterval()) {
+
+      ObjectInspector[] inputOIs = {
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+              TypeInfoFactory.intTypeInfo, new IntWritable(3)),
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+              TypeInfoFactory.intTypeInfo, new IntWritable(HiveParser.TOK_INTERVAL_DAY_LITERAL)) };
+
+      PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
+      Assert.assertEquals(TypeInfoFactory.intervalDayTimeTypeInfo, oi.getTypeInfo());
+      ConstantObjectInspector coi = (ConstantObjectInspector) oi;
+      HiveIntervalDayTimeWritable res =
+          (HiveIntervalDayTimeWritable) coi.getWritableConstantValue();
+      Assert.assertEquals(3, res.getHiveIntervalDayTime().getDays());
     }
   }
 
