@@ -22,11 +22,11 @@ insert into t values (1),(2);
 -- expressions/columnref
 explain
 select
-	date '2012-01-01' + interval -dt*dt day,
-	date '2012-01-01' - interval -dt*dt day
+	date '2012-01-01' + interval (-dt*dt) day,
+	date '2012-01-01' - interval (-dt*dt) day
 	from t;
 
 select
-	date '2012-01-01' + interval -dt*dt day,
-	date '2012-01-01' - interval -dt*dt day
+	date '2012-01-01' + interval (-dt*dt) day,
+	date '2012-01-01' - interval (-dt*dt) day
 	from t;
