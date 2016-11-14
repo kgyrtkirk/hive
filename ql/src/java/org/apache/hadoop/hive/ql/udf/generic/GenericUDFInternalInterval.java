@@ -316,7 +316,7 @@ public class GenericUDFInternalInterval extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    return getStandardDisplayString("INTERNAL_INTERVAL", children, ",");
+    return String.format("%s(%s)", processor.getClass().getSimpleName(), children[0]);
   }
 
 }

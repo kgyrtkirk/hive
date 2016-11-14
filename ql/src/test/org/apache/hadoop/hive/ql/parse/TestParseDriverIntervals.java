@@ -39,6 +39,7 @@ public class TestParseDriverIntervals {
     List<Object[]> ret = new ArrayList<>();
     ret.add(new Object[] { "select 1 days" });
     ret.add(new Object[] { "select (1) days" });
+    ret.add(new Object[] { "select (1) day" });
     ret.add(new Object[] { "select (1+1) days" });
     ret.add(new Object[] { "select interval 1 days" });
     ret.add(new Object[] { "select interval '1' days" });
