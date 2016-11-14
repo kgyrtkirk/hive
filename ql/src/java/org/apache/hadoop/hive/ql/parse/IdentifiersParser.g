@@ -365,6 +365,10 @@ intervalExpression
     KW_INTERVAL? k=(StringLiteral|Number) qualifiers=intervalQualifiers ->
 		^(TOK_FUNCTION Identifier["internal_interval"] $k NumberLiteral[Integer.toString(((CommonTree)qualifiers.getTree()).token.getType())])
     |
+    (KW_INTERVAL LPAREN expression RPAREN )=>
+    KW_INTERVAL LPAREN k3=expression RPAREN qualifiers=intervalQualifiers ->
+		^(TOK_FUNCTION Identifier["internal_interval"] $k3 NumberLiteral[Integer.toString(((CommonTree)qualifiers.getTree()).token.getType())])
+    |
     KW_INTERVAL k2=expression qualifiers=intervalQualifiers ->
 		^(TOK_FUNCTION Identifier["internal_interval"] $k2 NumberLiteral[Integer.toString(((CommonTree)qualifiers.getTree()).token.getType())])
     ;
@@ -391,8 +395,8 @@ expression
 atomExpression
     :
     (KW_NULL) => KW_NULL -> TOK_NULL
-    | (constant) => constant
     | (intervalExpression)=>intervalExpression
+    | (constant) => constant
     | castExpression
     | extractExpression
     | floorExpression
