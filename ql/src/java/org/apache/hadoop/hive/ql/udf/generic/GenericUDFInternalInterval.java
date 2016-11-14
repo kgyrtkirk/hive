@@ -50,6 +50,9 @@ import org.apache.hive.common.util.DateUtils;
   extended = "this method is not designed to be used by directly calling it - it provides internal support for 'INTERVAL (intervalArg) intervalType' constructs")
 
 public class GenericUDFInternalInterval extends GenericUDF {
+
+  private static Map<Integer, IntervalProcessor> processorMap;
+
   private transient IntervalProcessor processor;
   private transient PrimitiveObjectInspector inputOI;
 
@@ -87,8 +90,14 @@ public class GenericUDFInternalInterval extends GenericUDF {
           + " must be from the string group or numeric group (except:float/double)");
     }
 
-    return PrimitiveObjectInspectorFactory
-        .getPrimitiveWritableObjectInspector(processor.getTypeInfo());
+    if (arguments[0] instanceof ConstantObjectInspector) {
+      // return value as constant in case arg is constant
+      return PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+          processor.getTypeInfo(), processor.evaluate(getConstantStringValue(arguments, 0)));
+    } else {
+      return PrimitiveObjectInspectorFactory
+          .getPrimitiveWritableObjectInspector(processor.getTypeInfo());
+    }
   }
 
   private boolean isValidInputCategory(PrimitiveCategory cat) throws UDFArgumentTypeException {
@@ -279,6 +288,10 @@ public class GenericUDFInternalInterval extends GenericUDF {
 
   private static Map<Integer, IntervalProcessor> getProcessorMap() {
 
+    if (processorMap != null) {
+      return processorMap;
+    }
+
     Map<Integer, IntervalProcessor> ret = new HashMap<>();
     IntervalProcessor ips[]=new IntervalProcessor[]{
         new IntervalDayTimeLiteralProcessor(),
@@ -298,7 +311,7 @@ public class GenericUDFInternalInterval extends GenericUDF {
       ret.put(ip.getKey(), ip);
     }
 
-    return ret;
+    return processorMap=ret;
   }
 
   @Override
