@@ -46,9 +46,9 @@ public class TestParseDriverIntervals {
     ret.add(new Object[] { "select interval (x) days" });
     ret.add(new Object[] { "select interval (x+1) days" });
     ret.add(new Object[] { "select interval (1+x) days" });
-     ret.add(new Object[] { "select interval (1+1) days" });
-     ret.add(new Object[] { "select interval (x+1) days" });
-     
+    ret.add(new Object[] { "select interval (1+1) days" });
+    ret.add(new Object[] { "select interval (x+1) days" });
+
     return ret;
   }
 
@@ -60,7 +60,7 @@ public class TestParseDriverIntervals {
   @Test
   public void parseInterval() throws Exception {
     ASTNode root = parseDriver.parse(query);
-    assertNotNull("failed: "+query, findFunctionNode(root));
+    assertNotNull("failed: " + query, findFunctionNode(root));
     System.out.println(root.dump());
   }
 
