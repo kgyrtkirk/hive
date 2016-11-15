@@ -41,13 +41,17 @@ public class TestGenericUDFInternalInterval {
     try (GenericUDFInternalInterval udf = new GenericUDFInternalInterval()) {
 
       ObjectInspector[] inputOIs =
-          { PrimitiveObjectInspectorFactory.writableStringObjectInspector,
+          {
               PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
                   TypeInfoFactory.intTypeInfo,
-                  new IntWritable(HiveParser.TOK_INTERVAL_DAY_LITERAL)) };
+                  new IntWritable(HiveParser.TOK_INTERVAL_DAY_LITERAL)),
+              PrimitiveObjectInspectorFactory.writableStringObjectInspector
+          };
 
-      DeferredObject[] args = { new DeferredJavaObject(new Text("8")),
-          new DeferredJavaObject(new ByteWritable((byte) 4)) };
+      DeferredObject[] args = {
+          new DeferredJavaObject(new ByteWritable((byte) 4)),
+          new DeferredJavaObject(new Text("8"))
+          };
 
       PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
       Assert.assertEquals(TypeInfoFactory.intervalDayTimeTypeInfo, oi.getTypeInfo());
@@ -62,9 +66,10 @@ public class TestGenericUDFInternalInterval {
 
       ObjectInspector[] inputOIs = {
           PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-              TypeInfoFactory.intTypeInfo, new IntWritable(3)),
+              TypeInfoFactory.intTypeInfo, new IntWritable(HiveParser.TOK_INTERVAL_DAY_LITERAL)),
           PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-              TypeInfoFactory.intTypeInfo, new IntWritable(HiveParser.TOK_INTERVAL_DAY_LITERAL)) };
+              TypeInfoFactory.intTypeInfo, new IntWritable(3))
+          };
 
       PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
       Assert.assertEquals(TypeInfoFactory.intervalDayTimeTypeInfo, oi.getTypeInfo());
@@ -79,11 +84,12 @@ public class TestGenericUDFInternalInterval {
   public void testDoubleArgumentIsNotSupported() throws Exception {
     try (GenericUDFInternalInterval udf = new GenericUDFInternalInterval()) {
 
-      ObjectInspector[] inputOIs =
-          { PrimitiveObjectInspectorFactory.writableDoubleObjectInspector,
-              PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-                  TypeInfoFactory.intTypeInfo,
-                  new IntWritable(HiveParser.TOK_INTERVAL_DAY_LITERAL)) };
+      ObjectInspector[] inputOIs = {
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+              TypeInfoFactory.intTypeInfo,
+              new IntWritable(HiveParser.TOK_INTERVAL_DAY_LITERAL)),
+          PrimitiveObjectInspectorFactory.writableDoubleObjectInspector,
+          };
 
       // should detect double
       udf.initialize(inputOIs);
@@ -94,14 +100,17 @@ public class TestGenericUDFInternalInterval {
   public void testInvalidString() throws Exception {
     try (GenericUDFInternalInterval udf = new GenericUDFInternalInterval()) {
 
-      ObjectInspector[] inputOIs =
-          { PrimitiveObjectInspectorFactory.writableStringObjectInspector,
-              PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-                  TypeInfoFactory.intTypeInfo,
-                  new IntWritable(HiveParser.TOK_INTERVAL_DAY_LITERAL)) };
+      ObjectInspector[] inputOIs = {
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+              TypeInfoFactory.intTypeInfo,
+              new IntWritable(HiveParser.TOK_INTERVAL_DAY_LITERAL)),
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector,
+          };
 
-      DeferredObject[] args = { new DeferredJavaObject(new Text("invalid")),
-          new DeferredJavaObject(new ByteWritable((byte) 4)) };
+      DeferredObject[] args = {
+          new DeferredJavaObject(new ByteWritable((byte) 4)),
+          new DeferredJavaObject(new Text("invalid"))
+          };
 
       PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
       Assert.assertEquals(TypeInfoFactory.intervalDayTimeTypeInfo, oi.getTypeInfo());
@@ -114,13 +123,16 @@ public class TestGenericUDFInternalInterval {
   public void testNullBypass() throws Exception {
     try (GenericUDFInternalInterval udf = new GenericUDFInternalInterval()) {
 
-      ObjectInspector[] inputOIs =
-          { PrimitiveObjectInspectorFactory.writableStringObjectInspector,
-              PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-                  TypeInfoFactory.intTypeInfo,
-                  new IntWritable(HiveParser.TOK_INTERVAL_DAY_LITERAL)) };
-      DeferredObject[] args =
-          { new DeferredJavaObject(null), new DeferredJavaObject(new ByteWritable((byte) 4)) };
+      ObjectInspector[] inputOIs = {
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+              TypeInfoFactory.intTypeInfo,
+              new IntWritable(HiveParser.TOK_INTERVAL_DAY_LITERAL)),
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector
+          };
+      DeferredObject[] args = {
+              new DeferredJavaObject(new ByteWritable((byte) 4)),
+              new DeferredJavaObject(null)
+              };
 
       PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
       Assert.assertEquals(TypeInfoFactory.intervalDayTimeTypeInfo, oi.getTypeInfo());

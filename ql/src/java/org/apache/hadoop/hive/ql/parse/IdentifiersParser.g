@@ -362,10 +362,10 @@ timestampLiteral
 intervalExpression
     :
     KW_INTERVAL? k1=(StringLiteral|Number) q1=intervalQualifiers ->
-		^(TOK_FUNCTION Identifier["internal_interval"] $k1 NumberLiteral[Integer.toString(((CommonTree)q1.getTree()).token.getType())])
+		^(TOK_FUNCTION Identifier["internal_interval"] NumberLiteral[Integer.toString(((CommonTree)q1.getTree()).token.getType())] $k1)
     |
     KW_INTERVAL? LPAREN k2=expression RPAREN q2=intervalQualifiers ->
-		^(TOK_FUNCTION Identifier["internal_interval"] $k2 NumberLiteral[Integer.toString(((CommonTree)q2.getTree()).token.getType())])
+		^(TOK_FUNCTION Identifier["internal_interval"] NumberLiteral[Integer.toString(((CommonTree)q2.getTree()).token.getType())] $k2)
     ;
 
 intervalQualifiers

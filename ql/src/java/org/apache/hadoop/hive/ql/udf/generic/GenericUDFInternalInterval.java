@@ -46,7 +46,7 @@ import org.apache.hive.common.util.DateUtils;
 /**
  * GenericUDF Class for support of "INTERVAL (expression) (DAY|YEAR|...)".
  */
-@Description(name = "internal_interval", value = "_FUNC_(intervalArg,intervalType)",
+@Description(name = "internal_interval", value = "_FUNC_(intervalType,intervalArg)",
   extended = "this method is not designed to be used by directly calling it - it provides internal support for 'INTERVAL (intervalArg) intervalType' constructs")
 
 public class GenericUDFInternalInterval extends GenericUDF {
@@ -60,40 +60,40 @@ public class GenericUDFInternalInterval extends GenericUDF {
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
 
     // read operation mode
-    if (!(arguments[1] instanceof ConstantObjectInspector)) {
-      throw new UDFArgumentTypeException(1,
-          getFuncName() + ": may only accept constant as second argument");
+    if (!(arguments[0] instanceof ConstantObjectInspector)) {
+      throw new UDFArgumentTypeException(0,
+          getFuncName() + ": may only accept constant as first argument");
     }
-    Integer operationMode = getConstantIntValue(arguments, 1);
+    Integer operationMode = getConstantIntValue(arguments, 0);
     if (operationMode == null) {
-      throw new UDFArgumentTypeException(1, "must supply operationmode");
+      throw new UDFArgumentTypeException(0, "must supply operationmode");
     }
 
     processor = getProcessorMap().get(operationMode);
     if (processor == null) {
-      throw new UDFArgumentTypeException(1,
+      throw new UDFArgumentTypeException(0,
           getFuncName() + ": unsupported operationMode: " + operationMode);
     }
 
-    // check argument
-    if (arguments[0].getCategory() != Category.PRIMITIVE) {
-      throw new UDFArgumentTypeException(0,
+    // check value argument
+    if (arguments[1].getCategory() != Category.PRIMITIVE) {
+      throw new UDFArgumentTypeException(1,
           "The first argument to " + getFuncName() + " must be primitive");
     }
 
-    inputOI = (PrimitiveObjectInspector) arguments[0];
+    inputOI = (PrimitiveObjectInspector) arguments[1];
 
     PrimitiveCategory inputCategory = inputOI.getPrimitiveCategory();
 
     if (!isValidInputCategory(inputCategory)) {
-      throw new UDFArgumentTypeException(0, "The first argument to " + getFuncName()
+      throw new UDFArgumentTypeException(1, "The second argument to " + getFuncName()
           + " must be from the string group or numeric group (except:float/double)");
     }
 
-    if (arguments[0] instanceof ConstantObjectInspector) {
+    if (arguments[1] instanceof ConstantObjectInspector) {
       // return value as constant in case arg is constant
       return PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-          processor.getTypeInfo(), processor.evaluate(getConstantStringValue(arguments, 0)));
+          processor.getTypeInfo(), processor.evaluate(getConstantStringValue(arguments, 1)));
     } else {
       return PrimitiveObjectInspectorFactory
           .getPrimitiveWritableObjectInspector(processor.getTypeInfo());
@@ -120,14 +120,14 @@ public class GenericUDFInternalInterval extends GenericUDF {
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    String argString = PrimitiveObjectInspectorUtils.getString(arguments[0].get(), inputOI);
+    String argString = PrimitiveObjectInspectorUtils.getString(arguments[1].get(), inputOI);
     if (argString == null) {
       return null;
     }
     try {
       return processor.evaluate(argString);
     } catch (Exception e) {
-      throw new UDFArgumentTypeException(0, "Error parsing interval " + argString + " using:"
+      throw new UDFArgumentTypeException(1, "Error parsing interval " + argString + " using:"
           + processor.getClass().getSimpleName());
     }
   }
@@ -316,7 +316,7 @@ public class GenericUDFInternalInterval extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    return String.format("%s(%s)", processor.getClass().getSimpleName(), children[0]);
+    return String.format("%s(%s)", processor.getClass().getSimpleName(), children[1]);
   }
 
 }
