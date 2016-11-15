@@ -24,11 +24,13 @@ explain
 select
 	date '2012-01-01' +          (-dt*dt) day,
 	date '2012-01-01' - interval (-dt*dt) day,
-	date '2012-01-01' + 1 day + '2' days
+	date '2012-01-01' + 1 day + '2' days,
+	date '2012-01-01' + (dt || '-1') year to month
 	from t;
 
 select
 	date '2012-01-01' +          (-dt*dt) day,
 	date '2012-01-01' - interval (-dt*dt) day,
-	date '2012-01-01' + 1 day + '2' days
+	date '2012-01-01' + 1 day + '2' days,
+	date '2012-01-01' + (dt || '-1') year to month
 	from t;

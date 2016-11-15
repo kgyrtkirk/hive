@@ -71,7 +71,8 @@ explain
 select
 	date '2012-01-01' +          (-dt*dt) day,
 	date '2012-01-01' - interval (-dt*dt) day,
-	date '2012-01-01' + 1 day + '2' days
+	date '2012-01-01' + 1 day + '2' days,
+	date '2012-01-01' + (dt || '-1') year to month
 	from t
 PREHOOK: type: QUERY
 POSTHOOK: query: -- expressions/columnref
@@ -79,7 +80,8 @@ explain
 select
 	date '2012-01-01' +          (-dt*dt) day,
 	date '2012-01-01' - interval (-dt*dt) day,
-	date '2012-01-01' + 1 day + '2' days
+	date '2012-01-01' + 1 day + '2' days,
+	date '2012-01-01' + (dt || '-1') year to month
 	from t
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -94,8 +96,8 @@ STAGE PLANS:
             alias: t
             Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: (2012-01-01 + IntervalDayLiteralProcessor(((- dt) * dt))) (type: timestamp), (2012-01-01 - IntervalDayLiteralProcessor(((- dt) * dt))) (type: timestamp), 2012-01-04 (type: date)
-              outputColumnNames: _col0, _col1, _col2
+              expressions: (2012-01-01 + IntervalDayLiteralProcessor(((- dt) * dt))) (type: timestamp), (2012-01-01 - IntervalDayLiteralProcessor(((- dt) * dt))) (type: timestamp), 2012-01-04 (type: date), (2012-01-01 + IntervalYearMonthLiteralProcessor(concat(dt, '-1'))) (type: date)
+              outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -114,7 +116,8 @@ STAGE PLANS:
 PREHOOK: query: select
 	date '2012-01-01' +          (-dt*dt) day,
 	date '2012-01-01' - interval (-dt*dt) day,
-	date '2012-01-01' + 1 day + '2' days
+	date '2012-01-01' + 1 day + '2' days,
+	date '2012-01-01' + (dt || '-1') year to month
 	from t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
@@ -122,10 +125,11 @@ PREHOOK: Input: default@t
 POSTHOOK: query: select
 	date '2012-01-01' +          (-dt*dt) day,
 	date '2012-01-01' - interval (-dt*dt) day,
-	date '2012-01-01' + 1 day + '2' days
+	date '2012-01-01' + 1 day + '2' days,
+	date '2012-01-01' + (dt || '-1') year to month
 	from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
-2011-12-31 00:00:00	2012-01-02 00:00:00	2012-01-04
-2011-12-28 00:00:00	2012-01-05 00:00:00	2012-01-04
+2011-12-31 00:00:00	2012-01-02 00:00:00	2012-01-04	2013-02-01
+2011-12-28 00:00:00	2012-01-05 00:00:00	2012-01-04	2014-02-01
