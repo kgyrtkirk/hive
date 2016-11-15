@@ -69,15 +69,17 @@ POSTHOOK: Lineage: t.dt EXPRESSION [(values__tmp__table__1)values__tmp__table__1
 PREHOOK: query: -- expressions/columnref
 explain
 select
-	date '2012-01-01' + interval (-dt*dt) day,
-	date '2012-01-01' - interval (-dt*dt) day
+	date '2012-01-01' +          (-dt*dt) day,
+	date '2012-01-01' - interval (-dt*dt) day,
+	date '2012-01-01' + 1 day + '2' days
 	from t
 PREHOOK: type: QUERY
 POSTHOOK: query: -- expressions/columnref
 explain
 select
-	date '2012-01-01' + interval (-dt*dt) day,
-	date '2012-01-01' - interval (-dt*dt) day
+	date '2012-01-01' +          (-dt*dt) day,
+	date '2012-01-01' - interval (-dt*dt) day,
+	date '2012-01-01' + 1 day + '2' days
 	from t
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -92,8 +94,8 @@ STAGE PLANS:
             alias: t
             Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: (2012-01-01 + IntervalDayLiteralProcessor(((- dt) * dt))) (type: timestamp), (2012-01-01 - IntervalDayLiteralProcessor(((- dt) * dt))) (type: timestamp)
-              outputColumnNames: _col0, _col1
+              expressions: (2012-01-01 + IntervalDayLiteralProcessor(((- dt) * dt))) (type: timestamp), (2012-01-01 - IntervalDayLiteralProcessor(((- dt) * dt))) (type: timestamp), 2012-01-04 (type: date)
+              outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -110,18 +112,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select
-	date '2012-01-01' + interval (-dt*dt) day,
-	date '2012-01-01' - interval (-dt*dt) day
+	date '2012-01-01' +          (-dt*dt) day,
+	date '2012-01-01' - interval (-dt*dt) day,
+	date '2012-01-01' + 1 day + '2' days
 	from t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: select
-	date '2012-01-01' + interval (-dt*dt) day,
-	date '2012-01-01' - interval (-dt*dt) day
+	date '2012-01-01' +          (-dt*dt) day,
+	date '2012-01-01' - interval (-dt*dt) day,
+	date '2012-01-01' + 1 day + '2' days
 	from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
-2011-12-31 00:00:00	2012-01-02 00:00:00
-2011-12-28 00:00:00	2012-01-05 00:00:00
+2011-12-31 00:00:00	2012-01-02 00:00:00	2012-01-04
+2011-12-28 00:00:00	2012-01-05 00:00:00	2012-01-04
