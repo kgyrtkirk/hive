@@ -1,5 +1,1 @@
-PREHOOK: query: select 1 where 1
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask
+FAILED: SemanticException [Error 10407]: WHERE argument type must be boolean, not: int

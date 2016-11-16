@@ -3187,8 +3187,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     if (!TypeInfoFactory.booleanTypeInfo.equals(filterCond.getTypeInfo())) {
-      throw new SemanticException(SemanticAnalyzer.generateErrorMessage(condn,
-          ErrorMsg.INVALID_FUNCTION.getMsg("Where clause should evaluate to a boolean")));
+      throw new SemanticException(
+          ErrorMsg.INVALID_WHERE_ARGUMENT_TYPE.format(filterCond.getTypeInfo().getTypeName()));
     }
 
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
