@@ -55,8 +55,6 @@ explain select * from loc_orc where !true;
 -- numRows: 8 rawDataSize: 804
 explain select * from loc_orc where true;
 -- numRows: 8 rawDataSize: 804
-explain select * from loc_orc where 'foo';
--- numRows: 8 rawDataSize: 804
 explain select * from loc_orc where true = true;
 -- numRows: 0 rawDataSize: 0
 explain select * from loc_orc where false = true;
