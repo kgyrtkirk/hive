@@ -3186,6 +3186,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         filterCond = new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, false);
       }
     }
+    if (!TypeInfoFactory.booleanTypeInfo.equals(filterCond.getTypeInfo())) {
+      throw new SemanticException(SemanticAnalyzer.generateErrorMessage(condn,
+          ErrorMsg.INVALID_FUNCTION.getMsg("Where clause should evaluate to a boolean")));
+    }
 
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new FilterDesc(filterCond, false), new RowSchema(
