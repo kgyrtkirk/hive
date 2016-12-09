@@ -2,7 +2,12 @@ apply plugin: 'java'
 apply plugin: 'maven-publish' 
 
 group='org.apache.hive.aux'
-version='2.0.0'
+version='2.2.0-SNAPSHOT'
+
+ext.sparkArtifact= file("../../../spark/spark-${version}-bin-hadoop2-without-hive.tgz")
+if(!sparkArtifact.exists()) {
+  throw new GradleException("Expected that the spark artifact is already built: ${sparkArtifact} ; @see README.md")
+}
 
 publishing {
     publications {
@@ -16,17 +21,9 @@ publishing {
     }
 }
 
-task downloadFile {
-    def sourceUrl=new URL("http://d3jw87u4immizc.cloudfront.net/spark-tarball/spark-${version}-bin-hadoop2-without-hive.tgz")
-    ext.target=file(sourceUrl.path).name
-	outputs.file ext.target
-    doLast {
-	ant.get(src: sourceUrl, dest: target)
-    }
-}
 
-task repack(type: Jar){
-  from tarTree(resources.gzip(downloadFile.target))
+task repack(type: Jar) {
+  from tarTree(resources.gzip(sparkArtifact))
   includeEmptyDirs = false
   eachFile { details ->
     details.path -= "spark-${version}-bin-hadoop2-without-hive/"
@@ -39,7 +36,7 @@ task repack(type: Jar){
 publishing {
     repositories {
         maven {
-            url "../repo"
+            url "build/repo"
         }
     }
 }
