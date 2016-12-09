@@ -29,6 +29,7 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
+    <skipSparkAssemblyDeploy>true</skipSparkAssemblyDeploy>
   </properties>
 
   <modules>
@@ -46,6 +47,14 @@
    <module>hive-minikdc</module>
   </modules>
 
+  <repositories>
+     <repository>
+       <id>spark-aux-repo</id>
+       <url>https://www.rxd.hu/misc/hive-14735/</url>
+<!--       <url>http://localhost:7171/</url> -->
+     </repository>
+  </repositories>
+
   <profiles>
     <profile>
       <id>spark-test</id>
@@ -59,6 +68,42 @@
       </modules>
       <build>
         <plugins>
+
+       <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-dependency-plugin</artifactId>
+         <version>2.10</version>
+         <executions>
+           <execution>
+             <id>unpack</id>
+             <phase>generate-sources</phase>
+             <goals>
+               <goal>unpack</goal>
+             </goals>
+
+             <configuration>
+               <artifactItems>
+                 <artifactItem>
+                   <groupId>hive.aux</groupId>
+                   <artifactId>spark-without-hive</artifactId>
+                   <version>2.0.0</version>
+                   <type>jar</type>
+                   <overWrite>false</overWrite>
+                   <outputDirectory>${project.build.directory}/spark</outputDirectory>
+                   <classifier>assembly</classifier>
+                 </artifactItem>
+               </artifactItems>
+               <overWriteReleases>true</overWriteReleases>
+               <overWriteSnapshots>true</overWriteSnapshots>
+               <overWriteIfNewer>true</overWriteIfNewer>
+               <skip>${skipSparkAssemblyDeploy}</skip>
+             </configuration>
+           </execution>
+         </executions>
+
+       </plugin>
+
+
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
@@ -99,7 +144,8 @@
                         mv $BASE_DIR/spark-${spark.version}-bin-hadoop2-without-hive $BASE_DIR/$finalName
                       }
                       mkdir -p $DOWNLOAD_DIR
-                      download "http://d3jw87u4immizc.cloudfront.net/spark-tarball/spark-${spark.version}-bin-hadoop2-without-hive.tgz" "spark"
+                      # NO_NEED_TO download "http://d3jw87u4immizc.cloudfront.net/spark-tarball/spark-${spark.version}-bin-hadoop2-without-hive.tgz" "spark-old"
+                      # hmm..this log4j2 can be packed into the artifact...or keep it in pom.xml?
                       cp -f $HIVE_ROOT/data/conf/spark/log4j2.properties $BASE_DIR/spark/conf/
                     </echo>
                   </target>

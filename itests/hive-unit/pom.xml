@@ -30,6 +30,7 @@
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
     <spark.home>${basedir}/${hive.path.to.root}/itests/hive-unit/target/spark</spark.home>
+    <skipSparkAssemblyDeploy>false</skipSparkAssemblyDeploy>
   </properties>
 
   <dependencies>
