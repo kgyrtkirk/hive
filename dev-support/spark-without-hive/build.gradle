@@ -10,15 +10,15 @@ if(!sparkArtifact.exists()) {
 }
 
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            // auxilary...i don't want to hassle with manifest/etc
-            from components.java
-            artifact repack {
-               classifier 'assembly'
-            }
-        }
+  publications {
+    mavenJava(MavenPublication) {
+      // auxilary...i don't want to hassle with manifest/etc
+      from components.java
+      artifact repack {
+        classifier 'assembly'
+      }
     }
+  }
 }
 
 
@@ -34,10 +34,14 @@ task repack(type: Jar) {
 //
 
 publishing {
-    repositories {
-        maven {
-            url "build/repo"
-        }
+  repositories {
+    maven {
+      url "sftp://matrix.rxd.hu:22/home/kirk/misc/hx1"
+      credentials {
+        username 'kirk'
+        password System.getProperty('password')
+      }
     }
+  }
 }
 

@@ -3,7 +3,7 @@ this small subproject creates the 'spark-without-hive' artifact
 only usefull if the artifact have to be changed
 
 preconditions:
-	* expects spark to be checked out next to hive
+ - expects spark to be checked out next to hive
 
 usage:
  - choose the spark version you want to built
@@ -22,7 +22,5 @@ spark$ sh ./dev/make-distribution.sh  --name hadoop2-without-hive --tgz -Phadoop
 ```
    - for remote deployment
 ```
-	./gradlew publish
+	./gradlew publish '-Dpassword=myPassword'
 ```
- - remote only:
-   - publicate `build/repo` to the desired public repository
