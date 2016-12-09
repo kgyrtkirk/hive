@@ -31,8 +31,6 @@ task repack(type: Jar) {
 }
 
 
-//
-
 publishing {
   repositories {
     maven {
