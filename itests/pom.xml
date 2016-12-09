@@ -33,6 +33,7 @@
   </properties>
 
   <modules>
+   <module>thirdparty</module>
    <module>custom-serde</module>
    <module>custom-udfs</module>
    <module>hcatalog-unit</module>
