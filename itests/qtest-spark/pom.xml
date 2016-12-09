@@ -42,8 +42,7 @@
     <execute.beeline.tests>false</execute.beeline.tests>
     <active.hadoop.version>${hadoop.version}</active.hadoop.version>
     <test.dfs.mkdir>-mkdir -p</test.dfs.mkdir>
-    <spark.home>${basedir}/${hive.path.to.root}/itests/qtest-spark/target/spark</spark.home>
-    <skipSparkAssemblyDeploy>false</skipSparkAssemblyDeploy>
+    <spark.home>${basedir}/${hive.path.to.root}/itests/thirdparty/spark-${spark.version}</spark.home>
   </properties>
 
   <dependencies>
