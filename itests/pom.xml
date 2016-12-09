@@ -51,7 +51,6 @@
      <repository>
        <id>spark-aux-repo</id>
        <url>https://www.rxd.hu/misc/hive-14735/</url>
-<!--       <url>http://localhost:7171/</url> -->
      </repository>
   </repositories>
 
@@ -68,31 +67,30 @@
       </modules>
       <build>
         <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>2.10</version>
+            <executions>
+              <execution>
+                <id>unpack</id>
+                <phase>generate-sources</phase>
+                <goals>
+                  <goal>unpack</goal>
+                </goals>
 
-       <plugin>
-         <groupId>org.apache.maven.plugins</groupId>
-         <artifactId>maven-dependency-plugin</artifactId>
-         <version>2.10</version>
-         <executions>
-           <execution>
-             <id>unpack</id>
-             <phase>generate-sources</phase>
-             <goals>
-               <goal>unpack</goal>
-             </goals>
-
-             <configuration>
-               <artifactItems>
-                 <artifactItem>
-                   <groupId>org.apache.hive.aux</groupId>
-                   <artifactId>spark-without-hive</artifactId>
-                   <version>2.0.0</version>
-                   <type>jar</type>
-                   <overWrite>false</overWrite>
-                   <outputDirectory>${project.build.directory}/spark</outputDirectory>
-                   <classifier>assembly</classifier>
-                 </artifactItem>
-               </artifactItems>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>org.apache.hive.aux</groupId>
+                      <artifactId>spark-without-hive</artifactId>
+                      <version>2.0.0</version>
+                      <type>jar</type>
+                      <overWrite>false</overWrite>
+                      <outputDirectory>${project.build.directory}/spark</outputDirectory>
+                      <classifier>assembly</classifier>
+                    </artifactItem>
+                  </artifactItems>
                <overWriteReleases>true</overWriteReleases>
                <overWriteSnapshots>true</overWriteSnapshots>
                <overWriteIfNewer>true</overWriteIfNewer>
@@ -100,59 +98,7 @@
              </configuration>
            </execution>
          </executions>
-
-       </plugin>
-
-
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>download-spark</id>
-                <phase>generate-sources</phase>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <configuration>
-                  <target>
-                    <echo file="target/download.sh">
-                      set -x
-                      /bin/pwd
-                      BASE_DIR=./target
-                      HIVE_ROOT=$BASE_DIR/../../../
-                      DOWNLOAD_DIR=./../thirdparty
-                      download() {
-                        url=$1;
-                        finalName=$2
-                        tarName=$(basename $url)
-                        rm -rf $BASE_DIR/$finalName
-                        if [[ ! -f $DOWNLOAD_DIR/$tarName ]]
-                        then
-                         curl -Sso $DOWNLOAD_DIR/$tarName $url
-                        else
-                          local md5File="$tarName".md5sum
-                          curl -Sso $DOWNLOAD_DIR/$md5File "$url".md5sum
-                          cd $DOWNLOAD_DIR
-                          if ! md5sum -c $md5File; then
-                            curl -Sso $DOWNLOAD_DIR/$tarName $url || return 1
-                          fi
-
-                          cd -
-                        fi
-                        tar -zxf $DOWNLOAD_DIR/$tarName -C $BASE_DIR
-                        mv $BASE_DIR/spark-${spark.version}-bin-hadoop2-without-hive $BASE_DIR/$finalName
-                      }
-                      mkdir -p $DOWNLOAD_DIR
-                      # NO_NEED_TO download "http://d3jw87u4immizc.cloudfront.net/spark-tarball/spark-${spark.version}-bin-hadoop2-without-hive.tgz" "spark-old"
-                      # hmm..this log4j2 can be packed into the artifact...or keep it in pom.xml?
-                      cp -f $HIVE_ROOT/data/conf/spark/log4j2.properties $BASE_DIR/spark/conf/
-                    </echo>
-                  </target>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
+        </plugin>
         </plugins>
       </build>
     </profile>
