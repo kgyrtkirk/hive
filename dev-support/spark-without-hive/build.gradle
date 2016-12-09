@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'maven-publish' 
 
 group='org.apache.hive.aux'
-version='2.2.0-SNAPSHOT'
+version='2.0.0'
 
 ext.sparkArtifact= file("../../../spark/spark-${version}-bin-hadoop2-without-hive.tgz")
 if(!sparkArtifact.exists()) {
@@ -34,7 +34,7 @@ task repack(type: Jar) {
 publishing {
   repositories {
     maven {
-      url "sftp://matrix.rxd.hu:22/home/kirk/misc/hx1"
+      url "sftp://matrix.rxd.hu:22/home/kirk/misc/hive-14735"
       credentials {
         username 'kirk'
         password System.getProperty('password')

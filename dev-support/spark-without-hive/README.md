@@ -24,3 +24,7 @@ spark$ sh ./dev/make-distribution.sh  --name hadoop2-without-hive --tgz -Phadoop
 ```
 	./gradlew publish '-Dpassword=myPassword'
 ```
+     - after deploying to remote: don't forget to purge local maven caches about this artifact
+```
+$ rm -rf ~/.m2/repository/org/apache/hive/aux/
+```
