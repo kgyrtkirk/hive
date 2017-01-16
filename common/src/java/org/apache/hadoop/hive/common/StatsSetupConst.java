@@ -202,7 +202,7 @@ public class StatsSetupConst {
     if (params == null) {
       return false;
     }
-    ColumnStatsAccurate stats = parseStatsAcc2(params.get(COLUMN_STATS_ACCURATE));
+    ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
     return stats.basicStats;
   }
 
@@ -210,7 +210,7 @@ public class StatsSetupConst {
     if (params == null) {
       return false;
     }
-    ColumnStatsAccurate stats = parseStatsAcc2(params.get(COLUMN_STATS_ACCURATE));
+    ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
     return stats.columnStats.containsKey(colName);
   }
 
@@ -227,7 +227,7 @@ public class StatsSetupConst {
     if (params == null) {
       throw new RuntimeException("params are null...cant set columnstatstate!");
     }
-    ColumnStatsAccurate stats = parseStatsAcc2(params.get(COLUMN_STATS_ACCURATE));
+    ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
     stats.basicStats = true;
     try {
       params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));
@@ -240,7 +240,7 @@ public class StatsSetupConst {
     if (params == null) {
       throw new RuntimeException("params are null...cant set columnstatstate!");
     }
-    ColumnStatsAccurate stats = parseStatsAcc2(params.get(COLUMN_STATS_ACCURATE));
+    ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
 
     for (String colName : colNames) {
       if (!stats.columnStats.containsKey(colName)) {
@@ -258,7 +258,7 @@ public class StatsSetupConst {
     if (params == null) {
       return;
     }
-    ColumnStatsAccurate stats = parseStatsAcc2(params.get(COLUMN_STATS_ACCURATE));
+    ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
     stats.columnStats.clear();
 
     try {
@@ -301,7 +301,7 @@ public class StatsSetupConst {
     setBasicStatsState(params, setting);
   }
   
-  private static ColumnStatsAccurate parseStatsAcc2(String statsAcc) {
+  private static ColumnStatsAccurate parseStatsAcc(String statsAcc) {
     if (statsAcc == null) {
       return new ColumnStatsAccurate();
     }
