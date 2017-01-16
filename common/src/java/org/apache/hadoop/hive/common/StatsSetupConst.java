@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.management.RuntimeErrorException;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
@@ -31,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -305,23 +302,17 @@ public class StatsSetupConst {
   }
   
   private static ColumnStatsAccurate parseStatsAcc2(String statsAcc) {
-    if(statsAcc==null){
+    if (statsAcc == null) {
       return new ColumnStatsAccurate();
     }
-    if(statsAcc.startsWith("{")){
-       try {
-        return ColumnStatsAccurate.objectReader.readValue(statsAcc);
-      } catch (Exception e) {
-        /* this is a real error */
-        throw new RuntimeException("can't parse statsAcc",e);
-       }
-    }else{
+    try {
+      return ColumnStatsAccurate.objectReader.readValue(statsAcc);
+    } catch (Exception e) {
       ColumnStatsAccurate ret = new ColumnStatsAccurate();
-      if("TRUE".equalsIgnoreCase(statsAcc)){
-        ret.basicStats=true;
-       }
+      if (TRUE.equalsIgnoreCase(statsAcc)) {
+        ret.basicStats = true;
+      }
       return ret;
-     }
-   }
-
+    }
+  }
 }
