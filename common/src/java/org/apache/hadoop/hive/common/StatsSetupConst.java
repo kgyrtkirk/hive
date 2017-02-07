@@ -269,26 +269,17 @@ public class StatsSetupConst {
   }
 
   public static void removeColumnStatsState(Map<String, String> params, List<String> colNames) {
-    String statsAcc;
-    if (params != null && (statsAcc = params.get(COLUMN_STATS_ACCURATE)) != null) {
-      // statsAcc may not be jason format, which will throw exception
-      JSONObject stats = parseStatsAcc(statsAcc);
-      try {
-        JSONObject colStats = stats.getJSONObject(COLUMN_STATS);
-        for (String colName : colNames) {
-          if (colStats.has(colName)) {
-            colStats.remove(colName);
-          }
-        }
-        if (colStats.length() != 0) {
-          stats.put(COLUMN_STATS, colStats);
-        } else {
-          stats.remove(COLUMN_STATS);
-        }
-        params.put(COLUMN_STATS_ACCURATE, stats.toString());
-      } catch (JSONException e) {
-        LOG.debug(e.getMessage());
+    if (params == null) {
+      return;
+    }
+    try {
+      ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
+      for (String string : colNames) {
+        stats.columnStats.remove(string);
       }
+      params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));
+    } catch (JsonProcessingException e) {
+      LOG.trace(e.getMessage());
     }
   }
 
