@@ -18,4 +18,10 @@ INSERT INTO TABLE broken PARTITION(b1=FALSE,s='a',b2=TRUE,i=0) VALUES(1000);
 INSERT INTO TABLE broken PARTITION(b1=true,s='a',b2=false,i=0) VALUES(10000);
 INSERT INTO TABLE broken PARTITION(b1=tRUe,s='a',b2=fALSe,i=0) VALUES(100000);
 
+select count(*) from broken;
+select * from broken;
+
+ALTER TABLE broken DROP PARTITION(b1=true,s='a',b2=true,i=0);
+
+select count(*) from broken;
 select * from broken;
