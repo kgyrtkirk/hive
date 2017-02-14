@@ -550,13 +550,17 @@ public final class PrimitiveObjectInspectorUtils {
       break;
     case STRING:
       StringObjectInspector soi = (StringObjectInspector) oi;
+      int  firstChar='f';
       if (soi.preferWritable()) {
         Text t = soi.getPrimitiveWritableObject(o);
-        result = t.getLength() != 0;
+        if(t.getLength() > 0)
+          firstChar=t.charAt(0);
       } else {
         String s = soi.getPrimitiveJavaObject(o);
-        result = s.length() != 0;
+        if(s.length() > 0)
+          firstChar=s.charAt(0);
       }
+      result = (firstChar=='t' || firstChar =='T');
       break;
     case TIMESTAMP:
       result = (((TimestampObjectInspector) oi)

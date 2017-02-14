@@ -223,4 +223,16 @@ public class TestPrimitiveObjectInspectorUtils extends TestCase {
     DateFormat localDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     assertEquals("2015-02-07 00:00:00.000", localDateFormat.format(PrimitiveObjectInspectorUtils.getTimestampFromString("2015-02-07")));
   }
+
+  @Test
+  public void testGetBoolean(){
+    assertFalse(PrimitiveObjectInspectorUtils.getBoolean("false",
+        PrimitiveObjectInspectorFactory.javaStringObjectInspector));
+    assertFalse(PrimitiveObjectInspectorUtils.getBoolean("",
+        PrimitiveObjectInspectorFactory.javaStringObjectInspector));
+    assertTrue(PrimitiveObjectInspectorUtils.getBoolean("true",
+        PrimitiveObjectInspectorFactory.javaStringObjectInspector));
+    assertTrue(PrimitiveObjectInspectorUtils.getBoolean("True",
+        PrimitiveObjectInspectorFactory.javaStringObjectInspector));
+  }
 }
