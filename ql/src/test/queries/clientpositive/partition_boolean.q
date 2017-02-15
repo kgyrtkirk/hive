@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE broken (c int) PARTITIONED BY (b1 BOOLEAN, s STRING, b2 BOOLEAN, i INT);
 
 -- Insert a few variants of 'false' partition-key values.;
