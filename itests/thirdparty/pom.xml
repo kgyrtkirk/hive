@@ -34,7 +34,7 @@
   <repositories>
      <repository>
        <id>spark-aux-repo</id>
-       <url>https://www.rxd.hu/misc/hive-14735/</url>
+       <url>https://www.rxd.hu/misc/hive-14735-2/</url>
      </repository>
   </repositories>
 
