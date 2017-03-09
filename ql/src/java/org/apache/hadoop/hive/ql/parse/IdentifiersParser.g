@@ -58,8 +58,13 @@ groupByClause
 groupby_expression :
  rollupStandard |
  rollupOldSyntax|
- LPAREN RPAREN
+ rollupEmpty
 ;
+
+rollupEmpty
+    :
+    (KW_ROLLUP | KW_CUBE)? LPAREN RPAREN
+    ;
 
 // standard rollup syntax
 rollupStandard
