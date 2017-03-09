@@ -57,7 +57,8 @@ groupByClause
 // support for new and old rollup/cube syntax
 groupby_expression :
  rollupStandard |
- rollupOldSyntax
+ rollupOldSyntax|
+ LPAREN RPAREN
 ;
 
 // standard rollup syntax
