@@ -50,6 +50,7 @@ public class TestGenericUDAFRegr_SXX {
 
     Object run(List<Object[]> values) throws Exception {
       Object r1 = runComplete(values);
+      Object r2 = runPartialFinal(values);
       return r1;
     }
 
@@ -64,7 +65,9 @@ public class TestGenericUDAFRegr_SXX {
     }
     private Object runPartialFinal(List<Object[]> values) throws Exception {
       GenericUDAFEvaluator eval = evaluatorFactory.getEvaluator(gpi);
-      eval.init(GenericUDAFEvaluator.Mode.FINAL, gpi.getParameterObjectInspectors());
+      GenericUDAFEvaluator eval0 = evaluatorFactory.getEvaluator(gpi);
+      ObjectInspector partialOIs = eval0.init(GenericUDAFEvaluator.Mode.PARTIAL1, gpi.getParameterObjectInspectors());
+      eval.init(GenericUDAFEvaluator.Mode.FINAL, new ObjectInspector[]{partialOIs});
       AggregationBuffer buf = eval.getNewAggregationBuffer();
       for (Object partialResult : runPartial1(values)) {
         eval.merge(buf, partialResult);
