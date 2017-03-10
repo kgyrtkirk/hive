@@ -218,37 +218,37 @@ public class TestGenericUDAFBinarySetFunctions {
   @Test
   public void regr_count() throws Exception {
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
-    validateUDAF(expected.count(), new GenericUDAFBinarySetFunctions.Regr_Count());
+    validateUDAF(expected.count(), new GenericUDAFBinarySetFunctions.RegrCount());
   }
 
   @Test
   public void regr_sxx() throws Exception {
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
-    validateUDAF(expected.sxx(), new GenericUDAFBinarySetFunctions.Regr_SXX());
+    validateUDAF(expected.sxx(), new GenericUDAFBinarySetFunctions.RegrSXX());
   }
 
   @Test
   public void regr_syy() throws Exception {
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
-    validateUDAF(expected.syy(), new GenericUDAFBinarySetFunctions.Regr_SYY());
+    validateUDAF(expected.syy(), new GenericUDAFBinarySetFunctions.RegrSYY());
   }
 
   @Test
   public void regr_sxy() throws Exception {
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
-    validateUDAF(expected.sxy(), new GenericUDAFBinarySetFunctions.Regr_SXY());
+    validateUDAF(expected.sxy(), new GenericUDAFBinarySetFunctions.RegrSXY());
   }
 
   @Test
   public void regr_avgx() throws Exception {
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
-    validateUDAF(expected.avgx(), new GenericUDAFBinarySetFunctions.Regr_AVGX());
+    validateUDAF(expected.avgx(), new GenericUDAFBinarySetFunctions.RegrAvgX());
   }
 
   @Test
   public void regr_avgy() throws Exception {
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
-    validateUDAF(expected.avgy(), new GenericUDAFBinarySetFunctions.Regr_AVGY());
+    validateUDAF(expected.avgy(), new GenericUDAFBinarySetFunctions.RegrAvgY());
   }
 
   @Test
@@ -259,13 +259,13 @@ public class TestGenericUDAFBinarySetFunctions {
   @Test
   public void regr_r2() throws Exception {
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
-    validateUDAF(expected.r2(), new GenericUDAFBinarySetFunctions.Regr_R2());
+    validateUDAF(expected.r2(), new GenericUDAFBinarySetFunctions.RegrR2());
   }
 
   @Test
   public void regr_intercept() throws Exception {
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
-    validateUDAF(expected.intercept(), new GenericUDAFBinarySetFunctions.Regr_INTERCEPT());
+    validateUDAF(expected.intercept(), new GenericUDAFBinarySetFunctions.RegrIntercept());
   }
 
   @Test

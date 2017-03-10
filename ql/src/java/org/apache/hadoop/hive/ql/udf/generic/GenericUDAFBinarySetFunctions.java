@@ -38,7 +38,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
       + "will be returned. Otherwise, it computes the following:\n"
       + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
-  public static class Regr_Count extends AbstractGenericUDAFResolver {
+  public static class RegrCount extends AbstractGenericUDAFResolver {
 
     @Override
     public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
@@ -72,7 +72,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
       + "will be returned. Otherwise, it computes the following:\n"
       + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
-  public static class Regr_SXX extends AbstractGenericUDAFResolver {
+  public static class RegrSXX extends AbstractGenericUDAFResolver {
 
     @Override
     public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
@@ -119,7 +119,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
       + "will be returned. Otherwise, it computes the following:\n"
       + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
-  public static class Regr_SYY extends AbstractGenericUDAFResolver {
+  public static class RegrSYY extends AbstractGenericUDAFResolver {
 
     @Override
     public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
@@ -166,7 +166,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
       + "will be returned. Otherwise, it computes the following:\n"
       + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
-  public static class Regr_AVGX extends AbstractGenericUDAFResolver {
+  public static class RegrAvgX extends AbstractGenericUDAFResolver {
 
     @Override
     public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
@@ -204,7 +204,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
       + "will be returned. Otherwise, it computes the following:\n"
       + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
-  public static class Regr_AVGY extends AbstractGenericUDAFResolver {
+  public static class RegrAvgY extends AbstractGenericUDAFResolver {
 
     @Override
     public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
@@ -273,7 +273,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
       + "will be returned. Otherwise, it computes the following:\n"
       + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
-  public static class Regr_R2 extends AbstractGenericUDAFResolver {
+  public static class RegrR2 extends AbstractGenericUDAFResolver {
 
     @Override
     public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
@@ -308,7 +308,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
       + "will be returned. Otherwise, it computes the following:\n"
       + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
-  public static class Regr_SXY extends AbstractGenericUDAFResolver {
+  public static class RegrSXY extends AbstractGenericUDAFResolver {
 
     @Override
     public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
@@ -339,7 +339,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
       + "will be returned. Otherwise, it computes the following:\n"
       + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
-  public static class Regr_INTERCEPT extends AbstractGenericUDAFResolver {
+  public static class RegrIntercept extends AbstractGenericUDAFResolver {
 
     @Override
     public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
