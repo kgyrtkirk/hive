@@ -18,28 +18,23 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import junit.framework.TestCase;
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory.javaDoubleObjectInspector;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
-import org.apache.hadoop.hive.ql.udf.generic.TestGenericUDAFRegr_SXX.RowSetGenerator.DoubleSequence;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory.*;
-import static org.junit.Assert.assertEquals;
-
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
 
-import com.google.common.base.Function;
-
 public class TestGenericUDAFRegr_SXX {
+
+  private List<Object[]> rowSet;
 
   public static class GenericUDAFExecutor {
 
@@ -89,6 +84,10 @@ public class TestGenericUDAFRegr_SXX {
     }
 
   }
+  
+  public TestGenericUDAFRegr_SXX() {
+    rowSet = RowSetGenerator.generate(10, new RowSetGenerator.DoubleSequence(), new RowSetGenerator.DoubleSequence());
+  }
 
   @Test
   public void asdAvg() throws Exception {
@@ -96,17 +95,50 @@ public class TestGenericUDAFRegr_SXX {
     GenericUDAFParameterInfo gpi = new SimpleGenericUDAFParameterInfo(params, false, false, false);
     GenericUDAFExecutor executor = new GenericUDAFExecutor(new GenericUDAFAverage(), gpi);
     DoubleWritable v = (DoubleWritable) executor.run(RowSetGenerator.generate(10, new RowSetGenerator.DoubleSequence()));
-    assertEquals(4.5, v.get(),1e-10);
+    assertEquals(4.5, v.get(), 1e-10);
   }
 
   @Test
-  public void asd() throws Exception {
+  public void regr_sxx() throws Exception {
     ObjectInspector[] params = new ObjectInspector[] { javaDoubleObjectInspector, javaDoubleObjectInspector };
     GenericUDAFParameterInfo gpi = new SimpleGenericUDAFParameterInfo(params, false, false, false);
-     GenericUDAFExecutor executor = new GenericUDAFExecutor(new GenericUDAFRegr_SXX(), gpi);
+    GenericUDAFExecutor executor = new GenericUDAFExecutor(new GenericUDAFRegr_SXX(), gpi);
 
-    Object v = executor.run(RowSetGenerator.generate(10, new RowSetGenerator.DoubleSequence(), new RowSetGenerator.DoubleSequence()));
-    System.out.println(v);
+    Object v = executor.run(rowSet);
+    RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
+    assertEquals(expected.sxx(), ((DoubleWritable) v).get(), 1e-10);
+
+  }
+
+  static class RegrIntermediate {
+    public double sum_x2, sum_y2;
+    public double sum_x, sum_y;
+    public double n;
+
+    public void add(Double y, Double x) {
+      if (x == null || y == null) {
+        return;
+      }
+      sum_x2 += x * x;
+      sum_y2 += y * y;
+      sum_x += x;
+      sum_y += y;
+      n++;
+    }
+
+    public Double sxx() {
+      if (n == 0)
+        return null;
+      return sum_x2 - sum_x * sum_x / n;
+    }
+
+    public static RegrIntermediate computeFor(List<Object[]> rows) {
+      RegrIntermediate ri = new RegrIntermediate();
+      for (Object[] objects : rows) {
+        ri.add((double) objects[0], (double) objects[1]);
+      }
+      return ri;
+    }
 
   }
 
