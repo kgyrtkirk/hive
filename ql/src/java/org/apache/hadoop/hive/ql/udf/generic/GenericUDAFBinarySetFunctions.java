@@ -304,6 +304,69 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     }
   }
 
+  @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
+      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
+      + "will be returned. Otherwise, it computes the following:\n"
+      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
+  public static class Regr_SXY extends AbstractGenericUDAFResolver {
+
+    @Override
+    public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
+      checkArgumentTypes(parameters);
+      return new Evaluator();
+    }
+
+    /**
+     * NOTE: corr is declared as corr(x,y) instead corr(y,x) 
+     */
+    private static class Evaluator extends GenericUDAFCorrelationEvaluator {
+
+      @Override
+      public Object terminate(AggregationBuffer agg) throws HiveException {
+        StdAgg myagg = (StdAgg) agg;
+
+        if (myagg.count == 0) {
+          return null;
+        }
+        DoubleWritable result = getResult();
+        result.set(myagg.covar);
+        return result;
+      }
+    }
+  }
+
+  @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
+      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
+      + "will be returned. Otherwise, it computes the following:\n"
+      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
+  public static class Regr_INTERCEPT extends AbstractGenericUDAFResolver {
+
+    @Override
+    public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
+      checkArgumentTypes(parameters);
+      return new Evaluator();
+    }
+
+    /**
+     * NOTE: corr is declared as corr(x,y) instead corr(y,x) 
+     */
+    private static class Evaluator extends GenericUDAFCorrelationEvaluator {
+
+      @Override
+      public Object terminate(AggregationBuffer agg) throws HiveException {
+        StdAgg myagg = (StdAgg) agg;
+
+        if (myagg.count == 0) {
+          return null;
+        }
+        DoubleWritable result = getResult();
+        double slope=myagg.covar / myagg.yvar;
+        result.set(myagg.xavg - slope * myagg.yavg);
+        return result;
+      }
+    }
+  }
+  
 
   private static void checkArgumentTypes(TypeInfo[] parameters) throws UDFArgumentTypeException {
     if (parameters.length != 2) {

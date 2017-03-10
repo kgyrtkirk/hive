@@ -48,17 +48,17 @@ public class TestGenericUDAFBinarySetFunctions {
   /**
    * <pre>
    * 
-   * covar_pop
-   * covar_samp
-   * corr
+   * covar_pop      test
+   * covar_samp   test
+   * corr       test
    * 
    * 
    * regr_slope       ~corr   =>ok
-   * regr_intercept   ~?
+   * regr_intercept   ~corr =>ok
    * regr_r2          ~corr   =>ok
    * regr_sxx         ~var_pop    =>  ok
    * regr_syy         ~var_pop  =>  ok
-   * regr_sxy         ~corr?
+   * regr_sxy         ~corr?   => ok
    * regr_avgx        ~avg    =>  ok
    * regr_avgy        ~avg    => ok
    * regr_count       ~count  => ok
@@ -234,6 +234,12 @@ public class TestGenericUDAFBinarySetFunctions {
   }
 
   @Test
+  public void regr_sxy() throws Exception {
+    RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
+    validateUDAF(expected.sxy(), new GenericUDAFBinarySetFunctions.Regr_SXY());
+  }
+
+  @Test
   public void regr_avgx() throws Exception {
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
     validateUDAF(expected.avgx(), new GenericUDAFBinarySetFunctions.Regr_AVGX());
@@ -257,12 +263,32 @@ public class TestGenericUDAFBinarySetFunctions {
   }
 
   @Test
+  public void regr_intercept() throws Exception {
+    RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
+    validateUDAF(expected.intercept(), new GenericUDAFBinarySetFunctions.Regr_INTERCEPT());
+  }
+
+  @Test
   @Ignore("HIVE-16178 should fix this")
   public void corr() throws Exception {
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
     validateUDAF(expected.corr(), new GenericUDAFCorrelation());
   }
 
+  @Test
+  public void covar_pop() throws Exception {
+    RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
+    validateUDAF(expected.covar_pop(), new GenericUDAFCovariance());
+  }
+
+  @Test
+  @Ignore("HIVE-16178 should fix this")
+  public void covar_samp() throws Exception {
+    RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
+    validateUDAF(expected.covar_samp(), new GenericUDAFCovarianceSample());
+  }
+
+  
   private void validateUDAF(Double expectedResult, GenericUDAFResolver2 udaf) throws Exception {
     ObjectInspector[] params =
         new ObjectInspector[] { javaDoubleObjectInspector, javaDoubleObjectInspector };
@@ -302,6 +328,30 @@ public class TestGenericUDAFBinarySetFunctions {
       sum_y += y;
       sum_xy += x*y;
       n++;
+    }
+
+    public Double intercept() {
+      double xx = n*sum_x2 - sum_x*sum_x;
+      if (n == 0)
+        return null;
+      return (sum_y*sum_x2-sum_x*sum_xy) / xx;
+    }
+
+    public Double sxy() {
+      if (n == 0)
+        return null;
+      return sum_xy - sum_x * sum_y / n;
+    }
+
+    public Double covar_pop() {
+      if (n == 0)
+        return null;
+      return (sum_xy - sum_x * sum_y / n) / n;
+    }
+    public Double covar_samp() {
+      if (n <= 1)
+        return null;
+      return (sum_xy - sum_x * sum_y / n) / (n-1);
     }
 
     public Double corr() {
