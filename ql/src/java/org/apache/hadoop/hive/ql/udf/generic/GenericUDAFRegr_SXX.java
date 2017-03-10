@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount.GenericUDAFCountEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance.GenericUDAFVarianceEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance.GenericUDAFVarianceEvaluator.StdAgg;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -41,6 +42,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.LongWritable;
 
+import scala.annotation.meta.param;
+
 @Description(name = "regr_sxx",
     value = "_FUNC_(y,x) - write this",
     extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
@@ -50,8 +53,57 @@ import org.apache.hadoop.io.LongWritable;
         + "where neither x nor y is null.")
 public class GenericUDAFRegr_SXX extends AbstractGenericUDAFResolver {
 
-  @Override
-  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
+  @Description(name = "regr_sxx",
+      value = "_FUNC_(y,x) - write this",
+      extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
+          + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
+          + "will be returned. Otherwise, it computes the following:\n"
+          + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n"
+          + "where neither x nor y is null.")
+  public static class Regr_SXX extends AbstractGenericUDAFResolver {
+
+    @Override
+    public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
+      checkArgumentTypes(parameters);
+      return new RegrSXXEvaluator();
+    }
+  }
+  
+  public static class RegrSXXEvaluator extends GenericUDAFVarianceEvaluator{
+  
+    @Override
+    public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
+      switch (m) {
+      case COMPLETE:
+      case PARTIAL1:
+        return super.init(m, new ObjectInspector[] { parameters[1] });
+      default:
+        return super.init(m, parameters);
+      }
+    }
+    
+    @Override
+    public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
+      if (parameters[0] == null || parameters[1] == null)
+        return;
+      super.iterate(agg, new Object[] { parameters[1] });
+    }
+    
+    @Override
+    public Object terminate(AggregationBuffer agg) throws HiveException {
+      StdAgg myagg = (StdAgg) agg;
+
+      if (myagg.count == 0) { // SQL standard - return null for zero elements
+        return null;
+      } else {
+        DoubleWritable result = getResult();
+        result.set(myagg.variance);
+        return result;
+      }
+    }
+  }
+
+  private static void checkArgumentTypes(TypeInfo[] parameters) throws UDFArgumentTypeException {
     if (parameters.length != 2) {
       throw new UDFArgumentTypeException(parameters.length - 1,
           "Exactly two arguments are expected.");
@@ -80,12 +132,9 @@ public class GenericUDAFRegr_SXX extends AbstractGenericUDAFResolver {
           "Only numeric type arguments are accepted but "
           + parameters[1].getTypeName() + " is passed.");
     }
-    
-    return new GenericUDAFRegrSXXEvaluator();
-    
   }
 
-  private boolean acceptedPrimitiveCategory(PrimitiveCategory primitiveCategory) {
+  private static boolean acceptedPrimitiveCategory(PrimitiveCategory primitiveCategory) {
     switch (primitiveCategory) {
     case BYTE:
     case SHORT:

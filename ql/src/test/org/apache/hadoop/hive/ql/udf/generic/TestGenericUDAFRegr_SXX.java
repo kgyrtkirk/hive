@@ -33,19 +33,51 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+//@RunWith(Parameterized.class)
 public class TestGenericUDAFRegr_SXX {
+
+  /**
+   * <pre>
+   * 
+   * covar_pop
+   * covar_samp
+   * corr
+   * 
+   * 
+   * regr_slope       ~corr
+   * regr_intercept   ~?
+   * regr_r2          ~corr
+   * regr_sxx         ~var_pop
+   * regr_syy         ~var_pop
+   * regr_sxy         ~corr?
+   * regr_avgx        ~avg
+   * regr_avgy        ~avg
+   * regr_count       ~count
+   * 
+   *
+   * </pre>
+   */
 
   private List<Object[]> rowSet;
 
   public static class GenericUDAFExecutor {
 
     private GenericUDAFResolver2 evaluatorFactory;
-    private GenericUDAFParameterInfo gpi;
+    private GenericUDAFParameterInfo info;
+    private ObjectInspector[] partialOIs;
 
-    public GenericUDAFExecutor(GenericUDAFResolver2 evaluatorFactory, GenericUDAFParameterInfo gpi) {
+    public GenericUDAFExecutor(GenericUDAFResolver2 evaluatorFactory, GenericUDAFParameterInfo info)
+        throws Exception {
       this.evaluatorFactory = evaluatorFactory;
-      this.gpi = gpi;
+      this.info = info;
+
+      GenericUDAFEvaluator eval0 = evaluatorFactory.getEvaluator(info);
+      partialOIs = new ObjectInspector[] {
+          eval0.init(GenericUDAFEvaluator.Mode.PARTIAL1, info.getParameterObjectInspectors()) };
+
     }
 
     Object run(List<Object[]> values) throws Exception {
@@ -55,19 +87,18 @@ public class TestGenericUDAFRegr_SXX {
     }
 
     private Object runComplete(List<Object[]> values) throws SemanticException, HiveException {
-      GenericUDAFEvaluator eval = evaluatorFactory.getEvaluator(gpi);
-      eval.init(GenericUDAFEvaluator.Mode.COMPLETE, gpi.getParameterObjectInspectors());
-      AggregationBuffer buf = eval.getNewAggregationBuffer();
+      GenericUDAFEvaluator eval = evaluatorFactory.getEvaluator(info);
+      eval.init(GenericUDAFEvaluator.Mode.COMPLETE, info.getParameterObjectInspectors());
+      AggregationBuffer agg = eval.getNewAggregationBuffer();
       for (Object[] parameters : values) {
-        eval.iterate(buf, parameters);
+        eval.iterate(agg, parameters);
       }
-      return eval.terminate(buf);
+      return eval.terminate(agg);
     }
+
     private Object runPartialFinal(List<Object[]> values) throws Exception {
-      GenericUDAFEvaluator eval = evaluatorFactory.getEvaluator(gpi);
-      GenericUDAFEvaluator eval0 = evaluatorFactory.getEvaluator(gpi);
-      ObjectInspector partialOIs = eval0.init(GenericUDAFEvaluator.Mode.PARTIAL1, gpi.getParameterObjectInspectors());
-      eval.init(GenericUDAFEvaluator.Mode.FINAL, new ObjectInspector[]{partialOIs});
+      GenericUDAFEvaluator eval = evaluatorFactory.getEvaluator(info);
+      eval.init(GenericUDAFEvaluator.Mode.FINAL, partialOIs);
       AggregationBuffer buf = eval.getNewAggregationBuffer();
       for (Object partialResult : runPartial1(values)) {
         eval.merge(buf, partialResult);
@@ -80,8 +111,8 @@ public class TestGenericUDAFRegr_SXX {
       int batchSize = 1;
       Iterator<Object[]> iter = values.iterator();
       do {
-        GenericUDAFEvaluator eval = evaluatorFactory.getEvaluator(gpi);
-        eval.init(GenericUDAFEvaluator.Mode.PARTIAL1, gpi.getParameterObjectInspectors());
+        GenericUDAFEvaluator eval = evaluatorFactory.getEvaluator(info);
+        eval.init(GenericUDAFEvaluator.Mode.PARTIAL1, info.getParameterObjectInspectors());
         AggregationBuffer buf = eval.getNewAggregationBuffer();
         for (int i = 0; i < batchSize - 1 && iter.hasNext(); i++) {
           eval.iterate(buf, iter.next());
@@ -122,9 +153,10 @@ public class TestGenericUDAFRegr_SXX {
     }
 
   }
-  
+
   public TestGenericUDAFRegr_SXX() {
-    rowSet = RowSetGenerator.generate(10, new RowSetGenerator.DoubleSequence(), new RowSetGenerator.DoubleSequence());
+    rowSet = RowSetGenerator.generate(10, new RowSetGenerator.DoubleSequence(),
+        new RowSetGenerator.DoubleSequence());
   }
 
   @Test
@@ -132,15 +164,17 @@ public class TestGenericUDAFRegr_SXX {
     ObjectInspector[] params = new ObjectInspector[] { javaDoubleObjectInspector };
     GenericUDAFParameterInfo gpi = new SimpleGenericUDAFParameterInfo(params, false, false, false);
     GenericUDAFExecutor executor = new GenericUDAFExecutor(new GenericUDAFAverage(), gpi);
-    DoubleWritable v = (DoubleWritable) executor.run(RowSetGenerator.generate(10, new RowSetGenerator.DoubleSequence()));
+    DoubleWritable v = (DoubleWritable) executor
+        .run(RowSetGenerator.generate(10, new RowSetGenerator.DoubleSequence()));
     assertEquals(4.5, v.get(), 1e-10);
   }
 
   @Test
   public void regr_sxx() throws Exception {
-    ObjectInspector[] params = new ObjectInspector[] { javaDoubleObjectInspector, javaDoubleObjectInspector };
+    ObjectInspector[] params =
+        new ObjectInspector[] { javaDoubleObjectInspector, javaDoubleObjectInspector };
     GenericUDAFParameterInfo gpi = new SimpleGenericUDAFParameterInfo(params, false, false, false);
-    GenericUDAFExecutor executor = new GenericUDAFExecutor(new GenericUDAFRegr_SXX(), gpi);
+    GenericUDAFExecutor executor = new GenericUDAFExecutor(new GenericUDAFRegr_SXX.Regr_SXX(), gpi);
 
     Object v = executor.run(rowSet);
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
@@ -182,13 +216,15 @@ public class TestGenericUDAFRegr_SXX {
 
   public void testCorr() throws HiveException {
     GenericUDAFCorrelation corr = new GenericUDAFCorrelation();
-    GenericUDAFEvaluator eval1 = corr.getEvaluator(new TypeInfo[] { TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.doubleTypeInfo });
-    GenericUDAFEvaluator eval2 = corr.getEvaluator(new TypeInfo[] { TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.doubleTypeInfo });
+    GenericUDAFEvaluator eval1 = corr.getEvaluator(
+        new TypeInfo[] { TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.doubleTypeInfo });
+    GenericUDAFEvaluator eval2 = corr.getEvaluator(
+        new TypeInfo[] { TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.doubleTypeInfo });
 
-    ObjectInspector poi1 =
-        eval1.init(GenericUDAFEvaluator.Mode.PARTIAL1, new ObjectInspector[] { javaDoubleObjectInspector, javaDoubleObjectInspector });
-    ObjectInspector poi2 =
-        eval2.init(GenericUDAFEvaluator.Mode.PARTIAL1, new ObjectInspector[] { javaDoubleObjectInspector, javaDoubleObjectInspector });
+    ObjectInspector poi1 = eval1.init(GenericUDAFEvaluator.Mode.PARTIAL1,
+        new ObjectInspector[] { javaDoubleObjectInspector, javaDoubleObjectInspector });
+    ObjectInspector poi2 = eval2.init(GenericUDAFEvaluator.Mode.PARTIAL1,
+        new ObjectInspector[] { javaDoubleObjectInspector, javaDoubleObjectInspector });
 
     GenericUDAFEvaluator.AggregationBuffer buffer1 = eval1.getNewAggregationBuffer();
     eval1.iterate(buffer1, new Object[] { 100d, 200d });
@@ -203,7 +239,8 @@ public class TestGenericUDAFRegr_SXX {
     eval2.iterate(buffer2, new Object[] { 350d, 260d });
     Object object2 = eval2.terminatePartial(buffer2);
 
-    ObjectInspector coi = eval2.init(GenericUDAFEvaluator.Mode.FINAL, new ObjectInspector[] { poi1 });
+    ObjectInspector coi =
+        eval2.init(GenericUDAFEvaluator.Mode.FINAL, new ObjectInspector[] { poi1 });
 
     GenericUDAFEvaluator.AggregationBuffer buffer3 = eval2.getNewAggregationBuffer();
     eval2.merge(buffer3, object1);
