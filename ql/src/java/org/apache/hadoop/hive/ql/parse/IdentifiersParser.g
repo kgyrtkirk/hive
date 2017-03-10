@@ -63,7 +63,7 @@ groupby_expression :
 
 rollupEmpty
     :
-    (KW_ROLLUP | KW_CUBE)? LPAREN RPAREN
+    LPAREN RPAREN
     ;
 
 // standard rollup syntax
