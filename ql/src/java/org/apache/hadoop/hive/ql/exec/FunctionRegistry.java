@@ -418,6 +418,16 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("covar_pop", new GenericUDAFCovariance());
     system.registerGenericUDAF("covar_samp", new GenericUDAFCovarianceSample());
     system.registerGenericUDAF("corr", new GenericUDAFCorrelation());
+    system.registerGenericUDAF("regr_slope", new GenericUDAFBinarySetFunctions.RegrSlope());
+    system.registerGenericUDAF("regr_intercept", new GenericUDAFBinarySetFunctions.Regr_INTERCEPT());
+    system.registerGenericUDAF("regr_r2", new GenericUDAFBinarySetFunctions.Regr_R2());
+    system.registerGenericUDAF("regr_sxx", new GenericUDAFBinarySetFunctions.Regr_SXX());
+    system.registerGenericUDAF("regr_syy", new GenericUDAFBinarySetFunctions.Regr_SYY());
+    system.registerGenericUDAF("regr_sxy", new GenericUDAFBinarySetFunctions.Regr_SXY());
+    system.registerGenericUDAF("regr_avgx", new GenericUDAFBinarySetFunctions.Regr_AVGX());
+    system.registerGenericUDAF("regr_avgy", new GenericUDAFBinarySetFunctions.Regr_AVGY());
+    system.registerGenericUDAF("regr_count", new GenericUDAFBinarySetFunctions.Regr_Count());
+    
     system.registerGenericUDAF("histogram_numeric", new GenericUDAFHistogramNumeric());
     system.registerGenericUDAF("percentile_approx", new GenericUDAFPercentileApprox());
     system.registerGenericUDAF("collect_set", new GenericUDAFCollectSet());

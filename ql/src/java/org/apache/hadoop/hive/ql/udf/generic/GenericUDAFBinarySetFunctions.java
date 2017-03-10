@@ -242,7 +242,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
       + "will be returned. Otherwise, it computes the following:\n"
       + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
-  public static class Regr_SLOPE extends AbstractGenericUDAFResolver {
+  public static class RegrSlope extends AbstractGenericUDAFResolver {
 
     @Override
     public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {

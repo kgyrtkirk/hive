@@ -254,7 +254,7 @@ public class TestGenericUDAFBinarySetFunctions {
   @Test
   public void regr_slope() throws Exception {
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
-    validateUDAF(expected.slope(), new GenericUDAFBinarySetFunctions.Regr_SLOPE());
+    validateUDAF(expected.slope(), new GenericUDAFBinarySetFunctions.RegrSlope());
   }
   @Test
   public void regr_r2() throws Exception {
