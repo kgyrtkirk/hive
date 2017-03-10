@@ -23,6 +23,8 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount.GenericUDAFCountEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance.GenericUDAFVarianceEvaluator;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -101,80 +103,82 @@ public class GenericUDAFRegr_SXX extends AbstractGenericUDAFResolver {
 
   public static class GenericUDAFRegrSXXEvaluator extends GenericUDAFEvaluator {
 
-    // For PARTIAL1 and COMPLETE
-    private PrimitiveObjectInspector xInputOI;
-    private PrimitiveObjectInspector yInputOI;
-
-    // For PARTIAL2 and FINAL
-    private transient StructObjectInspector soi;
-    private transient StructField countField;
-    private transient StructField xavgField;
-    private transient StructField yavgField;
-    private transient StructField covarField;
-    private LongObjectInspector countFieldOI;
-    private DoubleObjectInspector xavgFieldOI;
-    private DoubleObjectInspector yavgFieldOI;
-    private DoubleObjectInspector covarFieldOI;
-
-    // For PARTIAL1 and PARTIAL2
-    private Object[] partialResult;
+    private GenericUDAFCountEvaluator countEvaluator;
+    private GenericUDAFVarianceEvaluator varianceEvaluator;
+    private ObjectInspector countOI;
+    private ObjectInspector varOI;
 
     // For FINAL and COMPLETE
     private DoubleWritable result;
 
+    public GenericUDAFRegrSXXEvaluator() {
+      countEvaluator = new GenericUDAFCount.GenericUDAFCountEvaluator();
+      varianceEvaluator = new GenericUDAFVariance.GenericUDAFVarianceEvaluator();
+    }
+    
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
       super.init(m, parameters);
-
-      // init input
+      
+      countOI = countEvaluator.init(m, new ObjectInspector[] { parameters[0] });
+      varOI = varianceEvaluator.init(m, new ObjectInspector[] { parameters[1] });
+      
       if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
-        assert (parameters.length == 2);
-        xInputOI = (PrimitiveObjectInspector) parameters[0];
-        yInputOI = (PrimitiveObjectInspector) parameters[1];
-      } else {
-        assert (parameters.length == 1);
-        soi = (StructObjectInspector) parameters[0];
-
-        countField = soi.getStructFieldRef("count");
-        xavgField = soi.getStructFieldRef("xavg");
-        yavgField = soi.getStructFieldRef("yavg");
-        covarField = soi.getStructFieldRef("covar");
-
-        countFieldOI =
-            (LongObjectInspector) countField.getFieldObjectInspector();
-        xavgFieldOI =
-            (DoubleObjectInspector) xavgField.getFieldObjectInspector();
-        yavgFieldOI =
-            (DoubleObjectInspector) yavgField.getFieldObjectInspector();
-        covarFieldOI =
-            (DoubleObjectInspector) covarField.getFieldObjectInspector();
+        
+      }else{
+        throw new RuntimeException("not yet supported");
       }
+      
+      // init input
+//      if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
+//        assert (parameters.length == 2);
+//        xInputOI = (PrimitiveObjectInspector) parameters[0];
+//        yInputOI = (PrimitiveObjectInspector) parameters[1];
+//      } else {
+//        assert (parameters.length == 1);
+//        soi = (StructObjectInspector) parameters[0];
+//
+//        countField = soi.getStructFieldRef("count");
+//        xavgField = soi.getStructFieldRef("xavg");
+//        yavgField = soi.getStructFieldRef("yavg");
+//        covarField = soi.getStructFieldRef("covar");
+//
+//        countFieldOI =
+//            (LongObjectInspector) countField.getFieldObjectInspector();
+//        xavgFieldOI =
+//            (DoubleObjectInspector) xavgField.getFieldObjectInspector();
+//        yavgFieldOI =
+//            (DoubleObjectInspector) yavgField.getFieldObjectInspector();
+//        covarFieldOI =
+//            (DoubleObjectInspector) covarField.getFieldObjectInspector();
+//      }
 
       // init output
       if (mode == Mode.PARTIAL1 || mode == Mode.PARTIAL2) {
-        // The output of a partial aggregation is a struct containing
-        // a long count, two double averages, and a double covariance.
-
-        ArrayList<ObjectInspector> foi = new ArrayList<ObjectInspector>();
-
-        foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
-
-        ArrayList<String> fname = new ArrayList<String>();
-        fname.add("count");
-        fname.add("xavg");
-        fname.add("yavg");
-        fname.add("covar");
-
-        partialResult = new Object[4];
-        partialResult[0] = new LongWritable(0);
-        partialResult[1] = new DoubleWritable(0);
-        partialResult[2] = new DoubleWritable(0);
-        partialResult[3] = new DoubleWritable(0);
-
-        return ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
+        throw new RuntimeException("not yet supported");
+//        // The output of a partial aggregation is a struct containing
+//        // a long count, two double averages, and a double covariance.
+//
+//        ArrayList<ObjectInspector> foi = new ArrayList<ObjectInspector>();
+//
+//        foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
+//        foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
+//        foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
+//        foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
+//
+//        ArrayList<String> fname = new ArrayList<String>();
+//        fname.add("count");
+//        fname.add("xavg");
+//        fname.add("yavg");
+//        fname.add("covar");
+//
+//        partialResult = new Object[4];
+//        partialResult[0] = new LongWritable(0);
+//        partialResult[1] = new DoubleWritable(0);
+//        partialResult[2] = new DoubleWritable(0);
+//        partialResult[3] = new DoubleWritable(0);
+//
+//        return ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
 
       } else {
         setResult(new DoubleWritable(0));
@@ -184,12 +188,10 @@ public class GenericUDAFRegr_SXX extends AbstractGenericUDAFResolver {
 
     @AggregationType(estimable = true)
     static class StdAgg extends AbstractAggregationBuffer {
-      long count; // number n of elements
-      double xavg; // average of x elements
-      double yavg; // average of y elements
-      double covar; // n times the covariance
+      GenericUDAFCount.GenericUDAFCountEvaluator.CountAgg countBuffer;
+      GenericUDAFVarianceEvaluator.StdAgg varBuffer;
       @Override
-      public int estimate() { return JavaDataModel.PRIMITIVES2 * 4; }
+      public int estimate() { return varBuffer.estimate()+countBuffer.estimate(); }
     };
 
     @Override
@@ -202,10 +204,8 @@ public class GenericUDAFRegr_SXX extends AbstractGenericUDAFResolver {
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
       StdAgg myagg = (StdAgg) agg;
-      myagg.count = 0;
-      myagg.xavg = 0;
-      myagg.yavg = 0;
-      myagg.covar = 0;
+      countEvaluator.reset(myagg.countBuffer);
+      varianceEvaluator.reset(myagg.varBuffer);
     }
 
     private final boolean warned = false;
@@ -216,74 +216,69 @@ public class GenericUDAFRegr_SXX extends AbstractGenericUDAFResolver {
       Object px = parameters[0];
       Object py = parameters[1];
       if (px != null && py != null) {
-        StdAgg myagg = (StdAgg) agg;
-        double vx = PrimitiveObjectInspectorUtils.getDouble(px, xInputOI);
-        double vy = PrimitiveObjectInspectorUtils.getDouble(py, yInputOI);
-        myagg.count++;
-        myagg.yavg = myagg.yavg + (vy - myagg.yavg) / myagg.count;
-        if (myagg.count > 1) {
-            myagg.covar += (vx - myagg.xavg) * (vy - myagg.yavg);
-        }
-        myagg.xavg = myagg.xavg + (vx - myagg.xavg) / myagg.count;
+        // this new is unfortunate to be here
+        varianceEvaluator.iterate(agg, new Object[]{parameters[1]});
       }
     }
 
     @Override
     public Object terminatePartial(AggregationBuffer agg) throws HiveException {
-      StdAgg myagg = (StdAgg) agg;
-      ((LongWritable) partialResult[0]).set(myagg.count);
-      ((DoubleWritable) partialResult[1]).set(myagg.xavg);
-      ((DoubleWritable) partialResult[2]).set(myagg.yavg);
-      ((DoubleWritable) partialResult[3]).set(myagg.covar);
-      return partialResult;
+//      StdAgg myagg = (StdAgg) agg;
+//      ((LongWritable) partialResult[0]).set(myagg.count);
+//      ((DoubleWritable) partialResult[1]).set(myagg.xavg);
+//      ((DoubleWritable) partialResult[2]).set(myagg.yavg);
+//      ((DoubleWritable) partialResult[3]).set(myagg.covar);
+//      return partialResult;
+      throw new RuntimeException("baj1");
     }
 
     @Override
     public void merge(AggregationBuffer agg, Object partial) throws HiveException {
-      if (partial != null) {
-        StdAgg myagg = (StdAgg) agg;
-
-        Object partialCount = soi.getStructFieldData(partial, countField);
-        Object partialXAvg = soi.getStructFieldData(partial, xavgField);
-        Object partialYAvg = soi.getStructFieldData(partial, yavgField);
-        Object partialCovar = soi.getStructFieldData(partial, covarField);
-
-        long nA = myagg.count;
-        long nB = countFieldOI.get(partialCount);
-
-        if (nA == 0) {
-            // Just copy the information since there is nothing so far
-            myagg.count = countFieldOI.get(partialCount);
-            myagg.xavg = xavgFieldOI.get(partialXAvg);
-            myagg.yavg = yavgFieldOI.get(partialYAvg);
-            myagg.covar = covarFieldOI.get(partialCovar);
-        }
-
-        if (nA != 0 && nB != 0) {
-          // Merge the two partials
-          double xavgA = myagg.xavg;
-          double yavgA = myagg.yavg;
-          double xavgB = xavgFieldOI.get(partialXAvg);
-          double yavgB = yavgFieldOI.get(partialYAvg);
-          double covarB = covarFieldOI.get(partialCovar);
-
-          myagg.count += nB;
-          myagg.xavg = (xavgA * nA + xavgB * nB) / myagg.count;
-          myagg.yavg = (yavgA * nA + yavgB * nB) / myagg.count;
-          myagg.covar +=
-              covarB + (xavgA - xavgB) * (yavgA - yavgB) * ((double) (nA * nB) / myagg.count);
-        }
-      }
+      throw new RuntimeException("baj1");
+//      if (partial != null) {
+//        StdAgg myagg = (StdAgg) agg;
+//
+//        Object partialCount = soi.getStructFieldData(partial, countField);
+//        Object partialXAvg = soi.getStructFieldData(partial, xavgField);
+//        Object partialYAvg = soi.getStructFieldData(partial, yavgField);
+//        Object partialCovar = soi.getStructFieldData(partial, covarField);
+//
+//        long nA = myagg.count;
+//        long nB = countFieldOI.get(partialCount);
+//
+//        if (nA == 0) {
+//            // Just copy the information since there is nothing so far
+//            myagg.count = countFieldOI.get(partialCount);
+//            myagg.xavg = xavgFieldOI.get(partialXAvg);
+//            myagg.yavg = yavgFieldOI.get(partialYAvg);
+//            myagg.covar = covarFieldOI.get(partialCovar);
+//        }
+//
+//        if (nA != 0 && nB != 0) {
+//          // Merge the two partials
+//          double xavgA = myagg.xavg;
+//          double yavgA = myagg.yavg;
+//          double xavgB = xavgFieldOI.get(partialXAvg);
+//          double yavgB = yavgFieldOI.get(partialYAvg);
+//          double covarB = covarFieldOI.get(partialCovar);
+//
+//          myagg.count += nB;
+//          myagg.xavg = (xavgA * nA + xavgB * nB) / myagg.count;
+//          myagg.yavg = (yavgA * nA + yavgB * nB) / myagg.count;
+//          myagg.covar +=
+//              covarB + (xavgA - xavgB) * (yavgA - yavgB) * ((double) (nA * nB) / myagg.count);
+//        }
+//      }
     }
 
     @Override
     public Object terminate(AggregationBuffer agg) throws HiveException {
       StdAgg myagg = (StdAgg) agg;
 
-      if (myagg.count == 0) { // SQL standard - return null for zero elements
+      if (myagg.varBuffer.count == 0) { // SQL standard - return null for zero elements
           return null;
       } else {
-          getResult().set(myagg.covar / (myagg.count));
+          getResult().set(myagg.varBuffer.variance);
           return getResult();
       }
     }
