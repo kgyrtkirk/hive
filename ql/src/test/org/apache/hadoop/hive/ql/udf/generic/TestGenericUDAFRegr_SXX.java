@@ -22,9 +22,11 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -47,6 +49,11 @@ public class TestGenericUDAFRegr_SXX {
     }
 
     Object run(List<Object[]> values) throws Exception {
+      Object r1 = runComplete(values);
+      return r1;
+    }
+
+    private Object runComplete(List<Object[]> values) throws SemanticException, HiveException {
       GenericUDAFEvaluator eval = evaluatorFactory.getEvaluator(gpi);
       eval.init(GenericUDAFEvaluator.Mode.COMPLETE, gpi.getParameterObjectInspectors());
       AggregationBuffer buf = eval.getNewAggregationBuffer();
@@ -54,6 +61,34 @@ public class TestGenericUDAFRegr_SXX {
         eval.iterate(buf, parameters);
       }
       return eval.terminate(buf);
+    }
+    private Object runPartialFinal(List<Object[]> values) throws Exception {
+      GenericUDAFEvaluator eval = evaluatorFactory.getEvaluator(gpi);
+      eval.init(GenericUDAFEvaluator.Mode.FINAL, gpi.getParameterObjectInspectors());
+      AggregationBuffer buf = eval.getNewAggregationBuffer();
+      for (Object partialResult : runPartial1(values)) {
+        eval.merge(buf, partialResult);
+      }
+      return eval.terminate(buf);
+    }
+
+    private List<Object> runPartial1(List<Object[]> values) throws Exception {
+      List<Object> ret = new ArrayList<>();
+      int batchSize = 1;
+      Iterator<Object[]> iter = values.iterator();
+      do {
+        GenericUDAFEvaluator eval = evaluatorFactory.getEvaluator(gpi);
+        eval.init(GenericUDAFEvaluator.Mode.PARTIAL1, gpi.getParameterObjectInspectors());
+        AggregationBuffer buf = eval.getNewAggregationBuffer();
+        for (int i = 0; i < batchSize - 1 && iter.hasNext(); i++) {
+          eval.iterate(buf, iter.next());
+        }
+        batchSize <<= 1;
+        ret.add(eval.terminatePartial(buf));
+
+        // back-check to force at least 1 output; and this should have a partial which is empty
+      } while (iter.hasNext());
+      return ret;
     }
   }
 
