@@ -32,13 +32,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
 
-  @Description(name = "regr_sxx",
-      value = "_FUNC_(y,x) - write this",
-      extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
-          + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
-          + "will be returned. Otherwise, it computes the following:\n"
-          + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n"
-          + "where neither x nor y is null.")
+  @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
+      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
+      + "will be returned. Otherwise, it computes the following:\n"
+      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
   public static class Regr_SXX extends AbstractGenericUDAFResolver {
 
     @Override
@@ -71,7 +68,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       public Object terminate(AggregationBuffer agg) throws HiveException {
         StdAgg myagg = (StdAgg) agg;
         // SQL standard - return null for zero elements
-        if (myagg.count == 0) { 
+        if (myagg.count == 0) {
           return null;
         } else {
           DoubleWritable result = getResult();
@@ -80,15 +77,12 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
         }
       }
     }
-  }  
-  
-  @Description(name = "regr_syy",
-      value = "_FUNC_(y,x) - write this",
-      extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
-          + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
-          + "will be returned. Otherwise, it computes the following:\n"
-          + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n"
-          + "where neither x nor y is null.")
+  }
+
+  @Description(name = "regr_syy", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
+      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
+      + "will be returned. Otherwise, it computes the following:\n"
+      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
   public static class Regr_SYY extends AbstractGenericUDAFResolver {
 
     @Override
@@ -121,7 +115,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       public Object terminate(AggregationBuffer agg) throws HiveException {
         StdAgg myagg = (StdAgg) agg;
         // SQL standard - return null for zero elements
-        if (myagg.count == 0) { 
+        if (myagg.count == 0) {
           return null;
         } else {
           DoubleWritable result = getResult();
@@ -130,7 +124,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
         }
       }
     }
-  }  
+  }
 
   private static void checkArgumentTypes(TypeInfo[] parameters) throws UDFArgumentTypeException {
     if (parameters.length != 2) {
@@ -139,26 +133,22 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     }
 
     if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
-      throw new UDFArgumentTypeException(0,
-          "Only primitive type arguments are accepted but "
+      throw new UDFArgumentTypeException(0, "Only primitive type arguments are accepted but "
           + parameters[0].getTypeName() + " is passed.");
     }
 
     if (parameters[1].getCategory() != ObjectInspector.Category.PRIMITIVE) {
-        throw new UDFArgumentTypeException(1,
-            "Only primitive type arguments are accepted but "
-            + parameters[1].getTypeName() + " is passed.");
+      throw new UDFArgumentTypeException(1, "Only primitive type arguments are accepted but "
+          + parameters[1].getTypeName() + " is passed.");
     }
-    
-    if (!acceptedPrimitiveCategory(((PrimitiveTypeInfo) parameters[0]).getPrimitiveCategory())){
-      throw new UDFArgumentTypeException(1,
-          "Only numeric type arguments are accepted but "
+
+    if (!acceptedPrimitiveCategory(((PrimitiveTypeInfo) parameters[0]).getPrimitiveCategory())) {
+      throw new UDFArgumentTypeException(0, "Only numeric type arguments are accepted but "
           + parameters[0].getTypeName() + " is passed.");
-      
+
     }
-    if (!acceptedPrimitiveCategory(((PrimitiveTypeInfo) parameters[1]).getPrimitiveCategory())){
-      throw new UDFArgumentTypeException(1,
-          "Only numeric type arguments are accepted but "
+    if (!acceptedPrimitiveCategory(((PrimitiveTypeInfo) parameters[1]).getPrimitiveCategory())) {
+      throw new UDFArgumentTypeException(1, "Only numeric type arguments are accepted but "
           + parameters[1].getTypeName() + " is passed.");
     }
   }
