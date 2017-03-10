@@ -188,8 +188,8 @@ public class GenericUDAFRegr_SXX extends AbstractGenericUDAFResolver {
 
     @AggregationType(estimable = true)
     static class StdAgg extends AbstractAggregationBuffer {
-      GenericUDAFCount.GenericUDAFCountEvaluator.CountAgg countBuffer;
-      GenericUDAFVarianceEvaluator.StdAgg varBuffer;
+      GenericUDAFCount.GenericUDAFCountEvaluator.CountAgg countBuffer = new GenericUDAFCount.GenericUDAFCountEvaluator.CountAgg();
+      GenericUDAFVarianceEvaluator.StdAgg varBuffer=new GenericUDAFVarianceEvaluator.StdAgg ();
       @Override
       public int estimate() { return varBuffer.estimate()+countBuffer.estimate(); }
     };
@@ -216,8 +216,9 @@ public class GenericUDAFRegr_SXX extends AbstractGenericUDAFResolver {
       Object px = parameters[0];
       Object py = parameters[1];
       if (px != null && py != null) {
+        StdAgg myagg = (StdAgg) agg;
         // this new is unfortunate to be here
-        varianceEvaluator.iterate(agg, new Object[]{parameters[1]});
+        varianceEvaluator.iterate(myagg.varBuffer, new Object[]{parameters[1]});
       }
     }
 
