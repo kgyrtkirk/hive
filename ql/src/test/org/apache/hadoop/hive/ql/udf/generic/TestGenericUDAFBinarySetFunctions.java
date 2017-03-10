@@ -33,6 +33,8 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.LongWritable;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -51,15 +53,15 @@ public class TestGenericUDAFBinarySetFunctions {
    * corr
    * 
    * 
-   * regr_slope       ~corr
+   * regr_slope       ~corr   =>ok
    * regr_intercept   ~?
-   * regr_r2          ~corr
+   * regr_r2          ~corr   =>ok
    * regr_sxx         ~var_pop    =>  ok
    * regr_syy         ~var_pop  =>  ok
    * regr_sxy         ~corr?
-   * regr_avgx        ~avg
-   * regr_avgy        ~avg
-   * regr_count       ~count
+   * regr_avgx        ~avg    =>  ok
+   * regr_avgy        ~avg    => ok
+   * regr_count       ~count  => ok
    * 
    *
    * </pre>
@@ -67,11 +69,15 @@ public class TestGenericUDAFBinarySetFunctions {
 
   private List<Object[]> rowSet;
 
-  @Parameters
+  @Parameters(name="{0}")
   public static List<Object[]> getParameters() {
     List<Object[]> ret = new ArrayList<>();
     ret.add(new Object[] { "seq/seq", RowSetGenerator.generate(10,
         new RowSetGenerator.DoubleSequence(0), new RowSetGenerator.DoubleSequence(0)) });
+    ret.add(new Object[] { "seq/ones", RowSetGenerator.generate(10,
+        new RowSetGenerator.DoubleSequence(0), new RowSetGenerator.NullSequence(1.0)) });
+    ret.add(new Object[] { "ones/seq", RowSetGenerator.generate(10,
+        new RowSetGenerator.NullSequence(1.0), new RowSetGenerator.DoubleSequence(0)) });
     ret.add(new Object[] { "empty", RowSetGenerator.generate(0,
         new RowSetGenerator.DoubleSequence(0), new RowSetGenerator.DoubleSequence(0)) });
     ret.add(new Object[] { "lonely", RowSetGenerator.generate(1,
@@ -79,9 +85,9 @@ public class TestGenericUDAFBinarySetFunctions {
     ret.add(new Object[] { "seq/seq+10", RowSetGenerator.generate(10,
         new RowSetGenerator.DoubleSequence(0), new RowSetGenerator.DoubleSequence(10)) });
     ret.add(new Object[] { "seq/null", RowSetGenerator.generate(10,
-        new RowSetGenerator.DoubleSequence(0), new RowSetGenerator.NullSequence()) });
+        new RowSetGenerator.DoubleSequence(0), new RowSetGenerator.NullSequence(null)) });
     ret.add(new Object[] { "null/seq0", RowSetGenerator.generate(10,
-        new RowSetGenerator.NullSequence(), new RowSetGenerator.DoubleSequence(0)) });
+        new RowSetGenerator.NullSequence(null), new RowSetGenerator.DoubleSequence(0)) });
     return ret;
   }
 
@@ -154,9 +160,15 @@ public class TestGenericUDAFBinarySetFunctions {
     }
 
     public static class NullSequence implements FieldGenerator {
+      private Object constant;
+
+      public NullSequence(Object constant) {
+        this.constant = constant;
+      }
+
       @Override
       public Object apply(int rowIndex) {
-        return null;
+        return constant;
       }
     }
 
@@ -204,6 +216,12 @@ public class TestGenericUDAFBinarySetFunctions {
   // }
 
   @Test
+  public void regr_count() throws Exception {
+    RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
+    validateUDAF(expected.count(), new GenericUDAFBinarySetFunctions.Regr_Count());
+  }
+
+  @Test
   public void regr_sxx() throws Exception {
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
     validateUDAF(expected.sxx(), new GenericUDAFBinarySetFunctions.Regr_SXX());
@@ -213,6 +231,36 @@ public class TestGenericUDAFBinarySetFunctions {
   public void regr_syy() throws Exception {
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
     validateUDAF(expected.syy(), new GenericUDAFBinarySetFunctions.Regr_SYY());
+  }
+
+  @Test
+  public void regr_avgx() throws Exception {
+    RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
+    validateUDAF(expected.avgx(), new GenericUDAFBinarySetFunctions.Regr_AVGX());
+  }
+
+  @Test
+  public void regr_avgy() throws Exception {
+    RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
+    validateUDAF(expected.avgy(), new GenericUDAFBinarySetFunctions.Regr_AVGY());
+  }
+
+  @Test
+  public void regr_slope() throws Exception {
+    RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
+    validateUDAF(expected.slope(), new GenericUDAFBinarySetFunctions.Regr_SLOPE());
+  }
+  @Test
+  public void regr_r2() throws Exception {
+    RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
+    validateUDAF(expected.r2(), new GenericUDAFBinarySetFunctions.Regr_R2());
+  }
+
+  @Test
+  @Ignore("HIVE-16178 should fix this")
+  public void corr() throws Exception {
+    RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
+    validateUDAF(expected.corr(), new GenericUDAFCorrelation());
   }
 
   private void validateUDAF(Double expectedResult, GenericUDAFResolver2 udaf) throws Exception {
@@ -229,7 +277,11 @@ public class TestGenericUDAFBinarySetFunctions {
       }
     } else {
       for (Object v : values) {
-        assertEquals(expectedResult, ((DoubleWritable) v).get(), 1e-10);
+        if (v instanceof DoubleWritable) {
+          assertEquals(expectedResult, ((DoubleWritable) v).get(), 1e-10);
+        } else {
+          assertEquals(expectedResult, ((LongWritable) v).get(), 1e-10);
+        }
       }
     }
   }
@@ -237,6 +289,7 @@ public class TestGenericUDAFBinarySetFunctions {
   static class RegrIntermediate {
     public double sum_x2, sum_y2;
     public double sum_x, sum_y;
+    public double sum_xy;
     public double n;
 
     public void add(Double y, Double x) {
@@ -247,7 +300,49 @@ public class TestGenericUDAFBinarySetFunctions {
       sum_y2 += y * y;
       sum_x += x;
       sum_y += y;
+      sum_xy += x*y;
       n++;
+    }
+
+    public Double corr() {
+      double xx = n*sum_x2 - sum_x*sum_x;
+      double yy = n*sum_y2 - sum_y*sum_y;
+      if(n==0 || xx == 0.0d || yy == 0.0d)
+        return null;
+      double c = n*sum_xy-sum_x*sum_y;
+      return Math.sqrt(c*c/xx/yy);
+    }
+
+    public Double r2() {
+      double xx = n*sum_x2 - sum_x*sum_x;
+      double yy = n*sum_y2 - sum_y*sum_y;
+      if(n==0 || xx == 0.0d)
+        return null;
+      if(yy== 0.0d)
+        return 1.0d;
+      double c = n*sum_xy-sum_x*sum_y;
+      return c*c/xx/yy;
+    }
+
+    public Double slope() {
+      if(n==0 || n*sum_x2 == sum_x*sum_x)
+        return null;
+      return (n*sum_xy-sum_x*sum_y) / (n*sum_x2-sum_x*sum_x);
+    }
+
+    public Double avgx() {
+      if(n==0)
+        return null;
+      return sum_x/n;
+    }
+    public Double avgy() {
+      if(n==0)
+        return null;
+      return sum_y/n;
+    }
+
+    public Double count() {
+      return n;
     }
 
     public Double sxx() {

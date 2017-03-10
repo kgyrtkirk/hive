@@ -21,16 +21,52 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage.GenericUDAFAverageEvaluatorDouble;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCorrelation.GenericUDAFCorrelationEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCorrelation.GenericUDAFCorrelationEvaluator.StdAgg;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount.GenericUDAFCountEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance.GenericUDAFVarianceEvaluator;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
+
+  @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
+      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
+      + "will be returned. Otherwise, it computes the following:\n"
+      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
+  public static class Regr_Count extends AbstractGenericUDAFResolver {
+
+    @Override
+    public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
+      checkArgumentTypes(parameters);
+      return new Evaluator();
+    }
+
+    private static class Evaluator extends GenericUDAFCountEvaluator {
+
+      @Override
+      public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
+        switch (m) {
+        case COMPLETE:
+        case PARTIAL1:
+          return super.init(m, new ObjectInspector[] { parameters[0] });
+        default:
+          return super.init(m, parameters);
+        }
+      }
+
+      @Override
+      public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
+        if (parameters[0] == null || parameters[1] == null)
+          return;
+        super.iterate(agg, new Object[] { parameters[0] });
+      }
+    }
+  }
 
   @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
       + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
@@ -41,10 +77,10 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     @Override
     public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
       checkArgumentTypes(parameters);
-      return new RegrSXXEvaluator();
+      return new Evaluator();
     }
 
-    public static class RegrSXXEvaluator extends GenericUDAFVarianceEvaluator {
+    private static class Evaluator extends GenericUDAFVarianceEvaluator {
 
       @Override
       public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
@@ -88,10 +124,10 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     @Override
     public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
       checkArgumentTypes(parameters);
-      return new RegrSXXEvaluator();
+      return new Evaluator();
     }
 
-    public static class RegrSXXEvaluator extends GenericUDAFVarianceEvaluator {
+    private static class Evaluator extends GenericUDAFVarianceEvaluator {
 
       @Override
       public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
@@ -125,6 +161,149 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       }
     }
   }
+
+  @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
+      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
+      + "will be returned. Otherwise, it computes the following:\n"
+      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
+  public static class Regr_AVGX extends AbstractGenericUDAFResolver {
+
+    @Override
+    public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
+      checkArgumentTypes(parameters);
+      return new Evaluator();
+    }
+
+    /**
+     * note: there is some distinction in {@link GenericUDAFAverage} for double/decimal this
+     * evaluator currently uses only double.
+     */
+    private static class Evaluator extends GenericUDAFAverageEvaluatorDouble {
+
+      @Override
+      public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
+        switch (m) {
+        case COMPLETE:
+        case PARTIAL1:
+          return super.init(m, new ObjectInspector[] { parameters[1] });
+        default:
+          return super.init(m, parameters);
+        }
+      }
+
+      @Override
+      public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
+        if (parameters[0] == null || parameters[1] == null)
+          return;
+        super.iterate(agg, new Object[] { parameters[1] });
+      }
+    }
+  }
+
+  @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
+      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
+      + "will be returned. Otherwise, it computes the following:\n"
+      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
+  public static class Regr_AVGY extends AbstractGenericUDAFResolver {
+
+    @Override
+    public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
+      checkArgumentTypes(parameters);
+      return new Evaluator();
+    }
+
+    /**
+     * note: there is some distinction in {@link GenericUDAFAverage} for double/decimal this
+     * evaluator currently uses only double.
+     */
+    private static class Evaluator extends GenericUDAFAverageEvaluatorDouble {
+
+      @Override
+      public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
+        switch (m) {
+        case COMPLETE:
+        case PARTIAL1:
+          return super.init(m, new ObjectInspector[] { parameters[0] });
+        default:
+          return super.init(m, parameters);
+        }
+      }
+
+      @Override
+      public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
+        if (parameters[0] == null || parameters[1] == null)
+          return;
+        super.iterate(agg, new Object[] { parameters[0] });
+      }
+    }
+  }
+  
+  @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
+      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
+      + "will be returned. Otherwise, it computes the following:\n"
+      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
+  public static class Regr_SLOPE extends AbstractGenericUDAFResolver {
+
+    @Override
+    public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
+      checkArgumentTypes(parameters);
+      return new Evaluator();
+    }
+
+    /**
+     * NOTE: corr is declared as corr(x,y) instead corr(y,x) 
+     */
+    private static class Evaluator extends GenericUDAFCorrelationEvaluator {
+
+      @Override
+      public Object terminate(AggregationBuffer agg) throws HiveException {
+        StdAgg myagg = (StdAgg) agg;
+
+        if (myagg.count < 2 || myagg.yvar == 0.0d) { // SQL standard - return null for zero or one pair
+            return null;
+        } else {
+          getResult().set(myagg.covar / myagg.yvar);
+            return getResult();
+        }
+      }
+    }
+  }
+
+  @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
+      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
+      + "will be returned. Otherwise, it computes the following:\n"
+      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
+  public static class Regr_R2 extends AbstractGenericUDAFResolver {
+
+    @Override
+    public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
+      checkArgumentTypes(parameters);
+      return new Evaluator();
+    }
+
+    /**
+     * NOTE: corr is declared as corr(x,y) instead corr(y,x) 
+     */
+    private static class Evaluator extends GenericUDAFCorrelationEvaluator {
+
+      @Override
+      public Object terminate(AggregationBuffer agg) throws HiveException {
+        StdAgg myagg = (StdAgg) agg;
+
+        if (myagg.count < 2 || myagg.yvar == 0.0d) {
+            return null;
+        }
+        DoubleWritable result = getResult();
+        if( myagg.xvar == 0.0d ){
+          result.set(1.0d);
+        }else{
+          result.set(myagg.covar*myagg.covar / myagg.yvar/ myagg.xvar);
+        }
+        return result;
+      }
+    }
+  }
+
 
   private static void checkArgumentTypes(TypeInfo[] parameters) throws UDFArgumentTypeException {
     if (parameters.length != 2) {
