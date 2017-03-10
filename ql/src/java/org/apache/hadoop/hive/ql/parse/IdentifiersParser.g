@@ -58,10 +58,10 @@ groupByClause
 groupby_expression :
  rollupStandard |
  rollupOldSyntax|
- rollupEmpty
+ groupByEmpty
 ;
 
-rollupEmpty
+groupByEmpty
     :
     LPAREN RPAREN
     ;
