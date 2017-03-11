@@ -43,28 +43,6 @@ import jersey.repackaged.com.google.common.collect.Lists;
 @RunWith(Parameterized.class)
 public class TestGenericUDAFBinarySetFunctions {
 
-  /**
-   * <pre>
-   * 
-   * covar_pop      test
-   * covar_samp   test
-   * corr       test
-   * 
-   * 
-   * regr_slope       ~corr   =>ok
-   * regr_intercept   ~corr =>ok
-   * regr_r2          ~corr   =>ok
-   * regr_sxx         ~var_pop    =>  ok
-   * regr_syy         ~var_pop  =>  ok
-   * regr_sxy         ~corr?   => ok
-   * regr_avgx        ~avg    =>  ok
-   * regr_avgy        ~avg    => ok
-   * regr_count       ~count  => ok
-   * 
-   *
-   * </pre>
-   */
-
   private List<Object[]> rowSet;
 
   @Parameters(name = "{0}")
@@ -109,7 +87,8 @@ public class TestGenericUDAFBinarySetFunctions {
     List<Object> run(List<Object[]> values) throws Exception {
       Object r1 = runComplete(values);
       Object r2 = runPartialFinal(values);
-      return Lists.newArrayList(r1, r2);
+      Object r3 = runPartial2Final(values);
+      return Lists.newArrayList(r1, r2, r3);
     }
 
     private Object runComplete(List<Object[]> values) throws SemanticException, HiveException {
@@ -132,6 +111,16 @@ public class TestGenericUDAFBinarySetFunctions {
       return eval.terminate(buf);
     }
 
+    private Object runPartial2Final(List<Object[]> values) throws Exception {
+      GenericUDAFEvaluator eval = evaluatorFactory.getEvaluator(info);
+      eval.init(GenericUDAFEvaluator.Mode.FINAL, partialOIs);
+      AggregationBuffer buf = eval.getNewAggregationBuffer();
+      for (Object partialResult : runPartial2(runPartial1(values))) {
+        eval.merge(buf, partialResult);
+      }
+      return eval.terminate(buf);
+    }
+
     private List<Object> runPartial1(List<Object[]> values) throws Exception {
       List<Object> ret = new ArrayList<>();
       int batchSize = 1;
@@ -142,6 +131,25 @@ public class TestGenericUDAFBinarySetFunctions {
         AggregationBuffer buf = eval.getNewAggregationBuffer();
         for (int i = 0; i < batchSize - 1 && iter.hasNext(); i++) {
           eval.iterate(buf, iter.next());
+        }
+        batchSize <<= 1;
+        ret.add(eval.terminatePartial(buf));
+
+        // back-check to force at least 1 output; and this should have a partial which is empty
+      } while (iter.hasNext());
+      return ret;
+    }
+    
+    private List<Object> runPartial2(List<Object> values) throws Exception {
+      List<Object> ret = new ArrayList<>();
+      int batchSize = 1;
+      Iterator<Object> iter = values.iterator();
+      do {
+        GenericUDAFEvaluator eval = evaluatorFactory.getEvaluator(info);
+        eval.init(GenericUDAFEvaluator.Mode.PARTIAL2, partialOIs);
+        AggregationBuffer buf = eval.getNewAggregationBuffer();
+        for (int i = 0; i < batchSize - 1 && iter.hasNext(); i++) {
+          eval.merge(buf, iter.next());
         }
         batchSize <<= 1;
         ret.add(eval.terminatePartial(buf));
@@ -196,22 +204,11 @@ public class TestGenericUDAFBinarySetFunctions {
       }
       return ret;
     }
-
   }
 
   public TestGenericUDAFBinarySetFunctions(String label, List<Object[]> rowSet) {
     this.rowSet = rowSet;
   }
-
-  // @Test
-  // public void asdAvg() throws Exception {
-  // ObjectInspector[] params = new ObjectInspector[] { javaDoubleObjectInspector };
-  // GenericUDAFParameterInfo gpi = new SimpleGenericUDAFParameterInfo(params, false, false, false);
-  // GenericUDAFExecutor executor = new GenericUDAFExecutor(new GenericUDAFAverage(), gpi);
-  // DoubleWritable v = (DoubleWritable) executor
-  // .run(RowSetGenerator.generate(10, new RowSetGenerator.DoubleSequence(0)));
-  // assertEquals(4.5, v.get(), 1e-10);
-  // }
 
   @Test
   public void regr_count() throws Exception {
