@@ -103,7 +103,6 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       @Override
       public Object terminate(AggregationBuffer agg) throws HiveException {
         StdAgg myagg = (StdAgg) agg;
-        // SQL standard - return null for zero elements
         if (myagg.count == 0) {
           return null;
         } else {
@@ -150,7 +149,6 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       @Override
       public Object terminate(AggregationBuffer agg) throws HiveException {
         StdAgg myagg = (StdAgg) agg;
-        // SQL standard - return null for zero elements
         if (myagg.count == 0) {
           return null;
         } else {
@@ -237,7 +235,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       }
     }
   }
-  
+
   @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
       + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
       + "will be returned. Otherwise, it computes the following:\n"
@@ -251,7 +249,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     }
 
     /**
-     * NOTE: corr is declared as corr(x,y) instead corr(y,x) 
+     * NOTE: corr is declared as corr(x,y) instead corr(y,x)
      */
     private static class Evaluator extends GenericUDAFCorrelationEvaluator {
 
@@ -259,11 +257,11 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       public Object terminate(AggregationBuffer agg) throws HiveException {
         StdAgg myagg = (StdAgg) agg;
 
-        if (myagg.count < 2 || myagg.yvar == 0.0d) { // SQL standard - return null for zero or one pair
-            return null;
+        if (myagg.count < 2 || myagg.yvar == 0.0d) {
+          return null;
         } else {
           getResult().set(myagg.covar / myagg.yvar);
-            return getResult();
+          return getResult();
         }
       }
     }
@@ -282,7 +280,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     }
 
     /**
-     * NOTE: corr is declared as corr(x,y) instead corr(y,x) 
+     * NOTE: corr is declared as corr(x,y) instead corr(y,x)
      */
     private static class Evaluator extends GenericUDAFCorrelationEvaluator {
 
@@ -291,13 +289,13 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
         StdAgg myagg = (StdAgg) agg;
 
         if (myagg.count < 2 || myagg.yvar == 0.0d) {
-            return null;
+          return null;
         }
         DoubleWritable result = getResult();
-        if( myagg.xvar == 0.0d ){
+        if (myagg.xvar == 0.0d) {
           result.set(1.0d);
-        }else{
-          result.set(myagg.covar*myagg.covar / myagg.yvar/ myagg.xvar);
+        } else {
+          result.set(myagg.covar * myagg.covar / myagg.yvar / myagg.xvar);
         }
         return result;
       }
@@ -317,7 +315,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     }
 
     /**
-     * NOTE: corr is declared as corr(x,y) instead corr(y,x) 
+     * NOTE: corr is declared as corr(x,y) instead corr(y,x)
      */
     private static class Evaluator extends GenericUDAFCorrelationEvaluator {
 
@@ -348,7 +346,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     }
 
     /**
-     * NOTE: corr is declared as corr(x,y) instead corr(y,x) 
+     * NOTE: corr is declared as corr(x,y) instead corr(y,x)
      */
     private static class Evaluator extends GenericUDAFCorrelationEvaluator {
 
@@ -360,13 +358,12 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
           return null;
         }
         DoubleWritable result = getResult();
-        double slope=myagg.covar / myagg.yvar;
+        double slope = myagg.covar / myagg.yvar;
         result.set(myagg.xavg - slope * myagg.yavg);
         return result;
       }
     }
   }
-  
 
   private static void checkArgumentTypes(TypeInfo[] parameters) throws UDFArgumentTypeException {
     if (parameters.length != 2) {
