@@ -31,11 +31,11 @@ insert into t values (704,6,null,null);
 insert into t values (800,7,1,1);
 
 
-explain select px,regr_count(y,x),regr_slope(y,x),
+explain select px,var_pop(x),var_pop(y),corr(y,x),covar_samp(y,x),covar_pop(y,x),regr_count(y,x),regr_slope(y,x),
 regr_intercept(y,x), regr_r2(y,x), regr_sxx(y,x), regr_syy(y,x), regr_sxy(y,x), regr_avgx(y,x), regr_avgy(y,x), regr_count(y,x)
  from t group by px order by px;
 
-select px,regr_count(y,x),regr_slope(y,x),
+select px,var_pop(x),var_pop(y),corr(y,x),covar_samp(y,x),covar_pop(y,x),regr_count(y,x),regr_slope(y,x),
 regr_intercept(y,x), regr_r2(y,x), regr_sxx(y,x), regr_syy(y,x), regr_sxy(y,x), regr_avgx(y,x), regr_avgy(y,x), regr_count(y,x)
  from t group by px order by px;
 
