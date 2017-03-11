@@ -33,10 +33,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
 
-  @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
-      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
-      + "will be returned. Otherwise, it computes the following:\n"
-      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
+  @Description(name = "regr_count", value = "_FUNC_(y,x) - returns the number of non-null pairs", extended = "The function takes as arguments any pair of numeric types and returns a long.\n"
+      + "Any pair with a NULL is ignored.")
   public static class RegrCount extends AbstractGenericUDAFResolver {
 
     @Override
@@ -67,10 +65,11 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     }
   }
 
-  @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
-      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
-      + "will be returned. Otherwise, it computes the following:\n"
-      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
+  @Description(name = "regr_sxx", value = "_FUNC_(y,x) - auxiliary analytic function", extended = "The function takes as arguments any pair of numeric types and returns a double.\n"
+      + "Any pair with a NULL is ignored.\n"
+      + "If applied to an empty set: NULL is returned.\n"
+      + "Otherwise, it computes the following:\n"
+      + "   SUM(x*x)-SUM(x)*SUM(x)/N\n")
   public static class RegrSXX extends AbstractGenericUDAFResolver {
 
     @Override
@@ -113,10 +112,11 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     }
   }
 
-  @Description(name = "regr_syy", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
-      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
-      + "will be returned. Otherwise, it computes the following:\n"
-      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
+  @Description(name = "regr_syy", value = "_FUNC_(y,x) - auxiliary analytic function", extended = "The function takes as arguments any pair of numeric types and returns a double.\n"
+      + "Any pair with a NULL is ignored.\n"
+      + "If applied to an empty set: NULL is returned.\n"
+      + "Otherwise, it computes the following:\n"
+      + "   SUM(y*y)-SUM(y)*SUM(y)/N\n")
   public static class RegrSYY extends AbstractGenericUDAFResolver {
 
     @Override
@@ -159,10 +159,11 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     }
   }
 
-  @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
-      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
-      + "will be returned. Otherwise, it computes the following:\n"
-      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
+  @Description(name = "regr_avgx", value = "_FUNC_(y,x) - evaluates the average of the independent variable", extended = "The function takes as arguments any pair of numeric types and returns a double.\n"
+      + "Any pair with a NULL is ignored.\n"
+      + "If applied to an empty set: NULL is returned.\n"
+      + "Otherwise, it computes the following:\n"
+      + "   AVG(X)")
   public static class RegrAvgX extends AbstractGenericUDAFResolver {
 
     @Override
@@ -197,10 +198,11 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     }
   }
 
-  @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
-      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
-      + "will be returned. Otherwise, it computes the following:\n"
-      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
+  @Description(name = "regr_avgy", value = "_FUNC_(y,x) - evaluates the average of the dependent variable", extended = "The function takes as arguments any pair of numeric types and returns a double.\n"
+      + "Any pair with a NULL is ignored.\n"
+      + "If applied to an empty set: NULL is returned.\n"
+      + "Otherwise, it computes the following:\n"
+      + "   AVG(Y)")
   public static class RegrAvgY extends AbstractGenericUDAFResolver {
 
     @Override
@@ -235,10 +237,12 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     }
   }
 
-  @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
-      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
-      + "will be returned. Otherwise, it computes the following:\n"
-      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
+  @Description(name = "regr_slope", value = "_FUNC_(y,x) - returns the slope of the linear regression line", extended = "The function takes as arguments any pair of numeric types and returns a double.\n"
+      + "Any pair with a NULL is ignored.\n"
+      + "If applied to an empty set: NULL is returned.\n"
+      + "If N*SUM(x*x) = SUM(x)*SUM(x): NULL is returned (the fit would be a vertical).\n"
+      + "Otherwise, it computes the following:\n"
+      + "   (N*SUM(x*y)-SUM(x)*SUM(y)) / (N*SUM(x*x)-SUM(x)*SUM(x))")
   public static class RegrSlope extends AbstractGenericUDAFResolver {
 
     @Override
@@ -266,10 +270,13 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     }
   }
 
-  @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
-      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
-      + "will be returned. Otherwise, it computes the following:\n"
-      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
+  @Description(name = "regr_r2", value = "_FUNC_(y,x) - returns the coefficient of determination (also called R-squared or goodness of fit) for the regression line.", extended = "The function takes as arguments any pair of numeric types and returns a double.\n"
+      + "Any pair with a NULL is ignored.\n"
+      + "If applied to an empty set: NULL is returned.\n"
+      + "If N*SUM(x*x) = SUM(x)*SUM(x): NULL is returned.\n"
+      + "If N*SUM(y*y) = SUM(y)*SUM(y): 1 is returned.\n"
+      + "Otherwise, it computes the following:\n"
+      + "   POWER( N*SUM(x*y)-SUM(x)*SUM(y) ,2)  /  ( (N*SUM(x*x)-SUM(x)*SUM(x)) * (N*SUM(y*y)-SUM(y)*SUM(y)) )")
   public static class RegrR2 extends AbstractGenericUDAFResolver {
 
     @Override
@@ -301,10 +308,12 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     }
   }
 
-  @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
-      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
-      + "will be returned. Otherwise, it computes the following:\n"
-      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
+  @Description(name = "regr_sxy", value = "_FUNC_(y,x) - return a value that can be used to evaluate the statistical validity of a regression model.", extended = "The function takes as arguments any pair of numeric types and returns a double.\n"
+      + "Any pair with a NULL is ignored.\n"
+      + "If applied to an empty set: NULL is returned.\n"
+      + "If N*SUM(x*x) = SUM(x)*SUM(x): NULL is returned.\n"
+      + "Otherwise, it computes the following:\n"
+      + "   SUM(x*y)-SUM(x)*SUM(y)/N")
   public static class RegrSXY extends AbstractGenericUDAFResolver {
 
     @Override
@@ -332,10 +341,12 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     }
   }
 
-  @Description(name = "regr_sxx", value = "_FUNC_(y,x) - write this", extended = "XXXX MISSING XXXX The function takes as arguments any pair of numeric types and returns a double.\n"
-      + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
-      + "will be returned. Otherwise, it computes the following:\n"
-      + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)\n" + "where neither x nor y is null.")
+  @Description(name = "regr_intercept", value = "_FUNC_(y,x) - returns the y-intercept of the regression line.", extended = "The function takes as arguments any pair of numeric types and returns a double.\n"
+      + "Any pair with a NULL is ignored.\n"
+      + "If applied to an empty set: NULL is returned.\n"
+      + "If N*SUM(x*x) = SUM(x)*SUM(x): NULL is returned.\n"
+      + "Otherwise, it computes the following:\n"
+      + "   ( SUM(y)*SUM(x*x)-SUM(X)*SUM(x*y) )  /  ( N*SUM(x*x)-SUM(x)*SUM(x) )")
   public static class RegrIntercept extends AbstractGenericUDAFResolver {
 
     @Override

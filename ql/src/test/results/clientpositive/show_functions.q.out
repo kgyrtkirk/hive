@@ -72,7 +72,6 @@ day
 dayofmonth
 dayofweek
 decode
-default.qtest_get_java_boolean
 degrees
 dense_rank
 div
@@ -191,6 +190,15 @@ reflect2
 regexp
 regexp_extract
 regexp_replace
+regr_avgx
+regr_avgy
+regr_count
+regr_intercept
+regr_r2
+regr_slope
+regr_sxx
+regr_sxy
+regr_syy
 repeat
 replace
 replicate_rows
@@ -322,6 +330,7 @@ percentile
 posexplode
 positive
 regexp_replace
+regr_slope
 replace
 reverse
 rlike
