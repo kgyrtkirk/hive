@@ -51,9 +51,9 @@ public class TestGenericUDAFBinarySetFunctions {
     ret.add(new Object[] { "seq/seq", RowSetGenerator.generate(10,
         new RowSetGenerator.DoubleSequence(0), new RowSetGenerator.DoubleSequence(0)) });
     ret.add(new Object[] { "seq/ones", RowSetGenerator.generate(10,
-        new RowSetGenerator.DoubleSequence(0), new RowSetGenerator.NullSequence(1.0)) });
+        new RowSetGenerator.DoubleSequence(0), new RowSetGenerator.ConstantSequence(1.0)) });
     ret.add(new Object[] { "ones/seq", RowSetGenerator.generate(10,
-        new RowSetGenerator.NullSequence(1.0), new RowSetGenerator.DoubleSequence(0)) });
+        new RowSetGenerator.ConstantSequence(1.0), new RowSetGenerator.DoubleSequence(0)) });
     ret.add(new Object[] { "empty", RowSetGenerator.generate(0,
         new RowSetGenerator.DoubleSequence(0), new RowSetGenerator.DoubleSequence(0)) });
     ret.add(new Object[] { "lonely", RowSetGenerator.generate(1,
@@ -61,9 +61,9 @@ public class TestGenericUDAFBinarySetFunctions {
     ret.add(new Object[] { "seq/seq+10", RowSetGenerator.generate(10,
         new RowSetGenerator.DoubleSequence(0), new RowSetGenerator.DoubleSequence(10)) });
     ret.add(new Object[] { "seq/null", RowSetGenerator.generate(10,
-        new RowSetGenerator.DoubleSequence(0), new RowSetGenerator.NullSequence(null)) });
+        new RowSetGenerator.DoubleSequence(0), new RowSetGenerator.ConstantSequence(null)) });
     ret.add(new Object[] { "null/seq0", RowSetGenerator.generate(10,
-        new RowSetGenerator.NullSequence(null), new RowSetGenerator.DoubleSequence(0)) });
+        new RowSetGenerator.ConstantSequence(null), new RowSetGenerator.DoubleSequence(0)) });
     return ret;
   }
 
@@ -165,10 +165,10 @@ public class TestGenericUDAFBinarySetFunctions {
       public Object apply(int rowIndex);
     }
 
-    public static class NullSequence implements FieldGenerator {
+    public static class ConstantSequence implements FieldGenerator {
       private Object constant;
 
-      public NullSequence(Object constant) {
+      public ConstantSequence(Object constant) {
         this.constant = constant;
       }
 
