@@ -427,7 +427,7 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("regr_avgx", new GenericUDAFBinarySetFunctions.RegrAvgX());
     system.registerGenericUDAF("regr_avgy", new GenericUDAFBinarySetFunctions.RegrAvgY());
     system.registerGenericUDAF("regr_count", new GenericUDAFBinarySetFunctions.RegrCount());
-    
+
     system.registerGenericUDAF("histogram_numeric", new GenericUDAFHistogramNumeric());
     system.registerGenericUDAF("percentile_approx", new GenericUDAFPercentileApprox());
     system.registerGenericUDAF("collect_set", new GenericUDAFCollectSet());

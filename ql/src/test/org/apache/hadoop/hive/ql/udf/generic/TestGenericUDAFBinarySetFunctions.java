@@ -139,7 +139,7 @@ public class TestGenericUDAFBinarySetFunctions {
       } while (iter.hasNext());
       return ret;
     }
-    
+
     private List<Object> runPartial2(List<Object> values) throws Exception {
       List<Object> ret = new ArrayList<>();
       int batchSize = 1;
