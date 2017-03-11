@@ -31,8 +31,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.LongWritable;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -69,7 +67,7 @@ public class TestGenericUDAFBinarySetFunctions {
 
   private List<Object[]> rowSet;
 
-  @Parameters(name="{0}")
+  @Parameters(name = "{0}")
   public static List<Object[]> getParameters() {
     List<Object[]> ret = new ArrayList<>();
     ret.add(new Object[] { "seq/seq", RowSetGenerator.generate(10,
@@ -256,6 +254,7 @@ public class TestGenericUDAFBinarySetFunctions {
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
     validateUDAF(expected.slope(), new GenericUDAFBinarySetFunctions.RegrSlope());
   }
+
   @Test
   public void regr_r2() throws Exception {
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
@@ -288,7 +287,6 @@ public class TestGenericUDAFBinarySetFunctions {
     validateUDAF(expected.covar_samp(), new GenericUDAFCovarianceSample());
   }
 
-  
   private void validateUDAF(Double expectedResult, GenericUDAFResolver2 udaf) throws Exception {
     ObjectInspector[] params =
         new ObjectInspector[] { javaDoubleObjectInspector, javaDoubleObjectInspector };
@@ -326,15 +324,15 @@ public class TestGenericUDAFBinarySetFunctions {
       sum_y2 += y * y;
       sum_x += x;
       sum_y += y;
-      sum_xy += x*y;
+      sum_xy += x * y;
       n++;
     }
 
     public Double intercept() {
-      double xx = n*sum_x2 - sum_x*sum_x;
+      double xx = n * sum_x2 - sum_x * sum_x;
       if (n == 0)
         return null;
-      return (sum_y*sum_x2-sum_x*sum_xy) / xx;
+      return (sum_y * sum_x2 - sum_x * sum_xy) / xx;
     }
 
     public Double sxy() {
@@ -348,47 +346,49 @@ public class TestGenericUDAFBinarySetFunctions {
         return null;
       return (sum_xy - sum_x * sum_y / n) / n;
     }
+
     public Double covar_samp() {
       if (n <= 1)
         return null;
-      return (sum_xy - sum_x * sum_y / n) / (n-1);
+      return (sum_xy - sum_x * sum_y / n) / (n - 1);
     }
 
     public Double corr() {
-      double xx = n*sum_x2 - sum_x*sum_x;
-      double yy = n*sum_y2 - sum_y*sum_y;
-      if(n==0 || xx == 0.0d || yy == 0.0d)
+      double xx = n * sum_x2 - sum_x * sum_x;
+      double yy = n * sum_y2 - sum_y * sum_y;
+      if (n == 0 || xx == 0.0d || yy == 0.0d)
         return null;
-      double c = n*sum_xy-sum_x*sum_y;
-      return Math.sqrt(c*c/xx/yy);
+      double c = n * sum_xy - sum_x * sum_y;
+      return Math.sqrt(c * c / xx / yy);
     }
 
     public Double r2() {
-      double xx = n*sum_x2 - sum_x*sum_x;
-      double yy = n*sum_y2 - sum_y*sum_y;
-      if(n==0 || xx == 0.0d)
+      double xx = n * sum_x2 - sum_x * sum_x;
+      double yy = n * sum_y2 - sum_y * sum_y;
+      if (n == 0 || xx == 0.0d)
         return null;
-      if(yy== 0.0d)
+      if (yy == 0.0d)
         return 1.0d;
-      double c = n*sum_xy-sum_x*sum_y;
-      return c*c/xx/yy;
+      double c = n * sum_xy - sum_x * sum_y;
+      return c * c / xx / yy;
     }
 
     public Double slope() {
-      if(n==0 || n*sum_x2 == sum_x*sum_x)
+      if (n == 0 || n * sum_x2 == sum_x * sum_x)
         return null;
-      return (n*sum_xy-sum_x*sum_y) / (n*sum_x2-sum_x*sum_x);
+      return (n * sum_xy - sum_x * sum_y) / (n * sum_x2 - sum_x * sum_x);
     }
 
     public Double avgx() {
-      if(n==0)
+      if (n == 0)
         return null;
-      return sum_x/n;
+      return sum_x / n;
     }
+
     public Double avgy() {
-      if(n==0)
+      if (n == 0)
         return null;
-      return sum_y/n;
+      return sum_y / n;
     }
 
     public Double count() {
