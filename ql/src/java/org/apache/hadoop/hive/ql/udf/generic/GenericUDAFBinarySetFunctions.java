@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage.GenericUDAFAverageEvaluatorDouble;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage.GenericUDAFAverageEvaluatorDecimal;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCorrelation.GenericUDAFCorrelationEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount.GenericUDAFCountEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance.GenericUDAFVarianceEvaluator;
@@ -169,14 +170,35 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     @Override
     public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
       checkArgumentTypes(parameters);
-      return new Evaluator();
+      if (((PrimitiveTypeInfo) parameters[1]).getPrimitiveCategory() == PrimitiveCategory.DECIMAL) {
+        return new EvaluatorDecimal();
+      } else {
+        return new EvaluatorDouble();
+      }
     }
 
-    /**
-     * note: there is some distinction in {@link GenericUDAFAverage} for double/decimal this
-     * evaluator currently uses only double.
-     */
-    private static class Evaluator extends GenericUDAFAverageEvaluatorDouble {
+    private static class EvaluatorDouble extends GenericUDAFAverageEvaluatorDouble {
+
+      @Override
+      public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
+        switch (m) {
+        case COMPLETE:
+        case PARTIAL1:
+          return super.init(m, new ObjectInspector[] { parameters[1] });
+        default:
+          return super.init(m, parameters);
+        }
+      }
+
+      @Override
+      public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
+        if (parameters[0] == null || parameters[1] == null)
+          return;
+        super.iterate(agg, new Object[] { parameters[1] });
+      }
+    }
+
+    private static class EvaluatorDecimal extends GenericUDAFAverageEvaluatorDecimal {
 
       @Override
       public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
@@ -208,14 +230,35 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     @Override
     public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
       checkArgumentTypes(parameters);
-      return new Evaluator();
+      if (((PrimitiveTypeInfo) parameters[1]).getPrimitiveCategory() == PrimitiveCategory.DECIMAL) {
+        return new EvaluatorDecimal();
+      } else {
+        return new EvaluatorDouble();
+      }
     }
 
-    /**
-     * note: there is some distinction in {@link GenericUDAFAverage} for double/decimal this
-     * evaluator currently uses only double.
-     */
-    private static class Evaluator extends GenericUDAFAverageEvaluatorDouble {
+    private static class EvaluatorDouble extends GenericUDAFAverageEvaluatorDouble {
+
+      @Override
+      public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
+        switch (m) {
+        case COMPLETE:
+        case PARTIAL1:
+          return super.init(m, new ObjectInspector[] { parameters[0] });
+        default:
+          return super.init(m, parameters);
+        }
+      }
+
+      @Override
+      public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
+        if (parameters[0] == null || parameters[1] == null)
+          return;
+        super.iterate(agg, new Object[] { parameters[0] });
+      }
+    }
+
+    private static class EvaluatorDecimal extends GenericUDAFAverageEvaluatorDecimal {
 
       @Override
       public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
