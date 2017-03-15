@@ -230,7 +230,7 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
     @Override
     public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
       checkArgumentTypes(parameters);
-      if (((PrimitiveTypeInfo) parameters[1]).getPrimitiveCategory() == PrimitiveCategory.DECIMAL) {
+      if (((PrimitiveTypeInfo) parameters[0]).getPrimitiveCategory() == PrimitiveCategory.DECIMAL) {
         return new EvaluatorDecimal();
       } else {
         return new EvaluatorDouble();
