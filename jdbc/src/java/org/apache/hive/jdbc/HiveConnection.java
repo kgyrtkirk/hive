@@ -174,23 +174,21 @@ public class HiveConnection implements java.sql.Connection {
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V10);
 
     if (isEmbeddedMode) {
-      TCLIService.Iface embeddedClient; 
+      TCLIService.Iface embeddedClient;
       try {
-        // FIXME possibly use serviceloader...
+        // FIXME: possibly use a serviceloader for this? that may make it more straight-forward
         Class<TCLIService.Iface> clazz = (Class<Iface>) Class.forName("org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService");
         embeddedClient=clazz.newInstance();
-//        embeddedClient.init(null);
 
         Method initMethod = clazz.getMethod("init", HiveConf.class);
         initMethod.invoke(embeddedClient, (HiveConf)null);
-        // init 
       } catch (ClassNotFoundException e) {
-        throw new RuntimeException("load hive-service jar to the classpath to enable embedded mode");
+        throw new RuntimeException("Please Load hive-service jar to the classpath to enable embedded mode");
       } catch (Exception e) {
-        throw new RuntimeException("error initializing embedded mode",e);
+        throw new RuntimeException("Error initializing embedded mode", e);
       }
       client = embeddedClient;
-      
+
       // open client session
       openSession();
       executeInitSql();
