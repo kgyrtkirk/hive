@@ -44,6 +44,8 @@
    <module>hive-jmh</module>
    <module>hive-unit-hadoop2</module>
    <module>hive-minikdc</module>
+   <module>hs2</module>
+   <module>jdbc</module>
   </modules>
 
   <profiles>
