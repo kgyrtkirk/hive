@@ -188,7 +188,7 @@ public class HiveConnection implements java.sql.Connection {
         throw new RuntimeException("Error initializing embedded mode", e);
       }
       client = embeddedClient;
-
+      
       // open client session
       openSession();
       executeInitSql();
