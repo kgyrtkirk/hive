@@ -109,7 +109,7 @@
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
-    </dependency> --->
+    </dependency> -->
     <!-- used by thrift generated code -->
     <dependency>
       <groupId>commons-lang</groupId>
