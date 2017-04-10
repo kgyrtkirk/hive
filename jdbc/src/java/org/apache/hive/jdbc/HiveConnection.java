@@ -20,13 +20,14 @@ package org.apache.hive.jdbc;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.KerberosSaslHelper;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.auth.SaslQOP;
-import org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService;
 import org.apache.hive.service.rpc.thrift.TCLIService;
+import org.apache.hive.service.rpc.thrift.TCLIService.Iface;
 import org.apache.hive.service.rpc.thrift.TCancelDelegationTokenReq;
 import org.apache.hive.service.rpc.thrift.TCancelDelegationTokenResp;
 import org.apache.hive.service.rpc.thrift.TCloseSessionReq;
@@ -173,8 +174,19 @@ public class HiveConnection implements java.sql.Connection {
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V10);
 
     if (isEmbeddedMode) {
-      EmbeddedThriftBinaryCLIService embeddedClient = new EmbeddedThriftBinaryCLIService();
-      embeddedClient.init(null);
+      TCLIService.Iface embeddedClient;
+      try {
+        // FIXME: possibly use a serviceloader for this? that may make it more straight-forward
+        Class<TCLIService.Iface> clazz = (Class<Iface>) Class.forName("org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService");
+        embeddedClient=clazz.newInstance();
+
+        Method initMethod = clazz.getMethod("init", HiveConf.class);
+        initMethod.invoke(embeddedClient, (HiveConf)null);
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException("Please Load hive-service jar to the classpath to enable embedded mode");
+      } catch (Exception e) {
+        throw new RuntimeException("Error initializing embedded mode", e);
+      }
       client = embeddedClient;
 
       // open client session
