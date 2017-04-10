@@ -84,8 +84,10 @@ public class HiveAuthFactory {
   private String hadoopAuth;
   private HiveDelegationTokenManager delegationTokenManager = null;
 
-  public static final String HS2_PROXY_USER = "hive.server2.proxy.user";
-  public static final String HS2_CLIENT_TOKEN = "hiveserver2ClientToken";
+  @Deprecated
+  public static final String HS2_PROXY_USER = HiveAuthConstants.HS2_PROXY_USER;
+  @Deprecated
+  public static final String HS2_CLIENT_TOKEN = HiveAuthConstants.HS2_CLIENT_TOKEN;
 
   public HiveAuthFactory(HiveConf conf) throws TTransportException {
     this.conf = conf;
