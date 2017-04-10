@@ -29,7 +29,7 @@ import javax.security.sasl.Sasl;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-// import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.DBTokenStore;
@@ -125,13 +125,7 @@ public class HiveAuthFactory {
           // Note: there will be two HS2 life-long opened MSCs, one is stored in HS2 thread local
           // Hive object, the other is in a daemon thread spawned in DelegationTokenSecretManager
           // to remove expired tokens.
-          
-          // this seems like something which is problematic...i will add a reflection here :)
-          try {
-            baseHandler = Class.forName("org.apache.hadoop.hive.ql.metadata.Hive");
-          } catch (ClassNotFoundException e) {
-            throw new RuntimeException("hive class not loaded",e);
-          }
+          baseHandler = Hive.class;
         }
 
         delegationTokenManager.startDelegationTokenSecretManager(conf, baseHandler, ServerMode.HIVESERVER2);
