@@ -837,7 +837,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     }
 
     // If there's no authentication, then directly substitute the user
-    if (HiveAuthFactory.AuthTypes.NONE.toString().
+    if (HiveAuthConstants.AuthTypes.NONE.toString().
         equalsIgnoreCase(hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION))) {
       return proxyUser;
     }
