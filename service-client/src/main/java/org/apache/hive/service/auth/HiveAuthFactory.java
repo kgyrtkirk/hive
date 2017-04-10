@@ -84,11 +84,6 @@ public class HiveAuthFactory {
   private String hadoopAuth;
   private HiveDelegationTokenManager delegationTokenManager = null;
 
-  @Deprecated
-  public static final String HS2_PROXY_USER = HiveAuthConstants.HS2_PROXY_USER;
-  @Deprecated
-  public static final String HS2_CLIENT_TOKEN = HiveAuthConstants.HS2_CLIENT_TOKEN;
-
   public HiveAuthFactory(HiveConf conf) throws TTransportException {
     this.conf = conf;
     transportMode = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE);
@@ -261,7 +256,7 @@ public class HiveAuthFactory {
 
     try {
       String tokenStr = delegationTokenManager.getDelegationTokenWithService(owner, renewer,
-          HS2_CLIENT_TOKEN, remoteAddr);
+          HiveAuthConstants.HS2_CLIENT_TOKEN, remoteAddr);
       if (tokenStr == null || tokenStr.isEmpty()) {
         throw new HiveSQLException(
             "Received empty retrieving delegation token for user " + owner, "08S01");
