@@ -56,27 +56,6 @@ import org.slf4j.LoggerFactory;
 public class HiveAuthFactory {
   private static final Logger LOG = LoggerFactory.getLogger(HiveAuthFactory.class);
 
-
-  public enum AuthTypes {
-    NOSASL("NOSASL"),
-    NONE("NONE"),
-    LDAP("LDAP"),
-    KERBEROS("KERBEROS"),
-    CUSTOM("CUSTOM"),
-    PAM("PAM");
-
-    private final String authType;
-
-    AuthTypes(String authType) {
-      this.authType = authType;
-    }
-
-    public String getAuthName() {
-      return authType;
-    }
-
-  }
-
   private HadoopThriftAuthBridge.Server saslServer;
   private String authTypeStr;
   private final String transportMode;
@@ -96,9 +75,9 @@ public class HiveAuthFactory {
     // In http mode we use NOSASL as the default auth type
     if (authTypeStr == null) {
       if ("http".equalsIgnoreCase(transportMode)) {
-        authTypeStr = AuthTypes.NOSASL.getAuthName();
+        authTypeStr = HiveAuthConstants.AuthTypes.NOSASL.getAuthName();
       } else {
-        authTypeStr = AuthTypes.NONE.getAuthName();
+        authTypeStr = HiveAuthConstants.AuthTypes.NONE.getAuthName();
       }
     }
     if (isSASLWithKerberizedHadoop()) {
@@ -153,12 +132,12 @@ public class HiveAuthFactory {
       } catch (TTransportException e) {
         throw new LoginException(e.getMessage());
       }
-      if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())) {
+      if (authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.KERBEROS.getAuthName())) {
         // no-op
-      } else if (authTypeStr.equalsIgnoreCase(AuthTypes.NONE.getAuthName()) ||
-          authTypeStr.equalsIgnoreCase(AuthTypes.LDAP.getAuthName()) ||
-          authTypeStr.equalsIgnoreCase(AuthTypes.PAM.getAuthName()) ||
-          authTypeStr.equalsIgnoreCase(AuthTypes.CUSTOM.getAuthName())) {
+      } else if (authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.NONE.getAuthName()) ||
+          authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.LDAP.getAuthName()) ||
+          authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.PAM.getAuthName()) ||
+          authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.CUSTOM.getAuthName())) {
         try {
           serverTransportFactory.addServerDefinition("PLAIN",
               authTypeStr, null, new HashMap<String, String>(),
@@ -170,12 +149,12 @@ public class HiveAuthFactory {
         throw new LoginException("Unsupported authentication type " + authTypeStr);
       }
       transportFactory = saslServer.wrapTransportFactory(serverTransportFactory);
-    } else if (authTypeStr.equalsIgnoreCase(AuthTypes.NONE.getAuthName()) ||
-          authTypeStr.equalsIgnoreCase(AuthTypes.LDAP.getAuthName()) ||
-          authTypeStr.equalsIgnoreCase(AuthTypes.PAM.getAuthName()) ||
-          authTypeStr.equalsIgnoreCase(AuthTypes.CUSTOM.getAuthName())) {
+    } else if (authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.NONE.getAuthName()) ||
+          authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.LDAP.getAuthName()) ||
+          authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.PAM.getAuthName()) ||
+          authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.CUSTOM.getAuthName())) {
        transportFactory = PlainSaslHelper.getPlainTransportFactory(authTypeStr);
-    } else if (authTypeStr.equalsIgnoreCase(AuthTypes.NOSASL.getAuthName())) {
+    } else if (authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.NOSASL.getAuthName())) {
       transportFactory = new TTransportFactory();
     } else {
       throw new LoginException("Unsupported authentication type " + authTypeStr);
@@ -215,7 +194,7 @@ public class HiveAuthFactory {
 
   public boolean isSASLWithKerberizedHadoop() {
     return "kerberos".equalsIgnoreCase(hadoopAuth)
-        && !authTypeStr.equalsIgnoreCase(AuthTypes.NOSASL.getAuthName());
+        && !authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.NOSASL.getAuthName());
   }
 
   public boolean isSASLKerberosUser() {
