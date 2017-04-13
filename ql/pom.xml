@@ -60,7 +60,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
+      <artifactId>hive-metastore-client</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
