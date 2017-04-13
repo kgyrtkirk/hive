@@ -38,6 +38,12 @@
       <artifactId>hive-common</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!--  might be moved forward? -->
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-serde</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- intra-project -->
     <dependency>
       <groupId>org.apache.thrift</groupId>
