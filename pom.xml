@@ -43,6 +43,7 @@
     <module>hcatalog</module>
     <module>hplsql</module>
     <module>jdbc</module>
+    <module>metastore-client</module>
     <module>metastore</module>
     <module>metastore-up</module>
     <module>ql</module>
