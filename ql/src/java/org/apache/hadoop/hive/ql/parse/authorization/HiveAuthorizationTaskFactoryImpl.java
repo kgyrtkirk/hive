@@ -19,9 +19,11 @@ package org.apache.hadoop.hive.ql.parse.authorization;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -265,17 +267,50 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
     return subject;
   }
 
+  static class PriviligeTypeLookup extends HashMap<Integer, PrivilegeType> {
+    private static final long serialVersionUID = 1L;
+    public static final PriviligeTypeLookup instance = new PriviligeTypeLookup();
+
+    private PriviligeTypeLookup() {
+      super();
+      put(HiveParser.TOK_PRIV_ALL, PrivilegeType.ALL);
+      put(HiveParser.TOK_PRIV_ALTER_DATA, PrivilegeType.ALTER_DATA);
+      put(HiveParser.TOK_PRIV_ALTER_METADATA, PrivilegeType.ALTER_METADATA);
+      put(HiveParser.TOK_PRIV_CREATE, PrivilegeType.CREATE);
+      put(HiveParser.TOK_PRIV_DROP, PrivilegeType.DROP);
+      put(HiveParser.TOK_PRIV_INDEX, PrivilegeType.INDEX);
+      put(HiveParser.TOK_PRIV_LOCK, PrivilegeType.LOCK);
+      put(HiveParser.TOK_PRIV_SELECT, PrivilegeType.SELECT);
+      put(HiveParser.TOK_PRIV_SHOW_DATABASE, PrivilegeType.SHOW_DATABASE);
+      put(HiveParser.TOK_PRIV_INSERT, PrivilegeType.INSERT);
+      put(HiveParser.TOK_PRIV_DELETE, PrivilegeType.DELETE);
+      Set<PrivilegeType> valueSet = new HashSet<>();
+      valueSet.addAll(values());
+      // the old enum covered this contract...it can't hurt
+      for (PrivilegeType privilegeType : PrivilegeType.values()) {
+        if (privilegeType != PrivilegeType.UNKNOWN && valueSet.contains(privilegeType)) {
+          throw new RuntimeException("not mapped privilegtype: " + privilegeType);
+        }
+      }
+    }
+
+    static PrivilegeType lookup(Integer token) {
+      return instance.getOrDefault(token, PrivilegeType.UNKNOWN);
+    }
+  }
+
   private List<PrivilegeDesc> analyzePrivilegeListDef(ASTNode node)
       throws SemanticException {
     List<PrivilegeDesc> ret = new ArrayList<PrivilegeDesc>();
     for (int i = 0; i < node.getChildCount(); i++) {
       ASTNode privilegeDef = (ASTNode) node.getChild(i);
-      ASTNode privilegeType = (ASTNode) privilegeDef.getChild(0);
-      Privilege privObj = PrivilegeRegistry.getPrivilege(privilegeType.getType());
+      ASTNode privilegeTypeNode = (ASTNode) privilegeDef.getChild(0);
+
+      PrivilegeType privilegeType = PriviligeTypeLookup.lookup(privilegeTypeNode.getType());
+      Privilege privObj = SessionState.lookupPrivilegType(privilegeType);
 
       if (privObj == null) {
-        throw new SemanticException("Undefined privilege " + PrivilegeType.
-            getPrivTypeByToken(privilegeType.getType()));
+        throw new SemanticException("Undefined privilege: " + privilegeType + " for token: "+privilegeTypeNode.getType());
       }
       List<String> cols = null;
       if (privilegeDef.getChildCount() > 1) {

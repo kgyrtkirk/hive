@@ -76,6 +76,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.Privilege;
+import org.apache.hadoop.hive.ql.security.authorization.PrivilegeRegistry;
+import org.apache.hadoop.hive.ql.security.authorization.PrivilegeType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.AuthorizationMetaStoreFilterHook;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
@@ -1806,6 +1809,10 @@ public class SessionState implements ISessionAuthState{
 
   public ProgressMonitor getProgressMonitor() {
     return progressMonitor;
+  }
+
+  public static Privilege lookupPrivilegType(PrivilegeType privilegeType) {
+    return PrivilegeRegistry.getPrivilege(SessionState.get().isAuthorizationModeV2(),privilegeType);
   }
 
 }
