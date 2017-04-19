@@ -28,34 +28,28 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
  */
 public enum PrivilegeType {
 
-  ALL(HiveParser.TOK_PRIV_ALL, "All"),
-  ALTER_DATA(HiveParser.TOK_PRIV_ALTER_DATA, "Update"),
-  ALTER_METADATA(HiveParser.TOK_PRIV_ALTER_METADATA, "Alter"),
-  CREATE(HiveParser.TOK_PRIV_CREATE, "Create"),
-  DROP(HiveParser.TOK_PRIV_DROP, "Drop"),
-  INDEX(HiveParser.TOK_PRIV_INDEX, "Index"),
-  LOCK(HiveParser.TOK_PRIV_LOCK, "Lock"),
-  SELECT(HiveParser.TOK_PRIV_SELECT, "Select"),
-  SHOW_DATABASE(HiveParser.TOK_PRIV_SHOW_DATABASE, "Show_Database"),
-  INSERT(HiveParser.TOK_PRIV_INSERT, "Insert"),
-  DELETE(HiveParser.TOK_PRIV_DELETE, "Delete"),
-  UNKNOWN(null, null);
+  ALL("All"),
+  ALTER_DATA("Update"),
+  ALTER_METADATA("Alter"),
+  CREATE("Create"),
+  DROP("Drop"),
+  INDEX("Index"),
+  LOCK("Lock"),
+  SELECT("Select"),
+  SHOW_DATABASE("Show_Database"),
+  INSERT("Insert"),
+  DELETE("Delete"),
+  UNKNOWN(null);
 
   private final String name;
-  private final Integer token;
 
-  PrivilegeType(Integer token, String name){
+  PrivilegeType(String name){
     this.name = name;
-    this.token = token;
   }
 
   @Override
   public String toString(){
     return name == null ? "unkown" : name;
-  }
-
-  public Integer getToken() {
-    return token;
   }
 
   private static Map<Integer, PrivilegeType> token2Type;
