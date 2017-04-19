@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.ql.security.authorization.PrivilegeRegistry;
+import org.apache.hadoop.hive.ql.security.authorization.PrivilegeType;
 
 public class CreateTableAutomaticGrant {
   private Map<String, List<PrivilegeGrantInfo>> userGrants;
@@ -105,7 +106,7 @@ public class CreateTableAutomaticGrant {
     String[] ownerGrantArray = ownerGrantsInConfig.split(",");
     // verify the config
     for (String ownerGrant : ownerGrantArray) {
-      Privilege prive = PrivilegeRegistry.getPrivilege(ownerGrant);
+      Privilege prive = PrivilegeRegistry.getPrivilege(PrivilegeType.getPrivTypeByName(ownerGrant));
       if (prive == null) {
         throw new HiveException("Privilege " + ownerGrant + " is not found.");
       }
