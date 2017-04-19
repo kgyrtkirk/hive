@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.security.authorization;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.session.SessionState;
-
 /**
  * PrivilegeRegistry is used to do privilege lookups. Given a privilege name, it
  * will return the Privilege object.
@@ -31,11 +29,6 @@ public class PrivilegeRegistry {
 
   protected static Map<PrivilegeType, Privilege> Registry = null;
   protected static Map<PrivilegeType, Privilege> RegistryV2 = null;
-
-  @Deprecated
-  public static Privilege getPrivilege(PrivilegeType privilegeType) {
-    return Registry.get(privilegeType);
-  }
 
   /**
    * Add entries to registry.
@@ -64,27 +57,11 @@ public class PrivilegeRegistry {
     RegistryV2.put(Privilege.DELETE.getPriv(), Privilege.DELETE);
   }
 
-  @Deprecated
-  public static Privilege getPrivilege(int privilegeToken) {
-    PrivilegeType ptype = PrivilegeType.getPrivTypeByToken(privilegeToken);
-    return getPrivilegeFromRegistry(ptype);
-  }
-
-  @Deprecated
-  public static Privilege getPrivilege(String privilegeName) {
-    PrivilegeType ptype = PrivilegeType.getPrivTypeByName(privilegeName);
-    return getPrivilegeFromRegistry(ptype);
-  }
-
-  public static Privilege getPrivilegeV1(PrivilegeType ptype) {
-    return Registry.get(ptype);
-  }
-  public static Privilege getPrivilegeV2(PrivilegeType ptype) {
-    return RegistryV2.get(ptype);
-  }
-  
-  private static Privilege getPrivilegeFromRegistry(PrivilegeType ptype) {
-    return SessionState.get().isAuthorizationModeV2() ? RegistryV2.get(ptype) : Registry.get(ptype);
+  public static Privilege getPrivilege(boolean authorizationModeV2, PrivilegeType privilegeType) {
+    if (authorizationModeV2)
+      return RegistryV2.get(privilegeType);
+    else
+      return Registry.get(privilegeType);
   }
 
 }
