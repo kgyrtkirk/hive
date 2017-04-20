@@ -52,32 +52,7 @@ public enum PrivilegeType {
     return name == null ? "unkown" : name;
   }
 
-  private static Map<Integer, PrivilegeType> token2Type;
   private static Map<String, PrivilegeType> name2Type;
-
-  /**
-   * Do case lookup of PrivilegeType associated with this antlr token
-   * @param privilegeName
-   * @return corresponding PrivilegeType
-   */
-  public static PrivilegeType getPrivTypeByToken(int token) {
-    populateToken2Type();
-    PrivilegeType privType = token2Type.get(token);
-    if(privType != null){
-      return privType;
-    }
-    return PrivilegeType.UNKNOWN;
-  }
-
-  private static synchronized void populateToken2Type() {
-    if(token2Type != null){
-      return;
-    }
-    token2Type = new HashMap<Integer, PrivilegeType>();
-    for(PrivilegeType privType : PrivilegeType.values()){
-      token2Type.put(privType.getToken(), privType);
-    }
-  }
 
   /**
    * Do case insensitive lookup of PrivilegeType with this name
