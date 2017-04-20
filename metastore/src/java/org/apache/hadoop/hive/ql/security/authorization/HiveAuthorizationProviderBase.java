@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
+import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
@@ -57,7 +58,7 @@ public abstract class HiveAuthorizationProviderBase implements
       this.handler = null;
     }
 
-    public void setHandler(HMSHandler handler){
+    public void setHandler(IHMSHandler handler){
       this.handler = handler;
     }
 
