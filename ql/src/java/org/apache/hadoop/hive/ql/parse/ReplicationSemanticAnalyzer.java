@@ -118,6 +118,32 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public static final String DUMPMETADATA = "_dumpmetadata";
 
+  public enum DUMPTYPE {
+    BOOTSTRAP("BOOTSTRAP"),
+    INCREMENTAL("INCREMENTAL"),
+    EVENT_CREATE_TABLE("EVENT_CREATE_TABLE"),
+    EVENT_ADD_PARTITION("EVENT_ADD_PARTITION"),
+    EVENT_DROP_TABLE("EVENT_DROP_TABLE"),
+    EVENT_DROP_PARTITION("EVENT_DROP_PARTITION"),
+    EVENT_ALTER_TABLE("EVENT_ALTER_TABLE"),
+    EVENT_RENAME_TABLE("EVENT_RENAME_TABLE"),
+    EVENT_ALTER_PARTITION("EVENT_ALTER_PARTITION"),
+    EVENT_RENAME_PARTITION("EVENT_RENAME_PARTITION"),
+    EVENT_INSERT("EVENT_INSERT"),
+    EVENT_UNKNOWN("EVENT_UNKNOWN");
+
+    String type = null;
+    DUMPTYPE(String type) {
+      this.type = type;
+    }
+
+    @Override
+    public String toString(){
+      return type;
+    }
+
+  };
+
   public ReplicationSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
@@ -238,7 +264,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         LOG.info(
             "Consolidation done, preparing to return {},{}->{}",
             dumpRoot.toUri(), bootDumpBeginReplId, bootDumpEndReplId);
-        dmd.setDump(DumpMetaData.DUMPTYPE.BOOTSTRAP, bootDumpBeginReplId, bootDumpEndReplId, cmRoot);
+        dmd.setDump(DUMPTYPE.BOOTSTRAP, bootDumpBeginReplId, bootDumpEndReplId, cmRoot);
         dmd.write();
 
         // Set the correct last repl id to return to the user
@@ -287,7 +313,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         writeOutput(
             Arrays.asList("incremental", String.valueOf(eventFrom), String.valueOf(lastReplId)),
             dmd.getDumpFilePath(), conf);
-        dmd.setDump(DumpMetaData.DUMPTYPE.INCREMENTAL, eventFrom, lastReplId, cmRoot);
+        dmd.setDump(DUMPTYPE.INCREMENTAL, eventFrom, lastReplId, cmRoot);
         dmd.write();
       }
       prepareReturnValues(Arrays.asList(dumpRoot.toUri().toString(), String.valueOf(lastReplId)), dumpSchema);

@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.parse.repl.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.ql.parse.DumpMetaData;
+import org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -44,7 +44,7 @@ public class TestEventHandlerFactory {
       }
 
       @Override
-      public DumpMetaData.DUMPTYPE dumpType() {
+      public ReplicationSemanticAnalyzer.DUMPTYPE dumpType() {
         return null;
       }
     }
