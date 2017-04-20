@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.security.authorization;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.parse.HiveParser;
-
 /**
  * Privilege type
  */
