@@ -21,7 +21,9 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
+import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.ISessionAuthState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -91,7 +93,7 @@ public class InjectableDummyAuthenticator implements HiveMetastoreAuthentication
   }
 
   @Override
-  public void setMetaStoreHandler(HMSHandler handler) {
+  public void setMetaStoreHandler(IHMSHandler handler) {
     hmap.setMetaStoreHandler(handler);
   }
 
@@ -101,7 +103,7 @@ public class InjectableDummyAuthenticator implements HiveMetastoreAuthentication
   }
 
   @Override
-  public void setSessionState(SessionState arg0) {
+  public void setSessionState(ISessionAuthState arg0) {
     //no-op
   }
 
