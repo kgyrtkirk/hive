@@ -288,7 +288,7 @@ public class HiveAuthorizationTaskFactoryImpl implements HiveAuthorizationTaskFa
       valueSet.addAll(values());
       // the old enum covered this contract...it can't hurt
       for (PrivilegeType privilegeType : PrivilegeType.values()) {
-        if (privilegeType != PrivilegeType.UNKNOWN && valueSet.contains(privilegeType)) {
+        if (privilegeType != PrivilegeType.UNKNOWN && !valueSet.contains(privilegeType)) {
           throw new RuntimeException("not mapped privilegtype: " + privilegeType);
         }
       }
