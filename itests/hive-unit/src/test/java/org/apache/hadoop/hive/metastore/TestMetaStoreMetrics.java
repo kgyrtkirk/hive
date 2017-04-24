@@ -58,7 +58,7 @@ public class TestMetaStoreMetrics {
     metrics = (CodahaleMetrics) MetricsFactory.getInstance();
 
     //Increments one HMS connection
-    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge(), hiveConf);
+    MetaStoreTestUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge(), hiveConf);
 
     //Increments one HMS connection (Hive.get())
     SessionState.start(new CliSessionState(hiveConf));

@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener;
@@ -75,7 +76,7 @@ public class StorageBasedMetastoreTestBase {
         InjectableDummyAuthenticator.class.getName());
 
     clientHiveConf = createHiveConf();
-    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge(), clientHiveConf);
+    MetaStoreTestUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge(), clientHiveConf);
 
     // Turn off client-side authorization
     clientHiveConf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED,false);

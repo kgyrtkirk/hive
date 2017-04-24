@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
@@ -80,7 +81,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
 
       // Test with remote metastore service
       int port = MetaStoreUtils.findFreePort();
-      MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
+      MetaStoreTestUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
       conf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
       conf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
       conf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");

@@ -58,7 +58,7 @@ public abstract class AbstractTestAuthorizationApiAuthorizer {
     hiveConf = new HiveConf();
     if (isRemoteMetastoreMode) {
       int port = MetaStoreUtils.findFreePort();
-      MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
+      MetaStoreTestUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
       hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     }
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);

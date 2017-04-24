@@ -75,7 +75,7 @@ public class TestMetaStoreAuthorization extends TestCase {
 
   public void testMetaStoreAuthorization() throws Exception {
     setup();
-    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
+    MetaStoreTestUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
     HiveMetaStoreClient client = new HiveMetaStoreClient(conf);
 
     FileSystem fs = null;
