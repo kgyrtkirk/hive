@@ -152,11 +152,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       }
       // instantiate the metastore server handler directly instead of connecting
       // through the network
+      IHMSHandlerFactory factory = new HMSHandlerFactory();
+
       if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
-        client = new HiveMetaStore.HMSHandler("hive client", this.conf, true);
+        client = factory.newHMSHandler("hive client", this.conf, true);
         fastpath = true;
       } else {
-        client = HiveMetaStore.newRetryingHMSHandler("hive client", this.conf, true);
+        client = factory.newRetryingHMSHandler("hive client", this.conf, true);
       }
       isConnected = true;
       snapshotActiveConf();
