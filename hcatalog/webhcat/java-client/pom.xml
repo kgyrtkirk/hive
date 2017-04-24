@@ -55,6 +55,13 @@
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-metastore</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+      <type>test-jar</type>
+    </dependency>
     <!-- inter-project -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
