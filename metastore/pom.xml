@@ -335,6 +335,9 @@
           <include>package.jdo</include>
         </includes>
       </resource>
+      <resource>
+        <directory>${basedir}/src/resources</directory>
+      </resource>
     </resources>
     <plugins>
       <!-- plugins are always listed in sorted order by groupId, artifectId -->

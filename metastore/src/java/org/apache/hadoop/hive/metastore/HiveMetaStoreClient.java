@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Random;
+import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.security.PrivilegedExceptionAction;
@@ -152,7 +153,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       }
       // instantiate the metastore server handler directly instead of connecting
       // through the network
-      IHMSHandlerFactory factory = new HMSHandlerFactory();
+      ServiceLoader<IHMSHandlerFactory> factoryLoader = ServiceLoader.load(IHMSHandlerFactory.class);
+      Iterator<IHMSHandlerFactory> it = factoryLoader.iterator();
+      if(!it.hasNext()) {
+        throw new RuntimeException("You must load hive-metastore to enable metastore startup");
+      }
+      IHMSHandlerFactory factory = it.next();
 
       if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
         client = factory.newHMSHandler("hive client", this.conf, true);
