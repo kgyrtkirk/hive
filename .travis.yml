@@ -32,8 +32,12 @@ cache:
   - $HOME/.m2
 
 env:
-  MAVEN_SKIP_RC=true
-  MAVEN_OPTS="-Xmx2g"
+  global:
+    - MAVEN_SKIP_RC=true
+    - MAVEN_OPTS="-Xmx2g"
+  matrix:
+    - TEST_OPTS="-pl jdbc"
+    - TEST_OPTS="-pl serde"
 
 # workaround added: https://github.com/travis-ci/travis-ci/issues/4629
 before_install:
@@ -42,4 +46,7 @@ before_install:
 
 install: true
 
-script: mvn clean install -DskipTests -T 4 -q -Pitests
+script:
+  - mvn clean install -DskipTests -T 4 -q -Pitests
+  - mvn test $TEST_OPTS
+  - rm -rf $HOME/.m2/repository/org/apache/hive
