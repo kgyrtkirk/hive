@@ -48,5 +48,5 @@ install: true
 
 script:
   - mvn clean install -DskipTests -T 4 -q -Pitests
-  - mvn test $TEST_OPTS
+  - mvn install -T 4 -q $TEST_OPTS
   - rm -rf $HOME/.m2/repository/org/apache/hive
