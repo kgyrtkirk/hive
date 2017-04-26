@@ -35,19 +35,16 @@ env:
   global:
     - MAVEN_SKIP_RC=true
     - MAVEN_OPTS="-Xmx2g"
+    - CACHE_NAME=HIVE_CACHE
   matrix:
     - TEST_OPTS="-pl accumulo-handler"
-    - TEST_OPTS="-pl vector-code-gen"
-    - TEST_OPTS="-pl beeline"
-    - TEST_OPTS="-pl cli"
-    - TEST_OPTS="-pl common"
-    - TEST_OPTS="-pl contrib"
     - TEST_OPTS="-pl druid-handler"
     - TEST_OPTS="-pl hbase-handler"
     - TEST_OPTS="-pl jdbc-handler"
     - TEST_OPTS="-pl hcatalog"
     - TEST_OPTS="-pl hplsql"
-    - TEST_OPTS="-pl jdbc"
+    - TEST_OPTS="-pl common"
+    - TEST_OPTS="-pl jdbc,vector-code-gen,beeline,cli"
     - TEST_OPTS="-pl metastore"
     - TEST_OPTS="-pl ql"
     - TEST_OPTS="-pl serde"
