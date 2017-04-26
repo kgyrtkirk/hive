@@ -36,8 +36,32 @@ env:
     - MAVEN_SKIP_RC=true
     - MAVEN_OPTS="-Xmx2g"
   matrix:
+    - TEST_OPTS="-pl accumulo-handler"
+    - TEST_OPTS="-pl vector-code-gen"
+    - TEST_OPTS="-pl beeline"
+    - TEST_OPTS="-pl cli"
+    - TEST_OPTS="-pl common"
+    - TEST_OPTS="-pl contrib"
+    - TEST_OPTS="-pl druid-handler"
+    - TEST_OPTS="-pl hbase-handler"
+    - TEST_OPTS="-pl jdbc-handler"
+    - TEST_OPTS="-pl hcatalog"
+    - TEST_OPTS="-pl hplsql"
     - TEST_OPTS="-pl jdbc"
+    - TEST_OPTS="-pl metastore"
+    - TEST_OPTS="-pl ql"
     - TEST_OPTS="-pl serde"
+    - TEST_OPTS="-pl service-rpc"
+    - TEST_OPTS="-pl service"
+    - TEST_OPTS="-pl llap-common"
+    - TEST_OPTS="-pl llap-client"
+    - TEST_OPTS="-pl llap-ext-client"
+    - TEST_OPTS="-pl llap-tez"
+    - TEST_OPTS="-pl llap-server"
+    - TEST_OPTS="-pl shims"
+    - TEST_OPTS="-pl spark-client"
+    - TEST_OPTS="-pl storage-api"
+    - TEST_OPTS="-pl testutils"
 
 # workaround added: https://github.com/travis-ci/travis-ci/issues/4629
 before_install:
