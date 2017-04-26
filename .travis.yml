@@ -16,7 +16,7 @@
 
 # https://docs.travis-ci.com/user/ci-environment/
 # trusty - 7.5GB memory and 2 cores
-sudo: required
+# sudo: required
 dist: trusty
 
 # travis performs a shallow clone by default, in case of any issues
