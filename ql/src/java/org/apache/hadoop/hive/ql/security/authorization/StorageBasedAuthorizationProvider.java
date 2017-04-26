@@ -44,8 +44,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 
 /**
  * StorageBasedAuthorizationProvider is an implementation of
@@ -212,6 +212,12 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     return false;
   }
 
+
+  @Override
+  public void authorize(Partition part, Privilege[] readRequiredPriv, Privilege[] writeRequiredPriv)
+      throws HiveException, AuthorizationException {
+    authorize(part.getTable(), part, readRequiredPriv, writeRequiredPriv);
+  }
 
   private void authorize(Table table, Partition part, Privilege[] readRequiredPriv,
       Privilege[] writeRequiredPriv)

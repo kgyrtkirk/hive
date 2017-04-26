@@ -26,8 +26,8 @@ import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 
 /**
  * If this authorizer is used, it allows authorization api to be invoked only in embedded
@@ -63,7 +63,7 @@ public class MetaStoreAuthzAPIAuthorizerEmbedOnly extends HiveAuthorizationProvi
   }
 
   @Override
-  public void authorize(Table table, Partition part, Privilege[] readRequiredPriv, Privilege[] writeRequiredPriv)
+  public void authorize(Partition part, Privilege[] readRequiredPriv, Privilege[] writeRequiredPriv)
       throws HiveException, AuthorizationException {
     // not authorized by this implementation, ie operation is allowed by it
   }

@@ -25,8 +25,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 
 /**
@@ -98,7 +98,7 @@ public interface HiveAuthorizationProvider extends Configurable{
    * @throws HiveException
    * @throws AuthorizationException
    */
-  public void authorize(Table table, Partition part, Privilege[] readRequiredPriv,
+  public void authorize(Partition part, Privilege[] readRequiredPriv,
       Privilege[] writeRequiredPriv) throws HiveException,
       AuthorizationException;
 

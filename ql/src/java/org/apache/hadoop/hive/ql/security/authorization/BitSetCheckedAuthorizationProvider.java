@@ -24,16 +24,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 
 public abstract class BitSetCheckedAuthorizationProvider extends
     HiveAuthorizationProviderBase {
@@ -112,14 +110,15 @@ public abstract class BitSetCheckedAuthorizationProvider extends
   }
 
   @Override
-  public void authorize(Table table, Partition part, Privilege[] inputRequiredPriv,
+  public void authorize(Partition part, Privilege[] inputRequiredPriv,
       Privilege[] outputRequiredPriv) throws HiveException {
 
     //if the partition does not have partition level privilege, go to table level.
+    Table table = part.getTable();
     if (table.getParameters().get("PARTITION_LEVEL_PRIVILEGE") == null || ("FALSE"
         .equalsIgnoreCase(table.getParameters().get(
             "PARTITION_LEVEL_PRIVILEGE")))) {
-      this.authorize(table, inputRequiredPriv, outputRequiredPriv);
+      this.authorize(part.getTable(), inputRequiredPriv, outputRequiredPriv);
       return;
     }
 
@@ -128,17 +127,14 @@ public abstract class BitSetCheckedAuthorizationProvider extends
     boolean[] inputCheck = checker.inputCheck;
     boolean[] outputCheck = checker.outputCheck;
 
-    if (authorizeUserDbAndPartition(table, part, inputRequiredPriv, outputRequiredPriv,
+    if (authorizeUserDbAndPartition(part, inputRequiredPriv, outputRequiredPriv,
         inputCheck, outputCheck)){
       return;
     }
 
-    try {
     checkAndThrowAuthorizationException(inputRequiredPriv, outputRequiredPriv,
-        inputCheck, outputCheck, table.getDbName(), table.getTableName(), Warehouse.makePartName(table.getPartitionKeys(),part.getValues()), null);
-    } catch (MetaException e) {
-      throw new RuntimeException(e);
-    }
+        inputCheck, outputCheck, part.getTable().getDbName(), part
+            .getTable().getTableName(), part.getName(), null);
   }
 
   @Override
@@ -157,11 +153,7 @@ public abstract class BitSetCheckedAuthorizationProvider extends
         && (table.getParameters().get("PARTITION_LEVEL_PRIVILEGE") != null && ("TRUE"
             .equalsIgnoreCase(table.getParameters().get(
                 "PARTITION_LEVEL_PRIVILEGE"))))) {
-      try{
-      partName = Warehouse.makePartName(table.getPartitionKeys(),part.getValues());
-      }catch(MetaException e){
-        throw new RuntimeException(e);
-      }
+      partName = part.getName();
       partValues = part.getValues();
     }
 
@@ -171,7 +163,7 @@ public abstract class BitSetCheckedAuthorizationProvider extends
         return;
       }
     } else {
-      if (authorizeUserDbAndPartition(table, part, inputRequiredPriv,
+      if (authorizeUserDbAndPartition(part, inputRequiredPriv,
           outputRequiredPriv, inputCheck, outputCheck)) {
         return;
       }
@@ -295,20 +287,20 @@ public abstract class BitSetCheckedAuthorizationProvider extends
    * @return true if the check passed
    * @throws HiveException
    */
-  private boolean authorizeUserDbAndPartition(Table table, Partition part,
+  private boolean authorizeUserDbAndPartition(Partition part,
       Privilege[] inputRequiredPriv, Privilege[] outputRequiredPriv,
       boolean[] inputCheck, boolean[] outputCheck) throws HiveException {
 
     if (authorizeUserAndDBPriv(
-        hive_db.getDatabase(table.getDbName()), inputRequiredPriv,
+        hive_db.getDatabase(part.getTable().getDbName()), inputRequiredPriv,
         outputRequiredPriv, inputCheck, outputCheck)) {
       return true;
     }
 
-    PrincipalPrivilegeSet partPrivileges = part.getPrivileges();
+    PrincipalPrivilegeSet partPrivileges = part.getTPartition().getPrivileges();
     if (partPrivileges == null) {
-      partPrivileges = hive_db.get_privilege_set(HiveObjectType.PARTITION, table.getDbName(),
-          table.getTableName(), part
+      partPrivileges = hive_db.get_privilege_set(HiveObjectType.PARTITION, part
+          .getTable().getDbName(), part.getTable().getTableName(), part
           .getValues(), null, this.getAuthenticator().getUserName(), this
           .getAuthenticator().getGroupNames());
     }
