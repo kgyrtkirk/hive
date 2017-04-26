@@ -30,6 +30,8 @@ jdk:
 cache:
   directories:
   - $HOME/.m2
+before_cache:
+  - rm -rf $HOME/.m2/repository/org/apache/hive
 
 env:
   global:
@@ -70,4 +72,3 @@ install: true
 script:
   - mvn clean install -DskipTests -T 4 -q -Pitests
   - mvn install -T 4 -q $TEST_OPTS
-  - rm -rf $HOME/.m2/repository/org/apache/hive
