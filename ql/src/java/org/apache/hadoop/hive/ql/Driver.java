@@ -826,14 +826,14 @@ public class Driver implements CommandProcessor {
           Partition part = db.getPartition(write.getTable(), write
               .getPartition().getSpec(), false);
           if (part != null) {
-            authorizer.authorize(write.getPartition(), null,
+            authorizer.authorize(write.getTable().getTTable(), write.getPartition().getTPartition(), null,
                     op.getOutputRequiredPrivileges());
             continue;
           }
         }
 
         if (write.getTable() != null) {
-          authorizer.authorize(write.getTable(), null,
+          authorizer.authorize(write.getTable().getTTable(), null,
                   op.getOutputRequiredPrivileges());
         }
       }
@@ -892,11 +892,11 @@ public class Driver implements CommandProcessor {
           if (Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName()))) {
             List<String> cols = part2Cols.get(partition);
             if (cols != null && cols.size() > 0) {
-              authorizer.authorize(partition.getTable(),
-                  partition, cols, op.getInputRequiredPrivileges(),
+              authorizer.authorize(partition.getTable().getTTable(),
+                  partition.getTPartition(), cols, op.getInputRequiredPrivileges(),
                   null);
             } else {
-              authorizer.authorize(partition,
+              authorizer.authorize(partition.getTable().getTTable(),partition.getTPartition(),
                   op.getInputRequiredPrivileges(), null);
             }
             continue;
@@ -910,10 +910,10 @@ public class Driver implements CommandProcessor {
             !(Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName())))) {
           List<String> cols = tab2Cols.get(tbl);
           if (cols != null && cols.size() > 0) {
-            authorizer.authorize(tbl, null, cols,
+            authorizer.authorize(tbl.getTTable(), null, cols,
                 op.getInputRequiredPrivileges(), null);
           } else {
-            authorizer.authorize(tbl, op.getInputRequiredPrivileges(),
+            authorizer.authorize(tbl.getTTable(), op.getInputRequiredPrivileges(),
                 null);
           }
           tableAuthChecked.add(tbl.getTableName());
