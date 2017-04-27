@@ -45,7 +45,6 @@
       <artifactId>hive-serde</artifactId>
       <version>${project.version}</version>
     </dependency>
-
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-shims</artifactId>
@@ -69,7 +68,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-hdfs</artifactId>
+      <artifactId>hadoop-hdfs-client</artifactId>
       <version>${hadoop.version}</version>
       <optional>true</optional>
       <exclusions>
@@ -84,7 +83,7 @@
       </exclusions>
     </dependency>
     
-    <dependency>
+<!--    <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-client</artifactId>
       <version>${hbase.version}</version>
@@ -98,7 +97,7 @@
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
-   </dependency>
+   </dependency> -->
     <dependency>
       <groupId>com.jolbox</groupId>
       <artifactId>bonecp</artifactId>
