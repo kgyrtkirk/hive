@@ -32,7 +32,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -208,8 +207,8 @@ public class ReplChangeManager {
   static public Path getCMPath(Path path, Configuration conf, String chksum)
       throws IOException, MetaException {
     String newFileName = chksum;
-    int maxLength = conf.getInt(DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_KEY,
-        DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_DEFAULT);
+    int maxLength = conf.getInt("X",
+        255);
 
     if (newFileName.length() > maxLength) {
       newFileName = newFileName.substring(0, maxLength-1);
