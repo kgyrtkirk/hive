@@ -91,7 +91,7 @@ public class InjectableDummyAuthenticator implements HiveMetastoreAuthentication
   }
 
   @Override
-  public void setMetaStoreHandler(HMSHandler handler) {
+  public void setMetaStoreHandler(org.apache.hadoop.hive.metastore.IHMSHandler handler) {
     hmap.setMetaStoreHandler(handler);
   }
 
@@ -101,7 +101,7 @@ public class InjectableDummyAuthenticator implements HiveMetastoreAuthentication
   }
 
   @Override
-  public void setSessionState(SessionState arg0) {
+  public void setSessionState(org.apache.hadoop.hive.ql.session.ISessionAuthState arg0) {
     //no-op
   }
 

@@ -63,7 +63,7 @@ public class DummyAuthenticator implements HiveAuthenticationProvider {
   }
 
   @Override
-  public void setSessionState(SessionState ss) {
+  public void setSessionState(org.apache.hadoop.hive.ql.session.ISessionAuthState ss) {
     //no op
   }
 
