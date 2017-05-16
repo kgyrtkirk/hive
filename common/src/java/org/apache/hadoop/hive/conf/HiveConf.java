@@ -597,6 +597,8 @@ public class HiveConf extends Configuration {
     HADOOPNUMREDUCERS("mapreduce.job.reduces", -1, "", true),
 
     // Metastore stuff. Be sure to update HiveConf.metaVars when you add something here!
+    METASTOREDBTYPE("hive.metastore.db.type", "DERBY", new StringSet("DERBY", "ORACLE", "MYSQL", "MSSQL", "POSTGRES"),
+        "Type of database used by the metastore. Information schema & JDBCStorageHandler depend on it."),
     METASTOREWAREHOUSE("hive.metastore.warehouse.dir", "/user/hive/warehouse",
         "location of default database for the warehouse"),
     METASTOREURIS("hive.metastore.uris", "",
@@ -899,6 +901,12 @@ public class HiveConf extends Configuration {
     METASTORE_RAW_STORE_IMPL("hive.metastore.rawstore.impl", "org.apache.hadoop.hive.metastore.ObjectStore",
         "Name of the class that implements org.apache.hadoop.hive.metastore.rawstore interface. \n" +
         "This class is used to store and retrieval of raw metadata objects such as table, database"),
+    METASTORE_CACHED_RAW_STORE_IMPL("hive.metastore.cached.rawstore.impl", "org.apache.hadoop.hive.metastore.ObjectStore",
+        "Name of the wrapped RawStore class"),
+    METASTORE_CACHED_RAW_STORE_CACHE_UPDATE_FREQUENCY(
+        "hive.metastore.cached.rawstore.cache.update.frequency", "60", new TimeValidator(
+            TimeUnit.SECONDS),
+        "The time after which metastore cache is updated from metastore DB."),
     METASTORE_TXN_STORE_IMPL("hive.metastore.txn.store.impl",
         "org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler",
         "Name of class that implements org.apache.hadoop.hive.metastore.txn.TxnStore.  This " +
@@ -1639,6 +1647,10 @@ public class HiveConf extends Configuration {
         "If the skew information is correctly stored in the metadata, hive.optimize.skewjoin.compiletime\n" +
         "would change the query plan to take care of it, and hive.optimize.skewjoin will be a no-op."),
 
+    HIVE_SHARED_SCAN_OPTIMIZATION("hive.optimize.shared.scan", true,
+        "Whether to enable shared scan optimizer. The optimizer finds scan operator over the same table\n" +
+        "in the query plan and merges them if they meet some preconditions."),
+
     // CTE
     HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", -1,
         "If the number of references to a CTE clause exceeds this threshold, Hive will materialize it\n" +
@@ -2212,7 +2224,10 @@ public class HiveConf extends Configuration {
         "When enabled, will log EXPLAIN EXTENDED output for the query at INFO log4j log level."),
     HIVE_EXPLAIN_USER("hive.explain.user", true,
         "Whether to show explain result at user level.\n" +
-        "When enabled, will log EXPLAIN output for the query at user level."),
+        "When enabled, will log EXPLAIN output for the query at user level. Tez only."),
+    HIVE_SPARK_EXPLAIN_USER("hive.spark.explain.user", false,
+        "Whether to show explain result at user level.\n" +
+        "When enabled, will log EXPLAIN output for the query at user level. Spark only."),
 
     // prefix used to auto generated column aliases (this should be started with '_')
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c",
@@ -2894,12 +2909,10 @@ public class HiveConf extends Configuration {
             "Bloom filter should be of at max certain size to be effective"),
     TEZ_BLOOM_FILTER_FACTOR("hive.tez.bloom.filter.factor", (float) 2.0,
             "Bloom filter should be a multiple of this factor with nDV"),
-    TEZ_BIGTABLE_MIN_SIZE_SEMIJOIN_REDUCTION("hive.tez.bigtable.minsize.semijoin.reduction", 1000000L,
+    TEZ_BIGTABLE_MIN_SIZE_SEMIJOIN_REDUCTION("hive.tez.bigtable.minsize.semijoin.reduction", 100000000L,
             "Big table for runtime filteting should be of atleast this size"),
     TEZ_DYNAMIC_SEMIJOIN_REDUCTION_THRESHOLD("hive.tez.dynamic.semijoin.reduction.threshold", (float) 0.50,
             "Only perform semijoin optimization if the estimated benefit at or above this fraction of the target table"),
-    TEZ_DYNAMIC_SEMIJOIN_REDUCTION_HINT_ONLY("hive.tez.dynamic.semijoin.reduction.hint.only", false,
-            "When true, only enforce semijoin when a hint is provided"),
     TEZ_SMB_NUMBER_WAVES(
         "hive.tez.smb.number.waves",
         (float) 0.5,
@@ -3143,6 +3156,19 @@ public class HiveConf extends Configuration {
     LLAP_DAEMON_NUM_EXECUTORS("hive.llap.daemon.num.executors", 4,
       "Number of executors to use in LLAP daemon; essentially, the number of tasks that can be\n" +
       "executed in parallel.", "llap.daemon.num.executors"),
+    LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR("hive.llap.mapjoin.memory.oversubscribe.factor", 0.2f,
+      "Fraction of memory from hive.auto.convert.join.noconditionaltask.size that can be over subscribed\n" +
+        "by queries running in LLAP mode. This factor has to be from 0.0 to 1.0. Default is 20% over subscription.\n"),
+    LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY("hive.llap.memory.oversubscription.max.executors.per.query", 3,
+      "Used along with hive.llap.mapjoin.memory.oversubscribe.factor to limit the number of executors from\n" +
+        "which memory for mapjoin can be borrowed. Default 3 (from 3 other executors\n" +
+        "hive.llap.mapjoin.memory.oversubscribe.factor amount of memory can be borrowed based on which mapjoin\n" +
+        "conversion decision will be made). This is only an upper bound. Lower bound is determined by number of\n" +
+        "executors and configured max concurrency."),
+    LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL("hive.llap.mapjoin.memory.monitor.check.interval", 100000L,
+      "Check memory usage of mapjoin hash tables after every interval of this many rows. If map join hash table\n" +
+        "memory usage exceeds (hive.auto.convert.join.noconditionaltask.size * hive.hash.table.inflation.factor)\n" +
+        "when running in LLAP, tasks will get killed and not retried. Set the value to 0 to disable this feature."),
     LLAP_DAEMON_AM_REPORTER_MAX_THREADS("hive.llap.daemon.am-reporter.max.threads", 4,
         "Maximum number of threads to be used for AM reporter. If this is lower than number of\n" +
         "executors in llap daemon, it would be set to number of executors at runtime.",
@@ -3328,6 +3354,8 @@ public class HiveConf extends Configuration {
         "hive.spark.use.groupby.shuffle", true,
         "Spark groupByKey transformation has better performance but uses unbounded memory." +
             "Turn this off when there is a memory issue."),
+    SPARK_JOB_MAX_TASKS("hive.spark.job.max.tasks", -1, "The maximum number of tasks a Spark job may have.\n" +
+            "If a Spark job contains more tasks than the maximum, it will be cancelled. A value of -1 means no limit."),
     NWAYJOINREORDER("hive.reorder.nway.joins", true,
       "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
     HIVE_MERGE_NWAY_JOINS("hive.merge.nway.joins", true,
@@ -3341,9 +3369,16 @@ public class HiveConf extends Configuration {
        " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)"),
     HIVE_MSCK_REPAIR_BATCH_SIZE(
         "hive.msck.repair.batch.size", 0,
-        "Batch size for the msck repair command. If the value is greater than zero, "
-            + "it will execute batch wise with the configured batch size. "
-            + "The default value is zero. Zero means it will execute directly (Not batch wise)"),
+        "Batch size for the msck repair command. If the value is greater than zero,\n "
+            + "it will execute batch wise with the configured batch size. In case of errors while\n"
+            + "adding unknown partitions the batch size is automatically reduced by half in the subsequent\n"
+            + "retry attempt. The default value is zero which means it will execute directly (not batch wise)"),
+    HIVE_MSCK_REPAIR_BATCH_MAX_RETRIES("hive.msck.repair.batch.max.retries", 0,
+        "Maximum number of retries for the msck repair command when adding unknown partitions.\n "
+        + "If the value is greater than zero it will retry adding unknown partitions until the maximum\n"
+        + "number of attempts is reached or batch size is reduced to 0, whichever is earlier.\n"
+        + "In each retry attempt it will reduce the batch size by a factor of 2 until it reaches zero.\n"
+        + "If the value is set to zero it will retry until the batch size becomes zero as described above."),
     HIVE_SERVER2_LLAP_CONCURRENT_QUERIES("hive.server2.llap.concurrent.queries", -1,
         "The number of queries allowed in parallel via llap. Negative number implies 'infinite'."),
     HIVE_TEZ_ENABLE_MEMORY_MANAGER("hive.tez.enable.memory.manager", true,

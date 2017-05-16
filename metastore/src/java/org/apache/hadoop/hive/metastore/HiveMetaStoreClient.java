@@ -1093,6 +1093,23 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   /**
+   * Truncate the table/partitions in the DEFAULT database.
+   * @param dbName
+   *          The db to which the table to be truncate belongs to
+   * @param tableName
+   *          The table to truncate
+   * @param partNames
+   *          List of partitions to truncate. NULL will truncate the whole table/all partitions
+   * @throws MetaException
+   * @throws TException
+   *           Could not truncate table properly.
+   */
+  @Override
+  public void truncateTable(String dbName, String tableName, List<String> partNames) throws MetaException, TException {
+    client.truncate_table(dbName, tableName, partNames);
+  }
+
+  /**
    * @param type
    * @return true if the type is dropped
    * @throws MetaException
@@ -2518,5 +2535,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
     CacheFileMetadataResult result = client.cache_file_metadata(req);
     return result.isIsSupported();
+  }
+
+  @Override
+  public String getMetastoreDbUuid() throws TException {
+    return client.get_metastore_db_uuid();
   }
 }

@@ -416,6 +416,21 @@ module ThriftHiveMetastore
       return
     end
 
+    def truncate_table(dbName, tableName, partNames)
+      send_truncate_table(dbName, tableName, partNames)
+      recv_truncate_table()
+    end
+
+    def send_truncate_table(dbName, tableName, partNames)
+      send_message('truncate_table', Truncate_table_args, :dbName => dbName, :tableName => tableName, :partNames => partNames)
+    end
+
+    def recv_truncate_table()
+      result = receive_message(Truncate_table_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
     def get_tables(db_name, pattern)
       send_get_tables(db_name, pattern)
       return recv_get_tables()
@@ -2547,6 +2562,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'cache_file_metadata failed: unknown result')
     end
 
+    def get_metastore_db_uuid()
+      send_get_metastore_db_uuid()
+      return recv_get_metastore_db_uuid()
+    end
+
+    def send_get_metastore_db_uuid()
+      send_message('get_metastore_db_uuid', Get_metastore_db_uuid_args)
+    end
+
+    def recv_get_metastore_db_uuid()
+      result = receive_message(Get_metastore_db_uuid_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_metastore_db_uuid failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -2878,6 +2909,17 @@ module ThriftHiveMetastore
         result.o3 = o3
       end
       write_result(result, oprot, 'drop_table_with_environment_context', seqid)
+    end
+
+    def process_truncate_table(seqid, iprot, oprot)
+      args = read_args(iprot, Truncate_table_args)
+      result = Truncate_table_result.new()
+      begin
+        @handler.truncate_table(args.dbName, args.tableName, args.partNames)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'truncate_table', seqid)
     end
 
     def process_get_tables(seqid, iprot, oprot)
@@ -4431,6 +4473,17 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'cache_file_metadata', seqid)
     end
 
+    def process_get_metastore_db_uuid(seqid, iprot, oprot)
+      args = read_args(iprot, Get_metastore_db_uuid_args)
+      result = Get_metastore_db_uuid_result.new()
+      begin
+        result.success = @handler.get_metastore_db_uuid()
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_metastore_db_uuid', seqid)
+    end
+
   end
 
   # HELPER FUNCTIONS AND STRUCTURES
@@ -5316,6 +5369,42 @@ module ThriftHiveMetastore
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Truncate_table_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DBNAME = 1
+    TABLENAME = 2
+    PARTNAMES = 3
+
+    FIELDS = {
+      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+      TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+      PARTNAMES => {:type => ::Thrift::Types::LIST, :name => 'partNames', :element => {:type => ::Thrift::Types::STRING}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Truncate_table_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end
@@ -10159,6 +10248,39 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::CacheFileMetadataResult}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_metastore_db_uuid_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_metastore_db_uuid_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRING, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

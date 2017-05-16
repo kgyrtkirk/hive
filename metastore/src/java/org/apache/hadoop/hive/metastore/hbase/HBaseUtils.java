@@ -619,7 +619,7 @@ public class HBaseUtils {
    * @param md message descriptor to use to generate the hash
    * @return the hash as a byte array
    */
-  static byte[] hashStorageDescriptor(StorageDescriptor sd, MessageDigest md)  {
+  public static byte[] hashStorageDescriptor(StorageDescriptor sd, MessageDigest md)  {
     // Note all maps and lists have to be absolutely sorted.  Otherwise we'll produce different
     // results for hashes based on the OS or JVM being used.
     md.reset();
@@ -653,7 +653,7 @@ public class HBaseUtils {
       }
     }
     if (sd.getBucketCols() != null) {
-      SortedSet<String> bucketCols = new TreeSet<>(sd.getBucketCols());
+      List<String> bucketCols = new ArrayList<>(sd.getBucketCols());
       for (String bucket : bucketCols) md.update(bucket.getBytes(ENCODING));
     }
     if (sd.getSortCols() != null) {
@@ -688,6 +688,7 @@ public class HBaseUtils {
           md.update(e.getValue().getBytes(ENCODING));
         }
       }
+      md.update(sd.isStoredAsSubDirectories() ? "true".getBytes(ENCODING) : "false".getBytes(ENCODING));
     }
 
     return md.digest();

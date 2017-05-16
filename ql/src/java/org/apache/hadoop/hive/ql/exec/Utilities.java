@@ -24,6 +24,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
@@ -52,6 +53,8 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Driver.DriverState;
+import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
@@ -142,6 +145,8 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
+import org.apache.hadoop.security.Credentials;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hive.common.util.ACLConfigurationParser;
 import org.apache.hive.common.util.ReflectionUtil;
@@ -2024,7 +2029,7 @@ public final class Utilities {
    * @param job
    *          configuration which receives configured properties
    */
-  public static void copyTableJobPropertiesToConf(TableDesc tbl, Configuration job) {
+  public static void copyTableJobPropertiesToConf(TableDesc tbl, JobConf job) throws HiveException {
     Properties tblProperties = tbl.getProperties();
     for(String name: tblProperties.stringPropertyNames()) {
       if (job.get(name) == null) {
@@ -2035,11 +2040,23 @@ public final class Utilities {
       }
     }
     Map<String, String> jobProperties = tbl.getJobProperties();
-    if (jobProperties == null) {
-      return;
+    if (jobProperties != null) {
+      for (Map.Entry<String, String> entry : jobProperties.entrySet()) {
+        job.set(entry.getKey(), entry.getValue());
+      }
     }
-    for (Map.Entry<String, String> entry : jobProperties.entrySet()) {
-      job.set(entry.getKey(), entry.getValue());
+
+    try {
+      Map<String, String> jobSecrets = tbl.getJobSecrets();
+      if (jobSecrets != null) {
+        for (Map.Entry<String, String> entry : jobSecrets.entrySet()) {
+          job.getCredentials().addSecretKey(new Text(entry.getKey()), entry.getValue().getBytes());
+          UserGroupInformation.getCurrentUser().getCredentials()
+            .addSecretKey(new Text(entry.getKey()), entry.getValue().getBytes());
+        }
+      }
+    } catch (IOException e) {
+      throw new HiveException(e);
     }
   }
 
@@ -2052,7 +2069,7 @@ public final class Utilities {
    * @param tbl
    * @param job
    */
-  public static void copyTablePropertiesToConf(TableDesc tbl, JobConf job) {
+  public static void copyTablePropertiesToConf(TableDesc tbl, JobConf job) throws HiveException {
     Properties tblProperties = tbl.getProperties();
     for(String name: tblProperties.stringPropertyNames()) {
       String val = (String) tblProperties.get(name);
@@ -2061,11 +2078,23 @@ public final class Utilities {
       }
     }
     Map<String, String> jobProperties = tbl.getJobProperties();
-    if (jobProperties == null) {
-      return;
+    if (jobProperties != null) {
+      for (Map.Entry<String, String> entry : jobProperties.entrySet()) {
+        job.set(entry.getKey(), entry.getValue());
+      }
     }
-    for (Map.Entry<String, String> entry : jobProperties.entrySet()) {
-      job.set(entry.getKey(), entry.getValue());
+
+    try {
+      Map<String, String> jobSecrets = tbl.getJobSecrets();
+      if (jobSecrets != null) {
+        for (Map.Entry<String, String> entry : jobSecrets.entrySet()) {
+          job.getCredentials().addSecretKey(new Text(entry.getKey()), entry.getValue().getBytes());
+          UserGroupInformation.getCurrentUser().getCredentials()
+            .addSecretKey(new Text(entry.getKey()), entry.getValue().getBytes());
+        }
+      }
+    } catch (IOException e) {
+      throw new HiveException(e);
     }
   }
 
@@ -3018,6 +3047,7 @@ public final class Utilities {
 
     Set<Path> pathsProcessed = new HashSet<Path>();
     List<Path> pathsToAdd = new LinkedList<Path>();
+    LockedDriverState lDrvStat = LockedDriverState.getLockedDriverState();
     // AliasToWork contains all the aliases
     for (String alias : work.getAliasToWork().keySet()) {
       LOG.info("Processing alias " + alias);
@@ -3027,6 +3057,9 @@ public final class Utilities {
       boolean hasLogged = false;
       // Note: this copies the list because createDummyFileForEmptyPartition may modify the map.
       for (Path file : new LinkedList<Path>(work.getPathToAliases().keySet())) {
+        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
+          throw new IOException("Operation is Canceled. ");
+
         List<String> aliases = work.getPathToAliases().get(file);
         if (aliases.contains(alias)) {
           if (file != null) {
@@ -3079,6 +3112,8 @@ public final class Utilities {
     List<Path> finalPathsToAdd = new LinkedList<>();
     List<Future<Path>> futures = new LinkedList<>();
     for (final Path path : pathsToAdd) {
+      if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
+        throw new IOException("Operation is Canceled. ");
       if (pool == null) {
         finalPathsToAdd.add(new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy).call());
       } else {
@@ -3088,6 +3123,8 @@ public final class Utilities {
 
     if (pool != null) {
       for (Future<Path> future : futures) {
+        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
+          throw new IOException("Operation is Canceled. ");
         finalPathsToAdd.add(future.get());
       }
     }

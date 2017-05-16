@@ -46,6 +46,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void add_foreign_key(const AddForeignKeyRequest& req) = 0;
   virtual void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) = 0;
   virtual void drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context) = 0;
+  virtual void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames) = 0;
   virtual void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern) = 0;
   virtual void get_tables_by_type(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern, const std::string& tableType) = 0;
   virtual void get_table_meta(std::vector<TableMeta> & _return, const std::string& db_patterns, const std::string& tbl_patterns, const std::vector<std::string> & tbl_types) = 0;
@@ -175,6 +176,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void put_file_metadata(PutFileMetadataResult& _return, const PutFileMetadataRequest& req) = 0;
   virtual void clear_file_metadata(ClearFileMetadataResult& _return, const ClearFileMetadataRequest& req) = 0;
   virtual void cache_file_metadata(CacheFileMetadataResult& _return, const CacheFileMetadataRequest& req) = 0;
+  virtual void get_metastore_db_uuid(std::string& _return) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -276,6 +278,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void drop_table_with_environment_context(const std::string& /* dbname */, const std::string& /* name */, const bool /* deleteData */, const EnvironmentContext& /* environment_context */) {
+    return;
+  }
+  void truncate_table(const std::string& /* dbName */, const std::string& /* tableName */, const std::vector<std::string> & /* partNames */) {
     return;
   }
   void get_tables(std::vector<std::string> & /* _return */, const std::string& /* db_name */, const std::string& /* pattern */) {
@@ -689,6 +694,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void cache_file_metadata(CacheFileMetadataResult& /* _return */, const CacheFileMetadataRequest& /* req */) {
+    return;
+  }
+  void get_metastore_db_uuid(std::string& /* _return */) {
     return;
   }
 };
@@ -3650,6 +3658,124 @@ class ThriftHiveMetastore_drop_table_with_environment_context_presult {
   MetaException o3;
 
   _ThriftHiveMetastore_drop_table_with_environment_context_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_truncate_table_args__isset {
+  _ThriftHiveMetastore_truncate_table_args__isset() : dbName(false), tableName(false), partNames(false) {}
+  bool dbName :1;
+  bool tableName :1;
+  bool partNames :1;
+} _ThriftHiveMetastore_truncate_table_args__isset;
+
+class ThriftHiveMetastore_truncate_table_args {
+ public:
+
+  ThriftHiveMetastore_truncate_table_args(const ThriftHiveMetastore_truncate_table_args&);
+  ThriftHiveMetastore_truncate_table_args& operator=(const ThriftHiveMetastore_truncate_table_args&);
+  ThriftHiveMetastore_truncate_table_args() : dbName(), tableName() {
+  }
+
+  virtual ~ThriftHiveMetastore_truncate_table_args() throw();
+  std::string dbName;
+  std::string tableName;
+  std::vector<std::string>  partNames;
+
+  _ThriftHiveMetastore_truncate_table_args__isset __isset;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableName(const std::string& val);
+
+  void __set_partNames(const std::vector<std::string> & val);
+
+  bool operator == (const ThriftHiveMetastore_truncate_table_args & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    if (!(partNames == rhs.partNames))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_truncate_table_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_truncate_table_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_truncate_table_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_truncate_table_pargs() throw();
+  const std::string* dbName;
+  const std::string* tableName;
+  const std::vector<std::string> * partNames;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_truncate_table_result__isset {
+  _ThriftHiveMetastore_truncate_table_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_truncate_table_result__isset;
+
+class ThriftHiveMetastore_truncate_table_result {
+ public:
+
+  ThriftHiveMetastore_truncate_table_result(const ThriftHiveMetastore_truncate_table_result&);
+  ThriftHiveMetastore_truncate_table_result& operator=(const ThriftHiveMetastore_truncate_table_result&);
+  ThriftHiveMetastore_truncate_table_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_truncate_table_result() throw();
+  MetaException o1;
+
+  _ThriftHiveMetastore_truncate_table_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_truncate_table_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_truncate_table_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_truncate_table_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_truncate_table_presult__isset {
+  _ThriftHiveMetastore_truncate_table_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_truncate_table_presult__isset;
+
+class ThriftHiveMetastore_truncate_table_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_truncate_table_presult() throw();
+  MetaException o1;
+
+  _ThriftHiveMetastore_truncate_table_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -19601,6 +19727,106 @@ class ThriftHiveMetastore_cache_file_metadata_presult {
 
 };
 
+
+class ThriftHiveMetastore_get_metastore_db_uuid_args {
+ public:
+
+  ThriftHiveMetastore_get_metastore_db_uuid_args(const ThriftHiveMetastore_get_metastore_db_uuid_args&);
+  ThriftHiveMetastore_get_metastore_db_uuid_args& operator=(const ThriftHiveMetastore_get_metastore_db_uuid_args&);
+  ThriftHiveMetastore_get_metastore_db_uuid_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_metastore_db_uuid_args() throw();
+
+  bool operator == (const ThriftHiveMetastore_get_metastore_db_uuid_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_metastore_db_uuid_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_metastore_db_uuid_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_metastore_db_uuid_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_metastore_db_uuid_pargs() throw();
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_metastore_db_uuid_result__isset {
+  _ThriftHiveMetastore_get_metastore_db_uuid_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_metastore_db_uuid_result__isset;
+
+class ThriftHiveMetastore_get_metastore_db_uuid_result {
+ public:
+
+  ThriftHiveMetastore_get_metastore_db_uuid_result(const ThriftHiveMetastore_get_metastore_db_uuid_result&);
+  ThriftHiveMetastore_get_metastore_db_uuid_result& operator=(const ThriftHiveMetastore_get_metastore_db_uuid_result&);
+  ThriftHiveMetastore_get_metastore_db_uuid_result() : success() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_metastore_db_uuid_result() throw();
+  std::string success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_metastore_db_uuid_result__isset __isset;
+
+  void __set_success(const std::string& val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_metastore_db_uuid_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_metastore_db_uuid_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_metastore_db_uuid_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_metastore_db_uuid_presult__isset {
+  _ThriftHiveMetastore_get_metastore_db_uuid_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_metastore_db_uuid_presult__isset;
+
+class ThriftHiveMetastore_get_metastore_db_uuid_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_metastore_db_uuid_presult() throw();
+  std::string* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_metastore_db_uuid_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  ::facebook::fb303::FacebookServiceClient {
  public:
   ThriftHiveMetastoreClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -19684,6 +19910,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context);
   void send_drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context);
   void recv_drop_table_with_environment_context();
+  void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames);
+  void send_truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames);
+  void recv_truncate_table();
   void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern);
   void send_get_tables(const std::string& db_name, const std::string& pattern);
   void recv_get_tables(std::vector<std::string> & _return);
@@ -20071,6 +20300,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void cache_file_metadata(CacheFileMetadataResult& _return, const CacheFileMetadataRequest& req);
   void send_cache_file_metadata(const CacheFileMetadataRequest& req);
   void recv_cache_file_metadata(CacheFileMetadataResult& _return);
+  void get_metastore_db_uuid(std::string& _return);
+  void send_get_metastore_db_uuid();
+  void recv_get_metastore_db_uuid(std::string& _return);
 };
 
 class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceProcessor {
@@ -20105,6 +20337,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_add_foreign_key(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_table_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_truncate_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_tables(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_tables_by_type(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_table_meta(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -20234,6 +20467,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_put_file_metadata(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_clear_file_metadata(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_cache_file_metadata(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_metastore_db_uuid(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ThriftHiveMetastoreProcessor(boost::shared_ptr<ThriftHiveMetastoreIf> iface) :
      ::facebook::fb303::FacebookServiceProcessor(iface),
@@ -20262,6 +20496,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["add_foreign_key"] = &ThriftHiveMetastoreProcessor::process_add_foreign_key;
     processMap_["drop_table"] = &ThriftHiveMetastoreProcessor::process_drop_table;
     processMap_["drop_table_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_drop_table_with_environment_context;
+    processMap_["truncate_table"] = &ThriftHiveMetastoreProcessor::process_truncate_table;
     processMap_["get_tables"] = &ThriftHiveMetastoreProcessor::process_get_tables;
     processMap_["get_tables_by_type"] = &ThriftHiveMetastoreProcessor::process_get_tables_by_type;
     processMap_["get_table_meta"] = &ThriftHiveMetastoreProcessor::process_get_table_meta;
@@ -20391,6 +20626,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["put_file_metadata"] = &ThriftHiveMetastoreProcessor::process_put_file_metadata;
     processMap_["clear_file_metadata"] = &ThriftHiveMetastoreProcessor::process_clear_file_metadata;
     processMap_["cache_file_metadata"] = &ThriftHiveMetastoreProcessor::process_cache_file_metadata;
+    processMap_["get_metastore_db_uuid"] = &ThriftHiveMetastoreProcessor::process_get_metastore_db_uuid;
   }
 
   virtual ~ThriftHiveMetastoreProcessor() {}
@@ -20648,6 +20884,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->drop_table_with_environment_context(dbname, name, deleteData, environment_context);
     }
     ifaces_[i]->drop_table_with_environment_context(dbname, name, deleteData, environment_context);
+  }
+
+  void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->truncate_table(dbName, tableName, partNames);
+    }
+    ifaces_[i]->truncate_table(dbName, tableName, partNames);
   }
 
   void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern) {
@@ -21891,6 +22136,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void get_metastore_db_uuid(std::string& _return) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_metastore_db_uuid(_return);
+    }
+    ifaces_[i]->get_metastore_db_uuid(_return);
+    return;
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -21979,6 +22234,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context);
   int32_t send_drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context);
   void recv_drop_table_with_environment_context(const int32_t seqid);
+  void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames);
+  int32_t send_truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames);
+  void recv_truncate_table(const int32_t seqid);
   void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern);
   int32_t send_get_tables(const std::string& db_name, const std::string& pattern);
   void recv_get_tables(std::vector<std::string> & _return, const int32_t seqid);
@@ -22366,6 +22624,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void cache_file_metadata(CacheFileMetadataResult& _return, const CacheFileMetadataRequest& req);
   int32_t send_cache_file_metadata(const CacheFileMetadataRequest& req);
   void recv_cache_file_metadata(CacheFileMetadataResult& _return, const int32_t seqid);
+  void get_metastore_db_uuid(std::string& _return);
+  int32_t send_get_metastore_db_uuid();
+  void recv_get_metastore_db_uuid(std::string& _return, const int32_t seqid);
 };
 
 #ifdef _WIN32

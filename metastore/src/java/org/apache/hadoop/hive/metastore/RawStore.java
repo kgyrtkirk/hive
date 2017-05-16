@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
@@ -578,6 +579,17 @@ public interface RawStore extends Configurable {
     List<String> partNames, List<String> colNames) throws MetaException, NoSuchObjectException;
 
   /**
+   * Get all partition column statistics for a table
+   * @param dbName
+   * @param tableName
+   * @return Map of partition column statistics
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   */
+  public Map<String, ColumnStatisticsObj> getAggrColStatsForTablePartitions(String dbName,
+      String tableName) throws MetaException, NoSuchObjectException;
+
+  /**
    * Get the next notification event.
    * @param rqst Request containing information on the last processed notification.
    * @return list of notifications, sorted by eventId
@@ -696,4 +708,11 @@ public interface RawStore extends Configurable {
   void addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException;
 
   void addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException;
+
+  /**
+   * Gets the unique id of the backing datastore for the metadata
+   * @return
+   * @throws MetaException
+   */
+  String getMetastoreDbUuid() throws MetaException;
 }

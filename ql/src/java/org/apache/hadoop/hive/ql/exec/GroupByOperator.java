@@ -32,7 +32,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
@@ -402,8 +404,8 @@ public class GroupByOperator extends Operator<GroupByDesc> {
 
     newKeys = keyWrapperFactory.getKeyWrapper();
     isTez = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez");
-    isLlap = isTez && HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_MODE).equals("llap");
-    numExecutors = isLlap ? HiveConf.getIntVar(hconf, HiveConf.ConfVars.LLAP_DAEMON_NUM_EXECUTORS) : 1;
+    isLlap = LlapDaemonInfo.INSTANCE.isLlap();
+    numExecutors = isLlap ? LlapDaemonInfo.INSTANCE.getNumExecutors() : 1;
     firstRow = true;
     // estimate the number of hash table entries based on the size of each
     // entry. Since the size of a entry
@@ -470,6 +472,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       keyPositionsSize.add(new Integer(pos));
       return javaObjectOverHead;
     case TIMESTAMP:
+    case TIMESTAMPTZ:
       return javaObjectOverHead + javaSizePrimitiveType;
     default:
       return javaSizeUnknownType;
@@ -502,7 +505,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       return javaSizePrimitiveType;
     }
 
-    if (c.isInstance(new Timestamp(0))){
+    if (c.isInstance(new Timestamp(0)) || c.isInstance(new TimestampTZ())) {
       return javaObjectOverHead + javaSizePrimitiveType;
     }
 

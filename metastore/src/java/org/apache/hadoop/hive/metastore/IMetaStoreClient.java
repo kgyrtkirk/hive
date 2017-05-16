@@ -304,6 +304,20 @@ public interface IMetaStoreClient {
   void dropTable(String dbname, String tableName)
       throws MetaException, TException, NoSuchObjectException;
 
+  /**
+   * Truncate the table/partitions in the DEFAULT database.
+   * @param dbName
+   *          The db to which the table to be truncate belongs to
+   * @param tableName
+   *          The table to truncate
+   * @param partNames
+   *          List of partitions to truncate. NULL will truncate the whole table/all partitions
+   * @throws MetaException
+   * @throws TException
+   *           Could not truncate table properly.
+   */
+  void truncateTable(String dbName, String tableName, List<String> partNames) throws MetaException, TException;
+
   boolean tableExists(String databaseName, String tableName) throws MetaException,
       TException, UnknownDBException;
 
@@ -1650,4 +1664,12 @@ public interface IMetaStoreClient {
 
   void addForeignKey(List<SQLForeignKey> foreignKeyCols) throws
   MetaException, NoSuchObjectException, TException;
+
+  /**
+   * Gets the unique id of the backing database instance used for storing metadata
+   * @return unique id of the backing database instance
+   * @throws MetaException if HMS is not able to fetch the UUID or if there are multiple UUIDs found in the database
+   * @throws TException in case of Thrift errors
+   */
+  String getMetastoreDbUuid() throws MetaException, TException;
 }

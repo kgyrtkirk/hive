@@ -59,8 +59,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.jdo.Query;
 
 public class TestObjectStore {
   private ObjectStore objectStore = null;
@@ -153,10 +156,15 @@ public class TestObjectStore {
     Assert.assertEquals(2, eventResponse.getEventsSize());
     Assert.assertEquals(FIRST_EVENT_ID, eventResponse.getEvents().get(0).getEventId());
     Assert.assertEquals(SECOND_EVENT_ID, eventResponse.getEvents().get(1).getEventId());
+
     // Verify that getNextNotification(last) returns events after a specified event
     eventResponse = objectStore.getNextNotification(new NotificationEventRequest(FIRST_EVENT_ID));
     Assert.assertEquals(1, eventResponse.getEventsSize());
     Assert.assertEquals(SECOND_EVENT_ID, eventResponse.getEvents().get(0).getEventId());
+
+    // Verify that getNextNotification(last) returns zero events if there are no more notifications available
+    eventResponse = objectStore.getNextNotification(new NotificationEventRequest(SECOND_EVENT_ID));
+    Assert.assertEquals(0, eventResponse.getEventsSize());
 
     // Verify that cleanNotificationEvents() cleans up all old notifications
     Thread.sleep(1);
@@ -404,5 +412,16 @@ public class TestObjectStore {
       }
     } catch (NoSuchObjectException e) {
     }
+  }
+
+  @Test
+  public void testQueryCloseOnError() throws Exception {
+    ObjectStore spy = Mockito.spy(objectStore);
+    spy.getAllDatabases();
+    spy.getAllFunctions();
+    spy.getAllTables(DB1);
+    spy.getPartitionCount();
+    Mockito.verify(spy, Mockito.times(3))
+        .rollbackAndCleanup(Mockito.anyBoolean(), Mockito.<Query>anyObject());
   }
 }
