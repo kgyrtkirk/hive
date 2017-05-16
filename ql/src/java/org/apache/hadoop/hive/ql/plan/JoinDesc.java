@@ -29,7 +29,6 @@ import java.util.Map;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
-import org.apache.hadoop.hive.ql.parse.SemiJoinHint;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
@@ -107,10 +106,9 @@ public class JoinDesc extends AbstractOperatorDesc {
   private transient Map<String, Operator<? extends OperatorDesc>> aliasToOpInfo;
   private transient boolean leftInputJoin;
   private transient List<String> streamAliases;
-  // Note: there are two things in Hive called semi-joins - the left semi join construct,
-  //       and also a bloom-filter based optimization that came later. This is for the latter.
-  //       Everything else in this desc that says "semi-join" is for the former.
-  private transient Map<String, SemiJoinHint> semiJoinHints;
+
+  // represents the total memory that this Join operator will use if it is a MapJoin operator
+  protected transient long inMemoryDataSize;
 
   // non-transient field, used at runtime to kill a task if it exceeded memory limits when running in LLAP
   protected long noConditionalTaskSize;
@@ -206,8 +204,8 @@ public class JoinDesc extends AbstractOperatorDesc {
     this.filterMap = clone.filterMap;
     this.residualFilterExprs = clone.residualFilterExprs;
     this.statistics = clone.statistics;
-    this.semiJoinHints = clone.semiJoinHints;
     this.noConditionalTaskSize = clone.noConditionalTaskSize;
+    this.inMemoryDataSize = clone.inMemoryDataSize;
   }
 
   public Map<Byte, List<ExprNodeDesc>> getExprs() {
@@ -694,17 +692,6 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(JoinDesc.class);
-  public void setSemiJoinHints(Map<String, SemiJoinHint> semiJoinHints) {
-    if (semiJoinHints != null || this.semiJoinHints != null) {
-      LOG.debug("Setting semi-join hints to " + semiJoinHints);
-    }
-    this.semiJoinHints = semiJoinHints;
-  }
-
-  public Map<String, SemiJoinHint> getSemiJoinHints() {
-    return semiJoinHints;
-  }
-
 
   public long getNoConditionalTaskSize() {
     return noConditionalTaskSize;
@@ -712,5 +699,13 @@ public class JoinDesc extends AbstractOperatorDesc {
 
   public void setNoConditionalTaskSize(final long noConditionalTaskSize) {
     this.noConditionalTaskSize = noConditionalTaskSize;
+  }
+
+  public long getInMemoryDataSize() {
+    return inMemoryDataSize;
+  }
+
+  public void setInMemoryDataSize(final long inMemoryDataSize) {
+    this.inMemoryDataSize = inMemoryDataSize;
   }
 }

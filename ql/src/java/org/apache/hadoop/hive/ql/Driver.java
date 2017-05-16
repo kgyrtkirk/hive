@@ -138,6 +138,7 @@ public class Driver implements CommandProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   static final private LogHelper console = new LogHelper(LOG);
   static final int SHUTDOWN_HOOK_PRIORITY = 0;
+  private final QueryInfo queryInfo;
   private Runnable shutdownRunner = null;
 
   private int maxRows = 100;
@@ -346,32 +347,36 @@ public class Driver implements CommandProcessor {
   }
 
   public Driver() {
-    this(new QueryState((SessionState.get() != null) ?
+    this(getNewQueryState((SessionState.get() != null) ?
         SessionState.get().getConf() : new HiveConf()), null);
   }
 
   public Driver(HiveConf conf) {
-    this(new QueryState(conf), null);
+    this(getNewQueryState(conf), null);
   }
 
   public Driver(HiveConf conf, Context ctx) {
-    this(new QueryState(conf), null);
+    this(getNewQueryState(conf), null);
     this.ctx = ctx;
   }
 
   public Driver(HiveConf conf, String userName) {
-    this(new QueryState(conf), userName);
+    this(getNewQueryState(conf), userName, null);
   }
 
   public Driver(QueryState queryState, String userName) {
-    this(queryState, userName, new HooksLoader(queryState.getConf()));
+    this(queryState, userName, new HooksLoader(queryState.getConf()), null);
   }
 
   public Driver(HiveConf conf, HooksLoader hooksLoader) {
-    this(new QueryState(conf), null, hooksLoader);
+    this(getNewQueryState(conf), null, hooksLoader, null);
   }
 
-  private Driver(QueryState queryState, String userName, HooksLoader hooksLoader) {
+  public Driver(QueryState queryState, String userName, QueryInfo queryInfo) {
+     this(queryState, userName, new HooksLoader(queryState.getConf()), queryInfo);
+  }
+
+  public Driver(QueryState queryState, String userName, HooksLoader hooksLoader, QueryInfo queryInfo) {
     this.queryState = queryState;
     this.conf = queryState.getConf();
     isParallelEnabled = (conf != null)
@@ -379,6 +384,16 @@ public class Driver implements CommandProcessor {
     this.userName = userName;
     this.hooksLoader = hooksLoader;
     this.queryLifeTimeHookRunner = new QueryLifeTimeHookRunner(conf, hooksLoader, console);
+    this.queryInfo = queryInfo;
+  }
+
+  /**
+   * Generating the new QueryState object. Making sure, that the new queryId is generated.
+   * @param conf The HiveConf which should be used
+   * @return The new QueryState object
+   */
+  private static QueryState getNewQueryState(HiveConf conf) {
+    return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
   }
 
   /**
@@ -448,7 +463,7 @@ public class Driver implements CommandProcessor {
 
     LockedDriverState.setLockedDriverState(lDrvState);
 
-    String queryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
+    String queryId = queryState.getQueryId();
 
     //save some info for webUI for use after plan is freed
     this.queryDisplay.setQueryStr(queryStr);
@@ -1687,7 +1702,7 @@ public class Driver implements CommandProcessor {
     int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
     Metrics metrics = MetricsFactory.getInstance();
 
-    String queryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
+    String queryId = queryState.getQueryId();
     // Get the query string from the conf file as the compileInternal() method might
     // hide sensitive information during query redaction.
     String queryStr = conf.getQueryString();
@@ -1726,17 +1741,16 @@ public class Driver implements CommandProcessor {
       plan.setStarted();
 
       if (SessionState.get() != null) {
-        SessionState.get().getHiveHistory().startQuery(queryStr,
-            conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
+        SessionState.get().getHiveHistory().startQuery(queryStr, queryId);
         SessionState.get().getHiveHistory().logPlanProgress(plan);
       }
       resStream = null;
 
       SessionState ss = SessionState.get();
 
-      hookContext = new HookContext(plan, queryState, ctx.getPathToCS(), ss.getUserFromAuthenticator(),
+      hookContext = new HookContext(plan, queryState, ctx.getPathToCS(), SessionState.get().getUserName(),
           ss.getUserIpAddress(), InetAddress.getLocalHost().getHostAddress(), operationId,
-          ss.getSessionId(), Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger);
+          ss.getSessionId(), Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger, queryInfo);
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
       for (Hook peh : hooksLoader.getHooks(HiveConf.ConfVars.PREEXECHOOKS, console)) {
@@ -2419,6 +2433,6 @@ public class Driver implements CommandProcessor {
     // repeated compile/execute calls create new contexts, plan, etc., so we don't need to worry
     // propagating queryState into those existing fields, or resetting them.
     releaseResources();
-    this.queryState = new QueryState(queryState.getConf());
+    this.queryState = getNewQueryState(queryState.getConf());
   }
 }

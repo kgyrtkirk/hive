@@ -89,7 +89,9 @@ public class LlapServiceDriver {
   protected static final Logger LOG = LoggerFactory.getLogger(LlapServiceDriver.class.getName());
 
   private static final String[] DEFAULT_AUX_CLASSES = new String[] {
-  "org.apache.hive.hcatalog.data.JsonSerDe","org.apache.hadoop.hive.druid.DruidStorageHandler" };
+    "org.apache.hive.hcatalog.data.JsonSerDe","org.apache.hadoop.hive.druid.DruidStorageHandler",
+    "org.apache.hive.storage.jdbc.JdbcStorageHandler"
+  };
   private static final String HBASE_SERDE_CLASS = "org.apache.hadoop.hive.hbase.HBaseSerDe";
   private static final String[] NEEDED_CONFIGS = LlapDaemonConfiguration.DAEMON_CONFIGS;
   private static final String[] OPTIONAL_CONFIGS = LlapDaemonConfiguration.SSL_DAEMON_CONFIGS;
@@ -349,7 +351,15 @@ public class LlapServiceDriver {
       final Path tezDir = new Path(libDir, "tez");
       final Path udfDir = new Path(libDir, "udfs");
       final Path confPath = new Path(tmpDir, "conf");
-      lfs.mkdirs(confPath);
+      if (!lfs.mkdirs(confPath)) {
+        LOG.warn("mkdirs for " + confPath + " returned false");
+      }
+      if (!lfs.mkdirs(tezDir)) {
+        LOG.warn("mkdirs for " + tezDir + " returned false");
+      }
+      if (!lfs.mkdirs(udfDir)) {
+        LOG.warn("mkdirs for " + udfDir + " returned false");
+      }
 
       NamedCallable<Void> downloadTez = new NamedCallable<Void>("downloadTez") {
         @Override
