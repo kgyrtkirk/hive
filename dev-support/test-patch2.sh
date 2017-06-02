@@ -27,5 +27,5 @@ fi
 docker run --rm -it 		\
 	--link hive_yetus_nginx	\
 	-v ~/.m2/settings.xml:/root/.m2/settings.xml \
-	yh \
+	kgyrtkirk/hive_yetus \
 	/run_yetus.bash "$PATCH_URL" "$@"

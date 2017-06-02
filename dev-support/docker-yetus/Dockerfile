@@ -1,7 +1,7 @@
 FROM debian:stretch
 MAINTAINER Zoltan Haindrich <kirk@rxd.hu>
 
-RUN apt-get update && apt-get install -y curl wget git diffutils openjdk-8-jdk-headless maven && apt-get clean
+RUN apt-get update && apt-get install -y curl wget git diffutils openjdk-8-jdk-headless maven findbugs && apt-get clean
 
 RUN git clone --no-checkout https://github.com/apache/hive
 #COPY settings.xml /root/.m2/
@@ -16,5 +16,6 @@ COPY hive-personality.sh /
 COPY run_yetus.bash /
 
 CMD /bin/bash
+ENV FINDBUGS_HOME=/usr/
 #test-patch --personality=/hive-personality.sh --skip-dir=dev-support "$@"
 
