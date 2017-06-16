@@ -14,4 +14,4 @@ wget -O "$PATCH_FILE" "$PATCH_URL"
 echo "*** preflight mvn install"
 time mvn install -q -T4 -DskipTests -Pitests -DskipSparkTests
 echo "*** run yetus"
-test-patch --personality=/hive-personality.sh --skip-dir=dev-support "$PATCH_FILE" "$@"
+test-patch --personality=/hive-personality.sh --skip-dir=dev-support "$PATCH_URL" "$@"
