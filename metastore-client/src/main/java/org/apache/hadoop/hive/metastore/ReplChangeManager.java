@@ -32,11 +32,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsPermission;
-<<<<<<< HEAD:metastore-client/src/main/java/org/apache/hadoop/hive/metastore/ReplChangeManager.java
-=======
-import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hive.common.FileUtils;
->>>>>>> asf/master:metastore/src/java/org/apache/hadoop/hive/metastore/ReplChangeManager.java
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -243,18 +239,11 @@ public class ReplChangeManager {
    * @param checkSum checksum of the file, can be retrieved by {@link #checksumFor(Path, FileSystem)}
    * @return Path
    */
-<<<<<<< HEAD:metastore-client/src/main/java/org/apache/hadoop/hive/metastore/ReplChangeManager.java
-  static public Path getCMPath(Path path, Configuration conf, String chksum)
-      throws IOException, MetaException {
-    String newFileName = chksum;
-    int maxLength = conf.getInt("X",
-        255);
-=======
   static Path getCMPath(Configuration conf, String checkSum) throws IOException, MetaException {
     String newFileName = checkSum;
-    int maxLength = conf.getInt(DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_KEY,
-        DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_DEFAULT);
->>>>>>> asf/master:metastore/src/java/org/apache/hadoop/hive/metastore/ReplChangeManager.java
+    // FIXME: DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_KEY is not part of the public API
+    // FIXME: DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_DEFAULT is not part of the public API
+    int maxLength = conf.getInt("dfs.namenode.fs-limits.max-component-length",255);
 
     if (newFileName.length() > maxLength) {
       newFileName = newFileName.substring(0, maxLength-1);
