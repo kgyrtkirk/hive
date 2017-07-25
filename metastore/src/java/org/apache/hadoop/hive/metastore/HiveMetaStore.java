@@ -40,6 +40,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
@@ -275,6 +277,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         };
 
+    /**
+     * Thread local HMSHandler used during shutdown to notify meta listeners
+     */
+    private static final ThreadLocal<HMSHandler> threadLocalHMSHandler = new ThreadLocal<>();
+
+    /**
+     * Thread local Map to keep track of modified meta conf keys
+     */
+    private static final ThreadLocal<Map<String, String>> threadLocalModifiedConfig =
+        new ThreadLocal<>();
+
     private static ExecutorService threadPool;
 
     public static final String AUDIT_FORMAT =
@@ -343,6 +356,55 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         return null;
       }
     };
+
+    /**
+     * Internal function to notify listeners for meta config change events
+     */
+    private void notifyMetaListeners(String key, String oldValue, String newValue) throws MetaException {
+      for (MetaStoreEventListener listener : listeners) {
+        listener.onConfigChange(new ConfigChangeEvent(this, key, oldValue, newValue));
+      }
+
+      if (transactionalListeners.size() > 0) {
+        // All the fields of this event are final, so no reason to create a new one for each
+        // listener
+        ConfigChangeEvent cce = new ConfigChangeEvent(this, key, oldValue, newValue);
+        for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+          transactionalListener.onConfigChange(cce);
+        }
+      }
+    }
+
+    /**
+     * Internal function to notify listeners to revert back to old values of keys
+     * that were modified during setMetaConf. This would get called from HiveMetaStore#cleanupRawStore
+     */
+    private void notifyMetaListenersOnShutDown() {
+      Map<String, String> modifiedConf = threadLocalModifiedConfig.get();
+      if (modifiedConf == null) {
+        // Nothing got modified
+        return;
+      }
+      try {
+        Configuration conf = threadLocalConf.get();
+        if (conf == null) {
+          throw new MetaException("Unexpected: modifiedConf is non-null but conf is null");
+        }
+        // Notify listeners of the changed value
+        for (Entry<String, String> entry : modifiedConf.entrySet()) {
+          String key = entry.getKey();
+          // curr value becomes old and vice-versa
+          String currVal = entry.getValue();
+          String oldVal = conf.get(key);
+          if (!Objects.equals(oldVal, currVal)) {
+            notifyMetaListeners(key, oldVal, currVal);
+          }
+        }
+        logInfo("Meta listeners shutdown notification completed.");
+      } catch (MetaException e) {
+        LOG.error("Failed to notify meta listeners on shutdown: ", e);
+      }
+    }
 
     public static void setThreadLocalIpAddress(String ipAddress) {
       threadLocalIpAddress.set(ipAddress);
@@ -513,6 +575,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return threadLocalId.get() + ": " + s;
     }
 
+    /**
+     * Set copy of invoking HMSHandler on thread local
+     */
+    private static void setHMSHandler(HMSHandler handler) {
+      if (threadLocalHMSHandler.get() == null) {
+        threadLocalHMSHandler.set(handler);
+      }
+    }
     @Override
     public void setConf(Configuration conf) {
       threadLocalConf.set(conf);
@@ -532,6 +602,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return conf;
     }
 
+    private Map<String, String> getModifiedConf() {
+      Map<String, String> modifiedConf = threadLocalModifiedConfig.get();
+      if (modifiedConf == null) {
+        modifiedConf = new HashMap<String, String>();
+        threadLocalModifiedConfig.set(modifiedConf);
+      }
+      return modifiedConf;
+    }
+
     public Warehouse getWh() {
       return wh;
     }
@@ -549,20 +628,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       Configuration configuration = getConf();
       String oldValue = configuration.get(key);
+      // Save prev val of the key on threadLocal
+      Map<String, String> modifiedConf = getModifiedConf();
+      if (!modifiedConf.containsKey(key)) {
+        modifiedConf.put(key, oldValue);
+      }
+      // Set invoking HMSHandler on threadLocal, this will be used later to notify
+      // metaListeners in HiveMetaStore#cleanupRawStore
+      setHMSHandler(this);
       configuration.set(key, value);
-
-      for (MetaStoreEventListener listener : listeners) {
-        listener.onConfigChange(new ConfigChangeEvent(this, key, oldValue, value));
-      }
-
-      if (transactionalListeners.size() > 0) {
-        // All the fields of this event are final, so no reason to create a new one for each
-        // listener
-        ConfigChangeEvent cce = new ConfigChangeEvent(this, key, oldValue, value);
-        for (MetaStoreEventListener transactionalListener : transactionalListeners) {
-          transactionalListener.onConfigChange(cce);
-        }
-      }
+      notifyMetaListeners(key, oldValue, value);
     }
 
     @Override
@@ -908,7 +983,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                 EventType.CREATE_DATABASE,
                                                 new CreateDatabaseEvent(db, success, this),
                                                 null,
-                                                transactionalListenersResponses);
+                                                transactionalListenersResponses, ms);
         }
       }
     }
@@ -1140,7 +1215,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                 EventType.DROP_DATABASE,
                                                 new DropDatabaseEvent(db, success, this),
                                                 null,
-                                                transactionalListenerResponses);
+                                                transactionalListenerResponses, ms);
         }
       }
     }
@@ -1367,8 +1442,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private void create_table_core(final RawStore ms, final Table tbl,
+        final EnvironmentContext envContext)
+            throws AlreadyExistsException, MetaException,
+            InvalidObjectException, NoSuchObjectException {
+      create_table_core(ms, tbl, envContext, null, null, null, null);
+    }
+
+    private void create_table_core(final RawStore ms, final Table tbl,
         final EnvironmentContext envContext, List<SQLPrimaryKey> primaryKeys,
-        List<SQLForeignKey> foreignKeys)
+        List<SQLForeignKey> foreignKeys, List<SQLUniqueConstraint> uniqueConstraints,
+        List<SQLNotNullConstraint> notNullConstraints)
         throws AlreadyExistsException, MetaException,
         InvalidObjectException, NoSuchObjectException {
       if (!MetaStoreUtils.validateName(tbl.getTableName(), hiveConf)) {
@@ -1453,10 +1536,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             tbl.getParameters().get(hive_metastoreConstants.DDL_TIME) == null) {
           tbl.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
         }
-        if (primaryKeys == null && foreignKeys == null) {
+        if (primaryKeys == null && foreignKeys == null
+                && uniqueConstraints == null && notNullConstraints == null) {
           ms.createTable(tbl);
         } else {
-          ms.createTableWithConstraints(tbl, primaryKeys, foreignKeys);
+          ms.createTableWithConstraints(tbl, primaryKeys, foreignKeys,
+              uniqueConstraints, notNullConstraints);
         }
 
         if (!transactionalListeners.isEmpty()) {
@@ -1481,7 +1566,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                 EventType.CREATE_TABLE,
                                                 new CreateTableEvent(tbl, success, this),
                                                 envContext,
-                                                transactionalListenerResponses);
+                                                transactionalListenerResponses, ms);
         }
       }
     }
@@ -1500,7 +1585,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean success = false;
       Exception ex = null;
       try {
-        create_table_core(getMS(), tbl, envContext, null, null);
+        create_table_core(getMS(), tbl, envContext);
         success = true;
       } catch (NoSuchObjectException e) {
         ex = e;
@@ -1523,13 +1608,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public void create_table_with_constraints(final Table tbl,
-        final List<SQLPrimaryKey> primaryKeys, final List<SQLForeignKey> foreignKeys)
+        final List<SQLPrimaryKey> primaryKeys, final List<SQLForeignKey> foreignKeys,
+        List<SQLUniqueConstraint> uniqueConstraints,
+        List<SQLNotNullConstraint> notNullConstraints)
         throws AlreadyExistsException, MetaException, InvalidObjectException {
       startFunction("create_table", ": " + tbl.toString());
       boolean success = false;
       Exception ex = null;
       try {
-        create_table_core(getMS(), tbl, null, primaryKeys, foreignKeys);
+        create_table_core(getMS(), tbl, null, primaryKeys, foreignKeys,
+            uniqueConstraints, notNullConstraints);
         success = true;
       } catch (NoSuchObjectException e) {
         ex = e;
@@ -1631,6 +1719,58 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @Override
+    public void add_unique_constraint(AddUniqueConstraintRequest req)
+      throws MetaException, InvalidObjectException {
+      List<SQLUniqueConstraint> uniqueConstraintCols = req.getUniqueConstraintCols();
+      String constraintName = (uniqueConstraintCols != null && uniqueConstraintCols.size() > 0) ?
+              uniqueConstraintCols.get(0).getUk_name() : "null";
+      startFunction("add_unique_constraint", ": " + constraintName);
+      boolean success = false;
+      Exception ex = null;
+      try {
+        getMS().addUniqueConstraints(uniqueConstraintCols);
+        success = true;
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else if (e instanceof InvalidObjectException) {
+          throw (InvalidObjectException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("add_unique_constraint", success, ex, constraintName);
+      }
+    }
+
+    @Override
+    public void add_not_null_constraint(AddNotNullConstraintRequest req)
+      throws MetaException, InvalidObjectException {
+      List<SQLNotNullConstraint> notNullConstraintCols = req.getNotNullConstraintCols();
+      String constraintName = (notNullConstraintCols != null && notNullConstraintCols.size() > 0) ?
+              notNullConstraintCols.get(0).getNn_name() : "null";
+      startFunction("add_not_null_constraint", ": " + constraintName);
+      boolean success = false;
+      Exception ex = null;
+      try {
+        getMS().addNotNullConstraints(notNullConstraintCols);
+        success = true;
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else if (e instanceof InvalidObjectException) {
+          throw (InvalidObjectException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("add_not_null_constraint", success, ex, constraintName);
+      }
+    }
+
     private boolean is_table_exists(RawStore ms, String dbname, String name)
         throws MetaException {
       return (ms.getTable(dbname, name) != null);
@@ -1725,7 +1865,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                 EventType.DROP_TABLE,
                                                 new DropTableEvent(tbl, deleteData, success, this),
                                                 envContext,
-                                                transactionalListenerResponses);
+                                                transactionalListenerResponses, ms);
         }
       }
       return success;
@@ -1998,6 +2138,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
       return locations;
+    }
+
+    @Override
+    public CmRecycleResponse cm_recycle(final CmRecycleRequest request) throws MetaException {
+      wh.recycleDirToCmPath(new Path(request.getDataPath()), request.isPurge());
+      return new CmRecycleResponse();
     }
 
     @Override
@@ -2374,7 +2520,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                 EventType.ADD_PARTITION,
                                                 new AddPartitionEvent(tbl, part, success, this),
                                                 envContext,
-                                                transactionalListenerResponses);
+                                                transactionalListenerResponses, ms);
         }
       }
       return part;
@@ -2629,7 +2775,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners,
                                                   EventType.ADD_PARTITION,
-                                                  new AddPartitionEvent(tbl, parts, false, this));
+                                                  new AddPartitionEvent(tbl, parts, false, this),
+                                                  null, null, ms);
           }
         } else {
           if (!listeners.isEmpty()) {
@@ -2637,13 +2784,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                   EventType.ADD_PARTITION,
                                                   new AddPartitionEvent(tbl, newParts, true, this),
                                                   null,
-                                                  transactionalListenerResponses);
+                                                  transactionalListenerResponses, ms);
 
             if (!existingParts.isEmpty()) {
               // The request has succeeded but we failed to add these partitions.
               MetaStoreListenerNotifier.notifyEvent(listeners,
                                                     EventType.ADD_PARTITION,
-                                                    new AddPartitionEvent(tbl, existingParts, false, this));
+                                                    new AddPartitionEvent(tbl, existingParts, false, this),
+                                                    null, null, ms);
             }
           }
         }
@@ -2831,7 +2979,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                 EventType.ADD_PARTITION,
                                                 new AddPartitionEvent(tbl, partitionSpecProxy, true, this),
                                                 null,
-                                                transactionalListenerResponses);
+                                                transactionalListenerResponses, ms);
         }
       }
     }
@@ -2985,7 +3133,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                 EventType.ADD_PARTITION,
                                                 new AddPartitionEvent(tbl, Arrays.asList(part), success, this),
                                                 envContext,
-                                                transactionalListenerResponses);
+                                                transactionalListenerResponses, ms);
 
         }
       }
@@ -3102,7 +3250,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
          * TODO: Use the hard link feature of hdfs
          * once https://issues.apache.org/jira/browse/HDFS-3370 is done
          */
-        pathCreated = wh.renameDir(sourcePath, destPath);
+        pathCreated = wh.renameDir(sourcePath, destPath, false);
 
         // Setting success to false to make sure that if the listener fails, rollback happens.
         success = false;
@@ -3129,7 +3277,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success || !pathCreated) {
           ms.rollbackTransaction();
           if (pathCreated) {
-            wh.renameDir(destPath, sourcePath);
+            wh.renameDir(destPath, sourcePath, false);
           }
         }
 
@@ -3139,7 +3287,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                 EventType.ADD_PARTITION,
                                                 addPartitionEvent,
                                                 null,
-                                                transactionalListenerResponsesForAddPartition);
+                                                transactionalListenerResponsesForAddPartition, ms);
 
           i = 0;
           for (Partition partition : partitionsToExchange) {
@@ -3154,7 +3302,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                   EventType.DROP_PARTITION,
                                                   dropPartitionEvent,
                                                   null,
-                                                  parameters);
+                                                  parameters, ms);
             i++;
           }
         }
@@ -3241,7 +3389,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                 EventType.DROP_PARTITION,
                                                 new DropPartitionEvent(tbl, part, success, deleteData, this),
                                                 envContext,
-                                                transactionalListenerResponses);
+                                                transactionalListenerResponses, ms);
         }
       }
       return true;
@@ -3434,7 +3582,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                     EventType.DROP_PARTITION,
                                                     new DropPartitionEvent(tbl, part, success, deleteData, this),
                                                     envContext,
-                                                    parameters);
+                                                    parameters, ms);
 
               i++;
             }
@@ -4026,7 +4174,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                 EventType.ALTER_INDEX,
                                                 new AlterIndexEvent(oldIndex, newIndex, success, this),
                                                 null,
-                                                transactionalListenerResponses);
+                                                transactionalListenerResponses, ms);
         }
       }
     }
@@ -4635,7 +4783,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public Index add_index(final Index newIndex, final Table indexTable)
         throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
-      startFunction("add_index", ": " + newIndex.toString() + " " + indexTable.toString());
+      String tableName = indexTable != null ? indexTable.getTableName() : "";
+      startFunction("add_index", ": " + newIndex.toString() + " " + tableName);
       Index ret = null;
       Exception ex = null;
       try {
@@ -4654,7 +4803,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw newMetaException(e);
         }
       } finally {
-        String tableName = indexTable != null ? indexTable.getTableName() : null;
         endFunction("add_index", ret != null, ex, tableName);
       }
       return ret;
@@ -4729,7 +4877,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                 EventType.CREATE_INDEX,
                                                 new AddIndexEvent(index, success, this),
                                                 null,
-                                                transactionalListenerResponses);
+                                                transactionalListenerResponses, ms);
         }
       }
     }
@@ -4822,7 +4970,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                 EventType.DROP_INDEX,
                                                 new DropIndexEvent(index, success, this),
                                                 null,
-                                                transactionalListenerResponses);
+                                                transactionalListenerResponses, ms);
         }
       }
       return success;
@@ -6293,7 +6441,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                 EventType.CREATE_FUNCTION,
                                                 new CreateFunctionEvent(func, success, this),
                                                 null,
-                                                transactionalListenerResponses);
+                                                transactionalListenerResponses, ms);
         }
       }
     }
@@ -6312,7 +6460,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (func == null) {
           throw new NoSuchObjectException("Function " + funcName + " does not exist");
         }
+        // if copy of jar to change management fails we fail the metastore transaction, since the
+        // user might delete the jars on HDFS externally after dropping the function, hence having
+        // a copy is required to allow incremental replication to work correctly.
+        if (func.getResourceUris() != null && !func.getResourceUris().isEmpty()) {
+          for (ResourceUri uri : func.getResourceUris()) {
+            if (uri.getUri().toLowerCase().startsWith("hdfs:")) {
+              wh.addToChangeManagement(new Path(uri.getUri()));
+            }
+          }
+        }
 
+        // if the operation on metastore fails, we don't do anything in change management, but fail
+        // the metastore transaction, as having a copy of the jar in change management is not going
+        // to cause any problem, the cleaner thread will remove this when this jar expires.
         ms.dropFunction(dbName, funcName);
         if (transactionalListeners.size() > 0) {
           transactionalListenerResponses =
@@ -6320,7 +6481,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                     EventType.DROP_FUNCTION,
                                                     new DropFunctionEvent(func, true, this));
         }
-
         success = ms.commitTransaction();
       } finally {
         if (!success) {
@@ -6332,7 +6492,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                 EventType.DROP_FUNCTION,
                                                 new DropFunctionEvent(func, success, this),
                                                 null,
-                                                transactionalListenerResponses);
+                                                transactionalListenerResponses, ms);
         }
       }
     }
@@ -6972,6 +7132,56 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public UniqueConstraintsResponse get_unique_constraints(UniqueConstraintsRequest request)
+        throws MetaException, NoSuchObjectException, TException {
+      String db_name = request.getDb_name();
+      String tbl_name = request.getTbl_name();
+      startTableFunction("get_unique_constraints", db_name, tbl_name);
+      List<SQLUniqueConstraint> ret = null;
+      Exception ex = null;
+      try {
+        ret = getMS().getUniqueConstraints(db_name, tbl_name);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else if (e instanceof NoSuchObjectException) {
+          throw (NoSuchObjectException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("get_unique_constraints", ret != null, ex, tbl_name);
+      }
+      return new UniqueConstraintsResponse(ret);
+    }
+
+    @Override
+    public NotNullConstraintsResponse get_not_null_constraints(NotNullConstraintsRequest request)
+        throws MetaException, NoSuchObjectException, TException {
+      String db_name = request.getDb_name();
+      String tbl_name = request.getTbl_name();
+      startTableFunction("get_not_null_constraints", db_name, tbl_name);
+      List<SQLNotNullConstraint> ret = null;
+      Exception ex = null;
+      try {
+        ret = getMS().getNotNullConstraints(db_name, tbl_name);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else if (e instanceof NoSuchObjectException) {
+          throw (NoSuchObjectException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("get_not_null_constraints", ret != null, ex, tbl_name);
+      }
+      return new NotNullConstraintsResponse(ret);
+    }
+
+    @Override
     public String get_metastore_db_uuid() throws MetaException, TException {
       try {
         return getMS().getMetastoreDbUuid();
@@ -6981,7 +7191,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
   }
-
 
   public static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, HiveConf hiveConf)
       throws MetaException {
@@ -7377,15 +7586,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
   private static void cleanupRawStore() {
-    RawStore rs = HMSHandler.getRawStore();
-    if (rs != null) {
-      HMSHandler.logInfo("Cleaning up thread local RawStore...");
-      try {
+    try {
+      RawStore rs = HMSHandler.getRawStore();
+      if (rs != null) {
+        HMSHandler.logInfo("Cleaning up thread local RawStore...");
         rs.shutdown();
-      } finally {
-        HMSHandler.threadLocalConf.remove();
-        HMSHandler.removeRawStore();
       }
+    } finally {
+      HMSHandler handler = HMSHandler.threadLocalHMSHandler.get();
+      if (handler != null) {
+        handler.notifyMetaListenersOnShutDown();
+      }
+      HMSHandler.threadLocalHMSHandler.remove();
+      HMSHandler.threadLocalConf.remove();
+      HMSHandler.threadLocalModifiedConfig.remove();
+      HMSHandler.removeRawStore();
       HMSHandler.logInfo("Done cleaning up thread local RawStore");
     }
   }

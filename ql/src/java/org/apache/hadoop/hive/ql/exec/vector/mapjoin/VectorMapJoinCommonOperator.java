@@ -33,6 +33,8 @@ import org.apache.hadoop.hive.ql.HashTableLoaderFactory;
 import org.apache.hadoop.hive.ql.exec.HashTableLoader;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorColumnMapping;
 import org.apache.hadoop.hive.ql.exec.vector.VectorColumnOutputMapping;
@@ -64,6 +66,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import com.google.common.base.Preconditions;
 
@@ -280,7 +284,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
     outputProjection = projectionMapping.getOutputColumns();
     outputTypeInfos = projectionMapping.getTypeInfos();
 
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       int[] orderDisplayable = new int[order.length];
       for (int i = 0; i < order.length; i++) {
         orderDisplayable[i] = (int) order[i];
@@ -338,7 +342,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
    * columns and new scratch columns.
    */
   protected void setupVOutContext(List<String> outputColumnNames) {
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor outputColumnNames " + outputColumnNames);
     }
     if (outputColumnNames.size() != outputProjection.length) {
@@ -350,7 +354,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
       int outputColumn = outputProjection[i];
       vOutContext.addProjectionColumn(columnName, outputColumn);
 
-      if (isLogDebugEnabled) {
+      if (LOG.isDebugEnabled()) {
         LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor addProjectionColumn " + i + " columnName " + columnName + " outputColumn " + outputColumn);
       }
     }
@@ -362,9 +366,9 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   @Override
   protected HashTableLoader getHashTableLoader(Configuration hconf) {
     VectorMapJoinDesc vectorDesc = (VectorMapJoinDesc) conf.getVectorDesc();
-    HashTableImplementationType hashTableImplementationType = vectorDesc.hashTableImplementationType();
+    HashTableImplementationType hashTableImplementationType = vectorDesc.getHashTableImplementationType();
     HashTableLoader hashTableLoader;
-    switch (vectorDesc.hashTableImplementationType()) {
+    switch (vectorDesc.getHashTableImplementationType()) {
     case OPTIMIZED:
       // Use the Tez hash table loader.
       hashTableLoader = HashTableLoaderFactory.getLoader(hconf);
@@ -423,7 +427,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
     needCommonSetup = true;
     needHashTableSetup = true;
 
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       int[] currentScratchColumns = vOutContext.currentScratchColumns();
       LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator initializeOp currentScratchColumns " + Arrays.toString(currentScratchColumns));
 
@@ -442,9 +446,32 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
     // setup mapJoinTables and serdes
     super.completeInitializationOp(os);
 
+    if (isTestingNoHashTableLoad) {
+      return;
+    }
+
+    MapJoinTableContainer mapJoinTableContainer =
+        mapJoinTables[posSingleVectorMapJoinSmallTable];
+
+    setUpHashTable();
+  }
+
+  @VisibleForTesting
+  @Override
+  public void setTestMapJoinTableContainer(int posSmallTable,
+      MapJoinTableContainer testMapJoinTableContainer,
+      MapJoinTableContainerSerDe mapJoinTableContainerSerDe) {
+
+    mapJoinTables[posSingleVectorMapJoinSmallTable] = testMapJoinTableContainer;
+
+    setUpHashTable();
+  }
+
+  private void setUpHashTable() {
+
     VectorMapJoinDesc vectorDesc = (VectorMapJoinDesc) conf.getVectorDesc();
-    HashTableImplementationType hashTableImplementationType = vectorDesc.hashTableImplementationType();
-    switch (vectorDesc.hashTableImplementationType()) {
+    HashTableImplementationType hashTableImplementationType = vectorDesc.getHashTableImplementationType();
+    switch (vectorDesc.getHashTableImplementationType()) {
     case OPTIMIZED:
       {
         // Create our vector map join optimized hash table variation *above* the
@@ -515,7 +542,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
       overflowBatch.cols[outputColumn] = VectorizedBatchUtil.createColumnVector(typeInfo);
 
-      if (isLogDebugEnabled) {
+      if (LOG.isDebugEnabled()) {
         LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator initializeOp overflowBatch outputColumn " + outputColumn + " class " + overflowBatch.cols[outputColumn].getClass().getSimpleName());
       }
     }
@@ -526,7 +553,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
    */
   protected void commonSetup(VectorizedRowBatch batch) throws HiveException {
 
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("VectorMapJoinInnerCommonOperator commonSetup begin...");
       displayBatchColumns(batch, "batch");
       displayBatchColumns(overflowBatch, "overflowBatch");

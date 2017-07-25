@@ -43,6 +43,8 @@ import java.util.regex.Pattern;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Maps;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,7 +129,7 @@ public class MetaStoreUtils {
     serdeInfo.getParameters().put(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT,
         DEFAULT_SERIALIZATION_FORMAT);
 
-    List<FieldSchema> fields = new ArrayList<FieldSchema>();
+    List<FieldSchema> fields = new ArrayList<FieldSchema>(columns.size());
     sd.setCols(fields);
     for (String col : columns) {
       FieldSchema field = new FieldSchema(col,
@@ -552,12 +554,9 @@ public class MetaStoreUtils {
    */
   public static List<String> getPvals(List<FieldSchema> partCols,
       Map<String, String> partSpec) {
-    List<String> pvals = new ArrayList<String>();
+    List<String> pvals = new ArrayList<String>(partCols.size());
     for (FieldSchema field : partCols) {
-      String val = partSpec.get(field.getName());
-      if (val == null) {
-        val = "";
-      }
+      String val = StringUtils.defaultString(partSpec.get(field.getName()));
       pvals.add(val);
     }
     return pvals;
@@ -574,7 +573,6 @@ public class MetaStoreUtils {
    * @param conf
    *          hive configuration
    * @return true or false depending on conformance
-   * @exception MetaException
    *              if it doesn't match the pattern.
    */
   static public boolean validateName(String name, Configuration conf) {
@@ -589,10 +587,7 @@ public class MetaStoreUtils {
     }
     tpat = Pattern.compile("[" + allowedCharacters + "]+");
     Matcher m = tpat.matcher(name);
-    if (m.matches()) {
-      return true;
-    }
-    return false;
+    return m.matches();
   }
 
   /*
@@ -636,28 +631,25 @@ public class MetaStoreUtils {
   }
 
   static boolean areSameColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
-    if (oldCols.size() != newCols.size()) {
-      return false;
-    } else {
-      for (int i = 0; i < oldCols.size(); i++) {
-        FieldSchema oldCol = oldCols.get(i);
-        FieldSchema newCol = newCols.get(i);
-        if(!oldCol.equals(newCol)) {
-          return false;
-        }
-      }
-    }
-    return true;
+    return ListUtils.isEqualList(oldCols, newCols);
   }
 
-  static boolean columnsIncluded(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
+  /*
+   * This method is to check if the new column list includes all the old columns with same name and
+   * type. The column comment does not count.
+   */
+  static boolean columnsIncludedByNameType(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     if (oldCols.size() > newCols.size()) {
       return false;
     }
 
-    Set<FieldSchema> newColsSet = new HashSet<FieldSchema>(newCols);
+    Map<String, String> columnNameTypePairMap = new HashMap<String, String>(newCols.size());
+    for (FieldSchema newCol : newCols) {
+      columnNameTypePairMap.put(newCol.getName().toLowerCase(), newCol.getType());
+    }
     for (final FieldSchema oldCol : oldCols) {
-      if (!newColsSet.contains(oldCol)) {
+      if (!columnNameTypePairMap.containsKey(oldCol.getName())
+          || !columnNameTypePairMap.get(oldCol.getName()).equalsIgnoreCase(oldCol.getType())) {
         return false;
       }
     }
@@ -690,7 +682,7 @@ public class MetaStoreUtils {
    * validate column type
    *
    * if it is predefined, yes. otherwise no
-   * @param name
+   * @param type
    * @return
    */
   static public String validateColumnType(String type) {
@@ -716,7 +708,7 @@ public class MetaStoreUtils {
   }
 
   public static String validateSkewedColNames(List<String> cols) {
-    if (null == cols) {
+    if (CollectionUtils.isEmpty(cols)) {
       return null;
     }
     for (String col : cols) {
@@ -729,10 +721,10 @@ public class MetaStoreUtils {
 
   public static String validateSkewedColNamesSubsetCol(List<String> skewedColNames,
       List<FieldSchema> cols) {
-    if (null == skewedColNames) {
+    if (CollectionUtils.isEmpty(skewedColNames)) {
       return null;
     }
-    List<String> colNames = new ArrayList<String>();
+    List<String> colNames = new ArrayList<String>(cols.size());
     for (FieldSchema fieldSchema : cols) {
       colNames.add(fieldSchema.getName());
     }
@@ -848,7 +840,7 @@ public class MetaStoreUtils {
    * @return String containing "Thrift
    *         DDL#comma-separated-column-names#colon-separated-columntypes
    *         Example:
-   *         "struct result { a string, map<int,string> b}#a,b#string:map<int,string>"
+   *         "struct result { a string, map&lt;int,string&gt; b}#a,b#string:map&lt;int,string&gt;"
    */
   public static String getFullDDLFromFieldSchema(String structName,
       List<FieldSchema> fieldSchemas) {
@@ -896,7 +888,7 @@ public class MetaStoreUtils {
     }
     ddl.append("}");
 
-    LOG.debug("DDL: " + ddl);
+    LOG.trace("DDL: {}", ddl);
     return ddl.toString();
   }
 
@@ -1012,7 +1004,7 @@ public class MetaStoreUtils {
             (key.equals(cols) || key.equals(colTypes) || key.equals(parts))) {
           continue;
         }
-        schema.put(key, (param.getValue() != null) ? param.getValue() : "");
+        schema.put(key, (param.getValue() != null) ? param.getValue() : StringUtils.EMPTY);
       }
 
       if (sd.getSerdeInfo().getSerializationLib() != null) {
@@ -1049,7 +1041,7 @@ public class MetaStoreUtils {
       }
       colNameBuf.append(col.getName());
       colTypeBuf.append(col.getType());
-      colComment.append((null != col.getComment()) ? col.getComment() : "");
+      colComment.append((null != col.getComment()) ? col.getComment() : StringUtils.EMPTY);
       first = false;
     }
     schema.setProperty(
@@ -1107,7 +1099,7 @@ public class MetaStoreUtils {
     }
     if (sd.getSerdeInfo() != null) {
       for (Map.Entry<String,String> param : sd.getSerdeInfo().getParameters().entrySet()) {
-        schema.put(param.getKey(), (param.getValue() != null) ? param.getValue() : "");
+        schema.put(param.getKey(), (param.getValue() != null) ? param.getValue() : StringUtils.EMPTY);
       }
 
       if (sd.getSerdeInfo().getSerializationLib() != null) {
@@ -1123,10 +1115,10 @@ public class MetaStoreUtils {
           getDDLFromFieldSchema(tableName, sd.getCols()));
     }
 
-    String partString = "";
-    String partStringSep = "";
-    String partTypesString = "";
-    String partTypesStringSep = "";
+    String partString = StringUtils.EMPTY;
+    String partStringSep = StringUtils.EMPTY;
+    String partTypesString = StringUtils.EMPTY;
+    String partTypesStringSep = StringUtils.EMPTY;
     for (FieldSchema partKey : partitionKeys) {
       partString = partString.concat(partStringSep);
       partString = partString.concat(partKey.getName());
@@ -1169,6 +1161,15 @@ public class MetaStoreUtils {
     return addCols(getSchemaWithoutCols(sd, tblsd, parameters, databaseName, tableName, partitionKeys), tblsd.getCols());
   }
 
+  public static List<String> getColumnNamesForTable(Table table) {
+    List<String> colNames = new ArrayList<String>();
+    Iterator<FieldSchema> colsIterator = table.getSd().getColsIterator();
+    while (colsIterator.hasNext()) {
+      colNames.add(colsIterator.next().getName());
+    }
+    return colNames;
+  }
+
   public static String getColumnNameDelimiter(List<FieldSchema> fieldSchemas) {
     // we first take a look if any fieldSchemas contain COMMA
     for (int i = 0; i < fieldSchemas.size(); i++) {
@@ -1178,7 +1179,7 @@ public class MetaStoreUtils {
     }
     return String.valueOf(SerDeUtils.COMMA);
   }
-  
+
   /**
    * Convert FieldSchemas to columnNames.
    */
@@ -1232,6 +1233,97 @@ public class MetaStoreUtils {
     }
   }
 
+<<<<<<< HEAD:metastore-client/src/main/java/org/apache/hadoop/hive/metastore/MetaStoreUtils.java
+=======
+  public static int startMetaStore() throws Exception {
+    return startMetaStore(ShimLoader.getHadoopThriftAuthBridge(), null);
+  }
+
+  public static int startMetaStore(final HadoopThriftAuthBridge bridge, HiveConf conf) throws Exception {
+    int port = findFreePort();
+    startMetaStore(port, bridge, conf);
+    return port;
+  }
+
+  public static int startMetaStore(HiveConf conf) throws Exception {
+    return startMetaStore(ShimLoader.getHadoopThriftAuthBridge(), conf);
+  }
+
+  public static void startMetaStore(final int port, final HadoopThriftAuthBridge bridge) throws Exception {
+    startMetaStore(port, bridge, null);
+  }
+
+  public static void startMetaStore(final int port,
+      final HadoopThriftAuthBridge bridge, HiveConf hiveConf)
+      throws Exception{
+    if (hiveConf == null) {
+      hiveConf = new HiveConf(HMSHandler.class);
+    }
+    final HiveConf finalHiveConf = hiveConf;
+    Thread thread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          HiveMetaStore.startMetaStore(port, bridge, finalHiveConf);
+        } catch (Throwable e) {
+          LOG.error("Metastore Thrift Server threw an exception...",e);
+        }
+      }
+    });
+    thread.setDaemon(true);
+    thread.start();
+    loopUntilHMSReady(port);
+  }
+
+  /**
+   * A simple connect test to make sure that the metastore is up
+   * @throws Exception
+   */
+  private static void loopUntilHMSReady(int port) throws Exception {
+    int retries = 0;
+    Exception exc = null;
+    while (true) {
+      try {
+        Socket socket = new Socket();
+        socket.connect(new InetSocketAddress(port), 5000);
+        socket.close();
+        return;
+      } catch (Exception e) {
+        if (retries++ > 60) { //give up
+          exc = e;
+          break;
+        }
+        Thread.sleep(1000);
+      }
+    }
+    // something is preventing metastore from starting
+    // print the stack from all threads for debugging purposes
+    LOG.error("Unable to connect to metastore server: " + exc.getMessage());
+    LOG.info("Printing all thread stack traces for debugging before throwing exception.");
+    LOG.info(getAllThreadStacksAsString());
+    throw exc;
+  }
+
+  private static String getAllThreadStacksAsString() {
+    Map<Thread, StackTraceElement[]> threadStacks = Thread.getAllStackTraces();
+    StringBuilder sb = new StringBuilder();
+    for (Map.Entry<Thread, StackTraceElement[]> entry : threadStacks.entrySet()) {
+      Thread t = entry.getKey();
+      sb.append(System.lineSeparator());
+      sb.append("Name: ").append(t.getName()).append(" State: ").append(t.getState());
+      addStackString(entry.getValue(), sb);
+    }
+    return sb.toString();
+  }
+
+  private static void addStackString(StackTraceElement[] stackElems, StringBuilder sb) {
+    sb.append(System.lineSeparator());
+    for (StackTraceElement stackElem : stackElems) {
+      sb.append(stackElem).append(System.lineSeparator());
+    }
+  }
+
+>>>>>>> asf/master:metastore/src/java/org/apache/hadoop/hive/metastore/MetaStoreUtils.java
   /**
    * Finds a free port on the machine.
    *
@@ -1404,11 +1496,7 @@ public class MetaStoreUtils {
   public static boolean isArchived(
       org.apache.hadoop.hive.metastore.api.Partition part) {
     Map<String, String> params = part.getParameters();
-    if ("true".equalsIgnoreCase(params.get(hive_metastoreConstants.IS_ARCHIVED))) {
-      return true;
-    } else {
-      return false;
-    }
+    return "TRUE".equalsIgnoreCase(params.get(hive_metastoreConstants.IS_ARCHIVED));
   }
 
   public static Path getOriginalLocation(
@@ -1537,10 +1625,9 @@ public class MetaStoreUtils {
    */
   static <T> List<T> getMetaStoreListeners(Class<T> clazz,
       HiveConf conf, String listenerImplList) throws MetaException {
-
     List<T> listeners = new ArrayList<T>();
-    listenerImplList = listenerImplList.trim();
-    if (listenerImplList.equals("")) {
+
+    if (StringUtils.isBlank(listenerImplList)) {
       return listeners;
     }
 
@@ -1634,23 +1721,15 @@ public class MetaStoreUtils {
     if (schema1.size() != schema2.size()) {
       return false;
     }
-    for (int i = 0; i < schema1.size(); i++) {
-      FieldSchema f1 = schema1.get(i);
-      FieldSchema f2 = schema2.get(i);
+    Iterator<FieldSchema> its1 = schema1.iterator();
+    Iterator<FieldSchema> its2 = schema2.iterator();
+    while (its1.hasNext()) {
+      FieldSchema f1 = its1.next();
+      FieldSchema f2 = its2.next();
       // The default equals provided by thrift compares the comments too for
       // equality, thus we need to compare the relevant fields here.
-      if (f1.getName() == null) {
-        if (f2.getName() != null) {
-          return false;
-        }
-      } else if (!f1.getName().equals(f2.getName())) {
-        return false;
-      }
-      if (f1.getType() == null) {
-        if (f2.getType() != null) {
-          return false;
-        }
-      } else if (!f1.getType().equals(f2.getType())) {
+      if (!StringUtils.equals(f1.getName(), f2.getName()) ||
+          !StringUtils.equals(f1.getType(), f2.getType())) {
         return false;
       }
     }
@@ -1691,9 +1770,9 @@ public class MetaStoreUtils {
     String lv = part.getParameters().get(ARCHIVING_LEVEL);
     if (lv != null) {
       return Integer.parseInt(lv);
-    } else {  // partitions archived before introducing multiple archiving
-      return part.getValues().size();
     }
+     // partitions archived before introducing multiple archiving
+    return part.getValues().size();
   }
 
   public static String[] getQualifiedName(String defaultDbName, String tableName) {
@@ -1701,7 +1780,7 @@ public class MetaStoreUtils {
     if (names.length == 1) {
       return new String[] { defaultDbName, tableName};
     }
-    return new String[] {names[0], names[1]};
+    return names;
   }
 
   /**
@@ -1711,11 +1790,7 @@ public class MetaStoreUtils {
       = new com.google.common.base.Function<String, String>() {
     @Override
     public java.lang.String apply(@Nullable java.lang.String string) {
-      if (string == null){
-        return "";
-      } else {
-        return string;
-      }
+      return StringUtils.defaultString(string);
     }
   };
 
@@ -1753,7 +1828,7 @@ public class MetaStoreUtils {
   private static URL urlFromPathString(String onestr) {
     URL oneurl = null;
     try {
-      if (StringUtils.indexOf(onestr, "file:/") == 0) {
+      if (onestr.startsWith("file:/")) {
         oneurl = new URL(onestr);
       } else {
         oneurl = new File(onestr).toURL();
@@ -1773,7 +1848,7 @@ public class MetaStoreUtils {
   public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) throws Exception {
     URLClassLoader loader = (URLClassLoader) cloader;
     List<URL> curPath = Arrays.asList(loader.getURLs());
-    ArrayList<URL> newPath = new ArrayList<URL>();
+    ArrayList<URL> newPath = new ArrayList<URL>(curPath.size());
 
     // get a list with the current classpath components
     for (URL onePath : curPath) {
@@ -1796,15 +1871,15 @@ public class MetaStoreUtils {
     // all the special characters with the corresponding number in ASCII.
     // Note that unicode is not supported in table names. And we have explicit
     // checks for it.
-    String ret = "";
+    StringBuilder sb = new StringBuilder();
     for (char ch : name.toCharArray()) {
       if (Character.isLetterOrDigit(ch) || ch == '_') {
-        ret += ch;
+        sb.append(ch);
       } else {
-        ret += "-" + (int) ch + "-";
+        sb.append('-').append((int) ch).append('-');
       }
     }
-    return ret;
+    return sb.toString();
   }
 
   // this function will merge csOld into csNew.
@@ -1817,8 +1892,8 @@ public class MetaStoreUtils {
       // present in both, overwrite stats for columns absent in metastore and
       // leave alone columns stats missing from stats task. This last case may
       // leave stats in stale state. This will be addressed later.
-      LOG.debug("New ColumnStats size is " + csNew.getStatsObj().size()
-          + ". But old ColumnStats size is " + csOld.getStatsObjSize());
+      LOG.debug("New ColumnStats size is {}, but old ColumnStats size is {}", 
+          csNew.getStatsObj().size(), csOld.getStatsObjSize());
     }
     // In this case, we have to find out which columns can be merged.
     Map<String, ColumnStatisticsObj> map = new HashMap<>();
@@ -1861,6 +1936,14 @@ public class MetaStoreUtils {
       metaException.initCause(e);
     }
     return metaException;
+  }
+  
+  public static List<String> getColumnNames(List<FieldSchema> schema) {
+    List<String> cols = new ArrayList<>(schema.size());
+    for (FieldSchema fs : schema) {
+      cols.add(fs.getName());
+    }
+    return cols;
   }
 
 }

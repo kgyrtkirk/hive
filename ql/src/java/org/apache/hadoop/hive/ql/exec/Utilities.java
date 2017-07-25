@@ -1205,7 +1205,7 @@ public final class Utilities {
    * Group 6: copy     [copy keyword]
    * Group 8: 2        [copy file index]
    */
-  private static final String COPY_KEYWORD = "_copy_"; // copy keyword
+  public static final String COPY_KEYWORD = "_copy_"; // copy keyword
   private static final Pattern COPY_FILE_NAME_TO_TASK_ID_REGEX =
       Pattern.compile("^.*?"+ // any prefix
                       "([0-9]+)"+ // taskId
@@ -2383,62 +2383,79 @@ public final class Utilities {
 
   public static List<TezTask> getTezTasks(List<Task<? extends Serializable>> tasks) {
     List<TezTask> tezTasks = new ArrayList<TezTask>();
+    Set<Task<? extends Serializable>> visited = new HashSet<Task<? extends Serializable>>();
     if (tasks != null) {
-      getTezTasks(tasks, tezTasks);
+      getTezTasks(tasks, tezTasks, visited);
     }
     return tezTasks;
   }
 
-  private static void getTezTasks(List<Task<? extends Serializable>> tasks, List<TezTask> tezTasks) {
+  private static void getTezTasks(List<Task<? extends Serializable>> tasks, List<TezTask> tezTasks,
+      Set<Task<? extends Serializable>> visited) {
     for (Task<? extends Serializable> task : tasks) {
+      if (visited.contains(task)) {
+        continue;
+      }
       if (task instanceof TezTask && !tezTasks.contains(task)) {
         tezTasks.add((TezTask) task);
       }
 
       if (task.getDependentTasks() != null) {
-        getTezTasks(task.getDependentTasks(), tezTasks);
+        getTezTasks(task.getDependentTasks(), tezTasks, visited);
       }
+      visited.add(task);
     }
   }
 
   public static List<SparkTask> getSparkTasks(List<Task<? extends Serializable>> tasks) {
     List<SparkTask> sparkTasks = new ArrayList<SparkTask>();
+    Set<Task<? extends Serializable>> visited = new HashSet<Task<? extends Serializable>>();
     if (tasks != null) {
-      getSparkTasks(tasks, sparkTasks);
+      getSparkTasks(tasks, sparkTasks, visited);
     }
     return sparkTasks;
   }
 
   private static void getSparkTasks(List<Task<? extends Serializable>> tasks,
-    List<SparkTask> sparkTasks) {
+    List<SparkTask> sparkTasks, Set<Task<? extends Serializable>> visited) {
     for (Task<? extends Serializable> task : tasks) {
+      if (visited.contains(task)) {
+        continue;
+      }
       if (task instanceof SparkTask && !sparkTasks.contains(task)) {
         sparkTasks.add((SparkTask) task);
       }
 
       if (task.getDependentTasks() != null) {
-        getSparkTasks(task.getDependentTasks(), sparkTasks);
+        getSparkTasks(task.getDependentTasks(), sparkTasks, visited);
       }
+      visited.add(task);
     }
   }
 
   public static List<ExecDriver> getMRTasks(List<Task<? extends Serializable>> tasks) {
     List<ExecDriver> mrTasks = new ArrayList<ExecDriver>();
+    Set<Task<? extends Serializable>> visited = new HashSet<Task<? extends Serializable>>();
     if (tasks != null) {
-      getMRTasks(tasks, mrTasks);
+      getMRTasks(tasks, mrTasks, visited);
     }
     return mrTasks;
   }
 
-  private static void getMRTasks(List<Task<? extends Serializable>> tasks, List<ExecDriver> mrTasks) {
+  private static void getMRTasks(List<Task<? extends Serializable>> tasks, List<ExecDriver> mrTasks,
+      Set<Task<? extends Serializable>> visited) {
     for (Task<? extends Serializable> task : tasks) {
+      if (visited.contains(task)) {
+        continue;
+      }
       if (task instanceof ExecDriver && !mrTasks.contains(task)) {
         mrTasks.add((ExecDriver) task);
       }
 
       if (task.getDependentTasks() != null) {
-        getMRTasks(task.getDependentTasks(), mrTasks);
+        getMRTasks(task.getDependentTasks(), mrTasks, visited);
       }
+      visited.add(task);
     }
   }
 
@@ -3110,22 +3127,30 @@ public final class Utilities {
     }
 
     List<Path> finalPathsToAdd = new LinkedList<>();
-    List<Future<Path>> futures = new LinkedList<>();
+    Map<GetInputPathsCallable, Future<Path>> getPathsCallableToFuture = new LinkedHashMap<>();
     for (final Path path : pathsToAdd) {
-      if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
+      if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT) {
         throw new IOException("Operation is Canceled. ");
+      }
       if (pool == null) {
-        finalPathsToAdd.add(new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy).call());
+        Path newPath = new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy).call();
+        updatePathForMapWork(newPath, work, path);
+        finalPathsToAdd.add(newPath);
       } else {
-        futures.add(pool.submit(new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy)));
+        GetInputPathsCallable callable = new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy);
+        getPathsCallableToFuture.put(callable, pool.submit(callable));
       }
     }
 
     if (pool != null) {
-      for (Future<Path> future : futures) {
-        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
+      for (Map.Entry<GetInputPathsCallable, Future<Path>> future : getPathsCallableToFuture.entrySet()) {
+        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT) {
           throw new IOException("Operation is Canceled. ");
-        finalPathsToAdd.add(future.get());
+        }
+
+        Path newPath = future.getValue().get();
+        updatePathForMapWork(newPath, work, future.getKey().path);
+        finalPathsToAdd.add(newPath);
       }
     }
 
@@ -3154,7 +3179,8 @@ public final class Utilities {
     @Override
     public Path call() throws Exception {
       if (!this.skipDummy && isEmptyPath(this.job, this.path, this.ctx)) {
-        return createDummyFileForEmptyPartition(this.path, this.job, this.work, this.hiveScratchDir);
+        return createDummyFileForEmptyPartition(this.path, this.job, this.work.getPathToPartitionInfo().get(this.path),
+                this.hiveScratchDir);
       }
       return this.path;
     }
@@ -3192,14 +3218,12 @@ public final class Utilities {
   }
 
   @SuppressWarnings("rawtypes")
-  private static Path createDummyFileForEmptyPartition(Path path, JobConf job, MapWork work,
-      Path hiveScratchDir)
-          throws Exception {
+  private static Path createDummyFileForEmptyPartition(Path path, JobConf job, PartitionDesc partDesc,
+                                                       Path hiveScratchDir) throws Exception {
 
     String strPath = path.toString();
 
     // The input file does not exist, replace it by a empty file
-    PartitionDesc partDesc = work.getPathToPartitionInfo().get(path);
     if (partDesc.getTableDesc().isNonNative()) {
       // if this isn't a hive table we can't create an empty file for it.
       return path;
@@ -3216,16 +3240,19 @@ public final class Utilities {
     if (LOG.isInfoEnabled()) {
       LOG.info("Changed input file " + strPath + " to empty file " + newPath + " (" + oneRow + ")");
     }
-
-    // update the work
-
-    work.addPathToAlias(newPath, work.getPathToAliases().get(path));
-    work.removePathToAlias(path);
-
-    work.removePathToPartitionInfo(path);
-    work.addPathToPartitionInfo(newPath, partDesc);
-
     return newPath;
+  }
+
+  private static void updatePathForMapWork(Path newPath, MapWork work, Path path) {
+    // update the work
+    if (!newPath.equals(path)) {
+      PartitionDesc partDesc = work.getPathToPartitionInfo().get(path);
+      work.addPathToAlias(newPath, work.getPathToAliases().get(path));
+      work.removePathToAlias(path);
+
+      work.removePathToPartitionInfo(path);
+      work.addPathToPartitionInfo(newPath, partDesc);
+    }
   }
 
   @SuppressWarnings("rawtypes")
@@ -3772,59 +3799,6 @@ public final class Utilities {
     StandardStructObjectInspector rowObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(colNames, ois);
 
     return rowObjectInspector;
-  }
-
-  /**
-   * Check if LLAP IO supports the column type that is being read
-   * @param conf - configuration
-   * @return false for types not supported by vectorization, true otherwise
-   */
-  public static boolean checkVectorizerSupportedTypes(final Configuration conf) {
-    final String[] readColumnNames = ColumnProjectionUtils.getReadColumnNames(conf);
-    final String columnNames = conf.get(serdeConstants.LIST_COLUMNS);
-    final String columnTypes = conf.get(serdeConstants.LIST_COLUMN_TYPES);
-    if (columnNames == null || columnTypes == null || columnNames.isEmpty() ||
-        columnTypes.isEmpty()) {
-      LOG.warn("Column names ({}) or types ({}) is null. Skipping type checking for LLAP IO.",
-          columnNames, columnTypes);
-      return true;
-    }
-    final List<String> allColumnNames = Lists.newArrayList(columnNames.split(","));
-    final List<TypeInfo> typeInfos = TypeInfoUtils.getTypeInfosFromTypeString(columnTypes);
-    final List<String> allColumnTypes = TypeInfoUtils.getTypeStringsFromTypeInfo(typeInfos);
-    return checkVectorizerSupportedTypes(Lists.newArrayList(readColumnNames), allColumnNames,
-        allColumnTypes);
-  }
-
-  /**
-   * Check if LLAP IO supports the column type that is being read
-   * @param readColumnNames - columns that will be read from the table/partition
-   * @param allColumnNames - all columns
-   * @param allColumnTypes - all column types
-   * @return false for types not supported by vectorization, true otherwise
-   */
-  public static boolean checkVectorizerSupportedTypes(final List<String> readColumnNames,
-      final List<String> allColumnNames, final List<String> allColumnTypes) {
-    final String[] readColumnTypes = getReadColumnTypes(readColumnNames, allColumnNames,
-        allColumnTypes);
-
-    if (readColumnTypes != null) {
-      for (String readColumnType : readColumnTypes) {
-        if (readColumnType != null) {
-          if (!Vectorizer.validateDataType(readColumnType,
-              VectorExpressionDescriptor.Mode.PROJECTION)) {
-            LOG.warn("Unsupported column type encountered ({}). Disabling LLAP IO.",
-                readColumnType);
-            return false;
-          }
-        }
-      }
-    } else {
-      LOG.warn("readColumnTypes is null. Skipping type checking for LLAP IO. " +
-          "readColumnNames: {} allColumnNames: {} allColumnTypes: {} readColumnTypes: {}",
-          readColumnNames, allColumnNames, allColumnTypes, readColumnTypes);
-    }
-    return true;
   }
 
   private static String[] getReadColumnTypes(final List<String> readColumnNames,

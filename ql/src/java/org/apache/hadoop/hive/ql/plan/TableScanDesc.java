@@ -102,6 +102,8 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   private boolean isAcidTable;
 
+  private boolean vectorized;
+
   private AcidUtils.AcidOperationalProperties acidOperationalProperties = null;
 
   private transient TableSample tableSample;
@@ -148,7 +150,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   @Explain(explainLevels = { Level.USER })
   public String getTbl() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(this.tableMetadata.getCompleteName());
     sb.append("," + alias);
     if (isAcidTable()) {
@@ -176,6 +178,9 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   @Explain(displayName = "filterExpr")
   public String getFilterExprString() {
+    if (filterExpr == null) {
+      return null;
+    }
     return PlanUtils.getExprListString(Arrays.asList(filterExpr));
   }
 
@@ -440,5 +445,13 @@ public class TableScanDesc extends AbstractOperatorDesc {
       return null;
     }
     return new TableScanOperatorExplainVectorization(this, vectorDesc);
+  }
+
+  public void setVectorized(boolean vectorized) {
+    this.vectorized = vectorized;
+  }
+
+  public boolean isVectorized() {
+    return vectorized;
   }
 }

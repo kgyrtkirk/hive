@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -48,13 +49,10 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConfUtil;
-import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
@@ -583,11 +581,21 @@ public final class FileUtils {
    * Copies files between filesystems.
    */
   public static boolean copy(FileSystem srcFS, Path src,
-    FileSystem dstFS, Path dst,
-    boolean deleteSource,
-    boolean overwrite,
-    HiveConf conf) throws IOException {
+      FileSystem dstFS, Path dst,
+      boolean deleteSource,
+      boolean overwrite,
+      HiveConf conf) throws IOException {
     return copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf, ShimLoader.getHadoopShims());
+  }
+
+  /**
+   * Copies files between filesystems as a fs super user using distcp, and runs
+   * as a privileged user.
+   */
+  public static boolean privilegedCopy(FileSystem srcFS, List<Path> srcPaths, Path dst,
+      HiveConf conf) throws IOException {
+    String privilegedUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
+    return distCp(srcFS, srcPaths, dst, false, privilegedUser, conf, ShimLoader.getHadoopShims());
   }
 
   @VisibleForTesting
@@ -612,14 +620,32 @@ public final class FileUtils {
                 HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES) + ")");
         LOG.info("Launch distributed copy (distcp) job.");
         triedDistcp = true;
-        copied = shims.runDistCp(src, dst, conf);
-        if (copied && deleteSource) {
-          srcFS.delete(src, true);
-        }
+        copied = distCp(srcFS, Collections.singletonList(src), dst, deleteSource, null, conf, shims);
       }
     }
     if (!triedDistcp) {
+      // Note : Currently, this implementation does not "fall back" to regular copy if distcp
+      // is tried and it fails. We depend upon that behaviour in cases like replication,
+      // wherein if distcp fails, there is good reason to not plod along with a trivial
+      // implementation, and fail instead.
       copied = FileUtil.copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf);
+    }
+    return copied;
+  }
+
+  public static boolean distCp(FileSystem srcFS, List<Path> srcPaths, Path dst,
+      boolean deleteSource, String doAsUser,
+      HiveConf conf, HadoopShims shims) throws IOException {
+    boolean copied = false;
+    if (doAsUser == null){
+      copied = shims.runDistCp(srcPaths, dst, conf);
+    } else {
+      copied = shims.runDistCpAs(srcPaths, dst, conf, doAsUser);
+    }
+    if (copied && deleteSource) {
+      for (Path path : srcPaths) {
+        srcFS.delete(path, true);
+      }
     }
     return copied;
   }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,6 +32,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsPermission;
+<<<<<<< HEAD:metastore-client/src/main/java/org/apache/hadoop/hive/metastore/ReplChangeManager.java
+=======
+import org.apache.hadoop.hdfs.DFSConfigKeys;
+import org.apache.hadoop.hive.common.FileUtils;
+>>>>>>> asf/master:metastore/src/java/org/apache/hadoop/hive/metastore/ReplChangeManager.java
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -52,9 +57,14 @@ public class ReplChangeManager {
   private String msGroup;
   private FileSystem fs;
 
-  public static final String ORIG_LOC_TAG = "user.original-loc";
-  public static final String REMAIN_IN_TRASH_TAG = "user.remain-in-trash";
-  public static final String URI_FRAGMENT_SEPARATOR = "#";
+  private static final String ORIG_LOC_TAG = "user.original-loc";
+  static final String REMAIN_IN_TRASH_TAG = "user.remain-in-trash";
+  private static final String URI_FRAGMENT_SEPARATOR = "#";
+
+  public enum RecycleType {
+    MOVE,
+    COPY
+  }
 
   public static ReplChangeManager getInstance(HiveConf hiveConf) throws MetaException {
     if (instance == null) {
@@ -63,7 +73,7 @@ public class ReplChangeManager {
     return instance;
   }
 
-  ReplChangeManager(HiveConf hiveConf) throws MetaException {
+  private ReplChangeManager(HiveConf hiveConf) throws MetaException {
     try {
       if (!inited) {
         if (hiveConf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
@@ -103,11 +113,14 @@ public class ReplChangeManager {
    * Move a path into cmroot. If the path is a directory (of a partition, or table if nonpartitioned),
    *   recursively move files inside directory to cmroot. Note the table must be managed table
    * @param path a single file or directory
-   * @param ifPurge if the file should skip Trash when delete
-   * @return
+   * @param type if the files to be copied or moved to cmpath.
+   *             Copy is costly but preserve the source file
+   * @param ifPurge if the file should skip Trash when move/delete source file.
+   *                This is referred only if type is MOVE.
+   * @return int
    * @throws MetaException
    */
-  public int recycle(Path path, boolean ifPurge) throws MetaException {
+  int recycle(Path path, RecycleType type, boolean ifPurge) throws MetaException {
     if (!enabled) {
       return 0;
     }
@@ -118,14 +131,11 @@ public class ReplChangeManager {
       if (fs.isDirectory(path)) {
         FileStatus[] files = fs.listStatus(path, hiddenFileFilter);
         for (FileStatus file : files) {
-          count += recycle(file.getPath(), ifPurge);
+          count += recycle(file.getPath(), type, ifPurge);
         }
       } else {
-        Path cmPath = getCMPath(path, hiveConf, getChksumString(path, fs));
-
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Moving " + path.toString() + " to " + cmPath.toString());
-        }
+        String fileCheckSum = checksumFor(path, fs);
+        Path cmPath = getCMPath(hiveConf, fileCheckSum);
 
         // set timestamp before moving to cmroot, so we can
         // avoid race condition CM remove the file before setting
@@ -133,17 +143,42 @@ public class ReplChangeManager {
         long now = System.currentTimeMillis();
         fs.setTimes(path, now, now);
 
-        boolean succ = fs.rename(path, cmPath);
+        boolean success = false;
+        if (fs.exists(cmPath) && fileCheckSum.equalsIgnoreCase(checksumFor(cmPath, fs))) {
+          // If already a file with same checksum exists in cmPath, just ignore the copy/move
+          // Also, mark the operation is unsuccessful to notify that file with same name already
+          // exist which will ensure the timestamp of cmPath is updated to avoid clean-up by
+          // CM cleaner.
+          success = false;
+        } else {
+          switch (type) {
+            case MOVE: {
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("Moving {} to {}", path.toString(), cmPath.toString());
+              }
+              // Rename fails if the file with same name already exist.
+              success = fs.rename(path, cmPath);
+              break;
+            }
+            case COPY: {
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("Copying {} to {}", path.toString(), cmPath.toString());
+              }
+              // It is possible to have a file with same checksum in cmPath but the content is
+              // partially copied or corrupted. In this case, just overwrite the existing file with
+              // new one.
+              success = FileUtils.copy(fs, path, fs, cmPath, false, true, hiveConf);
+              break;
+            }
+            default:
+              // Operation fails as invalid input
+              break;
+          }
+        }
+
         // Ignore if a file with same content already exist in cmroot
         // We might want to setXAttr for the new location in the future
-        if (!succ) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("A file with the same content of " + path.toString() + " already exists, ignore");
-          }
-          // Need to extend the tenancy if we saw a newer file with the same content
-          fs.setTimes(cmPath, now, now);
-        } else {
-
+        if (success) {
           // set the file owner to hive (or the id metastore run as)
           fs.setOwner(cmPath, msUser, msGroup);
 
@@ -154,19 +189,26 @@ public class ReplChangeManager {
           try {
             fs.setXAttr(cmPath, ORIG_LOC_TAG, path.toString().getBytes());
           } catch (UnsupportedOperationException e) {
-            LOG.warn("Error setting xattr for " + path.toString());
+            LOG.warn("Error setting xattr for {}", path.toString());
           }
 
           count++;
+        } else {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("A file with the same content of {} already exists, ignore", path.toString());
+          }
+          // Need to extend the tenancy if we saw a newer file with the same content
+          fs.setTimes(cmPath, now, now);
         }
+
         // Tag if we want to remain in trash after deletion.
         // If multiple files share the same content, then
         // any file claim remain in trash would be granted
-        if (!ifPurge) {
+        if ((type == RecycleType.MOVE) && !ifPurge) {
           try {
             fs.setXAttr(cmPath, REMAIN_IN_TRASH_TAG, new byte[]{0});
           } catch (UnsupportedOperationException e) {
-            LOG.warn("Error setting xattr for " + cmPath.toString());
+            LOG.warn("Error setting xattr for {}", cmPath.toString());
           }
         }
       }
@@ -177,7 +219,7 @@ public class ReplChangeManager {
   }
 
   // Get checksum of a file
-  static public String getChksumString(Path path, FileSystem fs) throws IOException {
+  static public String checksumFor(Path path, FileSystem fs) throws IOException {
     // TODO: fs checksum only available on hdfs, need to
     //       find a solution for other fs (eg, local fs, s3, etc)
     String checksumString = null;
@@ -197,54 +239,55 @@ public class ReplChangeManager {
    * Convert a path of file inside a partition or table (if non-partitioned)
    *   to a deterministic location of cmroot. So user can retrieve the file back
    *   with the original location plus checksum.
-   * @param path original path inside partition or table
    * @param conf
-   * @param chksum checksum of the file, can be retrieved by {@link getCksumString}
-   * @return
-   * @throws IOException
-   * @throws MetaException
+   * @param checkSum checksum of the file, can be retrieved by {@link #checksumFor(Path, FileSystem)}
+   * @return Path
    */
+<<<<<<< HEAD:metastore-client/src/main/java/org/apache/hadoop/hive/metastore/ReplChangeManager.java
   static public Path getCMPath(Path path, Configuration conf, String chksum)
       throws IOException, MetaException {
     String newFileName = chksum;
     int maxLength = conf.getInt("X",
         255);
+=======
+  static Path getCMPath(Configuration conf, String checkSum) throws IOException, MetaException {
+    String newFileName = checkSum;
+    int maxLength = conf.getInt(DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_KEY,
+        DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_DEFAULT);
+>>>>>>> asf/master:metastore/src/java/org/apache/hadoop/hive/metastore/ReplChangeManager.java
 
     if (newFileName.length() > maxLength) {
       newFileName = newFileName.substring(0, maxLength-1);
     }
 
-    Path cmPath = new Path(cmroot, newFileName);
-
-    return cmPath;
+    return new Path(cmroot, newFileName);
   }
 
   /***
    * Get original file specified by src and chksumString. If the file exists and checksum
    * matches, return the file; otherwise, use chksumString to retrieve it from cmroot
    * @param src Original file location
-   * @param chksumString Checksum of the original file
-   * @param conf
+   * @param checksumString Checksum of the original file
+   * @param hiveConf
    * @return Corresponding FileStatus object
-   * @throws MetaException
    */
-  static public FileStatus getFileStatus(Path src, String chksumString,
-      HiveConf conf) throws MetaException {
+  static public FileStatus getFileStatus(Path src, String checksumString,
+      HiveConf hiveConf) throws MetaException {
     try {
-      FileSystem srcFs = src.getFileSystem(conf);
-      if (chksumString == null) {
+      FileSystem srcFs = src.getFileSystem(hiveConf);
+      if (checksumString == null) {
         return srcFs.getFileStatus(src);
       }
 
       if (!srcFs.exists(src)) {
-        return srcFs.getFileStatus(getCMPath(src, conf, chksumString));
+        return srcFs.getFileStatus(getCMPath(hiveConf, checksumString));
       }
 
-      String currentChksumString = getChksumString(src, srcFs);
-      if (currentChksumString == null || chksumString.equals(currentChksumString)) {
+      String currentChecksumString = checksumFor(src, srcFs);
+      if (currentChecksumString == null || checksumString.equals(currentChecksumString)) {
         return srcFs.getFileStatus(src);
       } else {
-        return srcFs.getFileStatus(getCMPath(src, conf, chksumString));
+        return srcFs.getFileStatus(getCMPath(hiveConf, checksumString));
       }
     } catch (IOException e) {
       throw new MetaException(StringUtils.stringifyException(e));
@@ -280,6 +323,11 @@ public class ReplChangeManager {
       result[1] = uriAndFragment[1];
     }
     return result;
+  }
+
+  public static boolean isCMFileUri(Path fromPath, FileSystem srcFs) {
+    String[] result = getFileWithChksumFromURI(fromPath.toString());
+    return result[1] != null;
   }
 
   /**
@@ -340,7 +388,7 @@ public class ReplChangeManager {
   }
 
   // Schedule CMClearer thread. Will be invoked by metastore
-  public static void scheduleCMClearer(HiveConf hiveConf) {
+  static void scheduleCMClearer(HiveConf hiveConf) {
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.REPLCMENABLED)) {
       ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
           new BasicThreadFactory.Builder()

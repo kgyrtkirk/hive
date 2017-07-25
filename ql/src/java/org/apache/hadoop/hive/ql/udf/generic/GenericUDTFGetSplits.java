@@ -39,6 +39,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.FieldDesc;
@@ -90,6 +91,8 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
+import org.apache.tez.common.security.JobTokenIdentifier;
+import org.apache.tez.common.security.JobTokenSecretManager;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.InputDescriptor;
 import org.apache.tez.dag.api.InputInitializerDescriptor;
@@ -299,6 +302,17 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     FileSystem fs = scratchDir.getFileSystem(job);
     try {
       LocalResource appJarLr = createJarLocalResource(utils.getExecJarPathLocal(), utils, job);
+
+      LlapCoordinator coordinator = LlapCoordinator.getInstance();
+      if (coordinator == null) {
+        throw new IOException("LLAP coordinator is not initialized; must be running in HS2 with "
+            + ConfVars.LLAP_HS2_ENABLE_COORDINATOR.varname + " enabled");
+      }
+
+      // Update the queryId to use the generated applicationId. See comment below about
+      // why this is done.
+      ApplicationId applicationId = coordinator.createExtClientAppId();
+      HiveConf.setVar(wxConf, HiveConf.ConfVars.HIVEQUERYID, applicationId.toString());
       Vertex wx = utils.createVertex(wxConf, mapWork, scratchDir, appJarLr,
           new ArrayList<LocalResource>(), fs, ctx, false, work,
           work.getVertexType(mapWork));
@@ -312,6 +326,8 @@ public class GenericUDTFGetSplits extends GenericUDTF {
               ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS));
       Preconditions.checkState(HiveConf.getBoolVar(wxConf,
               ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS));
+
+
       HiveSplitGenerator splitGenerator = new HiveSplitGenerator(wxConf, mapWork);
       List<Event> eventList = splitGenerator.initialize();
 
@@ -327,15 +343,6 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       if (LOG.isDebugEnabled()) {
         LOG.debug("NumEvents=" + eventList.size() + ", NumSplits=" + result.length);
       }
-
-      LlapCoordinator coordinator = LlapCoordinator.getInstance();
-      if (coordinator == null) {
-        throw new IOException("LLAP coordinator is not initialized; must be running in HS2 with "
-            + ConfVars.LLAP_HS2_ENABLE_COORDINATOR.varname + " enabled");
-      }
-
-      // See the discussion in the implementation as to why we generate app ID.
-      ApplicationId applicationId = coordinator.createExtClientAppId();
 
       // This assumes LLAP cluster owner is always the HS2 user.
       String llapUser = UserGroupInformation.getLoginUser().getShortUserName();
@@ -364,6 +371,9 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         queryUser = UserGroupInformation.getCurrentUser().getUserName();
       }
 
+      // Generate umbilical token (applies to all splits)
+      Token<JobTokenIdentifier> umbilicalToken = JobTokenCreator.createJobToken(applicationId);
+
       LOG.info("Number of splits: " + (eventList.size() - 1));
       SignedMessage signedSvs = null;
       for (int i = 0; i < eventList.size() - 1; i++) {
@@ -384,7 +394,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
         SubmitWorkInfo submitWorkInfo = new SubmitWorkInfo(applicationId,
             System.currentTimeMillis(), taskSpec.getVertexParallelism(), signedSvs.message,
-            signedSvs.signature);
+            signedSvs.signature, umbilicalToken);
         byte[] submitWorkBytes = SubmitWorkInfo.toBytes(submitWorkInfo);
 
         // 3. Generate input event.
@@ -399,6 +409,18 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       return result;
     } catch (Exception e) {
       throw new IOException(e);
+    }
+  }
+
+  private static class JobTokenCreator {
+    private static Token<JobTokenIdentifier> createJobToken(ApplicationId applicationId) {
+      String tokenIdentifier = applicationId.toString();
+      JobTokenIdentifier identifier = new JobTokenIdentifier(new Text(
+          tokenIdentifier));
+      Token<JobTokenIdentifier> sessionToken = new Token<JobTokenIdentifier>(identifier,
+          new JobTokenSecretManager());
+      sessionToken.setService(identifier.getJobId());
+      return sessionToken;
     }
   }
 
@@ -440,6 +462,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
             .setDagIndex(taskSpec.getDagIdentifier()).setAppAttemptNumber(0).build();
     final SignableVertexSpec.Builder svsb = Converters.constructSignableVertexSpec(
         taskSpec, queryIdentifierProto, applicationId.toString(), queryUser, queryIdString);
+    svsb.setIsExternalSubmission(true);
     if (signer == null) {
       SignedMessage result = new SignedMessage();
       result.message = serializeVertexSpec(svsb);

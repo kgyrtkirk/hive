@@ -130,6 +130,10 @@ default	srcpart			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	srcpart			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	srcpart			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	srcpart			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+PREHOOK: query: DROP DATABASE IF EXISTS SYS
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE IF EXISTS SYS
+POSTHOOK: type: DROPDATABASE
 PREHOOK: query: CREATE DATABASE SYS
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:SYS
@@ -146,7 +150,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `BUCKETING_COLS` (
   `SD_ID` bigint,
   `BUCKET_COL_NAME` string,
   `INTEGER_IDX` int,
-  CONSTRAINT `SYS_PK_BUCKETING_COLS` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_BUCKETING_COLS` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -166,7 +170,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `BUCKETING_COLS` (
   `SD_ID` bigint,
   `BUCKET_COL_NAME` string,
   `INTEGER_IDX` int,
-  CONSTRAINT `SYS_PK_BUCKETING_COLS` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_BUCKETING_COLS` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -184,7 +188,7 @@ POSTHOOK: Output: SYS@BUCKETING_COLS
 POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE TABLE IF NOT EXISTS `CDS` (
   `CD_ID` bigint,
-  CONSTRAINT `SYS_PK_CDS` PRIMARY KEY (`CD_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_CDS` PRIMARY KEY (`CD_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -200,7 +204,7 @@ PREHOOK: Output: SYS@CDS
 PREHOOK: Output: database:sys
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS `CDS` (
   `CD_ID` bigint,
-  CONSTRAINT `SYS_PK_CDS` PRIMARY KEY (`CD_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_CDS` PRIMARY KEY (`CD_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -220,7 +224,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `COLUMNS_V2` (
   `COLUMN_NAME` string,
   `TYPE_NAME` string,
   `INTEGER_IDX` int,
-  CONSTRAINT `SYS_PK_COLUMN_V2` PRIMARY KEY (`CD_ID`,`COLUMN_NAME`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_COLUMN_V2` PRIMARY KEY (`CD_ID`,`COLUMN_NAME`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -244,7 +248,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `COLUMNS_V2` (
   `COLUMN_NAME` string,
   `TYPE_NAME` string,
   `INTEGER_IDX` int,
-  CONSTRAINT `SYS_PK_COLUMN_V2` PRIMARY KEY (`CD_ID`,`COLUMN_NAME`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_COLUMN_V2` PRIMARY KEY (`CD_ID`,`COLUMN_NAME`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -266,7 +270,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `DATABASE_PARAMS` (
   `DB_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_DATABASE_PARAMS` PRIMARY KEY (`DB_ID`,`PARAM_KEY`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_DATABASE_PARAMS` PRIMARY KEY (`DB_ID`,`PARAM_KEY`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -286,7 +290,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `DATABASE_PARAMS` (
   `DB_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_DATABASE_PARAMS` PRIMARY KEY (`DB_ID`,`PARAM_KEY`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_DATABASE_PARAMS` PRIMARY KEY (`DB_ID`,`PARAM_KEY`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -308,7 +312,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `DBS` (
   `NAME` string,
   `OWNER_NAME` string,
   `OWNER_TYPE` string,
-  CONSTRAINT `SYS_PK_DBS` PRIMARY KEY (`DB_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_DBS` PRIMARY KEY (`DB_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -332,7 +336,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `DBS` (
   `NAME` string,
   `OWNER_NAME` string,
   `OWNER_TYPE` string,
-  CONSTRAINT `SYS_PK_DBS` PRIMARY KEY (`DB_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_DBS` PRIMARY KEY (`DB_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -360,7 +364,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `DB_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `DB_PRIV` string,
-  CONSTRAINT `SYS_PK_DB_PRIVS` PRIMARY KEY (`DB_GRANT_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_DB_PRIVS` PRIMARY KEY (`DB_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -392,7 +396,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `DB_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `DB_PRIV` string,
-  CONSTRAINT `SYS_PK_DB_PRIVS` PRIMARY KEY (`DB_GRANT_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_DB_PRIVS` PRIMARY KEY (`DB_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -423,7 +427,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `GLOBAL_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `USER_PRIV` string,
-  CONSTRAINT `SYS_PK_GLOBAL_PRIVS` PRIMARY KEY (`USER_GRANT_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_GLOBAL_PRIVS` PRIMARY KEY (`USER_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -453,7 +457,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `GLOBAL_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `USER_PRIV` string,
-  CONSTRAINT `SYS_PK_GLOBAL_PRIVS` PRIMARY KEY (`USER_GRANT_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_GLOBAL_PRIVS` PRIMARY KEY (`USER_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -484,7 +488,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `IDXS` (
   `LAST_ACCESS_TIME` int,
   `ORIG_TBL_ID` bigint,
   `SD_ID` bigint,
-  CONSTRAINT `SYS_PK_IDXS` PRIMARY KEY (`INDEX_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_IDXS` PRIMARY KEY (`INDEX_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -516,7 +520,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `IDXS` (
   `LAST_ACCESS_TIME` int,
   `ORIG_TBL_ID` bigint,
   `SD_ID` bigint,
-  CONSTRAINT `SYS_PK_IDXS` PRIMARY KEY (`INDEX_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_IDXS` PRIMARY KEY (`INDEX_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -542,7 +546,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `INDEX_PARAMS` (
   `INDEX_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_INDEX_PARAMS` PRIMARY KEY (`INDEX_ID`,`PARAM_KEY`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_INDEX_PARAMS` PRIMARY KEY (`INDEX_ID`,`PARAM_KEY`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -562,7 +566,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `INDEX_PARAMS` (
   `INDEX_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_INDEX_PARAMS` PRIMARY KEY (`INDEX_ID`,`PARAM_KEY`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_INDEX_PARAMS` PRIMARY KEY (`INDEX_ID`,`PARAM_KEY`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -585,7 +589,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITIONS` (
   `PART_NAME` string,
   `SD_ID` bigint,
   `TBL_ID` bigint,
-  CONSTRAINT `SYS_PK_PARTITIONS` PRIMARY KEY (`PART_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_PARTITIONS` PRIMARY KEY (`PART_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -611,7 +615,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITIONS` (
   `PART_NAME` string,
   `SD_ID` bigint,
   `TBL_ID` bigint,
-  CONSTRAINT `SYS_PK_PARTITIONS` PRIMARY KEY (`PART_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_PARTITIONS` PRIMARY KEY (`PART_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -636,7 +640,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITION_KEYS` (
   `PKEY_NAME` string,
   `PKEY_TYPE` string,
   `INTEGER_IDX` int,
-  CONSTRAINT `SYS_PK_PARTITION_KEYS` PRIMARY KEY (`TBL_ID`,`PKEY_NAME`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_PARTITION_KEYS` PRIMARY KEY (`TBL_ID`,`PKEY_NAME`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -660,7 +664,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITION_KEYS` (
   `PKEY_NAME` string,
   `PKEY_TYPE` string,
   `INTEGER_IDX` int,
-  CONSTRAINT `SYS_PK_PARTITION_KEYS` PRIMARY KEY (`TBL_ID`,`PKEY_NAME`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_PARTITION_KEYS` PRIMARY KEY (`TBL_ID`,`PKEY_NAME`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -682,7 +686,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITION_KEY_VALS` (
   `PART_ID` bigint,
   `PART_KEY_VAL` string,
   `INTEGER_IDX` int,
-  CONSTRAINT `SYS_PK_PARTITION_KEY_VALS` PRIMARY KEY (`PART_ID`,`INTEGER_IDX`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_PARTITION_KEY_VALS` PRIMARY KEY (`PART_ID`,`INTEGER_IDX`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -702,7 +706,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITION_KEY_VALS` (
   `PART_ID` bigint,
   `PART_KEY_VAL` string,
   `INTEGER_IDX` int,
-  CONSTRAINT `SYS_PK_PARTITION_KEY_VALS` PRIMARY KEY (`PART_ID`,`INTEGER_IDX`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_PARTITION_KEY_VALS` PRIMARY KEY (`PART_ID`,`INTEGER_IDX`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -722,7 +726,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITION_PARAMS` (
   `PART_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_PARTITION_PARAMS` PRIMARY KEY (`PART_ID`,`PARAM_KEY`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_PARTITION_PARAMS` PRIMARY KEY (`PART_ID`,`PARAM_KEY`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -742,7 +746,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITION_PARAMS` (
   `PART_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_PARTITION_PARAMS` PRIMARY KEY (`PART_ID`,`PARAM_KEY`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_PARTITION_PARAMS` PRIMARY KEY (`PART_ID`,`PARAM_KEY`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -769,7 +773,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `PART_COL_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `PART_COL_PRIV` string,
-  CONSTRAINT `SYS_PK_PART_COL_PRIVS` PRIMARY KEY (`PART_COLUMN_GRANT_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_PART_COL_PRIVS` PRIMARY KEY (`PART_COLUMN_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -803,7 +807,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `PART_COL_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `PART_COL_PRIV` string,
-  CONSTRAINT `SYS_PK_PART_COL_PRIVS` PRIMARY KEY (`PART_COLUMN_GRANT_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_PART_COL_PRIVS` PRIMARY KEY (`PART_COLUMN_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -836,7 +840,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `PART_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `PART_PRIV` string,
-  CONSTRAINT `SYS_PK_PART_PRIVS` PRIMARY KEY (`PART_GRANT_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_PART_PRIVS` PRIMARY KEY (`PART_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -868,7 +872,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `PART_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `PART_PRIV` string,
-  CONSTRAINT `SYS_PK_PART_PRIVS` PRIMARY KEY (`PART_GRANT_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_PART_PRIVS` PRIMARY KEY (`PART_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -895,7 +899,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `ROLES` (
   `CREATE_TIME` int,
   `OWNER_NAME` string,
   `ROLE_NAME` string,
-  CONSTRAINT `SYS_PK_ROLES` PRIMARY KEY (`ROLE_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_ROLES` PRIMARY KEY (`ROLE_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -917,7 +921,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `ROLES` (
   `CREATE_TIME` int,
   `OWNER_NAME` string,
   `ROLE_NAME` string,
-  CONSTRAINT `SYS_PK_ROLES` PRIMARY KEY (`ROLE_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_ROLES` PRIMARY KEY (`ROLE_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -943,7 +947,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `ROLE_MAP` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `ROLE_ID` bigint,
-  CONSTRAINT `SYS_PK_ROLE_MAP` PRIMARY KEY (`ROLE_GRANT_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_ROLE_MAP` PRIMARY KEY (`ROLE_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -973,7 +977,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `ROLE_MAP` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `ROLE_ID` bigint,
-  CONSTRAINT `SYS_PK_ROLE_MAP` PRIMARY KEY (`ROLE_GRANT_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_ROLE_MAP` PRIMARY KEY (`ROLE_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1004,7 +1008,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `SDS` (
   `NUM_BUCKETS` int,
   `OUTPUT_FORMAT` string,
   `SERDE_ID` bigint,
-  CONSTRAINT `SYS_PK_SDS` PRIMARY KEY (`SD_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SDS` PRIMARY KEY (`SD_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1036,7 +1040,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SDS` (
   `NUM_BUCKETS` int,
   `OUTPUT_FORMAT` string,
   `SERDE_ID` bigint,
-  CONSTRAINT `SYS_PK_SDS` PRIMARY KEY (`SD_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SDS` PRIMARY KEY (`SD_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1062,7 +1066,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `SD_PARAMS` (
   `SD_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_SD_PARAMS` PRIMARY KEY (`SD_ID`,`PARAM_KEY`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SD_PARAMS` PRIMARY KEY (`SD_ID`,`PARAM_KEY`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1082,7 +1086,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SD_PARAMS` (
   `SD_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_SD_PARAMS` PRIMARY KEY (`SD_ID`,`PARAM_KEY`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SD_PARAMS` PRIMARY KEY (`SD_ID`,`PARAM_KEY`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1101,7 +1105,7 @@ POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE TABLE IF NOT EXISTS `SEQUENCE_TABLE` (
   `SEQUENCE_NAME` string,
   `NEXT_VAL` bigint,
-  CONSTRAINT `SYS_PK_SEQUENCE_TABLE` PRIMARY KEY (`SEQUENCE_NAME`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SEQUENCE_TABLE` PRIMARY KEY (`SEQUENCE_NAME`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1119,7 +1123,7 @@ PREHOOK: Output: database:sys
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SEQUENCE_TABLE` (
   `SEQUENCE_NAME` string,
   `NEXT_VAL` bigint,
-  CONSTRAINT `SYS_PK_SEQUENCE_TABLE` PRIMARY KEY (`SEQUENCE_NAME`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SEQUENCE_TABLE` PRIMARY KEY (`SEQUENCE_NAME`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1138,7 +1142,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `SERDES` (
   `SERDE_ID` bigint,
   `NAME` string,
   `SLIB` string,
-  CONSTRAINT `SYS_PK_SERDES` PRIMARY KEY (`SERDE_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SERDES` PRIMARY KEY (`SERDE_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1158,7 +1162,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SERDES` (
   `SERDE_ID` bigint,
   `NAME` string,
   `SLIB` string,
-  CONSTRAINT `SYS_PK_SERDES` PRIMARY KEY (`SERDE_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SERDES` PRIMARY KEY (`SERDE_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1178,7 +1182,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `SERDE_PARAMS` (
   `SERDE_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_SERDE_PARAMS` PRIMARY KEY (`SERDE_ID`,`PARAM_KEY`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SERDE_PARAMS` PRIMARY KEY (`SERDE_ID`,`PARAM_KEY`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1198,7 +1202,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SERDE_PARAMS` (
   `SERDE_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_SERDE_PARAMS` PRIMARY KEY (`SERDE_ID`,`PARAM_KEY`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SERDE_PARAMS` PRIMARY KEY (`SERDE_ID`,`PARAM_KEY`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1218,7 +1222,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_COL_NAMES` (
   `SD_ID` bigint,
   `SKEWED_COL_NAME` string,
   `INTEGER_IDX` int,
-  CONSTRAINT `SYS_PK_SKEWED_COL_NAMES` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SKEWED_COL_NAMES` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1238,7 +1242,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_COL_NAMES` (
   `SD_ID` bigint,
   `SKEWED_COL_NAME` string,
   `INTEGER_IDX` int,
-  CONSTRAINT `SYS_PK_SKEWED_COL_NAMES` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SKEWED_COL_NAMES` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1258,7 +1262,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_COL_VALUE_LOC_MAP` (
   `SD_ID` bigint,
   `STRING_LIST_ID_KID` bigint,
   `LOCATION` string,
-  CONSTRAINT `SYS_PK_COL_VALUE_LOC_MAP` PRIMARY KEY (`SD_ID`,`STRING_LIST_ID_KID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_COL_VALUE_LOC_MAP` PRIMARY KEY (`SD_ID`,`STRING_LIST_ID_KID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1278,7 +1282,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_COL_VALUE_LOC_MAP` (
   `SD_ID` bigint,
   `STRING_LIST_ID_KID` bigint,
   `LOCATION` string,
-  CONSTRAINT `SYS_PK_COL_VALUE_LOC_MAP` PRIMARY KEY (`SD_ID`,`STRING_LIST_ID_KID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_COL_VALUE_LOC_MAP` PRIMARY KEY (`SD_ID`,`STRING_LIST_ID_KID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1296,7 +1300,7 @@ POSTHOOK: Output: SYS@SKEWED_COL_VALUE_LOC_MAP
 POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_STRING_LIST` (
   `STRING_LIST_ID` bigint,
-  CONSTRAINT `SYS_PK_SKEWED_STRING_LIST` PRIMARY KEY (`STRING_LIST_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SKEWED_STRING_LIST` PRIMARY KEY (`STRING_LIST_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1312,7 +1316,7 @@ PREHOOK: Output: SYS@SKEWED_STRING_LIST
 PREHOOK: Output: database:sys
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_STRING_LIST` (
   `STRING_LIST_ID` bigint,
-  CONSTRAINT `SYS_PK_SKEWED_STRING_LIST` PRIMARY KEY (`STRING_LIST_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SKEWED_STRING_LIST` PRIMARY KEY (`STRING_LIST_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1330,7 +1334,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_STRING_LIST_VALUES` (
   `STRING_LIST_ID` bigint,
   `STRING_LIST_VALUE` string,
   `INTEGER_IDX` int,
-  CONSTRAINT `SYS_PK_SKEWED_STRING_LIST_VALUES` PRIMARY KEY (`STRING_LIST_ID`,`INTEGER_IDX`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SKEWED_STRING_LIST_VALUES` PRIMARY KEY (`STRING_LIST_ID`,`INTEGER_IDX`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1350,7 +1354,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_STRING_LIST_VALUES` (
   `STRING_LIST_ID` bigint,
   `STRING_LIST_VALUE` string,
   `INTEGER_IDX` int,
-  CONSTRAINT `SYS_PK_SKEWED_STRING_LIST_VALUES` PRIMARY KEY (`STRING_LIST_ID`,`INTEGER_IDX`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SKEWED_STRING_LIST_VALUES` PRIMARY KEY (`STRING_LIST_ID`,`INTEGER_IDX`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1370,7 +1374,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_VALUES` (
   `SD_ID_OID` bigint,
   `STRING_LIST_ID_EID` bigint,
   `INTEGER_IDX` int,
-  CONSTRAINT `SYS_PK_SKEWED_VALUES` PRIMARY KEY (`SD_ID_OID`,`INTEGER_IDX`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SKEWED_VALUES` PRIMARY KEY (`SD_ID_OID`,`INTEGER_IDX`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1390,7 +1394,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SKEWED_VALUES` (
   `SD_ID_OID` bigint,
   `STRING_LIST_ID_EID` bigint,
   `INTEGER_IDX` int,
-  CONSTRAINT `SYS_PK_SKEWED_VALUES` PRIMARY KEY (`SD_ID_OID`,`INTEGER_IDX`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SKEWED_VALUES` PRIMARY KEY (`SD_ID_OID`,`INTEGER_IDX`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1411,7 +1415,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `SORT_COLS` (
   `COLUMN_NAME` string,
   `ORDER` int,
   `INTEGER_IDX` int,
-  CONSTRAINT `SYS_PK_SORT_COLS` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SORT_COLS` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1433,7 +1437,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `SORT_COLS` (
   `COLUMN_NAME` string,
   `ORDER` int,
   `INTEGER_IDX` int,
-  CONSTRAINT `SYS_PK_SORT_COLS` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_SORT_COLS` PRIMARY KEY (`SD_ID`,`INTEGER_IDX`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1454,7 +1458,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `TABLE_PARAMS` (
   `TBL_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_TABLE_PARAMS` PRIMARY KEY (`TBL_ID`,`PARAM_KEY`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_TABLE_PARAMS` PRIMARY KEY (`TBL_ID`,`PARAM_KEY`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1474,7 +1478,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `TABLE_PARAMS` (
   `TBL_ID` bigint,
   `PARAM_KEY` string,
   `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_TABLE_PARAMS` PRIMARY KEY (`TBL_ID`,`PARAM_KEY`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_TABLE_PARAMS` PRIMARY KEY (`TBL_ID`,`PARAM_KEY`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1503,7 +1507,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `TBLS` (
   `VIEW_EXPANDED_TEXT` string,
   `VIEW_ORIGINAL_TEXT` string,
   `IS_REWRITE_ENABLED` boolean,
-  CONSTRAINT `SYS_PK_TBLS` PRIMARY KEY (`TBL_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_TBLS` PRIMARY KEY (`TBL_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1540,7 +1544,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `TBLS` (
   `VIEW_EXPANDED_TEXT` string,
   `VIEW_ORIGINAL_TEXT` string,
   `IS_REWRITE_ENABLED` boolean,
-  CONSTRAINT `SYS_PK_TBLS` PRIMARY KEY (`TBL_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_TBLS` PRIMARY KEY (`TBL_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1575,7 +1579,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `TBL_COL_PRIVS` (
   `PRINCIPAL_TYPE` string,
   `TBL_COL_PRIV` string,
   `TBL_ID` bigint,
-  CONSTRAINT `SYS_PK_TBL_COL_PRIVS` PRIMARY KEY (`TBL_COLUMN_GRANT_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_TBL_COL_PRIVS` PRIMARY KEY (`TBL_COLUMN_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1609,7 +1613,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `TBL_COL_PRIVS` (
   `PRINCIPAL_TYPE` string,
   `TBL_COL_PRIV` string,
   `TBL_ID` bigint,
-  CONSTRAINT `SYS_PK_TBL_COL_PRIVS` PRIMARY KEY (`TBL_COLUMN_GRANT_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_TBL_COL_PRIVS` PRIMARY KEY (`TBL_COLUMN_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1642,7 +1646,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `TBL_PRIVS` (
   `PRINCIPAL_TYPE` string,
   `TBL_PRIV` string,
   `TBL_ID` bigint,
-  CONSTRAINT `SYS_PK_TBL_PRIVS` PRIMARY KEY (`TBL_GRANT_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_TBL_PRIVS` PRIMARY KEY (`TBL_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1674,7 +1678,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `TBL_PRIVS` (
   `PRINCIPAL_TYPE` string,
   `TBL_PRIV` string,
   `TBL_ID` bigint,
-  CONSTRAINT `SYS_PK_TBL_PRIVS` PRIMARY KEY (`TBL_GRANT_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_TBL_PRIVS` PRIMARY KEY (`TBL_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1716,7 +1720,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `TAB_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
-  CONSTRAINT `SYS_PK_TAB_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_TAB_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1768,7 +1772,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `TAB_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
-  CONSTRAINT `SYS_PK_TAB_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_TAB_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1821,7 +1825,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `PART_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
-  CONSTRAINT `SYS_PK_PART_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_PART_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1875,7 +1879,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `PART_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
-  CONSTRAINT `SYS_PK_PART_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_PART_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1912,7 +1916,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `VERSION` (
   `VER_ID` BIGINT,
   `SCHEMA_VERSION` string,
   `VERSION_COMMENT` string,
-  CONSTRAINT `SYS_PK_VERSION` PRIMARY KEY (`VER_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_VERSION` PRIMARY KEY (`VER_ID`) DISABLE
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@VERSION
@@ -1921,7 +1925,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `VERSION` (
   `VER_ID` BIGINT,
   `SCHEMA_VERSION` string,
   `VERSION_COMMENT` string,
-  CONSTRAINT `SYS_PK_VERSION` PRIMARY KEY (`VER_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_VERSION` PRIMARY KEY (`VER_ID`) DISABLE
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@VERSION
@@ -1939,7 +1943,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `DB_VERSION` (
   `VER_ID` BIGINT,
   `SCHEMA_VERSION` string,
   `VERSION_COMMENT` string,
-  CONSTRAINT `SYS_PK_DB_VERSION` PRIMARY KEY (`VER_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_DB_VERSION` PRIMARY KEY (`VER_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1959,7 +1963,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `DB_VERSION` (
   `VER_ID` BIGINT,
   `SCHEMA_VERSION` string,
   `VERSION_COMMENT` string,
-  CONSTRAINT `SYS_PK_DB_VERSION` PRIMARY KEY (`VER_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_DB_VERSION` PRIMARY KEY (`VER_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -1984,7 +1988,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `FUNCS` (
   `FUNC_TYPE` int,
   `OWNER_NAME` string,
   `OWNER_TYPE` string,
-  CONSTRAINT `SYS_PK_FUNCS` PRIMARY KEY (`FUNC_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_FUNCS` PRIMARY KEY (`FUNC_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -2014,7 +2018,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `FUNCS` (
   `FUNC_TYPE` int,
   `OWNER_NAME` string,
   `OWNER_TYPE` string,
-  CONSTRAINT `SYS_PK_FUNCS` PRIMARY KEY (`FUNC_ID`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_FUNCS` PRIMARY KEY (`FUNC_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -2049,7 +2053,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
   `UPDATE_RULE` string,
   `DELETE_RULE` string,
   `ENABLE_VALIDATE_RELY` int,
-  CONSTRAINT `SYS_PK_KEY_CONSTRAINTS` PRIMARY KEY (`CONSTRAINT_NAME`, `POSITION`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_KEY_CONSTRAINTS` PRIMARY KEY (`CONSTRAINT_NAME`, `POSITION`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -2088,7 +2092,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
   `UPDATE_RULE` string,
   `DELETE_RULE` string,
   `ENABLE_VALIDATE_RELY` int,
-  CONSTRAINT `SYS_PK_KEY_CONSTRAINTS` PRIMARY KEY (`CONSTRAINT_NAME`, `POSITION`) DISABLE NOVALIDATE
+  CONSTRAINT `SYS_PK_KEY_CONSTRAINTS` PRIMARY KEY (`CONSTRAINT_NAME`, `POSITION`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -2113,6 +2117,80 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@KEY_CONSTRAINTS
 POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE VIEW `TABLE_STATS_VIEW` AS
+SELECT
+  `TBL_ID`,
+  max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
+  max(CASE `PARAM_KEY` WHEN 'numFiles' THEN `PARAM_VALUE` END) AS NUM_FILES,
+  max(CASE `PARAM_KEY` WHEN 'numRows' THEN `PARAM_VALUE` END) AS NUM_ROWS,
+  max(CASE `PARAM_KEY` WHEN 'rawDataSize' THEN `PARAM_VALUE` END) AS RAW_DATA_SIZE,
+  max(CASE `PARAM_KEY` WHEN 'totalSize' THEN `PARAM_VALUE` END) AS TOTAL_SIZE,
+#### A masked pattern was here ####
+FROM `TABLE_PARAMS` GROUP BY `TBL_ID`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@table_params
+PREHOOK: Output: SYS@TABLE_STATS_VIEW
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE VIEW `TABLE_STATS_VIEW` AS
+SELECT
+  `TBL_ID`,
+  max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
+  max(CASE `PARAM_KEY` WHEN 'numFiles' THEN `PARAM_VALUE` END) AS NUM_FILES,
+  max(CASE `PARAM_KEY` WHEN 'numRows' THEN `PARAM_VALUE` END) AS NUM_ROWS,
+  max(CASE `PARAM_KEY` WHEN 'rawDataSize' THEN `PARAM_VALUE` END) AS RAW_DATA_SIZE,
+  max(CASE `PARAM_KEY` WHEN 'totalSize' THEN `PARAM_VALUE` END) AS TOTAL_SIZE,
+#### A masked pattern was here ####
+FROM `TABLE_PARAMS` GROUP BY `TBL_ID`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@table_params
+POSTHOOK: Output: SYS@TABLE_STATS_VIEW
+POSTHOOK: Output: database:sys
+POSTHOOK: Lineage: TABLE_STATS_VIEW.column_stats_accurate EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_STATS_VIEW.num_files EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_STATS_VIEW.num_rows EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_STATS_VIEW.raw_data_size EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_STATS_VIEW.tbl_id SIMPLE [(table_params)table_params.FieldSchema(name:tbl_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_STATS_VIEW.total_size EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_STATS_VIEW.transient_last_ddl_time EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+PREHOOK: query: CREATE VIEW `PARTITION_STATS_VIEW` AS
+SELECT
+  `PART_ID`,
+  max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
+  max(CASE `PARAM_KEY` WHEN 'numFiles' THEN `PARAM_VALUE` END) AS NUM_FILES,
+  max(CASE `PARAM_KEY` WHEN 'numRows' THEN `PARAM_VALUE` END) AS NUM_ROWS,
+  max(CASE `PARAM_KEY` WHEN 'rawDataSize' THEN `PARAM_VALUE` END) AS RAW_DATA_SIZE,
+  max(CASE `PARAM_KEY` WHEN 'totalSize' THEN `PARAM_VALUE` END) AS TOTAL_SIZE,
+#### A masked pattern was here ####
+FROM `PARTITION_PARAMS` GROUP BY `PART_ID`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@partition_params
+PREHOOK: Output: SYS@PARTITION_STATS_VIEW
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE VIEW `PARTITION_STATS_VIEW` AS
+SELECT
+  `PART_ID`,
+  max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
+  max(CASE `PARAM_KEY` WHEN 'numFiles' THEN `PARAM_VALUE` END) AS NUM_FILES,
+  max(CASE `PARAM_KEY` WHEN 'numRows' THEN `PARAM_VALUE` END) AS NUM_ROWS,
+  max(CASE `PARAM_KEY` WHEN 'rawDataSize' THEN `PARAM_VALUE` END) AS RAW_DATA_SIZE,
+  max(CASE `PARAM_KEY` WHEN 'totalSize' THEN `PARAM_VALUE` END) AS TOTAL_SIZE,
+#### A masked pattern was here ####
+FROM `PARTITION_PARAMS` GROUP BY `PART_ID`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@partition_params
+POSTHOOK: Output: SYS@PARTITION_STATS_VIEW
+POSTHOOK: Output: database:sys
+POSTHOOK: Lineage: PARTITION_STATS_VIEW.column_stats_accurate EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: PARTITION_STATS_VIEW.num_files EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: PARTITION_STATS_VIEW.num_rows EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: PARTITION_STATS_VIEW.part_id SIMPLE [(partition_params)partition_params.FieldSchema(name:part_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: PARTITION_STATS_VIEW.raw_data_size EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: PARTITION_STATS_VIEW.total_size EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: PARTITION_STATS_VIEW.transient_last_ddl_time EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+PREHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA
+POSTHOOK: type: DROPDATABASE
 PREHOOK: query: CREATE DATABASE INFORMATION_SCHEMA
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:INFORMATION_SCHEMA
@@ -2334,7 +2412,7 @@ POSTHOOK: Output: INFORMATION_SCHEMA@TABLE_PRIVILEGES
 POSTHOOK: Output: database:information_schema
 POSTHOOK: Lineage: TABLE_PRIVILEGES.grantee SIMPLE [(tbl_privs)p.FieldSchema(name:principal_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_PRIVILEGES.grantor SIMPLE [(tbl_privs)p.FieldSchema(name:grantor, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: TABLE_PRIVILEGES.is_grantable EXPRESSION [(tbl_privs)p.FieldSchema(name:grant_option, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: TABLE_PRIVILEGES.is_grantable EXPRESSION [(tbl_privs)p.FieldSchema(name:grant_option, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_PRIVILEGES.privilege_type SIMPLE [(tbl_privs)p.FieldSchema(name:tbl_priv, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_PRIVILEGES.table_catalog SIMPLE []
 POSTHOOK: Lineage: TABLE_PRIVILEGES.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
@@ -2663,7 +2741,7 @@ POSTHOOK: Lineage: COLUMNS.datetime_precision EXPRESSION [(columns_v2)c.FieldSch
 POSTHOOK: Lineage: COLUMNS.declared_data_type SIMPLE [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.declared_numeric_precision EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.declared_numeric_scale EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.dtd_identifier SIMPLE [(columns_v2)c.FieldSchema(name:cd_id, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.dtd_identifier SIMPLE [(columns_v2)c.FieldSchema(name:cd_id, type:bigint, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.generation_expression EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.identity_cycle EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.identity_generation EXPRESSION []
@@ -2684,7 +2762,7 @@ POSTHOOK: Lineage: COLUMNS.maximum_cardinality EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.numeric_precision EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.numeric_precision_radix EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.numeric_scale EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.ordinal_position SIMPLE [(columns_v2)c.FieldSchema(name:integer_idx, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMNS.ordinal_position SIMPLE [(columns_v2)c.FieldSchema(name:integer_idx, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.scope_catalog EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.scope_name EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.scope_schema EXPRESSION []
@@ -2778,7 +2856,7 @@ POSTHOOK: Output: database:information_schema
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.column_name SIMPLE [(columns_v2)c.FieldSchema(name:column_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.grantee SIMPLE [(tbl_col_privs)p.FieldSchema(name:principal_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.grantor SIMPLE [(tbl_col_privs)p.FieldSchema(name:grantor, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMN_PRIVILEGES.is_grantable EXPRESSION [(tbl_col_privs)p.FieldSchema(name:grant_option, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMN_PRIVILEGES.is_grantable EXPRESSION [(tbl_col_privs)p.FieldSchema(name:grant_option, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.privilege_type SIMPLE [(tbl_col_privs)p.FieldSchema(name:tbl_col_priv, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_catalog SIMPLE []
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
@@ -2889,7 +2967,7 @@ POSTHOOK: query: select count(*) from cds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@cds
 #### A masked pattern was here ####
-63
+65
 PREHOOK: query: select column_name, type_name, integer_idx from columns_v2 order by column_name, integer_idx limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@columns_v2
@@ -3043,7 +3121,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-69
+71
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -3152,11 +3230,11 @@ POSTHOOK: query: select param_key, param_value from table_params order by param_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@table_params
 #### A masked pattern was here ####
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"json":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true","d":"true","e":"true","f":"true","g":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"add_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true","role_grant_id":"true","role_id":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"avg_col_len":"true","big_decimal_high_value":"true","big_decimal_low_value":"true","column_name":"true","column_type":"true","cs_id":"true","db_name":"true","double_high_value":"true","double_low_value":"true","last_analyzed":"true","long_high_value":"true","long_low_value":"true","max_col_len":"true","num_distincts":"true","num_falses":"true","num_nulls":"true","num_trues":"true","part_id":"true","partition_name":"true","table_name":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"avg_col_len":"true","big_decimal_high_value":"true","big_decimal_low_value":"true","column_name":"true","column_type":"true","cs_id":"true","db_name":"true","double_high_value":"true","double_low_value":"true","last_analyzed":"true","long_high_value":"true","long_low_value":"true","max_col_len":"true","num_distincts":"true","num_falses":"true","num_nulls":"true","num_trues":"true","table_name":"true","tbl_id":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"bucket_col_name":"true","integer_idx":"true","sd_id":"true"}}
 PREHOOK: query: select tbl_name from tbls order by tbl_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@tbls
@@ -3199,16 +3277,16 @@ POSTHOOK: query: select table_name, column_name, num_nulls, num_distincts from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@tab_col_stats
 #### A masked pattern was here ####
-alltypesorc	cbigint	3115	4083
+alltypesorc	cbigint	3115	6064
 alltypesorc	cboolean1	3114	NULL
 alltypesorc	cboolean2	3115	NULL
-alltypesorc	cdouble	3114	4264
-alltypesorc	cfloat	3115	117
-alltypesorc	cint	3115	5774
-alltypesorc	csmallint	3114	5529
-alltypesorc	cstring1	3114	7488
-alltypesorc	cstring2	3115	4083
-alltypesorc	ctimestamp1	3115	31
+alltypesorc	cdouble	3114	5569
+alltypesorc	cfloat	3115	131
+alltypesorc	cint	3115	6029
+alltypesorc	csmallint	3114	5594
+alltypesorc	cstring1	3114	6058
+alltypesorc	cstring2	3115	6040
+alltypesorc	ctimestamp1	3115	35
 PREHOOK: query: select table_name, partition_name, column_name, num_nulls, num_distincts from part_col_stats order by table_name, partition_name, column_name limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@part_col_stats
@@ -3225,8 +3303,8 @@ cbo_t1	dt=2014	value	2	4
 cbo_t2	dt=2014	c_boolean	2	NULL
 cbo_t2	dt=2014	c_float	2	2
 cbo_t2	dt=2014	c_int	2	2
-cbo_t2	dt=2014	key	2	4
-cbo_t2	dt=2014	value	2	4
+cbo_t2	dt=2014	key	2	5
+cbo_t2	dt=2014	value	2	5
 PREHOOK: query: select schema_version from version order by schema_version limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@version
@@ -3258,6 +3336,128 @@ sys_pk_bucketing_cols
 sys_pk_cds
 sys_pk_col_value_loc_map
 sys_pk_col_value_loc_map
+PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM TABLE_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@table_params
+PREHOOK: Input: sys@table_stats_view
+#### A masked pattern was here ####
+POSTHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM TABLE_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@table_params
+POSTHOOK: Input: sys@table_stats_view
+#### A masked pattern was here ####
+{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"column_name":"true","create_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true","tbl_col_priv":"true","tbl_column_grant_id":"true","tbl_id":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"next_val":"true","sequence_name":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	0	0	0	0
+#### A masked pattern was here ####
+PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM PARTITION_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@partition_params
+PREHOOK: Input: sys@partition_stats_view
+#### A masked pattern was here ####
+POSTHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM PARTITION_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@partition_params
+POSTHOOK: Input: sys@partition_stats_view
+#### A masked pattern was here ####
+{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}	1	20	262	282
+{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}	1	20	262	282
+{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
+{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
+{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
+PREHOOK: query: describe sys.tab_col_stats
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: sys@tab_col_stats
+POSTHOOK: query: describe sys.tab_col_stats
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: sys@tab_col_stats
+cs_id               	bigint              	from deserializer   
+db_name             	string              	from deserializer   
+table_name          	string              	from deserializer   
+column_name         	string              	from deserializer   
+column_type         	string              	from deserializer   
+tbl_id              	bigint              	from deserializer   
+long_low_value      	bigint              	from deserializer   
+long_high_value     	bigint              	from deserializer   
+double_high_value   	double              	from deserializer   
+double_low_value    	double              	from deserializer   
+big_decimal_low_value	string              	from deserializer   
+big_decimal_high_value	string              	from deserializer   
+num_nulls           	bigint              	from deserializer   
+num_distincts       	bigint              	from deserializer   
+avg_col_len         	double              	from deserializer   
+max_col_len         	bigint              	from deserializer   
+num_trues           	bigint              	from deserializer   
+num_falses          	bigint              	from deserializer   
+last_analyzed       	bigint              	from deserializer   
+PREHOOK: query: explain select max(num_distincts) from sys.tab_col_stats
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select max(num_distincts) from sys.tab_col_stats
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tab_col_stats
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: num_distincts (type: bigint)
+                    outputColumnNames: num_distincts
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Group By Operator
+                      aggregations: max(num_distincts)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(num_distincts) from sys.tab_col_stats
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@tab_col_stats
+#### A masked pattern was here ####
+POSTHOOK: query: select max(num_distincts) from sys.tab_col_stats
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@tab_col_stats
+#### A masked pattern was here ####
+6064
 PREHOOK: query: use INFORMATION_SCHEMA
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:information_schema
@@ -3330,6 +3530,7 @@ default	sys	part_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	partition_key_vals	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	partition_keys	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	partition_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	partition_stats_view	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	partitions	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	role_map	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	roles	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -3346,18 +3547,19 @@ default	sys	skewed_values	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	sort_cols	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	tab_col_stats	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	table_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	table_stats_view	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	tbl_col_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	tbl_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	tbls	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	version	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-PREHOOK: query: select * from TABLE_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME limit 10
+PREHOOK: query: select * from TABLE_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, PRIVILEGE_TYPE limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@table_privileges
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-POSTHOOK: query: select * from TABLE_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME limit 10
+POSTHOOK: query: select * from TABLE_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, PRIVILEGE_TYPE limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: information_schema@table_privileges
 POSTHOOK: Input: sys@dbs
@@ -3368,12 +3570,12 @@ hive_test_user	hive_test_user	default	default	alltypesorc	DELETE	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	INSERT	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	SELECT	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	UPDATE	YES	NO
+hive_test_user	hive_test_user	default	default	cbo_t1	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	cbo_t1	INSERT	YES	NO
 hive_test_user	hive_test_user	default	default	cbo_t1	SELECT	YES	NO
 hive_test_user	hive_test_user	default	default	cbo_t1	UPDATE	YES	NO
-hive_test_user	hive_test_user	default	default	cbo_t1	INSERT	YES	NO
-hive_test_user	hive_test_user	default	default	cbo_t1	DELETE	YES	NO
-hive_test_user	hive_test_user	default	default	cbo_t2	UPDATE	YES	NO
-hive_test_user	hive_test_user	default	default	cbo_t2	SELECT	YES	NO
+hive_test_user	hive_test_user	default	default	cbo_t2	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	cbo_t2	INSERT	YES	NO
 PREHOOK: query: select * from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@columns
@@ -3392,8 +3594,6 @@ POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 default	default	alltypesorc	ctinyint	0	NULL	YES	tinyint	NULL	NULL	3	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	tinyint	3	10
 default	default	alltypesorc	csmallint	1	NULL	YES	smallint	NULL	NULL	5	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	smallint	5	10
-default	default	alltypesorc	cboolean1	10	NULL	YES	boolean	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	boolean	NULL	NULL
-default	default	alltypesorc	cboolean2	11	NULL	YES	boolean	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	boolean	NULL	NULL
 default	default	alltypesorc	cint	2	NULL	YES	int	NULL	NULL	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	int	10	10
 default	default	alltypesorc	cbigint	3	NULL	YES	bigint	NULL	NULL	19	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	bigint	19	10
 default	default	alltypesorc	cfloat	4	NULL	YES	float	NULL	NULL	23	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	float	23	2
@@ -3402,6 +3602,8 @@ default	default	alltypesorc	cstring1	6	NULL	YES	string	NULL	NULL	NULL	NULL	NULL	
 default	default	alltypesorc	cstring2	7	NULL	YES	string	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	string	NULL	NULL
 default	default	alltypesorc	ctimestamp1	8	NULL	YES	timestamp	NULL	NULL	NULL	NULL	NULL	9	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	timestamp	NULL	NULL
 default	default	alltypesorc	ctimestamp2	9	NULL	YES	timestamp	NULL	NULL	NULL	NULL	NULL	9	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	timestamp	NULL	NULL
+default	default	alltypesorc	cboolean1	10	NULL	YES	boolean	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	boolean	NULL	NULL
+default	default	alltypesorc	cboolean2	11	NULL	YES	boolean	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	boolean	NULL	NULL
 default	default	moretypes	a	0	NULL	YES	decimal(10,2)	NULL	NULL	10	10	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	27	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	decimal(10,2)	10	10
 default	default	moretypes	b	1	NULL	YES	tinyint	NULL	NULL	3	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	27	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	tinyint	3	10
 default	default	moretypes	c	2	NULL	YES	smallint	NULL	NULL	5	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	27	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	smallint	5	10
@@ -3445,3 +3647,5 @@ information_schema	schemata
 information_schema	table_privileges
 information_schema	tables
 information_schema	views
+sys	partition_stats_view
+sys	table_stats_view

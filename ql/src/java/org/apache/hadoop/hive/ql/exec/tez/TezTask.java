@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.io.Serializable;
-import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 
 import java.io.IOException;
@@ -88,6 +86,8 @@ import org.apache.tez.dag.api.client.VertexStatus;
 import org.json.JSONObject;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  *
  * TezTask handles the execution of TezWork. Currently it executes a graph of map and reduce work
@@ -105,6 +105,8 @@ public class TezTask extends Task<TezWork> {
 
   private final DagUtils utils;
 
+  private final Object dagClientLock = new Object();
+  private volatile boolean isShutdown = false;
   private DAGClient dagClient = null;
 
   Map<BaseWork, Vertex> workToVertex = new HashMap<BaseWork, Vertex>();
@@ -122,6 +124,7 @@ public class TezTask extends Task<TezWork> {
   public TezCounters getTezCounters() {
     return counters;
   }
+
 
   @Override
   public int execute(DriverContext driverContext) {
@@ -161,8 +164,12 @@ public class TezTask extends Task<TezWork> {
         // create the tez tmp dir
         scratchDir = utils.createTezDir(scratchDir, conf);
 
+        // This is used to compare global and vertex resources. Global resources are originally
+        // derived from session conf via localizeTempFilesFromConf. So, use that here.
+        Configuration sessionConf =
+            (session != null && session.getConf() != null) ? session.getConf() : conf;
         Map<String,LocalResource> inputOutputLocalResources =
-            getExtraLocalResources(jobConf, scratchDir, inputOutputJars);
+            getExtraLocalResources(jobConf, scratchDir, inputOutputJars, sessionConf);
 
         // Ensure the session is open and has the necessary local resources
         updateSession(session, jobConf, scratchDir, inputOutputJars, inputOutputLocalResources);
@@ -184,12 +191,27 @@ public class TezTask extends Task<TezWork> {
         // Add the extra resources to the dag
         addExtraResourcesToDag(session, dag, inputOutputJars, inputOutputLocalResources);
 
-        // submit will send the job to the cluster and start executing
-        dagClient = submit(jobConf, dag, scratchDir, appJarLr, session,
+        // Check isShutdown opportunistically; it's never unset.
+        if (this.isShutdown) {
+          throw new HiveException("Operation cancelled");
+        }
+        DAGClient dagClient = submit(jobConf, dag, scratchDir, appJarLr, session,
             additionalLr, inputOutputJars, inputOutputLocalResources);
+        boolean wasShutdown = false;
+        synchronized (dagClientLock) {
+          assert this.dagClient == null;
+          wasShutdown = this.isShutdown;
+          if (!wasShutdown) {
+            this.dagClient = dagClient;
+          }
+        }
+        if (wasShutdown) {
+          closeDagClientOnCancellation(dagClient);
+          throw new HiveException("Operation cancelled");
+        }
 
         // finally monitor will print progress until the job is done
-        TezJobMonitor monitor = new TezJobMonitor(work.getWorkMap(),dagClient, conf, dag, ctx);
+        TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(),dagClient, conf, dag, ctx);
         rc = monitor.monitorExecution();
 
         if (rc != 0) {
@@ -249,12 +271,31 @@ public class TezTask extends Task<TezWork> {
         }
       }
       // need to either move tmp files or remove them
+      DAGClient dagClient = null;
+      synchronized (dagClientLock) {
+        dagClient = this.dagClient;
+        this.dagClient = null;
+      }
+      // TODO: not clear why we don't do the rest of the cleanup if dagClient is not created.
+      //       E.g. jobClose will be called if we fail after dagClient creation but no before...
+      //       DagClient as such should have no bearing on jobClose.
       if (dagClient != null) {
         // rc will only be overwritten if close errors out
-        rc = close(work, rc);
+        rc = close(work, rc, dagClient);
       }
     }
     return rc;
+  }
+
+  private void closeDagClientOnCancellation(DAGClient dagClient) {
+    try {
+      dagClient.tryKillDAG();
+      LOG.info("Waiting for Tez task to shut down: " + this);
+      dagClient.waitForCompletion();
+    } catch (Exception ex) {
+      LOG.warn("Failed to shut down TezTask" + this, ex);
+    }
+    closeDagClientWithoutEx(dagClient);
   }
 
   private void logResources(List<LocalResource> additionalLr) {
@@ -273,10 +314,11 @@ public class TezTask extends Task<TezWork> {
    * Converted the list of jars into local resources
    */
   Map<String,LocalResource> getExtraLocalResources(JobConf jobConf, Path scratchDir,
-      String[] inputOutputJars) throws Exception {
+      String[] inputOutputJars, Configuration sessionConf) throws Exception {
     final Map<String,LocalResource> resources = new HashMap<String,LocalResource>();
-    final List<LocalResource> localResources = utils.localizeTempFiles(
-        scratchDir.toString(), jobConf, inputOutputJars);
+    // Skip the files already in session local resources...
+    final List<LocalResource> localResources = utils.localizeTempFiles(scratchDir.toString(),
+        jobConf, inputOutputJars, DagUtils.getTempFilesFromConf(sessionConf));
     if (null != localResources) {
       for (LocalResource lr : localResources) {
         resources.put(utils.getBaseName(lr), lr);
@@ -538,7 +580,8 @@ public class TezTask extends Task<TezWork> {
    * close will move the temp files into the right place for the fetch
    * task. If the job has failed it will clean up the files.
    */
-  int close(TezWork work, int rc) {
+  @VisibleForTesting
+  int close(TezWork work, int rc, DAGClient dagClient) {
     try {
       List<BaseWork> ws = work.getAllWork();
       for (BaseWork w: ws) {
@@ -558,7 +601,9 @@ public class TezTask extends Task<TezWork> {
         console.printError(mesg, "\n" + StringUtils.stringifyException(e));
       }
     }
-    closeDagClientWithoutEx();
+    if (dagClient != null) { // null in tests
+      closeDagClientWithoutEx(dagClient);
+    }
     return rc;
   }
 
@@ -566,10 +611,9 @@ public class TezTask extends Task<TezWork> {
    * Close DagClient, log warning if it throws any exception.
    * We don't want to fail query if that function fails.
    */
-  private void closeDagClientWithoutEx(){
+  private static void closeDagClientWithoutEx(DAGClient dagClient) {
     try {
       dagClient.close();
-      dagClient = null;
     } catch (Exception e) {
       LOG.warn("Failed to close DagClient", e);
     }
@@ -636,17 +680,16 @@ public class TezTask extends Task<TezWork> {
   @Override
   public void shutdown() {
     super.shutdown();
-    if (dagClient != null) {
-      LOG.info("Shutting down Tez task " + this);
-      try {
-        dagClient.tryKillDAG();
-        LOG.info("Waiting for Tez task to shut down: " + this);
-        dagClient.waitForCompletion();
-      } catch (Exception ex) {
-        LOG.warn("Failed to shut down TezTask" + this, ex);
-      }
-      closeDagClientWithoutEx();
+    DAGClient dagClient = null;
+    synchronized (dagClientLock) {
+      isShutdown = true;
+      dagClient = this.dagClient;
+      // Don't set dagClient to null here - execute will only clean up operators if it's set.
     }
+    LOG.info("Shutting down Tez task " + this + " "
+        + ((dagClient == null) ? " before submit" : ""));
+    if (dagClient == null) return;
+    closeDagClientOnCancellation(dagClient);
   }
 
   /** DAG client that does dumb global sync on all the method calls;

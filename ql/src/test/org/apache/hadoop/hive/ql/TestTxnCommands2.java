@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -66,6 +67,8 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.validation.constraints.AssertTrue;
 
 /**
  * TODO: this should be merged with TestTxnCommands once that is checked in
@@ -87,19 +90,27 @@ public class TestTxnCommands2 {
   protected Driver d;
   protected static enum Table {
     ACIDTBL("acidTbl"),
-    ACIDTBLPART("acidTblPart"),
+    ACIDTBLPART("acidTblPart", "p"),
     NONACIDORCTBL("nonAcidOrcTbl"),
-    NONACIDPART("nonAcidPart"),
-    NONACIDPART2("nonAcidPart2"),
-    ACIDNESTEDPART("acidNestedPart");
+    NONACIDPART("nonAcidPart", "p"),
+    NONACIDPART2("nonAcidPart2", "p2"),
+    ACIDNESTEDPART("acidNestedPart", "p,q");
 
     private final String name;
+    private final String partitionColumns;
     @Override
     public String toString() {
       return name;
     }
+    String getPartitionColumns() {
+      return partitionColumns;
+    }
     Table(String name) {
+      this(name, null);
+    }
+    Table(String name, String partitionColumns) {
       this.name = name;
+      this.partitionColumns = partitionColumns;
     }
   }
 
@@ -319,6 +330,68 @@ public class TestTxnCommands2 {
     resultData = new int[][] {{3,8}, {5,6}, {9,20}};
     Assert.assertEquals(stringifyValues(resultData), rs);
   }
+  /**
+   * see HIVE-16177
+   * See also {@link TestTxnCommands#testNonAcidToAcidConversion01()}
+   */
+  @Test
+  public void testNonAcidToAcidConversion02() throws Exception {
+    //create 2 rows in a file 000001_0 (and an empty 000000_0)
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(1,2),(1,3)");
+    //create 2 rows in a file 000000_0_copy1 and 2 rows in a file 000001_0_copy1
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(0,12),(0,13),(1,4),(1,5)");
+    //create 1 row in a file 000001_0_copy2 (and empty 000000_0_copy2?)
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(1,6)");
+
+    //convert the table to Acid
+    runStatementOnDriver("alter table " + Table.NONACIDORCTBL + " SET TBLPROPERTIES ('transactional'='true')");
+    List<String> rs1 = runStatementOnDriver("describe "+ Table.NONACIDORCTBL);
+    //create a some of delta directories
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(0,15),(1,16)");
+    runStatementOnDriver("update " + Table.NONACIDORCTBL + " set b = 120 where a = 0 and b = 12");
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(0,17)");
+    runStatementOnDriver("delete from " + Table.NONACIDORCTBL + " where a = 1 and b = 3");
+
+    List<String> rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " +  Table.NONACIDORCTBL + " order by a,b");
+    LOG.warn("before compact");
+    for(String s : rs) {
+      LOG.warn(s);
+    }
+    /*
+     * All ROW__IDs are unique on read after conversion to acid 
+     * ROW__IDs are exactly the same before and after compaction
+     * Also check the file name after compaction for completeness
+     */
+    String[][] expected = {
+      {"{\"transactionid\":0,\"bucketid\":0,\"rowid\":0}\t0\t13",  "bucket_00000"},
+      {"{\"transactionid\":18,\"bucketid\":536870912,\"rowid\":0}\t0\t15", "bucket_00000"},
+      {"{\"transactionid\":20,\"bucketid\":536870912,\"rowid\":0}\t0\t17", "bucket_00000"},
+      {"{\"transactionid\":0,\"bucketid\":0,\"rowid\":1}\t0\t120", "bucket_00000"},
+      {"{\"transactionid\":0,\"bucketid\":1,\"rowid\":1}\t1\t2",   "bucket_00001"},
+      {"{\"transactionid\":0,\"bucketid\":1,\"rowid\":3}\t1\t4",   "bucket_00001"},
+      {"{\"transactionid\":0,\"bucketid\":1,\"rowid\":2}\t1\t5",   "bucket_00001"},
+      {"{\"transactionid\":0,\"bucketid\":1,\"rowid\":4}\t1\t6",   "bucket_00001"},
+      {"{\"transactionid\":18,\"bucketid\":536936448,\"rowid\":0}\t1\t16", "bucket_00001"}
+    };
+    Assert.assertEquals("Unexpected row count before compaction", expected.length, rs.size());
+    for(int i = 0; i < expected.length; i++) {
+      Assert.assertTrue("Actual line " + i + " bc: " + rs.get(i), rs.get(i).startsWith(expected[i][0]));
+    }
+    //run Compaction
+    runStatementOnDriver("alter table "+ TestTxnCommands2.Table.NONACIDORCTBL +" compact 'major'");
+    TestTxnCommands2.runWorker(hiveConf);
+    rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.NONACIDORCTBL + " order by a,b");
+    LOG.warn("after compact");
+    for(String s : rs) {
+      LOG.warn(s);
+    }
+    Assert.assertEquals("Unexpected row count after compaction", expected.length, rs.size());
+    for(int i = 0; i < expected.length; i++) {
+      Assert.assertTrue("Actual line " + i + " ac: " + rs.get(i), rs.get(i).startsWith(expected[i][0]));
+      Assert.assertTrue("Actual line(bucket) " + i + " ac: " + rs.get(i), rs.get(i).endsWith(expected[i][1]));
+    }
+    //make sure they are the same before and after compaction
+  }
 
   /**
    * Test the query correctness and directory layout after ACID table conversion and MAJOR compaction
@@ -477,7 +550,7 @@ public class TestTxnCommands2 {
     List<String> rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
     int [][] resultData = new int[][] {{1, 2}};
     Assert.assertEquals(stringifyValues(resultData), rs);
-    rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);
+    rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);//todo: what is the point of this if we just did select *?
     int resultCount = 1;
     Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
 
@@ -493,7 +566,7 @@ public class TestTxnCommands2 {
     rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
     resultData = new int[][] {{1, 2}};
     Assert.assertEquals(stringifyValues(resultData), rs);
-    rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);
+    rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);//todo: what is the point of this if we just did select *?
     resultCount = 1;
     Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
 
@@ -686,7 +759,7 @@ public class TestTxnCommands2 {
     rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
     resultData = new int[][] {{1, 3}, {3, 4}};
     Assert.assertEquals(stringifyValues(resultData), rs);
-    rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);
+    rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);//todo: what is the point of this if we just did select *?
     resultCount = 2;
     Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
 
@@ -722,7 +795,7 @@ public class TestTxnCommands2 {
     rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
     resultData = new int[][] {{1, 3}, {3, 4}};
     Assert.assertEquals(stringifyValues(resultData), rs);
-    rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);
+    rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);//todo: what is the point of this if we just did select *?
     resultCount = 2;
     Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
 
@@ -1438,12 +1511,13 @@ public class TestTxnCommands2 {
     String query = "merge into " + Table.ACIDTBL +
       " t using " + Table.NONACIDPART2 + " s ON t.a = s.a2 " +
       "WHEN MATCHED AND t.b between 1 and 3 THEN UPDATE set b = s.b2 " +
-      "WHEN NOT MATCHED and s.b2 >= 11 THEN INSERT VALUES(s.a2, s.b2)";
+      "WHEN NOT MATCHED and s.b2 >= 8 THEN INSERT VALUES(s.a2, s.b2)";
     runStatementOnDriver(query);
 
     r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
-    int[][] rExpected = {{2,2},{4,3},{5,6},{7,8},{11,11}};
+    int[][] rExpected = {{2,2},{4,3},{5,6},{7,8},{8,8},{11,11}};
     Assert.assertEquals(stringifyValues(rExpected), r);
+    assertUniqueID(Table.ACIDTBL);
   }
 
   /**
@@ -1471,6 +1545,7 @@ public class TestTxnCommands2 {
     r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
     int[][] rExpected = {{2,2},{4,44},{5,5},{7,8},{11,11}};
     Assert.assertEquals(stringifyValues(rExpected), r);
+    assertUniqueID(Table.ACIDTBL);
   }
 
   /**
@@ -1497,27 +1572,34 @@ public class TestTxnCommands2 {
     int[][] rExpected = {{7,8},{11,11}};
     Assert.assertEquals(stringifyValues(rExpected), r);
   }
-  /**
-   * https://hortonworks.jira.com/browse/BUG-66580
-   * @throws Exception
-   */
-  @Ignore
   @Test
   public void testMultiInsert() throws Exception {
-    runStatementOnDriver("create table if not exists  srcpart (a int, b int, c int) " +
-      "partitioned by (z int) clustered by (a) into 2 buckets " +
-      "stored as orc tblproperties('transactional'='true')");
     runStatementOnDriver("create temporary table if not exists data1 (x int)");
-//    runStatementOnDriver("create temporary table if not exists data2 (x int)");
-
-    runStatementOnDriver("insert into data1 values (1),(2),(3)");
-//    runStatementOnDriver("insert into data2 values (4),(5),(6)");
+    runStatementOnDriver("insert into data1 values (1),(2),(1)");
     d.destroy();
     hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     d = new Driver(hiveConf);
-    List<String> r = runStatementOnDriver(" from data1 " +
-      "insert into srcpart partition(z) select 0,0,1,x  " +
-      "insert into srcpart partition(z=1) select 0,0,1");
+
+    runStatementOnDriver(" from data1 " +
+      "insert into " + Table.ACIDTBLPART + " partition(p) select 0, 0, 'p' || x  "
+      +
+      "insert into " + Table.ACIDTBLPART + " partition(p='p1') select 0, 1");
+    /**
+     * Using {@link BucketCodec.V0} the output
+     * is missing 1 of the (p1,0,1) rows because they have the same ROW__ID and only differ by
+     * StatementId so {@link org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger} skips one.
+     * With split update (and V0), the data is read correctly (insert deltas are now the base) but we still
+     * should get duplicate ROW__IDs.
+     */
+    List<String> r = runStatementOnDriver("select p,a,b from " + Table.ACIDTBLPART + " order by p, a, b");
+    Assert.assertEquals("[p1\t0\t0, p1\t0\t0, p1\t0\t1, p1\t0\t1, p1\t0\t1, p2\t0\t0]", r.toString());
+    assertUniqueID(Table.ACIDTBLPART);
+    /**
+     * this delete + select covers VectorizedOrcAcidRowBatchReader
+     */
+    runStatementOnDriver("delete from " + Table.ACIDTBLPART);
+    r = runStatementOnDriver("select p,a,b from " + Table.ACIDTBLPART + " order by p, a, b");
+    Assert.assertEquals("[]", r.toString());
   }
   /**
    * Investigating DP and WriteEntity, etc
@@ -1583,6 +1665,8 @@ public class TestTxnCommands2 {
     r1 = runStatementOnDriver("select p,a,b from " + Table.ACIDTBLPART + " order by p, a, b");
     String result= r1.toString();
     Assert.assertEquals("[new part\t5\t5, new part\t11\t11, p1\t1\t1, p1\t2\t15, p1\t3\t3, p2\t4\t44]", result);
+    //note: inserts go into 'new part'... so this won't fail
+    assertUniqueID(Table.ACIDTBLPART);
   }
   /**
    * Using nested partitions and thus DummyPartition
@@ -1605,6 +1689,8 @@ public class TestTxnCommands2 {
       "when not matched then insert values(s.a, s.b, 3,4)");
     r1 = runStatementOnDriver("select p,q,a,b from " + Table.ACIDNESTEDPART + " order by p,q, a, b");
     Assert.assertEquals(stringifyValues(new int[][] {{1,1,1,1},{1,1,3,3},{1,2,2,15},{1,2,4,44},{3,4,5,5},{3,4,11,11}}), r1);
+    //insert of merge lands in part (3,4) - no updates land there
+    assertUniqueID(Table.ACIDNESTEDPART);
   }
   @Ignore("Covered elsewhere")
   @Test
@@ -1641,6 +1727,240 @@ public class TestTxnCommands2 {
     Assert.assertEquals(stringifyValues(rExpected), r);
   }
 
+  @Test
+  public void testBucketCodec() throws Exception {
+    d.destroy();
+    //insert data in "legacy" format
+    hiveConf.setIntVar(HiveConf.ConfVars.TESTMODE_BUCKET_CODEC_VERSION, 0);
+    d = new Driver(hiveConf);
+
+    int[][] targetVals = {{2,1},{4,3},{5,6},{7,8}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(targetVals));
+
+    d.destroy();
+    hiveConf.setIntVar(HiveConf.ConfVars.TESTMODE_BUCKET_CODEC_VERSION, 1);
+    d = new Driver(hiveConf);
+    //do some operations with new format
+    runStatementOnDriver("update " + Table.ACIDTBL + " set b=11 where a in (5,7)");
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " values(11,11)");
+    runStatementOnDriver("delete from " + Table.ACIDTBL + " where a = 7");
+
+    //make sure we get the right data back before/after compactions
+    List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] rExpected = {{2,1},{4,3},{5,11},{11,11}};
+    Assert.assertEquals(stringifyValues(rExpected), r);
+
+    runStatementOnDriver("ALTER TABLE " + Table.ACIDTBL + " COMPACT 'MINOR'");
+    runWorker(hiveConf);
+
+    r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    Assert.assertEquals(stringifyValues(rExpected), r);
+
+    runStatementOnDriver("ALTER TABLE " + Table.ACIDTBL + " COMPACT 'MAJOR'");
+    runWorker(hiveConf);
+
+    r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    Assert.assertEquals(stringifyValues(rExpected), r);
+  }
+  /**
+   * Test the scenario when IOW comes in before a MAJOR compaction happens
+   * @throws Exception
+   */
+  @Test
+  public void testInsertOverwrite1() throws Exception {
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] status;
+
+    // 1. Insert two rows to an ACID table
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(1,2)");
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(3,4)");
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs in the location
+    Assert.assertEquals(2, status.length);
+    for (int i = 0; i < status.length; i++) {
+      Assert.assertTrue(status[i].getPath().getName().matches("delta_.*"));
+    }
+
+    // 2. INSERT OVERWRITE
+    // Prepare data for the source table
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(5,6),(7,8)");
+    // Insert overwrite ACID table from source table
+    runStatementOnDriver("insert overwrite table " + Table.ACIDTBL + " select a,b from " + Table.NONACIDORCTBL);
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs, plus a base dir in the location
+    Assert.assertEquals(3, status.length);
+    boolean sawBase = false;
+    String baseDir = "";
+    int deltaCount = 0;
+    for (int i = 0; i < status.length; i++) {
+      String dirName = status[i].getPath().getName();
+      if (dirName.matches("delta_.*")) {
+        deltaCount++;
+      } else {
+        sawBase = true;
+        baseDir = dirName;
+        Assert.assertTrue(baseDir.matches("base_.*"));
+      }
+    }
+    Assert.assertEquals(2, deltaCount);
+    Assert.assertTrue(sawBase);
+    // Verify query result
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    int [][] resultData = new int[][] {{5,6},{7,8}};
+    Assert.assertEquals(stringifyValues(resultData), rs);
+
+    // 3. Perform a major compaction. Nothing should change. Both deltas and base dirs should have the same name.
+    // Re-verify directory layout and query result by using the same logic as above
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs, plus a base dir in the location
+    Assert.assertEquals(3, status.length);
+    sawBase = false;
+    deltaCount = 0;
+    for (int i = 0; i < status.length; i++) {
+      String dirName = status[i].getPath().getName();
+      if (dirName.matches("delta_.*")) {
+        deltaCount++;
+      } else {
+        sawBase = true;
+        Assert.assertTrue(dirName.matches("base_.*"));
+        Assert.assertEquals(baseDir, dirName);
+      }
+    }
+    Assert.assertEquals(2, deltaCount);
+    Assert.assertTrue(sawBase);
+    // Verify query result
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData), rs);
+
+    // 4. Run Cleaner. It should remove the 2 delta dirs.
+    runCleaner(hiveConf);
+    // There should be only 1 directory left: base_xxxxxxx.
+    // The delta dirs should have been cleaned up.
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    Assert.assertEquals(1, status.length);
+    Assert.assertTrue(status[0].getPath().getName().matches("base_.*"));
+    Assert.assertEquals(baseDir, status[0].getPath().getName());
+    // Verify query result
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData), rs);
+  }
+
+  /**
+   * Test the scenario when IOW comes in after a MAJOR compaction happens
+   * @throws Exception
+   */
+  @Test
+  public void testInsertOverwrite2() throws Exception {
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] status;
+
+    // 1. Insert two rows to an ACID table
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(1,2)");
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(3,4)");
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs in the location
+    Assert.assertEquals(2, status.length);
+    for (int i = 0; i < status.length; i++) {
+      Assert.assertTrue(status[i].getPath().getName().matches("delta_.*"));
+    }
+
+    // 2. Perform a major compaction. There should be an extra base dir now.
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs, plus a base dir in the location
+    Assert.assertEquals(3, status.length);
+    boolean sawBase = false;
+    int deltaCount = 0;
+    for (int i = 0; i < status.length; i++) {
+      String dirName = status[i].getPath().getName();
+      if (dirName.matches("delta_.*")) {
+        deltaCount++;
+      } else {
+        sawBase = true;
+        Assert.assertTrue(dirName.matches("base_.*"));
+      }
+    }
+    Assert.assertEquals(2, deltaCount);
+    Assert.assertTrue(sawBase);
+    // Verify query result
+    int [][] resultData = new int[][] {{1,2},{3,4}};
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData), rs);
+
+    // 3. INSERT OVERWRITE
+    // Prepare data for the source table
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(5,6),(7,8)");
+    // Insert overwrite ACID table from source table
+    runStatementOnDriver("insert overwrite table " + Table.ACIDTBL + " select a,b from " + Table.NONACIDORCTBL);
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs, plus 2 base dirs in the location
+    Assert.assertEquals(4, status.length);
+    int baseCount = 0;
+    deltaCount = 0;
+    for (int i = 0; i < status.length; i++) {
+      String dirName = status[i].getPath().getName();
+      if (dirName.matches("delta_.*")) {
+        deltaCount++;
+      } else {
+        baseCount++;
+      }
+    }
+    Assert.assertEquals(2, deltaCount);
+    Assert.assertEquals(2, baseCount);
+    // Verify query result
+    resultData = new int[][] {{5,6},{7,8}};
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData), rs);
+
+    // 4. Perform another major compaction. Nothing should change. Both deltas and  both base dirs
+    // should have the same name.
+    // Re-verify directory layout and query result by using the same logic as above
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs, plus 2 base dirs in the location
+    Assert.assertEquals(4, status.length);
+    baseCount = 0;
+    deltaCount = 0;
+    for (int i = 0; i < status.length; i++) {
+      String dirName = status[i].getPath().getName();
+      if (dirName.matches("delta_.*")) {
+        deltaCount++;
+      } else {
+        Assert.assertTrue(dirName.matches("base_.*"));
+        baseCount++;
+      }
+    }
+    Assert.assertEquals(2, deltaCount);
+    Assert.assertEquals(2, baseCount);
+    // Verify query result
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData), rs);
+
+    // 5. Run Cleaner. It should remove the 2 delta dirs and 1 old base dir.
+    runCleaner(hiveConf);
+    // There should be only 1 directory left: base_xxxxxxx.
+    // The delta dirs should have been cleaned up.
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    Assert.assertEquals(1, status.length);
+    Assert.assertTrue(status[0].getPath().getName().matches("base_.*"));
+    // Verify query result
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData), rs);
+  }
+
   /**
    * takes raw data and turns it into a string as if from Driver.getResults()
    * sorts rows in dictionary order
@@ -1661,7 +1981,7 @@ public class TestTxnCommands2 {
     }
     return rs;
   }
-  private static final class RowComp implements Comparator<int[]> {
+  static class RowComp implements Comparator<int[]> {
     @Override
     public int compare(int[] row1, int[] row2) {
       assert row1 != null && row2 != null && row1.length == row2.length;
@@ -1674,7 +1994,7 @@ public class TestTxnCommands2 {
       return 0;
     }
   }
-  String makeValuesClause(int[][] rows) {
+  static String makeValuesClause(int[][] rows) {
     assert rows.length > 0;
     StringBuilder sb = new StringBuilder("values");
     for(int[] row : rows) {
@@ -1704,5 +2024,20 @@ public class TestTxnCommands2 {
     List<String> rs = new ArrayList<String>();
     d.getResults(rs);
     return rs;
+  }
+  final void assertUniqueID(Table table) throws Exception {
+    String partCols = table.getPartitionColumns();
+    //check to make sure there are no duplicate ROW__IDs - HIVE-16832
+    StringBuilder sb = new StringBuilder("select ");
+    if(partCols != null && partCols.length() > 0) {
+      sb.append(partCols).append(",");
+    }
+    sb.append(" ROW__ID, count(*) from ").append(table).append(" group by ");
+    if(partCols != null && partCols.length() > 0) {
+      sb.append(partCols).append(",");
+    }
+    sb.append("ROW__ID having count(*) > 1");
+    List<String> r = runStatementOnDriver(sb.toString());
+    Assert.assertTrue("Duplicate ROW__ID: " + r.toString(),r.size() == 0);
   }
 }

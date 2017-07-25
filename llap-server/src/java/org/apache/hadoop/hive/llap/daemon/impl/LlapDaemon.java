@@ -14,8 +14,6 @@
 
 package org.apache.hadoop.hive.llap.daemon.impl;
 
-import org.apache.hadoop.hive.llap.LlapOutputFormatService;
-
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
@@ -42,6 +40,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
+import org.apache.hadoop.hive.llap.LlapOutputFormatService;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
@@ -77,6 +76,7 @@ import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.util.ConverterUtils;
+import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.slf4j.Logger;
@@ -90,7 +90,6 @@ import com.google.common.primitives.Ints;
 public class LlapDaemon extends CompositeService implements ContainerRunner, LlapDaemonMXBean {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapDaemon.class);
-
   private final Configuration shuffleHandlerConf;
   private final SecretManager secretManager;
   private final LlapProtocolServerImpl server;
@@ -198,7 +197,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       ", workDirs=" + Arrays.toString(localDirs) +
       ", shufflePort=" + shufflePort +
       ", waitQueueSize= " + waitQueueSize +
-      ", enablePreemption= " + enablePreemption;
+      ", enablePreemption= " + enablePreemption +
+      ", versionInfo= (" + HiveVersionInfo.getBuildVersion() + ")";
     LOG.info(logMsg);
     final String currTSISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date());
     // Time based log retrieval may not fetch the above log line so logging to stderr for debugging purpose.
@@ -243,7 +243,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     pauseMonitor.start();
     String displayNameJvm = "LlapDaemonJvmMetrics-" + hostName;
     String sessionId = MetricsUtils.getUUID();
-    LlapDaemonJvmMetrics.create(displayNameJvm, sessionId);
+    LlapDaemonJvmMetrics.create(displayNameJvm, sessionId, daemonConf);
     String displayName = "LlapDaemonExecutorMetrics-" + hostName;
     daemonConf.set("llap.daemon.metrics.sessionid", sessionId);
     String[] strIntervals = HiveConf.getTrimmedStringsVar(daemonConf,
@@ -537,7 +537,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
       llapDaemon.init(daemonConf);
       llapDaemon.start();
-      LOG.info("Started LlapDaemon");
+      LOG.info("Started LlapDaemon with PID: {}", LlapDaemonInfo.INSTANCE.getPID());
       // Relying on the RPC threads to keep the service alive.
     } catch (Throwable t) {
       // TODO Replace this with a ExceptionHandler / ShutdownHook

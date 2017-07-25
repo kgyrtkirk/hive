@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.common.jsonexplain.Vertex.VertexType;
 import org.json.JSONArray;
+import com.google.common.annotations.VisibleForTesting;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -85,7 +86,8 @@ public final class Op {
     }
   }
 
-  private void inlineJoinOp() throws Exception {
+  @VisibleForTesting
+  void inlineJoinOp() throws Exception {
     // inline map join operator
     if (this.type == OpType.MAPJOIN) {
       // get the map for posToVertex
@@ -170,7 +172,7 @@ public final class Op {
         }
       }
       this.attrs.remove("keys:");
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       JSONArray conditionMap = opObject.getJSONArray("condition map:");
       for (int index = 0; index < conditionMap.length(); index++) {
         JSONObject cond = conditionMap.getJSONObject(index);
@@ -250,7 +252,7 @@ public final class Op {
       }
       // update the attrs
       this.attrs.remove("keys:");
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       JSONArray conditionMap = opObject.getJSONArray("condition map:");
       for (int index = 0; index < conditionMap.length(); index++) {
         JSONObject cond = conditionMap.getJSONObject(index);
@@ -273,7 +275,7 @@ public final class Op {
   }
 
   private String getNameWithOpIdStats() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(DagJsonParserUtils.renameReduceOutputOperator(name, vertex));
     if (operatorId != null) {
       sb.append(" [" + operatorId + "]");

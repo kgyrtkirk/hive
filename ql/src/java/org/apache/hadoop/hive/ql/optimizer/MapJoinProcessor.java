@@ -432,7 +432,7 @@ public class MapJoinProcessor extends Transform {
         smbJoinDesc.getOutputColumnNames(),
         bigTablePos, smbJoinDesc.getConds(),
         smbJoinDesc.getFilters(), smbJoinDesc.isNoOuterJoin(), smbJoinDesc.getDumpFilePrefix(),
-        smbJoinDesc.getNoConditionalTaskSize(), smbJoinDesc.getInMemoryDataSize());
+        smbJoinDesc.getMemoryMonitorInfo(), smbJoinDesc.getInMemoryDataSize());
 
     mapJoinDesc.setStatistics(smbJoinDesc.getStatistics());
 
@@ -1073,8 +1073,11 @@ public class MapJoinProcessor extends Transform {
         ExprNodeDesc expr = colExprMap.get(column.getInternalName());
         int index = ExprNodeDescUtils.indexOf(expr, values);
         if (index >= 0) {
-          colExprMap.put(column.getInternalName(), newValues.get(index));
           schema.set(i, null);
+          if (adjustParentsChildren) {
+            // Since we remove reduce sink parents, replace original expressions
+            colExprMap.put(column.getInternalName(), newValues.get(index));
+          }
         }
       }
     }
@@ -1186,7 +1189,7 @@ public class MapJoinProcessor extends Transform {
         new MapJoinDesc(keyExprMap, keyTableDesc, newValueExprs, valueTableDescs,
             valueFilteredTableDescs, outputColumnNames, mapJoinPos, joinCondns, filters,
             op.getConf().getNoOuterJoin(), dumpFilePrefix,
-            op.getConf().getNoConditionalTaskSize(), op.getConf().getInMemoryDataSize());
+            op.getConf().getMemoryMonitorInfo(), op.getConf().getInMemoryDataSize());
     mapJoinDescriptor.setStatistics(op.getConf().getStatistics());
     mapJoinDescriptor.setTagOrder(tagOrder);
     mapJoinDescriptor.setNullSafes(desc.getNullSafes());

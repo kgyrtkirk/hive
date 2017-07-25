@@ -60,6 +60,7 @@ public class QueryInfo {
   private final LlapNodeId amNodeId;
   private final String appTokenIdentifier;
   private final Token<JobTokenIdentifier> appToken;
+  private final boolean isExternalQuery;
   // Map of states for different vertices.
 
   private final Set<QueryFragmentInfo> knownFragments =
@@ -77,7 +78,8 @@ public class QueryInfo {
     String[] localDirsBase, FileSystem localFs, String tokenUserName,
     String tokenAppId, final LlapNodeId amNodeId,
     String tokenIdentifier,
-    Token<JobTokenIdentifier> appToken) {
+    Token<JobTokenIdentifier> appToken,
+    boolean isExternalQuery) {
     this.queryIdentifier = queryIdentifier;
     this.appIdString = appIdString;
     this.dagIdString = dagIdString;
@@ -93,9 +95,12 @@ public class QueryInfo {
     this.amNodeId = amNodeId;
     this.appTokenIdentifier = tokenIdentifier;
     this.appToken = appToken;
+    this.isExternalQuery = isExternalQuery;
     final InetSocketAddress address =
         NetUtils.createSocketAddrForHost(amNodeId.getHostname(), amNodeId.getPort());
     SecurityUtil.setTokenService(appToken, address);
+    // TODO Caching this and re-using across submissions breaks AM recovery, since the
+    // new AM may run on a different host/port.
   }
 
   public QueryIdentifier getQueryIdentifier() {
@@ -144,6 +149,10 @@ public class QueryInfo {
 
   public List<QueryFragmentInfo> getRegisteredFragments() {
     return Lists.newArrayList(knownFragments);
+  }
+
+  public boolean isExternalQuery() {
+    return isExternalQuery;
   }
 
   private synchronized void createLocalDirs() throws IOException {
@@ -227,11 +236,12 @@ public class QueryInfo {
           sourceToEntity.put(source, entityInfo);
         }
 
-        if (lastFinishableState == fragmentInfo.canFinish()) {
+        boolean canFinish = QueryFragmentInfo.canFinish(fragmentInfo);
+        if (lastFinishableState == canFinish) {
           // State has not changed.
           return true;
         } else {
-          entityInfo.setLastFinishableState(fragmentInfo.canFinish());
+          entityInfo.setLastFinishableState(canFinish);
           return false;
         }
       } finally {
@@ -267,7 +277,7 @@ public class QueryInfo {
       }
       if (interestedEntityInfos != null) {
         for (EntityInfo entityInfo : interestedEntityInfos) {
-          boolean newFinishState = entityInfo.getFragmentInfo().canFinish();
+          boolean newFinishState = QueryFragmentInfo.canFinish(entityInfo.getFragmentInfo());
           if (newFinishState != entityInfo.getLastFinishableState()) {
             // State changed. Callback
             entityInfo.setLastFinishableState(newFinishState);

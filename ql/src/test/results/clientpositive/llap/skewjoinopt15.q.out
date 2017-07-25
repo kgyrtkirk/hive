@@ -224,7 +224,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Right Outer Join0 to 1
+                     Right Outer Join 0 to 1
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
@@ -332,7 +332,7 @@ STAGE PLANS:
                   1 _col0 (type: int)
                 Statistics: Num rows: 6 Data size: 26 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(1)
+                  aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -429,13 +429,13 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Right Outer Join0 to 1
+                     Right Outer Join 0 to 1
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 Statistics: Num rows: 6 Data size: 26 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(1)
+                  aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

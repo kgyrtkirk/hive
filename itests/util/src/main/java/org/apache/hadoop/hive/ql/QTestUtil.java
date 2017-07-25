@@ -350,7 +350,7 @@ public class QTestUtil {
     if (!useHBaseMetastore) {
       // Plug verifying metastore in for testing DirectSQL.
       conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
-        "org.apache.hadoop.hive.metastore.VerifyingObjectStore");
+          "org.apache.hadoop.hive.metastore.VerifyingObjectStore");
     } else {
       conf.setVar(ConfVars.METASTORE_RAW_STORE_IMPL, HBaseStore.class.getName());
       conf.setBoolVar(ConfVars.METASTORE_FASTPATH, true);
@@ -1696,6 +1696,8 @@ public class QTestUtil {
       ".*.hive-staging.*",
       "pk_-?[0-9]*_[0-9]*_[0-9]*",
       "fk_-?[0-9]*_[0-9]*_[0-9]*",
+      "uk_-?[0-9]*_[0-9]*_[0-9]*",
+      "nn_-?[0-9]*_[0-9]*_[0-9]*",
       ".*at com\\.sun\\.proxy.*",
       ".*at com\\.jolbox.*",
       ".*at com\\.zaxxer.*",

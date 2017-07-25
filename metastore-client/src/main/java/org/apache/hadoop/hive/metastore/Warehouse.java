@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ReplChangeManager.RecycleType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -196,8 +197,13 @@ public class Warehouse {
     return false;
   }
 
-  public boolean renameDir(Path sourcePath, Path destPath) throws MetaException {
+  public boolean renameDir(Path sourcePath, Path destPath, boolean needCmRecycle) throws MetaException {
     try {
+      if (needCmRecycle) {
+        // Copy the source files to cmroot. As the client will move the source files to another
+        // location, we should make a copy of the files to cmroot instead of moving it.
+        cm.recycle(sourcePath, RecycleType.COPY, true);
+      }
       FileSystem fs = getFs(sourcePath);
       return FileUtils.rename(fs, sourcePath, destPath, conf);
     } catch (Exception ex) {
@@ -206,14 +212,23 @@ public class Warehouse {
     return false;
   }
 
+  void addToChangeManagement(Path file) throws MetaException {
+    cm.recycle(file, RecycleType.COPY, true);
+  }
+
   public boolean deleteDir(Path f, boolean recursive) throws MetaException {
     return deleteDir(f, recursive, false);
   }
 
   public boolean deleteDir(Path f, boolean recursive, boolean ifPurge) throws MetaException {
-    cm.recycle(f, ifPurge);
+    cm.recycle(f, RecycleType.MOVE, ifPurge);
     FileSystem fs = getFs(f);
     return fsHandler.deleteDir(fs, f, recursive, ifPurge, conf);
+  }
+
+  public void recycleDirToCmPath(Path f, boolean ifPurge) throws MetaException {
+    cm.recycle(f, RecycleType.MOVE, ifPurge);
+    return;
   }
 
   public boolean isEmpty(Path path) throws IOException, MetaException {

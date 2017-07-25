@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.commons.math3.util.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
@@ -425,6 +426,7 @@ public class HttpServer {
     addServlet("jmx", "/jmx", JMXJsonServlet.class);
     addServlet("conf", "/conf", ConfServlet.class);
     addServlet("stacks", "/stacks", StackServlet.class);
+    addServlet("conflog", "/conflog", Log4j2ConfiguratorServlet.class);
 
     for (Pair<String, Class<? extends HttpServlet>> p : b.servlets) {
       addServlet(p.getFirst(), "/" + p.getFirst(), p.getSecond());

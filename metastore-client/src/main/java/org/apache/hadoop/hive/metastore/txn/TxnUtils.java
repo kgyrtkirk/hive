@@ -75,7 +75,7 @@ public class TxnUtils {
    * Transform a {@link org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse} to a
    * {@link org.apache.hadoop.hive.common.ValidTxnList}.  This assumes that the caller intends to
    * compact the files, and thus treats only open transactions as invalid.  Additionally any
-   * txnId > highestOpenTxnId is also invalid.  This is to avoid creating something like
+   * txnId &gt; highestOpenTxnId is also invalid.  This is to avoid creating something like
    * delta_17_120 where txnId 80, for example, is still open.
    * @param txns txn list from the metastore
    * @return a valid txn list.
@@ -99,7 +99,7 @@ public class TxnUtils {
     }
     highWater = minOpenTxn == Long.MAX_VALUE ? highWater : minOpenTxn - 1;
     BitSet bitSet = new BitSet(exceptions.length);
-    bitSet.set(0, bitSet.length()); // for ValidCompactorTxnList, everything in exceptions are aborted
+    bitSet.set(0, exceptions.length); // for ValidCompactorTxnList, everything in exceptions are aborted
     return new ValidCompactorTxnList(exceptions, bitSet, highWater);
   }
 
