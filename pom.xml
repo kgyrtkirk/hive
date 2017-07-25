@@ -913,8 +913,6 @@
           <artifactId>maven-eclipse-plugin</artifactId>
           <version>${maven.eclipse.plugin.version}</version>
           <configuration>
-            <downloadJavadocs>true</downloadJavadocs>
-            <downloadSources>true</downloadSources>
             <workspaceActiveCodeStyleProfileName>Hive</workspaceActiveCodeStyleProfileName>
             <workspaceCodeStylesURL>${basedir}/dev-support/eclipse-styles.xml</workspaceCodeStylesURL>
           </configuration>
