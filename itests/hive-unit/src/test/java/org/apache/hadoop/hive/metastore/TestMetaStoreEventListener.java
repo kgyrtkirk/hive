@@ -95,15 +95,10 @@ public class TestMetaStoreEventListener extends TestCase {
         DummyPreListener.class.getName());
 
     int port = MetaStoreUtils.findFreePort();
-<<<<<<< HEAD
-    MetaStoreTestUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
-
-=======
->>>>>>> asf/master
     hiveConf = new HiveConf(this.getClass());
 
     hiveConf.setVar(HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN, metaConfVal);
-    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge(), hiveConf);
+    MetaStoreTestUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge(), hiveConf);
 
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);

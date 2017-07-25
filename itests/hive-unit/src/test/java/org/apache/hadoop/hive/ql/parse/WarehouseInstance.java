@@ -90,19 +90,6 @@ class WarehouseInstance implements Closeable {
     }
 
     // turn on db notification listener on meta store
-<<<<<<< HEAD
-    hconf.setVar(HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS, LISTENER_CLASS);
-    hconf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
-    hconf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
-    hconf.setVar(HiveConf.ConfVars.REPLCMDIR, hiveWarehouseLocation + "/cmroot/");
-    int metaStorePort = MetaStoreTestUtils.startMetaStore(hconf);
-    hconf.setVar(HiveConf.ConfVars.REPLDIR, hiveWarehouseLocation + "/hrepl/");
-    hconf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + metaStorePort);
-    hconf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
-    hconf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hconf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
-    hconf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
-=======
     hiveConf.setVar(HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS, LISTENER_CLASS);
     hiveConf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
@@ -117,11 +104,10 @@ class WarehouseInstance implements Closeable {
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
->>>>>>> asf/master
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
 
-    int metaStorePort = MetaStoreUtils.startMetaStore(hiveConf);
+    int metaStorePort = MetaStoreTestUtils.startMetaStore(hiveConf);
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + metaStorePort);
 
     Path testPath = new Path(hiveWarehouseLocation);
