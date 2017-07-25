@@ -16,12 +16,12 @@ public class MetaStoreTestUtils {
   protected static final Logger LOG = LoggerFactory.getLogger("hive.log");
   
   public static int startMetaStore() throws Exception {
-    return MetaStoreTestUtils.startMetaStore(ShimLoader.getHadoopThriftAuthBridge(), null);
+    return startMetaStore(ShimLoader.getHadoopThriftAuthBridge(), null);
   }
 
   public static int startMetaStore(final HadoopThriftAuthBridge bridge, HiveConf conf) throws Exception {
     int port = MetaStoreUtils.findFreePort();
-    MetaStoreTestUtils.startMetaStore(port, bridge, conf);
+    startMetaStore(port, bridge, conf);
     return port;
   }
 
@@ -30,30 +30,30 @@ public class MetaStoreTestUtils {
   }
 
   public static void startMetaStore(final int port, final HadoopThriftAuthBridge bridge) throws Exception {
-    MetaStoreTestUtils.startMetaStore(port, bridge, null);
+    startMetaStore(port, bridge, null);
   }
 
   public static void startMetaStore(final int port,
-        final HadoopThriftAuthBridge bridge, HiveConf hiveConf)
-        throws Exception{
-      if (hiveConf == null) {
-        hiveConf = new HiveConf(HMSHandler.class);
-      }
-      final HiveConf finalHiveConf = hiveConf;
-      Thread thread = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            HiveMetaStore.startMetaStore(port, bridge, finalHiveConf);
-          } catch (Throwable e) {
-            LOG.error("Metastore Thrift Server threw an exception...",e);
-          }
-        }
-      });
-      thread.setDaemon(true);
-      thread.start();
-      loopUntilHMSReady(port);
+      final HadoopThriftAuthBridge bridge, HiveConf hiveConf)
+      throws Exception{
+    if (hiveConf == null) {
+      hiveConf = new HiveConf(HMSHandler.class);
     }
+    final HiveConf finalHiveConf = hiveConf;
+    Thread thread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          HiveMetaStore.startMetaStore(port, bridge, finalHiveConf);
+        } catch (Throwable e) {
+          LOG.error("Metastore Thrift Server threw an exception...",e);
+        }
+      }
+    });
+    thread.setDaemon(true);
+    thread.start();
+    loopUntilHMSReady(port);
+  }
 
   /**
    * A simple connect test to make sure that the metastore is up
@@ -90,7 +90,7 @@ public class MetaStoreTestUtils {
     for (Map.Entry<Thread, StackTraceElement[]> entry : threadStacks.entrySet()) {
       Thread t = entry.getKey();
       sb.append(System.lineSeparator());
-      sb.append("Name: ").append(t.getName()).append(" State: " + t.getState());
+      sb.append("Name: ").append(t.getName()).append(" State: ").append(t.getState());
       addStackString(entry.getValue(), sb);
     }
     return sb.toString();
@@ -102,5 +102,6 @@ public class MetaStoreTestUtils {
       sb.append(stackElem).append(System.lineSeparator());
     }
   }
+
 
 }
