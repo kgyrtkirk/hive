@@ -572,7 +572,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
         fetchDone[tag] = true;
         return;
       }
-      forwardOp.process(row.o, 0);
+      forwardOp.process(row.o, tag);
       // check if any operator had a fatal error or early exit during
       // execution
       if (forwardOp.getDone()) {
