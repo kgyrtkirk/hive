@@ -296,7 +296,7 @@ public class ReduceRecordProcessor extends RecordProcessor {
     // Note this behavior may have to change if we ever implement a vectorized merge join
     boolean vectorizedRecordSource = (tag == bigTablePosition) && redWork.getVectorMode();
     sources[tag].init(jconf, redWork.getReducer(), vectorizedRecordSource, keyTableDesc,
-        valueTableDesc, reader, tag == bigTablePosition, (byte) tag,
+        valueTableDesc, reader, tag == bigTablePosition, redWork.getNeedsTagging() ? (byte) tag : 0,
         redWork.getVectorizedRowBatchCtx(), redWork.getVectorizedVertexNum());
     ois[tag] = sources[tag].getObjectInspector();
   }
