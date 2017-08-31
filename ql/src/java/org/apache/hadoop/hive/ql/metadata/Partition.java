@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,6 +141,11 @@ public class Partition implements Serializable {
       tpart.setSd(tbl.getSd().deepCopy());
       tpart.getSd().setLocation((location != null) ? location.toString() : null);
     }
+    
+    Map<String, String> emptyParameters = new HashMap<String, String>();
+    tpart.setParameters(emptyParameters);
+    StatsSetupConst.setBasicStatsStateForCreateTable(tpart.getParameters(),
+        MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
     return tpart;
   }
 

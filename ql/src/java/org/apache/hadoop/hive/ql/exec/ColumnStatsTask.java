@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -370,23 +372,55 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
         }
       }
 
+      List<ColumnStatisticsObj> prunedStatsObjs = new ArrayList<ColumnStatisticsObj>();
       if (!isTblLevel) {
         List<String> partVals = new ArrayList<String>();
         // Iterate over partition columns to figure out partition name
         for (int i = fields.size() - partColSchema.size(); i < fields.size(); i++) {
-          Object partVal = ((PrimitiveObjectInspector)fields.get(i).getFieldObjectInspector()).
-              getPrimitiveJavaObject(list.get(i));
+          Object partVal = ((PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector())
+              .getPrimitiveJavaObject(list.get(i));
           partVals.add(partVal == null ? // could be null for default partition
-            this.conf.getVar(ConfVars.DEFAULTPARTITIONNAME) : partVal.toString());
+          this.conf.getVar(ConfVars.DEFAULTPARTITIONNAME)
+              : partVal.toString());
         }
         partName = Warehouse.makePartName(partColSchema, partVals);
+        if (work.getColStats().isNeedMerge()) {
+          // check all the columns stats
+          List<String> partNames = new ArrayList<>();
+          partNames.add(partName);
+          org.apache.hadoop.hive.ql.metadata.Partition partition = db
+              .getPartitionsByNames(tbl, partNames).iterator().next();
+          for (ColumnStatisticsObj statsObj : statsObjs) {
+            if (StatsSetupConst.canColumnStatsMerge(partition.getParameters(),
+                statsObj.getColName())) {
+              prunedStatsObjs.add(statsObj);
+            } else {
+              LOG.info("Skip merging column stats for " + statsObj.getColName());
+            }
+          }
+        } else {
+          prunedStatsObjs.addAll(statsObjs);
+        }
+      } else {
+        if (work.getColStats().isNeedMerge()) {
+          // check all the columns stats
+          for (ColumnStatisticsObj statsObj : statsObjs) {
+            if (StatsSetupConst.canColumnStatsMerge(tbl.getParameters(), statsObj.getColName())) {
+              prunedStatsObjs.add(statsObj);
+            } else {
+              LOG.info("Skip merging column stats for " + statsObj.getColName());
+            }
+          }
+        } else {
+          prunedStatsObjs.addAll(statsObjs);
+        }
       }
       String [] names = Utilities.getDbTableName(currentDb, tableName);
       ColumnStatisticsDesc statsDesc = getColumnStatsDesc(names[0], names[1], partName, isTblLevel);
       ColumnStatistics colStats = new ColumnStatistics();
       colStats.setStatsDesc(statsDesc);
-      colStats.setStatsObj(statsObjs);
-      if (!statsObjs.isEmpty()) {
+      colStats.setStatsObj(prunedStatsObjs);
+      if (!colStats.getStatsObj().isEmpty()) {
         stats.add(colStats);
       }
     }
@@ -419,9 +453,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
       return 0;
     }
     SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats);
-    if (work.getColStats() != null && work.getColStats().getNumBitVector() > 0) {
-      request.setNeedMerge(true);
-    }
+    request.setNeedMerge(work.getColStats().isNeedMerge());
     db.setPartitionColumnStatistics(request);
     return 0;
   }

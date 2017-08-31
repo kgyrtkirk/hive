@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.common;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.hadoop.conf.Configuration;
@@ -152,6 +153,8 @@ public class StatsSetupConst {
 
   public static final String FALSE = "false";
 
+  public static final String PENDING = "pending";
+
   // The parameter keys for the table statistics. Those keys are excluded from 'show create table' command output.
   public static final String[] TABLE_PARAMS_STATS_KEYS = new String[] {
     COLUMN_STATS_ACCURATE, NUM_FILES, TOTAL_SIZE,ROW_COUNT, RAW_DATA_SIZE, NUM_PARTITIONS};
@@ -184,6 +187,24 @@ public class StatsSetupConst {
       }
     }
 
+    static class StringSerializer extends JsonSerializer<String> {
+      
+      @Override
+      public void serialize(String value, JsonGenerator jsonGenerator,
+          SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
+        jsonGenerator.writeString(value);
+      }
+    }
+    
+    static class StringDeserializer extends JsonDeserializer<String> {
+      
+      public String deserialize(JsonParser jsonParser,
+          DeserializationContext deserializationContext)
+              throws IOException, JsonProcessingException {
+        return jsonParser.getValueAsString();
+      }
+    }
+
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     @JsonSerialize(using = BooleanSerializer.class)
     @JsonDeserialize(using = BooleanDeserializer.class)
@@ -192,9 +213,9 @@ public class StatsSetupConst {
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @JsonProperty(COLUMN_STATS)
-    @JsonSerialize(contentUsing = BooleanSerializer.class)
-    @JsonDeserialize(contentUsing = BooleanDeserializer.class)
-    TreeMap<String, Boolean> columnStats = new TreeMap<>();
+    @JsonSerialize(contentUsing = StringSerializer.class)
+    @JsonDeserialize(contentUsing = StringDeserializer.class)
+    TreeMap<String, String> columnStats = new TreeMap<>();
 
   };
 
@@ -211,7 +232,16 @@ public class StatsSetupConst {
       return false;
     }
     ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
-    return stats.columnStats.containsKey(colName);
+    return TRUE.equals(stats.columnStats.get(colName));
+  }
+
+  public static boolean canColumnStatsMerge(Map<String, String> params, String colName) {
+    if (params == null) {
+      return false;
+    }
+    ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
+    return TRUE.equals(stats.columnStats.get(colName))
+        || PENDING.equals(stats.columnStats.get(colName));
   }
 
   // It will only throw JSONException when stats.put(BASIC_STATS, TRUE)
@@ -243,9 +273,7 @@ public class StatsSetupConst {
     ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
 
     for (String colName : colNames) {
-      if (!stats.columnStats.containsKey(colName)) {
-        stats.columnStats.put(colName, true);
-      }
+      stats.columnStats.put(colName, TRUE);
     }
     try {
       params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));
@@ -254,13 +282,20 @@ public class StatsSetupConst {
     }
   }
 
-  public static void clearColumnStatsState(Map<String, String> params) {
+  public static void clearColumnStatsState(Map<String, String> params,
+      boolean hasFollowingColumnStatsTaskNeedMerge) {
     if (params == null) {
       return;
     }
     ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
-    stats.columnStats.clear();
-
+    if (!hasFollowingColumnStatsTaskNeedMerge) {
+      stats.columnStats.clear();
+    } else {
+      Set<String> colNames = stats.columnStats.keySet();
+      for (String colName : colNames) {
+        stats.columnStats.put(colName, PENDING);
+      }
+    }
     try {
       params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));
     } catch (JsonProcessingException e) {
@@ -283,13 +318,17 @@ public class StatsSetupConst {
     }
   }
 
-  public static void setBasicStatsStateForCreateTable(Map<String, String> params, String setting) {
+  public static void setBasicStatsStateForCreateTable(Map<String, String> params,
+      List<String> cols, String setting) {
     if (TRUE.equals(setting)) {
       for (String stat : StatsSetupConst.supportedStats) {
         params.put(stat, "0");
       }
     }
     setBasicStatsState(params, setting);
+    if (cols != null) {
+      setColumnStatsState(params, cols);
+    }
   }
   
   private static ColumnStatsAccurate parseStatsAcc(String statsAcc) {

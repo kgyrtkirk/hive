@@ -1,0 +1,758 @@
+PREHOOK: query: drop table p
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table p
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE p(insert_num int, c1 tinyint, c2 smallint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@p
+POSTHOOK: query: CREATE TABLE p(insert_num int, c1 tinyint, c2 smallint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@p
+PREHOOK: query: desc formatted p
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	comment             
+	 	 
+insert_num          	int                 	                    
+c1                  	tinyint             	                    
+c2                  	smallint            	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\",\"c2\":\"true\",\"insert_num\":\"true\"}}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into p values (1,22,333)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@p
+POSTHOOK: query: insert into p values (1,22,333)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@p
+POSTHOOK: Lineage: p.c1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: p.c2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: p.insert_num EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: desc formatted p
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	comment             
+	 	 
+insert_num          	int                 	                    
+c1                  	tinyint             	                    
+c2                  	smallint            	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	8                   
+	totalSize           	9                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table p replace columns (insert_num int, c1 STRING, c2 STRING)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@p
+PREHOOK: Output: default@p
+POSTHOOK: query: alter table p replace columns (insert_num int, c1 STRING, c2 STRING)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@p
+POSTHOOK: Output: default@p
+PREHOOK: query: explain insert into p values (1,'2','3')
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert into p values (1,'2','3')
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-2 depends on stages: Stage-0
+  Stage-8 depends on stages: Stage-2
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: values__tmp__table__2
+            Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: UDFToInteger(tmp_values_col1) (type: int), tmp_values_col2 (type: string), tmp_values_col3 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.p
+              Select Operator
+                expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+                outputColumnNames: insert_num, c1, c2
+                Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: compute_stats(insert_num, 16), compute_stats(c1, 16), compute_stats(c2, 16)
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 1 Data size: 1464 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 1464 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.p
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-8
+    Column Stats Work
+      Column Stats Desc:
+          Columns: insert_num, c1, c2
+          Column Types: int, string, string
+          Table: default.p
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.p
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.p
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: insert into p values (1,'2','3')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@p
+POSTHOOK: query: insert into p values (1,'2','3')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@p
+POSTHOOK: Lineage: p.c1 SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: p.c2 SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: p.insert_num EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: desc formatted p
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	comment             
+	 	 
+insert_num          	int                 	                    
+c1                  	string              	                    
+c2                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numRows             	2                   
+	rawDataSize         	13                  
+	totalSize           	15                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted p c1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p c1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+c1                  	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 
+PREHOOK: query: desc formatted p c2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p c2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+c2                  	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 
+PREHOOK: query: drop table p
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@p
+PREHOOK: Output: default@p
+POSTHOOK: query: drop table p
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@p
+POSTHOOK: Output: default@p
+PREHOOK: query: CREATE TABLE p(insert_num int, c1 tinyint, c2 smallint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@p
+POSTHOOK: query: CREATE TABLE p(insert_num int, c1 tinyint, c2 smallint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@p
+PREHOOK: query: desc formatted p
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	comment             
+	 	 
+insert_num          	int                 	                    
+c1                  	tinyint             	                    
+c2                  	smallint            	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\",\"c2\":\"true\",\"insert_num\":\"true\"}}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain insert into p values (1,22,333)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert into p values (1,22,333)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-2 depends on stages: Stage-0
+  Stage-8 depends on stages: Stage-2
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: values__tmp__table__4
+            Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: UDFToInteger(tmp_values_col1) (type: int), UDFToByte(tmp_values_col2) (type: tinyint), UDFToShort(tmp_values_col3) (type: smallint)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.p
+              Select Operator
+                expressions: _col0 (type: int), _col1 (type: tinyint), _col2 (type: smallint)
+                outputColumnNames: insert_num, c1, c2
+                Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: compute_stats(insert_num, 16), compute_stats(c1, 16), compute_stats(c2, 16)
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 1428 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 1428 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 1 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.p
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-8
+    Column Stats Work
+      Column Stats Desc:
+          Columns: insert_num, c1, c2
+          Column Types: int, tinyint, smallint
+          Table: default.p
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.p
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.p
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: insert into p values (1,22,333)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@p
+POSTHOOK: query: insert into p values (1,22,333)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@p
+POSTHOOK: Lineage: p.c1 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: p.c2 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: p.insert_num EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: desc formatted p
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	comment             
+	 	 
+insert_num          	int                 	                    
+c1                  	tinyint             	                    
+c2                  	smallint            	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\",\"c2\":\"true\",\"insert_num\":\"true\"}}
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	8                   
+	totalSize           	9                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted p c1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p c1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+c1                  	tinyint             	22                  	22                  	0                   	1                   	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\",\"c2\":\"true\",\"insert_num\":\"true\"}}	 	 	 	 	 	 	 	 	 
+PREHOOK: query: alter table p replace columns (insert_num int, c1 STRING, c2 STRING, c3 STRING)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@p
+PREHOOK: Output: default@p
+POSTHOOK: query: alter table p replace columns (insert_num int, c1 STRING, c2 STRING, c3 STRING)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@p
+POSTHOOK: Output: default@p
+PREHOOK: query: desc formatted p
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	comment             
+	 	 
+insert_num          	int                 	                    
+c1                  	string              	                    
+c2                  	string              	                    
+c3                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	8                   
+	totalSize           	9                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain insert into p values (1,'2','3','4')
+PREHOOK: type: QUERY
+POSTHOOK: query: explain insert into p values (1,'2','3','4')
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-2 depends on stages: Stage-0
+  Stage-8 depends on stages: Stage-2
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: values__tmp__table__6
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: UDFToInteger(tmp_values_col1) (type: int), tmp_values_col2 (type: string), tmp_values_col3 (type: string), tmp_values_col4 (type: string)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.p
+              Select Operator
+                expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string)
+                outputColumnNames: insert_num, c1, c2, c3
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: compute_stats(insert_num, 16), compute_stats(c1, 16), compute_stats(c2, 16), compute_stats(c3, 16)
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 1 Data size: 1956 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 1956 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.p
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-8
+    Column Stats Work
+      Column Stats Desc:
+          Columns: insert_num, c1, c2, c3
+          Column Types: int, string, string, string
+          Table: default.p
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.p
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.p
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: insert into p values (1,'2','3','4')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@p
+POSTHOOK: query: insert into p values (1,'2','3','4')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@p
+POSTHOOK: Lineage: p.c1 SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: p.c2 SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: p.c3 SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: p.insert_num EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: desc formatted p
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	comment             
+	 	 
+insert_num          	int                 	                    
+c1                  	string              	                    
+c2                  	string              	                    
+c3                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numRows             	2                   
+	rawDataSize         	15                  
+	totalSize           	17                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted p insert_num
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p insert_num
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+insert_num          	int                 	1                   	1                   	0                   	1                   	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}	 	 	 	 	 	 	 	 	 
+PREHOOK: query: desc formatted p c2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p c2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+c2                  	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}	 	 	 	 	 	 	 	 	 
+PREHOOK: query: desc formatted p c3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p c3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+c3                  	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}	 	 	 	 	 	 	 	 	 

@@ -24,8 +24,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -238,6 +240,27 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     return false;
   }
 
+  public boolean hasFollowingColumnStatsTaskNeedMerge() {
+    Queue<Task<? extends Serializable>> tasks = new LinkedList<>();
+    tasks.offer(this);
+    Task<? extends Serializable> t = null;
+    while (!tasks.isEmpty()) {
+      t = tasks.poll();
+      if (t instanceof ColumnStatsTask) {
+        break;
+      } else if (t.getNumChild() != 0) {
+        for (Task<? extends Serializable> child : t.getChildTasks()) {
+          tasks.offer(child);
+        }
+      }
+    }
+    if (t instanceof ColumnStatsTask) {
+      return ((ColumnStatsTask) t).getWork().getColStats().isNeedMerge();
+    } else {
+      return false;
+    }
+  }
+
   @Override
   public int execute(DriverContext driverContext) {
 
@@ -245,6 +268,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
         return 0;
       }
+      boolean hasFollowingStatsTask = hasFollowingStatsTask();
+      boolean hasFollowingColumnStatsTaskNeedMerge = hasFollowingColumnStatsTaskNeedMerge();
       Hive db = getHive();
 
       // Do any hive related operations like moving tables and files
@@ -357,7 +382,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getReplace(),
               work.isSrcLocal(), isSkewedStoredAsDirs(tbd),
               work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
-              hasFollowingStatsTask());
+              hasFollowingStatsTask, hasFollowingColumnStatsTaskNeedMerge);
           if (work.getOutputs() != null) {
             DDLTask.addIfAbsentByName(new WriteEntity(table,
               getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());
@@ -434,7 +459,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 dpCtx.getNumDPCols(),
                 isSkewedStoredAsDirs(tbd),
                 work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
-                SessionState.get().getTxnMgr().getCurrentTxnId(), hasFollowingStatsTask(),
+                SessionState.get().getTxnMgr().getCurrentTxnId(), hasFollowingStatsTask, hasFollowingColumnStatsTaskNeedMerge,
                 work.getLoadTableWork().getWriteType());
 
             // publish DP columns to its subscribers
@@ -500,7 +525,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             db.loadPartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
                 tbd.getPartitionSpec(), tbd.getReplace(),
                 tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
-                work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID, hasFollowingStatsTask());
+                work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID, hasFollowingStatsTask, hasFollowingColumnStatsTaskNeedMerge);
             Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
 
             if (bucketCols != null || sortCols != null) {

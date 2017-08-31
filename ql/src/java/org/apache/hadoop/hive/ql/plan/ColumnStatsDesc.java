@@ -30,6 +30,7 @@ public class ColumnStatsDesc extends DDLDesc implements Serializable, Cloneable 
   private static final long serialVersionUID = 1L;
   private boolean isTblLevel;
   private int numBitVector;
+  private boolean needMerge;
   private String tableName;
   private List<String> colName;
   private List<String> colType;
@@ -44,6 +45,7 @@ public class ColumnStatsDesc extends DDLDesc implements Serializable, Cloneable 
     this.colType = colType;
     this.isTblLevel = isTblLevel;
     this.numBitVector = 0;
+    this.needMerge = false;
   }
   
   public ColumnStatsDesc(String tableName, List<String> colName,
@@ -53,6 +55,7 @@ public class ColumnStatsDesc extends DDLDesc implements Serializable, Cloneable 
     this.colType = colType;
     this.isTblLevel = isTblLevel;
     this.numBitVector = numBitVector;
+    this.needMerge = this.numBitVector!=0;
   }
 
   @Explain(displayName = "Table")
@@ -95,8 +98,8 @@ public class ColumnStatsDesc extends DDLDesc implements Serializable, Cloneable 
     return numBitVector;
   }
 
-  public void setNumBitVector(int numBitVector) {
-    this.numBitVector = numBitVector;
+  public boolean isNeedMerge() {
+    return needMerge;
   }
 
 }

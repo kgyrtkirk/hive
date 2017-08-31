@@ -4525,7 +4525,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (crtTbl.getLocation() == null && !tbl.isPartitioned()
         && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
       StatsSetupConst.setBasicStatsStateForCreateTable(tbl.getTTable().getParameters(),
-          StatsSetupConst.TRUE);
+          MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
     }
 
     // create the table
@@ -4765,7 +4765,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     StatsSetupConst.setBasicStatsState(props, StatsSetupConst.TRUE);
     environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
     //then invalidate column stats
-    StatsSetupConst.clearColumnStatsState(props);
+    StatsSetupConst.clearColumnStatsState(props, false);
     return statsPresent;
   }
 

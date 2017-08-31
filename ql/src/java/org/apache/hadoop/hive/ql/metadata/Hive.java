@@ -1574,10 +1574,10 @@ public class Hive {
   public void loadPartition(Path loadPath, String tableName,
       Map<String, String> partSpec, boolean replace,
       boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
-      boolean isSrcLocal, boolean isAcid, boolean hasFollowingStatsTask) throws HiveException {
+      boolean isSrcLocal, boolean isAcid, boolean hasFollowingStatsTask, boolean hasFollowingColumnStatsTaskNeedMerge) throws HiveException {
     Table tbl = getTable(tableName);
     loadPartition(loadPath, tbl, partSpec, replace, inheritTableSpecs,
-        isSkewedStoreAsSubdir, isSrcLocal, isAcid, hasFollowingStatsTask);
+        isSkewedStoreAsSubdir, isSrcLocal, isAcid, hasFollowingStatsTask, hasFollowingColumnStatsTaskNeedMerge);
   }
 
   /**
@@ -1604,7 +1604,7 @@ public class Hive {
   public Partition loadPartition(Path loadPath, Table tbl,
       Map<String, String> partSpec, boolean replace,
       boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
-      boolean isSrcLocal, boolean isAcid, boolean hasFollowingStatsTask) throws HiveException {
+      boolean isSrcLocal, boolean isAcid, boolean hasFollowingStatsTask, boolean hasFollowingColumnStatsTaskNeedMerge) throws HiveException {
 
     Path tblDataLocationPath =  tbl.getDataLocation();
     try {
@@ -1668,7 +1668,7 @@ public class Hive {
       }
 
       //column stats will be inaccurate
-      StatsSetupConst.clearColumnStatsState(newTPart.getParameters());
+      StatsSetupConst.clearColumnStatsState(newTPart.getParameters(), hasFollowingColumnStatsTaskNeedMerge);
 
       // recreate the partition if it existed before
       if (isSkewedStoreAsSubdir) {
@@ -1685,11 +1685,6 @@ public class Hive {
         StatsSetupConst.setBasicStatsState(newTPart.getParameters(), StatsSetupConst.FALSE);
       }
       if (oldPart == null) {
-        newTPart.getTPartition().setParameters(new HashMap<String,String>());
-        if (this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-          StatsSetupConst.setBasicStatsStateForCreateTable(newTPart.getParameters(),
-              StatsSetupConst.TRUE);
-        }
         MetaStoreUtils.populateQuickStats(HiveStatsUtils.getFileStatusRecurse(newPartPath, -1, newPartPath.getFileSystem(conf)), newTPart.getParameters());
         try {
           LOG.debug("Adding new partition " + newTPart.getSpec());
@@ -1877,7 +1872,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public Map<Map<String, String>, Partition> loadDynamicPartitions(final Path loadPath,
       final String tableName, final Map<String, String> partSpec, final boolean replace,
       final int numDP, final boolean listBucketingEnabled, final boolean isAcid, final long txnId,
-      final boolean hasFollowingStatsTask, final AcidUtils.Operation operation)
+      final boolean hasFollowingStatsTask, final boolean hasFollowingColumnStatsTaskNeedMerge, final AcidUtils.Operation operation)
       throws HiveException {
 
     final Map<Map<String, String>, Partition> partitionsMap =
@@ -1921,7 +1916,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               // load the partition
               Partition newPartition = loadPartition(partPath, tbl, fullPartSpec,
                   replace, true, listBucketingEnabled,
-                  false, isAcid, hasFollowingStatsTask);
+                  false, isAcid, hasFollowingStatsTask, hasFollowingColumnStatsTaskNeedMerge);
               partitionsMap.put(fullPartSpec, newPartition);
 
               if (inPlaceEligible) {
@@ -2002,7 +1997,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param isAcid true if this is an ACID based write
    */
   public void loadTable(Path loadPath, String tableName, boolean replace, boolean isSrcLocal,
-      boolean isSkewedStoreAsSubdir, boolean isAcid, boolean hasFollowingStatsTask)
+      boolean isSkewedStoreAsSubdir, boolean isAcid, boolean hasFollowingStatsTask, boolean hasFollowingColumnStatsTaskNeedMerge)
       throws HiveException {
 
     List<Path> newFiles = null;
@@ -2029,7 +2024,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     //column stats will be inaccurate
-    StatsSetupConst.clearColumnStatsState(tbl.getParameters());
+    StatsSetupConst.clearColumnStatsState(tbl.getParameters(), hasFollowingColumnStatsTaskNeedMerge);
 
     try {
       if (isSkewedStoreAsSubdir) {

@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData._Fields;
 import org.apache.hadoop.hive.metastore.hbase.stats.merge.ColumnStatsMerger;
 import org.apache.hadoop.hive.metastore.hbase.stats.merge.ColumnStatsMergerFactory;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
@@ -1928,13 +1929,30 @@ public class MetaStoreUtils {
       ColumnStatisticsObj statsObjNew = csNew.getStatsObj().get(index);
       ColumnStatisticsObj statsObjOld = map.get(statsObjNew.getColName());
       if (statsObjOld != null) {
+        if (statsObjNew.getStatsData().getSetField() != statsObjOld.getStatsData().getSetField()) {
+          // because we already confirm that the stats is accurate
+          // it is impossible that the column types have been changed while the
+          // column stats is still accurate.
+          throw new RuntimeException("Column " + statsObjNew.getColName()
+              + "'s old type is different from new type. "
+              + "We can not merge stats in auto column stats gathering.");
+        }
         // If statsObjOld is found, we can merge.
         ColumnStatsMerger merger = ColumnStatsMergerFactory.getColumnStatsMerger(statsObjNew,
             statsObjOld);
         merger.merge(statsObjNew, statsObjOld);
       }
+      // otherwise we can just insert the new statsObj
       list.add(statsObjNew);
     }
     csNew.setStatsObj(list);
+  }
+  
+  public static List<String> getColumnNames(List<FieldSchema> schema) {
+    List<String> cols = new ArrayList<>();
+    for (FieldSchema fs : schema) {
+      cols.add(fs.getName());
+    }
+    return cols;
   }
 }
