@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -60,7 +61,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
-import org.apache.hadoop.hive.ql.parse.ParseDriver;
+import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
@@ -70,13 +71,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 
-/** 
+/**
  * Registry for materialized views. The goal of this cache is to avoid parsing and creating
  * logical plans for the materialized views at query runtime. When a query arrives, we will
  * just need to consult this cache and extract the logical plans for the views (which had
@@ -286,7 +286,7 @@ public final class HiveMaterializedViewsRegistry {
     RelOptHiveTable optTable = new RelOptHiveTable(null, fullyQualifiedTabName,
         rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<VirtualColumn>(),
         SessionState.get().getConf(), new HashMap<String, PrunedPartitionList>(),
-        new AtomicInteger());
+        new HashMap<String, ColumnStatsList>(), new AtomicInteger());
     RelNode tableRel;
 
     // 3. Build operator
@@ -330,7 +330,8 @@ public final class HiveMaterializedViewsRegistry {
   private static RelNode parseQuery(String viewQuery) {
     try {
       final ASTNode node = ParseUtils.parse(viewQuery);
-      final QueryState qs = new QueryState(SessionState.get().getConf());
+      final QueryState qs =
+          new QueryState.Builder().withHiveConf(SessionState.get().getConf()).build();
       CalcitePlanner analyzer = new CalcitePlanner(qs);
       analyzer.initCtx(new Context(SessionState.get().getConf()));
       analyzer.init(false);
@@ -359,8 +360,7 @@ public final class HiveMaterializedViewsRegistry {
         return false;
       }
       ViewKey viewKey = (ViewKey) obj;
-      return creationDate == viewKey.creationDate &&
-          (viewName == viewKey.viewName || (viewName != null && viewName.equals(viewKey.viewName)));
+      return creationDate == viewKey.creationDate && Objects.equals(viewName, viewKey.viewName);
     }
 
     @Override

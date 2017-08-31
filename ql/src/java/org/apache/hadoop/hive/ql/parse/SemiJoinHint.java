@@ -19,25 +19,28 @@
 package org.apache.hadoop.hive.ql.parse;
 
 public class SemiJoinHint {
-  private String tabAlias;
   private String colName;
+  private String target;
   private Integer numEntries;
 
-  public SemiJoinHint(String tabAlias, String colName, Integer numEntries) {
-    this.tabAlias = tabAlias;
+  public SemiJoinHint(String colName, String target, Integer numEntries) {
     this.colName = colName;
+    this.target = target;
     this.numEntries = numEntries;
-  }
-
-  public String getTabAlias() {
-    return tabAlias;
   }
 
   public String getColName() {
     return colName;
   }
-
+  public String getTarget() {
+    return target;
+  }
   public Integer getNumEntries() {
     return numEntries != null ? numEntries : -1;
+  }
+
+  @Override
+  public String toString() {
+    return "colName=" + colName + ", target=" + target + ", numEntries=" + numEntries;
   }
 }

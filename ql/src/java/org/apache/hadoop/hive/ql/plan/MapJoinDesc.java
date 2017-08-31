@@ -28,13 +28,15 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationType;
-import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.OperatorVariation;
+import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.VectorMapJoinVariation;
 
 /**
  * Map Join operator Descriptor implementation.
@@ -109,11 +111,12 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   }
 
   public MapJoinDesc(final Map<Byte, List<ExprNodeDesc>> keys,
-      final TableDesc keyTblDesc, final Map<Byte, List<ExprNodeDesc>> values,
-      final List<TableDesc> valueTblDescs,final List<TableDesc> valueFilteredTblDescs,  List<String> outputColumnNames,
-      final int posBigTable, final JoinCondDesc[] conds,
-      final Map<Byte, List<ExprNodeDesc>> filters, boolean noOuterJoin, String dumpFilePrefix) {
-    super(values, outputColumnNames, noOuterJoin, conds, filters, null);
+    final TableDesc keyTblDesc, final Map<Byte, List<ExprNodeDesc>> values,
+    final List<TableDesc> valueTblDescs, final List<TableDesc> valueFilteredTblDescs, List<String> outputColumnNames,
+    final int posBigTable, final JoinCondDesc[] conds,
+    final Map<Byte, List<ExprNodeDesc>> filters, boolean noOuterJoin, String dumpFilePrefix,
+    final MemoryMonitorInfo memoryMonitorInfo, final long inMemoryDataSize) {
+    super(values, outputColumnNames, noOuterJoin, conds, filters, null, memoryMonitorInfo);
     vectorDesc = null;
     this.keys = keys;
     this.keyTblDesc = keyTblDesc;
@@ -122,6 +125,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.posBigTable = posBigTable;
     this.bigTableBucketNumMapping = new LinkedHashMap<String, Integer>();
     this.dumpFilePrefix = dumpFilePrefix;
+    this.inMemoryDataSize = inMemoryDataSize;
     initRetainExprList();
   }
 
@@ -401,7 +405,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
     public MapJoinOperatorExplainVectorization(MapJoinDesc mapJoinDesc, VectorDesc vectorDesc) {
       // VectorMapJoinOperator is not native vectorized.
-      super(vectorDesc, ((VectorMapJoinDesc) vectorDesc).hashTableImplementationType() != HashTableImplementationType.NONE);
+      super(vectorDesc, ((VectorMapJoinDesc) vectorDesc).getHashTableImplementationType() != HashTableImplementationType.NONE);
       this.mapJoinDesc = mapJoinDesc;
       vectorMapJoinDesc = (VectorMapJoinDesc) vectorDesc;
       vectorMapJoinInfo = vectorMapJoinDesc.getVectorMapJoinInfo();
@@ -536,7 +540,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
     @Explain(vectorization = Vectorization.DETAIL, displayName = "bigTableOuterKeyMapping", explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public List<String> getBigTableOuterKey() {
-      if (!isNative || vectorMapJoinDesc.operatorVariation() != OperatorVariation.OUTER) {
+      if (!isNative || vectorMapJoinDesc.getVectorMapJoinVariation() != VectorMapJoinVariation.OUTER) {
         return null;
       }
       return columnMappingToStringList(vectorMapJoinInfo.getBigTableOuterKeyMapping());
@@ -586,4 +590,15 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     return new SMBJoinOperatorExplainVectorization((SMBJoinDesc) this, vectorDesc);
   }
 
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (super.isSame(other)) {
+      MapJoinDesc otherDesc = (MapJoinDesc) other;
+      return Objects.equals(getParentToInput(), otherDesc.getParentToInput()) &&
+          Objects.equals(getKeyCountsExplainDesc(), otherDesc.getKeyCountsExplainDesc()) &&
+          getPosBigTable() == otherDesc.getPosBigTable() &&
+          isBucketMapJoin() == otherDesc.isBucketMapJoin();
+    }
+    return false;
+  }
 }

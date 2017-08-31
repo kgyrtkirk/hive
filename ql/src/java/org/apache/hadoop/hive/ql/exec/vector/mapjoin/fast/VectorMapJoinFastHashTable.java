@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTable;
 
 public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTable {
@@ -46,7 +48,7 @@ public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTab
   public static final int ONE_SIXTH_LIMIT = HIGHEST_INT_POWER_OF_2 / 6;
 
   public void throwExpandError(int limit, String dataTypeName) {
-    throw new RuntimeException(
+    throw new MapJoinMemoryExhaustionError(
         "Vector MapJoin " + dataTypeName + " Hash Table cannot grow any more -- use a smaller container size. " +
         "Current logical size is " + logicalHashBucketCount + " and " +
         "the limit is " + limit + ". " +
@@ -87,5 +89,11 @@ public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTab
   @Override
   public int size() {
     return keysAssigned;
+  }
+
+  @Override
+  public long getEstimatedMemorySize() {
+    JavaDataModel jdm = JavaDataModel.get();
+    return JavaDataModel.alignUp(10L * jdm.primitive1() + jdm.primitive2(), jdm.memoryAlign());
   }
 }

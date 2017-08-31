@@ -141,6 +141,7 @@ public class BeeLine implements Closeable {
   private OutputFile recordOutputFile = null;
   private PrintStream outputStream = new PrintStream(System.out, true);
   private PrintStream errorStream = new PrintStream(System.err, true);
+  private InputStream inputStream = System.in;
   private ConsoleReader consoleReader;
   private List<String> batch = null;
   private final Reflector reflector = new Reflector(this);
@@ -281,6 +282,8 @@ public class BeeLine implements Closeable {
       new ReflectiveCommandHandler(this, new String[]{"addlocaldriverjar"},
           null),
       new ReflectiveCommandHandler(this, new String[]{"addlocaldrivername"},
+          null),
+      new ReflectiveCommandHandler(this, new String[]{"delimiter"},
           null)
   };
 
@@ -1165,7 +1168,6 @@ public class BeeLine implements Closeable {
       return ERRNO_OTHER;
     } finally {
       IOUtils.closeStream(fileStream);
-      output("");   // dummy new line
     }
   }
 
@@ -1223,10 +1225,10 @@ public class BeeLine implements Closeable {
       // by appending a newline to the end of inputstream
       InputStream inputStreamAppendedNewline = new SequenceInputStream(inputStream,
           new ByteArrayInputStream((new String("\n")).getBytes()));
-      consoleReader = new ConsoleReader(inputStreamAppendedNewline, getOutputStream());
+      consoleReader = new ConsoleReader(inputStreamAppendedNewline, getErrorStream());
       consoleReader.setCopyPasteDetection(true); // jline will detect if <tab> is regular character
     } else {
-      consoleReader = new ConsoleReader();
+      consoleReader = new ConsoleReader(getInputStream(), getErrorStream());
     }
 
     //disable the expandEvents for the purpose of backward compatibility
@@ -1357,7 +1359,7 @@ public class BeeLine implements Closeable {
       return false;
     }
 
-    return !trimmed.endsWith(";");
+    return !trimmed.endsWith(getOpts().getDelimiter());
   }
 
   /**
@@ -1408,7 +1410,7 @@ public class BeeLine implements Closeable {
           // we're continuing an existing command
           cmd.append("\n");
           cmd.append(scriptLine);
-          if (trimmedLine.endsWith(";")) {
+          if (trimmedLine.endsWith(getOpts().getDelimiter())) {
             // this command has terminated
             cmds.add(cmd.toString());
             cmd = null;
@@ -1429,7 +1431,7 @@ public class BeeLine implements Closeable {
         // ### REVIEW: oops, somebody left the last command
         // unterminated; should we fix it for them or complain?
         // For now be nice and fix it.
-        cmd.append(";");
+        cmd.append(getOpts().getDelimiter());
         cmds.add(cmd.toString());
       }
     }
@@ -2179,8 +2181,7 @@ public class BeeLine implements Closeable {
       output(getColorBuffer().pad(loc("scanning", f.getAbsolutePath()), 60),
           false);
 
-      try {
-        ZipFile zf = new ZipFile(f);
+      try (ZipFile zf = new ZipFile(f)) {
         int total = zf.size();
         int index = 0;
 
@@ -2402,6 +2403,10 @@ public class BeeLine implements Closeable {
 
   PrintStream getErrorStream() {
     return errorStream;
+  }
+
+  InputStream getInputStream() {
+    return inputStream;
   }
 
   ConsoleReader getConsoleReader() {

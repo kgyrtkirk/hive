@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.lang.reflect.Field;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -30,7 +31,12 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import junit.framework.TestCase;
 
@@ -38,6 +44,7 @@ import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -79,6 +86,7 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
@@ -99,6 +107,8 @@ public abstract class TestHiveMetaStore extends TestCase {
 
   private static final int DEFAULT_LIMIT_PARTITION_REQUEST = 100;
 
+  protected abstract HiveMetaStoreClient createClient() throws Exception;
+
   @Override
   protected void setUp() throws Exception {
     hiveConf = new HiveConf(this.getClass());
@@ -110,6 +120,7 @@ public abstract class TestHiveMetaStore extends TestCase {
     hiveConf.set("hive.key2", "http://www.example.com");
     hiveConf.set("hive.key3", "");
     hiveConf.set("hive.key4", "0");
+    hiveConf.set("datanucleus.autoCreateTables", "false");
 
     hiveConf.setIntVar(ConfVars.METASTORE_BATCH_RETRIEVE_MAX, 2);
     hiveConf.setIntVar(ConfVars.METASTORE_LIMIT_PARTITION_REQUEST, DEFAULT_LIMIT_PARTITION_REQUEST);
@@ -585,6 +596,55 @@ public abstract class TestHiveMetaStore extends TestCase {
     assertNotNull("should have returned partitions", partitions);
     assertEquals(" should have returned 50 partitions", maxParts, partitions.size());
   }
+
+  public void testAlterTableCascade() throws Throwable {
+    // create a table with multiple partitions
+    String dbName = "compdb";
+    String tblName = "comptbl";
+    String typeName = "Person";
+
+    cleanUp(dbName, tblName, typeName);
+
+    List<List<String>> values = new ArrayList<List<String>>();
+    values.add(makeVals("2008-07-01 14:13:12", "14"));
+    values.add(makeVals("2008-07-01 14:13:12", "15"));
+    values.add(makeVals("2008-07-02 14:13:12", "15"));
+    values.add(makeVals("2008-07-03 14:13:12", "151"));
+
+    createMultiPartitionTableSchema(dbName, tblName, typeName, values);
+    Table tbl = client.getTable(dbName, tblName);
+    List<FieldSchema> cols = tbl.getSd().getCols();
+    cols.add(new FieldSchema("new_col", serdeConstants.STRING_TYPE_NAME, ""));
+    tbl.getSd().setCols(cols);
+    //add new column with cascade option
+    client.alter_table(dbName, tblName, tbl, true);
+    //
+    Table tbl2 = client.getTable(dbName, tblName);
+    Assert.assertEquals("Unexpected number of cols", 3, tbl2.getSd().getCols().size());
+    Assert.assertEquals("Unexpected column name", "new_col", tbl2.getSd().getCols().get(2).getName());
+    //get a partition
+    List<String> pvalues = new ArrayList<>(2);
+    pvalues.add("2008-07-01 14:13:12");
+    pvalues.add("14");
+    Partition partition = client.getPartition(dbName, tblName, pvalues);
+    Assert.assertEquals("Unexpected number of cols", 3, partition.getSd().getCols().size());
+    Assert.assertEquals("Unexpected column name", "new_col", partition.getSd().getCols().get(2).getName());
+
+    //add another column
+    cols = tbl.getSd().getCols();
+    cols.add(new FieldSchema("new_col2", serdeConstants.STRING_TYPE_NAME, ""));
+    tbl.getSd().setCols(cols);
+    //add new column with no cascade option
+    client.alter_table(dbName, tblName, tbl, false);
+    tbl2 = client.getTable(dbName, tblName);
+    Assert.assertEquals("Unexpected number of cols", 4, tbl2.getSd().getCols().size());
+    Assert.assertEquals("Unexpected column name", "new_col2", tbl2.getSd().getCols().get(3).getName());
+    //get partition, this partition should not have the newly added column since cascade option
+    //was false
+    partition = client.getPartition(dbName, tblName, pvalues);
+    Assert.assertEquals("Unexpected number of cols", 3, partition.getSd().getCols().size());  
+  }
+
 
   public void testListPartitionNames() throws Throwable {
     // create a table with multiple partitions
@@ -1666,6 +1726,61 @@ public abstract class TestHiveMetaStore extends TestCase {
       throw e;
     } finally {
       cleanUp(dbName, tblName, typeName);
+    }
+  }
+
+  static class ClassNotFoundSerde extends LazySimpleSerDe {
+
+    public ClassNotFoundSerde() throws Exception {
+    }
+
+    @Override
+    public void initialize(Configuration job, Properties tbl) throws SerDeException {
+      super.initialize(job, tbl);
+      throw new NoClassDefFoundError();
+    }
+
+  }
+
+  public void testGetSchemaWithNoClassDefFoundError() throws Exception {
+    try {
+      String dbName = "testDb";
+      String tblName = "testTable";
+
+      client.dropTable(dbName, tblName);
+      silentDropDatabase(dbName);
+
+      Database db = new Database();
+      db.setName(dbName);
+      client.createDatabase(db);
+
+      Table tbl = new Table();
+      tbl.setDbName(dbName);
+      tbl.setTableName(tblName);
+
+      ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(1);
+      cols.add(new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
+
+      StorageDescriptor sd = new StorageDescriptor();
+      tbl.setSd(sd);
+      sd.setCols(cols);
+      SerDeInfo serdeInfo = new SerDeInfo();
+      sd.setSerdeInfo(serdeInfo);
+      serdeInfo.setSerializationLib(ClassNotFoundSerde.class.getName());
+
+      client.createTable(tbl);
+
+      Boolean MetaExceptionCaught = false;
+      try {
+        client.getSchema(dbName, tblName);
+      } catch (MetaException me) {
+        MetaExceptionCaught = true;
+      }
+      assertTrue("MetaException is expected to be caught for throwing NoClassDefFoundError", MetaExceptionCaught);
+    } catch (Throwable e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testGetSchemaWithNoClassDefFoundError() failed.");
+      throw e;
     }
   }
 
@@ -2903,7 +3018,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       Table t = createTable(dbName, tblName, owner, params, null, sd, 0);
       Assert.assertTrue("Expected exception", false);
     } catch (MetaException e) {
-      Assert.assertEquals("The table must be bucketed and stored using an ACID compliant format (such as ORC)", e.getMessage());
+      Assert.assertEquals("The table must be stored using an ACID compliant format (such as ORC)", e.getMessage());
     }
 
     // Fail - "transactional" is set to true, and the table is bucketed, but doesn't use ORC
@@ -2916,7 +3031,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       Table t = createTable(dbName, tblName, owner, params, null, sd, 0);
       Assert.assertTrue("Expected exception", false);
     } catch (MetaException e) {
-      Assert.assertEquals("The table must be bucketed and stored using an ACID compliant format (such as ORC)", e.getMessage());
+      Assert.assertEquals("The table must be stored using an ACID compliant format (such as ORC)", e.getMessage());
     }
 
     // Succeed - "transactional" is set to true, and the table is bucketed, and uses ORC
@@ -2949,13 +3064,14 @@ public abstract class TestHiveMetaStore extends TestCase {
       tblName += "1";
       params.clear();
       sd.unsetBucketCols();
+      sd.setInputFormat("org.apache.hadoop.mapred.FileInputFormat");
       t = createTable(dbName, tblName, owner, params, null, sd, 0);
       params.put("transactional", "true");
       t.setParameters(params);
       client.alter_table(dbName, tblName, t);
       Assert.assertTrue("Expected exception", false);
     } catch (MetaException e) {
-      Assert.assertEquals("The table must be bucketed and stored using an ACID compliant format (such as ORC)", e.getMessage());
+      Assert.assertEquals("The table must be stored using an ACID compliant format (such as ORC)", e.getMessage());
     }
 
     // Succeed - trying to set "transactional" to "true", and satisfies bucketing and Input/OutputFormat requirement
@@ -2963,6 +3079,7 @@ public abstract class TestHiveMetaStore extends TestCase {
     params.clear();
     sd.setNumBuckets(1);
     sd.setBucketCols(bucketCols);
+    sd.setInputFormat("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat");
     t = createTable(dbName, tblName, owner, params, null, sd, 0);
     params.put("transactional", "true");
     t.setParameters(params);
@@ -3165,6 +3282,34 @@ public abstract class TestHiveMetaStore extends TestCase {
     client.dropDatabase(dbName, true, true, true);
   }
 
+  @Test
+  public void testDBLocationChange() throws IOException, TException {
+    final String dbName = "alterDbLocation";
+    String defaultUri = HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/default_location.db";
+    String newUri = HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/new_location.db";
+
+    Database db = new Database();
+    db.setName(dbName);
+    db.setLocationUri(defaultUri);
+    client.createDatabase(db);
+
+    db = client.getDatabase(dbName);
+
+    assertEquals("Incorrect default location of the database",
+        warehouse.getDnsPath(new Path(defaultUri)).toString(), db.getLocationUri());
+
+    db.setLocationUri(newUri);
+    client.alterDatabase(dbName, db);
+
+    db = client.getDatabase(dbName);
+
+    assertEquals("Incorrect new location of the database",
+        warehouse.getDnsPath(new Path(newUri)).toString(), db.getLocationUri());
+
+    client.dropDatabase(dbName);
+    silentDropDatabase(dbName);
+  }
+
   private void checkDbOwnerType(String dbName, String ownerName, PrincipalType ownerType)
       throws NoSuchObjectException, MetaException, TException {
     Database db = client.getDatabase(dbName);
@@ -3323,5 +3468,47 @@ public abstract class TestHiveMetaStore extends TestCase {
       System.err.println("testValidateTableCols() failed.");
       throw e;
     }
+  }
+
+  public void testGetMetastoreUuid() throws Throwable {
+    String uuid = client.getMetastoreDbUuid();
+    assertNotNull(uuid);
+  }
+
+  public void testGetUUIDInParallel() throws Exception {
+    int numThreads = 5;
+    int parallelCalls = 10;
+    int numAPICallsPerThread = 10;
+    ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+    List<Future<List<String>>> futures = new ArrayList<>();
+    for (int n = 0; n < parallelCalls; n++) {
+      futures.add(executorService.submit(new Callable<List<String>>() {
+        @Override
+        public List<String> call() throws Exception {
+          HiveMetaStoreClient testClient = new HiveMetaStoreClient(hiveConf);
+          List<String> uuids = new ArrayList<>(10);
+          for (int i = 0; i < numAPICallsPerThread; i++) {
+            String uuid = testClient.getMetastoreDbUuid();
+            uuids.add(uuid);
+          }
+          return uuids;
+        }
+      }));
+    }
+
+    String firstUUID = null;
+    List<String> allUuids = new ArrayList<String>();
+    for (Future<List<String>> future : futures) {
+      for (String uuid : future.get()) {
+        if (firstUUID == null) {
+          firstUUID = uuid;
+        } else {
+          assertEquals(firstUUID.toLowerCase(), uuid.toLowerCase());
+        }
+        allUuids.add(uuid);
+      }
+    }
+    int size = allUuids.size();
+    assertEquals(numAPICallsPerThread * parallelCalls, size);
   }
 }

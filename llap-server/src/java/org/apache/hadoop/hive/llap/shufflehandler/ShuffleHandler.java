@@ -119,14 +119,20 @@ import org.jboss.netty.util.CharsetUtil;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timer;
 
+import io.netty.util.NetUtil;
+
 public class ShuffleHandler implements AttemptRegistrationListener {
 
   private static final Logger LOG = LoggerFactory.getLogger(ShuffleHandler.class);
 
   public static final String SHUFFLE_HANDLER_LOCAL_DIRS = "llap.shuffle.handler.local-dirs";
 
-  public static final String SHUFFLE_MANAGE_OS_CACHE = "lla[.shuffle.manage.os.cache";
+  public static final String SHUFFLE_MANAGE_OS_CACHE = "llap.shuffle.manage.os.cache";
   public static final boolean DEFAULT_SHUFFLE_MANAGE_OS_CACHE = true;
+
+  public static final String SHUFFLE_OS_CACHE_ALWAYS_EVICT =
+      "llap.shuffle.os.cache.always.evict";
+  public static final boolean DEFAULT_SHUFFLE_OS_CACHE_ALWAYS_EVICT = false;
 
   public static final String SHUFFLE_READAHEAD_BYTES = "llap.shuffle.readahead.bytes";
   public static final int DEFAULT_SHUFFLE_READAHEAD_BYTES = 4 * 1024 * 1024;
@@ -154,6 +160,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
    * sendfile
    */
   private final boolean manageOsCache;
+  private final boolean shouldAlwaysEvictOsCache;
   private final int readaheadLength;
   private final int maxShuffleConnections;
   private final int shuffleBufferSize;
@@ -171,7 +178,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
 
   public static final String SHUFFLE_CONNECTION_KEEP_ALIVE_ENABLED =
       "llap.shuffle.connection-keep-alive.enable";
-  public static final boolean DEFAULT_SHUFFLE_CONNECTION_KEEP_ALIVE_ENABLED = false;
+  public static final boolean DEFAULT_SHUFFLE_CONNECTION_KEEP_ALIVE_ENABLED = true;
 
   public static final String SHUFFLE_CONNECTION_KEEP_ALIVE_TIME_OUT =
       "llap.shuffle.connection-keep-alive.timeout";
@@ -194,7 +201,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
   
   public static final String MAX_SHUFFLE_THREADS = "llap.shuffle.max.threads";
   // 0 implies Netty default of 2 * number of available processors
-  public static final int DEFAULT_MAX_SHUFFLE_THREADS = 0;
+  public static final int DEFAULT_MAX_SHUFFLE_THREADS = Runtime.getRuntime().availableProcessors() * 3;
   
   public static final String SHUFFLE_BUFFER_SIZE = 
       "llap.shuffle.transfer.buffer.size";
@@ -209,6 +216,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
   private static final AtomicBoolean started = new AtomicBoolean(false);
   private static final AtomicBoolean initing = new AtomicBoolean(false);
   private static ShuffleHandler INSTANCE;
+  private static final String TIMEOUT_HANDLER = "timeout";
 
 
   final boolean connectionKeepAliveEnabled;
@@ -252,6 +260,8 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     this.conf = conf;
     manageOsCache = conf.getBoolean(SHUFFLE_MANAGE_OS_CACHE,
         DEFAULT_SHUFFLE_MANAGE_OS_CACHE);
+    shouldAlwaysEvictOsCache = conf.getBoolean(SHUFFLE_OS_CACHE_ALWAYS_EVICT,
+        DEFAULT_SHUFFLE_OS_CACHE_ALWAYS_EVICT);
 
     readaheadLength = conf.getInt(SHUFFLE_READAHEAD_BYTES,
         DEFAULT_SHUFFLE_READAHEAD_BYTES);
@@ -313,6 +323,14 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       LOG.info("DirWatcher disabled by config");
       dirWatcher = null;
     }
+    LOG.info("manageOsCache:{}, shouldAlwaysEvictOsCache:{}, readaheadLength:{}"
+        + ", maxShuffleConnections:{}, localDirs:{}"
+        + ", shuffleBufferSize:{}, shuffleTransferToAllowed:{}"
+        + ", connectionKeepAliveEnabled:{}, connectionKeepAliveTimeOut:{}"
+        + ", mapOutputMetaInfoCacheSize:{}, sslFileBufferSize:{}",
+        manageOsCache, shouldAlwaysEvictOsCache,readaheadLength, maxShuffleConnections, localDirs,
+        shuffleBufferSize, shuffleTransferToAllowed, connectionKeepAliveEnabled,
+        connectionKeepAliveTimeOut, mapOutputMetaInfoCacheSize, sslFileBufferSize);
   }
 
 
@@ -326,6 +344,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       throw new RuntimeException(ex);
     }
     bootstrap.setPipelineFactory(pipelineFact);
+    bootstrap.setOption("backlog", NetUtil.SOMAXCONN);
     port = conf.getInt(SHUFFLE_PORT_CONFIG_KEY, DEFAULT_SHUFFLE_PORT);
     Channel ch = bootstrap.bind(new InetSocketAddress(port));
     accepted.add(ch);
@@ -335,7 +354,8 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     if (dirWatcher != null) {
       dirWatcher.start();
     }
-    LOG.info("LlapShuffleHandler" + " listening on port " + port);
+    LOG.info("LlapShuffleHandler" + " listening on port " + port + " (SOMAXCONN: " + bootstrap.getOption("backlog")
+      + ")");
   }
 
   public static void initializeAndStart(Configuration conf) throws Exception {
@@ -520,9 +540,16 @@ public class ShuffleHandler implements AttemptRegistrationListener {
   }
 
   private static class TimeoutHandler extends IdleStateAwareChannelHandler {
+
+    private boolean enabledTimeout;
+
+    void setEnabledTimeout(boolean enabledTimeout) {
+      this.enabledTimeout = enabledTimeout;
+    }
+
     @Override
     public void channelIdle(ChannelHandlerContext ctx, IdleStateEvent e) {
-      if (e.getState() == IdleState.WRITER_IDLE) {
+      if (e.getState() == IdleState.WRITER_IDLE && enabledTimeout) {
         e.getChannel().close();
       }
     }
@@ -564,7 +591,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       pipeline.addLast("chunking", new ChunkedWriteHandler());
       pipeline.addLast("shuffle", SHUFFLE);
       pipeline.addLast("idle", idleStateHandler);
-      pipeline.addLast("timeout", new TimeoutHandler());
+      pipeline.addLast(TIMEOUT_HANDLER, new TimeoutHandler());
       return pipeline;
       // TODO factor security manager into pipeline
       // TODO factor out encode/decode to permit binary shuffle
@@ -741,6 +768,13 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       Map<String, MapOutputInfo> mapOutputInfoMap =
           new HashMap<String, MapOutputInfo>();
       Channel ch = evt.getChannel();
+
+      // In case of KeepAlive, ensure that timeout handler does not close connection until entire
+      // response is written (i.e, response headers + mapOutput).
+      ChannelPipeline pipeline = ch.getPipeline();
+      TimeoutHandler timeoutHandler = (TimeoutHandler)pipeline.get(TIMEOUT_HANDLER);
+      timeoutHandler.setEnabledTimeout(false);
+
       String user = userRsrc.get(jobId);
 
       try {
@@ -781,11 +815,24 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       // If Keep alive is enabled, do not close the connection.
       if (!keepAliveParam && !connectionKeepAliveEnabled) {
         lastMap.addListener(ChannelFutureListener.CLOSE);
+      } else {
+        lastMap.addListener(new ChannelFutureListener() {
+          @Override
+          public void operationComplete(ChannelFuture future) throws Exception {
+            if (!future.isSuccess()) {
+              // On error close the channel.
+              future.getChannel().close();
+              return;
+            }
+            // Entire response is written out. Safe to enable timeout handling.
+            timeoutHandler.setEnabledTimeout(true);
+          }
+        });
       }
     }
 
     private String getErrorMessage(Throwable t) {
-      StringBuffer sb = new StringBuffer(t.getMessage());
+      StringBuilder sb = new StringBuilder(t.getMessage());
       while (t.getCause() != null) {
         sb.append(t.getCause().getMessage());
         t = t.getCause();
@@ -939,10 +986,14 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       }
       ChannelFuture writeFuture;
       if (ch.getPipeline().get(SslHandler.class) == null) {
+        boolean canEvictAfterTransfer = true;
+        if (!shouldAlwaysEvictOsCache) {
+          canEvictAfterTransfer = (reduce > 0); // e.g broadcast data
+        }
         final FadvisedFileRegion partition = new FadvisedFileRegion(spill,
             info.getStartOffset(), info.getPartLength(), manageOsCache, readaheadLength,
             readaheadPool, spillfile.getAbsolutePath(), 
-            shuffleBufferSize, shuffleTransferToAllowed);
+            shuffleBufferSize, shuffleTransferToAllowed, canEvictAfterTransfer);
         writeFuture = ch.write(partition);
         writeFuture.addListener(new ChannelFutureListener() {
             // TODO error handling; distinguish IO/connection failures,

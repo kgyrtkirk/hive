@@ -1,4 +1,3 @@
-package org.apache.hadoop.hive.cli.control;
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -16,6 +15,8 @@ package org.apache.hadoop.hive.cli.control;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+ 
+package org.apache.hadoop.hive.cli.control;
 
 
 
@@ -60,7 +61,7 @@ public class CorePerfCliDriver extends CliAdapter{
       String hadoopVer = cliConfig.getHadoopVersion();
       qt = new QTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR, hiveConfDir,
           hadoopVer, initScript,
-          cleanupScript, false, false);
+          cleanupScript, false);
 
       // do a one time initialization
       qt.cleanUp();

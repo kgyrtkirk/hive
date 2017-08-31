@@ -544,7 +544,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
     needHashTableSetup = true;
     LOG.info("Created " + vectorMapJoinHashTable.getClass().getSimpleName() + " from " + this.getClass().getSimpleName());
 
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug(CLASS_NAME + " reloadHashTable!");
     }
   }
@@ -553,7 +553,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
   protected void reProcessBigTable(int partitionId)
       throws HiveException {
 
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug(CLASS_NAME + " reProcessBigTable enter...");
     }
 
@@ -607,7 +607,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
       throw new HiveException(e);
     }
 
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug(CLASS_NAME + " reProcessBigTable exit! " + rowCount + " row processed and " + batchCount + " batches processed");
     }
   }
@@ -635,7 +635,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
     batch.projectionSize = outputProjection.length;
     batch.projectedColumns = outputProjection;
 
-    forward(batch, null);
+    forward(batch, null, true);
 
     // Revert the projected columns back, because batch can be re-used by our parent operators.
     batch.projectionSize = originalProjectionSize;
@@ -647,7 +647,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
    * Forward the overflow batch and reset the batch.
    */
   protected void forwardOverflow() throws HiveException {
-    forward(overflowBatch, null);
+    forward(overflowBatch, null, true);
     overflowBatch.reset();
     maybeCheckInterrupt();
   }
@@ -664,7 +664,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
    * Forward the overflow batch, but do not reset the batch.
    */
   private void forwardOverflowNoReset() throws HiveException {
-    forward(overflowBatch, null);
+    forward(overflowBatch, null, true);
   }
 
   /*
@@ -680,7 +680,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
     if (!aborted && overflowBatch.size > 0) {
       forwardOverflow();
     }
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("VectorMapJoinInnerLongOperator closeOp " + batchCounter + " batches processed");
     }
   }

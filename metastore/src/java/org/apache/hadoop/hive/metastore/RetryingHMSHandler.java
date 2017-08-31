@@ -109,7 +109,7 @@ public class RetryingHMSHandler implements InvocationHandler {
       error = false;
       return result.result;
     } finally {
-      StringBuffer additionalInfo = new StringBuffer();
+      StringBuilder additionalInfo = new StringBuilder();
       additionalInfo.append("threadId=").append(threadId).append(" retryCount=").append(retryCount)
         .append(" error=").append(error);
       perfLogger.PerfLogEnd(CLASS_NAME, method.getName(), additionalInfo.toString());
@@ -153,8 +153,6 @@ public class RetryingHMSHandler implements InvocationHandler {
         }
         return new Result(object, retryCount);
 
-      } catch (javax.jdo.JDOException e) {
-        caughtException = e;
       } catch (UndeclaredThrowableException e) {
         if (e.getCause() != null) {
           if (e.getCause() instanceof javax.jdo.JDOException) {

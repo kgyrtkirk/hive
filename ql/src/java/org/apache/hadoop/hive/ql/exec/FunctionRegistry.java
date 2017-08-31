@@ -272,6 +272,8 @@ public final class FunctionRegistry {
     system.registerGenericUDF("initcap", GenericUDFInitCap.class);
 
     system.registerUDF("like", UDFLike.class, true);
+    system.registerGenericUDF("likeany", GenericUDFLikeAny.class);
+    system.registerGenericUDF("likeall", GenericUDFLikeAll.class);
     system.registerGenericUDF("rlike", GenericUDFRegExp.class);
     system.registerGenericUDF("regexp", GenericUDFRegExp.class);
     system.registerUDF("regexp_replace", UDFRegExpReplace.class, false);
@@ -357,6 +359,10 @@ public final class FunctionRegistry {
 
     system.registerGenericUDF("isnull", GenericUDFOPNull.class);
     system.registerGenericUDF("isnotnull", GenericUDFOPNotNull.class);
+    system.registerGenericUDF("istrue", GenericUDFOPTrue.class);
+    system.registerGenericUDF("isnottrue", GenericUDFOPNotTrue.class);
+    system.registerGenericUDF("isfalse", GenericUDFOPFalse.class);
+    system.registerGenericUDF("isnotfalse", GenericUDFOPNotFalse.class);
 
     system.registerGenericUDF("if", GenericUDFIf.class);
     system.registerGenericUDF("in", GenericUDFIn.class);
@@ -396,6 +402,7 @@ public final class FunctionRegistry {
 
     system.registerGenericUDF(serdeConstants.DATE_TYPE_NAME, GenericUDFToDate.class);
     system.registerGenericUDF(serdeConstants.TIMESTAMP_TYPE_NAME, GenericUDFTimestamp.class);
+    system.registerGenericUDF(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME, GenericUDFToTimestampLocalTZ.class);
     system.registerGenericUDF(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME, GenericUDFToIntervalYearMonth.class);
     system.registerGenericUDF(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME, GenericUDFToIntervalDayTime.class);
     system.registerGenericUDF(serdeConstants.BINARY_TYPE_NAME, GenericUDFToBinary.class);
@@ -1530,7 +1537,8 @@ public final class FunctionRegistry {
         udfClass == UDFToShort.class || udfClass == UDFToString.class ||
         udfClass == GenericUDFToVarchar.class || udfClass == GenericUDFToChar.class ||
         udfClass == GenericUDFTimestamp.class || udfClass == GenericUDFToBinary.class ||
-        udfClass == GenericUDFToDate.class  || udfClass == GenericUDFToDecimal.class;
+        udfClass == GenericUDFToDate.class || udfClass == GenericUDFToDecimal.class ||
+        udfClass == GenericUDFToTimestampLocalTZ.class;
   }
 
   /**

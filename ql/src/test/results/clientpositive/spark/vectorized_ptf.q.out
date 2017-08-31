@@ -154,8 +154,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
+                        keyColumns: [2, 1]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumns: [2]
+                        valueColumns: [5, 7]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized
@@ -176,7 +179,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -207,7 +210,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -232,21 +235,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col7
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
@@ -365,9 +368,11 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: p_partkey (type: int)
                       Reduce Sink Vectorization:
-                          className: VectorReduceSinkObjectHashOperator
+                          className: VectorReduceSinkLongOperator
+                          keyColumns: [0]
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: [1, 2, 5]
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
             Execution mode: vectorized
@@ -404,9 +409,11 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: p_partkey (type: int)
                       Reduce Sink Vectorization:
-                          className: VectorReduceSinkObjectHashOperator
+                          className: VectorReduceSinkLongOperator
+                          keyColumns: [0]
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: []
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
@@ -447,7 +454,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -478,7 +485,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: lag not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -503,7 +510,7 @@ STAGE PLANS:
                               arguments: _col5, 1, _col5
                               name: lag
                               window function: GenericUDAFLagEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 28 Data size: 17646 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -609,8 +616,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
+                        keyColumns: [2, 1]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumns: [2]
+                        valueColumns: [5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int)
             Execution mode: vectorized
@@ -631,7 +641,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -760,8 +770,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
+                        keyColumns: [2, 1]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumns: [2]
+                        valueColumns: [5, 7]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized
@@ -782,7 +795,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -813,7 +826,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -838,21 +851,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col7
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
@@ -970,8 +983,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
+                        keyColumns: [2, 1]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumns: [2]
+                        valueColumns: [5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int)
             Execution mode: vectorized
@@ -992,7 +1008,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -1023,7 +1039,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: lag not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -1048,21 +1064,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: lag_window_2
                               arguments: _col5, 1, _col5
                               name: lag
                               window function: GenericUDAFLagEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -1183,8 +1199,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
+                        keyColumns: [2, 1]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumns: [2]
+                        valueColumns: [5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int)
             Execution mode: vectorized
@@ -1205,7 +1224,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -1244,7 +1263,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: lag not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
                 vectorized: false
             Reduce Operator Tree:
               Group By Operator
@@ -1270,21 +1289,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: lag_window_2
                               arguments: _col2, 1, _col2
                               name: lag
                               window function: GenericUDAFLagEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -1398,8 +1417,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
+                        keyColumns: [2, 1]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumns: [2]
+                        valueColumns: [0, 3, 4, 5, 6, 7, 8]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_partkey (type: int), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
             Execution mode: vectorized
@@ -1436,9 +1458,11 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: p_partkey (type: int)
                       Reduce Sink Vectorization:
-                          className: VectorReduceSinkObjectHashOperator
+                          className: VectorReduceSinkLongOperator
+                          keyColumns: [0]
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: []
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
@@ -1458,7 +1482,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -1611,9 +1635,11 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: p_partkey (type: int)
                       Reduce Sink Vectorization:
-                          className: VectorReduceSinkObjectHashOperator
+                          className: VectorReduceSinkLongOperator
+                          keyColumns: [0]
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: []
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
@@ -1643,8 +1669,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
+                        keyColumns: [2, 1]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumns: [2]
+                        valueColumns: [0, 3, 4, 5, 6, 7, 8]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_partkey (type: int), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
             Execution mode: vectorized
@@ -1691,7 +1720,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -1838,7 +1867,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -1869,7 +1898,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: More than 1 argument expression of aggregation function rank
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -1894,7 +1923,7 @@ STAGE PLANS:
                               arguments: _col1, _col5
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -2028,7 +2057,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -2060,7 +2089,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -2085,21 +2114,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col7
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
@@ -2213,8 +2242,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
+                        keyColumns: [2, 1]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumns: [2]
+                        valueColumns: [5, 7]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized
@@ -2235,7 +2267,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -2266,7 +2298,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -2291,21 +2323,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col7
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
@@ -2422,8 +2454,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
+                        keyColumns: [2, 1]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumns: [2]
+                        valueColumns: [5, 7]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized
@@ -2444,7 +2479,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -2498,7 +2533,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -2537,7 +2572,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -2562,21 +2597,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col7
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
@@ -2700,8 +2735,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
+                        keyColumns: [2, 1]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumns: [2]
+                        valueColumns: [5, 7]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized
@@ -2722,7 +2760,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -2753,7 +2791,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -2778,13 +2816,13 @@ STAGE PLANS:
                               arguments: _col5
                               name: count
                               window function: GenericUDAFCountEvaluator
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
                             window function definition
                               alias: sum_window_1
                               arguments: _col7
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(2)~FOLLOWING(2)
+                              window frame: ROWS PRECEDING(2)~FOLLOWING(2)
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), count_window_0 (type: bigint), round(sum_window_1, 2) (type: double)
@@ -2913,8 +2951,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
+                        keyColumns: [2, 1]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumns: [2]
+                        valueColumns: [0, 5, 7]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_partkey (type: int), p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized
@@ -2951,9 +2992,11 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: p_partkey (type: int)
                       Reduce Sink Vectorization:
-                          className: VectorReduceSinkObjectHashOperator
+                          className: VectorReduceSinkLongOperator
+                          keyColumns: [0]
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: []
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
@@ -2973,7 +3016,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -3028,7 +3071,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -3053,33 +3096,33 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: count_window_2
                               arguments: _col1
                               name: count
                               window function: GenericUDAFCountEvaluator
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
                             window function definition
                               alias: sum_window_3
                               arguments: _col7
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                             window function definition
                               alias: lag_window_4
                               arguments: _col5, 1, _col5
                               name: lag
                               window function: GenericUDAFLagEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 28 Data size: 17646 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -3196,8 +3239,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
+                        keyColumns: [2, 1]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumns: [2]
+                        valueColumns: [5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int)
             Execution mode: vectorized
@@ -3218,7 +3264,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -3272,9 +3318,11 @@ STAGE PLANS:
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     keyExpressions: col 0, col 1, col 2
                     native: false
+                    vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumns: []
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
                 mode: mergepartial
@@ -3410,9 +3458,11 @@ STAGE PLANS:
                       Group By Vectorization:
                           aggregators: VectorUDAFSumDouble(col 7) -> double
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 2, col 3
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: [0]
                       keys: p_mfgr (type: string), p_brand (type: string)
                       mode: hash
@@ -3424,8 +3474,11 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            partitionColumns: [0]
+                            valueColumns: [2]
                         Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: double)
             Execution mode: vectorized
@@ -3446,7 +3499,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Group By Operator
@@ -3483,7 +3536,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -3508,7 +3561,7 @@ STAGE PLANS:
                               arguments: _col2
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(2)~CURRENT
+                              window frame: ROWS PRECEDING(2)~CURRENT
                   Statistics: Num rows: 13 Data size: 8021 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), round(sum_window_0, 2) (type: double)
@@ -3676,8 +3729,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
+                        keyColumns: [2, 1]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumns: [2]
+                        valueColumns: [5, 7]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized
@@ -3698,7 +3754,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -3723,21 +3779,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col7
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
@@ -3755,7 +3811,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -3780,7 +3836,7 @@ STAGE PLANS:
                               arguments: _col5
                               name: sum
                               window function: GenericUDAFSumLong
-                              window frame: PRECEDING(5)~CURRENT
+                              window frame: RANGE PRECEDING(5)~CURRENT
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: sum_window_0 (type: bigint), _col1 (type: string), _col2 (type: string), _col5 (type: int)
@@ -3796,7 +3852,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: More than 1 argument expression of aggregation function rank
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -3821,28 +3877,28 @@ STAGE PLANS:
                               arguments: _col3, _col2
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_2
                               arguments: _col3, _col2
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: cume_dist_window_3
                               arguments: _col3, _col2
                               name: cume_dist
                               window function: GenericUDAFCumeDistEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: first_value_window_4
                               arguments: _col6, true
                               name: first_value
                               window function: GenericUDAFFirstValueEvaluator
-                              window frame: PRECEDING(2)~FOLLOWING(2)
+                              window frame: ROWS PRECEDING(2)~FOLLOWING(2)
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col3 (type: string), _col2 (type: string), _col6 (type: int), UDFToInteger(round(_col0, 1)) (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), cume_dist_window_3 (type: double), first_value_window_4 (type: int)
@@ -3860,7 +3916,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -3889,7 +3945,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -4123,9 +4179,11 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
-                        className: VectorReduceSinkObjectHashOperator
+                        className: VectorReduceSinkStringOperator
+                        keyColumns: [2]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: [1, 5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_name (type: string), p_size (type: int)
             Execution mode: vectorized
@@ -4146,7 +4204,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -4207,7 +4265,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -4246,7 +4304,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: More than 1 argument expression of aggregation function rank
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -4271,21 +4329,21 @@ STAGE PLANS:
                               arguments: _col2, _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col2, _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col5
                               name: sum
                               window function: GenericUDAFSumLong
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
@@ -4432,9 +4490,11 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
-                        className: VectorReduceSinkObjectHashOperator
+                        className: VectorReduceSinkStringOperator
+                        keyColumns: [2]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: [1, 5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_name (type: string), p_size (type: int)
             Execution mode: vectorized
@@ -4455,7 +4515,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -4493,7 +4553,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -4524,7 +4584,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -4555,7 +4615,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is not supported for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -4580,21 +4640,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col5
                               name: sum
                               window function: GenericUDAFSumLong
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
@@ -4736,9 +4796,11 @@ STAGE PLANS:
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Reduce Sink Vectorization:
-                        className: VectorReduceSinkObjectHashOperator
+                        className: VectorReduceSinkMultiKeyOperator
+                        keyColumns: [2, 1]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: [5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int)
             Execution mode: vectorized
@@ -4759,7 +4821,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -4797,7 +4859,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -4832,15 +4894,29 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: int)
         Reducer 4 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
-                vectorized: false
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: bigint, bigint, bigint
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [1, 0, 2]
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -4860,28 +4936,48 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col5
                               name: sum
                               window function: GenericUDAFSumLong
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorLongSum]
+                      functionInputExpressions: [col 1, col 1, col 2]
+                      functionNames: [rank, dense_rank, sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 1]
+                      outputColumns: [3, 4, 5, 1, 0, 2]
+                      outputTypes: [int, int, bigint, string, string, int]
+                      partitionExpressions: [col 0]
+                      streamingColumns: [3, 4]
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 3, 4, 2, 5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -5017,9 +5113,11 @@ STAGE PLANS:
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Reduce Sink Vectorization:
-                        className: VectorReduceSinkObjectHashOperator
+                        className: VectorReduceSinkMultiKeyOperator
+                        keyColumns: [2, 1]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: [5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int)
             Execution mode: vectorized
@@ -5040,7 +5138,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -5078,7 +5176,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -5125,7 +5223,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -5157,7 +5255,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: More than 1 argument expression of aggregation function rank
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -5182,21 +5280,21 @@ STAGE PLANS:
                               arguments: _col2, _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col2, _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col5
                               name: sum
                               window function: GenericUDAFSumLong
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
@@ -5340,9 +5438,11 @@ STAGE PLANS:
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Reduce Sink Vectorization:
-                        className: VectorReduceSinkObjectHashOperator
+                        className: VectorReduceSinkMultiKeyOperator
+                        keyColumns: [2, 1]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: [5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int)
             Execution mode: vectorized
@@ -5363,7 +5463,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -5417,7 +5517,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -5456,7 +5556,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: More than 1 argument expression of aggregation function rank
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -5481,21 +5581,21 @@ STAGE PLANS:
                               arguments: _col2, _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col2, _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col5
                               name: sum
                               window function: GenericUDAFSumLong
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint), sum_window_2 (type: bigint)
@@ -5633,9 +5733,11 @@ STAGE PLANS:
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string), p_name (type: string)
                     Reduce Sink Vectorization:
-                        className: VectorReduceSinkObjectHashOperator
+                        className: VectorReduceSinkMultiKeyOperator
+                        keyColumns: [2, 1]
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: [5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_size (type: int)
             Execution mode: vectorized
@@ -5656,7 +5758,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -5710,7 +5812,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
+                notVectorizedReason: PTF operator: NOOP not supported
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -5739,15 +5841,29 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: int)
         Reducer 4 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF Operator (PTF) not supported
-                vectorized: false
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: bigint, bigint, bigint
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [1, 0, 2]
                 Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -5767,28 +5883,48 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col5
                               name: sum
                               window function: GenericUDAFSumLong
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorLongSum]
+                      functionInputExpressions: [col 1, col 1, col 2]
+                      functionNames: [rank, dense_rank, sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 1]
+                      outputColumns: [3, 4, 5, 1, 0, 2]
+                      outputTypes: [int, int, bigint, string, string, int]
+                      partitionExpressions: [col 0]
+                      streamingColumns: [3, 4]
                   Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 3, 4, 2, 5, 5]
                     Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat

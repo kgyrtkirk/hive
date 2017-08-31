@@ -79,9 +79,11 @@ STAGE PLANS:
                       Group By Vectorization:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0, col 1, ConstantVectorExpression(val 0) -> 2:long
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: [0]
                       keys: key (type: int), value (type: int), 0 (type: int)
                       mode: hash
@@ -100,9 +102,11 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: int), 1 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkMultiKeyOperator
+                              keyColumns: [0, 1, 4]
                               keyExpressions: ConstantVectorExpression(val 1) -> 4:long
                               native: true
-                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: [3]
                           Statistics: Num rows: 6 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col3 (type: bigint)
             Execution mode: vectorized, llap
@@ -143,9 +147,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 3) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     keyExpressions: col 0, col 1, ConstantVectorExpression(val 1) -> 4:long
                     native: false
+                    vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumns: [0]
                 keys: KEY._col0 (type: int), KEY._col1 (type: int), 1 (type: int)
                 mode: mergepartial
@@ -251,9 +257,11 @@ STAGE PLANS:
                       Group By Vectorization:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0, col 1, ConstantVectorExpression(val 0) -> 2:long
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: [0]
                       keys: _col0 (type: int), _col1 (type: int), 0 (type: int)
                       mode: hash
@@ -265,8 +273,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
+                            keyColumns: [0, 1, 2]
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: [3]
                         Statistics: Num rows: 12 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col3 (type: bigint)
             Execution mode: vectorized, llap
@@ -306,9 +316,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 3) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     keyExpressions: col 0, col 1, col 2
                     native: false
+                    vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumns: [0]
                 keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
                 mode: mergepartial

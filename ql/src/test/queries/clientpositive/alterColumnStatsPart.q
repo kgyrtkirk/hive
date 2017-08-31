@@ -13,6 +13,8 @@ insert into p partition (c=1) values (1,2);
 
 desc formatted p partition (c=1) a;
 
+desc formatted p partition (c=1);
+
 explain select max(a) from p where c=1;
 
 analyze table p partition(c=1) compute statistics for columns a;
@@ -28,6 +30,8 @@ desc formatted p partition(c=4);
 explain select max(a) from p where c=4;
 
 alter table p add partition (c=100);
+
+desc formatted p partition (c=100);
 
 explain select max(a) from p where c=100;
 

@@ -69,7 +69,7 @@ STAGE PLANS:
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -94,9 +94,11 @@ STAGE PLANS:
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
+                    groupByMode: PARTIAL1
                     vectorOutput: true
                     keyExpressions: col 0
                     native: false
+                    vectorProcessingMode: STREAMING
                     projectedOutputColumns: []
                 keys: KEY._col0 (type: string)
                 mode: partial1
@@ -109,7 +111,7 @@ STAGE PLANS:
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkStringOperator
                       native: true
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Execution mode: vectorized, llap
@@ -124,9 +126,11 @@ STAGE PLANS:
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
+                    groupByMode: FINAL
                     vectorOutput: true
                     keyExpressions: col 0
                     native: false
+                    vectorProcessingMode: STREAMING
                     projectedOutputColumns: []
                 keys: KEY._col0 (type: string)
                 mode: final

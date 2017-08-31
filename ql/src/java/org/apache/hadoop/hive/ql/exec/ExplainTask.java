@@ -42,6 +42,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
@@ -54,11 +55,9 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
-import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkCommonOperator;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -117,7 +116,6 @@ import org.slf4j.LoggerFactory;
 public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   public static final String EXPL_COLUMN_NAME = "Explain";
-  public static final String OUTPUT_OPERATORS = "OutputOperators:";
   private final Set<Operator<?>> visitedOps = new HashSet<Operator<?>>();
   private boolean isLogical = false;
   protected final Logger LOG;
@@ -135,32 +133,33 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
    * {"input_tables":[{"tablename": "default@test_sambavi_v1", "tabletype": "TABLE"}],
    *  "input partitions":["default@srcpart@ds=2008-04-08/hr=11"]}
    */
-  private static JSONObject getJSONDependencies(ExplainWork work)
+  @VisibleForTesting
+  static JSONObject getJSONDependencies(ExplainWork work)
       throws Exception {
     assert(work.getDependency());
 
     JSONObject outJSONObject = new JSONObject(new LinkedHashMap<>());
-    List<Map<String, String>> inputTableInfo = new ArrayList<Map<String, String>>();
-    List<Map<String, String>> inputPartitionInfo = new ArrayList<Map<String, String>>();
+    JSONArray inputTableInfo = new JSONArray();
+    JSONArray inputPartitionInfo = new JSONArray();
     for (ReadEntity input: work.getInputs()) {
       switch (input.getType()) {
         case TABLE:
           Table table = input.getTable();
-          Map<String, String> tableInfo = new LinkedHashMap<String, String>();
+          JSONObject tableInfo = new JSONObject();
           tableInfo.put("tablename", table.getCompleteName());
           tableInfo.put("tabletype", table.getTableType().toString());
           if ((input.getParents() != null) && (!input.getParents().isEmpty())) {
             tableInfo.put("tableParents", input.getParents().toString());
           }
-          inputTableInfo.add(tableInfo);
+          inputTableInfo.put(tableInfo);
           break;
         case PARTITION:
-          Map<String, String> partitionInfo = new HashMap<String, String>();
+          JSONObject partitionInfo = new JSONObject();
           partitionInfo.put("partitionName", input.getPartition().getCompleteName());
           if ((input.getParents() != null) && (!input.getParents().isEmpty())) {
             partitionInfo.put("partitionParents", input.getParents().toString());
           }
-          inputPartitionInfo.add(partitionInfo);
+          inputPartitionInfo.put(partitionInfo);
           break;
         default:
           break;
@@ -205,7 +204,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static String falseCondNameVectorizationEnabled =
       HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname + " IS false";
 
-  private ImmutablePair<Boolean, JSONObject> outputPlanVectorization(PrintStream out, boolean jsonOutput)
+  @VisibleForTesting
+  ImmutablePair<Boolean, JSONObject> outputPlanVectorization(PrintStream out, boolean jsonOutput)
       throws Exception {
 
     if (out != null) {
@@ -238,10 +238,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
     if (jsonOutput) {
       json.put("enabled", isVectorizationEnabled);
+      JSONArray jsonArray = new JSONArray(Arrays.asList(isVectorizationEnabledCondName));
       if (!isVectorizationEnabled) {
-        json.put("enabledConditionsNotMet", isVectorizationEnabledCondList);
+        json.put("enabledConditionsNotMet", jsonArray);
       } else {
-        json.put("enabledConditionsMet", isVectorizationEnabledCondList);
+        json.put("enabledConditionsMet", jsonArray);
       }
     }
 
@@ -278,7 +279,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     boolean suppressOthersForVectorization = false;
     if (this.work != null && this.work.isVectorization()) {
       ImmutablePair<Boolean, JSONObject> planVecPair = outputPlanVectorization(out, jsonOutput);
-  
+
       if (this.work.isVectorizationOnly()) {
         // Suppress the STAGES if vectorization is off.
         suppressOthersForVectorization = !planVecPair.left;
@@ -287,7 +288,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       if (out != null) {
         out.println();
       }
-  
+
       if (jsonOutput) {
         outJSONObject.put("PLAN VECTORIZATION", planVecPair.right);
       }
@@ -400,6 +401,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         } else {
           JSONObject jsonPlan = getJSONPlan(out, work);
           if (work.isFormatted()) {
+            // use the parser to get the output operators of RS
+            JsonParser jsonParser = JsonParserFactory.getParser(conf);
+            if (jsonParser != null) {
+              jsonParser.print(jsonPlan, null);
+              LOG.info("JsonPlan is augmented to " + jsonPlan.toString());
+            }
             out.print(jsonPlan);
           }
         }
@@ -419,7 +426,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
   }
 
-  private JSONObject collectAuthRelatedEntities(PrintStream out, ExplainWork work)
+  @VisibleForTesting
+  JSONObject collectAuthRelatedEntities(PrintStream out, ExplainWork work)
       throws Exception {
 
     BaseSemanticAnalyzer analyzer = work.getAnalyzer();
@@ -483,7 +491,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return sb.toString();
   }
 
-  private JSONObject outputMap(Map<?, ?> mp, boolean hasHeader, PrintStream out,
+  @VisibleForTesting
+  JSONObject outputMap(Map<?, ?> mp, boolean hasHeader, PrintStream out,
       boolean extended, boolean jsonOutput, int indent) throws Exception {
 
     TreeMap<Object, Object> tree = getBasictypeKeyedMap(mp);
@@ -609,9 +618,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
   /**
    * Retruns a map which have either primitive or string keys.
-   * 
+   *
    * This is neccessary to discard object level comparators which may sort the objects based on some non-trivial logic.
-   * 
+   *
    * @param mp
    * @return
    */
@@ -693,7 +702,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return outputPlan(work, out, extended, jsonOutput, indent, "");
   }
 
-  private JSONObject outputPlan(Object work, PrintStream out,
+  @VisibleForTesting
+  JSONObject outputPlan(Object work, PrintStream out,
       boolean extended, boolean jsonOutput, int indent, String appendToHeader) throws Exception {
     // Check if work has an explain annotation
     Annotation note = AnnotationUtils.getAnnotation(work.getClass(), Explain.class);
@@ -797,17 +807,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           if (jsonOut != null && jsonOut.length() > 0) {
             ((JSONObject) jsonOut.get(JSONObject.getNames(jsonOut)[0])).put("OperatorId:",
                 operator.getOperatorId());
-            if (!this.work.isUserLevelExplain()
-                && this.work.isFormatted()
-                && (operator instanceof ReduceSinkOperator
-                    || operator instanceof VectorReduceSinkOperator || operator instanceof VectorReduceSinkCommonOperator)) {
-              List<String> outputOperators = ((ReduceSinkDesc) operator.getConf())
-                  .getOutputOperators();
-              if (outputOperators != null) {
-                ((JSONObject) jsonOut.get(JSONObject.getNames(jsonOut)[0])).put(OUTPUT_OPERATORS,
-                    Arrays.toString(outputOperators.toArray()));
-              }
-            }
+          }
+          if (!this.work.isUserLevelExplain() && this.work.isFormatted()
+              && operator.getConf() instanceof ReduceSinkDesc ) {
+            ((JSONObject) jsonOut.get(JSONObject.getNames(jsonOut)[0])).put("outputname:",
+                ((ReduceSinkDesc) operator.getConf()).getOutputName());
           }
         }
         if (jsonOutput) {
@@ -1075,7 +1079,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return null;
   }
 
-  private JSONObject outputDependencies(Task<?> task,
+  @VisibleForTesting
+  JSONObject outputDependencies(Task<?> task,
       PrintStream out, JSONObject parentJson, boolean jsonOutput, boolean taskType, int indent)
       throws Exception {
 

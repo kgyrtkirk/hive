@@ -52,6 +52,7 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "minitez.query.files");
         excludesFrom(testConfigProps, "encrypted.query.files");
         excludesFrom(testConfigProps, "spark.only.query.files");
+        excludesFrom(testConfigProps, "miniSparkOnYarn.only.query.files");
         excludesFrom(testConfigProps, "disabled.query.files");
 
         setResultsDir("ql/src/test/results/clientpositive");
@@ -287,6 +288,8 @@ public class CliConfigs {
 
         excludesFrom(testConfigProps, "minimr.query.negative.files");
         excludeQuery("authorization_uri_import.q");
+        excludeQuery("spark_job_max_tasks.q");
+        excludeQuery("spark_stage_max_tasks.q");
 
         setResultsDir("ql/src/test/results/clientnegative");
         setLogDir("itests/qtest/target/qfile-results/clientnegative");
@@ -453,6 +456,7 @@ public class CliConfigs {
         setQueryDir("ql/src/test/queries/clientpositive");
 
         includesFrom(testConfigProps, "spark.query.files");
+        includesFrom(testConfigProps, "spark.only.query.files");
 
         setResultsDir("ql/src/test/results/clientpositive/spark");
         setLogDir("itests/qtest-spark/target/qfile-results/clientpositive/spark");
@@ -475,7 +479,7 @@ public class CliConfigs {
         setQueryDir("ql/src/test/queries/clientpositive");
 
         includesFrom(testConfigProps, "miniSparkOnYarn.query.files");
-        includesFrom(testConfigProps, "spark.only.query.files");
+        includesFrom(testConfigProps, "miniSparkOnYarn.only.query.files");
 
         setResultsDir("ql/src/test/results/clientpositive/spark");
         setLogDir("itests/qtest-spark/target/qfile-results/clientpositive/spark");

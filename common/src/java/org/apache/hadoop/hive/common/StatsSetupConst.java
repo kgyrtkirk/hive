@@ -111,18 +111,18 @@ public class StatsSetupConst {
 
   public static final String STATS_FILE_PREFIX = "tmpstats-";
   /**
-   * @return List of all supported statistics
+   * List of all supported statistics
    */
   public static final String[] supportedStats = {NUM_FILES,ROW_COUNT,TOTAL_SIZE,RAW_DATA_SIZE};
 
   /**
-   * @return List of all statistics that need to be collected during query execution. These are
+   * List of all statistics that need to be collected during query execution. These are
    * statistics that inherently require a scan of the data.
    */
   public static final String[] statsRequireCompute = new String[] {ROW_COUNT,RAW_DATA_SIZE};
 
   /**
-   * @return List of statistics that can be collected quickly without requiring a scan of the data.
+   * List of statistics that can be collected quickly without requiring a scan of the data.
    */
   public static final String[] fastStats = new String[] {NUM_FILES,TOTAL_SIZE};
 
@@ -270,6 +270,9 @@ public class StatsSetupConst {
     if (params == null) {
       throw new RuntimeException("params are null...cant set columnstatstate!");
     }
+    if (colNames == null) {
+      return;
+    }
     ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
 
     for (String colName : colNames) {
@@ -318,7 +321,7 @@ public class StatsSetupConst {
     }
   }
 
-  public static void setBasicStatsStateForCreateTable(Map<String, String> params,
+  public static void setStatsStateForCreateTable(Map<String, String> params,
       List<String> cols, String setting) {
     if (TRUE.equals(setting)) {
       for (String stat : StatsSetupConst.supportedStats) {
@@ -326,9 +329,7 @@ public class StatsSetupConst {
       }
     }
     setBasicStatsState(params, setting);
-    if (cols != null) {
-      setColumnStatsState(params, cols);
-    }
+    setColumnStatsState(params, cols);
   }
   
   private static ColumnStatsAccurate parseStatsAcc(String statsAcc) {

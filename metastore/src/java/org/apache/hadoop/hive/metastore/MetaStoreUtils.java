@@ -22,11 +22,16 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,13 +42,31 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Predicates;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -72,6 +95,10 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData._Fields;
 import org.apache.hadoop.hive.metastore.hbase.stats.merge.ColumnStatsMerger;
 import org.apache.hadoop.hive.metastore.hbase.stats.merge.ColumnStatsMergerFactory;
+import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
+import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
+import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMerger;
+import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMergerFactory;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -86,8 +113,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
@@ -111,6 +136,7 @@ public class MetaStoreUtils {
   // configuration parameter documentation
   // HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES in HiveConf as well.
   public static final char[] specialCharactersInTableNames = new char[] { '/' };
+  final static Charset ENCODING = StandardCharsets.UTF_8;
 
   public static Table createColumnsetSchema(String name, List<String> columns,
       List<String> partCols, Configuration conf) throws MetaException {
@@ -130,7 +156,7 @@ public class MetaStoreUtils {
     serdeInfo.getParameters().put(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT,
         DEFAULT_SERIALIZATION_FORMAT);
 
-    List<FieldSchema> fields = new ArrayList<FieldSchema>();
+    List<FieldSchema> fields = new ArrayList<FieldSchema>(columns.size());
     sd.setCols(fields);
     for (String col : columns) {
       FieldSchema field = new FieldSchema(col,
@@ -447,7 +473,7 @@ public class MetaStoreUtils {
       return deserializer;
     } catch (RuntimeException e) {
       throw e;
-    } catch (Exception e) {
+    } catch (Throwable e) {
       LOG.error("error in initSerDe: " + e.getClass().getName() + " "
           + e.getMessage(), e);
       throw new MetaException(e.getClass().getName() + " " + e.getMessage());
@@ -490,7 +516,7 @@ public class MetaStoreUtils {
       return deserializer;
     } catch (RuntimeException e) {
       throw e;
-    } catch (Exception e) {
+    } catch (Throwable e) {
       LOG.error("error in initSerDe: " + e.getClass().getName() + " "
           + e.getMessage(), e);
       throw new MetaException(e.getClass().getName() + " " + e.getMessage());
@@ -555,12 +581,9 @@ public class MetaStoreUtils {
    */
   public static List<String> getPvals(List<FieldSchema> partCols,
       Map<String, String> partSpec) {
-    List<String> pvals = new ArrayList<String>();
+    List<String> pvals = new ArrayList<String>(partCols.size());
     for (FieldSchema field : partCols) {
-      String val = partSpec.get(field.getName());
-      if (val == null) {
-        val = "";
-      }
+      String val = StringUtils.defaultString(partSpec.get(field.getName()));
       pvals.add(val);
     }
     return pvals;
@@ -577,7 +600,6 @@ public class MetaStoreUtils {
    * @param conf
    *          hive configuration
    * @return true or false depending on conformance
-   * @exception MetaException
    *              if it doesn't match the pattern.
    */
   static public boolean validateName(String name, Configuration conf) {
@@ -592,10 +614,7 @@ public class MetaStoreUtils {
     }
     tpat = Pattern.compile("[" + allowedCharacters + "]+");
     Matcher m = tpat.matcher(name);
-    if (m.matches()) {
-      return true;
-    }
-    return false;
+    return m.matches();
   }
 
   /*
@@ -638,37 +657,26 @@ public class MetaStoreUtils {
     }
   }
 
-  static boolean isCascadeNeededInAlterTable(Table oldTable, Table newTable) {
-    //currently cascade only supports add/replace columns and
-    //changing column type/position/name/comments
-    List<FieldSchema> oldCols = oldTable.getSd().getCols();
-    List<FieldSchema> newCols = newTable.getSd().getCols();
-    return !areSameColumns(oldCols, newCols);
-  }
-
   static boolean areSameColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
-    if (oldCols.size() != newCols.size()) {
-      return false;
-    } else {
-      for (int i = 0; i < oldCols.size(); i++) {
-        FieldSchema oldCol = oldCols.get(i);
-        FieldSchema newCol = newCols.get(i);
-        if(!oldCol.equals(newCol)) {
-          return false;
-        }
-      }
-    }
-    return true;
+    return ListUtils.isEqualList(oldCols, newCols);
   }
 
-  static boolean columnsIncluded(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
+  /*
+   * This method is to check if the new column list includes all the old columns with same name and
+   * type. The column comment does not count.
+   */
+  static boolean columnsIncludedByNameType(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     if (oldCols.size() > newCols.size()) {
       return false;
     }
 
-    Set<FieldSchema> newColsSet = new HashSet<FieldSchema>(newCols);
+    Map<String, String> columnNameTypePairMap = new HashMap<String, String>(newCols.size());
+    for (FieldSchema newCol : newCols) {
+      columnNameTypePairMap.put(newCol.getName().toLowerCase(), newCol.getType());
+    }
     for (final FieldSchema oldCol : oldCols) {
-      if (!newColsSet.contains(oldCol)) {
+      if (!columnNameTypePairMap.containsKey(oldCol.getName())
+          || !columnNameTypePairMap.get(oldCol.getName()).equalsIgnoreCase(oldCol.getType())) {
         return false;
       }
     }
@@ -701,7 +709,7 @@ public class MetaStoreUtils {
    * validate column type
    *
    * if it is predefined, yes. otherwise no
-   * @param name
+   * @param type
    * @return
    */
   static public String validateColumnType(String type) {
@@ -727,7 +735,7 @@ public class MetaStoreUtils {
   }
 
   public static String validateSkewedColNames(List<String> cols) {
-    if (null == cols) {
+    if (CollectionUtils.isEmpty(cols)) {
       return null;
     }
     for (String col : cols) {
@@ -740,10 +748,10 @@ public class MetaStoreUtils {
 
   public static String validateSkewedColNamesSubsetCol(List<String> skewedColNames,
       List<FieldSchema> cols) {
-    if (null == skewedColNames) {
+    if (CollectionUtils.isEmpty(skewedColNames)) {
       return null;
     }
-    List<String> colNames = new ArrayList<String>();
+    List<String> colNames = new ArrayList<String>(cols.size());
     for (FieldSchema fieldSchema : cols) {
       colNames.add(fieldSchema.getName());
     }
@@ -859,7 +867,7 @@ public class MetaStoreUtils {
    * @return String containing "Thrift
    *         DDL#comma-separated-column-names#colon-separated-columntypes
    *         Example:
-   *         "struct result { a string, map<int,string> b}#a,b#string:map<int,string>"
+   *         "struct result { a string, map&lt;int,string&gt; b}#a,b#string:map&lt;int,string&gt;"
    */
   public static String getFullDDLFromFieldSchema(String structName,
       List<FieldSchema> fieldSchemas) {
@@ -907,7 +915,7 @@ public class MetaStoreUtils {
     }
     ddl.append("}");
 
-    LOG.debug("DDL: " + ddl);
+    LOG.trace("DDL: {}", ddl);
     return ddl.toString();
   }
 
@@ -1023,7 +1031,7 @@ public class MetaStoreUtils {
             (key.equals(cols) || key.equals(colTypes) || key.equals(parts))) {
           continue;
         }
-        schema.put(key, (param.getValue() != null) ? param.getValue() : "");
+        schema.put(key, (param.getValue() != null) ? param.getValue() : StringUtils.EMPTY);
       }
 
       if (sd.getSerdeInfo().getSerializationLib() != null) {
@@ -1060,7 +1068,7 @@ public class MetaStoreUtils {
       }
       colNameBuf.append(col.getName());
       colTypeBuf.append(col.getType());
-      colComment.append((null != col.getComment()) ? col.getComment() : "");
+      colComment.append((null != col.getComment()) ? col.getComment() : StringUtils.EMPTY);
       first = false;
     }
     schema.setProperty(
@@ -1118,7 +1126,7 @@ public class MetaStoreUtils {
     }
     if (sd.getSerdeInfo() != null) {
       for (Map.Entry<String,String> param : sd.getSerdeInfo().getParameters().entrySet()) {
-        schema.put(param.getKey(), (param.getValue() != null) ? param.getValue() : "");
+        schema.put(param.getKey(), (param.getValue() != null) ? param.getValue() : StringUtils.EMPTY);
       }
 
       if (sd.getSerdeInfo().getSerializationLib() != null) {
@@ -1134,10 +1142,10 @@ public class MetaStoreUtils {
           getDDLFromFieldSchema(tableName, sd.getCols()));
     }
 
-    String partString = "";
-    String partStringSep = "";
-    String partTypesString = "";
-    String partTypesStringSep = "";
+    String partString = StringUtils.EMPTY;
+    String partStringSep = StringUtils.EMPTY;
+    String partTypesString = StringUtils.EMPTY;
+    String partTypesStringSep = StringUtils.EMPTY;
     for (FieldSchema partKey : partitionKeys) {
       partString = partString.concat(partStringSep);
       partString = partString.concat(partKey.getName());
@@ -1180,6 +1188,15 @@ public class MetaStoreUtils {
     return addCols(getSchemaWithoutCols(sd, tblsd, parameters, databaseName, tableName, partitionKeys), tblsd.getCols());
   }
 
+  public static List<String> getColumnNamesForTable(Table table) {
+    List<String> colNames = new ArrayList<String>();
+    Iterator<FieldSchema> colsIterator = table.getSd().getColsIterator();
+    while (colsIterator.hasNext()) {
+      colNames.add(colsIterator.next().getName());
+    }
+    return colNames;
+  }
+
   public static String getColumnNameDelimiter(List<FieldSchema> fieldSchemas) {
     // we first take a look if any fieldSchemas contain COMMA
     for (int i = 0; i < fieldSchemas.size(); i++) {
@@ -1189,7 +1206,7 @@ public class MetaStoreUtils {
     }
     return String.valueOf(SerDeUtils.COMMA);
   }
-  
+
   /**
    * Convert FieldSchemas to columnNames.
    */
@@ -1244,7 +1261,7 @@ public class MetaStoreUtils {
   }
 
   public static int startMetaStore() throws Exception {
-    return startMetaStore(ShimLoader.getHadoopThriftAuthBridge(), null);
+    return startMetaStore(HadoopThriftAuthBridge.getBridge(), null);
   }
 
   public static int startMetaStore(final HadoopThriftAuthBridge bridge, HiveConf conf) throws Exception {
@@ -1254,7 +1271,7 @@ public class MetaStoreUtils {
   }
 
   public static int startMetaStore(HiveConf conf) throws Exception {
-    return startMetaStore(ShimLoader.getHadoopThriftAuthBridge(), conf);
+    return startMetaStore(HadoopThriftAuthBridge.getBridge(), conf);
   }
 
   public static void startMetaStore(final int port, final HadoopThriftAuthBridge bridge) throws Exception {
@@ -1318,7 +1335,7 @@ public class MetaStoreUtils {
     for (Map.Entry<Thread, StackTraceElement[]> entry : threadStacks.entrySet()) {
       Thread t = entry.getKey();
       sb.append(System.lineSeparator());
-      sb.append("Name: ").append(t.getName()).append(" State: " + t.getState());
+      sb.append("Name: ").append(t.getName()).append(" State: ").append(t.getState());
       addStackString(entry.getValue(), sb);
     }
     return sb.toString();
@@ -1503,11 +1520,7 @@ public class MetaStoreUtils {
   public static boolean isArchived(
       org.apache.hadoop.hive.metastore.api.Partition part) {
     Map<String, String> params = part.getParameters();
-    if ("true".equalsIgnoreCase(params.get(hive_metastoreConstants.IS_ARCHIVED))) {
-      return true;
-    } else {
-      return false;
-    }
+    return "TRUE".equalsIgnoreCase(params.get(hive_metastoreConstants.IS_ARCHIVED));
   }
 
   public static Path getOriginalLocation(
@@ -1636,10 +1649,9 @@ public class MetaStoreUtils {
    */
   static <T> List<T> getMetaStoreListeners(Class<T> clazz,
       HiveConf conf, String listenerImplList) throws MetaException {
-
     List<T> listeners = new ArrayList<T>();
-    listenerImplList = listenerImplList.trim();
-    if (listenerImplList.equals("")) {
+
+    if (StringUtils.isBlank(listenerImplList)) {
       return listeners;
     }
 
@@ -1733,23 +1745,15 @@ public class MetaStoreUtils {
     if (schema1.size() != schema2.size()) {
       return false;
     }
-    for (int i = 0; i < schema1.size(); i++) {
-      FieldSchema f1 = schema1.get(i);
-      FieldSchema f2 = schema2.get(i);
+    Iterator<FieldSchema> its1 = schema1.iterator();
+    Iterator<FieldSchema> its2 = schema2.iterator();
+    while (its1.hasNext()) {
+      FieldSchema f1 = its1.next();
+      FieldSchema f2 = its2.next();
       // The default equals provided by thrift compares the comments too for
       // equality, thus we need to compare the relevant fields here.
-      if (f1.getName() == null) {
-        if (f2.getName() != null) {
-          return false;
-        }
-      } else if (!f1.getName().equals(f2.getName())) {
-        return false;
-      }
-      if (f1.getType() == null) {
-        if (f2.getType() != null) {
-          return false;
-        }
-      } else if (!f1.getType().equals(f2.getType())) {
+      if (!StringUtils.equals(f1.getName(), f2.getName()) ||
+          !StringUtils.equals(f1.getType(), f2.getType())) {
         return false;
       }
     }
@@ -1790,9 +1794,9 @@ public class MetaStoreUtils {
     String lv = part.getParameters().get(ARCHIVING_LEVEL);
     if (lv != null) {
       return Integer.parseInt(lv);
-    } else {  // partitions archived before introducing multiple archiving
-      return part.getValues().size();
     }
+     // partitions archived before introducing multiple archiving
+    return part.getValues().size();
   }
 
   public static String[] getQualifiedName(String defaultDbName, String tableName) {
@@ -1800,7 +1804,7 @@ public class MetaStoreUtils {
     if (names.length == 1) {
       return new String[] { defaultDbName, tableName};
     }
-    return new String[] {names[0], names[1]};
+    return names;
   }
 
   /**
@@ -1810,11 +1814,7 @@ public class MetaStoreUtils {
       = new com.google.common.base.Function<String, String>() {
     @Override
     public java.lang.String apply(@Nullable java.lang.String string) {
-      if (string == null){
-        return "";
-      } else {
-        return string;
-      }
+      return StringUtils.defaultString(string);
     }
   };
 
@@ -1852,7 +1852,7 @@ public class MetaStoreUtils {
   private static URL urlFromPathString(String onestr) {
     URL oneurl = null;
     try {
-      if (StringUtils.indexOf(onestr, "file:/") == 0) {
+      if (onestr.startsWith("file:/")) {
         oneurl = new URL(onestr);
       } else {
         oneurl = new File(onestr).toURL();
@@ -1872,7 +1872,7 @@ public class MetaStoreUtils {
   public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) throws Exception {
     URLClassLoader loader = (URLClassLoader) cloader;
     List<URL> curPath = Arrays.asList(loader.getURLs());
-    ArrayList<URL> newPath = new ArrayList<URL>();
+    ArrayList<URL> newPath = new ArrayList<URL>(curPath.size());
 
     // get a list with the current classpath components
     for (URL onePath : curPath) {
@@ -1895,15 +1895,15 @@ public class MetaStoreUtils {
     // all the special characters with the corresponding number in ASCII.
     // Note that unicode is not supported in table names. And we have explicit
     // checks for it.
-    String ret = "";
+    StringBuilder sb = new StringBuilder();
     for (char ch : name.toCharArray()) {
       if (Character.isLetterOrDigit(ch) || ch == '_') {
-        ret += ch;
+        sb.append(ch);
       } else {
-        ret += "-" + (int) ch + "-";
+        sb.append('-').append((int) ch).append('-');
       }
     }
-    return ret;
+    return sb.toString();
   }
 
   // this function will merge csOld into csNew.
@@ -1916,8 +1916,8 @@ public class MetaStoreUtils {
       // present in both, overwrite stats for columns absent in metastore and
       // leave alone columns stats missing from stats task. This last case may
       // leave stats in stale state. This will be addressed later.
-      LOG.debug("New ColumnStats size is " + csNew.getStatsObj().size()
-          + ". But old ColumnStats size is " + csOld.getStatsObjSize());
+      LOG.debug("New ColumnStats size is {}, but old ColumnStats size is {}",
+          csNew.getStatsObj().size(), csOld.getStatsObjSize());
     }
     // In this case, we have to find out which columns can be merged.
     Map<String, ColumnStatisticsObj> map = new HashMap<>();
@@ -1947,12 +1947,188 @@ public class MetaStoreUtils {
     }
     csNew.setStatsObj(list);
   }
-  
+
+  /**
+   * convert Exception to MetaException, which sets the cause to such exception
+   * @param e cause of the exception
+   * @return  the MetaException with the specified exception as the cause
+   */
+  public static MetaException newMetaException(Exception e) {
+    return newMetaException(e != null ? e.getMessage() : null, e);
+  }
+
+  /**
+   * convert Exception to MetaException, which sets the cause to such exception
+   * @param errorMessage  the error message for this MetaException
+   * @param e             cause of the exception
+   * @return  the MetaException with the specified exception as the cause
+   */
+  public static MetaException newMetaException(String errorMessage, Exception e) {
+    MetaException metaException = new MetaException(errorMessage);
+    if (e != null) {
+      metaException.initCause(e);
+    }
+    return metaException;
+  }
+
   public static List<String> getColumnNames(List<FieldSchema> schema) {
-    List<String> cols = new ArrayList<>();
+    List<String> cols = new ArrayList<>(schema.size());
     for (FieldSchema fs : schema) {
       cols.add(fs.getName());
     }
     return cols;
+  }
+
+  // given a list of partStats, this function will give you an aggr stats
+  public static List<ColumnStatisticsObj> aggrPartitionStats(List<ColumnStatistics> partStats,
+      String dbName, String tableName, List<String> partNames, List<String> colNames,
+      boolean useDensityFunctionForNDVEstimation, double ndvTuner)
+      throws MetaException {
+    // 1. group by the stats by colNames
+    // map the colName to List<ColumnStatistics>
+    Map<String, List<ColumnStatistics>> map = new HashMap<>();
+    for (ColumnStatistics css : partStats) {
+      List<ColumnStatisticsObj> objs = css.getStatsObj();
+      for (ColumnStatisticsObj obj : objs) {
+        List<ColumnStatisticsObj> singleObj = new ArrayList<>();
+        singleObj.add(obj);
+        ColumnStatistics singleCS = new ColumnStatistics(css.getStatsDesc(), singleObj);
+        if (!map.containsKey(obj.getColName())) {
+          map.put(obj.getColName(), new ArrayList<ColumnStatistics>());
+        }
+        map.get(obj.getColName()).add(singleCS);
+      }
+    }
+    return aggrPartitionStats(map,dbName,tableName,partNames,colNames,useDensityFunctionForNDVEstimation, ndvTuner);
+  }
+
+  public static List<ColumnStatisticsObj> aggrPartitionStats(
+      Map<String, List<ColumnStatistics>> map, String dbName, String tableName,
+      final List<String> partNames, List<String> colNames,
+      final boolean useDensityFunctionForNDVEstimation,final double ndvTuner) throws MetaException {
+    List<ColumnStatisticsObj> colStats = new ArrayList<>();
+    // 2. Aggregate stats for each column in a separate thread
+    if (map.size()< 1) {
+      //stats are absent in RDBMS
+      LOG.debug("No stats data found for: dbName=" +dbName +" tblName=" + tableName +
+          " partNames= " + partNames + " colNames=" + colNames );
+      return colStats;
+    }
+    final ExecutorService pool = Executors.newFixedThreadPool(Math.min(map.size(), 16),
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("aggr-col-stats-%d").build());
+    final List<Future<ColumnStatisticsObj>> futures = Lists.newLinkedList();
+
+    long start = System.currentTimeMillis();
+    for (final Entry<String, List<ColumnStatistics>> entry : map.entrySet()) {
+      futures.add(pool.submit(new Callable<ColumnStatisticsObj>() {
+        @Override
+        public ColumnStatisticsObj call() throws Exception {
+          List<ColumnStatistics> css = entry.getValue();
+          ColumnStatsAggregator aggregator = ColumnStatsAggregatorFactory.getColumnStatsAggregator(css
+              .iterator().next().getStatsObj().iterator().next().getStatsData().getSetField(),
+              useDensityFunctionForNDVEstimation, ndvTuner);
+          ColumnStatisticsObj statsObj = aggregator.aggregate(entry.getKey(), partNames, css);
+          return statsObj;
+        }}));
+    }
+    pool.shutdown();
+    for (Future<ColumnStatisticsObj> future : futures) {
+      try {
+        colStats.add(future.get());
+      } catch (InterruptedException | ExecutionException e) {
+        pool.shutdownNow();
+        LOG.debug(e.toString());
+        throw new MetaException(e.toString());
+      }
+    }
+    LOG.debug("Time for aggr col stats in seconds: {} Threads used: {}",
+      ((System.currentTimeMillis() - (double)start))/1000, Math.min(map.size(), 16));
+    return colStats;
+  }
+
+
+  /**
+   * Produce a hash for the storage descriptor
+   * @param sd storage descriptor to hash
+   * @param md message descriptor to use to generate the hash
+   * @return the hash as a byte array
+   */
+  public static byte[] hashStorageDescriptor(StorageDescriptor sd, MessageDigest md)  {
+    // Note all maps and lists have to be absolutely sorted.  Otherwise we'll produce different
+    // results for hashes based on the OS or JVM being used.
+    md.reset();
+    for (FieldSchema fs : sd.getCols()) {
+      md.update(fs.getName().getBytes(ENCODING));
+      md.update(fs.getType().getBytes(ENCODING));
+      if (fs.getComment() != null) md.update(fs.getComment().getBytes(ENCODING));
+    }
+    if (sd.getInputFormat() != null) {
+      md.update(sd.getInputFormat().getBytes(ENCODING));
+    }
+    if (sd.getOutputFormat() != null) {
+      md.update(sd.getOutputFormat().getBytes(ENCODING));
+    }
+    md.update(sd.isCompressed() ? "true".getBytes(ENCODING) : "false".getBytes(ENCODING));
+    md.update(Integer.toString(sd.getNumBuckets()).getBytes(ENCODING));
+    if (sd.getSerdeInfo() != null) {
+      SerDeInfo serde = sd.getSerdeInfo();
+      if (serde.getName() != null) {
+        md.update(serde.getName().getBytes(ENCODING));
+      }
+      if (serde.getSerializationLib() != null) {
+        md.update(serde.getSerializationLib().getBytes(ENCODING));
+      }
+      if (serde.getParameters() != null) {
+        SortedMap<String, String> params = new TreeMap<>(serde.getParameters());
+        for (Entry<String, String> param : params.entrySet()) {
+          md.update(param.getKey().getBytes(ENCODING));
+          md.update(param.getValue().getBytes(ENCODING));
+        }
+      }
+    }
+    if (sd.getBucketCols() != null) {
+      List<String> bucketCols = new ArrayList<>(sd.getBucketCols());
+      for (String bucket : bucketCols) md.update(bucket.getBytes(ENCODING));
+    }
+    if (sd.getSortCols() != null) {
+      SortedSet<Order> orders = new TreeSet<>(sd.getSortCols());
+      for (Order order : orders) {
+        md.update(order.getCol().getBytes(ENCODING));
+        md.update(Integer.toString(order.getOrder()).getBytes(ENCODING));
+      }
+    }
+    if (sd.getSkewedInfo() != null) {
+      SkewedInfo skewed = sd.getSkewedInfo();
+      if (skewed.getSkewedColNames() != null) {
+        SortedSet<String> colnames = new TreeSet<>(skewed.getSkewedColNames());
+        for (String colname : colnames) md.update(colname.getBytes(ENCODING));
+      }
+      if (skewed.getSkewedColValues() != null) {
+        SortedSet<String> sortedOuterList = new TreeSet<>();
+        for (List<String> innerList : skewed.getSkewedColValues()) {
+          SortedSet<String> sortedInnerList = new TreeSet<>(innerList);
+          sortedOuterList.add(StringUtils.join(sortedInnerList, "."));
+        }
+        for (String colval : sortedOuterList) md.update(colval.getBytes(ENCODING));
+      }
+      if (skewed.getSkewedColValueLocationMaps() != null) {
+        SortedMap<String, String> sortedMap = new TreeMap<>();
+        for (Entry<List<String>, String> smap : skewed.getSkewedColValueLocationMaps().entrySet()) {
+          SortedSet<String> sortedKey = new TreeSet<>(smap.getKey());
+          sortedMap.put(StringUtils.join(sortedKey, "."), smap.getValue());
+        }
+        for (Entry<String, String> e : sortedMap.entrySet()) {
+          md.update(e.getKey().getBytes(ENCODING));
+          md.update(e.getValue().getBytes(ENCODING));
+        }
+      }
+      md.update(sd.isStoredAsSubDirectories() ? "true".getBytes(ENCODING) : "false".getBytes(ENCODING));
+    }
+
+    return md.digest();
+  }
+
+  public static double decimalToDouble(Decimal decimal) {
+    return new BigDecimal(new BigInteger(decimal.getUnscaled()), decimal.getScale()).doubleValue();
   }
 }

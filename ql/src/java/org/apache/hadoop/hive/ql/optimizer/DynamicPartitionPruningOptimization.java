@@ -21,41 +21,66 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.exec.*;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
-import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
-import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
-import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
-import org.apache.hadoop.hive.ql.parse.*;
+import org.apache.hadoop.hive.ql.parse.GenTezUtils;
+import org.apache.hadoop.hive.ql.parse.GenTezUtils.DynamicListContext;
+import org.apache.hadoop.hive.ql.parse.GenTezUtils.DynamicPartitionPrunerContext;
+import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
+import org.apache.hadoop.hive.ql.parse.RuntimeValuesInfo;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
+import org.apache.hadoop.hive.ql.parse.SemiJoinHint;
 import org.apache.hadoop.hive.ql.parse.spark.OptimizeSparkProcContext;
-import org.apache.hadoop.hive.ql.plan.*;
+import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
+import org.apache.hadoop.hive.ql.plan.DynamicValue;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.yarn.api.protocolrecords.GetNewApplicationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 /**
  * This optimization looks for expressions of the kind "x IN (RS[n])". If such
@@ -67,59 +92,6 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
 
   static final private Logger LOG = LoggerFactory.getLogger(DynamicPartitionPruningOptimization.class
       .getName());
-
-  private static class DynamicPartitionPrunerProc implements NodeProcessor {
-
-    /**
-     * process simply remembers all the dynamic partition pruning expressions
-     * found
-     */
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-      ExprNodeDynamicListDesc desc = (ExprNodeDynamicListDesc) nd;
-      DynamicPartitionPrunerContext context = (DynamicPartitionPrunerContext) procCtx;
-
-      // Rule is searching for dynamic pruning expr. There's at least an IN
-      // expression wrapping it.
-      ExprNodeDesc parent = (ExprNodeDesc) stack.get(stack.size() - 2);
-      ExprNodeDesc grandParent = stack.size() >= 3 ? (ExprNodeDesc) stack.get(stack.size() - 3) : null;
-
-      context.addDynamicList(desc, parent, grandParent, (ReduceSinkOperator) desc.getSource());
-
-      return context;
-    }
-  }
-
-  private static class DynamicListContext {
-    public ExprNodeDynamicListDesc desc;
-    public ExprNodeDesc parent;
-    public ExprNodeDesc grandParent;
-    public ReduceSinkOperator generator;
-
-    public DynamicListContext(ExprNodeDynamicListDesc desc, ExprNodeDesc parent,
-        ExprNodeDesc grandParent, ReduceSinkOperator generator) {
-      this.desc = desc;
-      this.parent = parent;
-      this.grandParent = grandParent;
-      this.generator = generator;
-    }
-  }
-
-  private static class DynamicPartitionPrunerContext implements NodeProcessorCtx,
-      Iterable<DynamicListContext> {
-    public List<DynamicListContext> dynLists = new ArrayList<DynamicListContext>();
-
-    public void addDynamicList(ExprNodeDynamicListDesc desc, ExprNodeDesc parent,
-        ExprNodeDesc grandParent, ReduceSinkOperator generator) {
-      dynLists.add(new DynamicListContext(desc, parent, grandParent, generator));
-    }
-
-    @Override
-    public Iterator<DynamicListContext> iterator() {
-      return dynLists.iterator();
-    }
-  }
 
   @Override
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
@@ -139,7 +111,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     FilterDesc desc = filter.getConf();
 
     if (!parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING) &&
-        !parseContext.getConf().getBoolVar(ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING)) {
+        !parseContext.getConf().isSparkDPPAny()) {
       // nothing to do when the optimization is off
       return null;
     }
@@ -161,7 +133,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
 
     // collect the dynamic pruning conditions
     removerContext.dynLists.clear();
-    collectDynamicPruningConditions(desc.getPredicate(), removerContext);
+    GenTezUtils.collectDynamicPruningConditions(desc.getPredicate(), removerContext);
 
     if (ts == null) {
       // Replace the synthetic predicate with true and bail out
@@ -173,7 +145,11 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       return false;
     }
 
-    final boolean semiJoin = parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION);
+    boolean semiJoin = parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION);
+    if (HiveConf.getVar(parseContext.getConf(), HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+      //TODO HIVE-16862: Implement a similar feature like "hive.tez.dynamic.semijoin.reduction" in hive on spark
+      semiJoin = false;
+    }
 
     for (DynamicListContext ctx : removerContext) {
       String column = ExprNodeDescUtils.extractColName(ctx.parent);
@@ -212,22 +188,45 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
           if (semiJoin && ts.getConf().getFilterExpr() != null) {
             LOG.debug("Initiate semijoin reduction for " + column + " ("
                 + ts.getConf().getFilterExpr().getExprString());
-            // Get the table name from which the min-max values and bloom filter will come.
-            Operator<?> op = ctx.generator;
 
-            while (!(op == null || op instanceof TableScanOperator)) {
-              op = op.getParentOperators().get(0);
-            }
-            String tableAlias = (op == null ? "" : ((TableScanOperator) op).getConf().getAlias());
+            StringBuilder internalColNameBuilder = new StringBuilder();
+            StringBuilder colNameBuilder = new StringBuilder();
 
-            Map<String, SemiJoinHint> hints = ctx.desc.getHints();
-            SemiJoinHint sjHint = (hints != null) ? hints.get(tableAlias) : null;
-            keyBaseAlias = ctx.generator.getOperatorId() + "_" + tableAlias + "_" + column;
+            // Apply best effort to fetch the correct table alias. If not
+            // found, fallback to old logic.
+            StringBuilder tabAliasBuilder = new StringBuilder();
+            if (getColumnInfo(ctx, internalColNameBuilder, colNameBuilder, tabAliasBuilder)) {
+              String colName = colNameBuilder.toString();
+              String tableAlias;
+              if (tabAliasBuilder.length() > 0) {
+                tableAlias = tabAliasBuilder.toString();
+              } else {
+                //falling back
+                Operator<?> op = ctx.generator;
 
-            semiJoinAttempted = generateSemiJoinOperatorPlan(
-                ctx, parseContext, ts, keyBaseAlias, sjHint);
-            if (!semiJoinAttempted && sjHint != null) {
-              throw new SemanticException("The user hint to enforce semijoin failed required conditions");
+                while (!(op == null || op instanceof TableScanOperator)) {
+                  op = op.getParentOperators().get(0);
+                }
+                tableAlias = (op == null ? "" : ((TableScanOperator) op).
+                        getConf().getAlias());
+              }
+
+              // Use the tableAlias to generate keyBaseAlias
+              keyBaseAlias = ctx.generator.getOperatorId() + "_" + tableAlias
+                      + "_" + colName;
+              Map<String, List<SemiJoinHint>> hints = parseContext.getSemiJoinHints();
+              if (hints != null) {
+                // Create semijoin optimizations ONLY for hinted columns
+                semiJoinAttempted = processSemiJoinHints(
+                        parseContext, ctx, hints, tableAlias,
+                        internalColNameBuilder.toString(), colName, ts,
+                        keyBaseAlias);
+              } else {
+                // fallback to regular logic
+                semiJoinAttempted = generateSemiJoinOperatorPlan(
+                        ctx, parseContext, ts, keyBaseAlias,
+                        internalColNameBuilder.toString(), colName, null);
+              }
             }
           }
         }
@@ -276,6 +275,83 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     return false;
   }
 
+  // Given a key, find the corresponding column name.
+  private boolean getColumnInfo(DynamicListContext ctx, StringBuilder internalColName,
+                                StringBuilder colName, StringBuilder tabAlias) {
+    ExprNodeDesc exprNodeDesc = ctx.generator.getConf().getKeyCols().get(ctx.desc.getKeyIndex());
+    ExprNodeColumnDesc colExpr = ExprNodeDescUtils.getColumnExpr(exprNodeDesc);
+
+    if (colExpr == null) {
+      return false;
+    }
+    internalColName.append(colExpr.getColumn());
+
+    // fetch table ablias
+    ExprNodeDescUtils.ColumnOrigin columnOrigin =
+            ExprNodeDescUtils.findColumnOrigin(exprNodeDesc, ctx.generator);
+
+    if (columnOrigin != null) {
+      // get both tableAlias and column name from columnOrigin
+      assert columnOrigin.op instanceof TableScanOperator;
+      TableScanOperator ts = (TableScanOperator) columnOrigin.op;
+      tabAlias.append(ts.getConf().getAlias());
+      colName.append(
+              ExprNodeDescUtils.getColumnExpr(columnOrigin.col).getColumn());
+      return true;
+    }
+
+    Operator<? extends OperatorDesc> parentOfRS = ctx.generator.getParentOperators().get(0);
+    if (!(parentOfRS instanceof SelectOperator)) {
+      colName.append(internalColName.toString());
+      return true;
+    }
+
+    exprNodeDesc = parentOfRS.getColumnExprMap().get(internalColName.toString());
+    colExpr = ExprNodeDescUtils.getColumnExpr(exprNodeDesc);
+
+    if (colExpr == null) {
+      return false;
+    }
+
+    colName.append(ExprNodeDescUtils.extractColName(colExpr));
+    return true;
+  }
+
+  // Handle hint based semijoin
+  private boolean processSemiJoinHints(
+          ParseContext pCtx, DynamicListContext ctx,
+          Map<String, List<SemiJoinHint>> hints, String tableAlias,
+          String internalColName, String colName, TableScanOperator ts,
+          String keyBaseAlias) throws SemanticException {
+    if (hints.size() == 0) {
+      return false;
+    }
+
+    List<SemiJoinHint> hintList = hints.get(tableAlias);
+    if (hintList == null) {
+      return false;
+    }
+
+    // Iterate through the list
+    for (SemiJoinHint sjHint : hintList) {
+      if (!colName.equals(sjHint.getColName())) {
+        continue;
+      }
+      if (!ts.getConf().getAlias().equals(sjHint.getTarget())) {
+        continue;
+      }
+
+      // match!
+      LOG.info("Creating runtime filter due to user hint: column = " + colName);
+      if (generateSemiJoinOperatorPlan(ctx, pCtx, ts, keyBaseAlias,
+              internalColName, colName, sjHint)) {
+        return true;
+      }
+      throw new SemanticException("The user hint to enforce semijoin failed required conditions");
+    }
+    return false;
+  }
+
   private void replaceExprNode(DynamicListContext ctx, FilterDesc desc, ExprNodeDesc node) {
     if (ctx.grandParent == null) {
       desc.setPredicate(node);
@@ -297,7 +373,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
 
     // collect the dynamic pruning conditions
     removerContext.dynLists.clear();
-    collectDynamicPruningConditions(ts.getConf().getFilterExpr(), removerContext);
+    GenTezUtils.collectDynamicPruningConditions(ts.getConf().getFilterExpr(), removerContext);
 
     for (DynamicListContext ctx : removerContext) {
       // remove the condition by replacing it with "true"
@@ -371,6 +447,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
         ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
       DynamicPruningEventDesc eventDesc = new DynamicPruningEventDesc();
       eventDesc.setTableScan(ts);
+      eventDesc.setGenerator(ctx.generator);
       eventDesc.setTable(PlanUtils.getReduceValueTableDesc(PlanUtils
           .getFieldSchemasFromColumnList(keyExprs, "key")));
       eventDesc.setTargetColumnName(column);
@@ -384,6 +461,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       desc.setTable(PlanUtils.getReduceValueTableDesc(PlanUtils
           .getFieldSchemasFromColumnList(keyExprs, "key")));
       desc.setTargetColumnName(column);
+      desc.setTargetColumnType(columnType);
       desc.setPartKey(partKey);
       OperatorFactory.getAndMakeChild(desc, groupByOp);
     }
@@ -391,13 +469,8 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
 
   // Generates plan for min/max when dynamic partition pruning is ruled out.
   private boolean generateSemiJoinOperatorPlan(DynamicListContext ctx, ParseContext parseContext,
-      TableScanOperator ts, String keyBaseAlias, SemiJoinHint sjHint) throws SemanticException {
-
-    // If semijoin hint is enforced, make sure hint is provided
-    if (parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_HINT_ONLY)
-            && sjHint == null) {
-        return false;
-    }
+      TableScanOperator ts, String keyBaseAlias, String internalColName,
+      String colName, SemiJoinHint sjHint) throws SemanticException {
 
     // we will put a fork in the plan at the source of the reduce sink
     Operator<? extends OperatorDesc> parentOfRS = ctx.generator.getParentOperators().get(0);
@@ -405,58 +478,21 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     // we need the expr that generated the key of the reduce sink
     ExprNodeDesc key = ctx.generator.getConf().getKeyCols().get(ctx.desc.getKeyIndex());
 
-    String internalColName = null;
-    ExprNodeDesc exprNodeDesc = key;
-    // Find the ExprNodeColumnDesc
-    while (!(exprNodeDesc instanceof ExprNodeColumnDesc) &&
-            (exprNodeDesc.getChildren() != null)) {
-      exprNodeDesc = exprNodeDesc.getChildren().get(0);
+    assert colName != null;
+    // Fetch the TableScan Operator.
+    Operator<?> op = parentOfRS;
+    while (!(op == null || op instanceof TableScanOperator ||
+             op instanceof ReduceSinkOperator)) {
+      op = op.getParentOperators().get(0);
     }
+    Preconditions.checkNotNull(op);
 
-    if (!(exprNodeDesc instanceof ExprNodeColumnDesc)) {
-      // No column found!
-      // Bail out
-      return false;
-    }
-
-    internalColName = ((ExprNodeColumnDesc) exprNodeDesc).getColumn();
-    if (parentOfRS instanceof SelectOperator) {
-      // Make sure the semijoin branch is not on partition column.
-      ExprNodeDesc expr = parentOfRS.getColumnExprMap().get(internalColName);
-      while (!(expr instanceof ExprNodeColumnDesc) &&
-              (expr.getChildren() != null)) {
-        expr = expr.getChildren().get(0);
-      }
-
-      if (!(expr instanceof ExprNodeColumnDesc)) {
-        // No column found!
-        // Bail out
-        return false;
-      }
-
-      ExprNodeColumnDesc colExpr = (ExprNodeColumnDesc) expr;
-      String colName = ExprNodeDescUtils.extractColName(colExpr);
-
-      // Fetch the TableScan Operator.
-      Operator<?> op = parentOfRS.getParentOperators().get(0);
-      while (op != null && !(op instanceof TableScanOperator)) {
-        op = op.getParentOperators().get(0);
-      }
-      assert op != null;
-
+    if (op instanceof TableScanOperator) {
       Table table = ((TableScanOperator) op).getConf().getTableMetadata();
       if (table.isPartitionKey(colName)) {
         // The column is partition column, skip the optimization.
         return false;
       }
-    }
-
-    // If hint is provided and only hinted semijoin optimizations should be
-    // created, then skip other columns on the table
-    if (parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_HINT_ONLY)
-            && sjHint.getColName() != null &&
-            !internalColName.equals(sjHint.getColName())) {
-      return false;
     }
 
     // Check if there already exists a semijoin branch
@@ -662,14 +698,6 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
             groupByDescFinal, new RowSchema(rsOp.getSchema()), rsOp);
     groupByOpFinal.setColumnExprMap(new HashMap<String, ExprNodeDesc>());
 
-    // for explain purpose
-    if (parseContext.getContext().getExplainConfig() != null
-        && parseContext.getContext().getExplainConfig().isFormatted()) {
-      List<String> outputOperators = new ArrayList<>();
-      outputOperators.add(groupByOpFinal.getOperatorId());
-      rsOp.getConf().setOutputOperators(outputOperators);
-    }
-
     createFinalRsForSemiJoinOp(parseContext, ts, groupByOpFinal, key,
             keyBaseAlias, ctx.parent.getChildren().get(0), sjHint != null);
 
@@ -712,16 +740,6 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     SemiJoinBranchInfo sjInfo = new SemiJoinBranchInfo(ts, isHint);
     parseContext.getRsToSemiJoinBranchInfo().put(rsOpFinal, sjInfo);
 
-    // for explain purpose
-    if (parseContext.getContext().getExplainConfig() != null &&
-            parseContext.getContext().getExplainConfig().isFormatted()) {
-      List<String> outputOperators = rsOpFinal.getConf().getOutputOperators();
-      if (outputOperators == null) {
-        outputOperators = new ArrayList<>();
-      }
-      outputOperators.add(ts.getOperatorId());
-    }
-
     // Save the info that is required at query time to resolve dynamic/runtime values.
     RuntimeValuesInfo runtimeValuesInfo = new RuntimeValuesInfo();
     TableDesc rsFinalTableDesc = PlanUtils.getReduceValueTableDesc(
@@ -737,29 +755,6 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     runtimeValuesInfo.setTsColExpr(colExpr);
     parseContext.getRsToRuntimeValuesInfoMap().put(rsOpFinal, runtimeValuesInfo);
     parseContext.getColExprToGBMap().put(key, gb);
-  }
-
-  private Map<Node, Object> collectDynamicPruningConditions(ExprNodeDesc pred, NodeProcessorCtx ctx)
-      throws SemanticException {
-
-    // create a walker which walks the tree in a DFS manner while maintaining
-    // the operator stack. The dispatcher
-    // generates the plan from the operator tree
-    Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
-    exprRules.put(new RuleRegExp("R1", ExprNodeDynamicListDesc.class.getName() + "%"),
-        new DynamicPartitionPrunerProc());
-
-    // The dispatcher fires the processor corresponding to the closest matching
-    // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(null, exprRules, ctx);
-    GraphWalker egw = new DefaultGraphWalker(disp);
-
-    List<Node> startNodes = new ArrayList<Node>();
-    startNodes.add(pred);
-
-    HashMap<Node, Object> outputMap = new HashMap<Node, Object>();
-    egw.startWalking(startNodes, outputMap);
-    return outputMap;
   }
 
 }

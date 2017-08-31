@@ -41,6 +41,12 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
  * CLI qtest results.
  */
 public final class LogDivertAppenderForTest {
+
+  /**
+   * Name of the test query routine appender.
+   */
+  public static final String TEST_QUERY_ROUTING_APPENDER = "test-query-routing";
+
   private LogDivertAppenderForTest() {
     // Prevent instantiation
   }
@@ -54,7 +60,10 @@ public final class LogDivertAppenderForTest {
     public Result filter(LogEvent event) {
       if (event.getLevel().equals(Level.INFO) && "SessionState".equals(event.getLoggerName())) {
         if (event.getMessage().getFormattedMessage().startsWith("PREHOOK:")
-            || event.getMessage().getFormattedMessage().startsWith("POSTHOOK:")) {
+            || event.getMessage().getFormattedMessage().startsWith("POSTHOOK:")
+            || event.getMessage().getFormattedMessage().startsWith("unix_timestamp(void)")
+            || event.getMessage().getFormattedMessage().startsWith("Warning: ")
+            ) {
           return Result.ACCEPT;
         }
       }
@@ -166,7 +175,7 @@ public final class LogDivertAppenderForTest {
     Configuration configuration = context.getConfiguration();
 
     // Create the appender
-    RoutingAppender routingAppender = RoutingAppender.createAppender("test-query-routing",
+    RoutingAppender routingAppender = RoutingAppender.createAppender(TEST_QUERY_ROUTING_APPENDER,
         "true",
         routes,
         configuration,

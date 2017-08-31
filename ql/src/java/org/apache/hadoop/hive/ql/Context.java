@@ -561,7 +561,7 @@ public class Context {
 
 
   private static final String MR_PREFIX = "-mr-";
-  private static final String EXT_PREFIX = "-ext-";
+  public static final String EXT_PREFIX = "-ext-";
   private static final String LOCAL_PREFIX = "-local-";
 
   /**
@@ -947,6 +947,13 @@ public class Context {
 
   public ExplainConfiguration getExplainConfig() {
     return explainConfig;
+  }
+  private boolean isExplainPlan = false;
+  public boolean isExplainPlan() {
+    return isExplainPlan;
+  }
+  public void setExplainPlan(boolean t) {
+    this.isExplainPlan = t;
   }
 
   public void setExplainConfig(ExplainConfiguration explainConfig) {

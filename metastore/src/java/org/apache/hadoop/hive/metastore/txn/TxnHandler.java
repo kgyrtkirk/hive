@@ -18,10 +18,6 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.jolbox.bonecp.BoneCPConfig;
-import com.jolbox.bonecp.BoneCPDataSource;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
@@ -34,24 +30,25 @@ import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.HouseKeeperService;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.datasource.BoneCPDataSourceProvider;
+import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
+import org.apache.hadoop.hive.metastore.datasource.HikariCPDataSourceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 
-import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 
 import javax.sql.DataSource;
 
-import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.ByteBuffer;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -394,23 +391,27 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             "initialized, null record found in next_txn_id");
         }
         close(rs);
-        Set<Long> openList = new HashSet<Long>();
+        List<Long> openList = new ArrayList<Long>();
         //need the WHERE clause below to ensure consistent results with READ_COMMITTED
-        s = "select txn_id, txn_state from TXNS where txn_id <= " + hwm;
+        s = "select txn_id, txn_state from TXNS where txn_id <= " + hwm + " order by txn_id";
         LOG.debug("Going to execute query<" + s + ">");
         rs = stmt.executeQuery(s);
         long minOpenTxn = Long.MAX_VALUE;
+        BitSet abortedBits = new BitSet();
         while (rs.next()) {
           long txnId = rs.getLong(1);
           openList.add(txnId);
           char c = rs.getString(2).charAt(0);
           if(c == TXN_OPEN) {
             minOpenTxn = Math.min(minOpenTxn, txnId);
+          } else if (c == TXN_ABORTED) {
+            abortedBits.set(openList.size() - 1);
           }
         }
         LOG.debug("Going to rollback");
         dbConn.rollback();
-        GetOpenTxnsResponse otr = new GetOpenTxnsResponse(hwm, openList);
+        ByteBuffer byteBuffer = ByteBuffer.wrap(abortedBits.toByteArray());
+        GetOpenTxnsResponse otr = new GetOpenTxnsResponse(hwm, openList, byteBuffer);
         if(minOpenTxn < Long.MAX_VALUE) {
           otr.setMin_open_txn(minOpenTxn);
         }
@@ -855,7 +856,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   /**
    * As much as possible (i.e. in absence of retries) we want both operations to be done on the same
    * connection (but separate transactions).  This avoid some flakiness in BONECP where if you
-   * perform an operation on 1 connection and immediately get another fron the pool, the 2nd one
+   * perform an operation on 1 connection and immediately get another from the pool, the 2nd one
    * doesn't see results of the first.
    * 
    * Retry-by-caller note: If the call to lock is from a transaction, then in the worst case
@@ -992,6 +993,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                   }
                   break;
                 case SELECT:
+                  updateTxnComponents = false;
+                  break;
+                case NO_TXN:
+                  /*this constant is a bit of a misnomer since we now always have a txn context.  It
+                   just means the operation is such that we don't care what tables/partitions it
+                   affected as it doesn't trigger a compaction or conflict detection.  A better name
+                   would be NON_TRANSACTIONAL.*/
                   updateTxnComponents = false;
                   break;
                 default:
@@ -1472,16 +1480,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     // Get the id for the next entry in the queue
     String s = sqlGenerator.addForUpdateClause("select ncq_next from NEXT_COMPACTION_QUEUE_ID");
     LOG.debug("going to execute query <" + s + ">");
-    ResultSet rs = stmt.executeQuery(s);
-    if (!rs.next()) {
-      throw new IllegalStateException("Transaction tables not properly initiated, " +
-        "no record found in next_compaction_queue_id");
+    try (ResultSet rs = stmt.executeQuery(s)) {
+      if (!rs.next()) {
+        throw new IllegalStateException("Transaction tables not properly initiated, "
+            + "no record found in next_compaction_queue_id");
+      }
+      long id = rs.getLong(1);
+      s = "update NEXT_COMPACTION_QUEUE_ID set ncq_next = " + (id + 1);
+      LOG.debug("Going to execute update <" + s + ">");
+      stmt.executeUpdate(s);
+      return id;
     }
-    long id = rs.getLong(1);
-    s = "update NEXT_COMPACTION_QUEUE_ID set ncq_next = " + (id + 1);
-    LOG.debug("Going to execute update <" + s + ">");
-    stmt.executeUpdate(s);
-    return id;
   }
   @Override
   @RetrySemantics.Idempotent
@@ -2435,10 +2444,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    *
    * This is expected to run at READ_COMMITTED.
    *
-   * Note: this calls acquire() for (extLockId,intLockId) but extLockId is the same and we either take
-   * all locks for given extLockId or none.  Would be more efficient to update state on all locks
-   * at once.  Semantics are the same since this is all part of the same txn.
-   *
    * If there is a concurrent commitTxn/rollbackTxn, those can only remove rows from HIVE_LOCKS.
    * If they happen to be for the same txnid, there will be a WW conflict (in MS DB), if different txnid,
    * checkLock() will in the worst case keep locks in Waiting state a little longer.
@@ -2471,14 +2476,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       response.setLockid(extLockId);
 
       LOG.debug("checkLock(): Setting savepoint. extLockId=" + JavaUtils.lockIdToString(extLockId));
-      Savepoint save = dbConn.setSavepoint();//todo: get rid of this
+      Savepoint save = dbConn.setSavepoint();
       StringBuilder query = new StringBuilder("select hl_lock_ext_id, " +
         "hl_lock_int_id, hl_db, hl_table, hl_partition, hl_lock_state, " +
         "hl_lock_type, hl_txnid from HIVE_LOCKS where hl_db in (");
 
       Set<String> strings = new HashSet<String>(locksBeingChecked.size());
 
-      //This the set of entities that the statement represnted by extLockId wants to update
+      //This the set of entities that the statement represented by extLockId wants to update
       List<LockInfo> writeSet = new ArrayList<>();
 
       for (LockInfo info : locksBeingChecked) {
@@ -2645,7 +2650,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         // Look at everything in front of this lock to see if it should block
         // it or not.
-        boolean acquired = false;
         for (int i = index - 1; i >= 0; i--) {
           // Check if we're operating on the same database, if not, move on
           if (!locks[index].db.equals(locks[i].db)) {
@@ -2697,20 +2701,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               }
               //fall through to ACQUIRE
             case ACQUIRE:
-              acquire(dbConn, stmt, extLockId, info);
-              acquired = true;
               break;
             case KEEP_LOOKING:
               continue;
           }
-          if (acquired) break; // We've acquired this lock component,
-          // so get out of the loop and look at the next component.
+          //if we got here, it means it's ok to acquire 'info' lock
+          break;// so exit the loop and check next lock
         }
-
-        // If we've arrived here and we have not already acquired, it means there's nothing in the
-        // way of the lock, so acquire the lock.
-        if (!acquired) acquire(dbConn, stmt, extLockId, info);
       }
+      //if here, ther were no locks that blocked any locks in 'locksBeingChecked' - acquire them all
+      acquire(dbConn, stmt, locksBeingChecked);
 
       // We acquired all of the locks, so commit and return acquired.
       LOG.debug("Going to commit");
@@ -2723,6 +2723,48 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
     }
     return response;
+  }
+  private void acquire(Connection dbConn, Statement stmt, List<LockInfo> locksBeingChecked)
+    throws SQLException, NoSuchLockException, MetaException {
+    if(locksBeingChecked == null || locksBeingChecked.isEmpty()) {
+      return;
+    }
+    long txnId = locksBeingChecked.get(0).txnId;
+    long extLockId = locksBeingChecked.get(0).extLockId;
+    long now = getDbTime(dbConn);
+    String s = "update HIVE_LOCKS set hl_lock_state = '" + LOCK_ACQUIRED + "', " +
+      //if lock is part of txn, heartbeat info is in txn record
+      "hl_last_heartbeat = " + (isValidTxn(txnId) ? 0 : now) +
+      ", hl_acquired_at = " + now + ",HL_BLOCKEDBY_EXT_ID=NULL,HL_BLOCKEDBY_INT_ID=null" +
+      " where hl_lock_ext_id = " +  extLockId;
+    LOG.debug("Going to execute update <" + s + ">");
+    int rc = stmt.executeUpdate(s);
+    if (rc < locksBeingChecked.size()) {
+      LOG.debug("Going to rollback acquire(Connection dbConn, Statement stmt, List<LockInfo> locksBeingChecked)");
+      dbConn.rollback();
+      /*select all locks for this ext ID and see which ones are missing*/
+      StringBuilder sb = new StringBuilder("No such lock(s): (" + JavaUtils.lockIdToString(extLockId) + ":");
+      ResultSet rs = stmt.executeQuery("select hl_lock_int_id from HIVE_LOCKS where hl_lock_ext_id = " + extLockId);
+      while(rs.next()) {
+        int intLockId = rs.getInt(1);
+        int idx = 0;
+        for(; idx < locksBeingChecked.size(); idx++) {
+          LockInfo expectedLock = locksBeingChecked.get(idx);
+          if(expectedLock != null && expectedLock.intLockId == intLockId) {
+            locksBeingChecked.set(idx, null);
+            break;
+          }
+        }
+      }
+      for(LockInfo expectedLock : locksBeingChecked) {
+        if(expectedLock != null) {
+          sb.append(expectedLock.intLockId).append(",");
+        }
+      }
+      sb.append(") ").append(JavaUtils.txnIdToString(txnId));
+      close(rs);
+      throw new NoSuchLockException(sb.toString());
+    }
   }
 
   /**
@@ -2766,28 +2808,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     LOG.debug("Going to rollback to savepoint");
     dbConn.rollback(save);
   }
-
-  private void acquire(Connection dbConn, Statement stmt, long extLockId, LockInfo lockInfo)
-    throws SQLException, NoSuchLockException, MetaException {
-    long now = getDbTime(dbConn);
-    String s = "update HIVE_LOCKS set hl_lock_state = '" + LOCK_ACQUIRED + "', " +
-      //if lock is part of txn, heartbeat info is in txn record
-      "hl_last_heartbeat = " + (isValidTxn(lockInfo.txnId) ? 0 : now) +
-    ", hl_acquired_at = " + now + ",HL_BLOCKEDBY_EXT_ID=NULL,HL_BLOCKEDBY_INT_ID=null" + " where hl_lock_ext_id = " +
-      extLockId + " and hl_lock_int_id = " + lockInfo.intLockId;
-    LOG.debug("Going to execute update <" + s + ">");
-    int rc = stmt.executeUpdate(s);
-    if (rc < 1) {
-      LOG.debug("Going to rollback");
-      dbConn.rollback();
-      throw new NoSuchLockException("No such lock: (" + JavaUtils.lockIdToString(extLockId) + "," +
-        + lockInfo.intLockId + ") " + JavaUtils.txnIdToString(lockInfo.txnId));
-    }
-    // We update the database, but we don't commit because there may be other
-    // locks together with this, and we only want to acquire one if we can
-    // acquire all.
-  }
-
   /**
    * Heartbeats on the lock table.  This commits, so do not enter it with any state.
    * Should not be called on a lock that belongs to transaction.
@@ -2851,22 +2871,26 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private TxnStatus findTxnState(long txnid, Statement stmt) throws SQLException, MetaException {
     String s = "select txn_state from TXNS where txn_id = " + txnid;
     LOG.debug("Going to execute query <" + s + ">");
-    ResultSet rs = stmt.executeQuery(s);
-    if (!rs.next()) {
-      s = sqlGenerator.addLimitClause(1, "1 from COMPLETED_TXN_COMPONENTS where CTC_TXNID = " + txnid);
-      LOG.debug("Going to execute query <" + s + ">");
-      ResultSet rs2 = stmt.executeQuery(s);
-      if(rs2.next()) {
-        return TxnStatus.COMMITTED;
+    try (ResultSet rs = stmt.executeQuery(s)) {
+      if (!rs.next()) {
+        s =
+            sqlGenerator.addLimitClause(1, "1 from COMPLETED_TXN_COMPONENTS where CTC_TXNID = "
+                + txnid);
+        LOG.debug("Going to execute query <" + s + ">");
+        try (ResultSet rs2 = stmt.executeQuery(s)) {
+          if (rs2.next()) {
+            return TxnStatus.COMMITTED;
+          }
+        }
+        // could also check WRITE_SET but that seems overkill
+        return TxnStatus.UNKNOWN;
       }
-      //could also check WRITE_SET but that seems overkill
-      return TxnStatus.UNKNOWN;
+      char txnState = rs.getString(1).charAt(0);
+      if (txnState == TXN_ABORTED) {
+        return TxnStatus.ABORTED;
+      }
+      assert txnState == TXN_OPEN : "we found it in TXNS but it's not ABORTED, so must be OPEN";
     }
-    char txnState = rs.getString(1).charAt(0);
-    if (txnState == TXN_ABORTED) {
-      return TxnStatus.ABORTED;
-    }
-    assert txnState == TXN_OPEN : "we found it in TXNS but it's not ABORTED, so must be OPEN";
     return TxnStatus.OPEN;
   }
 
@@ -2897,27 +2921,32 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     // We need to check whether this transaction is valid and open
     String s = "select txn_state from TXNS where txn_id = " + txnid;
     LOG.debug("Going to execute query <" + s + ">");
-    ResultSet rs = stmt.executeQuery(s);
-    if (!rs.next()) {
-      //todo: add LIMIT 1 instead of count - should be more efficient
-      s = "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TXNID = " + txnid;
-      ResultSet rs2 = stmt.executeQuery(s);
-      //todo: strictly speaking you can commit an empty txn, thus 2nd conjunct is wrong but only
-      //possible for for multi-stmt txns
-      boolean alreadyCommitted = rs2.next() && rs2.getInt(1) > 0;
-      LOG.debug("Going to rollback");
-      rollbackDBConn(dbConn);
-      if(alreadyCommitted) {
-        //makes the message more informative - helps to find bugs in client code
-        throw new NoSuchTxnException("Transaction " + JavaUtils.txnIdToString(txnid) + " is already committed.");
+    try (ResultSet rs = stmt.executeQuery(s)) {
+      if (!rs.next()) {
+        // todo: add LIMIT 1 instead of count - should be more efficient
+        s = "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TXNID = " + txnid;
+        try (ResultSet rs2 = stmt.executeQuery(s)) {
+          // todo: strictly speaking you can commit an empty txn, thus 2nd conjunct is wrong but
+          // only
+          // possible for for multi-stmt txns
+          boolean alreadyCommitted = rs2.next() && rs2.getInt(1) > 0;
+          LOG.debug("Going to rollback");
+          rollbackDBConn(dbConn);
+          if (alreadyCommitted) {
+            // makes the message more informative - helps to find bugs in client code
+            throw new NoSuchTxnException("Transaction " + JavaUtils.txnIdToString(txnid)
+                + " is already committed.");
+          }
+          throw new NoSuchTxnException("No such transaction " + JavaUtils.txnIdToString(txnid));
+        }
       }
-      throw new NoSuchTxnException("No such transaction " + JavaUtils.txnIdToString(txnid));
-    }
-    if (rs.getString(1).charAt(0) == TXN_ABORTED) {
-      LOG.debug("Going to rollback");
-      rollbackDBConn(dbConn);
-      throw new TxnAbortedException("Transaction " + JavaUtils.txnIdToString(txnid) +
-        " already aborted");//todo: add time of abort, which is not currently tracked.  Requires schema change
+      if (rs.getString(1).charAt(0) == TXN_ABORTED) {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        throw new TxnAbortedException("Transaction " + JavaUtils.txnIdToString(txnid)
+            + " already aborted");// todo: add time of abort, which is not currently tracked.
+                                  // Requires schema change
+      }
     }
   }
 
@@ -3146,25 +3175,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   private static synchronized DataSource setupJdbcConnectionPool(HiveConf conf, int maxPoolSize, long getConnectionTimeoutMs) throws SQLException {
-    String driverUrl = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORECONNECTURLKEY);
-    String user = getMetastoreJdbcUser(conf);
-    String passwd = getMetastoreJdbcPasswd(conf);
+    String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(conf);
+    String user = DataSourceProvider.getMetastoreJdbcUser(conf);
+    String passwd = DataSourceProvider.getMetastoreJdbcPasswd(conf);
     String connectionPooler = conf.getVar(
       HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE).toLowerCase();
 
     if ("bonecp".equals(connectionPooler)) {
-      BoneCPConfig config = new BoneCPConfig();
-      config.setJdbcUrl(driverUrl);
-      //if we are waiting for connection for a long time, something is really wrong
-      //better raise an error than hang forever
-      //see DefaultConnectionStrategy.getConnectionInternal()
-      config.setConnectionTimeoutInMs(getConnectionTimeoutMs);
-      config.setMaxConnectionsPerPartition(maxPoolSize);
-      config.setPartitionCount(1);
-      config.setUser(user);
-      config.setPassword(passwd);
       doRetryOnConnPool = true;  // Enable retries to work around BONECP bug.
-      return new BoneCPDataSource(config);
+      return new BoneCPDataSourceProvider().create(conf);
     } else if ("dbcp".equals(connectionPooler)) {
       GenericObjectPool objectPool = new GenericObjectPool();
       //https://commons.apache.org/proper/commons-pool/api-1.6/org/apache/commons/pool/impl/GenericObjectPool.html#setMaxActive(int)
@@ -3177,15 +3196,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           new PoolableConnectionFactory(connFactory, objectPool, null, null, false, true);
       return new PoolingDataSource(objectPool);
     } else if ("hikaricp".equals(connectionPooler)) {
-      HikariConfig config = new HikariConfig();
-      config.setMaximumPoolSize(maxPoolSize);
-      config.setJdbcUrl(driverUrl);
-      config.setUsername(user);
-      config.setPassword(passwd);
-      //https://github.com/brettwooldridge/HikariCP
-      config.setConnectionTimeout(getConnectionTimeoutMs);
-
-      return new HikariDataSource(config);
+      return new HikariCPDataSourceProvider().create(conf);
     } else if ("none".equals(connectionPooler)) {
       LOG.info("Choosing not to pool JDBC connections");
       return new NoPoolConnectionPool(conf);
@@ -3673,19 +3684,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private static String getMetastoreJdbcUser(HiveConf conf) {
-    return conf.getVar(HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME);
-  }
-
-  private static String getMetastoreJdbcPasswd(HiveConf conf) throws SQLException {
-    try {
-      return ShimLoader.getHadoopShims().getPassword(conf,
-          HiveConf.ConfVars.METASTOREPWD.varname);
-    } catch (IOException err) {
-      throw new SQLException("Error getting metastore password", err);
-    }
-  }
-
   private static class NoPoolConnectionPool implements DataSource {
     // Note that this depends on the fact that no-one in this class calls anything but
     // getConnection.  If you want to use any of the Logger or wrap calls you'll have to
@@ -3703,8 +3701,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     @Override
     public Connection getConnection() throws SQLException {
       if (user == null) {
-        user = getMetastoreJdbcUser(conf);
-        passwd = getMetastoreJdbcPasswd(conf);
+        user = DataSourceProvider.getMetastoreJdbcUser(conf);
+        passwd = DataSourceProvider.getMetastoreJdbcPasswd(conf);
       }
       return getConnection(user, passwd);
     }

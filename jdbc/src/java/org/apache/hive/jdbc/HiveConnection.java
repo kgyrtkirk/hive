@@ -20,8 +20,9 @@ package org.apache.hive.jdbc;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
-import org.apache.hive.service.auth.HiveAuthFactory;
+import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.KerberosSaslHelper;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.auth.SaslQOP;
@@ -148,7 +149,7 @@ public class HiveConnection implements java.sql.Connection {
     // sess_var_list -> sessConfMap
     // hive_conf_list -> hiveConfMap
     // hive_var_list -> hiveVarMap
-    host = connParams.getHost();
+    host = ShimLoader.getHadoopThriftAuthBridge().getCanonicalHostName(connParams.getHost());
     port = connParams.getPort();
     sessConfMap = connParams.getSessionVars();
     isEmbeddedMode = connParams.isEmbeddedMode();
@@ -213,7 +214,7 @@ public class HiveConnection implements java.sql.Connection {
             }
             // Update with new values
             jdbcUriString = connParams.getJdbcUriString();
-            host = connParams.getHost();
+            host = ShimLoader.getHadoopThriftAuthBridge().getCanonicalHostName(connParams.getHost());
             port = connParams.getPort();
           } else {
             errMsg = warnMsg;
@@ -303,14 +304,14 @@ public class HiveConnection implements java.sql.Connection {
 
 
   private void openTransport() throws Exception {
-      assumeSubject =
-          JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT.equals(sessConfMap
-              .get(JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE));
-      transport = isHttpTransportMode() ? createHttpTransport() : createBinaryTransport();
-      if (!transport.isOpen()) {
-        transport.open();
-        logZkDiscoveryMessage("Connected to " + connParams.getHost() + ":" + connParams.getPort());
-      }
+    assumeSubject =
+        JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT.equals(sessConfMap
+            .get(JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE));
+    transport = isHttpTransportMode() ? createHttpTransport() : createBinaryTransport();
+    if (!transport.isOpen()) {
+      transport.open();
+    }
+    logZkDiscoveryMessage("Connected to " + connParams.getHost() + ":" + connParams.getPort());
   }
 
   public String getConnectedUrl() {
@@ -636,7 +637,7 @@ public class HiveConnection implements java.sql.Connection {
     if (JdbcConnectionParams.AUTH_TOKEN.equalsIgnoreCase(jdbcConnConf.get(JdbcConnectionParams.AUTH_TYPE))) {
       // check delegation token in job conf if any
       try {
-        tokenStr = org.apache.hadoop.hive.shims.Utils.getTokenStrForm(HiveAuthFactory.HS2_CLIENT_TOKEN);
+        tokenStr = org.apache.hadoop.hive.shims.Utils.getTokenStrForm(HiveAuthConstants.HS2_CLIENT_TOKEN);
       } catch (IOException e) {
         throw new SQLException("Error reading token ", e);
       }
@@ -664,9 +665,9 @@ public class HiveConnection implements java.sql.Connection {
 
     // set the session configuration
     Map<String, String> sessVars = connParams.getSessionVars();
-    if (sessVars.containsKey(HiveAuthFactory.HS2_PROXY_USER)) {
-      openConf.put(HiveAuthFactory.HS2_PROXY_USER,
-          sessVars.get(HiveAuthFactory.HS2_PROXY_USER));
+    if (sessVars.containsKey(HiveAuthConstants.HS2_PROXY_USER)) {
+      openConf.put(HiveAuthConstants.HS2_PROXY_USER,
+          sessVars.get(HiveAuthConstants.HS2_PROXY_USER));
     }
     openReq.setConfiguration(openConf);
 

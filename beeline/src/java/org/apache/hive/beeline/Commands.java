@@ -60,13 +60,14 @@ import org.apache.hadoop.hive.conf.SystemVariables;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.beeline.logs.BeelineInPlaceUpdateStream;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.jdbc.HiveStatement;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 
 public class Commands {
+
   private final BeeLine beeLine;
   private static final int DEFAULT_QUERY_PROGRESS_INTERVAL = 1000;
   private static final int DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT = 10 * 1000;
@@ -297,12 +298,13 @@ public class Commands {
       try {
         while (rs.next()) {
           cmds.add("DROP TABLE "
-              + rs.getString("TABLE_NAME") + ";");
+              + rs.getString("TABLE_NAME") + beeLine.getOpts().getDelimiter());
         }
       } finally {
         try {
           rs.close();
         } catch (Exception e) {
+          beeLine.error(e);
         }
       }
       // run as a batch
@@ -786,6 +788,7 @@ public class Commands {
   private BufferedRows getConfInternal(boolean call) {
     Statement stmnt = null;
     BufferedRows rows = null;
+    ResultSet rs = null;
     try {
       boolean hasResults = false;
       DatabaseConnection dbconn = beeLine.getDatabaseConnection();
@@ -802,17 +805,24 @@ public class Commands {
         }
       }
       if (hasResults) {
-        ResultSet rs = stmnt.getResultSet();
+        rs = stmnt.getResultSet();
         rows = new BufferedRows(beeLine, rs);
       }
     } catch (SQLException e) {
       beeLine.error(e);
     } finally {
+      if (rs != null) {
+        try {
+          rs.close();
+        } catch (SQLException e1) {
+          beeLine.error(e1);
+        }
+      }
       if (stmnt != null) {
         try {
           stmnt.close();
-        } catch (SQLException e1) {
-          beeLine.error(e1);
+        } catch (SQLException e2) {
+          beeLine.error(e2);
         }
       }
     }
@@ -879,9 +889,8 @@ public class Commands {
     BufferedReader reader = null;
     try {
       reader = new BufferedReader(new FileReader(sourceFile));
-      String extra = reader.readLine();
-      String lines = null;
-      while (extra != null) {
+      String lines = null, extra;
+      while ((extra = reader.readLine()) != null) {
         if (beeLine.isComment(extra)) {
           continue;
         }
@@ -890,9 +899,8 @@ public class Commands {
         } else {
           lines += "\n" + extra;
         }
-        extra = reader.readLine();
       }
-      String[] cmds = lines.split(";");
+      String[] cmds = lines.split(beeLine.getOpts().getDelimiter());
       for (String c : cmds) {
         c = c.trim();
         if (!executeInternal(c, false)) {
@@ -1003,6 +1011,15 @@ public class Commands {
         beeLine.showWarnings();
 
         if (hasResults) {
+          OutputFile outputFile = beeLine.getRecordOutputFile();
+          if (beeLine.isTestMode() && outputFile != null && outputFile.isActiveConverter()) {
+            outputFile.fetchStarted();
+            if (!sql.trim().toLowerCase().startsWith("explain")) {
+              outputFile.foundQuery(true);
+            } else {
+              outputFile.foundQuery(false);
+            }
+          }
           do {
             ResultSet rs = stmnt.getResultSet();
             try {
@@ -1020,6 +1037,9 @@ public class Commands {
               rs.close();
             }
           } while (BeeLine.getMoreResults(stmnt));
+          if (beeLine.isTestMode() && outputFile != null && outputFile.isActiveConverter()) {
+            outputFile.fetchFinished();
+          }
         } else {
           int count = stmnt.getUpdateCount();
           long end = System.currentTimeMillis();
@@ -1048,39 +1068,13 @@ public class Commands {
     return true;
   }
 
-  //startQuote use array type in order to pass int type as input/output parameter.
-  //This method remove comment from current line of a query.
-  //It does not remove comment like strings inside quotes.
-  @VisibleForTesting
-  String removeComments(String line, int[] startQuote) {
-    if (line == null || line.isEmpty()) return line;
-    if (startQuote[0] == -1 && beeLine.isComment(line)) return "";  //assume # can only be used at the beginning of line.
-    StringBuilder builder = new StringBuilder();
-    for (int index = 0; index < line.length(); index++) {
-      if (startQuote[0] == -1 && index < line.length() - 1 && line.charAt(index) == '-' && line.charAt(index + 1) =='-') {
-        return builder.toString().trim();
-      }
-
-      char letter = line.charAt(index);
-      if (startQuote[0] == letter && (index == 0 || line.charAt(index -1) != '\\') ) {
-        startQuote[0] = -1; // Turn escape off.
-      } else if (startQuote[0] == -1 && (letter == '\'' || letter == '"') && (index == 0 || line.charAt(index -1) != '\\')) {
-        startQuote[0] = letter; // Turn escape on.
-      }
-
-      builder.append(letter);
-    }
-
-    return builder.toString().trim();
-  }
-
   /*
    * Check if the input line is a multi-line command which needs to read further
    */
   public String handleMultiLineCmd(String line) throws IOException {
     //When using -e, console reader is not initialized and command is always a single line
     int[] startQuote = {-1};
-    line = removeComments(line,startQuote);
+    line = HiveStringUtils.removeComments(line, startQuote);
     while (isMultiLine(line) && beeLine.getOpts().isAllowMultiLineCommand()) {
       StringBuilder prompt = new StringBuilder(beeLine.getPrompt());
       if (!beeLine.getOpts().isSilent()) {
@@ -1105,7 +1099,7 @@ public class Commands {
       if (extra == null) { //it happens when using -f and the line of cmds does not end with ;
         break;
       }
-      extra = removeComments(extra,startQuote);
+      extra = HiveStringUtils.removeComments(extra, startQuote);
       if (extra != null && !extra.isEmpty()) {
         line += "\n" + extra;
       }
@@ -1119,7 +1113,7 @@ public class Commands {
   //assumes line would never be null when this method is called
   private boolean isMultiLine(String line) {
     line = line.trim();
-    if (line.endsWith(";") || beeLine.isComment(line)) {
+    if (line.endsWith(beeLine.getOpts().getDelimiter()) || beeLine.isComment(line)) {
       return false;
     }
     // handles the case like line = show tables; --test comment
@@ -1190,7 +1184,7 @@ public class Commands {
     // the continuation lines! This is logged as sf.net
     // bug 879518.
 
-    // use multiple lines for statements not terminated by ";"
+    // use multiple lines for statements not terminated by the delimiter
     try {
       line = handleMultiLineCmd(line);
     } catch (Exception e) {
@@ -1212,8 +1206,8 @@ public class Commands {
 
   /**
    * Helper method to parse input from Beeline and convert it to a {@link List} of commands that
-   * can be executed. This method contains logic for handling semicolons that are placed within
-   * quotations. It iterates through each character in the line and checks to see if it is a ;, ',
+   * can be executed. This method contains logic for handling delimiters that are placed within
+   * quotations. It iterates through each character in the line and checks to see if it is the delimiter, ',
    * or "
    */
   private List<String> getCmdList(String line, boolean entireLineAsCommand) {
@@ -1229,55 +1223,50 @@ public class Commands {
       // Marker to track if there is starting single quote without an ending double quote
       boolean hasUnterminatedSingleQuote = false;
 
-      // Index of the last seen semicolon in the given line
-      int lastSemiColonIndex = 0;
-      char[] lineChars = line.toCharArray();
+      // Index of the last seen delimiter in the given line
+      int lastDelimiterIndex = 0;
 
       // Marker to track if the previous character was an escape character
       boolean wasPrevEscape = false;
 
       int index = 0;
 
-      // Iterate through the line and invoke the addCmdPart method whenever a semicolon is seen that is not inside a
+      // Iterate through the line and invoke the addCmdPart method whenever the delimiter is seen that is not inside a
       // quoted string
-      for (; index < lineChars.length; index++) {
-        switch (lineChars[index]) {
-          case '\'':
-            // If a single quote is seen and the index is not inside a double quoted string and the previous character
-            // was not an escape, then update the hasUnterminatedSingleQuote flag
-            if (!hasUnterminatedDoubleQuote && !wasPrevEscape) {
-              hasUnterminatedSingleQuote = !hasUnterminatedSingleQuote;
-            }
-            wasPrevEscape = false;
-            break;
-          case '\"':
-            // If a double quote is seen and the index is not inside a single quoted string and the previous character
-            // was not an escape, then update the hasUnterminatedDoubleQuote flag
-            if (!hasUnterminatedSingleQuote && !wasPrevEscape) {
-              hasUnterminatedDoubleQuote = !hasUnterminatedDoubleQuote;
-            }
-            wasPrevEscape = false;
-            break;
-          case ';':
-            // If a semicolon is seen, and the line isn't inside a quoted string, then treat
-            // line[lastSemiColonIndex] to line[index] as a single command
-            if (!hasUnterminatedDoubleQuote && !hasUnterminatedSingleQuote) {
-              addCmdPart(cmdList, command, line.substring(lastSemiColonIndex, index));
-              lastSemiColonIndex = index + 1;
-            }
-            wasPrevEscape = false;
-            break;
-          case '\\':
-            wasPrevEscape = !wasPrevEscape;
-            break;
-          default:
-            wasPrevEscape = false;
-            break;
+      for (; index < line.length();) {
+        if (line.startsWith("\'", index)) {
+          // If a single quote is seen and the index is not inside a double quoted string and the previous character
+          // was not an escape, then update the hasUnterminatedSingleQuote flag
+          if (!hasUnterminatedDoubleQuote && !wasPrevEscape) {
+            hasUnterminatedSingleQuote = !hasUnterminatedSingleQuote;
+          }
+          wasPrevEscape = false;
+          index++;
+        } else if (line.startsWith("\"", index)) {
+          // If a double quote is seen and the index is not inside a single quoted string and the previous character
+          // was not an escape, then update the hasUnterminatedDoubleQuote flag
+          if (!hasUnterminatedSingleQuote && !wasPrevEscape) {
+            hasUnterminatedDoubleQuote = !hasUnterminatedDoubleQuote;
+          }
+          wasPrevEscape = false;
+          index++;
+        } else if (line.startsWith(beeLine.getOpts().getDelimiter(), index)) {
+          // If the delimiter is seen, and the line isn't inside a quoted string, then treat
+          // line[lastDelimiterIndex] to line[index] as a single command
+          if (!hasUnterminatedDoubleQuote && !hasUnterminatedSingleQuote) {
+            addCmdPart(cmdList, command, line.substring(lastDelimiterIndex, index));
+            lastDelimiterIndex = index + beeLine.getOpts().getDelimiter().length();
+          }
+          wasPrevEscape = false;
+          index += beeLine.getOpts().getDelimiter().length();
+        } else {
+          wasPrevEscape = line.startsWith("\\", index) && !wasPrevEscape;
+          index++;
         }
       }
-      // If the line doesn't end with a ; or if the line is empty, add the cmd part
-      if (lastSemiColonIndex != index || lineChars.length == 0) {
-        addCmdPart(cmdList, command, line.substring(lastSemiColonIndex, index));
+      // If the line doesn't end with the delimiter or if the line is empty, add the cmd part
+      if (lastDelimiterIndex != index || line.length() == 0) {
+        addCmdPart(cmdList, command, line.substring(lastDelimiterIndex, index));
       }
     }
     return cmdList;
@@ -1289,7 +1278,7 @@ public class Commands {
    */
   private void addCmdPart(List<String> cmdList, StringBuilder command, String cmdpart) {
     if (cmdpart.endsWith("\\")) {
-      command.append(cmdpart.substring(0, cmdpart.length() - 1)).append(";");
+      command.append(cmdpart.substring(0, cmdpart.length() - 1)).append(beeLine.getOpts().getDelimiter());
       return;
     } else {
       command.append(cmdpart);
@@ -1420,7 +1409,6 @@ public class Commands {
   public boolean closeall(String line) {
     if (close(null)) {
       while (close(null)) {
-        ;
       }
       return true;
     }
@@ -1936,5 +1924,9 @@ public class Commands {
     }
     breader.close();
     return true;
+  }
+
+  public boolean delimiter(String line) {
+    return set("set " + line);
   }
 }

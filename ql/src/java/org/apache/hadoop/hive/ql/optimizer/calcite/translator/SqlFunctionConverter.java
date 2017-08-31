@@ -127,9 +127,9 @@ public class SqlFunctionConverter {
     }
     // Make sure we handle unary + and - correctly.
     if (argsLength == 1) {
-      if (name == "+") {
+      if ("+".equals(name)) {
         name = FunctionRegistry.UNARY_PLUS_FUNC_NAME;
-      } else if (name == "-") {
+      } else if ("-".equals(name)) {
         name = FunctionRegistry.UNARY_MINUS_FUNC_NAME;
       }
     }
@@ -181,6 +181,9 @@ public class SqlFunctionConverter {
         castUDF = FunctionRegistry.getFunctionInfo("double");
       } else if (castType.equals(TypeInfoFactory.timestampTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo("timestamp");
+      } else if (castType.equals(TypeInfoFactory.timestampLocalTZTypeInfo)) {
+        castUDF = handleCastForParameterizedType(castType,
+            FunctionRegistry.getFunctionInfo(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME));
       } else if (castType.equals(TypeInfoFactory.dateTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo("date");
       } else if (castType instanceof DecimalTypeInfo) {
@@ -350,8 +353,8 @@ public class SqlFunctionConverter {
       registerFunction("in", HiveIn.INSTANCE, hToken(HiveParser.Identifier, "in"));
       registerFunction("between", HiveBetween.INSTANCE, hToken(HiveParser.Identifier, "between"));
       registerFunction("struct", SqlStdOperatorTable.ROW, hToken(HiveParser.Identifier, "struct"));
-      registerFunction("isnotnull", SqlStdOperatorTable.IS_NOT_NULL, hToken(HiveParser.TOK_ISNOTNULL, "TOK_ISNOTNULL"));
-      registerFunction("isnull", SqlStdOperatorTable.IS_NULL, hToken(HiveParser.TOK_ISNULL, "TOK_ISNULL"));
+      registerFunction("isnotnull", SqlStdOperatorTable.IS_NOT_NULL, hToken(HiveParser.Identifier, "isnotnull"));
+      registerFunction("isnull", SqlStdOperatorTable.IS_NULL, hToken(HiveParser.Identifier, "isnull"));
       registerFunction("is not distinct from", SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, hToken(HiveParser.EQUAL_NS, "<=>"));
       registerFunction("when", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       registerDuplicateFunction("case", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));

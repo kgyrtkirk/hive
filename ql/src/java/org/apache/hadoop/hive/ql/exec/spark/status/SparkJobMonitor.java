@@ -66,7 +66,6 @@ abstract class SparkJobMonitor {
   private int lines = 0;
   private final PrintStream out;
 
-
   private static final int COLUMN_1_WIDTH = 16;
   private static final String HEADER_FORMAT = "%16s%10s %13s  %5s  %9s  %7s  %7s  %6s  ";
   private static final String STAGE_FORMAT = "%-16s%10s %13s  %5s  %9s  %7s  %7s  %6s  ";
@@ -171,6 +170,27 @@ abstract class SparkJobMonitor {
     }
 
     lastPrintTime = System.currentTimeMillis();
+  }
+
+  protected int getTotalTaskCount(Map<String, SparkStageProgress> progressMap) {
+    int totalTasks = 0;
+    for (SparkStageProgress progress: progressMap.values() ) {
+      totalTasks += progress.getTotalTaskCount();
+    }
+
+    return totalTasks;
+  }
+
+  protected int getStageMaxTaskCount(Map<String, SparkStageProgress> progressMap) {
+    int stageMaxTasks = 0;
+    for (SparkStageProgress progress: progressMap.values() ) {
+      int tasks = progress.getTotalTaskCount();
+      if (tasks > stageMaxTasks) {
+        stageMaxTasks = tasks;
+      }
+    }
+
+    return stageMaxTasks;
   }
 
   private String getReport(Map<String, SparkStageProgress> progressMap) {

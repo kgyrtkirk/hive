@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.commons.math3.util.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
@@ -216,13 +217,15 @@ public class HttpServer {
 
   /**
    * Checks the user has privileges to access to instrumentation servlets.
-   * <p/>
+   * <p>
    * If <code>hadoop.security.instrumentation.requires.admin</code> is set to FALSE
    * (default value) it always returns TRUE.
-   * <p/>
+   * </p>
+   * <p>
    * If <code>hadoop.security.instrumentation.requires.admin</code> is set to TRUE
    * it will check if the current user is in the admin ACLS. If the user is
    * in the admin ACLs it returns TRUE, otherwise it returns FALSE.
+   * </p>
    *
    * @param servletContext the servlet context.
    * @param request the servlet request.
@@ -423,6 +426,7 @@ public class HttpServer {
     addServlet("jmx", "/jmx", JMXJsonServlet.class);
     addServlet("conf", "/conf", ConfServlet.class);
     addServlet("stacks", "/stacks", StackServlet.class);
+    addServlet("conflog", "/conflog", Log4j2ConfiguratorServlet.class);
 
     for (Pair<String, Class<? extends HttpServlet>> p : b.servlets) {
       addServlet(p.getFirst(), "/" + p.getFirst(), p.getSecond());

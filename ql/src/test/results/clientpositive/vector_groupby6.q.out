@@ -62,7 +62,7 @@ STAGE PLANS:
                 Reduce Sink Vectorization:
                     className: VectorReduceSinkOperator
                     native: false
-                    nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                    nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                 Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
@@ -81,8 +81,10 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           Group By Vectorization:
+              groupByMode: PARTIAL1
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: string)
           mode: partial1
@@ -109,7 +111,7 @@ STAGE PLANS:
               Reduce Sink Vectorization:
                   className: VectorReduceSinkOperator
                   native: false
-                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
               Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
@@ -128,8 +130,10 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           Group By Vectorization:
+              groupByMode: FINAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: string)
           mode: final

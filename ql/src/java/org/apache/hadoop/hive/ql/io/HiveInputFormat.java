@@ -357,9 +357,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       LOG.debug("Found spec for " + hsplit.getPath() + " " + part + " from " + pathToPartitionInfo);
     }
 
-    if ((part != null) && (part.getTableDesc() != null)) {
-      Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), job);
-      nonNative = part.getTableDesc().isNonNative();
+    try {
+      if ((part != null) && (part.getTableDesc() != null)) {
+        Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), job);
+        nonNative = part.getTableDesc().isNonNative();
+      }
+    } catch (HiveException e) {
+      throw new IOException(e);
     }
 
     Path splitPath = hsplit.getPath();
@@ -396,7 +400,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
       // Prune partitions
       if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")
-          && HiveConf.getBoolVar(job, HiveConf.ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING)) {
+          && HiveConf.isSparkDPPAny(job)) {
         SparkDynamicPartitionPruner pruner = new SparkDynamicPartitionPruner();
         try {
           pruner.prune(mrwork, job);
@@ -419,7 +423,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       InputFormat inputFormat, Class<? extends InputFormat> inputFormatClass, int splits,
       TableDesc table, List<InputSplit> result) throws IOException {
 
-    Utilities.copyTablePropertiesToConf(table, conf);
+    try {
+      Utilities.copyTablePropertiesToConf(table, conf);
+    } catch (HiveException e) {
+      throw new IOException(e);
+    }
 
     if (tableScan != null) {
       pushFilters(conf, tableScan);

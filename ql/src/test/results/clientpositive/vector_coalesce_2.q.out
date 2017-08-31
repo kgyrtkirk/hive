@@ -48,8 +48,10 @@ STAGE PLANS:
               Group By Operator
                 aggregations: sum(_col1)
                 Group By Vectorization:
+                    groupByMode: HASH
                     vectorOutput: false
                     native: false
+                    vectorProcessingMode: NONE
                     projectedOutputColumns: null
                 keys: _col0 (type: string)
                 mode: hash
@@ -65,8 +67,10 @@ STAGE PLANS:
         Group By Operator
           aggregations: sum(VALUE._col0)
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: string)
           mode: mergepartial
@@ -205,9 +209,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFSumLong(col 4) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: HASH
                     vectorOutput: true
                     keyExpressions: col 1
                     native: false
+                    vectorProcessingMode: HASH
                     projectedOutputColumns: [0]
                 keys: _col0 (type: string)
                 mode: hash
@@ -220,7 +226,7 @@ STAGE PLANS:
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                   Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
@@ -241,8 +247,10 @@ STAGE PLANS:
         Group By Operator
           aggregations: sum(VALUE._col0)
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: string)
           mode: mergepartial

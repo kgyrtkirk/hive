@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.io.IOContextMap;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.Credentials;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -123,6 +124,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private final SchedulerFragmentCompletingListener completionListener;
   private UserGroupInformation fsTaskUgi;
   private final SocketFactory socketFactory;
+  private boolean isGuaranteed;
 
   @VisibleForTesting
   public TaskRunnerCallable(SubmitWorkRequestProto request, QueryFragmentInfo fragmentInfo,
@@ -132,7 +134,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
                             FragmentCompletionHandler fragmentCompleteHandler, HadoopShim tezHadoopShim,
                             TezTaskAttemptID attemptId, SignableVertexSpec vertex, TezEvent initialEvent,
                             UserGroupInformation fsTaskUgi, SchedulerFragmentCompletingListener completionListener,
-                            SocketFactory socketFactory) {
+                            SocketFactory socketFactory, boolean isGuaranteed) {
     this.request = request;
     this.fragmentInfo = fragmentInfo;
     this.conf = conf;
@@ -166,6 +168,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     this.fsTaskUgi = fsTaskUgi;
     this.completionListener = completionListener;
     this.socketFactory = socketFactory;
+    this.isGuaranteed = isGuaranteed;
   }
 
   public long getStartTime() {
@@ -219,7 +222,18 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           TezCommonUtils.convertJobTokenToBytes(jobToken));
       Multimap<String, String> startedInputsMap = createStartedInputMap(vertex);
 
-      final UserGroupInformation taskOwner = fragmentInfo.getQueryInfo().getUmbilicalUgi();
+      final UserGroupInformation taskOwner;
+      if (!vertex.getIsExternalSubmission()) {
+        taskOwner = fragmentInfo.getQueryInfo().getUmbilicalUgi();
+      } else {
+        // Temporary, till the external interface makes use of a single connection per
+        // instance.
+        taskOwner = UserGroupInformation.createRemoteUser(vertex.getTokenIdentifier());
+        taskOwner.addToken(jobToken);
+        final InetSocketAddress address =
+            NetUtils.createSocketAddrForHost(request.getAmHost(), request.getAmPort());
+        SecurityUtil.setTokenService(jobToken, address);
+      }
       if (LOG.isDebugEnabled()) {
         LOG.debug("taskOwner hashCode:" + taskOwner.hashCode());
       }
@@ -274,6 +288,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           return result;
         } finally {
           FileSystem.closeAllForUGI(fsTaskUgi);
+          fragmentInfo.getQueryInfo().returnUmbilicalUgi(taskOwner);
           LOG.info("ExecutionTime for Container: " + request.getContainerIdString() + "=" +
                   runtimeWatch.stop().elapsedMillis());
           if (LOG.isDebugEnabled()) {
@@ -382,7 +397,15 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   }
 
   public boolean canFinish() {
-    return fragmentInfo.canFinish();
+    return QueryFragmentInfo.canFinish(fragmentInfo);
+  }
+
+  public boolean canFinishForPriority() {
+    return fragmentInfo.canFinishForPriority();
+  }
+
+  public void updateCanFinishForPriority(boolean value) {
+    fragmentInfo.setCanFinishForPriority(value);
   }
 
   private static Multimap<String, String> createStartedInputMap(SignableVertexSpec vertex) {
@@ -576,5 +599,13 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   public SignableVertexSpec getVertexSpec() {
     // TODO: support for binary spec? presumably we'd parse it somewhere earlier
     return vertex;
+  }
+
+  public boolean isGuaranteed() {
+    return isGuaranteed;
+  }
+
+  public void setIsGuaranteed(boolean isGuaranteed) {
+    this.isGuaranteed = isGuaranteed;
   }
 }

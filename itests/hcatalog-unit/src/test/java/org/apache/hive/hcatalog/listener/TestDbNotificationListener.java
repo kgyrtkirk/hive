@@ -41,6 +41,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
+import org.apache.hadoop.hive.metastore.MetaStoreEventListenerConstants;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
@@ -94,11 +96,14 @@ import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.hcatalog.api.repl.ReplicationV1CompatRule;
 import org.apache.hive.hcatalog.data.Pair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,6 +122,20 @@ public class TestDbNotificationListener {
   private static MessageDeserializer md = null;
   private int startTime;
   private long firstEventId;
+
+  private static List<String> testsToSkipForReplV1BackwardCompatTesting =
+      new ArrayList<>(Arrays.asList("cleanupNotifs", "sqlTempTable"));
+  // Make sure we skip backward-compat checking for those tests that don't generate events
+
+  private static ReplicationV1CompatRule bcompat = null;
+
+  @Rule
+  public TestRule replV1BackwardCompatibleRule = bcompat;
+  // Note - above looks funny because it seems like we're instantiating a static var, and
+  // then a non-static var as the rule, but the reason this is required is because Rules
+  // are not allowed to be static, but we wind up needing it initialized from a static
+  // context. So, bcompat is initialzed in a static context, but this rule is initialized
+  // before the tests run, and will pick up an initialized value of bcompat.
 
   /* This class is used to verify that HiveMetaStore calls the non-transactional listeners with the
     * current event ID set by the DbNotificationListener class */
@@ -238,6 +257,8 @@ public class TestDbNotificationListener {
     msClient = new HiveMetaStoreClient(conf);
     driver = new Driver(conf);
     md = MessageFactory.getInstance().getDeserializer();
+
+    bcompat = new ReplicationV1CompatRule(msClient, conf, testsToSkipForReplV1BackwardCompatTesting );
   }
 
   @Before
@@ -364,7 +385,7 @@ public class TestDbNotificationListener {
             emptyParameters);
     Table table =
         new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, null,
-            emptyParameters, null, null, null);
+            emptyParameters, null, null, TableType.MANAGED_TABLE.toString());
     msClient.createTable(table);
 
     // Get notifications from metastore
@@ -382,6 +403,7 @@ public class TestDbNotificationListener {
     assertEquals(defaultDbName, createTblMsg.getDB());
     assertEquals(tblName, createTblMsg.getTable());
     assertEquals(table, createTblMsg.getTableObj());
+    assertEquals(TableType.MANAGED_TABLE.toString(), createTblMsg.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
@@ -441,6 +463,7 @@ public class TestDbNotificationListener {
 
     AlterTableMessage alterTableMessage = md.getAlterTableMessage(event.getMessage());
     assertEquals(table, alterTableMessage.getTableObjAfter());
+    assertEquals(TableType.MANAGED_TABLE.toString(), alterTableMessage.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
@@ -495,6 +518,7 @@ public class TestDbNotificationListener {
     DropTableMessage dropTblMsg = md.getDropTableMessage(event.getMessage());
     assertEquals(defaultDbName, dropTblMsg.getDB());
     assertEquals(tblName, dropTblMsg.getTable());
+    assertEquals(TableType.MANAGED_TABLE.toString(), dropTblMsg.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.DROP_TABLE, firstEventId + 2);
@@ -564,6 +588,7 @@ public class TestDbNotificationListener {
     Iterator<Partition> ptnIter = addPtnMsg.getPartitionObjs().iterator();
     assertTrue(ptnIter.hasNext());
     assertEquals(partition, ptnIter.next());
+    assertEquals(TableType.MANAGED_TABLE.toString(), addPtnMsg.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.ADD_PARTITION, firstEventId + 2);
@@ -634,6 +659,7 @@ public class TestDbNotificationListener {
     assertEquals(defaultDbName, alterPtnMsg.getDB());
     assertEquals(tblName, alterPtnMsg.getTable());
     assertEquals(newPart, alterPtnMsg.getPtnObjAfter());
+    assertEquals(TableType.MANAGED_TABLE.toString(), alterPtnMsg.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.ADD_PARTITION, firstEventId + 2);
@@ -701,6 +727,7 @@ public class TestDbNotificationListener {
     assertEquals(table.getDbName(), tableObj.getDbName());
     assertEquals(table.getTableName(), tableObj.getTableName());
     assertEquals(table.getOwner(), tableObj.getOwner());
+    assertEquals(TableType.MANAGED_TABLE.toString(), dropPtnMsg.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.DROP_PARTITION, firstEventId + 3);
@@ -783,6 +810,8 @@ public class TestDbNotificationListener {
     assertEquals(dbName, addPtnMsg.getDB());
     assertEquals(tab2.getTableName(), addPtnMsg.getTable());
     Iterator<Partition> ptnIter = addPtnMsg.getPartitionObjs().iterator();
+    assertEquals(TableType.MANAGED_TABLE.toString(), addPtnMsg.getTableType());
+
     assertTrue(ptnIter.hasNext());
     Partition msgPart = ptnIter.next();
     assertEquals(part1.getValues(), msgPart.getValues());
@@ -800,6 +829,7 @@ public class TestDbNotificationListener {
     DropPartitionMessage dropPtnMsg = md.getDropPartitionMessage(event.getMessage());
     assertEquals(dbName, dropPtnMsg.getDB());
     assertEquals(tab1.getTableName(), dropPtnMsg.getTable());
+    assertEquals(TableType.MANAGED_TABLE.toString(), dropPtnMsg.getTableType());
     Iterator<Map<String, String>> parts = dropPtnMsg.getPartitions().iterator();
     assertTrue(parts.hasNext());
     assertEquals(part1.getValues(), Lists.newArrayList(parts.next().values()));
@@ -1185,6 +1215,12 @@ public class TestDbNotificationListener {
     // Parse the message field
     verifyInsert(event, defaultDbName, tblName);
 
+    // Parse the message field
+    InsertMessage insertMessage = md.getInsertMessage(event.getMessage());
+    assertEquals(defaultDbName, insertMessage.getDB());
+    assertEquals(tblName, insertMessage.getTable());
+    assertEquals(TableType.MANAGED_TABLE.toString(), insertMessage.getTableType());
+
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.INSERT, firstEventId + 2);
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
@@ -1208,8 +1244,9 @@ public class TestDbNotificationListener {
     FieldSchema partCol1 = new FieldSchema("ds", "string", "no comment");
     List<FieldSchema> partCols = new ArrayList<FieldSchema>();
     List<String> partCol1Vals = Arrays.asList("today");
-    LinkedHashMap<String, String> partKeyVals = new LinkedHashMap<String, String>();
-    partKeyVals.put("ds", "today");
+    List<String> partKeyVals = new ArrayList<String>();
+    partKeyVals.add("today");
+
     partCols.add(partCol1);
     Table table =
         new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, partCols,
@@ -1245,9 +1282,9 @@ public class TestDbNotificationListener {
     // Parse the message field
     verifyInsert(event, defaultDbName, tblName);
     InsertMessage insertMessage = md.getInsertMessage(event.getMessage());
-    Map<String,String> partKeyValsFromNotif = insertMessage.getPartitionKeyValues();
+    List<String> ptnValues = insertMessage.getPtnObj().getValues();
 
-    assertMapEquals(partKeyVals, partKeyValsFromNotif);
+    assertEquals(partKeyVals, ptnValues);
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.INSERT, firstEventId + 3);
@@ -1509,29 +1546,14 @@ public class TestDbNotificationListener {
     InsertMessage insertMsg = md.getInsertMessage(event.getMessage());
     System.out.println("InsertMessage: " + insertMsg.toString());
     if (dbName != null ){
-      assertEquals(dbName, insertMsg.getDB());
+      assertEquals(dbName, insertMsg.getTableObj().getDbName());
     }
     if (tblName != null){
-      assertEquals(tblName, insertMsg.getTable());
+      assertEquals(tblName, insertMsg.getTableObj().getTableName());
     }
     // Should have files
     Iterator<String> files = insertMsg.getFiles().iterator();
     assertTrue(files.hasNext());
-  }
-
-
-  private void assertMapEquals(Map<String, String> map1, Map<String, String> map2) {
-    // non ordered, non-classed map comparison - use sparingly instead of assertEquals
-    // only if you're sure that the order does not matter.
-    if ((map1 == null) || (map2 == null)){
-      assertNull(map1);
-      assertNull(map2);
-    }
-    assertEquals(map1.size(),map2.size());
-    for (String k : map1.keySet()){
-      assertTrue(map2.containsKey(k));
-      assertEquals(map1.get(k), map2.get(k));
-    }
   }
 
   @Test

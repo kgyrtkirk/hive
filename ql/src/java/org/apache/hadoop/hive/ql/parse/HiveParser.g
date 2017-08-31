@@ -105,14 +105,15 @@ TOK_IMPORT;
 TOK_REPLICATION;
 TOK_METADATA;
 TOK_NULL;
-TOK_ISNULL;
-TOK_ISNOTNULL;
+TOK_NOT_NULL;
+TOK_UNIQUE;
 TOK_PRIMARY_KEY;
 TOK_FOREIGN_KEY;
 TOK_VALIDATE;
 TOK_NOVALIDATE;
 TOK_RELY;
 TOK_NORELY;
+TOK_CONSTRAINT_NAME;
 TOK_TINYINT;
 TOK_SMALLINT;
 TOK_INT;
@@ -125,6 +126,7 @@ TOK_DATELITERAL;
 TOK_DATETIME;
 TOK_TIMESTAMP;
 TOK_TIMESTAMPLITERAL;
+TOK_TIMESTAMPLOCALTZ;
 TOK_INTERVAL_YEAR_MONTH;
 TOK_INTERVAL_YEAR_MONTH_LITERAL;
 TOK_INTERVAL_DAY_TIME;
@@ -327,6 +329,7 @@ TOK_DATABASELOCATION;
 TOK_DBPROPLIST;
 TOK_ALTERDATABASE_PROPERTIES;
 TOK_ALTERDATABASE_OWNER;
+TOK_ALTERDATABASE_LOCATION;
 TOK_TABNAME;
 TOK_TABSRC;
 TOK_RESTRICT;
@@ -492,6 +495,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_DATE", "DATE");
     xlateMap.put("KW_DATETIME", "DATETIME");
     xlateMap.put("KW_TIMESTAMP", "TIMESTAMP");
+    xlateMap.put("KW_TIMESTAMPLOCALTZ", "TIMESTAMPLOCALTZ");
+    xlateMap.put("KW_TIME", "TIME");
+    xlateMap.put("KW_ZONE", "ZONE");
     xlateMap.put("KW_STRING", "STRING");
     xlateMap.put("KW_BINARY", "BINARY");
     xlateMap.put("KW_ARRAY", "ARRAY");
@@ -547,6 +553,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_UPDATE", "UPDATE");
     xlateMap.put("KW_VALUES", "VALUES");
     xlateMap.put("KW_PURGE", "PURGE");
+    xlateMap.put("KW_UNIQUE", "UNIQUE");
     xlateMap.put("KW_PRIMARY", "PRIMARY");
     xlateMap.put("KW_FOREIGN", "FOREIGN");
     xlateMap.put("KW_KEY", "KEY");
@@ -1002,7 +1009,7 @@ createTableStatement
          tableFileFormat?
          tableLocation?
          tablePropertiesPrefixed?
-       | (LPAREN columnNameTypeOrPKOrFKList RPAREN)?
+       | (LPAREN columnNameTypeOrConstraintList RPAREN)?
          tableComment?
          tablePartition?
          tableBuckets?
@@ -1015,7 +1022,7 @@ createTableStatement
       )
     -> ^(TOK_CREATETABLE $name $temp? $ext? ifNotExists?
          ^(TOK_LIKETABLE $likeName?)
-         columnNameTypeOrPKOrFKList?
+         columnNameTypeOrConstraintList?
          tableComment?
          tablePartition?
          tableBuckets?
@@ -1195,6 +1202,7 @@ alterDatabaseStatementSuffix
 @after { popMsg(state); }
     : alterDatabaseSuffixProperties
     | alterDatabaseSuffixSetOwner
+    | alterDatabaseSuffixSetLocation
     ;
 
 alterDatabaseSuffixProperties
@@ -1209,6 +1217,13 @@ alterDatabaseSuffixSetOwner
 @after { popMsg(state); }
     : dbName=identifier KW_SET KW_OWNER principalName
     -> ^(TOK_ALTERDATABASE_OWNER $dbName principalName)
+    ;
+
+alterDatabaseSuffixSetLocation
+@init { pushMsg("alter database set location", state); }
+@after { popMsg(state); }
+    : dbName=identifier KW_SET KW_LOCATION newLocation=StringLiteral
+    -> ^(TOK_ALTERDATABASE_LOCATION $dbName $newLocation)
     ;
 
 alterStatementSuffixRename[boolean table]
@@ -1230,9 +1245,9 @@ alterStatementSuffixAddCol
 alterStatementSuffixAddConstraint
 @init { pushMsg("add constraint statement", state); }
 @after { popMsg(state); }
-   :  KW_ADD (fk=foreignKeyWithName | primaryKeyWithName)
-   -> {fk != null}? ^(TOK_ALTERTABLE_ADDCONSTRAINT foreignKeyWithName)
-   ->               ^(TOK_ALTERTABLE_ADDCONSTRAINT primaryKeyWithName)
+   :  KW_ADD (fk=alterForeignKeyWithName | alterConstraintWithName)
+   -> {fk != null}? ^(TOK_ALTERTABLE_ADDCONSTRAINT alterForeignKeyWithName)
+   ->               ^(TOK_ALTERTABLE_ADDCONSTRAINT alterConstraintWithName)
    ;
 
 alterStatementSuffixDropConstraint
@@ -1245,8 +1260,8 @@ alterStatementSuffixDropConstraint
 alterStatementSuffixRenameCol
 @init { pushMsg("rename column name", state); }
 @after { popMsg(state); }
-    : KW_CHANGE KW_COLUMN? oldName=identifier newName=identifier colType (KW_COMMENT comment=StringLiteral)? alterStatementChangeColPosition? restrictOrCascade?
-    ->^(TOK_ALTERTABLE_RENAMECOL $oldName $newName colType $comment? alterStatementChangeColPosition? restrictOrCascade?)
+    : KW_CHANGE KW_COLUMN? oldName=identifier newName=identifier colType alterColumnConstraint[$newName.tree]? (KW_COMMENT comment=StringLiteral)? alterStatementChangeColPosition? restrictOrCascade?
+    ->^(TOK_ALTERTABLE_RENAMECOL $oldName $newName colType $comment? alterColumnConstraint? alterStatementChangeColPosition? restrictOrCascade?)
     ;
 
 alterStatementSuffixUpdateStatsCol
@@ -2104,10 +2119,10 @@ columnNameTypeList
 @after { popMsg(state); }
     : columnNameType (COMMA columnNameType)* -> ^(TOK_TABCOLLIST columnNameType+)
     ;
-columnNameTypeOrPKOrFKList
+columnNameTypeOrConstraintList
 @init { pushMsg("column name type list with PK and FK", state); }
 @after { popMsg(state); }
-    : columnNameTypeOrPKOrFK (COMMA columnNameTypeOrPKOrFK)* -> ^(TOK_TABCOLLIST columnNameTypeOrPKOrFK+)
+    : columnNameTypeOrConstraint (COMMA columnNameTypeOrConstraint)* -> ^(TOK_TABCOLLIST columnNameTypeOrConstraint+)
     ;
 
 columnNameColonTypeList
@@ -2148,6 +2163,12 @@ columnParenthesesList
     : LPAREN! columnNameList RPAREN!
     ;
 
+enableValidateSpecification
+@init { pushMsg("enable specification", state); }
+@after { popMsg(state); }
+    : enableSpecification validateSpecification?
+    ;
+
 enableSpecification
 @init { pushMsg("enable specification", state); }
 @after { popMsg(state); }
@@ -2169,32 +2190,36 @@ relySpecification
     |  (KW_NORELY)? -> ^(TOK_NORELY)
     ;
 
-primaryKeyWithoutName
-@init { pushMsg("primary key without key name", state); }
+createConstraint
+@init { pushMsg("pk or uk or nn constraint", state); }
 @after { popMsg(state); }
-    : KW_PRIMARY KW_KEY columnParenthesesList enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
-    -> ^(TOK_PRIMARY_KEY columnParenthesesList $relySpec $enableSpec $validateSpec)
+    : (KW_CONSTRAINT constraintName=identifier)? tableConstraintType pkCols=columnParenthesesList constraintOptsCreate?
+    -> {$constraintName.tree != null}?
+            ^(tableConstraintType $pkCols ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsCreate?)
+    -> ^(tableConstraintType $pkCols constraintOptsCreate?)
     ;
 
-primaryKeyWithName
-@init { pushMsg("primary key with key name", state); }
+alterConstraintWithName
+@init { pushMsg("pk or uk or nn constraint with name", state); }
 @after { popMsg(state); }
-    : KW_CONSTRAINT idfr=identifier KW_PRIMARY KW_KEY pkCols=columnParenthesesList enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
-    -> ^(TOK_PRIMARY_KEY $pkCols $idfr $relySpec $enableSpec $validateSpec)
+    : KW_CONSTRAINT constraintName=identifier tableConstraintType pkCols=columnParenthesesList constraintOptsAlter?
+    -> ^(tableConstraintType $pkCols ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsAlter?)
     ;
 
-foreignKeyWithName
+createForeignKey
+@init { pushMsg("foreign key", state); }
+@after { popMsg(state); }
+    : (KW_CONSTRAINT constraintName=identifier)? KW_FOREIGN KW_KEY fkCols=columnParenthesesList  KW_REFERENCES tabName=tableName parCols=columnParenthesesList constraintOptsCreate?
+    -> {$constraintName.tree != null}?
+            ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $constraintName) $fkCols $tabName $parCols constraintOptsCreate?)
+    -> ^(TOK_FOREIGN_KEY $fkCols $tabName $parCols constraintOptsCreate?)
+    ;
+
+alterForeignKeyWithName
 @init { pushMsg("foreign key with key name", state); }
 @after { popMsg(state); }
-    : KW_CONSTRAINT idfr=identifier KW_FOREIGN KW_KEY fkCols=columnParenthesesList  KW_REFERENCES tabName=tableName parCols=columnParenthesesList enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
-    -> ^(TOK_FOREIGN_KEY $idfr $fkCols $tabName $parCols $relySpec $enableSpec $validateSpec)
-    ;
-
-foreignKeyWithoutName
-@init { pushMsg("foreign key without key name", state); }
-@after { popMsg(state); }
-    : KW_FOREIGN KW_KEY fkCols=columnParenthesesList  KW_REFERENCES tabName=tableName parCols=columnParenthesesList enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
-    -> ^(TOK_FOREIGN_KEY $fkCols  $tabName $parCols $relySpec $enableSpec $validateSpec)
+    : KW_CONSTRAINT constraintName=identifier KW_FOREIGN KW_KEY fkCols=columnParenthesesList  KW_REFERENCES tabName=tableName parCols=columnParenthesesList constraintOptsAlter?
+    -> ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $constraintName) $fkCols $tabName $parCols constraintOptsAlter?)
     ;
 
 skewedValueElement
@@ -2308,14 +2333,94 @@ columnNameType
     ->                     ^(TOK_TABCOL $colName colType $comment)
     ;
 
-columnNameTypeOrPKOrFK
-@init { pushMsg("column name or primary key or foreign key", state); }
+columnNameTypeOrConstraint
+@init { pushMsg("column name or constraint", state); }
 @after { popMsg(state); }
-    : ( foreignKeyWithName )
-    | ( primaryKeyWithName )
-    | ( primaryKeyWithoutName )
-    | ( foreignKeyWithoutName )
-    | ( columnNameType )
+    : ( tableConstraint )
+    | ( columnNameTypeConstraint )
+    ;
+
+tableConstraint
+@init { pushMsg("table constraint", state); }
+@after { popMsg(state); }
+    : ( createForeignKey )
+    | ( createConstraint )
+    ;
+
+columnNameTypeConstraint
+@init { pushMsg("column specification", state); }
+@after { popMsg(state); }
+    : colName=identifier colType columnConstraint[$colName.tree]? (KW_COMMENT comment=StringLiteral)?
+    -> {containExcludedCharForCreateTableColumnName($colName.text)}? {throwColumnNameException()}
+    -> ^(TOK_TABCOL $colName colType $comment? columnConstraint?)
+    ;
+
+columnConstraint[CommonTree fkColName]
+@init { pushMsg("column constraint", state); }
+@after { popMsg(state); }
+    : ( foreignKeyConstraint[$fkColName] )
+    | ( colConstraint )
+    ;
+
+foreignKeyConstraint[CommonTree fkColName]
+@init { pushMsg("column constraint", state); }
+@after { popMsg(state); }
+    : (KW_CONSTRAINT constraintName=identifier)? KW_REFERENCES tabName=tableName LPAREN colName=columnName RPAREN constraintOptsCreate?
+    -> {$constraintName.tree != null}?
+            ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $constraintName) ^(TOK_TABCOLNAME {$fkColName}) $tabName ^(TOK_TABCOLNAME $colName) constraintOptsCreate?)
+    -> ^(TOK_FOREIGN_KEY ^(TOK_TABCOLNAME {$fkColName}) $tabName ^(TOK_TABCOLNAME $colName) constraintOptsCreate?)
+    ;
+
+colConstraint
+@init { pushMsg("column constraint", state); }
+@after { popMsg(state); }
+    : (KW_CONSTRAINT constraintName=identifier)? columnConstraintType constraintOptsCreate?
+    -> {$constraintName.tree != null}?
+            ^(columnConstraintType ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsCreate?)
+    -> ^(columnConstraintType constraintOptsCreate?)
+    ;
+
+alterColumnConstraint[CommonTree fkColName]
+@init { pushMsg("alter column constraint", state); }
+@after { popMsg(state); }
+    : ( alterForeignKeyConstraint[$fkColName] )
+    | ( alterColConstraint )
+    ;
+
+alterForeignKeyConstraint[CommonTree fkColName]
+@init { pushMsg("alter column constraint", state); }
+@after { popMsg(state); }
+    : (KW_CONSTRAINT constraintName=identifier)? KW_REFERENCES tabName=tableName LPAREN colName=columnName RPAREN constraintOptsAlter?
+    -> {$constraintName.tree != null}?
+            ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $constraintName) ^(TOK_TABCOLNAME {$fkColName}) $tabName ^(TOK_TABCOLNAME $colName) constraintOptsAlter?)
+    -> ^(TOK_FOREIGN_KEY ^(TOK_TABCOLNAME {$fkColName}) $tabName ^(TOK_TABCOLNAME $colName) constraintOptsAlter?)
+    ;
+
+alterColConstraint
+@init { pushMsg("alter column constraint", state); }
+@after { popMsg(state); }
+    : (KW_CONSTRAINT constraintName=identifier)? columnConstraintType constraintOptsAlter?
+    -> {$constraintName.tree != null}?
+            ^(columnConstraintType ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsAlter?)
+    -> ^(columnConstraintType constraintOptsAlter?)
+    ;
+
+columnConstraintType
+    : KW_NOT KW_NULL       ->    TOK_NOT_NULL
+    | tableConstraintType
+    ;
+
+tableConstraintType
+    : KW_PRIMARY KW_KEY    ->    TOK_PRIMARY_KEY
+    | KW_UNIQUE            ->    TOK_UNIQUE
+    ;
+
+constraintOptsCreate
+    : enableValidateSpecification relySpecification
+    ;
+
+constraintOptsAlter
+    : enableValidateSpecification relySpecification
     ;
 
 columnNameColonType
@@ -2358,6 +2463,10 @@ primitiveType
     | KW_DATE          ->    TOK_DATE
     | KW_DATETIME      ->    TOK_DATETIME
     | KW_TIMESTAMP     ->    TOK_TIMESTAMP
+    | KW_TIMESTAMPLOCALTZ   ->    TOK_TIMESTAMPLOCALTZ
+    //| KW_TIMESTAMPTZ   ->    TOK_TIMESTAMPTZ
+    | KW_TIMESTAMP KW_WITH KW_LOCAL KW_TIME KW_ZONE -> TOK_TIMESTAMPLOCALTZ
+    //| KW_TIMESTAMP KW_WITH KW_TIME KW_ZONE -> TOK_TIMESTAMPTZ
     // Uncomment to allow intervals as table column types
     //| KW_INTERVAL KW_YEAR KW_TO KW_MONTH -> TOK_INTERVAL_YEAR_MONTH
     //| KW_INTERVAL KW_DAY KW_TO KW_SECOND -> TOK_INTERVAL_DAY_TIME

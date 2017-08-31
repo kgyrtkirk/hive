@@ -18,6 +18,8 @@
 
 package org.apache.hive.beeline;
 
+import org.apache.hive.beeline.ConvertedOutputFile.Converter;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -50,11 +52,13 @@ public class QFileBeeLineClient implements AutoCloseable {
         });
   }
 
-  public void execute(String[] commands, File resultFile) throws SQLException {
+  public void execute(String[] commands, File resultFile, Converter converter)
+      throws Exception {
     beeLine.runCommands(
         new String[] {
           "!record " + resultFile.getAbsolutePath()
         });
+    beeLine.setRecordOutputFile(new ConvertedOutputFile(beeLine.getRecordOutputFile(), converter));
 
     int lastSuccessfulCommand = beeLine.runCommands(commands);
     if (commands.length != lastSuccessfulCommand) {
@@ -64,7 +68,7 @@ public class QFileBeeLineClient implements AutoCloseable {
     beeLine.runCommands(new String[] {"!record"});
   }
 
-  private void beforeExecute(QFile qFile) throws SQLException {
+  private void beforeExecute(QFile qFile) throws Exception {
     execute(
         new String[] {
           "!set outputformat tsv2",
@@ -73,17 +77,18 @@ public class QFileBeeLineClient implements AutoCloseable {
           "!set showheader false",
           "USE default;",
           "SHOW TABLES;",
-          "DROP DATABASE IF EXISTS `" + qFile.getName() + "` CASCADE;",
-          "CREATE DATABASE `" + qFile.getName() + "`;",
-          "USE `" + qFile.getName() + "`;",
+          "DROP DATABASE IF EXISTS `" + qFile.getDatabaseName() + "` CASCADE;",
+          "CREATE DATABASE `" + qFile.getDatabaseName() + "`;",
+          "USE `" + qFile.getDatabaseName() + "`;",
           "set hive.in.test.short.logs=true;",
           "set hive.in.test.remove.logs=false;",
         },
-        qFile.getBeforeExecuteLogFile());
+        qFile.getBeforeExecuteLogFile(),
+        Converter.NONE);
     beeLine.setIsTestMode(true);
   }
 
-  private void afterExecute(QFile qFile) throws SQLException {
+  private void afterExecute(QFile qFile) throws Exception {
     beeLine.setIsTestMode(false);
     execute(
         new String[] {
@@ -93,15 +98,16 @@ public class QFileBeeLineClient implements AutoCloseable {
           "!set showheader true",
           "!set outputformat table",
           "USE default;",
-          "DROP DATABASE IF EXISTS `" + qFile.getName() + "` CASCADE;",
+          "DROP DATABASE IF EXISTS `" + qFile.getDatabaseName() + "` CASCADE;",
         },
-        qFile.getAfterExecuteLogFile());
+        qFile.getAfterExecuteLogFile(),
+        Converter.NONE);
   }
 
-  public void execute(QFile qFile) throws SQLException, IOException {
+  public void execute(QFile qFile) throws Exception {
     beforeExecute(qFile);
     String[] commands = beeLine.getCommands(qFile.getInputFile());
-    execute(qFile.filterCommands(commands), qFile.getRawOutputFile());
+    execute(qFile.filterCommands(commands), qFile.getRawOutputFile(), qFile.getConverter());
     afterExecute(qFile);
   }
 

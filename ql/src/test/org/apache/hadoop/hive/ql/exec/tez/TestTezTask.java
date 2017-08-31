@@ -32,6 +32,7 @@ import static org.mockito.Mockito.never;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -226,14 +227,15 @@ public class TestTezTask {
     task.submit(conf, dag, path, appLr, sessionState, Collections.<LocalResource> emptyList(),
         new String[0], Collections.<String,LocalResource> emptyMap());
     // validate close/reopen
-    verify(sessionState, times(1)).open(any(HiveConf.class), any(String[].class));
+    verify(sessionState, times(1)).open(
+        any(HiveConf.class), any(Collection.class), any(Path.class));
     verify(sessionState, times(1)).close(eq(true)); // now uses pool after HIVE-7043
     verify(session, times(2)).submitDAG(any(DAG.class));
   }
 
   @Test
   public void testClose() throws HiveException {
-    task.close(work, 0);
+    task.close(work, 0, null);
     verify(op, times(4)).jobClose(any(Configuration.class), eq(true));
   }
 
@@ -245,7 +247,7 @@ public class TestTezTask {
     final Map<String,LocalResource> resMap = new HashMap<String,LocalResource>();
     resMap.put("foo.jar", res);
 
-    when(utils.localizeTempFiles(path.toString(), conf, inputOutputJars))
+    when(utils.localizeTempFiles(path.toString(), conf, inputOutputJars, null))
         .thenReturn(resources);
     when(utils.getBaseName(res)).thenReturn("foo.jar");
     when(sessionState.isOpen()).thenReturn(true);
@@ -264,7 +266,7 @@ public class TestTezTask {
     resMap.put("foo.jar", res);
     DAG dag = mock(DAG.class);
 
-    when(utils.localizeTempFiles(path.toString(), conf, inputOutputJars))
+    when(utils.localizeTempFiles(path.toString(), conf, inputOutputJars, null))
         .thenReturn(resources);
     when(utils.getBaseName(res)).thenReturn("foo.jar");
     when(sessionState.isOpen()).thenReturn(true);
@@ -282,11 +284,11 @@ public class TestTezTask {
     final Map<String,LocalResource> resMap = new HashMap<String,LocalResource>();
     resMap.put("foo.jar", res);
 
-    when(utils.localizeTempFiles(path.toString(), conf, inputOutputJars))
-        .thenReturn(resources);
+    when(utils.localizeTempFiles(eq(path.toString()), eq(conf), eq(inputOutputJars),
+        Mockito.<String[]>any())).thenReturn(resources);
     when(utils.getBaseName(res)).thenReturn("foo.jar");
 
-    assertEquals(resMap, task.getExtraLocalResources(conf, path, inputOutputJars));
+    assertEquals(resMap, task.getExtraLocalResources(conf, path, inputOutputJars, null));
   }
 
   @Test

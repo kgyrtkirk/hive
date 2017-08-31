@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.StreamPrinter;
+import org.apache.hive.beeline.ConvertedOutputFile.Converter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -30,8 +31,11 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -58,10 +62,13 @@ public final class QFile {
 
   private static final Pattern USE_PATTERN =
       Pattern.compile("^\\s*use\\s.*", Pattern.CASE_INSENSITIVE);
+  private static final Pattern ENTITYLIST_PATTERN =
+      Pattern.compile("(((PREHOOK|POSTHOOK): (Input|Output): \\S+\n)+)", Pattern.MULTILINE);
 
   private static final String MASK_PATTERN = "#### A masked pattern was here ####\n";
 
   private String name;
+  private String databaseName;
   private File inputFile;
   private File rawOutputFile;
   private File outputFile;
@@ -72,11 +79,16 @@ public final class QFile {
   private static RegexFilterSet staticFilterSet = getStaticFilterSet();
   private RegexFilterSet specificFilterSet;
   private boolean rewriteSourceTables;
+  private Converter converter;
 
   private QFile() {}
 
   public String getName() {
     return name;
+  }
+
+  public String getDatabaseName() {
+    return databaseName;
   }
 
   public File getInputFile() {
@@ -105,6 +117,10 @@ public final class QFile {
 
   public File getAfterExecuteLogFile() {
     return afterExecuteLogFile;
+  }
+
+  public Converter getConverter() {
+    return converter;
   }
 
   public String getDebugHint() {
@@ -157,19 +173,35 @@ public final class QFile {
    */
   private String revertReplaceTableNames(String source) {
     for (String table : srcTables) {
-      source = source.replaceAll("(?is)(\\s+)default\\." + table + "([\\s;\\n\\)])", "$1" + table
-          + "$2");
+      source = source.replaceAll("(?is)(?<!name:?|alias:?)(\\s+)default\\." + table
+          + "([\\s;\\n\\)])", "$1" + table + "$2");
+    }
+    return source;
+  }
+
+  /**
+   * The PREHOOK/POSTHOOK Input/Output lists should be sorted again after reverting the database
+   * name in those strings to match the original Cli output.
+   * @param source The original query output
+   * @return The query output where the input/output list are alphabetically ordered
+   */
+  private String sortInputOutput(String source) {
+    Matcher matcher = ENTITYLIST_PATTERN.matcher(source);
+    while(matcher.find()) {
+      List<String> lines = Arrays.asList(matcher.group(1).split("\n"));
+      Collections.sort(lines);
+      source = source.replaceAll(matcher.group(1), String.join("\n", lines) + "\n");
     }
     return source;
   }
 
   public void filterOutput() throws IOException {
-    String rawOutput = FileUtils.readFileToString(rawOutputFile, "UTF-8");
+    String output = FileUtils.readFileToString(rawOutputFile, "UTF-8");
+    output = staticFilterSet.filter(specificFilterSet.filter(output));
     if (rewriteSourceTables) {
-      rawOutput = revertReplaceTableNames(rawOutput);
+      output = sortInputOutput(revertReplaceTableNames(output));
     }
-    String filteredOutput = staticFilterSet.filter(specificFilterSet.filter(rawOutput));
-    FileUtils.writeStringToFile(outputFile, filteredOutput);
+    FileUtils.writeStringToFile(outputFile, output);
   }
 
   public QTestProcessExecResult compareResults() throws IOException, InterruptedException {
@@ -272,8 +304,12 @@ public final class QFile {
         .addFilter(".*/tmp/.*\n", MASK_PATTERN)
         .addFilter(".*file:.*\n", MASK_PATTERN)
         .addFilter(".*file\\..*\n", MASK_PATTERN)
+        .addFilter(".*Output:.*/data/files/.*\n", MASK_PATTERN)
         .addFilter(".*CreateTime.*\n", MASK_PATTERN)
         .addFilter(".*transient_lastDdlTime.*\n", MASK_PATTERN)
+        .addFilter(".*lastUpdateTime.*\n", MASK_PATTERN)
+        .addFilter(".*lastAccessTime.*\n", MASK_PATTERN)
+        .addFilter(".*[Oo]wner.*\n", MASK_PATTERN)
         .addFilter("(?s)(" + MASK_PATTERN + ")+", MASK_PATTERN);
   }
 
@@ -313,6 +349,7 @@ public final class QFile {
     public QFile getQFile(String name) throws IOException {
       QFile result = new QFile();
       result.name = name;
+      result.databaseName = "test_db_" + name;
       result.inputFile = new File(queryDirectory, name + ".q");
       result.rawOutputFile = new File(logDirectory, name + ".q.out.raw");
       result.outputFile = new File(logDirectory, name + ".q.out");
@@ -322,11 +359,24 @@ public final class QFile {
       result.afterExecuteLogFile = new File(logDirectory, name + ".q.afterExecute.log");
       result.rewriteSourceTables = rewriteSourceTables;
       result.specificFilterSet = new RegexFilterSet()
-          .addFilter("(PREHOOK|POSTHOOK): (Output|Input): database:" + name + "\n",
+          .addFilter("(PREHOOK|POSTHOOK): (Output|Input): database:" + result.databaseName + "\n",
               "$1: $2: database:default\n")
-          .addFilter("(PREHOOK|POSTHOOK): (Output|Input): " + name + "@", "$1: $2: default@")
-          .addFilter("name(:?) " + name + "\\.(.*)\n", "name$1 default.$2\n")
-          .addFilter("/" + name + ".db/", "/");
+          .addFilter("(PREHOOK|POSTHOOK): (Output|Input): " + result.databaseName + "@",
+              "$1: $2: default@")
+          .addFilter("name(:?) " + result.databaseName + "\\.(.*)\n", "name$1 default.$2\n")
+          .addFilter("alias(:?) " + result.databaseName + "\\.(.*)\n", "alias$1 default.$2\n")
+          .addFilter("/" + result.databaseName + ".db/", "/");
+      result.converter = Converter.NONE;
+      String input = FileUtils.readFileToString(result.inputFile, "UTF-8");
+      if (input.contains("-- SORT_QUERY_RESULTS")) {
+        result.converter = Converter.SORT_QUERY_RESULTS;
+      }
+      if (input.contains("-- HASH_QUERY_RESULTS")) {
+        result.converter = Converter.HASH_QUERY_RESULTS;
+      }
+      if (input.contains("-- SORT_AND_HASH_QUERY_RESULTS")) {
+        result.converter = Converter.SORT_AND_HASH_QUERY_RESULTS;
+      }
       return result;
     }
   }

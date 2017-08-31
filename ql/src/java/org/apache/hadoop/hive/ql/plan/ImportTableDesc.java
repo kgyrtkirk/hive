@@ -18,14 +18,19 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -74,7 +79,11 @@ public class ImportTableDesc {
                 (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
                         .getSkewedColNames(),
                 (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
-                        .getSkewedColValues(), null, null);
+                        .getSkewedColValues(),
+                null,
+                null,
+                null,
+                null);
         this.createTblDesc.setStoredAsSubDirectories(table.getSd().isStoredAsSubDirectories());
         break;
       case VIEW:
@@ -291,8 +300,12 @@ public class ImportTableDesc {
    * @param replaceMode Determine if this CreateTable should behave like a replace-into alter instead
    */
   public void setReplaceMode(boolean replaceMode) {
-    if (TYPE.TABLE.equals(getTableType())) {
-      createTblDesc.setReplaceMode(replaceMode);
+    switch (getTableType()) {
+      case TABLE:
+        createTblDesc.setReplaceMode(replaceMode);
+        break;
+      case VIEW:
+        createViewDesc.setOrReplace(replaceMode);
     }
   }
 
@@ -300,12 +313,13 @@ public class ImportTableDesc {
     return dbName;
   }
 
-  public Task <?> getCreateTableTask(EximUtil.SemanticAnalyzerWrapperContext x) {
+  public Task<? extends Serializable> getCreateTableTask(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      HiveConf conf) {
     switch (getTableType()) {
       case TABLE:
-        return TaskFactory.get(new DDLWork(x.getInputs(), x.getOutputs(), createTblDesc), x.getConf());
+        return TaskFactory.get(new DDLWork(inputs, outputs, createTblDesc), conf);
       case VIEW:
-        return TaskFactory.get(new DDLWork(x.getInputs(), x.getOutputs(), createViewDesc), x.getConf());
+        return TaskFactory.get(new DDLWork(inputs, outputs, createViewDesc), conf);
     }
     return null;
   }

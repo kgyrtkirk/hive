@@ -65,9 +65,54 @@ PREHOOK: Input: default@p
 POSTHOOK: query: desc formatted p partition (c=1) a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
+<<<<<<< HEAD
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 a                   	int                 	from deserializer   	 	 	 	 	 	 	 	 
+=======
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 	 
+a                   	int                 	from deserializer   	 	 	 	 	 	 	 	 	 
+PREHOOK: query: desc formatted p partition (c=1)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p partition (c=1)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+c                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	p                   	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	3                   
+	totalSize           	4                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+>>>>>>> asf/master
 PREHOOK: query: explain select max(a) from p where c=1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select max(a) from p where c=1
@@ -250,6 +295,48 @@ POSTHOOK: query: alter table p add partition (c=100)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@p
 POSTHOOK: Output: default@p@c=100
+<<<<<<< HEAD
+=======
+PREHOOK: query: desc formatted p partition (c=100)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p partition (c=100)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+c                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[100]               	 
+Database:           	default             	 
+Table:              	p                   	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+>>>>>>> asf/master
 PREHOOK: query: explain select max(a) from p where c=100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select max(a) from p where c=100
@@ -427,6 +514,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+<<<<<<< HEAD
 PREHOOK: query: drop table p
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@p
@@ -1021,3 +1109,5 @@ POSTHOOK: Input: default@p
 POSTHOOK: Input: default@p@c=4
 #### A masked pattern was here ####
 3
+=======
+>>>>>>> asf/master

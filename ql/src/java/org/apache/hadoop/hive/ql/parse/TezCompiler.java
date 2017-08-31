@@ -17,26 +17,55 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.hive.ql.optimizer.physical.LlapClusterStateForCompile;
-
-import com.google.common.base.Preconditions;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.hadoop.hive.ql.exec.*;
-import org.apache.hadoop.hive.ql.lib.*;
-import org.apache.hadoop.hive.ql.plan.*;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
+import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
+import org.apache.hadoop.hive.ql.exec.ConditionalTask;
+import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.lib.CompositeProcessor;
+import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
+import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.ForwardWalker;
+import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.lib.PreOrderOnceWalker;
+import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagate;
@@ -47,9 +76,12 @@ import org.apache.hadoop.hive.ql.optimizer.MergeJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.ReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.RemoveDynamicPruningBySize;
 import org.apache.hadoop.hive.ql.optimizer.SetReducerParallelism;
+import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer;
+import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkJoinDeDuplication;
 import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
 import org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.CrossProductCheck;
+import org.apache.hadoop.hive.ql.optimizer.physical.LlapClusterStateForCompile;
 import org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider;
 import org.apache.hadoop.hive.ql.optimizer.physical.LlapPreVectorizationPass;
 import org.apache.hadoop.hive.ql.optimizer.physical.MemoryDecider;
@@ -60,10 +92,25 @@ import org.apache.hadoop.hive.ql.optimizer.physical.SerializeFilter;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.optimizer.stats.annotation.AnnotateWithStatistics;
+import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.MoveWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.Statistics;
+import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TezCompiler translates the operator plan into TezTasks.
@@ -92,6 +139,7 @@ public class TezCompiler extends TaskCompiler {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     // Create the context for the walker
     OptimizeTezProcContext procCtx = new OptimizeTezProcContext(conf, pCtx, inputs, outputs);
+
     perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     // setup dynamic partition pruning where possible
     runDynamicPartitionPruning(procCtx, inputs, outputs);
@@ -106,6 +154,16 @@ public class TezCompiler extends TaskCompiler {
     // run the optimizations that use stats for optimization
     runStatsDependentOptimizations(procCtx, inputs, outputs);
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run the optimizations that use stats for optimization");
+
+    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    if(procCtx.conf.getBoolVar(ConfVars.HIVEOPTJOINREDUCEDEDUPLICATION)) {
+      new ReduceSinkJoinDeDuplication().transform(procCtx.parseContext);
+    }
+    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run reduce sink after join algorithm selection");
+
+    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    runRemoveDynamicPruningOptimization(procCtx, inputs, outputs);
+    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run remove dynamic pruning by size");
 
     // Removing semijoin optimization when it may not be beneficial
     removeSemijoinOptimizationByBenefit(procCtx);
@@ -135,6 +193,12 @@ public class TezCompiler extends TaskCompiler {
     // to take care of.
     runCycleAnalysisForPartitionPruning(procCtx, inputs, outputs);
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run cycle analysis for partition pruning");
+
+    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    if(procCtx.conf.getBoolVar(ConfVars.HIVE_SHARED_WORK_OPTIMIZATION)) {
+      new SharedWorkOptimizer().transform(procCtx.parseContext);
+    }
+    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Shared scans optimization");
 
     // need a new run of the constant folding because we might have created lots
     // of "and true and true" conditions.
@@ -361,6 +425,25 @@ public class TezCompiler extends TaskCompiler {
     opRules.put(new RuleRegExp("Convert Join to Map-join",
         JoinOperator.getOperatorName() + "%"), new ConvertJoinMapJoin());
 
+    // The dispatcher fires the processor corresponding to the closest matching
+    // rule and passes the context along
+    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    List<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(procCtx.parseContext.getTopOps().values());
+    GraphWalker ogw = new ForwardWalker(disp);
+    ogw.startWalking(topNodes, null);
+  }
+
+  private void runRemoveDynamicPruningOptimization(OptimizeTezProcContext procCtx,
+      Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException {
+
+    // Sequence of TableScan operators to be walked
+    Deque<Operator<?>> deque = new LinkedList<Operator<?>>();
+    deque.addAll(procCtx.parseContext.getTopOps().values());
+
+    // create a walker which walks the tree in a DFS manner while maintaining
+    // the operator stack.
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(
         new RuleRegExp("Remove dynamic pruning by size",
         AppMasterEventOperator.getOperatorName() + "%"),
@@ -671,7 +754,6 @@ public class TezCompiler extends TaskCompiler {
           continue;
         }
 
-        assert parent instanceof SelectOperator;
         while (parent != null) {
           if (parent instanceof TableScanOperator) {
             tsOps.add((TableScanOperator) parent);
@@ -685,20 +767,21 @@ public class TezCompiler extends TaskCompiler {
     // a semijoin filter on any of them, if so, remove it.
 
     ParseContext pctx = procCtx.parseContext;
+    Set<ReduceSinkOperator> rsSet = new HashSet<>(pctx.getRsToSemiJoinBranchInfo().keySet());
     for (TableScanOperator ts : tsOps) {
-      for (ReduceSinkOperator rs : pctx.getRsToSemiJoinBranchInfo().keySet()) {
+      for (ReduceSinkOperator rs : rsSet) {
         SemiJoinBranchInfo sjInfo = pctx.getRsToSemiJoinBranchInfo().get(rs);
-        if (ts == sjInfo.getTsOp()) {
+        if (sjInfo != null && ts == sjInfo.getTsOp()) {
           // match!
+          if (sjInfo.getIsHint()) {
+            throw new SemanticException("Removing hinted semijoin as it is with SMB join " + rs + " : " + ts);
+          }
           if (LOG.isDebugEnabled()) {
             LOG.debug("Semijoin optimization found going to SMB join. Removing semijoin "
                     + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(ts));
           }
           GenTezUtils.removeBranch(rs);
           GenTezUtils.removeSemiJoinOperator(pctx, rs, ts);
-          if (sjInfo.getIsHint()) {
-            LOG.debug("Removing hinted semijoin as it is with SMB join " + rs + " : " + ts);
-          }
         }
       }
     }
@@ -795,15 +878,15 @@ public class TezCompiler extends TaskCompiler {
 
           if (parent == ts) {
             // We have a cycle!
+            if (sjInfo.getIsHint()) {
+              throw new SemanticException("Removing hinted semijoin as it is creating cycles with mapside joins " + rs + " : " + ts);
+            }
             if (LOG.isDebugEnabled()) {
               LOG.debug("Semijoin cycle due to mapjoin. Removing semijoin "
                   + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(ts));
             }
             GenTezUtils.removeBranch(rs);
             GenTezUtils.removeSemiJoinOperator(pCtx, rs, ts);
-            if (sjInfo.getIsHint()) {
-              LOG.debug("Removing hinted semijoin as it is creating cycles with mapside joins " + rs + " : " + ts);
-            }
           }
         }
       }
@@ -830,7 +913,7 @@ public class TezCompiler extends TaskCompiler {
       GroupByDesc gbDesc = gbOp.getConf();
       ArrayList<AggregationDesc> aggregationDescs = gbDesc.getAggregators();
       for (AggregationDesc agg : aggregationDescs) {
-        if (agg.getGenericUDAFName() != "bloom_filter") {
+        if (!"bloom_filter".equals(agg.getGenericUDAFName())) {
           continue;
         }
 
@@ -842,6 +925,10 @@ public class TezCompiler extends TaskCompiler {
         long expectedEntries = udafBloomFilterEvaluator.getExpectedEntries();
         if (expectedEntries == -1 || expectedEntries >
                 pCtx.getConf().getLongVar(ConfVars.TEZ_MAX_BLOOM_FILTER_ENTRIES)) {
+          if (sjInfo.getIsHint()) {
+            throw new SemanticException("Removing hinted semijoin due to lack to stats" +
+            " or exceeding max bloom filter entries");
+          }
           // Remove the semijoin optimization branch along with ALL the mappings
           // The parent GB2 has all the branches. Collect them and remove them.
           for (Operator<?> op : gbOp.getChildOperators()) {
@@ -971,8 +1058,10 @@ public class TezCompiler extends TaskCompiler {
   private void removeSemijoinsParallelToMapJoin(OptimizeTezProcContext procCtx)
           throws SemanticException {
     if(!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION) ||
-            !procCtx.conf.getBoolVar(ConfVars.HIVECONVERTJOIN)) {
-      // Not needed without semi-join reduction
+            !procCtx.conf.getBoolVar(ConfVars.HIVECONVERTJOIN) ||
+            procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_FOR_MAPJOIN)) {
+      // Not needed without semi-join reduction or mapjoins or when semijoins
+      // are enabled for parallel mapjoins.
       return;
     }
 

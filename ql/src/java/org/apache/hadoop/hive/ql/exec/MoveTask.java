@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
@@ -96,7 +97,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
       FileSystem fs = sourcePath.getFileSystem(conf);
       if (isDfsDir) {
-        moveFileInDfs (sourcePath, targetPath, fs);
+        moveFileInDfs (sourcePath, targetPath, conf);
       } else {
         // This is a local file
         FileSystem dstFs = FileSystem.getLocal(conf);
@@ -108,21 +109,36 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
   }
 
-  private void moveFileInDfs (Path sourcePath, Path targetPath, FileSystem fs)
+  private void moveFileInDfs (Path sourcePath, Path targetPath, HiveConf conf)
       throws HiveException, IOException {
+
+    final FileSystem srcFs, tgtFs;
+    try {
+      tgtFs = targetPath.getFileSystem(conf);
+    } catch (IOException e) {
+      LOG.error("Failed to get dest fs", e);
+      throw new HiveException(e.getMessage(), e);
+    }
+    try {
+      srcFs = sourcePath.getFileSystem(conf);
+    } catch (IOException e) {
+      LOG.error("Failed to get src fs", e);
+      throw new HiveException(e.getMessage(), e);
+    }
+
     // if source exists, rename. Otherwise, create a empty directory
-    if (fs.exists(sourcePath)) {
+    if (srcFs.exists(sourcePath)) {
       Path deletePath = null;
       // If it multiple level of folder are there fs.rename is failing so first
       // create the targetpath.getParent() if it not exist
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS)) {
-        deletePath = createTargetPath(targetPath, fs);
+        deletePath = createTargetPath(targetPath, tgtFs);
       }
       Hive.clearDestForSubDirSrc(conf, targetPath, sourcePath, false);
       if (!Hive.moveFile(conf, sourcePath, targetPath, true, false)) {
         try {
           if (deletePath != null) {
-            fs.delete(deletePath, true);
+            tgtFs.delete(deletePath, true);
           }
         } catch (IOException e) {
           LOG.info("Unable to delete the path created for facilitating rename"
@@ -131,7 +147,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         throw new HiveException("Unable to rename: " + sourcePath
             + " to: " + targetPath);
       }
-    } else if (!fs.mkdirs(targetPath)) {
+    } else if (!tgtFs.mkdirs(targetPath)) {
       throw new HiveException("Unable to make directory: " + targetPath);
     }
   }
@@ -366,8 +382,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 }
               }
               if (!flag) {
-                throw new HiveException(
-                    "Wrong file format. Please check the file's format.");
+                throw new HiveException(ErrorMsg.WRONG_FILE_FORMAT);
               }
             } else {
               LOG.warn("Skipping file format check as dpCtx is not null");
@@ -565,6 +580,23 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       }
 
       return 0;
+    } catch (HiveException he) {
+      int errorCode = 1;
+
+      if (he.getCanonicalErrorMsg() != ErrorMsg.GENERIC_ERROR) {
+        errorCode = he.getCanonicalErrorMsg().getErrorCode();
+        if (he.getCanonicalErrorMsg() == ErrorMsg.UNRESOLVED_RT_EXCEPTION) {
+          console.printError("Failed with exception " + he.getMessage(), "\n"
+              + StringUtils.stringifyException(he));
+        } else {
+          console.printError("Failed with exception " + he.getMessage()
+              + "\nRemote Exception: " + he.getRemoteErrorMsg());
+          console.printInfo("\n", StringUtils.stringifyException(he),false);
+        }
+      }
+
+      setException(he);
+      return errorCode;
     } catch (Exception e) {
       console.printError("Failed with exception " + e.getMessage(), "\n"
           + StringUtils.stringifyException(e));

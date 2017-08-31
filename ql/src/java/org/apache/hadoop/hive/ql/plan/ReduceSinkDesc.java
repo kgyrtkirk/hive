@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -78,12 +79,6 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   private String outputName;
 
   /**
-   * Holds the name of the output operators
-   * that this reduce sink is outputing to.
-   */
-  private List<String> outputOperators;
-
-  /**
    * The partition columns (CLUSTER BY or DISTRIBUTE BY in Hive language).
    * Partition columns decide the reducer that the current row goes to.
    * Partition columns are not passed to reducer.
@@ -104,6 +99,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   //flag used to control how TopN handled for PTF/Windowing partitions.
   private boolean isPTFReduceSink = false; 
   private boolean skipTag; // Skip writing tags when feeding into mapjoin hashtable
+  private boolean forwarding; // Whether this RS can forward records directly instead of shuffling/sorting
 
   public static enum ReducerTraits {
     UNSET(0), // unset
@@ -188,6 +184,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       throw new RuntimeException("Clone with vectorization desc not supported");
     }
     desc.vectorDesc = null;
+    desc.outputName = outputName;
     return desc;
   }
 
@@ -437,6 +434,14 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return skipTag;
   }
 
+  public void setForwarding(boolean forwarding) {
+    this.forwarding = forwarding;
+  }
+
+  public boolean isForwarding() {
+    return forwarding;
+  }
+
   @Explain(displayName = "auto parallelism", explainLevels = { Level.EXTENDED })
   public final boolean isAutoParallel() {
     return (this.reduceTraits.contains(ReducerTraits.AUTOPARALLEL));
@@ -527,10 +532,62 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       return vectorExpressionsToStringList(vectorReduceSinkInfo.getReduceSinkValueExpressions());
     }
 
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "keyColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getKeyColumns() {
+      if (!isNative) {
+        return null;
+      }
+      int[] keyColumnMap = vectorReduceSinkInfo.getReduceSinkKeyColumnMap();
+      if (keyColumnMap == null) {
+        // Always show an array.
+        keyColumnMap = new int[0];
+      }
+      return Arrays.toString(keyColumnMap);
+    }
+
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "valueColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getValueColumns() {
+      if (!isNative) {
+        return null;
+      }
+      int[] valueColumnMap = vectorReduceSinkInfo.getReduceSinkValueColumnMap();
+      if (valueColumnMap == null) {
+        // Always show an array.
+        valueColumnMap = new int[0];
+      }
+      return Arrays.toString(valueColumnMap);
+    }
+
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "bucketColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getBucketColumns() {
+      if (!isNative) {
+        return null;
+      }
+      int[] bucketColumnMap = vectorReduceSinkInfo.getReduceSinkBucketColumnMap();
+      if (bucketColumnMap == null || bucketColumnMap.length == 0) {
+        // Suppress empty column map.
+        return null;
+      }
+      return Arrays.toString(bucketColumnMap);
+    }
+
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "partitionColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getPartitionColumns() {
+      if (!isNative) {
+        return null;
+      }
+      int[] partitionColumnMap = vectorReduceSinkInfo.getReduceSinkPartitionColumnMap();
+      if (partitionColumnMap == null || partitionColumnMap.length == 0) {
+       // Suppress empty column map.
+        return null;
+      }
+      return Arrays.toString(partitionColumnMap);
+    }
+
     private VectorizationCondition[] createNativeConditions() {
 
       boolean enabled = vectorReduceSinkDesc.getIsVectorizationReduceSinkNativeEnabled();
- 
+
       String engine = vectorReduceSinkDesc.getEngine();
       String engineInSupportedCondName =
           HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname + " " + engine + " IN " + vectorizableReduceSinkNativeEngines;
@@ -544,8 +601,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
               engineInSupported,
               engineInSupportedCondName),
           new VectorizationCondition(
-              !vectorReduceSinkDesc.getHasTopN(),
-              "No TopN"),
+              !vectorReduceSinkDesc.getHasPTFTopN(),
+              "No PTF TopN"),
           new VectorizationCondition(
               !vectorReduceSinkDesc.getHasDistinctColumns(),
               "No DISTINCT columns"),
@@ -593,11 +650,18 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return new ReduceSinkOperatorExplainVectorization(this, vectorDesc);
   }
 
-  public List<String> getOutputOperators() {
-    return outputOperators;
-  }
-
-  public void setOutputOperators(List<String> outputOperators) {
-    this.outputOperators = outputOperators;
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      ReduceSinkDesc otherDesc = (ReduceSinkDesc) other;
+      return ExprNodeDescUtils.isSame(getKeyCols(), otherDesc.getKeyCols()) &&
+          ExprNodeDescUtils.isSame(getValueCols(), otherDesc.getValueCols()) &&
+          ExprNodeDescUtils.isSame(getPartitionCols(), otherDesc.getPartitionCols()) &&
+          getTag() == otherDesc.getTag() &&
+          Objects.equals(getOrder(), otherDesc.getOrder()) &&
+          getTopN() == otherDesc.getTopN() &&
+          isAutoParallel() == otherDesc.isAutoParallel();
+    }
+    return false;
   }
 }

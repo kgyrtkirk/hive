@@ -52,6 +52,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.tez.dag.api.TezConfiguration;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -76,10 +78,9 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.eclipse.jetty.rewrite.handler.Rule;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.joda.time.DateTime;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -88,7 +89,9 @@ public class LlapServiceDriver {
   protected static final Logger LOG = LoggerFactory.getLogger(LlapServiceDriver.class.getName());
 
   private static final String[] DEFAULT_AUX_CLASSES = new String[] {
-  "org.apache.hive.hcatalog.data.JsonSerDe","org.apache.hadoop.hive.druid.DruidStorageHandler" };
+    "org.apache.hive.hcatalog.data.JsonSerDe","org.apache.hadoop.hive.druid.DruidStorageHandler",
+    "org.apache.hive.storage.jdbc.JdbcStorageHandler"
+  };
   private static final String HBASE_SERDE_CLASS = "org.apache.hadoop.hive.hbase.HBaseSerDe";
   private static final String[] NEEDED_CONFIGS = LlapDaemonConfiguration.DAEMON_CONFIGS;
   private static final String[] OPTIONAL_CONFIGS = LlapDaemonConfiguration.SSL_DAEMON_CONFIGS;
@@ -348,7 +351,15 @@ public class LlapServiceDriver {
       final Path tezDir = new Path(libDir, "tez");
       final Path udfDir = new Path(libDir, "udfs");
       final Path confPath = new Path(tmpDir, "conf");
-      lfs.mkdirs(confPath);
+      if (!lfs.mkdirs(confPath)) {
+        LOG.warn("mkdirs for " + confPath + " returned false");
+      }
+      if (!lfs.mkdirs(tezDir)) {
+        LOG.warn("mkdirs for " + tezDir + " returned false");
+      }
+      if (!lfs.mkdirs(udfDir)) {
+        LOG.warn("mkdirs for " + udfDir + " returned false");
+      }
 
       NamedCallable<Void> downloadTez = new NamedCallable<Void>("downloadTez") {
         @Override
@@ -379,6 +390,7 @@ public class LlapServiceDriver {
               LlapInputFormat.class, // llap-server
               HiveInputFormat.class, // hive-exec
               SslContextFactory.class, // hive-common (https deps)
+              Rule.class, // Jetty rewrite class
               RegistryUtils.ServiceRecordMarshal.class, // ZK registry
               // log4j2
               com.lmax.disruptor.RingBuffer.class, // disruptor
@@ -630,7 +642,7 @@ public class LlapServiceDriver {
   }
 
   private JSONObject createConfigJson(long containerSize, long cache, long xmx,
-      String java_home) throws JSONException {
+                                      String java_home) throws JSONException {
     // extract configs for processing by the python fragments in Slider
     JSONObject configs = new JSONObject();
 

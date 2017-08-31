@@ -18,9 +18,7 @@
 package org.apache.hive.service.cli.operation;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +32,8 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.log.LogDivertAppender;
+import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hive.service.cli.FetchOrientation;
@@ -63,7 +63,6 @@ public abstract class Operation {
   protected volatile Future<?> backgroundHandle;
   protected OperationLog operationLog;
   protected boolean isOperationLogEnabled;
-  protected Map<String, String> confOverlay = new HashMap<String, String>();
 
   private long operationTimeout;
   private volatile long lastAccessTime;
@@ -90,9 +89,6 @@ public abstract class Operation {
   protected Operation(HiveSession parentSession,
       Map<String, String> confOverlay, OperationType opType, boolean isAsyncQueryState) {
     this.parentSession = parentSession;
-    if (confOverlay != null) {
-      this.confOverlay = confOverlay;
-    }
     this.opHandle = new OperationHandle(opType, parentSession.getProtocolVersion());
     beginTime = System.currentTimeMillis();
     lastAccessTime = beginTime;
@@ -101,7 +97,12 @@ public abstract class Operation {
 
     currentStateScope = updateOperationStateMetrics(null, MetricsConstant.OPERATION_PREFIX,
         MetricsConstant.COMPLETED_OPERATION_PREFIX, state);
-    queryState = new QueryState(parentSession.getHiveConf(), confOverlay, isAsyncQueryState);
+    queryState = new QueryState.Builder()
+                     .withConfOverlay(confOverlay)
+                     .withRunAsync(isAsyncQueryState)
+                     .withGenerateNewQueryId(true)
+                     .withHiveConf(parentSession.getHiveConf())
+                     .build();
   }
 
   public Future<?> getBackgroundHandle() {
@@ -211,14 +212,7 @@ public abstract class Operation {
       isOperationLogEnabled = true;
 
       // create OperationLog object with above log file
-      try {
-        operationLog = new OperationLog(opHandle.toString(), operationLogFile, parentSession.getHiveConf());
-      } catch (FileNotFoundException e) {
-        LOG.warn("Unable to instantiate OperationLog object for operation: " +
-            opHandle, e);
-        isOperationLogEnabled = false;
-        return;
-      }
+      operationLog = new OperationLog(opHandle.toString(), operationLogFile, parentSession.getHiveConf());
     }
   }
 
@@ -271,6 +265,10 @@ public abstract class Operation {
       } else {
         operationLog.close();
       }
+      // stop the appenders for the operation log
+      String queryId = queryState.getQueryId();
+      LogUtils.stopQueryAppender(LogDivertAppender.QUERY_ROUTING_APPENDER, queryId);
+      LogUtils.stopQueryAppender(LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId);
     }
   }
 
