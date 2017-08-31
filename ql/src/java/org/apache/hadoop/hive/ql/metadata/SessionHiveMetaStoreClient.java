@@ -558,7 +558,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     StatsSetupConst.setBasicStatsState(props, StatsSetupConst.TRUE);
     environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
     //then invalidate column stats
-    StatsSetupConst.clearColumnStatsState(props);
+    StatsSetupConst.clearColumnStatsState(props,false);
     return statsPresent;
   }
 

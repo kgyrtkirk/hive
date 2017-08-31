@@ -2239,7 +2239,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       StatsSetupConst.setBasicStatsState(props, StatsSetupConst.TRUE);
       environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
       //then invalidate column stats
-      StatsSetupConst.clearColumnStatsState(props);
+      StatsSetupConst.clearColumnStatsState(props, false);
       return;
     }
 
