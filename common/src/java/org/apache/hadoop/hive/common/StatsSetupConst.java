@@ -198,6 +198,81 @@ public class StatsSetupConst {
 
   };
 
+  public static class BasicStats {
+    private ColumnStatsAccurate statsAcc;
+    public long numFiles, rowCount, totalSize, rawDataSize;
+
+    private BasicStats(Map<String, String> params) {
+      if (params == null) {
+        statsAcc = new ColumnStatsAccurate();
+      } else {
+        statsAcc = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
+        numFiles = Long.parseLong(params.get(NUM_FILES));
+        rowCount = Long.parseLong(params.get(ROW_COUNT));
+        totalSize = Long.parseLong(params.get(TOTAL_SIZE));
+        rawDataSize = Long.parseLong(params.get(RAW_DATA_SIZE));
+        assert (supportedStats.length == 4);
+      }
+    }
+
+    public boolean areBasicStatsUptoDate() {
+      return statsAcc.basicStats;
+    }
+
+    public boolean areColumnStatsUptoDate(String colName) {
+      return statsAcc.columnStats.containsKey(colName);
+    }
+
+    public void setBasicStatsState(boolean state) {
+      statsAcc.basicStats = state;
+    }
+
+    public void setColumnStatsState(List<String> colNames) {
+      if (colNames == null) {
+        return;
+      }
+
+      for (String colName : colNames) {
+        if (!statsAcc.columnStats.containsKey(colName)) {
+          statsAcc.columnStats.put(colName, true);
+        }
+      }
+    }
+
+    public void clearColumnStatsState() {
+      statsAcc.columnStats.clear();
+    }
+
+    public void removeColumnStatsState(List<String> colNames) {
+      for (String string : colNames) {
+        statsAcc.columnStats.remove(string);
+      }
+    }
+
+    public void saveBasicStats(Map<String, String> params) {
+      if (!statsAcc.basicStats) {
+        params.remove(COLUMN_STATS_ACCURATE);
+      } else {
+        try {
+          params.put(COLUMN_STATS_ACCURATE,
+              ColumnStatsAccurate.objectWriter.writeValueAsString(statsAcc));
+          params.put(NUM_FILES, Long.toString(numFiles));
+          params.put(ROW_COUNT, Long.toString(rowCount));
+          params.put(TOTAL_SIZE, Long.toString(totalSize));
+          params.put(RAW_DATA_SIZE, Long.toString(rawDataSize));
+        } catch (JsonProcessingException e) {
+          throw new RuntimeException("can't serialize column stats", e);
+        }
+
+      }
+    }
+
+  }
+
+  public static BasicStats parseBasicStats(Map<String, String> params) {
+     return new BasicStats(params);
+  }
+
   public static boolean areBasicStatsUptoDate(Map<String, String> params) {
     if (params == null) {
       return false;
