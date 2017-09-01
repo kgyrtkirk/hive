@@ -58,6 +58,7 @@ import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.StatsSetupConst.BasicStats;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -3375,27 +3376,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         if (tbl.isPartitioned() && part == null) {
           // No partitioned specified for partitioned table, lets fetch all.
           Map<String,String> tblProps = tbl.getParameters() == null ? new HashMap<String,String>() : tbl.getParameters();
-          Map<String, Long> valueMap = new HashMap<>();
-          Boolean statState= true;
-          for (String stat : StatsSetupConst.supportedStats) {
-            valueMap.put(stat, 0L);
-          }
+          BasicStats bs = StatsSetupConst.BasicStats.createEmpty();
+          bs.setBasicStatsState(true);
+          
           PartitionIterable parts = new PartitionIterable(db, tbl, null, conf.getIntVar(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
           int numParts = 0;
           for (Partition partition : parts) {
-            Map<String, String> props = partition.getParameters();
-            statState = statState && StatsSetupConst.areBasicStatsUptoDate(props);
-            for (String stat : StatsSetupConst.supportedStats) {
-              if (props != null && props.get(stat) != null) {
-                valueMap.put(stat, valueMap.get(stat) + Long.parseLong(props.get(stat)));
-              }
-            }
+            BasicStats bsPart = StatsSetupConst.parseBasicStats(partition.getParameters());
+            bs.merge(bsPart);
             numParts++;
           }
-          StatsSetupConst.setBasicStatsState(tblProps, Boolean.toString(statState));
-          for (String stat : StatsSetupConst.supportedStats) {
-            tblProps.put(stat, valueMap.get(stat).toString());
-          }
+          bs.saveBasicStats(tblProps);
           tblProps.put(StatsSetupConst.NUM_PARTITIONS, Integer.toString(numParts));
           tbl.setParameters(tblProps);
         }

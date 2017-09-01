@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.StatsSetupConst.BasicStats;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -265,6 +266,10 @@ public class StatsSetupConst {
         }
 
       }
+    }
+
+    public static BasicStats createEmpty() {
+      return new BasicStats(null);
     }
 
   }
