@@ -29,7 +29,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.StatsSetupConst.BasicStats;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -2981,10 +2980,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           if (desc.getPartParams() == null) {
             desc.setPartParams(new HashMap<String, String>());
           }
-          BasicStats stats = StatsSetupConst.parseBasicStats(desc.getPartParams());
-          stats.setBasicStatsState(true);
-          stats.setColumnStatsState(MetaStoreUtils.getColumnNames(tab.getCols()));
-          stats.saveBasicStats(desc.getPartParams());
+          StatsSetupConst.setStatsStateForCreateTable(desc.getPartParams(),
+              MetaStoreUtils.getColumnNames(tab.getCols()), StatsSetupConst.TRUE);
         }
       }
     }

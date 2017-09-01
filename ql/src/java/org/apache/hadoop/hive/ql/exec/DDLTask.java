@@ -58,7 +58,6 @@ import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.StatsSetupConst.BasicStats;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -4593,10 +4592,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     if (crtTbl.getLocation() == null && !tbl.isPartitioned()
         && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-      BasicStats stats = StatsSetupConst.parseBasicStats(tbl.getTTable().getParameters());
-      stats.setBasicStatsState(true);
-      stats.setColumnStatsState(MetaStoreUtils.getColumnNames(tbl.getCols()));
-      stats.saveBasicStats(tbl.getTTable().getParameters());
+      StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),
+          MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
     }
 
     // create the table
