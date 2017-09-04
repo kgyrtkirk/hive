@@ -187,24 +187,6 @@ public class StatsSetupConst {
       }
     }
 
-    static class StringSerializer extends JsonSerializer<String> {
-      
-      @Override
-      public void serialize(String value, JsonGenerator jsonGenerator,
-          SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
-        jsonGenerator.writeString(value);
-      }
-    }
-    
-    static class StringDeserializer extends JsonDeserializer<String> {
-      
-      public String deserialize(JsonParser jsonParser,
-          DeserializationContext deserializationContext)
-              throws IOException, JsonProcessingException {
-        return jsonParser.getValueAsString();
-      }
-    }
-
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     @JsonSerialize(using = BooleanSerializer.class)
     @JsonDeserialize(using = BooleanDeserializer.class)
@@ -213,8 +195,6 @@ public class StatsSetupConst {
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @JsonProperty(COLUMN_STATS)
-    @JsonSerialize(contentUsing = StringSerializer.class)
-    @JsonDeserialize(contentUsing = StringDeserializer.class)
     TreeMap<String, String> columnStats = new TreeMap<>();
 
   };
@@ -331,7 +311,7 @@ public class StatsSetupConst {
     setBasicStatsState(params, setting);
     setColumnStatsState(params, cols);
   }
-  
+
   private static ColumnStatsAccurate parseStatsAcc(String statsAcc) {
     if (statsAcc == null) {
       return new ColumnStatsAccurate();
