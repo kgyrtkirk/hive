@@ -30,3 +30,5 @@ desc formatted nzhang_part14 partition(ds='1', hr='3');
 
 desc formatted nzhang_part14 partition(ds='2', hr='1');
 
+desc formatted nzhang_part14;
+
