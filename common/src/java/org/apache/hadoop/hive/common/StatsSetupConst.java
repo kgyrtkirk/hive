@@ -304,9 +304,9 @@ public class StatsSetupConst {
   public static void setStatsStateForCreateTable(Map<String, String> params,
       List<String> cols, String setting) {
     if (TRUE.equals(setting)) {
-      for (String stat : StatsSetupConst.supportedStats) {
-        params.put(stat, "0");
-      }
+//      for (String stat : StatsSetupConst.supportedStats) {
+//        params.put(stat, "0");
+//      }
     }
     setBasicStatsState(params, setting);
     setColumnStatsState(params, cols);

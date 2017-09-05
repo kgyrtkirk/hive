@@ -103,10 +103,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean1\":\"true\",\"cboolean2\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"cstring1\":\"true\",\"cstring2\":\"true\",\"ctimestamp1\":\"true\",\"ctimestamp2\":\"true\",\"ctinyint\":\"true\"}}
-	numFiles            	0                   
-	numRows             	0                   
-	rawDataSize         	0                   
-	totalSize           	0                   
 	transactional       	true                
 #### A masked pattern was here ####
 	 	 
@@ -169,8 +165,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
 	totalSize           	295483              
 	transactional       	true                
 #### A masked pattern was here ####
@@ -362,8 +356,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
 	totalSize           	1554                
 	transactional       	true                
 #### A masked pattern was here ####
@@ -484,8 +476,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	2                   
-	numRows             	0                   
-	rawDataSize         	0                   
 	totalSize           	3109                
 	transactional       	true                
 #### A masked pattern was here ####
@@ -604,8 +594,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	3                   
-	numRows             	0                   
-	rawDataSize         	0                   
 	totalSize           	298592              
 	transactional       	true                
 #### A masked pattern was here ####
@@ -701,10 +689,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
-	numFiles            	0                   
-	numRows             	0                   
-	rawDataSize         	0                   
-	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -832,8 +816,6 @@ Table:              	sp
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
 	totalSize           	5812                
 #### A masked pattern was here ####
 	 	 
@@ -938,8 +920,6 @@ Table:              	sp
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	2                   
-	numRows             	0                   
-	rawDataSize         	0                   
 	totalSize           	5820                
 #### A masked pattern was here ####
 	 	 
