@@ -1742,7 +1742,7 @@ public class Hive {
       }
 
       // column stats will be inaccurate
-      StatsSetupConst.clearColumnStatsState(newTPart.getParameters(),false);
+      StatsSetupConst.clearColumnStatsState(newTPart.getParameters(),hasFollowingColumnStatsTaskNeedMerge);
 
       // recreate the partition if it existed before
       if (isSkewedStoreAsSubdir) {
