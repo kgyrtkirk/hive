@@ -6,6 +6,14 @@ POSTHOOK: query: create table t_input (c1 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_input
+PREHOOK: query: create table c (c1 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@c
+POSTHOOK: query: create table c (c1 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@c
 PREHOOK: query: insert into t_input values (1),(2),(3)
 PREHOOK: type: QUERY
 PREHOOK: Output: default@t_input
@@ -29,6 +37,109 @@ POSTHOOK: query: create table b like t_input
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@b
+PREHOOK: query: insert into c select * from t_input
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_input
+PREHOOK: Output: default@c
+POSTHOOK: query: insert into c select * from t_input
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_input
+POSTHOOK: Output: default@c
+POSTHOOK: Lineage: c.c1 SIMPLE [(t_input)t_input.FieldSchema(name:c1, type:int, comment:null), ]
+PREHOOK: query: describe formatted a
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@a
+POSTHOOK: query: describe formatted a
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@a
+# col_name            	data_type           	comment             
+	 	 
+c1                  	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\"}}
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@b
+POSTHOOK: query: describe formatted b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@b
+# col_name            	data_type           	comment             
+	 	 
+c1                  	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\"}}
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@c
+POSTHOOK: query: describe formatted c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@c
+# col_name            	data_type           	comment             
+	 	 
+c1                  	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\"}}
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	3                   
+	totalSize           	6                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: from t_input
 insert overwrite table a select *
 insert into table b select *
@@ -96,7 +207,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\"}}
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	3                   

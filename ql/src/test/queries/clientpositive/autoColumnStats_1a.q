@@ -13,11 +13,19 @@ set hive.optimize.bucketingsorting=false;
 
 
 create table t_input (c1 int);
+create table c (c1 int);
 
 insert into t_input values (1),(2),(3);
 
+
 create table a like t_input;
 create table b like t_input;
+
+insert into c select * from t_input;
+
+describe formatted a;
+describe formatted b;
+describe formatted c;
 
 from t_input
 insert overwrite table a select *

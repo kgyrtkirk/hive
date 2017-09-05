@@ -256,14 +256,17 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     return false;
   }
 
-  public boolean hasFollowingColumnStatsTaskNeedMerge() {
+  public boolean hasFollowingColumnStatsTaskNeedMerge(String tableName) {
     Queue<Task<? extends Serializable>> tasks = new LinkedList<>();
     tasks.offer(this);
     Task<? extends Serializable> t = null;
     while (!tasks.isEmpty()) {
       t = tasks.poll();
       if (t instanceof ColumnStatsTask) {
-        break;
+        ColumnStatsTask columnStatsTask = (ColumnStatsTask) t;
+        if (columnStatsTask.getWork().getColStats().getTableName().equals(tableName)) {
+          break;
+        }
       } else if (t.getNumChild() != 0) {
         for (Task<? extends Serializable> child : t.getChildTasks()) {
           tasks.offer(child);
@@ -284,8 +287,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
         return 0;
       }
-      boolean hasFollowingStatsTask = hasFollowingStatsTask();
-      boolean hasFollowingColumnStatsTaskNeedMerge = hasFollowingColumnStatsTaskNeedMerge();
       Hive db = getHive();
 
       // Do any hive related operations like moving tables and files
@@ -318,6 +319,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       // Next we do this for tables and partitions
       LoadTableDesc tbd = work.getLoadTableWork();
       if (tbd != null) {
+        boolean hasFollowingStatsTask = hasFollowingStatsTask();
+        boolean hasFollowingColumnStatsTaskNeedMerge = hasFollowingColumnStatsTaskNeedMerge(tbd.getTable().getTableName());
+        
         StringBuilder mesg = new StringBuilder("Loading data to table ")
             .append( tbd.getTable().getTableName());
         if (tbd.getPartitionSpec().size() > 0) {
