@@ -1759,11 +1759,6 @@ public class Hive {
         StatsSetupConst.setBasicStatsState(newTPart.getParameters(), StatsSetupConst.FALSE);
       }
       if (oldPart == null) {
-        newTPart.getTPartition().setParameters(new HashMap<String,String>());
-        if (this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-          StatsSetupConst.setStatsStateForCreateTable(newTPart.getParameters(), null,
-              StatsSetupConst.TRUE);
-        }
         MetaStoreUtils.populateQuickStats(HiveStatsUtils.getFileStatusRecurse(newPartPath, -1, newPartPath.getFileSystem(conf)), newTPart.getParameters());
         try {
           LOG.debug("Adding new partition " + newTPart.getSpec());
