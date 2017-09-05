@@ -50,6 +50,56 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
+PREHOOK: query: analyze table nzhang_part14 partition (ds,hr) compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_part14
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table nzhang_part14 partition (ds,hr) compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_part14
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted nzhang_part14
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_part14
+POSTHOOK: query: desc formatted nzhang_part14
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_part14
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: insert into table nzhang_part14 partition(ds, hr)
 select key, value, ds, hr from (
   select '1' as ds,'3' as hr,'k' as key, 'v' as value
