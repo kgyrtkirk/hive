@@ -146,10 +146,13 @@ public class Partition implements Serializable {
     
     Map<String, String> emptyParameters = new HashMap<String, String>();
     tpart.setParameters(emptyParameters);
-    if (location == null
-        && SessionState.getSessionConf().getBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER)) {
-      StatsSetupConst.setStatsStateForCreateTable(tpart.getParameters(),
-          MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
+    if (location == null) {
+      if(SessionState.getSessionConf().getBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER)) {
+        StatsSetupConst.setStatsStateForCreateTable(tpart.getParameters(),
+            MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
+      }else{
+        StatsSetupConst.setBasicStatsState(tpart.getParameters(), StatsSetupConst.TRUE);
+      }
     }
     return tpart;
   }

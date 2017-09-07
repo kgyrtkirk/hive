@@ -29,6 +29,6 @@ F=${1:-/tmp/__a}
 
 cat ${F:-} | grep CliDriver | sed -E 's/.*(Test[^\.]+)\..+\[(.+)\].*/\1	\2.q/' > /tmp/__b
 cat /tmp/__b | cut -f 1 | sort | uniq | while read d;do
-	q="`grep $d /tmp/__b | cut -f 2 |paste -d, -s`"
+	q="`grep $d /tmp/__b | cut -f 2 |sort|uniq|paste -d, -s`"
 	echo " mvn install -Pitests -pl itests/qtest -T9 -q -Dtest=$d -Dqfile=$q -Dtest.output.overwrite"
 done
