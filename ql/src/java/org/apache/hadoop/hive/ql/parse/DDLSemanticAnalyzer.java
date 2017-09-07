@@ -2980,12 +2980,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           if (desc.getPartParams() == null) {
             desc.setPartParams(new HashMap<String, String>());
           }
-          if (desc.getCols() != null) {
-            StatsSetupConst.setStatsStateForCreateTable(desc.getPartParams(),
-                MetaStoreUtils.getColumnNames(desc.getCols()), StatsSetupConst.TRUE);
+          List<String> colNames = MetaStoreUtils.getColumnNames(desc.getCols() != null? desc.getCols(): tab.getCols());
+          if (this.conf.getBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER)) {
+            StatsSetupConst.setStatsStateForCreateTable(desc.getPartParams(), colNames,
+                StatsSetupConst.TRUE);
           } else {
-            StatsSetupConst.setStatsStateForCreateTable(desc.getPartParams(),
-                MetaStoreUtils.getColumnNames(tab.getCols()), StatsSetupConst.TRUE);
+            StatsSetupConst.setBasicStatsState(desc.getPartParams(), StatsSetupConst.TRUE);
           }
         }
       }

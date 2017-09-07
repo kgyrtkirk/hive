@@ -4779,58 +4779,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  private List<Path> getLocations(Hive db, Table table, Map<String, String> partSpec)
-      throws HiveException, InvalidOperationException {
-    List<Path> locations = new ArrayList<Path>();
-    if (partSpec == null) {
-      if (table.isPartitioned()) {
-        for (Partition partition : db.getPartitions(table)) {
-          locations.add(partition.getDataLocation());
-          EnvironmentContext environmentContext = new EnvironmentContext();
-          if (needToUpdateStats(partition.getParameters(), environmentContext)) {
-            db.alterPartition(table.getDbName(), table.getTableName(), partition, environmentContext);
-          }
-        }
-      } else {
-        locations.add(table.getPath());
-        EnvironmentContext environmentContext = new EnvironmentContext();
-        if (needToUpdateStats(table.getParameters(), environmentContext)) {
-          db.alterTable(table.getDbName()+"."+table.getTableName(), table, environmentContext);
-        }
-      }
-    } else {
-      for (Partition partition : db.getPartitionsByNames(table, partSpec)) {
-        locations.add(partition.getDataLocation());
-        EnvironmentContext environmentContext = new EnvironmentContext();
-        if (needToUpdateStats(partition.getParameters(), environmentContext)) {
-          db.alterPartition(table.getDbName(), table.getTableName(), partition, environmentContext);
-        }
-      }
-    }
-    return locations;
-  }
-
-  private boolean needToUpdateStats(Map<String,String> props, EnvironmentContext environmentContext) {
-    if (null == props) {
-      return false;
-    }
-    boolean statsPresent = false;
-    for (String stat : StatsSetupConst.supportedStats) {
-      String statVal = props.get(stat);
-      if (statVal != null && Long.parseLong(statVal) > 0) {
-        statsPresent = true;
-        //In the case of truncate table, we set the stats to be 0.
-        props.put(stat, "0");
-      }
-    }
-    //first set basic stats to true
-    StatsSetupConst.setBasicStatsState(props, StatsSetupConst.TRUE);
-    environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
-    //then invalidate column stats
-    StatsSetupConst.clearColumnStatsState(props, false);
-    return statsPresent;
-  }
-
   @Override
   public StageType getType() {
     return StageType.DDL;
