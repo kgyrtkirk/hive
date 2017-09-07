@@ -141,7 +141,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key1":"true","key2":"true","value1":"true","value2":"true"}}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
                     column.name.delimiter ,
                     columns key1,value1,key2,value2
@@ -149,13 +149,9 @@ STAGE PLANS:
                     columns.types int:string:int:string
 #### A masked pattern was here ####
                     name default.dest1
-                    numFiles 0
-                    numRows 0
-                    rawDataSize 0
                     serialization.ddl struct dest1 { i32 key1, string value1, i32 key2, string value2}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.dest1
@@ -172,7 +168,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key1":"true","key2":"true","value1":"true","value2":"true"}}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
                 column.name.delimiter ,
                 columns key1,value1,key2,value2
@@ -180,13 +176,9 @@ STAGE PLANS:
                 columns.types int:string:int:string
 #### A masked pattern was here ####
                 name default.dest1
-                numFiles 0
-                numRows 0
-                rawDataSize 0
                 serialization.ddl struct dest1 { i32 key1, string value1, i32 key2, string value2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest1

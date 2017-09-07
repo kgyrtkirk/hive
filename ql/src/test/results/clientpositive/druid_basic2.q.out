@@ -40,14 +40,10 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"__time\":\"true\",\"added\":\"true\",\"anonymous\":\"true\",\"count\":\"true\",\"deleted\":\"true\",\"delta\":\"true\",\"language\":\"true\",\"namespace\":\"true\",\"newpage\":\"true\",\"page\":\"true\",\"robot\":\"true\",\"unpatrolled\":\"true\",\"user\":\"true\",\"variation\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	druid.datasource    	wikipedia           
-	numFiles            	0                   
-	numRows             	0                   
-	rawDataSize         	0                   
 	storage_handler     	org.apache.hadoop.hive.druid.QTestDruidStorageHandler
-	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -266,7 +262,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
             output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               EXTERNAL TRUE
               bucket_count -1
               column.name.delimiter ,
@@ -278,21 +274,17 @@ STAGE PLANS:
               druid.query.type select
 #### A masked pattern was here ####
               name default.druid_table_1
-              numFiles 0
-              numRows 0
-              rawDataSize 0
               serialization.ddl struct druid_table_1 { timestamp __time, string robot, string namespace, string anonymous, string unpatrolled, string page, string language, string newpage, string user, float count, float added, float delta, float variation, float deleted}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.druid.QTestDruidSerDe
               storage_handler org.apache.hadoop.hive.druid.QTestDruidStorageHandler
-              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
           
               input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
               output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 EXTERNAL TRUE
                 bucket_count -1
                 column.name.delimiter ,
@@ -304,14 +296,10 @@ STAGE PLANS:
                 druid.query.type select
 #### A masked pattern was here ####
                 name default.druid_table_1
-                numFiles 0
-                numRows 0
-                rawDataSize 0
                 serialization.ddl struct druid_table_1 { timestamp __time, string robot, string namespace, string anonymous, string unpatrolled, string page, string language, string newpage, string user, float count, float added, float delta, float variation, float deleted}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.druid.QTestDruidSerDe
                 storage_handler org.apache.hadoop.hive.druid.QTestDruidStorageHandler
-                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
               name: default.druid_table_1
@@ -434,7 +422,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
             output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               EXTERNAL TRUE
               bucket_count -1
               column.name.delimiter ,
@@ -446,21 +434,17 @@ STAGE PLANS:
               druid.query.type select
 #### A masked pattern was here ####
               name default.druid_table_1
-              numFiles 0
-              numRows 0
-              rawDataSize 0
               serialization.ddl struct druid_table_1 { timestamp __time, string robot, string namespace, string anonymous, string unpatrolled, string page, string language, string newpage, string user, float count, float added, float delta, float variation, float deleted}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.druid.QTestDruidSerDe
               storage_handler org.apache.hadoop.hive.druid.QTestDruidStorageHandler
-              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
           
               input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
               output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 EXTERNAL TRUE
                 bucket_count -1
                 column.name.delimiter ,
@@ -472,14 +456,10 @@ STAGE PLANS:
                 druid.query.type select
 #### A masked pattern was here ####
                 name default.druid_table_1
-                numFiles 0
-                numRows 0
-                rawDataSize 0
                 serialization.ddl struct druid_table_1 { timestamp __time, string robot, string namespace, string anonymous, string unpatrolled, string page, string language, string newpage, string user, float count, float added, float delta, float variation, float deleted}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.druid.QTestDruidSerDe
                 storage_handler org.apache.hadoop.hive.druid.QTestDruidStorageHandler
-                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
               name: default.druid_table_1
@@ -581,7 +561,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
             output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               EXTERNAL TRUE
               bucket_count -1
               column.name.delimiter ,
@@ -593,21 +573,17 @@ STAGE PLANS:
               druid.query.type groupBy
 #### A masked pattern was here ####
               name default.druid_table_1
-              numFiles 0
-              numRows 0
-              rawDataSize 0
               serialization.ddl struct druid_table_1 { timestamp __time, string robot, string namespace, string anonymous, string unpatrolled, string page, string language, string newpage, string user, float count, float added, float delta, float variation, float deleted}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.druid.QTestDruidSerDe
               storage_handler org.apache.hadoop.hive.druid.QTestDruidStorageHandler
-              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
           
               input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
               output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 EXTERNAL TRUE
                 bucket_count -1
                 column.name.delimiter ,
@@ -619,14 +595,10 @@ STAGE PLANS:
                 druid.query.type groupBy
 #### A masked pattern was here ####
                 name default.druid_table_1
-                numFiles 0
-                numRows 0
-                rawDataSize 0
                 serialization.ddl struct druid_table_1 { timestamp __time, string robot, string namespace, string anonymous, string unpatrolled, string page, string language, string newpage, string user, float count, float added, float delta, float variation, float deleted}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.druid.QTestDruidSerDe
                 storage_handler org.apache.hadoop.hive.druid.QTestDruidStorageHandler
-                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
               name: default.druid_table_1
@@ -963,7 +935,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
             output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               EXTERNAL TRUE
               bucket_count -1
               column.name.delimiter ,
@@ -973,21 +945,17 @@ STAGE PLANS:
               druid.datasource wikipedia
 #### A masked pattern was here ####
               name default.druid_table_1
-              numFiles 0
-              numRows 0
-              rawDataSize 0
               serialization.ddl struct druid_table_1 { timestamp __time, string robot, string namespace, string anonymous, string unpatrolled, string page, string language, string newpage, string user, float count, float added, float delta, float variation, float deleted}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.druid.QTestDruidSerDe
               storage_handler org.apache.hadoop.hive.druid.QTestDruidStorageHandler
-              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
           
               input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
               output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 EXTERNAL TRUE
                 bucket_count -1
                 column.name.delimiter ,
@@ -997,14 +965,10 @@ STAGE PLANS:
                 druid.datasource wikipedia
 #### A masked pattern was here ####
                 name default.druid_table_1
-                numFiles 0
-                numRows 0
-                rawDataSize 0
                 serialization.ddl struct druid_table_1 { timestamp __time, string robot, string namespace, string anonymous, string unpatrolled, string page, string language, string newpage, string user, float count, float added, float delta, float variation, float deleted}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.druid.QTestDruidSerDe
                 storage_handler org.apache.hadoop.hive.druid.QTestDruidStorageHandler
-                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
               name: default.druid_table_1

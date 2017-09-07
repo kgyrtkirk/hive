@@ -320,11 +320,7 @@ Database:           	db1
 Table:              	t1                  	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key1\":\"true\",\"value1\":\"true\"}}
-	numFiles            	0                   
-	numRows             	0                   
-	rawDataSize         	0                   
-	totalSize           	0                   
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -394,11 +390,7 @@ Database:           	db1
 Table:              	t1                  	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key1\":\"true\",\"value1\":\"true\"}}
-	numFiles            	0                   
-	numRows             	0                   
-	rawDataSize         	0                   
-	totalSize           	0                   
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
