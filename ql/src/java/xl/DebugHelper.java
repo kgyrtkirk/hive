@@ -2,7 +2,7 @@ package xl;
 
 public class DebugHelper {
 
-  public static String INTEREST_PATTERN = "insert overwrite table a sel";
+  public static String INTEREST_PATTERN = "ALTER TABLE anaylyze_external ADD PARTITION";
   public static String query = null;
   public static boolean interesting = false;
   public static int i0 = 0;

@@ -36,6 +36,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -144,8 +145,10 @@ public class Partition implements Serializable {
     
     Map<String, String> emptyParameters = new HashMap<String, String>();
     tpart.setParameters(emptyParameters);
-    StatsSetupConst.setStatsStateForCreateTable(tpart.getParameters(),
-        MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
+    if (tbl.getTableType() == TableType.MANAGED_TABLE) {
+      StatsSetupConst.setStatsStateForCreateTable(tpart.getParameters(),
+          MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
+    }
     return tpart;
   }
 
