@@ -146,10 +146,8 @@ Database:           	default
 Table:              	nzhang_part14       	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	1                   
-	numRows             	1                   
-	rawDataSize         	3                   
 	totalSize           	4                   
 #### A masked pattern was here ####
 	 	 
@@ -186,10 +184,8 @@ Database:           	default
 Table:              	nzhang_part14       	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	1                   
-	numRows             	1                   
-	rawDataSize         	3                   
 	totalSize           	4                   
 #### A masked pattern was here ####
 	 	 
@@ -227,11 +223,10 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
 	numPartitions       	2                   
-	numRows             	2                   
-	rawDataSize         	6                   
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	8                   
 #### A masked pattern was here ####
 	 	 

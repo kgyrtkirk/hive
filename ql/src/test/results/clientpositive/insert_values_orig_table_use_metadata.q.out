@@ -832,8 +832,6 @@ Table:              	sp
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
 	totalSize           	5812                
 #### A masked pattern was here ####
 	 	 
@@ -938,8 +936,6 @@ Table:              	sp
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	2                   
-	numRows             	0                   
-	rawDataSize         	0                   
 	totalSize           	5820                
 #### A masked pattern was here ####
 	 	 

@@ -207,10 +207,8 @@ Database:           	default
 Table:              	nzhang_part14       	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	1                   
-	numRows             	2                   
-	rawDataSize         	6                   
 	totalSize           	8                   
 #### A masked pattern was here ####
 	 	 
@@ -257,10 +255,8 @@ Database:           	default
 Table:              	nzhang_part14       	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"value\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"value\":\"true\"}}
 	numFiles            	1                   
-	numRows             	2                   
-	rawDataSize         	6                   
 	totalSize           	8                   
 #### A masked pattern was here ####
 	 	 
@@ -297,10 +293,8 @@ Database:           	default
 Table:              	nzhang_part14       	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	1                   
-	numRows             	2                   
-	rawDataSize         	8                   
 	totalSize           	10                  
 #### A masked pattern was here ####
 	 	 
@@ -367,10 +361,7 @@ Database:           	default
 Table:              	nzhang_part14       	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"value\":\"true\"}}
 	numFiles            	2                   
-	numRows             	4                   
-	rawDataSize         	12                  
 	totalSize           	16                  
 #### A masked pattern was here ####
 	 	 
@@ -407,10 +398,7 @@ Database:           	default
 Table:              	nzhang_part14       	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
-	numRows             	4                   
-	rawDataSize         	16                  
 	totalSize           	20                  
 #### A masked pattern was here ####
 	 	 

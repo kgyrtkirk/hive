@@ -322,6 +322,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         boolean hasFollowingStatsTask = hasFollowingStatsTask();
         boolean hasFollowingColumnStatsTaskNeedMerge = hasFollowingColumnStatsTaskNeedMerge(tbd.getTable().getTableName());
         
+
         StringBuilder mesg = new StringBuilder("Loading data to table ")
             .append( tbd.getTable().getTableName());
         if (tbd.getPartitionSpec().size() > 0) {

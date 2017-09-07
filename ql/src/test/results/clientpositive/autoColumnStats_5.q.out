@@ -169,10 +169,8 @@ Database:           	default
 Table:              	partitioned1        	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	1                   
-	numRows             	4                   
-	rawDataSize         	40                  
 	totalSize           	44                  
 #### A masked pattern was here ####
 	 	 
@@ -193,9 +191,9 @@ POSTHOOK: query: desc formatted partitioned1 partition(part=1) a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partitioned1
 col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment	bitvector
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 	 
-a                   	int                 	1                   	4                   	0                   	4                   	                    	                    	                    	                    	HL                  	from deserializer   
+a                   	int                 	from deserializer   	 	 	 	 	 	 	 	 	 
 PREHOOK: query: alter table partitioned1 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@partitioned1
@@ -227,10 +225,8 @@ Database:           	default
 Table:              	partitioned1        	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	1                   
-	numRows             	4                   
-	rawDataSize         	40                  
 	totalSize           	44                  
 #### A masked pattern was here ####
 	 	 
@@ -411,10 +407,8 @@ Database:           	default
 Table:              	partitioned1        	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	1                   
-	numRows             	4                   
-	rawDataSize         	56                  
 	totalSize           	60                  
 #### A masked pattern was here ####
 	 	 
@@ -435,9 +429,9 @@ POSTHOOK: query: desc formatted partitioned1 partition(part=2) c
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partitioned1
 col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment	bitvector
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 	 
-c                   	int                 	10                  	40                  	0                   	4                   	                    	                    	                    	                    	HL                  	from deserializer   
+c                   	int                 	from deserializer   	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain insert into table partitioned1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain insert into table partitioned1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
@@ -603,10 +597,7 @@ Database:           	default
 Table:              	partitioned1        	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
 	numFiles            	2                   
-	numRows             	6                   
-	rawDataSize         	78                  
 	totalSize           	84                  
 #### A masked pattern was here ####
 	 	 
@@ -627,9 +618,9 @@ POSTHOOK: query: desc formatted partitioned1 partition(part=1) a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partitioned1
 col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment	bitvector
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 	 
-a                   	int                 	1                   	6                   	0                   	6                   	                    	                    	                    	                    	HL                  	from deserializer   
+a                   	int                 	from deserializer   	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted partitioned1 partition(part=1) c
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partitioned1
