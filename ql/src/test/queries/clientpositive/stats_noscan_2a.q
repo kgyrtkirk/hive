@@ -1,4 +1,9 @@
 dfs -cp ${system:hive.root}/data/files/ext_test ${system:test.tmp.dir}/analyze_external;
+dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/texternal/2008-01-01;
+
+create external table t0 (key string,val string) location 'pfile://${system:test.tmp.dir}/texternal/2008-01-01';
+insert into t0 values ('a','b'),('a','b'), ('a','b');
+drop table t0;
 
 -- create external table
 CREATE external TABLE anaylyze_external (key string, val string) partitioned by (insertdate string) LOCATION "pfile://${system:test.tmp.dir}/texternal"; 
