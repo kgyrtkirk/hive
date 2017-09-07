@@ -376,10 +376,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.spart
                     numFiles 1
-                    numRows 0
                     partition_columns ds/hr
                     partition_columns.types string:string
-                    rawDataSize 0
                     serialization.ddl struct spart { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -423,10 +421,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.spart
                     numFiles 1
-                    numRows 0
                     partition_columns ds/hr
                     partition_columns.types string:string
-                    rawDataSize 0
                     serialization.ddl struct spart { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -793,10 +789,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.spart
                     numFiles 1
-                    numRows 0
                     partition_columns ds/hr
                     partition_columns.types string:string
-                    rawDataSize 0
                     serialization.ddl struct spart { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -840,10 +834,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.spart
                     numFiles 1
-                    numRows 0
                     partition_columns ds/hr
                     partition_columns.types string:string
-                    rawDataSize 0
                     serialization.ddl struct spart { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1210,10 +1202,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.spart
                     numFiles 1
-                    numRows 0
                     partition_columns ds/hr
                     partition_columns.types string:string
-                    rawDataSize 0
                     serialization.ddl struct spart { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1410,8 +1400,6 @@ Table:              	spart
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	1                   
-	numRows             	0                   
-	rawDataSize         	0                   
 	totalSize           	5812                
 #### A masked pattern was here ####
 	 	 

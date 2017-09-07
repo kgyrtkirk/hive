@@ -93,9 +93,13 @@ STAGE PLANS:
                           columns.types int:int
 #### A masked pattern was here ####
                           name default.outputtbl1
+                          numFiles 0
+                          numRows 0
+                          rawDataSize 0
                           serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          totalSize 0
 #### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.outputtbl1
@@ -184,9 +188,13 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl1
@@ -217,9 +225,13 @@ STAGE PLANS:
                     columns.types int:int
 #### A masked pattern was here ####
                     name default.outputtbl1
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
                     serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.outputtbl1
@@ -243,9 +255,13 @@ STAGE PLANS:
               columns.types int:int
 #### A masked pattern was here ####
               name default.outputtbl1
+              numFiles 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -260,9 +276,13 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl1
@@ -292,9 +312,13 @@ STAGE PLANS:
                     columns.types int:int
 #### A masked pattern was here ####
                     name default.outputtbl1
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
                     serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.outputtbl1
@@ -318,9 +342,13 @@ STAGE PLANS:
               columns.types int:int
 #### A masked pattern was here ####
               name default.outputtbl1
+              numFiles 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -335,9 +363,13 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl1
@@ -510,9 +542,13 @@ STAGE PLANS:
                     columns.types int:string:int
 #### A masked pattern was here ####
                     name default.outputtbl2
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
                     serialization.ddl struct outputtbl2 { i32 key1, string key2, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.outputtbl2
@@ -537,9 +573,13 @@ STAGE PLANS:
                 columns.types int:string:int
 #### A masked pattern was here ####
                 name default.outputtbl2
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct outputtbl2 { i32 key1, string key2, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl2
@@ -1390,9 +1430,13 @@ STAGE PLANS:
                           columns.types int:int:int
 #### A masked pattern was here ####
                           name default.outputtbl3
+                          numFiles 0
+                          numRows 0
+                          rawDataSize 0
                           serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          totalSize 0
 #### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.outputtbl3
@@ -1481,9 +1525,13 @@ STAGE PLANS:
                 columns.types int:int:int
 #### A masked pattern was here ####
                 name default.outputtbl3
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl3
@@ -1514,9 +1562,13 @@ STAGE PLANS:
                     columns.types int:int:int
 #### A masked pattern was here ####
                     name default.outputtbl3
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
                     serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.outputtbl3
@@ -1540,9 +1592,13 @@ STAGE PLANS:
               columns.types int:int:int
 #### A masked pattern was here ####
               name default.outputtbl3
+              numFiles 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -1557,9 +1613,13 @@ STAGE PLANS:
                 columns.types int:int:int
 #### A masked pattern was here ####
                 name default.outputtbl3
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl3
@@ -1589,9 +1649,13 @@ STAGE PLANS:
                     columns.types int:int:int
 #### A masked pattern was here ####
                     name default.outputtbl3
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
                     serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.outputtbl3
@@ -1615,9 +1679,13 @@ STAGE PLANS:
               columns.types int:int:int
 #### A masked pattern was here ####
               name default.outputtbl3
+              numFiles 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -1632,9 +1700,13 @@ STAGE PLANS:
                 columns.types int:int:int
 #### A masked pattern was here ####
                 name default.outputtbl3
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl3
@@ -1808,9 +1880,13 @@ STAGE PLANS:
                     columns.types int:int:string:int
 #### A masked pattern was here ####
                     name default.outputtbl4
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
                     serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.outputtbl4
@@ -1835,9 +1911,13 @@ STAGE PLANS:
                 columns.types int:int:string:int
 #### A masked pattern was here ####
                 name default.outputtbl4
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl4
@@ -4491,9 +4571,13 @@ STAGE PLANS:
                           columns.types int:int:string:int:int
 #### A masked pattern was here ####
                           name default.outputtbl5
+                          numFiles 0
+                          numRows 0
+                          rawDataSize 0
                           serialization.ddl struct outputtbl5 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          totalSize 0
 #### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.outputtbl5
@@ -4582,9 +4666,13 @@ STAGE PLANS:
                 columns.types int:int:string:int:int
 #### A masked pattern was here ####
                 name default.outputtbl5
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct outputtbl5 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl5
@@ -4615,9 +4703,13 @@ STAGE PLANS:
                     columns.types int:int:string:int:int
 #### A masked pattern was here ####
                     name default.outputtbl5
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
                     serialization.ddl struct outputtbl5 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.outputtbl5
@@ -4641,9 +4733,13 @@ STAGE PLANS:
               columns.types int:int:string:int:int
 #### A masked pattern was here ####
               name default.outputtbl5
+              numFiles 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct outputtbl5 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -4658,9 +4754,13 @@ STAGE PLANS:
                 columns.types int:int:string:int:int
 #### A masked pattern was here ####
                 name default.outputtbl5
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct outputtbl5 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl5
@@ -4690,9 +4790,13 @@ STAGE PLANS:
                     columns.types int:int:string:int:int
 #### A masked pattern was here ####
                     name default.outputtbl5
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
                     serialization.ddl struct outputtbl5 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.outputtbl5
@@ -4716,9 +4820,13 @@ STAGE PLANS:
               columns.types int:int:string:int:int
 #### A masked pattern was here ####
               name default.outputtbl5
+              numFiles 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct outputtbl5 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -4733,9 +4841,13 @@ STAGE PLANS:
                 columns.types int:int:string:int:int
 #### A masked pattern was here ####
                 name default.outputtbl5
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct outputtbl5 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl5

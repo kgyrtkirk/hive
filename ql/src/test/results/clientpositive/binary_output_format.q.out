@@ -103,10 +103,14 @@ STAGE PLANS:
                         columns.types string
 #### A masked pattern was here ####
                         name default.dest1
+                        numFiles 0
+                        numRows 0
+                        rawDataSize 0
                         serialization.ddl struct dest1 { string mydata}
                         serialization.format 1
                         serialization.last.column.takes.rest true
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        totalSize 0
 #### A masked pattern was here ####
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.dest1
@@ -191,10 +195,14 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.dest1
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct dest1 { string mydata}
                 serialization.format 1
                 serialization.last.column.takes.rest true
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest1
@@ -225,10 +233,14 @@ STAGE PLANS:
                     columns.types string
 #### A masked pattern was here ####
                     name default.dest1
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
                     serialization.ddl struct dest1 { string mydata}
                     serialization.format 1
                     serialization.last.column.takes.rest true
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.dest1
@@ -252,10 +264,14 @@ STAGE PLANS:
               columns.types string
 #### A masked pattern was here ####
               name default.dest1
+              numFiles 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct dest1 { string mydata}
               serialization.format 1
               serialization.last.column.takes.rest true
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -270,10 +286,14 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.dest1
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct dest1 { string mydata}
                 serialization.format 1
                 serialization.last.column.takes.rest true
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest1
@@ -303,10 +323,14 @@ STAGE PLANS:
                     columns.types string
 #### A masked pattern was here ####
                     name default.dest1
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
                     serialization.ddl struct dest1 { string mydata}
                     serialization.format 1
                     serialization.last.column.takes.rest true
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.dest1
@@ -330,10 +354,14 @@ STAGE PLANS:
               columns.types string
 #### A masked pattern was here ####
               name default.dest1
+              numFiles 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct dest1 { string mydata}
               serialization.format 1
               serialization.last.column.takes.rest true
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -348,10 +376,14 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.dest1
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct dest1 { string mydata}
                 serialization.format 1
                 serialization.last.column.takes.rest true
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest1

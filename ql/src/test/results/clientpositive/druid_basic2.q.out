@@ -43,7 +43,11 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	druid.datasource    	wikipedia           
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
 	storage_handler     	org.apache.hadoop.hive.druid.QTestDruidStorageHandler
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -274,10 +278,14 @@ STAGE PLANS:
               druid.query.type select
 #### A masked pattern was here ####
               name default.druid_table_1
+              numFiles 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct druid_table_1 { timestamp __time, string robot, string namespace, string anonymous, string unpatrolled, string page, string language, string newpage, string user, float count, float added, float delta, float variation, float deleted}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.druid.QTestDruidSerDe
               storage_handler org.apache.hadoop.hive.druid.QTestDruidStorageHandler
+              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
           
@@ -296,10 +304,14 @@ STAGE PLANS:
                 druid.query.type select
 #### A masked pattern was here ####
                 name default.druid_table_1
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct druid_table_1 { timestamp __time, string robot, string namespace, string anonymous, string unpatrolled, string page, string language, string newpage, string user, float count, float added, float delta, float variation, float deleted}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.druid.QTestDruidSerDe
                 storage_handler org.apache.hadoop.hive.druid.QTestDruidStorageHandler
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
               name: default.druid_table_1
@@ -434,10 +446,14 @@ STAGE PLANS:
               druid.query.type select
 #### A masked pattern was here ####
               name default.druid_table_1
+              numFiles 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct druid_table_1 { timestamp __time, string robot, string namespace, string anonymous, string unpatrolled, string page, string language, string newpage, string user, float count, float added, float delta, float variation, float deleted}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.druid.QTestDruidSerDe
               storage_handler org.apache.hadoop.hive.druid.QTestDruidStorageHandler
+              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
           
@@ -456,10 +472,14 @@ STAGE PLANS:
                 druid.query.type select
 #### A masked pattern was here ####
                 name default.druid_table_1
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct druid_table_1 { timestamp __time, string robot, string namespace, string anonymous, string unpatrolled, string page, string language, string newpage, string user, float count, float added, float delta, float variation, float deleted}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.druid.QTestDruidSerDe
                 storage_handler org.apache.hadoop.hive.druid.QTestDruidStorageHandler
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
               name: default.druid_table_1
@@ -573,10 +593,14 @@ STAGE PLANS:
               druid.query.type groupBy
 #### A masked pattern was here ####
               name default.druid_table_1
+              numFiles 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct druid_table_1 { timestamp __time, string robot, string namespace, string anonymous, string unpatrolled, string page, string language, string newpage, string user, float count, float added, float delta, float variation, float deleted}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.druid.QTestDruidSerDe
               storage_handler org.apache.hadoop.hive.druid.QTestDruidStorageHandler
+              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
           
@@ -595,10 +619,14 @@ STAGE PLANS:
                 druid.query.type groupBy
 #### A masked pattern was here ####
                 name default.druid_table_1
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct druid_table_1 { timestamp __time, string robot, string namespace, string anonymous, string unpatrolled, string page, string language, string newpage, string user, float count, float added, float delta, float variation, float deleted}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.druid.QTestDruidSerDe
                 storage_handler org.apache.hadoop.hive.druid.QTestDruidStorageHandler
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
               name: default.druid_table_1
@@ -945,10 +973,14 @@ STAGE PLANS:
               druid.datasource wikipedia
 #### A masked pattern was here ####
               name default.druid_table_1
+              numFiles 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct druid_table_1 { timestamp __time, string robot, string namespace, string anonymous, string unpatrolled, string page, string language, string newpage, string user, float count, float added, float delta, float variation, float deleted}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.druid.QTestDruidSerDe
               storage_handler org.apache.hadoop.hive.druid.QTestDruidStorageHandler
+              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
           
@@ -965,10 +997,14 @@ STAGE PLANS:
                 druid.datasource wikipedia
 #### A masked pattern was here ####
                 name default.druid_table_1
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct druid_table_1 { timestamp __time, string robot, string namespace, string anonymous, string unpatrolled, string page, string language, string newpage, string user, float count, float added, float delta, float variation, float deleted}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.druid.QTestDruidSerDe
                 storage_handler org.apache.hadoop.hive.druid.QTestDruidStorageHandler
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.druid.QTestDruidSerDe
               name: default.druid_table_1

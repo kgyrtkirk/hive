@@ -523,10 +523,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part
                     numFiles 4
-                    numRows 0
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 0
                     serialization.ddl struct srcbucket_mapjoin_part { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -584,7 +582,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
-                          COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value1":"true","value2":"true"}}
+                          COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
                           column.name.delimiter ,
                           columns key,value1,value2
@@ -618,7 +616,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value1":"true","value2":"true"}}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value1,value2
@@ -889,10 +887,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part
                     numFiles 4
-                    numRows 0
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 0
                     serialization.ddl struct srcbucket_mapjoin_part { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

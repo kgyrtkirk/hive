@@ -670,10 +670,8 @@ Database:           	default
 Table:              	calendarp           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	1                   
-	numRows             	3                   
-	rawDataSize         	12                  
 	totalSize           	15                  
 #### A masked pattern was here ####
 	 	 
@@ -707,11 +705,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: calendarp
-                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: year (type: int)
                     outputColumnNames: year
-                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: max(year)
                       mode: hash

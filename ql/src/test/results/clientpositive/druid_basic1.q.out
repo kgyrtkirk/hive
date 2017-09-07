@@ -43,7 +43,11 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	druid.datasource    	wikipedia           
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
 	storage_handler     	org.apache.hadoop.hive.druid.QTestDruidStorageHandler
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -101,7 +105,11 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	druid.datasource    	wikipedia           
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
 	storage_handler     	org.apache.hadoop.hive.druid.QTestDruidStorageHandler
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

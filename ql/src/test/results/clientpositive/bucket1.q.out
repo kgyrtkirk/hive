@@ -116,9 +116,13 @@ STAGE PLANS:
                   columns.types int:string
 #### A masked pattern was here ####
                   name default.bucket1_1
+                  numFiles 0
+                  numRows 0
+                  rawDataSize 0
                   serialization.ddl struct bucket1_1 { i32 key, string value}
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  totalSize 0
 #### A masked pattern was here ####
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: default.bucket1_1
@@ -144,9 +148,13 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.bucket1_1
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct bucket1_1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket1_1

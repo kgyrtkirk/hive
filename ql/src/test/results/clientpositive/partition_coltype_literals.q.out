@@ -41,7 +41,7 @@ Database:           	default
 Table:              	partcoltypenum      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -91,7 +91,7 @@ Database:           	default
 Table:              	partcoltypenum      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   
@@ -142,7 +142,7 @@ Database:           	default
 Table:              	partcoltypenum      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   
@@ -194,7 +194,7 @@ Database:           	default
 Table:              	partcoltypenum      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   
@@ -517,10 +517,8 @@ Database:           	default
 Table:              	partcoltypenum      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	1                   
-	numRows             	10                  
-	rawDataSize         	104                 
 	totalSize           	114                 
 #### A masked pattern was here ####
 	 	 
@@ -568,11 +566,9 @@ Database:           	default
 Table:              	partcoltypenum      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{}                  
 #### A masked pattern was here ####
 	numFiles            	1                   
-	numRows             	10                  
-	rawDataSize         	104                 
 	totalSize           	114                 
 #### A masked pattern was here ####
 	 	 

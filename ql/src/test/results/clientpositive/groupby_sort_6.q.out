@@ -89,9 +89,13 @@ STAGE PLANS:
                     columns.types int:int
 #### A masked pattern was here ####
                     name default.outputtbl1
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
                     serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.outputtbl1
@@ -116,9 +120,13 @@ STAGE PLANS:
                 columns.types int:int
 #### A masked pattern was here ####
                 name default.outputtbl1
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.outputtbl1
