@@ -151,7 +151,8 @@ public class Partition implements Serializable {
         StatsSetupConst.setStatsStateForCreateTable(tpart.getParameters(),
             MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
       }else{
-        StatsSetupConst.setBasicStatsState(tpart.getParameters(), StatsSetupConst.TRUE);
+        StatsSetupConst.setStatsStateForCreateTable(tpart.getParameters(),
+            null, StatsSetupConst.TRUE);
       }
     }
     return tpart;

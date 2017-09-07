@@ -4598,7 +4598,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),
               MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
         } else if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-          StatsSetupConst.setBasicStatsState(tbl.getTTable().getParameters(), StatsSetupConst.TRUE);
+          StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(), null,
+              StatsSetupConst.TRUE);
         }
       }
     } else {
