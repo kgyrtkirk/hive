@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -145,7 +146,8 @@ public class Partition implements Serializable {
     
     Map<String, String> emptyParameters = new HashMap<String, String>();
     tpart.setParameters(emptyParameters);
-    if (location == null) {
+    if (location == null
+        && SessionState.getSessionConf().getBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER)) {
       StatsSetupConst.setStatsStateForCreateTable(tpart.getParameters(),
           MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
     }

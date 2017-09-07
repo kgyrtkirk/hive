@@ -2987,8 +2987,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
             StatsSetupConst.setStatsStateForCreateTable(desc.getPartParams(),
                 MetaStoreUtils.getColumnNames(tab.getCols()), StatsSetupConst.TRUE);
           }
-        } else {
-          StatsSetupConst.setBasicStatsState(desc.getPartParams(), StatsSetupConst.FALSE);
         }
       }
     }

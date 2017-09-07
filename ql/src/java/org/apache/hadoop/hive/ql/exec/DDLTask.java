@@ -4592,9 +4592,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       makeLocationQualified(tbl.getDbName(), tbl.getTTable().getSd(), tbl.getTableName(), conf);
     }
 
-    if (crtTbl.getLocation() == null && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-      StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),
-          MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
+    if (crtTbl.getLocation() == null && (!crtTbl.isExternal())) {
+      if (!tbl.isPartitioned()) {
+        if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER)) {
+          StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),
+              MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
+        } else if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+          StatsSetupConst.setBasicStatsState(tbl.getTTable().getParameters(), StatsSetupConst.TRUE);
+        }
+      }
+    } else {
+      StatsSetupConst.setBasicStatsState(tbl.getTTable().getParameters(), StatsSetupConst.FALSE);
     }
 
     // create the table

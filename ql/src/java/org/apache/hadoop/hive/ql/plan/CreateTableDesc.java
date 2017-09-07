@@ -848,13 +848,16 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     }
 
     if (!this.isCTAS && (tbl.getPath() == null || (tbl.isEmpty() && !isExternal()))) {
-      if (!tbl.isPartitioned() && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-        StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),
-            MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
+      if (!tbl.isPartitioned()){
+        if(conf.getBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER)) {
+          StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),
+              MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
+        }else  if(conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+          StatsSetupConst.setBasicStatsState(tbl.getTTable().getParameters(), StatsSetupConst.TRUE);
+        }
       }
     } else {
-      StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(), null,
-          StatsSetupConst.FALSE);
+      StatsSetupConst.setBasicStatsState(tbl.getTTable().getParameters(), StatsSetupConst.FALSE);
     }
     return tbl;
   }
