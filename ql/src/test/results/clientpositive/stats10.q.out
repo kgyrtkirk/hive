@@ -17,7 +17,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
-  Stage-2 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-0, Stage-3
   Stage-3 depends on stages: Stage-1
 
 STAGE PLANS:
@@ -54,7 +54,7 @@ STAGE PLANS:
             outputColumnNames: key, value, ds
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
-              aggregations: compute_stats(key, 16), compute_stats(value, 16)
+              aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
               keys: ds (type: string)
               mode: hash
               outputColumnNames: _col0, _col1, _col2
@@ -95,7 +95,7 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+              value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
@@ -104,7 +104,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: string)
+            expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

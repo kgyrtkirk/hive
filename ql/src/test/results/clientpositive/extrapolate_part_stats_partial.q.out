@@ -304,20 +304,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_1d
-<<<<<<< HEAD
           Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-          Statistics: Num rows: 20 Data size: 1700 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
           GatherStats: false
           Select Operator
             expressions: state (type: string)
             outputColumnNames: _col0
-<<<<<<< HEAD
             Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-            Statistics: Num rows: 20 Data size: 1700 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
             ListSink
 
 PREHOOK: query: explain extended select state,locid from loc_orc_1d
@@ -515,20 +507,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_1d
-<<<<<<< HEAD
           Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-          Statistics: Num rows: 20 Data size: 1780 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
           GatherStats: false
           Select Operator
             expressions: state (type: string), locid (type: int)
             outputColumnNames: _col0, _col1
-<<<<<<< HEAD
             Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-            Statistics: Num rows: 20 Data size: 1780 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
             ListSink
 
 PREHOOK: query: analyze table loc_orc_1d partition(year='2000') compute statistics for columns state

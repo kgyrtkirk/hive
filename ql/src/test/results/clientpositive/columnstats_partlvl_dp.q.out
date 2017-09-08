@@ -276,13 +276,8 @@ STAGE PLANS:
                   key expressions: _col0 (type: double), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
-<<<<<<< HEAD
                   Statistics: Num rows: 27 Data size: 206 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
-=======
-                  Statistics: Num rows: 116 Data size: 466 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
->>>>>>> asf/master
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0)
@@ -384,13 +379,8 @@ STAGE PLANS:
                   key expressions: _col0 (type: double), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
-<<<<<<< HEAD
                   Statistics: Num rows: 54 Data size: 412 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
-=======
-                  Statistics: Num rows: 2 Data size: 466 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
->>>>>>> asf/master
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
