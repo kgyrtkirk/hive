@@ -200,7 +200,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	1828                
+	totalSize           	1798                
 	transactional       	true                
 #### A masked pattern was here ####
 	 	 
@@ -243,7 +243,7 @@ Table Parameters:
 	numFiles            	4                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	2946                
+	totalSize           	2909                
 	transactional       	true                
 #### A masked pattern was here ####
 	 	 
