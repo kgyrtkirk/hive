@@ -46,6 +46,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
@@ -95,6 +97,8 @@ public interface RawStore extends Configurable {
    */
   @CanNotRetry
   public abstract boolean commitTransaction();
+
+  public boolean isActiveTransaction();
 
   /**
    * Rolls back the current transaction if it is active
@@ -619,6 +623,13 @@ public interface RawStore extends Configurable {
    */
   public CurrentNotificationEventId getCurrentNotificationEventId();
 
+  /**
+   * Get the number of events corresponding to given database with fromEventId.
+   * This is intended for use by the repl commands to track the progress of incremental dump.
+   * @return
+   */
+  public NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst);
+
   /*
    * Flush any catalog objects held by the metastore implementation.  Note that this does not
    * flush statistics objects.  This should be called at the beginning of each query.
@@ -708,19 +719,19 @@ public interface RawStore extends Configurable {
   public abstract List<SQLNotNullConstraint> getNotNullConstraints(String db_name,
     String tbl_name) throws MetaException;
 
-  void createTableWithConstraints(Table tbl, List<SQLPrimaryKey> primaryKeys,
+  List<String> createTableWithConstraints(Table tbl, List<SQLPrimaryKey> primaryKeys,
     List<SQLForeignKey> foreignKeys, List<SQLUniqueConstraint> uniqueConstraints,
     List<SQLNotNullConstraint> notNullConstraints) throws InvalidObjectException, MetaException;
 
   void dropConstraint(String dbName, String tableName, String constraintName) throws NoSuchObjectException;
 
-  void addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException;
+  List<String> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException;
 
-  void addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException;
+  List<String> addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException;
 
-  void addUniqueConstraints(List<SQLUniqueConstraint> uks) throws InvalidObjectException, MetaException;
+  List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks) throws InvalidObjectException, MetaException;
 
-  void addNotNullConstraints(List<SQLNotNullConstraint> nns) throws InvalidObjectException, MetaException;
+  List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns) throws InvalidObjectException, MetaException;
 
   /**
    * Gets the unique id of the backing datastore for the metadata

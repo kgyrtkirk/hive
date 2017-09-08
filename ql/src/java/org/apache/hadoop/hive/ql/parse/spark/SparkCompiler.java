@@ -62,14 +62,16 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TypeRule;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagate;
+import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcCtx;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
-import org.apache.hadoop.hive.ql.optimizer.SparkRemoveDynamicPruningBySize;
+import org.apache.hadoop.hive.ql.optimizer.SparkRemoveDynamicPruning;
 import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
 import org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.NullScanOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.SparkCrossProductCheck;
+import org.apache.hadoop.hive.ql.optimizer.physical.SparkDynamicPartitionPruningResolver;
 import org.apache.hadoop.hive.ql.optimizer.physical.SparkMapJoinResolver;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
@@ -124,14 +126,42 @@ public class SparkCompiler extends TaskCompiler {
     // Run Join releated optimizations
     runJoinOptimizations(procCtx);
 
+    // Remove DPP based on expected size of the output data
+    runRemoveDynamicPruning(procCtx);
+
     // Remove cyclic dependencies for DPP
     runCycleAnalysisForPartitionPruning(procCtx);
+
+    // Re-run constant propagation so we fold any new constants introduced by the operator optimizers
+    // Specifically necessary for DPP because we might have created lots of "and true and true" conditions
+    if (procCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+      new ConstantPropagate(ConstantPropagateProcCtx.ConstantPropagateOption.SHORTCUT).transform(pCtx);
+    }
 
     PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
   }
 
+  private void runRemoveDynamicPruning(OptimizeSparkProcContext procCtx) throws SemanticException {
+    ParseContext pCtx = procCtx.getParseContext();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+
+    opRules.put(new RuleRegExp("Disabling Dynamic Partition Pruning",
+        SparkPartitionPruningSinkOperator.getOperatorName() + "%"),
+        new SparkRemoveDynamicPruning());
+
+    // The dispatcher fires the processor corresponding to the closest matching
+    // rule and passes the context along
+    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    GraphWalker ogw = new DefaultGraphWalker(disp);
+
+    // Create a list of topop nodes
+    ArrayList<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(pCtx.getTopOps().values());
+    ogw.startWalking(topNodes, null);
+  }
+
   private void runCycleAnalysisForPartitionPruning(OptimizeSparkProcContext procCtx) {
-    if (!conf.getBoolVar(HiveConf.ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING)) {
+    if (!conf.isSparkDPPAny()) {
       return;
     }
 
@@ -243,7 +273,7 @@ public class SparkCompiler extends TaskCompiler {
 
   private void runDynamicPartitionPruning(OptimizeSparkProcContext procCtx)
       throws SemanticException {
-    if (!conf.getBoolVar(HiveConf.ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING)) {
+    if (!conf.isSparkDPPAny()) {
       return;
     }
 
@@ -262,12 +292,6 @@ public class SparkCompiler extends TaskCompiler {
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(parseContext.getTopOps().values());
     ogw.startWalking(topNodes, null);
-
-    // need a new run of the constant folding because we might have created lots
-    // of "and true and true" conditions.
-    if(procCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
-      new ConstantPropagate().transform(parseContext);
-    }
   }
 
   private void runSetReducerParallelism(OptimizeSparkProcContext procCtx) throws SemanticException {
@@ -295,10 +319,6 @@ public class SparkCompiler extends TaskCompiler {
     opRules.put(new TypeRule(JoinOperator.class), new SparkJoinOptimizer(pCtx));
 
     opRules.put(new TypeRule(MapJoinOperator.class), new SparkJoinHintOptimizer(pCtx));
-
-    opRules.put(new RuleRegExp("Disabling Dynamic Partition Pruning By Size",
-        SparkPartitionPruningSinkOperator.getOperatorName() + "%"),
-        new SparkRemoveDynamicPruningBySize());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -543,6 +563,10 @@ public class SparkCompiler extends TaskCompiler {
     }
 
     physicalCtx = new SparkMapJoinResolver().resolve(physicalCtx);
+
+    if (conf.isSparkDPPAny()) {
+      physicalCtx = new SparkDynamicPartitionPruningResolver().resolve(physicalCtx);
+    }
 
     if (conf.getBoolVar(HiveConf.ConfVars.HIVENULLSCANOPTIMIZE)) {
       physicalCtx = new NullScanOptimizer().resolve(physicalCtx);

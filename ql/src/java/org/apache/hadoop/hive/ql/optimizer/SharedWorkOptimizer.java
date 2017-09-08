@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
@@ -362,7 +363,9 @@ public class SharedWorkOptimizer extends Transform {
   private static Multimap<String, TableScanOperator> splitTableScanOpsByTable(
           ParseContext pctx) {
     Multimap<String, TableScanOperator> tableNameToOps = ArrayListMultimap.create();
-    for (Entry<String, TableScanOperator> e : pctx.getTopOps().entrySet()) {
+    // Sort by operator ID so we get deterministic results
+    Map<String, TableScanOperator> sortedTopOps = new TreeMap<>(pctx.getTopOps());
+    for (Entry<String, TableScanOperator> e : sortedTopOps.entrySet()) {
       TableScanOperator tsOp = e.getValue();
       tableNameToOps.put(
               tsOp.getConf().getTableMetadata().getDbName() + "."
@@ -440,8 +443,8 @@ public class SharedWorkOptimizer extends Transform {
         Set<Operator<?>> ascendants =
             findAscendantWorkOperators(pctx, optimizerCache, op);
         if (ascendants.contains(tsOp2)) {
-          dppsOp1.remove(i);
-          i--;
+          // This should not happen, we cannot merge
+          return false;
         }
       }
     }
@@ -451,8 +454,8 @@ public class SharedWorkOptimizer extends Transform {
         Set<Operator<?>> ascendants =
             findAscendantWorkOperators(pctx, optimizerCache, op);
         if (ascendants.contains(tsOp1)) {
-          dppsOp2.remove(i);
-          i--;
+          // This should not happen, we cannot merge
+          return false;
         }
       }
     }
@@ -461,9 +464,9 @@ public class SharedWorkOptimizer extends Transform {
       return false;
     }
     // Check if DPP branches are equal
+    BitSet bs = new BitSet();
     for (int i = 0; i < dppsOp1.size(); i++) {
       Operator<?> dppOp1 = dppsOp1.get(i);
-      BitSet bs = new BitSet();
       for (int j = 0; j < dppsOp2.size(); j++) {
         if (!bs.get(j)) {
           // If not visited yet
@@ -475,7 +478,7 @@ public class SharedWorkOptimizer extends Transform {
           }
         }
       }
-      if (bs.cardinality() == i) {
+      if (bs.cardinality() < i + 1) {
         return false;
       }
     }
@@ -527,7 +530,6 @@ public class SharedWorkOptimizer extends Transform {
         if (currentOp1.getChildOperators().size() > 1 ||
                 currentOp2.getChildOperators().size() > 1) {
           // TODO: Support checking multiple child operators to merge further.
-          discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache, discardableInputOps));
           discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache, discardableOps));
           discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache, retainableOps, discardableInputOps));
           return new SharedResult(retainableOps, discardableOps, discardableInputOps, dataSize, maxDataSize);
@@ -536,7 +538,6 @@ public class SharedWorkOptimizer extends Transform {
         currentOp2 = currentOp2.getChildOperators().get(0);
       } else {
         // Bail out
-        discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache, discardableInputOps));
         discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache, discardableOps));
         discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache, retainableOps, discardableInputOps));
         return new SharedResult(retainableOps, discardableOps, discardableInputOps, dataSize, maxDataSize);
@@ -751,6 +752,7 @@ public class SharedWorkOptimizer extends Transform {
     // We can ignore table alias since when we compare ReduceSinkOperator, all
     // its ancestors need to match (down to table scan), thus we make sure that
     // both plans are the same.
+    // TODO: move this to logicalEquals
     if (op1 instanceof ReduceSinkOperator) {
       ReduceSinkDesc op1Conf = ((ReduceSinkOperator) op1).getConf();
       ReduceSinkDesc op2Conf = ((ReduceSinkOperator) op2).getConf();
@@ -770,6 +772,7 @@ public class SharedWorkOptimizer extends Transform {
 
     // We handle TableScanOperator here as we can safely ignore table alias
     // and the current comparator implementation does not.
+    // TODO: move this to logicalEquals
     if (op1 instanceof TableScanOperator) {
       TableScanOperator tsOp1 = (TableScanOperator) op1;
       TableScanOperator tsOp2 = (TableScanOperator) op2;
@@ -790,9 +793,7 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
-    OperatorComparatorFactory.OperatorComparator operatorComparator =
-      OperatorComparatorFactory.getOperatorComparator(op1.getClass());
-    return operatorComparator.equals(op1, op2);
+    return op1.logicalEquals(op2);
   }
 
   private static boolean validPreConditions(ParseContext pctx, SharedWorkOptimizerCache optimizerCache,

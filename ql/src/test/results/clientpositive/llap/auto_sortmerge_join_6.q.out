@@ -91,6 +91,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: a
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -100,17 +101,7 @@ STAGE PLANS:
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col1 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col1 (type: string)
-                        Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int)
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 5 
-            Map Operator Tree:
-                TableScan
+=======
                   alias: c
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -125,6 +116,54 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 500 Data size: 89488 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key is not null and value is not null) (type: boolean)
+                    Statistics: Num rows: 450 Data size: 80539 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 450 Data size: 80539 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+<<<<<<< HEAD
+                        Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 5 
+=======
+                        Statistics: Num rows: 450 Data size: 80539 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 6 
+>>>>>>> asf/master
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Map 6 
@@ -153,6 +192,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
+<<<<<<< HEAD
                   0 _col1 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0
@@ -162,6 +202,17 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1168 Data size: 4672 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  0 _col0 (type: string)
+                  1 _col1 (type: string)
+                outputColumnNames: _col1
+                Statistics: Num rows: 550 Data size: 50050 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: int)
+                  Statistics: Num rows: 550 Data size: 50050 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -169,9 +220,15 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
+<<<<<<< HEAD
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 Statistics: Num rows: 2979 Data size: 23832 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                Statistics: Num rows: 605 Data size: 55055 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -237,6 +294,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: a
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -246,17 +304,7 @@ STAGE PLANS:
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col1 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col1 (type: string)
-                        Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int)
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 5 
-            Map Operator Tree:
-                TableScan
+=======
                   alias: d
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -271,6 +319,54 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 500 Data size: 89488 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key is not null and value is not null) (type: boolean)
+                    Statistics: Num rows: 450 Data size: 80539 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 450 Data size: 80539 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+<<<<<<< HEAD
+                        Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 5 
+=======
+                        Statistics: Num rows: 450 Data size: 80539 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 6 
+>>>>>>> asf/master
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Map 6 
@@ -299,6 +395,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
+<<<<<<< HEAD
                   0 _col1 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0
@@ -308,6 +405,17 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1168 Data size: 4672 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  0 _col0 (type: string)
+                  1 _col1 (type: string)
+                outputColumnNames: _col1
+                Statistics: Num rows: 550 Data size: 50050 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: int)
+                  Statistics: Num rows: 550 Data size: 50050 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -315,9 +423,15 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
+<<<<<<< HEAD
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 Statistics: Num rows: 2979 Data size: 23832 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                Statistics: Num rows: 605 Data size: 55055 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -383,6 +497,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: a
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -392,17 +507,7 @@ STAGE PLANS:
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col1 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col1 (type: string)
-                        Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int)
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 5 
-            Map Operator Tree:
-                TableScan
+=======
                   alias: h
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -417,6 +522,54 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 500 Data size: 89488 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key is not null and value is not null) (type: boolean)
+                    Statistics: Num rows: 450 Data size: 80539 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 450 Data size: 80539 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+<<<<<<< HEAD
+                        Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 5 
+=======
+                        Statistics: Num rows: 450 Data size: 80539 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 6 
+>>>>>>> asf/master
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Map 6 
@@ -445,6 +598,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
+<<<<<<< HEAD
                   0 _col1 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0
@@ -454,6 +608,17 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1168 Data size: 4672 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  0 _col0 (type: string)
+                  1 _col1 (type: string)
+                outputColumnNames: _col1
+                Statistics: Num rows: 550 Data size: 50050 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: int)
+                  Statistics: Num rows: 550 Data size: 50050 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -461,9 +626,15 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
+<<<<<<< HEAD
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 Statistics: Num rows: 2979 Data size: 23832 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                Statistics: Num rows: 605 Data size: 55055 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -529,6 +700,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: a
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -538,17 +710,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: UDFToDouble(_col0) (type: double)
-                        sort order: +
-                        Map-reduce partition columns: UDFToDouble(_col0) (type: double)
-                        Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int)
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 5 
-            Map Operator Tree:
-                TableScan
+=======
                   alias: c
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -563,6 +725,54 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: UDFToDouble(_col0) (type: double)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
+                      Reduce Output Operator
+                        key expressions: UDFToDouble(_col0) (type: double)
+                        sort order: +
+                        Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+<<<<<<< HEAD
+                        Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 5 
+=======
+                        Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 6 
+>>>>>>> asf/master
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Map 6 
@@ -593,6 +803,7 @@ STAGE PLANS:
                 keys:
                   0 UDFToDouble(_col0) (type: double)
                   1 UDFToDouble(_col0) (type: double)
+<<<<<<< HEAD
                 outputColumnNames: _col0
                 Statistics: Num rows: 1219 Data size: 4876 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
@@ -600,6 +811,15 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1219 Data size: 4876 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                outputColumnNames: _col1
+                Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: int)
+                  Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -607,9 +827,15 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
+<<<<<<< HEAD
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 Statistics: Num rows: 3109 Data size: 24872 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                Statistics: Num rows: 605 Data size: 52635 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -674,6 +900,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+<<<<<<< HEAD
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -704,6 +931,38 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -712,7 +971,11 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                           2 _col0 (type: int)
+<<<<<<< HEAD
                         Statistics: Num rows: 3253 Data size: 26024 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 1045 Data size: 3977 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -780,6 +1043,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+<<<<<<< HEAD
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
@@ -794,12 +1058,47 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int)
+=======
+                  Statistics: Num rows: 500 Data size: 89488 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key is not null and value is not null) (type: boolean)
+                    Statistics: Num rows: 450 Data size: 80539 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 450 Data size: 80539 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                      Merge Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        outputColumnNames: _col2
+                        Statistics: Num rows: 522 Data size: 1988 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col2 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col2 (type: string)
+                          Statistics: Num rows: 522 Data size: 1988 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
             Execution mode: llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: c
+<<<<<<< HEAD
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -808,10 +1107,21 @@ STAGE PLANS:
                       expressions: value (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: value is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+<<<<<<< HEAD
                         Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
@@ -832,6 +1142,9 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -841,8 +1154,9 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: string)
+                  0 _col2 (type: string)
                   1 _col0 (type: string)
+<<<<<<< HEAD
                 outputColumnNames: _col0
                 Statistics: Num rows: 1168 Data size: 4672 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
@@ -860,6 +1174,9 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 Statistics: Num rows: 2979 Data size: 23832 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                Statistics: Num rows: 574 Data size: 2186 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -925,6 +1242,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: a
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -934,17 +1252,7 @@ STAGE PLANS:
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col1 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col1 (type: string)
-                        Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int)
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 5 
-            Map Operator Tree:
-                TableScan
+=======
                   alias: c
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -959,6 +1267,54 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 500 Data size: 89488 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key is not null and value is not null) (type: boolean)
+                    Statistics: Num rows: 450 Data size: 80539 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 450 Data size: 80539 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+<<<<<<< HEAD
+                        Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 5 
+=======
+                        Statistics: Num rows: 450 Data size: 80539 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 6 
+>>>>>>> asf/master
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Map 6 
@@ -987,6 +1343,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
+<<<<<<< HEAD
                   0 _col1 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0
@@ -996,6 +1353,17 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1168 Data size: 4672 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  0 _col0 (type: string)
+                  1 _col1 (type: string)
+                outputColumnNames: _col1
+                Statistics: Num rows: 550 Data size: 50050 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: int)
+                  Statistics: Num rows: 550 Data size: 50050 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1003,9 +1371,15 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
+<<<<<<< HEAD
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 Statistics: Num rows: 2979 Data size: 23832 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                Statistics: Num rows: 605 Data size: 55055 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -1071,6 +1445,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: a
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -1080,17 +1455,7 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: UDFToDouble(_col0) (type: double)
-                        sort order: +
-                        Map-reduce partition columns: UDFToDouble(_col0) (type: double)
-                        Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int)
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 5 
-            Map Operator Tree:
-                TableScan
+=======
                   alias: c
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -1105,6 +1470,54 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: UDFToDouble(_col0) (type: double)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
+                      Reduce Output Operator
+                        key expressions: UDFToDouble(_col0) (type: double)
+                        sort order: +
+                        Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+<<<<<<< HEAD
+                        Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 5 
+=======
+                        Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 6 
+>>>>>>> asf/master
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Map 6 
@@ -1135,6 +1548,7 @@ STAGE PLANS:
                 keys:
                   0 UDFToDouble(_col0) (type: double)
                   1 UDFToDouble(_col0) (type: double)
+<<<<<<< HEAD
                 outputColumnNames: _col0
                 Statistics: Num rows: 1219 Data size: 4876 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
@@ -1142,6 +1556,15 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1219 Data size: 4876 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                outputColumnNames: _col1
+                Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: int)
+                  Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1149,9 +1572,15 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
+<<<<<<< HEAD
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 Statistics: Num rows: 3109 Data size: 24872 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                Statistics: Num rows: 605 Data size: 52635 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -1216,6 +1645,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+<<<<<<< HEAD
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1246,6 +1676,38 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1254,7 +1716,11 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                           2 _col0 (type: int)
+<<<<<<< HEAD
                         Statistics: Num rows: 3253 Data size: 26024 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 1045 Data size: 3977 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -1322,6 +1788,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+<<<<<<< HEAD
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
@@ -1336,12 +1803,47 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int)
+=======
+                  Statistics: Num rows: 500 Data size: 89488 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key is not null and value is not null) (type: boolean)
+                    Statistics: Num rows: 450 Data size: 80539 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 450 Data size: 80539 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
+                      Merge Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        outputColumnNames: _col2
+                        Statistics: Num rows: 522 Data size: 1988 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col2 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col2 (type: string)
+                          Statistics: Num rows: 522 Data size: 1988 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
             Execution mode: llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: c
+<<<<<<< HEAD
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -1350,10 +1852,21 @@ STAGE PLANS:
                       expressions: value (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: value is not null (type: boolean)
+                    Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+<<<<<<< HEAD
                         Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
@@ -1374,6 +1887,9 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -1383,8 +1899,9 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: string)
+                  0 _col2 (type: string)
                   1 _col0 (type: string)
+<<<<<<< HEAD
                 outputColumnNames: _col0
                 Statistics: Num rows: 1168 Data size: 4672 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
@@ -1402,6 +1919,9 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 Statistics: Num rows: 2979 Data size: 23832 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                Statistics: Num rows: 574 Data size: 2186 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 Group By Operator
                   aggregations: count()
                   mode: hash

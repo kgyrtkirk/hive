@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import org.antlr.runtime.tree.Tree;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -47,6 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.tree.TreeVisitor;
 import org.antlr.runtime.tree.TreeVisitorAction;
 import org.apache.calcite.adapter.druid.DruidQuery;
@@ -54,6 +53,7 @@ import org.apache.calcite.adapter.druid.DruidRules;
 import org.apache.calcite.adapter.druid.DruidSchema;
 import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.calcite.adapter.druid.LocalInterval;
+import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.config.CalciteConnectionProperty;
 import org.apache.calcite.plan.RelOptCluster;
@@ -142,12 +142,13 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
@@ -172,7 +173,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateJoinTransp
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregatePullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateReduceRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveDruidProjectFilterTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExceptRewriteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExpandDistinctAggregatesRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterAggregateTransposeRule;
@@ -200,6 +200,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceExpressionsRu
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceExpressionsWithStatsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelDecorrelator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelFieldTrimmer;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveSqCountCheck;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortJoinReduceRule;
@@ -212,7 +213,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSubQueryRemoveRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewFilterScanRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverter;
@@ -261,8 +262,6 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-
-import org.apache.calcite.config.CalciteConnectionConfig;
 
 public class CalcitePlanner extends SemanticAnalyzer {
 
@@ -1092,7 +1091,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
     if (this.columnAccessInfo == null) {
       this.columnAccessInfo = new ColumnAccessInfo();
     }
-    calcitePlannerAction = new CalcitePlannerAction(prunedPartitions, this.columnAccessInfo);
+    calcitePlannerAction = new CalcitePlannerAction(
+        prunedPartitions,
+        ctx.getOpContext().getColStatsCache(),
+        this.columnAccessInfo);
 
     try {
       optimizedOptiqPlan = Frameworks.withPlanner(calcitePlannerAction, Frameworks
@@ -1129,7 +1131,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
     if (this.columnAccessInfo == null) {
       this.columnAccessInfo = new ColumnAccessInfo();
     }
-    calcitePlannerAction = new CalcitePlannerAction(prunedPartitions, this.columnAccessInfo);
+    calcitePlannerAction = new CalcitePlannerAction(
+        prunedPartitions,
+        ctx.getOpContext().getColStatsCache(),
+        this.columnAccessInfo);
 
     try {
       optimizedOptiqPlan = Frameworks.withPlanner(calcitePlannerAction, Frameworks
@@ -1291,6 +1296,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private RelOptCluster                                 cluster;
     private RelOptSchema                                  relOptSchema;
     private final Map<String, PrunedPartitionList>        partitionCache;
+    private final Map<String, ColumnStatsList>            colStatsCache;
     private final ColumnAccessInfo columnAccessInfo;
     private Map<HiveProject, Table> viewProjectToTableSchema;
 
@@ -1308,8 +1314,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
     LinkedHashMap<RelNode, RowResolver>                   relToHiveRR                   = new LinkedHashMap<RelNode, RowResolver>();
     LinkedHashMap<RelNode, ImmutableMap<String, Integer>> relToHiveColNameCalcitePosMap = new LinkedHashMap<RelNode, ImmutableMap<String, Integer>>();
 
-    CalcitePlannerAction(Map<String, PrunedPartitionList> partitionCache, ColumnAccessInfo columnAccessInfo) {
+    CalcitePlannerAction(
+        Map<String, PrunedPartitionList> partitionCache,
+        Map<String, ColumnStatsList> colStatsCache,
+        ColumnAccessInfo columnAccessInfo) {
       this.partitionCache = partitionCache;
+      this.colStatsCache = colStatsCache;
       this.columnAccessInfo = columnAccessInfo;
     }
 
@@ -1334,8 +1344,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
               CalciteConnectionProperty.MATERIALIZATIONS_ENABLED.camelName(),
               Boolean.FALSE.toString());
       CalciteConnectionConfig calciteConfig = new CalciteConnectionConfigImpl(calciteConfigProperties);
+      boolean isCorrelatedColumns = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_CORRELATED_MULTI_KEY_JOINS);
       HivePlannerContext confContext = new HivePlannerContext(algorithmsConf, registry, calciteConfig,
-                 corrScalarRexSQWithAgg, scalarAggNoGbyNoWin);
+                 corrScalarRexSQWithAgg, scalarAggNoGbyNoWin, new HiveConfPlannerContext(isCorrelatedColumns));
       RelOptPlanner planner = HiveVolcanoPlanner.createPlanner(confContext);
       final RexBuilder rexBuilder = cluster.getRexBuilder();
       final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
@@ -1379,7 +1390,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       //Remove subquery
       LOG.debug("Plan before removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
       calciteGenPlan = hepPlan(calciteGenPlan, false, mdProvider.getMetadataProvider(), null,
-              HiveSubQueryRemoveRule.REL_NODE);
+              new HiveSubQueryRemoveRule(conf));
       LOG.debug("Plan just after removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
 
       calciteGenPlan = HiveRelDecorrelator.decorrelateQuery(calciteGenPlan);
@@ -1488,7 +1499,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
             planner.addMaterialization(materialization);
           }
           // Add view-based rewriting rules to planner
-          planner.addRule(HiveMaterializedViewFilterScanRule.INSTANCE);
+          planner.addRule(HiveMaterializedViewRule.INSTANCE_PROJECT_FILTER);
+          planner.addRule(HiveMaterializedViewRule.INSTANCE_FILTER);
           // Optimize plan
           planner.setRoot(calciteOptimizedPlan);
           calciteOptimizedPlan = planner.findBestExp();
@@ -1529,6 +1541,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
         perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Semijoin conversion");
       }
 
+      // 8. Get rid of sq_count_check if group by key is constant (HIVE-)
+      if (conf.getBoolVar(ConfVars.HIVE_REMOVE_SQ_COUNT_CHECK)) {
+        perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+        calciteOptimizedPlan =
+            hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
+                HiveRemoveSqCountCheck.INSTANCE);
+        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
+            "Calcite: Removing sq_count_check UDF ");
+      }
+
+
 
       // 8. Run rule to fix windowing issue when it is done over
       // aggregation columns (HIVE-10627)
@@ -1544,7 +1567,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
               HepMatchOrder.BOTTOM_UP,
               DruidRules.FILTER,
-              HiveDruidProjectFilterTransposeRule.INSTANCE,
+              DruidRules.PROJECT_FILTER_TRANSPOSE,
               DruidRules.AGGREGATE_FILTER_TRANSPOSE,
               DruidRules.AGGREGATE_PROJECT,
               DruidRules.PROJECT,
@@ -2319,7 +2342,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
           RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
                   rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-                  partitionCache, noColsMissingStats);
+                  partitionCache, colStatsCache, noColsMissingStats);
           // Build Druid query
           String address = HiveConf.getVar(conf,
                   HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
@@ -2364,7 +2387,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
           RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
                   rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-                  partitionCache, noColsMissingStats);
+                  partitionCache, colStatsCache, noColsMissingStats);
           // Build Hive Table Scan Rel
           tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
               null == tableAlias ? tabMetaData.getTableName() : tableAlias,
@@ -3451,7 +3474,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         w = cluster.getRexBuilder().makeOver(calciteAggFnRetType, calciteAggFn, calciteAggFnArgs,
             partitionKeys, ImmutableList.<RexFieldCollation> copyOf(orderKeys), lowerBound,
-            upperBound, isRows, true, false);
+            upperBound, isRows, true, false, hiveAggInfo.m_distinct);
       } else {
         // TODO: Convert to Semantic Exception
         throw new RuntimeException("Unsupported window Spec");

@@ -98,7 +98,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory_part_0
+<<<<<<< HEAD
                   Statistics: Num rows: 200 Data size: 780 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4]
@@ -109,7 +113,11 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumns: [3]
+<<<<<<< HEAD
                     Statistics: Num rows: 200 Data size: 780 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       Group By Vectorization:
@@ -122,14 +130,22 @@ STAGE PLANS:
                           projectedOutputColumns: [0]
                       mode: hash
                       outputColumnNames: _col0
+<<<<<<< HEAD
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Reduce Output Operator
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+<<<<<<< HEAD
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -163,13 +179,21 @@ STAGE PLANS:
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
+<<<<<<< HEAD
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
+<<<<<<< HEAD
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -271,7 +295,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory_part_1
+<<<<<<< HEAD
                   Statistics: Num rows: 200 Data size: 780 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 200 Data size: 12640 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5]
@@ -282,7 +310,11 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumns: [3]
+<<<<<<< HEAD
                     Statistics: Num rows: 200 Data size: 780 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 200 Data size: 12640 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       Group By Vectorization:
@@ -295,14 +327,22 @@ STAGE PLANS:
                           projectedOutputColumns: [0]
                       mode: hash
                       outputColumnNames: _col0
+<<<<<<< HEAD
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Reduce Output Operator
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+<<<<<<< HEAD
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -336,13 +376,21 @@ STAGE PLANS:
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
+<<<<<<< HEAD
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
+<<<<<<< HEAD
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -444,7 +492,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory_part_2a
+<<<<<<< HEAD
                   Statistics: Num rows: 200 Data size: 780 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4]
@@ -455,7 +507,11 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumns: [3]
+<<<<<<< HEAD
                     Statistics: Num rows: 200 Data size: 780 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       Group By Vectorization:
@@ -468,14 +524,22 @@ STAGE PLANS:
                           projectedOutputColumns: [0]
                       mode: hash
                       outputColumnNames: _col0
+<<<<<<< HEAD
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Reduce Output Operator
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+<<<<<<< HEAD
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -509,13 +573,21 @@ STAGE PLANS:
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
+<<<<<<< HEAD
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
+<<<<<<< HEAD
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -604,7 +676,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory_part_2b
+<<<<<<< HEAD
                   Statistics: Num rows: 200 Data size: 792 Basic stats: COMPLETE Column stats: PARTIAL
+=======
+                  Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5]
@@ -615,7 +691,11 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumns: [3]
+<<<<<<< HEAD
                     Statistics: Num rows: 200 Data size: 792 Basic stats: COMPLETE Column stats: PARTIAL
+=======
+                    Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       Group By Vectorization:
@@ -628,14 +708,22 @@ STAGE PLANS:
                           projectedOutputColumns: [0]
                       mode: hash
                       outputColumnNames: _col0
+<<<<<<< HEAD
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+=======
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Reduce Output Operator
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+<<<<<<< HEAD
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+=======
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -669,13 +757,21 @@ STAGE PLANS:
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
+<<<<<<< HEAD
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+=======
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
+<<<<<<< HEAD
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+=======
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -764,7 +860,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory_part_3
+<<<<<<< HEAD
                   Statistics: Num rows: 200 Data size: 780 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4]
@@ -775,7 +875,11 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumns: [3]
+<<<<<<< HEAD
                     Statistics: Num rows: 200 Data size: 780 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       Group By Vectorization:
@@ -788,14 +892,22 @@ STAGE PLANS:
                           projectedOutputColumns: [0]
                       mode: hash
                       outputColumnNames: _col0
+<<<<<<< HEAD
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Reduce Output Operator
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+<<<<<<< HEAD
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -829,13 +941,21 @@ STAGE PLANS:
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
+<<<<<<< HEAD
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
+<<<<<<< HEAD
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

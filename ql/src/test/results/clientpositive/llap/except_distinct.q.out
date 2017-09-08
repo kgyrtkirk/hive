@@ -701,42 +701,74 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+<<<<<<< HEAD
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: value (type: int)
                     outputColumnNames: value
                     Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: value (type: int)
+                    outputColumnNames: value
+                    Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                     Group By Operator
                       keys: value (type: int)
                       mode: hash
                       outputColumnNames: _col0
+<<<<<<< HEAD
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                      Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
+<<<<<<< HEAD
                         Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
             Execution mode: llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: b
+<<<<<<< HEAD
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int)
                     outputColumnNames: key
                     Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: key
+                    Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                     Group By Operator
                       keys: key (type: int)
                       mode: hash
                       outputColumnNames: _col0
+<<<<<<< HEAD
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                      Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
+<<<<<<< HEAD
                         Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -746,12 +778,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
+<<<<<<< HEAD
                 Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 Group By Operator
                   aggregations: count()
                   keys: _col0 (type: int)
                   mode: complete
                   outputColumnNames: _col0, _col1
+<<<<<<< HEAD
                   Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), 2 (type: bigint), _col1 (type: bigint)
@@ -761,17 +798,36 @@ STAGE PLANS:
                       expressions: _col0 (type: int), _col2 (type: bigint), (_col1 * _col2) (type: bigint)
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: int), 2 (type: bigint), _col1 (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: int), _col2 (type: bigint), (_col1 * _col2) (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Group By Operator
                         aggregations: sum(_col1), sum(_col2)
                         keys: _col0 (type: int)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
+<<<<<<< HEAD
                         Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
+<<<<<<< HEAD
                           Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                           value expressions: _col1 (type: bigint), _col2 (type: bigint)
         Reducer 4 
             Execution mode: llap
@@ -781,6 +837,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
+<<<<<<< HEAD
                 Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: ((_col1 > 0) and ((_col1 * 2) = _col2)) (type: boolean)
@@ -792,6 +849,19 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: ((_col1 > 0) and ((_col1 * 2) = _col2)) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -803,12 +873,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
+<<<<<<< HEAD
                 Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 Group By Operator
                   aggregations: count()
                   keys: _col0 (type: int)
                   mode: complete
                   outputColumnNames: _col0, _col1
+<<<<<<< HEAD
                   Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), 1 (type: bigint), _col1 (type: bigint)
@@ -818,17 +893,36 @@ STAGE PLANS:
                       expressions: _col0 (type: int), _col2 (type: bigint), (_col1 * _col2) (type: bigint)
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: int), 1 (type: bigint), _col1 (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: int), _col2 (type: bigint), (_col1 * _col2) (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Group By Operator
                         aggregations: sum(_col1), sum(_col2)
                         keys: _col0 (type: int)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
+<<<<<<< HEAD
                         Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
+<<<<<<< HEAD
                           Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                           value expressions: _col1 (type: bigint), _col2 (type: bigint)
         Union 3 
             Vertex: Union 3

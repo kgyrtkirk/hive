@@ -44,6 +44,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
@@ -96,6 +98,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     } else {
       return false;
     }
+  }
+
+  @Override
+  public boolean isActiveTransaction() {
+    return false;
   }
 
   // All remaining functions simply delegate to objectStore
@@ -788,6 +795,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst) {
+    return  objectStore.getNotificationEventsCount(rqst);
+  }
+
+  @Override
   public void flushCache() {
     objectStore.flushCache();
   }
@@ -863,12 +875,13 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void createTableWithConstraints(Table tbl,
+  public List<String> createTableWithConstraints(Table tbl,
     List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
     List<SQLUniqueConstraint> uniqueConstraints,
     List<SQLNotNullConstraint> notNullConstraints)
     throws InvalidObjectException, MetaException {
     // TODO Auto-generated method stub
+    return null;
   }
 
   @Override
@@ -878,27 +891,29 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void addPrimaryKeys(List<SQLPrimaryKey> pks)
+  public List<String> addPrimaryKeys(List<SQLPrimaryKey> pks)
     throws InvalidObjectException, MetaException {
-    // TODO Auto-generated method stub
+    return null;
   }
 
   @Override
-  public void addForeignKeys(List<SQLForeignKey> fks)
+  public List<String> addForeignKeys(List<SQLForeignKey> fks)
     throws InvalidObjectException, MetaException {
-    // TODO Auto-generated method stub
+    return null;
   }
 
   @Override
-  public void addUniqueConstraints(List<SQLUniqueConstraint> uks)
+  public List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks)
     throws InvalidObjectException, MetaException {
     // TODO Auto-generated method stub
+    return null;
   }
 
   @Override
-  public void addNotNullConstraints(List<SQLNotNullConstraint> nns)
+  public List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns)
     throws InvalidObjectException, MetaException {
     // TODO Auto-generated method stub
+    return null;
   }
 
   @Override

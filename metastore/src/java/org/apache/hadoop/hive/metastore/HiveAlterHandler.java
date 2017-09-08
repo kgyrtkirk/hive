@@ -121,7 +121,7 @@ public class HiveAlterHandler implements AlterHandler {
     boolean success = false;
     boolean dataWasMoved = false;
     Table oldt = null;
-    List<MetaStoreEventListener> transactionalListeners = null;
+    List<TransactionalMetaStoreEventListener> transactionalListeners = null;
     if (handler != null) {
       transactionalListeners = handler.getTransactionalListeners();
     }
@@ -220,10 +220,10 @@ public class HiveAlterHandler implements AlterHandler {
                   + newDbName + "." + newTblName + " already exists : " + destPath);
             }
             // check that src exists and also checks permissions necessary, rename src to dest
-            if (srcFs.exists(srcPath) && srcFs.rename(srcPath, destPath)) {
+            if (srcFs.exists(srcPath) && wh.renameDir(srcPath, destPath, true)) {
               dataWasMoved = true;
             }
-          } catch (IOException e) {
+          } catch (IOException | MetaException e) {
             LOG.error("Alter Table operation for " + dbname + "." + name + " failed.", e);
             throw new InvalidOperationException("Alter Table operation for " + dbname + "." + name +
                 " failed to move data due to: '" + getSimpleMessage(e)
@@ -357,13 +357,13 @@ public class HiveAlterHandler implements AlterHandler {
   }
 
   /**
-   * RemoteExceptionS from hadoop RPC wrap the stack trace into e.getMessage() which makes
-   * logs/stack traces confusing.
+   * MetaException that encapsulates error message from RemoteException from hadoop RPC which wrap
+   * the stack trace into e.getMessage() which makes logs/stack traces confusing.
    * @param ex
    * @return
    */
-  String getSimpleMessage(IOException ex) {
-    if(ex instanceof RemoteException) {
+  String getSimpleMessage(Exception ex) {
+    if(ex instanceof MetaException) {
       String msg = ex.getMessage();
       if(msg == null || !msg.contains("\n")) {
         return msg;
@@ -388,7 +388,7 @@ public class HiveAlterHandler implements AlterHandler {
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     boolean success = false;
     Partition oldPart = null;
-    List<MetaStoreEventListener> transactionalListeners = null;
+    List<TransactionalMetaStoreEventListener> transactionalListeners = null;
     if (handler != null) {
       transactionalListeners = handler.getTransactionalListeners();
     }
@@ -526,7 +526,7 @@ public class HiveAlterHandler implements AlterHandler {
               }
 
               //rename the data directory
-              wh.renameDir(srcPath, destPath);
+              wh.renameDir(srcPath, destPath, true);
               LOG.info("Partition directory rename from " + srcPath + " to " + destPath + " done.");
               dataWasMoved = true;
             }
@@ -580,7 +580,7 @@ public class HiveAlterHandler implements AlterHandler {
           LOG.error("Revert the data move in renaming a partition.");
           try {
             if (destFs.exists(destPath)) {
-              wh.renameDir(destPath, srcPath);
+              wh.renameDir(destPath, srcPath, false);
             }
           } catch (MetaException me) {
             LOG.error("Failed to restore partition data from " + destPath + " to " + srcPath
@@ -610,7 +610,7 @@ public class HiveAlterHandler implements AlterHandler {
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     List<Partition> oldParts = new ArrayList<Partition>();
     List<List<String>> partValsList = new ArrayList<List<String>>();
-    List<MetaStoreEventListener> transactionalListeners = null;
+    List<TransactionalMetaStoreEventListener> transactionalListeners = null;
     if (handler != null) {
       transactionalListeners = handler.getTransactionalListeners();
     }

@@ -33,7 +33,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.registry.ServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.registry.impl.LlapZookeeperRegistryImpl;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -103,6 +103,7 @@ public class LlapWebServices extends AbstractService {
       this.http.addServlet("status", "/status", LlapStatusServlet.class);
       this.http.addServlet("peers", "/peers", LlapPeerRegistryServlet.class);
       this.http.addServlet("iomem", "/iomem", LlapIoMemoryServlet.class);
+      this.http.addServlet("system", "/system", SystemConfigurationServlet.class);
     } catch (IOException e) {
       LOG.warn("LLAP web service failed to come up", e);
     }
@@ -229,7 +230,7 @@ public class LlapWebServices extends AbstractService {
           }
           jg.writeStringField("identity", registry.getWorkerIdentity());
           jg.writeArrayFieldStart("peers");
-          for (ServiceInstance s : registry.getInstances().getAllInstancesOrdered(false)) {
+          for (LlapServiceInstance s : registry.getInstances().getAllInstancesOrdered(false)) {
             jg.writeStartObject();
             jg.writeStringField("identity", s.getWorkerIdentity());
             jg.writeStringField("host", s.getHost());

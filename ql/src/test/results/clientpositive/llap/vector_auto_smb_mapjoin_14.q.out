@@ -68,6 +68,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -87,13 +88,38 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
+<<<<<<< HEAD
                         Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         Group By Operator
                           aggregations: count()
                           Group By Vectorization:
@@ -206,6 +232,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -225,6 +252,27 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -232,7 +280,11 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                         outputColumnNames: _col0
+<<<<<<< HEAD
                         Statistics: Num rows: 16 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         Group By Operator
                           Group By Vectorization:
                               groupByMode: HASH
@@ -243,12 +295,20 @@ STAGE PLANS:
                           keys: _col0 (type: int)
                           mode: hash
                           outputColumnNames: _col0
+<<<<<<< HEAD
                           Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                          Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                           Reduce Output Operator
                             key expressions: _col0 (type: int)
                             sort order: +
                             Map-reduce partition columns: _col0 (type: int)
+<<<<<<< HEAD
                             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                            Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
             Execution mode: llap
         Reducer 2 
             Execution mode: vectorized, llap
@@ -272,13 +332,21 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
+<<<<<<< HEAD
                 Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 Select Operator
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumns: []
+<<<<<<< HEAD
                   Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   Group By Operator
                     aggregations: count()
                     Group By Vectorization:
@@ -413,7 +481,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (ONE_TO_ONE_EDGE), Reducer 6 (ONE_TO_ONE_EDGE)
         Reducer 6 <- Map 5 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
@@ -421,6 +489,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -440,6 +509,27 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -447,7 +537,11 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                         outputColumnNames: _col0
+<<<<<<< HEAD
                         Statistics: Num rows: 16 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         Group By Operator
                           aggregations: count()
                           Group By Vectorization:
@@ -459,18 +553,27 @@ STAGE PLANS:
                           keys: _col0 (type: int)
                           mode: hash
                           outputColumnNames: _col0, _col1
+<<<<<<< HEAD
                           Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                          Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                           Reduce Output Operator
                             key expressions: _col0 (type: int)
                             sort order: +
                             Map-reduce partition columns: _col0 (type: int)
+<<<<<<< HEAD
                             Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                            Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                             value expressions: _col1 (type: bigint)
             Execution mode: llap
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: b
+<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -490,6 +593,27 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -497,7 +621,11 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                         outputColumnNames: _col0
+<<<<<<< HEAD
                         Statistics: Num rows: 16 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         Group By Operator
                           aggregations: count()
                           Group By Vectorization:
@@ -509,12 +637,20 @@ STAGE PLANS:
                           keys: _col0 (type: int)
                           mode: hash
                           outputColumnNames: _col0, _col1
+<<<<<<< HEAD
                           Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                          Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                           Reduce Output Operator
                             key expressions: _col0 (type: int)
                             sort order: +
                             Map-reduce partition columns: _col0 (type: int)
+<<<<<<< HEAD
                             Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                            Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                             value expressions: _col1 (type: bigint)
             Execution mode: llap
         Reducer 2 
@@ -541,16 +677,24 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
+<<<<<<< HEAD
                 Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Reduce Sink Vectorization:
-                      className: VectorReduceSinkLongOperator
+                      className: VectorReduceSinkObjectHashOperator
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+<<<<<<< HEAD
                   Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   value expressions: _col1 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -562,6 +706,7 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col3
+<<<<<<< HEAD
                 Statistics: Num rows: 6 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col3 (type: bigint), _col1 (type: bigint)
@@ -570,6 +715,16 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     Statistics: Num rows: 6 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                Statistics: Num rows: 5 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), _col3 (type: bigint), _col1 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 5 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 5 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -598,16 +753,24 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
+<<<<<<< HEAD
                 Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Reduce Sink Vectorization:
-                      className: VectorReduceSinkLongOperator
+                      className: VectorReduceSinkObjectHashOperator
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+<<<<<<< HEAD
                   Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   value expressions: _col1 (type: bigint)
 
   Stage: Stage-0
@@ -694,6 +857,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
@@ -713,13 +877,38 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
+<<<<<<< HEAD
                         Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         Group By Operator
                           aggregations: count()
                           Group By Vectorization:
@@ -839,6 +1028,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key < 8) and (key < 6)) (type: boolean)
@@ -858,13 +1048,38 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
+<<<<<<< HEAD
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         Group By Operator
                           aggregations: count()
                           Group By Vectorization:
@@ -1008,6 +1223,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key < 8) and (key < 6)) (type: boolean)
@@ -1027,13 +1243,38 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
+<<<<<<< HEAD
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         Group By Operator
                           aggregations: count()
                           Group By Vectorization:
@@ -1165,6 +1406,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key < 8) (type: boolean)
@@ -1184,13 +1426,38 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 8) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 8) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
+<<<<<<< HEAD
                         Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         Group By Operator
                           aggregations: count()
                           Group By Vectorization:
@@ -1301,7 +1568,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1]
@@ -1311,7 +1582,11 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0) -> boolean
                     predicate: key is not null (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                     Select Operator
                       expressions: (key + 1) (type: int)
                       outputColumnNames: _col0
@@ -1320,7 +1595,11 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumns: [2]
                           selectExpressions: LongColAddLongScalar(col 0, val 1) -> 2:long
+<<<<<<< HEAD
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
@@ -1329,7 +1608,11 @@ STAGE PLANS:
                             className: VectorReduceSinkLongOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+<<<<<<< HEAD
                         Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1344,7 +1627,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1]
@@ -1354,7 +1641,11 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0) -> boolean
                     predicate: key is not null (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                     Select Operator
                       expressions: (key + 1) (type: int)
                       outputColumnNames: _col0
@@ -1363,7 +1654,11 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumns: [2]
                           selectExpressions: LongColAddLongScalar(col 0, val 1) -> 2:long
+<<<<<<< HEAD
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
@@ -1372,7 +1667,11 @@ STAGE PLANS:
                             className: VectorReduceSinkLongOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+<<<<<<< HEAD
                         Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1392,7 +1691,11 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
+<<<<<<< HEAD
                 Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 Group By Operator
                   aggregations: count()
                   Group By Vectorization:
@@ -1497,6 +1800,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
@@ -1516,13 +1820,38 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
+<<<<<<< HEAD
                         Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         Group By Operator
                           aggregations: count()
                           Group By Vectorization:
@@ -1634,6 +1963,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key < 6) (type: boolean)
@@ -1664,6 +1994,38 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1672,7 +2034,11 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                           2 _col0 (type: int)
+<<<<<<< HEAD
                         Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         Group By Operator
                           aggregations: count()
                           Group By Vectorization:
@@ -1800,6 +2166,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key < 8) and (key < 6)) (type: boolean)
@@ -1819,13 +2186,38 @@ STAGE PLANS:
                       expressions: key (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
+<<<<<<< HEAD
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                         Group By Operator
                           aggregations: count()
                           Group By Vectorization:
@@ -1968,6 +2360,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1987,6 +2380,27 @@ STAGE PLANS:
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1994,6 +2408,7 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col1, _col3
+<<<<<<< HEAD
                         Statistics: Num rows: 16 Data size: 2912 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
@@ -2006,6 +2421,20 @@ STAGE PLANS:
                             File Output Operator
                               compressed: false
                               Statistics: Num rows: 16 Data size: 1488 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
+                        Select Operator
+                          expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
+                          Select Operator
+                            expressions: _col0 (type: int), _col1 (type: string)
+                            outputColumnNames: _col0, _col1
+                            Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
+                            File Output Operator
+                              compressed: false
+                              Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                               table:
                                   input format: org.apache.hadoop.mapred.TextInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2032,7 +2461,11 @@ STAGE PLANS:
                                   value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
                           File Output Operator
                             compressed: false
+<<<<<<< HEAD
                             Statistics: Num rows: 16 Data size: 2912 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                            Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2279,6 +2712,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2298,6 +2732,27 @@ STAGE PLANS:
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -2305,10 +2760,17 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                         outputColumnNames: _col0, _col1
+<<<<<<< HEAD
                         Statistics: Num rows: 16 Data size: 1488 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
                           Statistics: Num rows: 16 Data size: 1488 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                        Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2336,7 +2798,11 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: int)
                           outputColumnNames: _col0
+<<<<<<< HEAD
                           Statistics: Num rows: 16 Data size: 1488 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                          Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                           Group By Operator
                             aggregations: count()
                             Group By Vectorization:
@@ -2348,12 +2814,20 @@ STAGE PLANS:
                             keys: _col0 (type: int)
                             mode: hash
                             outputColumnNames: _col0, _col1
+<<<<<<< HEAD
                             Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                            Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                             Reduce Output Operator
                               key expressions: _col0 (type: int)
                               sort order: +
                               Map-reduce partition columns: _col0 (type: int)
+<<<<<<< HEAD
                               Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                              Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                               value expressions: _col1 (type: bigint)
             Execution mode: llap
         Reducer 2 
@@ -2389,6 +2863,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
+<<<<<<< HEAD
                 Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), UDFToInteger(_col1) (type: int)
@@ -2397,6 +2872,23 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                Statistics: Num rows: 5 Data size: 940 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), UDFToInteger(_col1) (type: int)
+                  outputColumnNames: _col0, _col1
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumns: [0, 1]
+                  Statistics: Num rows: 5 Data size: 940 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+                    Statistics: Num rows: 5 Data size: 940 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

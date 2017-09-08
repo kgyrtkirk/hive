@@ -224,8 +224,12 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
+<<<<<<< HEAD
         Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
         Reducer 3 <- Reducer 2 (GROUP, 2)
+=======
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 3 (PARTITION-LEVEL SORT, 4)
+>>>>>>> asf/master
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -393,8 +397,13 @@ Database:           	default
 Table:              	test_table_out      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+<<<<<<< HEAD
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	2                   
+=======
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	4                   
+>>>>>>> asf/master
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	0                   
@@ -582,8 +591,12 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
+<<<<<<< HEAD
         Reducer 2 <- Map 1 (GROUP, 2)
         Reducer 3 <- Reducer 2 (GROUP, 2)
+=======
+        Reducer 2 <- Map 1 (GROUP, 4)
+>>>>>>> asf/master
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -728,8 +741,13 @@ Database:           	default
 Table:              	test_table_out      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+<<<<<<< HEAD
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	2                   
+=======
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	4                   
+>>>>>>> asf/master
 	numRows             	309                 
 	rawDataSize         	2728                
 	totalSize           	3037                

@@ -29,7 +29,9 @@ import java.util.Properties;
 
 import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.DruidStorageHandler;
@@ -42,7 +44,9 @@ import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -52,23 +56,25 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
-import org.joda.time.Period;
-import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,11 +82,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.metamx.common.lifecycle.Lifecycle;
-import com.metamx.common.parsers.ParseException;
-import com.metamx.http.client.HttpClient;
-import com.metamx.http.client.HttpClientConfig;
-import com.metamx.http.client.HttpClientInit;
 
 import io.druid.query.Druids;
 import io.druid.query.Druids.SegmentMetadataQueryBuilder;
@@ -88,8 +89,6 @@ import io.druid.query.Query;
 import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.query.aggregation.PostAggregator;
 import io.druid.query.dimension.DimensionSpec;
-import io.druid.query.dimension.ExtractionDimensionSpec;
-import io.druid.query.extraction.TimeFormatExtractionFn;
 import io.druid.query.groupby.GroupByQuery;
 import io.druid.query.metadata.metadata.ColumnAnalysis;
 import io.druid.query.metadata.metadata.SegmentAnalysis;
@@ -284,6 +283,8 @@ public class DruidSerDe extends AbstractSerDe {
     // Retrieve results
     List<SegmentAnalysis> resultsList;
     try {
+      // This will throw an exception in case of the response from druid is not an array
+      // this case occurs if for instance druid query execution returns an exception instead of array of results.
       resultsList = DruidStorageHandlerUtils.SMILE_MAPPER.readValue(response,
               new TypeReference<List<SegmentAnalysis>>() {
               }
@@ -492,10 +493,17 @@ public class DruidSerDe extends AbstractSerDe {
           res = ((HiveDecimalObjectInspector) fields.get(i).getFieldObjectInspector())
                   .getPrimitiveJavaObject(values.get(i)).doubleValue();
           break;
+        case CHAR:
+          res = ((HiveCharObjectInspector) fields.get(i).getFieldObjectInspector())
+                  .getPrimitiveJavaObject(values.get(i)).getValue();
+          break;
+        case VARCHAR:
+          res = ((HiveVarcharObjectInspector) fields.get(i).getFieldObjectInspector())
+                  .getPrimitiveJavaObject(values.get(i)).getValue();
+          break;
         case STRING:
           res = ((StringObjectInspector) fields.get(i).getFieldObjectInspector())
-                  .getPrimitiveJavaObject(
-                          values.get(i));
+                  .getPrimitiveJavaObject(values.get(i));
           break;
         default:
           throw new SerDeException("Unknown type: " + types[i].getPrimitiveCategory());
@@ -549,6 +557,20 @@ public class DruidSerDe extends AbstractSerDe {
           break;
         case DECIMAL:
           output.add(new HiveDecimalWritable(HiveDecimal.create(((Number) value).doubleValue())));
+          break;
+        case CHAR:
+          output.add(
+              new HiveCharWritable(
+                  new HiveChar(
+                      value.toString(),
+                      ((CharTypeInfo) types[i]).getLength())));
+          break;
+        case VARCHAR:
+          output.add(
+              new HiveVarcharWritable(
+                  new HiveVarchar(
+                      value.toString(),
+                      ((VarcharTypeInfo) types[i]).getLength())));
           break;
         case STRING:
           output.add(new Text(value.toString()));

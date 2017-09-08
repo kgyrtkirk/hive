@@ -20,15 +20,31 @@ package org.apache.hadoop.hive.ql.parse.repl.dump;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.io.IOUtils;
 
+import com.google.common.collect.Collections2;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class Utils {
+  public static final String BOOTSTRAP_DUMP_STATE_KEY_PREFIX = "bootstrap.dump.state.";
+
+  public enum ReplDumpState {
+    IDLE, ACTIVE
+  }
+
   public static void writeOutput(List<String> values, Path outputFile, HiveConf hiveConf)
       throws SemanticException {
     DataOutputStream outStream = null;
@@ -46,5 +62,88 @@ public class Utils {
     } finally {
       IOUtils.closeStream(outStream);
     }
+  }
+
+  public static Iterable<? extends String> matchesDb(Hive db, String dbPattern) throws HiveException {
+    if (dbPattern == null) {
+      return db.getAllDatabases();
+    } else {
+      return db.getDatabasesByPattern(dbPattern);
+    }
+  }
+
+  public static Iterable<? extends String> matchesTbl(Hive db, String dbName, String tblPattern)
+      throws HiveException {
+    if (tblPattern == null) {
+      return getAllTables(db, dbName);
+    } else {
+      return db.getTablesByPattern(dbName, tblPattern);
+    }
+  }
+
+  public static Collection<String> getAllTables(Hive db, String dbName) throws HiveException {
+    return Collections2.filter(db.getAllTables(dbName),
+            tableName -> {
+              assert tableName != null;
+              return !tableName.toLowerCase().startsWith(
+                      SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX.toLowerCase());
+            });
+  }
+
+  public static String setDbBootstrapDumpState(Hive hiveDb, String dbName) throws HiveException {
+    Database database = hiveDb.getDatabase(dbName);
+    if (database == null) {
+      return null;
+    }
+
+    Map<String, String> newParams = new HashMap<>();
+    String uniqueKey = BOOTSTRAP_DUMP_STATE_KEY_PREFIX + UUID.randomUUID().toString();
+    newParams.put(uniqueKey, ReplDumpState.ACTIVE.name());
+    Map<String, String> params = database.getParameters();
+
+    // if both old params are not null, merge them
+    if (params != null) {
+      params.putAll(newParams);
+      database.setParameters(params);
+    } else {
+      // if one of them is null, replace the old params with the new one
+      database.setParameters(newParams);
+    }
+
+    hiveDb.alterDatabase(dbName, database);
+    return uniqueKey;
+  }
+
+  public static void resetDbBootstrapDumpState(Hive hiveDb, String dbName,
+                                               String uniqueKey) throws HiveException {
+    Database database = hiveDb.getDatabase(dbName);
+    if (database != null) {
+      Map<String, String> params = database.getParameters();
+      if ((params != null) && params.containsKey(uniqueKey)) {
+        params.remove(uniqueKey);
+        database.setParameters(params);
+        hiveDb.alterDatabase(dbName, database);
+      }
+    }
+  }
+
+  public static boolean isBootstrapDumpInProgress(Hive hiveDb, String dbName) throws HiveException {
+    Database database = hiveDb.getDatabase(dbName);
+    if (database == null) {
+      return false;
+    }
+
+    Map<String, String> params = database.getParameters();
+    if (params == null) {
+      return false;
+    }
+
+    for (String key : params.keySet()) {
+      if (key.startsWith(BOOTSTRAP_DUMP_STATE_KEY_PREFIX)
+              && params.get(key).equals(ReplDumpState.ACTIVE.name())) {
+        return true;
+      }
+    }
+    return false;
   }
 }

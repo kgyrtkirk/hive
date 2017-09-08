@@ -38,9 +38,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+<<<<<<< HEAD
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
         Reducer 5 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
+=======
+        Reducer 3 <- Reducer 2 (ONE_TO_ONE_EDGE)
+>>>>>>> asf/master
 #### A masked pattern was here ####
       Vertices:
         Map 1 
