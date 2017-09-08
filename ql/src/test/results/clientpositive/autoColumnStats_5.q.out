@@ -627,14 +627,7 @@ PREHOOK: Input: default@partitioned1
 POSTHOOK: query: desc formatted partitioned1 partition(part=1) c
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partitioned1
-<<<<<<< HEAD
-col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
-	 	 	 	 	 	 	 	 	 	 
-c                   	int                 	from deserializer   	 	 	 	 	 	 	 	 
-=======
 col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment	bitvector
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 	 
-c                   	int                 	100                 	200                 	0                   	2                   	                    	                    	                    	                    	HL                  	from deserializer   
->>>>>>> asf/master
+c                   	int                 	from deserializer   	 	 	 	 	 	 	 	 	 

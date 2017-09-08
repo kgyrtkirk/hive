@@ -197,11 +197,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	0                   
 	rawDataSize         	0                   
-<<<<<<< HEAD
-	totalSize           	1756                
-=======
 	totalSize           	1798                
->>>>>>> asf/master
 	transactional       	true                
 #### A masked pattern was here ####
 	 	 
@@ -244,11 +240,7 @@ Table Parameters:
 	numFiles            	4                   
 	numRows             	0                   
 	rawDataSize         	0                   
-<<<<<<< HEAD
-	totalSize           	2798                
-=======
 	totalSize           	2909                
->>>>>>> asf/master
 	transactional       	true                
 #### A masked pattern was here ####
 	 	 
