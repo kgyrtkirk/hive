@@ -37,7 +37,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: x
@@ -109,7 +109,7 @@ STAGE PLANS:
                   name: default.src1
             Truncated Path -> Alias:
               /src1 [$hdt$_2:x]
-        Map 3 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: y
@@ -184,6 +184,8 @@ STAGE PLANS:
 
   Stage: Stage-1
     Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -208,7 +210,7 @@ STAGE PLANS:
                           1 _col1 (type: string)
                         outputColumnNames: _col0, _col3
                         input vertices:
-                          1 Map 2
+                          1 Map 3
                         Position of Big Table: 0
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
@@ -219,7 +221,7 @@ STAGE PLANS:
                             1 _col0 (type: string)
                           outputColumnNames: _col0, _col3, _col6
                           input vertices:
-                            1 Map 3
+                            1 Map 4
                           Position of Big Table: 0
                           Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
                           Select Operator
@@ -258,6 +260,22 @@ STAGE PLANS:
                               TotalFiles: 1
                               GatherStats: true
                               MultiFileSpray: false
+                            Select Operator
+                              expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                              outputColumnNames: key, value, val2
+                              Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                              Group By Operator
+                                aggregations: compute_stats(key, 16), compute_stats(value, 16), compute_stats(val2, 16)
+                                mode: hash
+                                outputColumnNames: _col0, _col1, _col2
+                                Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                                Reduce Output Operator
+                                  null sort order: 
+                                  sort order: 
+                                  Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                                  tag: -1
+                                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                                  auto parallelism: false
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -313,6 +331,36 @@ STAGE PLANS:
                   name: default.srcpart
             Truncated Path -> Alias:
               /srcpart/ds=2008-04-08/hr=11 [$hdt$_1:z]
+        Reducer 2 
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        columns _col0,_col1,_col2
+                        columns.types struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>:struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>:struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
 
   Stage: Stage-0
     Move Operator
@@ -343,8 +391,14 @@ STAGE PLANS:
               name: default.dest_j1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
+      Column Stats Desc:
+          Columns: key, value, val2
+          Column Types: string, string, string
+          Table: default.dest_j1
+          Is Table Level Stats: true
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1
 SELECT x.key, z.value, y.value
@@ -648,7 +702,7 @@ STAGE PLANS:
                   name: default.src1
             Truncated Path -> Alias:
               /src1 [$hdt$_2:x]
-        Map 4 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: y
@@ -723,6 +777,8 @@ STAGE PLANS:
 
   Stage: Stage-1
     Spark
+      Edges:
+        Reducer 4 <- Map 3 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 3 
@@ -758,7 +814,7 @@ STAGE PLANS:
                             1 _col0 (type: string)
                           outputColumnNames: _col0, _col3, _col6
                           input vertices:
-                            1 Map 4
+                            1 Map 5
                           Position of Big Table: 0
                           Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
                           Select Operator
@@ -776,7 +832,7 @@ STAGE PLANS:
                                   input format: org.apache.hadoop.mapred.TextInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                   properties:
-                                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val2":"true","value":"true"}}
                                     bucket_count -1
                                     column.name.delimiter ,
                                     columns key,value,val2
@@ -797,6 +853,22 @@ STAGE PLANS:
                               TotalFiles: 1
                               GatherStats: true
                               MultiFileSpray: false
+                            Select Operator
+                              expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                              outputColumnNames: key, value, val2
+                              Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                              Group By Operator
+                                aggregations: compute_stats(key, 16), compute_stats(value, 16), compute_stats(val2, 16)
+                                mode: hash
+                                outputColumnNames: _col0, _col1, _col2
+                                Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                                Reduce Output Operator
+                                  null sort order: 
+                                  sort order: 
+                                  Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                                  tag: -1
+                                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                                  auto parallelism: false
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -850,6 +922,36 @@ STAGE PLANS:
                   name: default.src
             Truncated Path -> Alias:
               /src [$hdt$_1:w]
+        Reducer 4 
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        columns _col0,_col1,_col2
+                        columns.types struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>:struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>:struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
 
   Stage: Stage-0
     Move Operator
@@ -860,7 +962,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val2":"true","value":"true"}}
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value,val2
@@ -880,8 +982,14 @@ STAGE PLANS:
               name: default.dest_j1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
+      Column Stats Desc:
+          Columns: key, value, val2
+          Column Types: string, string, string
+          Table: default.dest_j1
+          Is Table Level Stats: true
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1
 SELECT x.key, z.value, y.value
@@ -1094,7 +1202,7 @@ STAGE PLANS:
                   name: default.srcpart
             Truncated Path -> Alias:
               /srcpart/ds=2008-04-08/hr=11 [$hdt$_0:z]
-        Map 3 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: x
@@ -1169,6 +1277,8 @@ STAGE PLANS:
 
   Stage: Stage-1
     Spark
+      Edges:
+        Reducer 3 <- Map 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 2 
@@ -1193,7 +1303,7 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col1, _col2
                         input vertices:
-                          1 Map 3
+                          1 Map 4
                         Position of Big Table: 0
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
@@ -1247,6 +1357,22 @@ STAGE PLANS:
                                 TotalFiles: 1
                                 GatherStats: true
                                 MultiFileSpray: false
+                              Select Operator
+                                expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                                outputColumnNames: key, value, val2
+                                Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                                Group By Operator
+                                  aggregations: compute_stats(key, 16), compute_stats(value, 16), compute_stats(val2, 16)
+                                  mode: hash
+                                  outputColumnNames: _col0, _col1, _col2
+                                  Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                                  Reduce Output Operator
+                                    null sort order: 
+                                    sort order: 
+                                    Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                                    tag: -1
+                                    value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                                    auto parallelism: false
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -1300,6 +1426,36 @@ STAGE PLANS:
                   name: default.src
             Truncated Path -> Alias:
               /src [$hdt$_1:$hdt$_1:y]
+        Reducer 3 
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        columns _col0,_col1,_col2
+                        columns.types struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>:struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>:struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
 
   Stage: Stage-0
     Move Operator
@@ -1330,8 +1486,14 @@ STAGE PLANS:
               name: default.dest_j2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
+      Column Stats Desc:
+          Columns: key, value, val2
+          Column Types: string, string, string
+          Table: default.dest_j2
+          Is Table Level Stats: true
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j2
 SELECT res.key, z.value, res.value
@@ -1617,6 +1779,8 @@ STAGE PLANS:
 
   Stage: Stage-1
     Spark
+      Edges:
+        Reducer 4 <- Map 3 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 3 
@@ -1674,7 +1838,7 @@ STAGE PLANS:
                                     input format: org.apache.hadoop.mapred.TextInputFormat
                                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                     properties:
-                                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val2":"true","value":"true"}}
                                       bucket_count -1
                                       column.name.delimiter ,
                                       columns key,value,val2
@@ -1695,6 +1859,22 @@ STAGE PLANS:
                                 TotalFiles: 1
                                 GatherStats: true
                                 MultiFileSpray: false
+                              Select Operator
+                                expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                                outputColumnNames: key, value, val2
+                                Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                                Group By Operator
+                                  aggregations: compute_stats(key, 16), compute_stats(value, 16), compute_stats(val2, 16)
+                                  mode: hash
+                                  outputColumnNames: _col0, _col1, _col2
+                                  Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                                  Reduce Output Operator
+                                    null sort order: 
+                                    sort order: 
+                                    Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                                    tag: -1
+                                    value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                                    auto parallelism: false
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -1748,6 +1928,36 @@ STAGE PLANS:
                   name: default.src1
             Truncated Path -> Alias:
               /src1 [$hdt$_1:$hdt$_2:x]
+        Reducer 4 
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        columns _col0,_col1,_col2
+                        columns.types struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>:struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>:struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
 
   Stage: Stage-0
     Move Operator
@@ -1758,7 +1968,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val2":"true","value":"true"}}
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value,val2
@@ -1778,8 +1988,14 @@ STAGE PLANS:
               name: default.dest_j2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
+      Column Stats Desc:
+          Columns: key, value, val2
+          Column Types: string, string, string
+          Table: default.dest_j2
+          Is Table Level Stats: true
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j2
 SELECT res.key, z.value, res.value
@@ -1950,7 +2166,7 @@ STAGE PLANS:
                           1 _col1 (type: string)
             Local Work:
               Map Reduce Local Work
-        Map 3 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: x
@@ -1971,6 +2187,8 @@ STAGE PLANS:
 
   Stage: Stage-1
     Spark
+      Edges:
+        Reducer 3 <- Map 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 2 
@@ -1993,7 +2211,7 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col1, _col2
                         input vertices:
-                          1 Map 3
+                          1 Map 4
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col1 (type: string), _col2 (type: string)
@@ -2021,8 +2239,35 @@ STAGE PLANS:
                                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                                     name: default.dest_j2
+                              Select Operator
+                                expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                                outputColumnNames: key, value, val2
+                                Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                                Group By Operator
+                                  aggregations: compute_stats(key, 16), compute_stats(value, 16), compute_stats(val2, 16)
+                                  mode: hash
+                                  outputColumnNames: _col0, _col1, _col2
+                                  Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                                  Reduce Output Operator
+                                    sort order: 
+                                    Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                                    value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
             Local Work:
               Map Reduce Local Work
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Move Operator
@@ -2035,7 +2280,12 @@ STAGE PLANS:
               name: default.dest_j2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value, val2
+          Column Types: string, string, string
+          Table: default.dest_j2
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j2
 SELECT res.key, x.value, res.value  
@@ -2194,7 +2444,7 @@ STAGE PLANS:
                           1 _col1 (type: string)
             Local Work:
               Map Reduce Local Work
-        Map 3 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: x
@@ -2215,6 +2465,8 @@ STAGE PLANS:
 
   Stage: Stage-1
     Spark
+      Edges:
+        Reducer 3 <- Map 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 2 
@@ -2237,7 +2489,7 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col1, _col2
                         input vertices:
-                          1 Map 3
+                          1 Map 4
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col1 (type: string), _col2 (type: string)
@@ -2265,8 +2517,35 @@ STAGE PLANS:
                                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                                     name: default.dest_j2
+                              Select Operator
+                                expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                                outputColumnNames: key, value, val2
+                                Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                                Group By Operator
+                                  aggregations: compute_stats(key, 16), compute_stats(value, 16), compute_stats(val2, 16)
+                                  mode: hash
+                                  outputColumnNames: _col0, _col1, _col2
+                                  Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                                  Reduce Output Operator
+                                    sort order: 
+                                    Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                                    value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
             Local Work:
               Map Reduce Local Work
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Move Operator
@@ -2279,7 +2558,12 @@ STAGE PLANS:
               name: default.dest_j2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value, val2
+          Column Types: string, string, string
+          Table: default.dest_j2
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j2
 SELECT res.key, y.value, res.value

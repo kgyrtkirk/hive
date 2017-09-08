@@ -36,7 +36,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	170                 
@@ -60,7 +60,6 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-2 depends on stages: Stage-0
-  Stage-3 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-0
@@ -74,22 +73,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s
-                  Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                   Statistics Aggregation Key Prefix: default.s/
                   GatherStats: true
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(key, 16), compute_stats(value, 16)
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 984 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 984 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 984 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 984 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: -1
                         value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
                         auto parallelism: false
@@ -104,7 +103,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,value
@@ -125,7 +124,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
                       column.name.delimiter ,
                       columns key,value
@@ -154,13 +153,13 @@ STAGE PLANS:
                 aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 984 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 960 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 984 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 960 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -179,10 +178,8 @@ STAGE PLANS:
                   MultiFileSpray: false
 
   Stage: Stage-2
-    Stats-Aggr Operator
-
-  Stage: Stage-3
-    Column Stats Work
+    Stats Work
+      Basic Stats NoJob Work:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
@@ -315,7 +312,6 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-2 depends on stages: Stage-0
-  Stage-3 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-0
@@ -365,7 +361,7 @@ STAGE PLANS:
                     ds 2008-04-08
                     hr 11
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
 #### A masked pattern was here ####
                     name default.spart
@@ -409,7 +405,7 @@ STAGE PLANS:
                     ds 2008-04-08
                     hr 12
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
 #### A masked pattern was here ####
                     name default.spart
@@ -485,10 +481,8 @@ STAGE PLANS:
                     MultiFileSpray: false
 
   Stage: Stage-2
-    Stats-Aggr Operator
-
-  Stage: Stage-3
-    Column Stats Work
+    Stats Work
+      Basic Stats NoJob Work:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
@@ -720,7 +714,6 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-2 depends on stages: Stage-0
-  Stage-3 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-0
@@ -770,7 +763,7 @@ STAGE PLANS:
                     ds 2008-04-08
                     hr 11
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
 #### A masked pattern was here ####
                     name default.spart
@@ -845,10 +838,8 @@ STAGE PLANS:
                     MultiFileSpray: false
 
   Stage: Stage-2
-    Stats-Aggr Operator
-
-  Stage: Stage-3
-    Column Stats Work
+    Stats Work
+      Basic Stats NoJob Work:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
@@ -974,7 +965,7 @@ Database:           	default
 Table:              	spart               	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	170                 

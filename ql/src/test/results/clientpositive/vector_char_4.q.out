@@ -148,38 +148,60 @@ STAGE PLANS:
           TableScan
             alias: vectortab2korc
             Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
-            TableScan Vectorization:
-                native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
             Select Operator
               expressions: CAST( t AS CHAR(10) (type: char(10)), CAST( si AS CHAR(10) (type: char(10)), CAST( i AS CHAR(20) (type: char(20)), CAST( b AS CHAR(30) (type: char(30)), CAST( f AS CHAR(20) (type: char(20)), CAST( d AS CHAR(20) (type: char(20)), CAST( s AS CHAR(50) (type: char(50))
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-              Select Vectorization:
-                  className: VectorSelectOperator
-                  native: true
-                  projectedOutputColumns: [13, 14, 15, 16, 17, 18, 19]
-                  selectExpressions: CastLongToChar(col 0, maxLength 10) -> 13:Char, CastLongToChar(col 1, maxLength 10) -> 14:Char, CastLongToChar(col 2, maxLength 20) -> 15:Char, CastLongToChar(col 3, maxLength 30) -> 16:Char, VectorUDFAdaptor(CAST( f AS CHAR(20)) -> 17:char(20), VectorUDFAdaptor(CAST( d AS CHAR(20)) -> 18:char(20), CastStringGroupToChar(col 8, maxLength 50) -> 19:Char
               Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                File Sink Vectorization:
-                    className: VectorFileSinkOperator
-                    native: false
                 Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe
                     name: default.char_lazy_binary_columnar
-      Execution mode: vectorized
+              Select Operator
+                expressions: _col0 (type: char(10)), _col1 (type: char(10)), _col2 (type: char(20)), _col3 (type: char(30)), _col4 (type: char(20)), _col5 (type: char(20)), _col6 (type: char(50))
+                outputColumnNames: ct, csi, ci, cb, cf, cd, cs
+                Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: compute_stats(ct, 16), compute_stats(csi, 16), compute_stats(ci, 16), compute_stats(cb, 16), compute_stats(cf, 16), compute_stats(cd, 16), compute_stats(cs, 16)
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                  Statistics: Num rows: 1 Data size: 3444 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 3444 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col5 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col6 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          allNative: false
-          usesVectorUDFAdaptor: true
-          vectorized: true
+          notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
+          vectorized: false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3), compute_stats(VALUE._col4), compute_stats(VALUE._col5), compute_stats(VALUE._col6)
+          Group By Vectorization:
+              groupByMode: MERGEPARTIAL
+              vectorOutput: false
+              native: false
+              vectorProcessingMode: NONE
+              projectedOutputColumns: null
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+          Statistics: Num rows: 1 Data size: 3444 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 3444 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-7
     Conditional Operator
@@ -201,7 +223,12 @@ STAGE PLANS:
               name: default.char_lazy_binary_columnar
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: ct, csi, ci, cb, cf, cd, cs
+          Column Types: char(10), char(10), char(20), char(30), char(20), char(20), char(50)
+          Table: default.char_lazy_binary_columnar
 
   Stage: Stage-3
     Merge File Operator

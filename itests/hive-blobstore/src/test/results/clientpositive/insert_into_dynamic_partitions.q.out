@@ -109,6 +109,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"tmp_values_col1":"true","tmp_values_col2":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns tmp_values_col1,tmp_values_col2
@@ -116,14 +117,19 @@ STAGE PLANS:
               columns.types string:string
 #### A masked pattern was here ####
               name default.values__tmp__table__3
+              numFiles 0
+              numRows 0
+              rawDataSize 0
               serialization.ddl struct values__tmp__table__3 { string tmp_values_col1, string tmp_values_col2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 0
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"tmp_values_col1":"true","tmp_values_col2":"true"}}
                 bucket_count -1
                 column.name.delimiter ,
                 columns tmp_values_col1,tmp_values_col2
@@ -131,9 +137,13 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.values__tmp__table__3
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct values__tmp__table__3 { string tmp_values_col1, string tmp_values_col2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.values__tmp__table__3
             name: default.values__tmp__table__3
@@ -208,8 +218,14 @@ STAGE PLANS:
               name: default.table1
 
   Stage: Stage-2
-    Stats-Aggr Operator
-      Stats Aggregation Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+      Column Stats Desc:
+          Columns: id
+          Column Types: int
+          Table: default.table1
+          Is Table Level Stats: false
 
 PREHOOK: query: DROP TABLE table1
 PREHOOK: type: DROPTABLE

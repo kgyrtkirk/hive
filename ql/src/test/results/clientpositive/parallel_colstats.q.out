@@ -29,8 +29,6 @@ STAGE DEPENDENCIES:
   Stage-3 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-3
   Stage-4 depends on stages: Stage-0
-  Stage-8 depends on stages: Stage-4, Stage-5, Stage-6, Stage-7
-  Stage-9 depends on stages: Stage-4, Stage-5, Stage-6, Stage-7
   Stage-5 depends on stages: Stage-3
   Stage-1 depends on stages: Stage-3
   Stage-6 depends on stages: Stage-1
@@ -150,21 +148,12 @@ STAGE PLANS:
               name: default.src_a
 
   Stage: Stage-4
-    Stats-Aggr Operator
-
-  Stage: Stage-8
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
           Table: default.src_a
-
-  Stage: Stage-9
-    Column Stats Work
-      Column Stats Desc:
-          Columns: key, value
-          Column Types: string, string
-          Table: default.src_b
 
   Stage: Stage-5
     Map Reduce
@@ -199,7 +188,12 @@ STAGE PLANS:
               name: default.src_b
 
   Stage: Stage-6
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: string, string
+          Table: default.src_b
 
   Stage: Stage-7
     Map Reduce

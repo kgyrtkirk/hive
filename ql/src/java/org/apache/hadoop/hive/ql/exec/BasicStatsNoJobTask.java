@@ -50,7 +50,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
-import org.apache.hadoop.hive.ql.plan.StatsNoJobWork;
+import org.apache.hadoop.hive.ql.plan.BasicStatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
@@ -73,16 +73,16 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * rows. This task can be used for computing basic stats like numFiles, numRows, fileSize,
  * rawDataSize from ORC footer.
  **/
-public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable {
+public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private static transient final Logger LOG = LoggerFactory.getLogger(StatsNoJobTask.class);
+  private static transient final Logger LOG = LoggerFactory.getLogger(BasicStatsNoJobTask.class);
   private ConcurrentMap<String, Partition> partUpdates;
   private Table table;
   private String tableFullName;
   private JobConf jc = null;
 
-  public StatsNoJobTask() {
+  public BasicStatsNoJobTask() {
     super();
   }
 
@@ -143,7 +143,6 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
       // get the list of partitions
       org.apache.hadoop.hive.metastore.api.Partition tPart = partn.getTPartition();
       Map<String, String> parameters = tPart.getParameters();
-
       try {
         Path dir = new Path(tPart.getSd().getLocation());
         long numRows = 0;
@@ -176,6 +175,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
         }
 
         if (statsAvailable) {
+
           parameters.put(StatsSetupConst.ROW_COUNT, String.valueOf(numRows));
           parameters.put(StatsSetupConst.RAW_DATA_SIZE, String.valueOf(rawDataSize));
           parameters.put(StatsSetupConst.TOTAL_SIZE, String.valueOf(fileSize));
@@ -285,7 +285,6 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
             parameters.put(StatsSetupConst.NUM_FILES, String.valueOf(numFiles));
             EnvironmentContext environmentContext = new EnvironmentContext();
             environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
-
             db.alterTable(tableFullName, new Table(tTable), environmentContext);
 
             String msg = "Table " + tableFullName + " stats: [" + toString(parameters) + ']';

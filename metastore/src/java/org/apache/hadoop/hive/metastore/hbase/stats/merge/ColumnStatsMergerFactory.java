@@ -49,12 +49,8 @@ public class ColumnStatsMergerFactory {
   public static ColumnStatsMerger getColumnStatsMerger(ColumnStatisticsObj statsObjNew,
       ColumnStatisticsObj statsObjOld) {
     ColumnStatsMerger agg;
-    _Fields typeNew = statsObjNew.getStatsData().getSetField();
-    _Fields typeOld = statsObjOld.getStatsData().getSetField();
-    // make sure that they have the same type
-    typeNew = typeNew == typeOld ? typeNew : null;
     int numBitVectors = 0;
-    switch (typeNew) {
+    switch (statsObjNew.getStatsData().getSetField()) {
     case BOOLEAN_STATS:
       agg = new BooleanColumnStatsMerger();
       break;
@@ -97,7 +93,7 @@ public class ColumnStatsMergerFactory {
       break;
     }
     default:
-      throw new IllegalArgumentException("Unknown stats type " + typeNew.toString());
+      throw new IllegalArgumentException("Unknown stats type " + statsObjNew.getStatsData().getSetField());
     }
     if (numBitVectors > 0) {
       agg.ndvEstimator = new NumDistinctValueEstimator(numBitVectors);

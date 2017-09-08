@@ -97,7 +97,8 @@ STAGE PLANS:
           name: default.nzhang_CTAS1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-0
     Move Operator
@@ -253,7 +254,8 @@ STAGE PLANS:
           name: default.nzhang_ctas2
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-0
     Move Operator
@@ -409,7 +411,8 @@ STAGE PLANS:
           name: default.nzhang_ctas3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-0
     Move Operator
@@ -630,7 +633,8 @@ STAGE PLANS:
           name: default.nzhang_ctas4
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-0
     Move Operator
@@ -790,7 +794,8 @@ STAGE PLANS:
           name: default.nzhang_ctas5
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-0
     Move Operator

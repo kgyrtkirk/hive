@@ -421,6 +421,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
 
     // Add temp table info to current session
     Table tTable = new Table(tbl);
+    StatsSetupConst.setStatsStateForCreateTable(tbl.getParameters(),
+        MetaStoreUtils.getColumnNamesForTable(tbl), StatsSetupConst.TRUE);
     if (tables == null) {
       tables = new HashMap<String, Table>();
       ss.getTempTables().put(dbName, tables);
@@ -698,6 +700,13 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
           ssTableColStats);
     }
     mergeColumnStats(ssTableColStats, colStats);
+    
+    List<String> colNames = new ArrayList<>();
+    for (ColumnStatisticsObj obj : colStats.getStatsObj()) {
+      colNames.add(obj.getColName());
+    }
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tableName);
+    StatsSetupConst.setColumnStatsState(table.getParameters(), colNames);
     return true;
   }
 

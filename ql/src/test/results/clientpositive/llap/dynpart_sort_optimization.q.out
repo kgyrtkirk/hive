@@ -180,7 +180,12 @@ STAGE PLANS:
               name: default.over1k_part
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, i, b, f
+          Column Types: smallint, int, bigint, float
+          Table: default.over1k_part
 
 PREHOOK: query: explain insert overwrite table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27 limit 10
 PREHOOK: type: QUERY
@@ -273,7 +278,12 @@ STAGE PLANS:
               name: default.over1k_part_limit
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, i, b, f
+          Column Types: smallint, int, bigint, float
+          Table: default.over1k_part_limit
 
 PREHOOK: query: explain insert overwrite table over1k_part_buck partition(t) select si,i,b,f,t from over1k where t is null or t=27
 PREHOOK: type: QUERY
@@ -346,7 +356,12 @@ STAGE PLANS:
               name: default.over1k_part_buck
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, i, b, f
+          Column Types: smallint, int, bigint, float
+          Table: default.over1k_part_buck
 
 PREHOOK: query: explain insert overwrite table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k where t is null or t=27
 PREHOOK: type: QUERY
@@ -419,7 +434,12 @@ STAGE PLANS:
               name: default.over1k_part_buck_sort
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, i, b, f
+          Column Types: smallint, int, bigint, float
+          Table: default.over1k_part_buck_sort
 
 PREHOOK: query: insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
 PREHOOK: type: QUERY
@@ -561,7 +581,12 @@ STAGE PLANS:
               name: default.over1k_part
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, i, b, f
+          Column Types: smallint, int, bigint, float
+          Table: default.over1k_part
 
 PREHOOK: query: explain insert into table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27 limit 10
 PREHOOK: type: QUERY
@@ -654,7 +679,12 @@ STAGE PLANS:
               name: default.over1k_part_limit
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, i, b, f
+          Column Types: smallint, int, bigint, float
+          Table: default.over1k_part_limit
 
 PREHOOK: query: explain insert into table over1k_part_buck partition(t) select si,i,b,f,t from over1k where t is null or t=27
 PREHOOK: type: QUERY
@@ -727,7 +757,12 @@ STAGE PLANS:
               name: default.over1k_part_buck
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, i, b, f
+          Column Types: smallint, int, bigint, float
+          Table: default.over1k_part_buck
 
 PREHOOK: query: explain insert into table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k where t is null or t=27
 PREHOOK: type: QUERY
@@ -800,7 +835,12 @@ STAGE PLANS:
               name: default.over1k_part_buck_sort
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, i, b, f
+          Column Types: smallint, int, bigint, float
+          Table: default.over1k_part_buck_sort
 
 PREHOOK: query: insert into table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
 PREHOOK: type: QUERY
@@ -895,7 +935,7 @@ Database:           	default
 Table:              	over1k_part         	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"f\":\"true\",\"i\":\"true\",\"si\":\"true\"}}
 	numFiles            	2                   
 	numRows             	32                  
 	rawDataSize         	830                 
@@ -937,7 +977,7 @@ Database:           	default
 Table:              	over1k_part         	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"f\":\"true\",\"i\":\"true\",\"si\":\"true\"}}
 	numFiles            	2                   
 	numRows             	6                   
 	rawDataSize         	156                 
@@ -979,7 +1019,7 @@ Database:           	default
 Table:              	over1k_part_limit   	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"f\":\"true\",\"i\":\"true\",\"si\":\"true\"}}
 	numFiles            	2                   
 	numRows             	14                  
 	rawDataSize         	362                 
@@ -1021,7 +1061,7 @@ Database:           	default
 Table:              	over1k_part_limit   	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"f\":\"true\",\"i\":\"true\",\"si\":\"true\"}}
 	numFiles            	2                   
 	numRows             	6                   
 	rawDataSize         	156                 
@@ -1062,7 +1102,7 @@ Database:           	default
 Table:              	over1k_part_buck    	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"f\":\"true\",\"i\":\"true\",\"si\":\"true\"}}
 	numFiles            	8                   
 	numRows             	32                  
 	rawDataSize         	830                 
@@ -1103,7 +1143,7 @@ Database:           	default
 Table:              	over1k_part_buck    	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"f\":\"true\",\"i\":\"true\",\"si\":\"true\"}}
 	numFiles            	4                   
 	numRows             	6                   
 	rawDataSize         	156                 
@@ -1144,7 +1184,7 @@ Database:           	default
 Table:              	over1k_part_buck_sort	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"f\":\"true\",\"i\":\"true\",\"si\":\"true\"}}
 	numFiles            	8                   
 	numRows             	32                  
 	rawDataSize         	830                 
@@ -1185,7 +1225,7 @@ Database:           	default
 Table:              	over1k_part_buck_sort	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"f\":\"true\",\"i\":\"true\",\"si\":\"true\"}}
 	numFiles            	4                   
 	numRows             	6                   
 	rawDataSize         	156                 
@@ -1288,6 +1328,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1324,6 +1365,42 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.over1k_part2
+                Select Operator
+                  expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), 'foo' (type: string), _col4 (type: tinyint)
+                  outputColumnNames: si, i, b, f, ds, t
+                  Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: compute_stats(si, 16), compute_stats(i, 16), compute_stats(b, 16), compute_stats(f, 16)
+                    keys: ds (type: string), t (type: tinyint)
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: tinyint)
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string), _col1 (type: tinyint)
+                      Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col4 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col5 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string,numbitvectors:int>)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
+                keys: KEY._col0 (type: string), KEY._col1 (type: tinyint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 2221 Data size: 53305 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col4 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col5 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: string), _col1 (type: tinyint)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Statistics: Num rows: 2221 Data size: 53305 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2221 Data size: 53305 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Dependency Collection
@@ -1342,7 +1419,12 @@ STAGE PLANS:
               name: default.over1k_part2
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, i, b, f
+          Column Types: smallint, int, bigint, float
+          Table: default.over1k_part2
 
 PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 order by i
 PREHOOK: type: QUERY
@@ -1416,7 +1498,12 @@ STAGE PLANS:
               name: default.over1k_part2
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, i, b, f
+          Column Types: smallint, int, bigint, float
+          Table: default.over1k_part2
 
 PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from (select * from over1k order by i limit 10) tmp where t is null or t=27
 PREHOOK: type: QUERY
@@ -1511,7 +1598,12 @@ STAGE PLANS:
               name: default.over1k_part2
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, i, b, f
+          Column Types: smallint, int, bigint, float
+          Table: default.over1k_part2
 
 PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 group by si,i,b,f,t
 PREHOOK: type: QUERY
@@ -1529,6 +1621,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1571,6 +1664,42 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.over1k_part2
+                  Select Operator
+                    expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), 'foo' (type: string), _col4 (type: tinyint)
+                    outputColumnNames: si, i, b, f, ds, t
+                    Statistics: Num rows: 2221 Data size: 53305 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: compute_stats(si, 16), compute_stats(i, 16), compute_stats(b, 16), compute_stats(f, 16)
+                      keys: ds (type: string), t (type: tinyint)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                      Statistics: Num rows: 2221 Data size: 53305 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: tinyint)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: tinyint)
+                        Statistics: Num rows: 2221 Data size: 53305 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col4 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col5 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string,numbitvectors:int>)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
+                keys: KEY._col0 (type: string), KEY._col1 (type: tinyint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 1110 Data size: 26640 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col4 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col5 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: string), _col1 (type: tinyint)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Statistics: Num rows: 1110 Data size: 26640 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1110 Data size: 26640 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Dependency Collection
@@ -1589,7 +1718,12 @@ STAGE PLANS:
               name: default.over1k_part2
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, i, b, f
+          Column Types: smallint, int, bigint, float
+          Table: default.over1k_part2
 
 PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 group by si,i,b,f,t
 PREHOOK: type: QUERY
@@ -1668,7 +1802,12 @@ STAGE PLANS:
               name: default.over1k_part2
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, i, b, f
+          Column Types: smallint, int, bigint, float
+          Table: default.over1k_part2
 
 PREHOOK: query: insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 order by i
 PREHOOK: type: QUERY
@@ -1712,7 +1851,7 @@ Database:           	default
 Table:              	over1k_part2        	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"f\":\"true\",\"i\":\"true\",\"si\":\"true\"}}
 	numFiles            	1                   
 	numRows             	16                  
 	rawDataSize         	415                 
@@ -1754,7 +1893,7 @@ Database:           	default
 Table:              	over1k_part2        	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"f\":\"true\",\"i\":\"true\",\"si\":\"true\"}}
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	78                  
@@ -1857,7 +1996,7 @@ Database:           	default
 Table:              	over1k_part2        	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"f\":\"true\",\"i\":\"true\",\"si\":\"true\"}}
 	numFiles            	1                   
 	numRows             	16                  
 	rawDataSize         	415                 
@@ -1899,7 +2038,7 @@ Database:           	default
 Table:              	over1k_part2        	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"f\":\"true\",\"i\":\"true\",\"si\":\"true\"}}
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	78                  
@@ -1998,6 +2137,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -2035,6 +2175,42 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.over1k_part_buck_sort2
+                Select Operator
+                  expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
+                  outputColumnNames: si, i, b, f, t
+                  Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: compute_stats(si, 16), compute_stats(i, 16), compute_stats(b, 16), compute_stats(f, 16)
+                    keys: t (type: tinyint)
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: tinyint)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: tinyint)
+                      Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col4 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string,numbitvectors:int>)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
+                keys: KEY._col0 (type: tinyint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 2221 Data size: 53305 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col4 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: tinyint)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                  Statistics: Num rows: 2221 Data size: 53305 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2221 Data size: 53305 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Dependency Collection
@@ -2052,7 +2228,12 @@ STAGE PLANS:
               name: default.over1k_part_buck_sort2
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, i, b, f
+          Column Types: smallint, int, bigint, float
+          Table: default.over1k_part_buck_sort2
 
 PREHOOK: query: explain insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k where t is null or t=27
 PREHOOK: type: QUERY
@@ -2125,7 +2306,12 @@ STAGE PLANS:
               name: default.over1k_part_buck_sort2
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, i, b, f
+          Column Types: smallint, int, bigint, float
+          Table: default.over1k_part_buck_sort2
 
 PREHOOK: query: insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k where t is null or t=27
 PREHOOK: type: QUERY
@@ -2168,7 +2354,7 @@ Database:           	default
 Table:              	over1k_part_buck_sort2	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"f\":\"true\",\"i\":\"true\",\"si\":\"true\"}}
 	numFiles            	1                   
 	numRows             	16                  
 	rawDataSize         	415                 
@@ -2209,7 +2395,7 @@ Database:           	default
 Table:              	over1k_part_buck_sort2	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"f\":\"true\",\"i\":\"true\",\"si\":\"true\"}}
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	78                  
@@ -2311,7 +2497,7 @@ Database:           	default
 Table:              	over1k_part_buck_sort2	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"f\":\"true\",\"i\":\"true\",\"si\":\"true\"}}
 	numFiles            	1                   
 	numRows             	16                  
 	rawDataSize         	415                 
@@ -2352,7 +2538,7 @@ Database:           	default
 Table:              	over1k_part_buck_sort2	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"f\":\"true\",\"i\":\"true\",\"si\":\"true\"}}
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	78                  
@@ -2502,7 +2688,12 @@ STAGE PLANS:
               name: default.over1k_part3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, b, f
+          Column Types: smallint, bigint, float
+          Table: default.over1k_part3
 
 PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27
 PREHOOK: type: QUERY
@@ -2577,7 +2768,12 @@ STAGE PLANS:
               name: default.over1k_part3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, b, f
+          Column Types: smallint, bigint, float
+          Table: default.over1k_part3
 
 PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100
 PREHOOK: type: QUERY
@@ -2652,7 +2848,12 @@ STAGE PLANS:
               name: default.over1k_part3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, b, f
+          Column Types: smallint, bigint, float
+          Table: default.over1k_part3
 
 PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27
 PREHOOK: type: QUERY
@@ -2727,7 +2928,12 @@ STAGE PLANS:
               name: default.over1k_part3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, b, f
+          Column Types: smallint, bigint, float
+          Table: default.over1k_part3
 
 PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and s="foo"
 PREHOOK: type: QUERY
@@ -2802,7 +3008,12 @@ STAGE PLANS:
               name: default.over1k_part3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, b, f
+          Column Types: smallint, bigint, float
+          Table: default.over1k_part3
 
 PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27 and s="foo"
 PREHOOK: type: QUERY
@@ -2877,7 +3088,12 @@ STAGE PLANS:
               name: default.over1k_part3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, b, f
+          Column Types: smallint, bigint, float
+          Table: default.over1k_part3
 
 PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27 and s="foo"
 PREHOOK: type: QUERY
@@ -2892,6 +3108,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -2914,8 +3133,44 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.over1k_part3
+                      Select Operator
+                        expressions: _col0 (type: smallint), _col1 (type: bigint), _col2 (type: float), _col3 (type: string), _col4 (type: tinyint), _col5 (type: int)
+                        outputColumnNames: si, b, f, s, t, i
+                        Statistics: Num rows: 107 Data size: 13282 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: compute_stats(si, 16), compute_stats(b, 16), compute_stats(f, 16)
+                          keys: s (type: string), t (type: tinyint), i (type: int)
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                          Statistics: Num rows: 107 Data size: 13282 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string), _col1 (type: tinyint), _col2 (type: int)
+                            sort order: +++
+                            Map-reduce partition columns: _col0 (type: string), _col1 (type: tinyint), _col2 (type: int)
+                            Statistics: Num rows: 107 Data size: 13282 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col4 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col5 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string,numbitvectors:int>)
             Execution mode: llap
             LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
+                keys: KEY._col0 (type: string), KEY._col1 (type: tinyint), KEY._col2 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 53 Data size: 6578 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col4 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col5 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: string), _col1 (type: tinyint), _col2 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Statistics: Num rows: 53 Data size: 6578 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 53 Data size: 6578 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Dependency Collection
@@ -2935,7 +3190,12 @@ STAGE PLANS:
               name: default.over1k_part3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: si, b, f
+          Column Types: smallint, bigint, float
+          Table: default.over1k_part3
 
 PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where s="foo"
 PREHOOK: type: QUERY
