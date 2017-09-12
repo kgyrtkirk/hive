@@ -84,15 +84,15 @@ STAGE DEPENDENCIES:
   Stage-9 depends on stages: Stage-3 , consists of Stage-6, Stage-5, Stage-7
   Stage-6
   Stage-0 depends on stages: Stage-6, Stage-5, Stage-8
-  Stage-4 depends on stages: Stage-0
+  Stage-4 depends on stages: Stage-0, Stage-11, Stage-13
   Stage-5
   Stage-7
   Stage-8 depends on stages: Stage-7
   Stage-1 depends on stages: Stage-3
-  Stage-10 depends on stages: Stage-1
+  Stage-10 depends on stages: Stage-1, Stage-11, Stage-13
   Stage-11 depends on stages: Stage-3
+  Stage-12 depends on stages: Stage-2, Stage-11, Stage-13
   Stage-2 depends on stages: Stage-3
-  Stage-12 depends on stages: Stage-2
   Stage-13 depends on stages: Stage-3
 
 STAGE PLANS:
@@ -122,14 +122,14 @@ STAGE PLANS:
                   outputColumnNames: rn
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: compute_stats(rn, 16)
+                    aggregations: compute_stats(rn, 'hll')
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 476 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                      Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
             Filter Operator
               predicate: ((rn >= 100) and (rn < 1000)) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -150,10 +150,10 @@ STAGE PLANS:
                   outputColumnNames: rn
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: compute_stats(rn, 16)
+                    aggregations: compute_stats(rn, 'hll')
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       table:
@@ -180,10 +180,10 @@ STAGE PLANS:
                   outputColumnNames: rn
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: compute_stats(rn, 16)
+                    aggregations: compute_stats(rn, 'hll')
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       table:
@@ -205,10 +205,10 @@ STAGE PLANS:
           aggregations: compute_stats(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -295,8 +295,8 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 1 Data size: 476 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+              Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
@@ -315,14 +315,22 @@ STAGE PLANS:
           aggregations: compute_stats(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-12
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: rn
+          Column Types: int
+          Table: default.orc_rn3
 
   Stage: Stage-2
     Move Operator
@@ -334,22 +342,14 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.orc_rn3
 
-  Stage: Stage-12
-    Stats Work
-      Basic Stats Work:
-      Column Stats Desc:
-          Columns: rn
-          Column Types: int
-          Table: default.orc_rn3
-
   Stage: Stage-13
     Map Reduce
       Map Operator Tree:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 1 Data size: 476 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+              Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
@@ -368,10 +368,10 @@ STAGE PLANS:
           aggregations: compute_stats(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
