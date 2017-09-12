@@ -96,7 +96,7 @@ STAGE PLANS:
                     outputColumnNames: key, value, part
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: compute_stats(key, 16), compute_stats(value, 16)
+                      aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       keys: part (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
@@ -106,7 +106,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                        value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
@@ -115,7 +115,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: string)
+            expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -326,7 +326,7 @@ STAGE PLANS:
               outputColumnNames: key, value, part
               Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(key, 16), compute_stats(value, 16)
+                aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                 keys: part (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
@@ -367,7 +367,7 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+              value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
@@ -376,7 +376,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: string)
+            expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -497,7 +497,7 @@ STAGE PLANS:
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
                     Group By Operator
-                      aggregations: compute_stats(key, 16), compute_stats(value, 16)
+                      aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       keys: '1' (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
@@ -505,7 +505,7 @@ STAGE PLANS:
                         key expressions: '1' (type: string)
                         sort order: +
                         Map-reduce partition columns: '1' (type: string)
-                        value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                        value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
@@ -513,7 +513,7 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
           Select Operator
-            expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), '1' (type: string)
+            expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), '1' (type: string)
             outputColumnNames: _col0, _col1, _col2
             File Output Operator
               compressed: false
@@ -695,7 +695,7 @@ STAGE PLANS:
               expressions: _col0 (type: string), _col1 (type: string)
               outputColumnNames: key, value
               Group By Operator
-                aggregations: compute_stats(key, 16), compute_stats(value, 16)
+                aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                 keys: '1' (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
@@ -734,7 +734,7 @@ STAGE PLANS:
               key expressions: '1' (type: string)
               sort order: +
               Map-reduce partition columns: '1' (type: string)
-              value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+              value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
@@ -742,7 +742,7 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
           Select Operator
-            expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), '1' (type: string)
+            expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), '1' (type: string)
             outputColumnNames: _col0, _col1, _col2
             File Output Operator
               compressed: false
