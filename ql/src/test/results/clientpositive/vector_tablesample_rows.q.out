@@ -131,14 +131,14 @@ STAGE PLANS:
                 outputColumnNames: t
                 Statistics: Num rows: 12288 Data size: 1376256 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
-                  aggregations: compute_stats(t, 16)
+                  aggregations: compute_stats(t, 'hll')
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 684 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 632 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 684 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: struct<columntype:string,min:decimal(18,9),max:decimal(18,9),countnulls:bigint,bitvector:string,numbitvectors:int>)
+                    Statistics: Num rows: 1 Data size: 632 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: struct<columntype:string,min:decimal(18,9),max:decimal(18,9),countnulls:bigint,bitvector:binary>)
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
@@ -160,10 +160,10 @@ STAGE PLANS:
               projectedOutputColumns: null
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 688 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 648 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 688 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 648 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

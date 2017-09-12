@@ -49,6 +49,12 @@ Database:           	default
 Retention:          	0                   	 
 #### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
 Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"tmp_values_col1\":\"true\",\"tmp_values_col2\":\"true\"}}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 

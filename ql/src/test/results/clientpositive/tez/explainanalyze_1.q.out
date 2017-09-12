@@ -133,8 +133,8 @@ Stage-3
             Stage-1
               Reducer 2
               File Output Operator [FS_5]
-                Group By Operator [GBY_3] (rows=1/1 width=480)
-                  Output:["_col0"],aggregations:["compute_stats(VALUE._col0, 16)"]
+                Group By Operator [GBY_3] (rows=1/1 width=440)
+                  Output:["_col0"],aggregations:["compute_stats(VALUE._col0, 'hll')"]
                 <-Map 1 [CUSTOM_SIMPLE_EDGE]
                   File Output Operator [FS_2]
                     table:{"name:":"default.t"}
