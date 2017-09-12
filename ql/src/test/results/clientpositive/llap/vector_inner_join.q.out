@@ -54,11 +54,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-<<<<<<< HEAD
-                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0]
@@ -68,11 +64,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0, val 2) -> boolean
                     predicate: (c > 2) (type: boolean)
-<<<<<<< HEAD
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Select Operator
                       expressions: c (type: int)
                       outputColumnNames: _col0
@@ -80,11 +72,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0]
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -101,11 +89,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 2
-<<<<<<< HEAD
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         Select Operator
                           expressions: _col1 (type: int)
                           outputColumnNames: _col0
@@ -113,21 +97,13 @@ STAGE PLANS:
                               className: VectorSelectOperator
                               native: true
                               projectedOutputColumns: [0]
-<<<<<<< HEAD
-                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                           File Output Operator
                             compressed: false
                             File Sink Vectorization:
                                 className: VectorFileSinkOperator
                                 native: false
-<<<<<<< HEAD
-                            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -151,7 +127,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
-                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0]
@@ -161,7 +137,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0, val 2) -> boolean
                     predicate: (a > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: a (type: int)
                       outputColumnNames: _col0
@@ -169,7 +145,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0]
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
@@ -180,7 +156,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: []
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -240,11 +216,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-<<<<<<< HEAD
-                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0]
@@ -254,11 +226,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0, val 2) -> boolean
                     predicate: (c > 2) (type: boolean)
-<<<<<<< HEAD
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Select Operator
                       expressions: c (type: int)
                       outputColumnNames: _col0
@@ -266,11 +234,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0]
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Map Join Operator
                         condition map:
                              Left Semi Join 0 to 1
@@ -288,21 +252,13 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 2
-<<<<<<< HEAD
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         File Output Operator
                           compressed: false
                           File Sink Vectorization:
                               className: VectorFileSinkOperator
                               native: false
-<<<<<<< HEAD
-                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -326,7 +282,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
-                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0]
@@ -336,7 +292,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0, val 2) -> boolean
                     predicate: (a > 2) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: a (type: int)
                       outputColumnNames: _col0
@@ -344,7 +300,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0]
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
@@ -357,7 +313,7 @@ STAGE PLANS:
                         keys: _col0 (type: int)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           sort order: +
@@ -368,7 +324,7 @@ STAGE PLANS:
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                               valueColumns: []
-                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -460,11 +416,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-<<<<<<< HEAD
-                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1]
@@ -474,11 +426,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0, val 2) -> boolean
                     predicate: (c > 2) (type: boolean)
-<<<<<<< HEAD
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Select Operator
                       expressions: c (type: int)
                       outputColumnNames: _col0
@@ -486,11 +434,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0]
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -508,11 +452,7 @@ STAGE PLANS:
                         outputColumnNames: _col1, _col2
                         input vertices:
                           1 Map 2
-<<<<<<< HEAD
-                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         Select Operator
                           expressions: _col1 (type: string), _col2 (type: int)
                           outputColumnNames: _col0, _col1
@@ -520,21 +460,13 @@ STAGE PLANS:
                               className: VectorSelectOperator
                               native: true
                               projectedOutputColumns: [2, 0]
-<<<<<<< HEAD
-                          Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                           File Output Operator
                             compressed: false
                             File Sink Vectorization:
                                 className: VectorFileSinkOperator
                                 native: false
-<<<<<<< HEAD
-                            Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -559,11 +491,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
-<<<<<<< HEAD
-                  Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 4 Data size: 752 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1]
@@ -573,11 +501,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 1, val 2) -> boolean
                     predicate: (a > 2) (type: boolean)
-<<<<<<< HEAD
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Select Operator
                       expressions: v1 (type: string), a (type: int)
                       outputColumnNames: _col0, _col1
@@ -585,11 +509,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0, 1]
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
@@ -600,11 +520,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: [0]
-<<<<<<< HEAD
-                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -665,11 +581,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
-<<<<<<< HEAD
-                  Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 4 Data size: 752 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1]
@@ -679,11 +591,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 1, val 2) -> boolean
                     predicate: (a > 2) (type: boolean)
-<<<<<<< HEAD
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Select Operator
                       expressions: v1 (type: string), a (type: int)
                       outputColumnNames: _col0, _col1
@@ -691,11 +599,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0, 1]
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
@@ -706,11 +610,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: [0]
-<<<<<<< HEAD
-                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -731,11 +631,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-<<<<<<< HEAD
-                  Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 5 Data size: 940 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1]
@@ -745,11 +641,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0, val 2) -> boolean
                     predicate: (c > 2) (type: boolean)
-<<<<<<< HEAD
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Select Operator
                       expressions: c (type: int), v2 (type: string)
                       outputColumnNames: _col0, _col1
@@ -757,11 +649,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0, 1]
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -780,21 +668,13 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2, _col3
                         input vertices:
                           0 Map 1
-<<<<<<< HEAD
-                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         File Output Operator
                           compressed: false
                           File Sink Vectorization:
                               className: VectorFileSinkOperator
                               native: false
-<<<<<<< HEAD
-                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                           Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -859,11 +739,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-<<<<<<< HEAD
-                  Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 5 Data size: 940 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1]
@@ -873,11 +749,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0, val 2) -> boolean
                     predicate: (c > 2) (type: boolean)
-<<<<<<< HEAD
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Select Operator
                       expressions: c (type: int), v2 (type: string)
                       outputColumnNames: _col0, _col1
@@ -885,11 +757,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0, 1]
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -908,11 +776,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2, _col3
                         input vertices:
                           1 Map 2
-<<<<<<< HEAD
-                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         Select Operator
                           expressions: _col2 (type: string), (_col3 * 2) (type: int), (_col0 * 5) (type: int), _col1 (type: string)
                           outputColumnNames: _col0, _col1, _col2, _col3
@@ -921,21 +785,13 @@ STAGE PLANS:
                               native: true
                               projectedOutputColumns: [2, 3, 4, 1]
                               selectExpressions: LongColMultiplyLongScalar(col 0, val 2) -> 3:long, LongColMultiplyLongScalar(col 0, val 5) -> 4:long
-<<<<<<< HEAD
-                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                           Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                           File Output Operator
                             compressed: false
                             File Sink Vectorization:
                                 className: VectorFileSinkOperator
                                 native: false
-<<<<<<< HEAD
-                            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                             Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -960,11 +816,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
-<<<<<<< HEAD
-                  Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 4 Data size: 752 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1]
@@ -974,11 +826,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 1, val 2) -> boolean
                     predicate: (a > 2) (type: boolean)
-<<<<<<< HEAD
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Select Operator
                       expressions: v1 (type: string), a (type: int)
                       outputColumnNames: _col0, _col1
@@ -986,11 +834,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0, 1]
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
@@ -1001,11 +845,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: [0]
-<<<<<<< HEAD
-                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1066,11 +906,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-<<<<<<< HEAD
-                  Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 5 Data size: 940 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1]
@@ -1080,11 +916,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0, val 2) -> boolean
                     predicate: (c > 2) (type: boolean)
-<<<<<<< HEAD
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Select Operator
                       expressions: c (type: int), v2 (type: string)
                       outputColumnNames: _col0, _col1
@@ -1092,11 +924,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0, 1]
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1115,11 +943,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2
                         input vertices:
                           1 Map 2
-<<<<<<< HEAD
-                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         Select Operator
                           expressions: _col2 (type: string), _col1 (type: string), _col0 (type: int)
                           outputColumnNames: _col0, _col1, _col2
@@ -1127,21 +951,13 @@ STAGE PLANS:
                               className: VectorSelectOperator
                               native: true
                               projectedOutputColumns: [2, 1, 0]
-<<<<<<< HEAD
-                          Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                           Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                           File Output Operator
                             compressed: false
                             File Sink Vectorization:
                                 className: VectorFileSinkOperator
                                 native: false
-<<<<<<< HEAD
-                            Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                             Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1166,11 +982,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
-<<<<<<< HEAD
-                  Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 4 Data size: 752 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1]
@@ -1180,11 +992,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 1, val 2) -> boolean
                     predicate: (a > 2) (type: boolean)
-<<<<<<< HEAD
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Select Operator
                       expressions: v1 (type: string), a (type: int)
                       outputColumnNames: _col0, _col1
@@ -1192,11 +1000,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0, 1]
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
@@ -1207,11 +1011,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: [0]
-<<<<<<< HEAD
-                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1272,11 +1072,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-<<<<<<< HEAD
-                  Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 5 Data size: 940 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1]
@@ -1286,11 +1082,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0, val 2) -> boolean
                     predicate: (c > 2) (type: boolean)
-<<<<<<< HEAD
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Select Operator
                       expressions: c (type: int), v2 (type: string)
                       outputColumnNames: _col0, _col1
@@ -1298,11 +1090,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0, 1]
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1321,11 +1109,7 @@ STAGE PLANS:
                         outputColumnNames: _col1, _col2, _col3
                         input vertices:
                           1 Map 2
-<<<<<<< HEAD
-                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         Select Operator
                           expressions: _col3 (type: int), _col2 (type: string), _col1 (type: string)
                           outputColumnNames: _col0, _col1, _col2
@@ -1333,21 +1117,13 @@ STAGE PLANS:
                               className: VectorSelectOperator
                               native: true
                               projectedOutputColumns: [0, 2, 1]
-<<<<<<< HEAD
-                          Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                           Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                           File Output Operator
                             compressed: false
                             File Sink Vectorization:
                                 className: VectorFileSinkOperator
                                 native: false
-<<<<<<< HEAD
-                            Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                             Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1372,11 +1148,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
-<<<<<<< HEAD
-                  Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 4 Data size: 752 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1]
@@ -1386,11 +1158,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 1, val 2) -> boolean
                     predicate: (a > 2) (type: boolean)
-<<<<<<< HEAD
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Select Operator
                       expressions: v1 (type: string), a (type: int)
                       outputColumnNames: _col0, _col1
@@ -1398,11 +1166,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0, 1]
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
@@ -1413,11 +1177,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: [0]
-<<<<<<< HEAD
-                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1478,11 +1238,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
-<<<<<<< HEAD
-                  Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 4 Data size: 752 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1]
@@ -1492,11 +1248,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 1, val 2) -> boolean
                     predicate: (a > 2) (type: boolean)
-<<<<<<< HEAD
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Select Operator
                       expressions: v1 (type: string), a (type: int)
                       outputColumnNames: _col0, _col1
@@ -1504,11 +1256,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0, 1]
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
@@ -1519,11 +1267,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: [0]
-<<<<<<< HEAD
-                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1544,11 +1288,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-<<<<<<< HEAD
-                  Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 5 Data size: 940 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1]
@@ -1558,11 +1298,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0, val 2) -> boolean
                     predicate: (c > 2) (type: boolean)
-<<<<<<< HEAD
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Select Operator
                       expressions: c (type: int), v2 (type: string)
                       outputColumnNames: _col0, _col1
@@ -1570,11 +1306,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0, 1]
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1593,11 +1325,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col2, _col3
                         input vertices:
                           0 Map 1
-<<<<<<< HEAD
-                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         Select Operator
                           expressions: _col0 (type: string), _col3 (type: string), _col2 (type: int)
                           outputColumnNames: _col0, _col1, _col2
@@ -1605,21 +1333,13 @@ STAGE PLANS:
                               className: VectorSelectOperator
                               native: true
                               projectedOutputColumns: [2, 1, 0]
-<<<<<<< HEAD
-                          Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                           Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                           File Output Operator
                             compressed: false
                             File Sink Vectorization:
                                 className: VectorFileSinkOperator
                                 native: false
-<<<<<<< HEAD
-                            Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                             Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1684,11 +1404,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
-<<<<<<< HEAD
-                  Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 4 Data size: 752 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1]
@@ -1698,11 +1414,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 1, val 2) -> boolean
                     predicate: (a > 2) (type: boolean)
-<<<<<<< HEAD
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Select Operator
                       expressions: v1 (type: string), a (type: int)
                       outputColumnNames: _col0, _col1
@@ -1710,11 +1422,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0, 1]
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
@@ -1725,11 +1433,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: [0]
-<<<<<<< HEAD
-                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1750,11 +1454,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-<<<<<<< HEAD
-                  Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 5 Data size: 940 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1]
@@ -1764,11 +1464,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0, val 2) -> boolean
                     predicate: (c > 2) (type: boolean)
-<<<<<<< HEAD
-                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Select Operator
                       expressions: c (type: int), v2 (type: string)
                       outputColumnNames: _col0, _col1
@@ -1776,11 +1472,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0, 1]
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1799,11 +1491,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col3
                         input vertices:
                           0 Map 1
-<<<<<<< HEAD
-                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         Select Operator
                           expressions: _col1 (type: int), _col0 (type: string), _col3 (type: string)
                           outputColumnNames: _col0, _col1, _col2
@@ -1811,21 +1499,13 @@ STAGE PLANS:
                               className: VectorSelectOperator
                               native: true
                               projectedOutputColumns: [0, 2, 1]
-<<<<<<< HEAD
-                          Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                           Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                           File Output Operator
                             compressed: false
                             File Sink Vectorization:
                                 className: VectorFileSinkOperator
                                 native: false
-<<<<<<< HEAD
-                            Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                             Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

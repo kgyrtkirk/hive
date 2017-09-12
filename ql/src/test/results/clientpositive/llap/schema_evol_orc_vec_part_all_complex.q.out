@@ -455,11 +455,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_add_various_various_struct2
-<<<<<<< HEAD
-                  Statistics: Num rows: 8 Data size: 800 Basic stats: COMPLETE Column stats: PARTIAL
-=======
                   Statistics: Num rows: 8 Data size: 6416 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3]
@@ -470,21 +466,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumns: [0, 3, 1, 2]
-<<<<<<< HEAD
-                    Statistics: Num rows: 8 Data size: 800 Basic stats: COMPLETE Column stats: PARTIAL
-=======
                     Statistics: Num rows: 8 Data size: 1536 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-<<<<<<< HEAD
-                      Statistics: Num rows: 8 Data size: 800 Basic stats: COMPLETE Column stats: PARTIAL
-=======
                       Statistics: Num rows: 8 Data size: 1536 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

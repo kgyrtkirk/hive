@@ -183,11 +183,10 @@ POSTHOOK: query: explain
 select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b) from stats_tbl
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-<<<<<<< HEAD
-=======
   Stage: Stage-1
     Tez
 #### A masked pattern was here ####
@@ -235,10 +234,9 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
->>>>>>> asf/master
   Stage: Stage-0
     Fetch Operator
-      limit: 1
+      limit: -1
       Processor Tree:
         ListSink
 
@@ -249,11 +247,10 @@ POSTHOOK: query: explain
 select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b) from stats_tbl_part
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-<<<<<<< HEAD
-=======
   Stage: Stage-1
     Tez
 #### A masked pattern was here ####
@@ -301,10 +298,9 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
->>>>>>> asf/master
   Stage: Stage-0
     Fetch Operator
-      limit: 1
+      limit: -1
       Processor Tree:
         ListSink
 
@@ -315,11 +311,10 @@ POSTHOOK: query: explain
 select count(*), '1' as one, sum(1), sum(0.2), 2 as two, count(1), count(s), 3+4.0 as three, count(bo), count(bin), count(si), max(i), min(b) from stats_tbl
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-<<<<<<< HEAD
-=======
   Stage: Stage-1
     Tez
 #### A masked pattern was here ####
@@ -367,10 +362,9 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
->>>>>>> asf/master
   Stage: Stage-0
     Fetch Operator
-      limit: 1
+      limit: -1
       Processor Tree:
         ListSink
 
@@ -381,11 +375,10 @@ POSTHOOK: query: explain
 select count(*), '1' as one, sum(1), sum(0.2), 2 as two, count(1), count(s), 3+4.0 as three, count(bo), count(bin), count(si), max(i), min(b) from stats_tbl_part
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-<<<<<<< HEAD
-=======
   Stage: Stage-1
     Tez
 #### A masked pattern was here ####
@@ -433,10 +426,9 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
->>>>>>> asf/master
   Stage: Stage-0
     Fetch Operator
-      limit: 1
+      limit: -1
       Processor Tree:
         ListSink
 
@@ -662,34 +654,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: stats_tbl_part
-<<<<<<< HEAD
-                  Statistics: Num rows: 9489 Data size: 379560 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: ts (type: timestamp)
-                    outputColumnNames: ts
-                    Statistics: Num rows: 9489 Data size: 379560 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 9489 Data size: 1339425 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ts (type: timestamp)
                     outputColumnNames: ts
                     Statistics: Num rows: 9489 Data size: 1339425 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Group By Operator
                       aggregations: count(ts)
                       mode: hash
                       outputColumnNames: _col0
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         value expressions: _col0 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -700,17 +677,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-<<<<<<< HEAD
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                 Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

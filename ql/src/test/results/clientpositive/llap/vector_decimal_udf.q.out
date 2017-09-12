@@ -65,16 +65,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (key + key) (type: decimal(21,10))
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (key + key) (type: decimal(21,10))
@@ -83,7 +73,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -160,16 +149,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (key + CAST( value AS decimal(10,0))) (type: decimal(21,10))
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (key + CAST( value AS decimal(10,0))) (type: decimal(21,10))
@@ -178,7 +157,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -255,16 +233,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (UDFToDouble(key) + (UDFToDouble(value) / 2.0)) (type: double)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (UDFToDouble(key) + (UDFToDouble(value) / 2.0)) (type: double)
@@ -273,7 +241,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -350,16 +317,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (UDFToDouble(key) + 1.0) (type: double)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (UDFToDouble(key) + 1.0) (type: double)
@@ -368,7 +325,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -445,16 +401,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (key - key) (type: decimal(21,10))
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (key - key) (type: decimal(21,10))
@@ -463,7 +409,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -540,16 +485,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (key - CAST( value AS decimal(10,0))) (type: decimal(21,10))
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (key - CAST( value AS decimal(10,0))) (type: decimal(21,10))
@@ -558,7 +493,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -635,16 +569,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (UDFToDouble(key) - (UDFToDouble(value) / 2.0)) (type: double)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (UDFToDouble(key) - (UDFToDouble(value) / 2.0)) (type: double)
@@ -653,7 +577,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -730,16 +653,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (UDFToDouble(key) - 1.0) (type: double)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (UDFToDouble(key) - 1.0) (type: double)
@@ -748,7 +661,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -825,16 +737,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (key * key) (type: decimal(38,17))
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (key * key) (type: decimal(38,17))
@@ -843,7 +745,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -920,19 +821,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: ((key * CAST( value AS decimal(10,0))) > 0) (type: boolean)
-                    Statistics: Num rows: 12 Data size: 1392 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: decimal(20,10)), value (type: int)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 12 Data size: 1392 Basic stats: COMPLETE Column stats: COMPLETE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 12 Data size: 1392 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key * CAST( value AS decimal(10,0))) > 0) (type: boolean)
@@ -944,7 +832,6 @@ STAGE PLANS:
                       File Output Operator
                         compressed: false
                         Statistics: Num rows: 12 Data size: 1392 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1006,16 +893,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (key * CAST( value AS decimal(10,0))) (type: decimal(31,10))
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (key * CAST( value AS decimal(10,0))) (type: decimal(31,10))
@@ -1024,7 +901,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1101,16 +977,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (UDFToDouble(key) * (UDFToDouble(value) / 2.0)) (type: double)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (UDFToDouble(key) * (UDFToDouble(value) / 2.0)) (type: double)
@@ -1119,7 +985,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1196,16 +1061,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (UDFToDouble(key) * 2.0) (type: double)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (UDFToDouble(key) * 2.0) (type: double)
@@ -1214,7 +1069,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1291,19 +1145,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (key / 0) (type: decimal(22,12))
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 1
-                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (key / 0) (type: decimal(22,12))
@@ -1315,7 +1156,6 @@ STAGE PLANS:
                       File Output Operator
                         compressed: false
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1355,19 +1195,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (UDFToDouble(key) / null) (type: double)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 1
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (UDFToDouble(key) / null) (type: double)
@@ -1379,7 +1206,6 @@ STAGE PLANS:
                       File Output Operator
                         compressed: false
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1419,19 +1245,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (key <> 0) (type: boolean)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: (key / key) (type: decimal(38,18))
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key <> 0) (type: boolean)
@@ -1443,7 +1256,6 @@ STAGE PLANS:
                       File Output Operator
                         compressed: false
                         Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1516,19 +1328,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (value <> 0) (type: boolean)
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: (key / CAST( value AS decimal(10,0))) (type: decimal(31,21))
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (value <> 0) (type: boolean)
@@ -1540,7 +1339,6 @@ STAGE PLANS:
                       File Output Operator
                         compressed: false
                         Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1603,19 +1401,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (value <> 0) (type: boolean)
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: (UDFToDouble(key) / (UDFToDouble(value) / 2.0)) (type: double)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (value <> 0) (type: boolean)
@@ -1627,7 +1412,6 @@ STAGE PLANS:
                       File Output Operator
                         compressed: false
                         Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1690,16 +1474,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (1.0 + (UDFToDouble(key) / 2.0)) (type: double)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (1.0 + (UDFToDouble(key) / 2.0)) (type: double)
@@ -1708,7 +1482,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1785,16 +1558,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: abs(key) (type: decimal(20,10))
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: abs(key) (type: decimal(20,10))
@@ -1803,7 +1566,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1884,38 +1646,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: decimal(20,10)), value (type: int)
-                    outputColumnNames: key, value
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: decimal(20,10)), value (type: int)
                     outputColumnNames: key, value
                     Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Group By Operator
                       aggregations: sum(key), count(key), avg(key)
                       keys: value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
-<<<<<<< HEAD
-                      Statistics: Num rows: 14 Data size: 5768 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-<<<<<<< HEAD
-                        Statistics: Num rows: 14 Data size: 5768 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         value expressions: _col1 (type: decimal(30,10)), _col2 (type: bigint), _col3 (type: struct<count:bigint,sum:decimal(30,10),input:decimal(20,10)>)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1927,17 +1673,6 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
-<<<<<<< HEAD
-                Statistics: Num rows: 14 Data size: 3304 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col0 (type: int), (_col1 / CAST( _col2 AS decimal(19,0))) (type: decimal(38,18)), _col3 (type: decimal(24,14)), _col1 (type: decimal(30,10))
-                  outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 14 Data size: 4760 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Statistics: Num rows: 14 Data size: 4760 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                 Statistics: Num rows: 19 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), (_col1 / CAST( _col2 AS decimal(19,0))) (type: decimal(38,18)), _col3 (type: decimal(24,14)), _col1 (type: decimal(30,10))
@@ -1947,7 +1682,6 @@ STAGE PLANS:
                     key expressions: _col0 (type: int)
                     sort order: +
                     Statistics: Num rows: 19 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     value expressions: _col1 (type: decimal(38,18)), _col2 (type: decimal(24,14)), _col3 (type: decimal(30,10))
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1955,17 +1689,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: decimal(38,18)), VALUE._col1 (type: decimal(24,14)), VALUE._col2 (type: decimal(30,10))
                 outputColumnNames: _col0, _col1, _col2, _col3
-<<<<<<< HEAD
-                Statistics: Num rows: 14 Data size: 4760 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 14 Data size: 4760 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                 Statistics: Num rows: 19 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 19 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2019,16 +1746,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: (- key) (type: decimal(20,10))
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: (- key) (type: decimal(20,10))
@@ -2037,7 +1754,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2179,16 +1895,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: ceil(key) (type: decimal(11,0))
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ceil(key) (type: decimal(11,0))
@@ -2197,7 +1903,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2274,16 +1979,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: floor(key) (type: decimal(11,0))
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: floor(key) (type: decimal(11,0))
@@ -2292,7 +1987,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2369,16 +2063,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: round(key, 2) (type: decimal(13,2))
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: round(key, 2) (type: decimal(13,2))
@@ -2387,7 +2071,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2464,16 +2147,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: power(key, 2) (type: double)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: power(key, 2) (type: double)
@@ -2482,7 +2155,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2559,16 +2231,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: ((key + 1) % (key / 2)) (type: decimal(22,12))
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ((key + 1) % (key / 2)) (type: decimal(22,12))
@@ -2577,7 +2239,6 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2657,38 +2318,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: decimal(20,10)), value (type: int)
-                    outputColumnNames: key, value
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: decimal(20,10)), value (type: int)
                     outputColumnNames: key, value
                     Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Group By Operator
                       aggregations: stddev(key), variance(key)
                       keys: value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-<<<<<<< HEAD
-                      Statistics: Num rows: 14 Data size: 2296 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-<<<<<<< HEAD
-                        Statistics: Num rows: 14 Data size: 2296 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         value expressions: _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -2700,17 +2345,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-<<<<<<< HEAD
-                Statistics: Num rows: 14 Data size: 280 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 14 Data size: 280 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                 Statistics: Num rows: 19 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 19 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2767,38 +2405,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: decimal(20,10)), value (type: int)
-                    outputColumnNames: key, value
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: decimal(20,10)), value (type: int)
                     outputColumnNames: key, value
                     Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Group By Operator
                       aggregations: stddev_samp(key), var_samp(key)
                       keys: value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-<<<<<<< HEAD
-                      Statistics: Num rows: 14 Data size: 2296 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-<<<<<<< HEAD
-                        Statistics: Num rows: 14 Data size: 2296 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         value expressions: _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -2810,17 +2432,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-<<<<<<< HEAD
-                Statistics: Num rows: 14 Data size: 280 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 14 Data size: 280 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                 Statistics: Num rows: 19 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 19 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2877,34 +2492,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: decimal(20,10))
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: decimal(20,10))
                     outputColumnNames: _col0
                     Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Group By Operator
                       aggregations: histogram_numeric(_col0, 3)
                       mode: hash
                       outputColumnNames: _col0
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         value expressions: _col0 (type: array<double>)
             Execution mode: llap
             LLAP IO: all inputs
@@ -2915,17 +2515,10 @@ STAGE PLANS:
                 aggregations: histogram_numeric(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-<<<<<<< HEAD
-                Statistics: Num rows: 1 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                 Statistics: Num rows: 1 Data size: 832 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 1 Data size: 832 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2966,34 +2559,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: decimal(20,10))
-                    outputColumnNames: key
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: decimal(20,10))
                     outputColumnNames: key
                     Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Group By Operator
                       aggregations: min(key)
                       mode: hash
                       outputColumnNames: _col0
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         value expressions: _col0 (type: decimal(20,10))
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -3004,17 +2582,10 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-<<<<<<< HEAD
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                 Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3055,34 +2626,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: decimal(20,10))
-                    outputColumnNames: key
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: decimal(20,10))
                     outputColumnNames: key
                     Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Group By Operator
                       aggregations: max(key)
                       mode: hash
                       outputColumnNames: _col0
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         value expressions: _col0 (type: decimal(20,10))
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -3093,17 +2649,10 @@ STAGE PLANS:
                 aggregations: max(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-<<<<<<< HEAD
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                 Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3144,34 +2693,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-<<<<<<< HEAD
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: decimal(20,10))
-                    outputColumnNames: key
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: decimal(20,10))
                     outputColumnNames: key
                     Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Group By Operator
                       aggregations: count(key)
                       mode: hash
                       outputColumnNames: _col0
-<<<<<<< HEAD
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -3182,17 +2716,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-<<<<<<< HEAD
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                 Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

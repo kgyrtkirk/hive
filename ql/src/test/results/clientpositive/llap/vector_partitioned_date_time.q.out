@@ -948,11 +948,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: flights_tiny_orc_partitioned_date
-<<<<<<< HEAD
-                  Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 137 Data size: 94360 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5]
@@ -963,21 +959,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumns: [0, 1, 2, 3, 4, 5]
-<<<<<<< HEAD
-                    Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 137 Data size: 62584 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-<<<<<<< HEAD
-                      Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 137 Data size: 62584 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1195,11 +1183,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: flights_tiny_orc_partitioned_date
-<<<<<<< HEAD
-                  Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 137 Data size: 94360 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5]
@@ -1210,11 +1194,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumns: [0, 1, 2, 3, 4, 5]
-<<<<<<< HEAD
-                    Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 137 Data size: 94360 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                     Reduce Output Operator
                       key expressions: _col4 (type: int), _col5 (type: date)
                       sort order: ++
@@ -1222,11 +1202,7 @@ STAGE PLANS:
                           className: VectorReduceSinkObjectHashOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-<<<<<<< HEAD
-                      Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 137 Data size: 94360 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                       TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
             Execution mode: vectorized, llap
@@ -1256,21 +1232,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [2, 3, 4, 5, 0, 1]
-<<<<<<< HEAD
-                Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                 Statistics: Num rows: 137 Data size: 62584 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                 Limit
                   Number of rows: 25
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true
-<<<<<<< HEAD
-                  Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 25 Data size: 11800 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                   Reduce Output Operator
                     key expressions: _col4 (type: int), _col5 (type: date)
                     sort order: ++
@@ -1278,11 +1246,7 @@ STAGE PLANS:
                         className: VectorReduceSinkObjectHashOperator
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-<<<<<<< HEAD
-                    Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 25 Data size: 11800 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                     TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
         Reducer 3 
@@ -1302,31 +1266,19 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [2, 3, 4, 5, 0, 1]
-<<<<<<< HEAD
-                Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                 Statistics: Num rows: 25 Data size: 11800 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                 Limit
                   Number of rows: 25
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true
-<<<<<<< HEAD
-                  Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 25 Data size: 11800 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                   File Output Operator
                     compressed: false
                     File Sink Vectorization:
                         className: VectorFileSinkOperator
                         native: false
-<<<<<<< HEAD
-                    Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 25 Data size: 11800 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3436,11 +3388,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: flights_tiny_parquet_partitioned_date
-<<<<<<< HEAD
-                  Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 137 Data size: 63269 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5]
@@ -3451,21 +3399,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumns: [0, 1, 2, 3, 4, 5]
-<<<<<<< HEAD
-                    Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 137 Data size: 62584 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-<<<<<<< HEAD
-                      Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 137 Data size: 62584 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3683,11 +3623,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: flights_tiny_parquet_partitioned_date
-<<<<<<< HEAD
-                  Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 137 Data size: 63269 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5]
@@ -3698,11 +3634,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumns: [0, 1, 2, 3, 4, 5]
-<<<<<<< HEAD
-                    Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 137 Data size: 63269 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                     Reduce Output Operator
                       key expressions: _col4 (type: int), _col5 (type: date)
                       sort order: ++
@@ -3710,11 +3642,7 @@ STAGE PLANS:
                           className: VectorReduceSinkObjectHashOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-<<<<<<< HEAD
-                      Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       Statistics: Num rows: 137 Data size: 63269 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                       TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
             Execution mode: vectorized, llap
@@ -3744,21 +3672,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [2, 3, 4, 5, 0, 1]
-<<<<<<< HEAD
-                Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                 Statistics: Num rows: 137 Data size: 62584 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                 Limit
                   Number of rows: 25
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true
-<<<<<<< HEAD
-                  Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 25 Data size: 11800 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                   Reduce Output Operator
                     key expressions: _col4 (type: int), _col5 (type: date)
                     sort order: ++
@@ -3766,11 +3686,7 @@ STAGE PLANS:
                         className: VectorReduceSinkObjectHashOperator
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-<<<<<<< HEAD
-                    Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 25 Data size: 11800 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                     TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
         Reducer 3 
@@ -3790,31 +3706,19 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [2, 3, 4, 5, 0, 1]
-<<<<<<< HEAD
-                Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                 Statistics: Num rows: 25 Data size: 11800 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                 Limit
                   Number of rows: 25
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true
-<<<<<<< HEAD
-                  Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 25 Data size: 11800 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                   File Output Operator
                     compressed: false
                     File Sink Vectorization:
                         className: VectorFileSinkOperator
                         native: false
-<<<<<<< HEAD
-                    Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                     Statistics: Num rows: 25 Data size: 11800 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

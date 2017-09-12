@@ -1641,7 +1641,7 @@ POSTHOOK: Lineage: part_table PARTITION(partitionid=1).value SIMPLE [(src)src.Fi
 RUN: Stage-1:MAPRED
 RUN: Stage-2:DEPENDENCY_COLLECTION
 RUN: Stage-0:MOVE
-RUN: Stage-3:COLUMNSTATS
+RUN: Stage-3:STATS
 PREHOOK: query: INSERT OVERWRITE TABLE part_table PARTITION (partitionId=2)
   SELECT key, value FROM src1 ORDER BY key, value
 PREHOOK: type: QUERY
@@ -1657,7 +1657,7 @@ POSTHOOK: Lineage: part_table PARTITION(partitionid=2).value SIMPLE [(src1)src1.
 RUN: Stage-1:MAPRED
 RUN: Stage-2:DEPENDENCY_COLLECTION
 RUN: Stage-0:MOVE
-RUN: Stage-3:COLUMNSTATS
+RUN: Stage-3:STATS
 PREHOOK: query: EXPLAIN
 SELECT count(*)
 FROM part_table x JOIN src1 y ON (x.key = y.key)
@@ -1683,16 +1683,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-<<<<<<< HEAD
-                  Statistics: Num rows: 125 Data size: 10875 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 125 Data size: 10875 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 125 Data size: 10875 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                   Statistics: Num rows: 125 Data size: 23341 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1701,7 +1691,6 @@ STAGE PLANS:
                       expressions: key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 119 Data size: 22220 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1710,19 +1699,15 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         input vertices:
                           1 Map 3
-<<<<<<< HEAD
-                        Statistics: Num rows: 72 Data size: 576 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                         Statistics: Num rows: 130 Data size: 24442 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         Group By Operator
                           aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -1752,10 +1737,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
