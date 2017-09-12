@@ -364,11 +364,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-<<<<<<< HEAD
-	totalSize           	1528                
-=======
-	totalSize           	1554                
->>>>>>> asf/master
+	totalSize           	1555                
 	transactional       	true                
 #### A masked pattern was here ####
 	 	 
@@ -396,15 +392,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid_ivot
-<<<<<<< HEAD
-            Statistics: Num rows: 1 Data size: 1528 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 1555 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 1 Data size: 1528 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-            Statistics: Num rows: 1 Data size: 1554 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              Statistics: Num rows: 1 Data size: 1554 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
+              Statistics: Num rows: 1 Data size: 1555 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 mode: hash
@@ -496,11 +486,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	0                   
 	rawDataSize         	0                   
-<<<<<<< HEAD
-	totalSize           	3056                
-=======
-	totalSize           	3109                
->>>>>>> asf/master
+	totalSize           	3110                
 	transactional       	true                
 #### A masked pattern was here ####
 	 	 
@@ -528,15 +514,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid_ivot
-<<<<<<< HEAD
-            Statistics: Num rows: 1 Data size: 3056 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 3110 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 1 Data size: 3056 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-            Statistics: Num rows: 1 Data size: 3109 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              Statistics: Num rows: 1 Data size: 3109 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
+              Statistics: Num rows: 1 Data size: 3110 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 mode: hash
@@ -626,11 +606,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	0                   
 	rawDataSize         	0                   
-<<<<<<< HEAD
-	totalSize           	380293              
-=======
-	totalSize           	298592              
->>>>>>> asf/master
+	totalSize           	298593              
 	transactional       	true                
 #### A masked pattern was here ####
 	 	 
@@ -658,15 +634,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid_ivot
-<<<<<<< HEAD
-            Statistics: Num rows: 1 Data size: 380293 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 298593 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 1 Data size: 380293 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-            Statistics: Num rows: 1 Data size: 298592 Basic stats: COMPLETE Column stats: COMPLETE
-            Select Operator
-              Statistics: Num rows: 1 Data size: 298592 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
+              Statistics: Num rows: 1 Data size: 298593 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 mode: hash
