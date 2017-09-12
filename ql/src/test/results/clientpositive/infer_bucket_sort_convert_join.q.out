@@ -40,7 +40,7 @@ Database:           	default
 Table:              	test_table          	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	1028                
 	rawDataSize         	10968               
@@ -62,6 +62,8 @@ SELECT a.key, b.value FROM src a JOIN src b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_table@part=1
+FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
+ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 POSTHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
 SELECT a.key, b.value FROM src a JOIN src b ON a.key = b.key
 POSTHOOK: type: QUERY
@@ -91,7 +93,7 @@ Database:           	default
 Table:              	test_table          	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	1028                
 	rawDataSize         	10968               
@@ -103,8 +105,8 @@ SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
 OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
+Num Buckets:        	1                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[Order(col:key, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
