@@ -137,6 +137,12 @@ class TextMetaDataFormatter implements MetaDataFormatter {
                 :
                   MetaDataFormatUtils.getAllColumnsInformation(cols, partCols, isFormatted, isOutputPadded, showPartColsSeparately);
       } else {
+        List<String[]> table=new ArrayList<String[]>();
+        table.add(MetaDataFormatUtils.getColumnsHeader(colStats));
+        for (FieldSchema x : cols) {
+          table.add(MetaDataFormatUtils.extractColumnValues(x,colStats!=null,MetaDataFormatUtils.getColumnStatisticsObject(x.getName(),x.getType(),colStats)));
+        }
+        
         output = MetaDataFormatUtils.getAllColumnsInformation(cols, isFormatted, isOutputPadded, colStats);
         String statsState;
         if (tbl.getParameters() != null && (statsState = tbl.getParameters().get(StatsSetupConst.COLUMN_STATS_ACCURATE)) != null) {

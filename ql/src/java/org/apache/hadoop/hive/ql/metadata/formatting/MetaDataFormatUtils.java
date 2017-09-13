@@ -53,6 +53,8 @@ import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hive.common.util.HiveStringUtils;
 
+import com.google.common.collect.Lists;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -188,7 +190,7 @@ public final class MetaDataFormatUtils {
     return new String(sub);
   }
 
-  private static ColumnStatisticsObj getColumnStatisticsObject(String colName,
+  public static ColumnStatisticsObj getColumnStatisticsObject(String colName,
       String colType, List<ColumnStatisticsObj> colStats) {
     if (colStats != null && !colStats.isEmpty()) {
       for (ColumnStatisticsObj cso : colStats) {
@@ -696,6 +698,57 @@ public final class MetaDataFormatUtils {
     formatOutput(name, unescapedValue, tableInfo);
   }
 
+  public static String[] extractColumnValues(FieldSchema x, boolean hasColStats, ColumnStatisticsObj columnStatisticsObj){
+    List<String>  ret=new ArrayList<>();
+    ret.add(x.getName());
+    ret.add(x.getType());
+    
+    if(hasColStats){
+      
+      if(columnStatisticsObj!=null){
+        
+        ColumnStatisticsData csd = columnStatisticsObj.getStatsData();
+        if (csd.isSetBinaryStats()) {
+          BinaryColumnStatsData bcsd = csd.getBinaryStats();
+          ret.addAll(Lists.newArrayList("", "", "" + bcsd.getNumNulls(), "", "",
+              "" + bcsd.getAvgColLen(), "" + bcsd.getMaxColLen(), "", ""));
+        } else if (csd.isSetStringStats()) {
+          StringColumnStatsData scsd = csd.getStringStats();
+          ret.addAll(Lists.newArrayList( "", "", ""+scsd.getNumNulls(), ""+scsd.getNumDVs(),
+              convertToString(scsd.getBitVectors()), ""+scsd.getAvgColLen(), ""+scsd.getMaxColLen(), "",
+              ""));
+        } else if (csd.isSetBooleanStats()) {
+          BooleanColumnStatsData bcsd = csd.getBooleanStats();
+          ret.addAll(Lists.newArrayList("", "", ""+bcsd.getNumNulls(), "", "", "", "",
+              ""+bcsd.getNumTrues(), ""+bcsd.getNumFalses()));
+        } else if (csd.isSetDecimalStats()) {
+          DecimalColumnStatsData dcsd = csd.getDecimalStats();
+          ret.addAll(Lists.newArrayList(convertToString(dcsd.getLowValue()),
+              convertToString(dcsd.getHighValue()), ""+dcsd.getNumNulls(), ""+dcsd.getNumDVs(),
+              convertToString(dcsd.getBitVectors()), "", "", "", ""));
+        } else if (csd.isSetDoubleStats()) {
+          DoubleColumnStatsData dcsd = csd.getDoubleStats();
+          ret.addAll(Lists.newArrayList(""+dcsd.getLowValue(), ""+dcsd.getHighValue(), ""+dcsd.getNumNulls(),
+              ""+dcsd.getNumDVs(), convertToString(dcsd.getBitVectors()), "", "", "", ""));
+        } else if (csd.isSetLongStats()) {
+          LongColumnStatsData lcsd = csd.getLongStats();
+          ret.addAll(Lists.newArrayList(""+lcsd.getLowValue(), ""+lcsd.getHighValue(), ""+lcsd.getNumNulls(),
+              ""+lcsd.getNumDVs(), convertToString(lcsd.getBitVectors()), "", "", "", ""));
+        } else if (csd.isSetDateStats()) {
+          DateColumnStatsData dcsd = csd.getDateStats();
+          ret.addAll(Lists.newArrayList(convertToString(dcsd.getLowValue()),
+              convertToString(dcsd.getHighValue()), ""+dcsd.getNumNulls(), ""+dcsd.getNumDVs(),
+              convertToString(dcsd.getBitVectors()), "", "", "", ""));
+        }
+
+      }
+    }
+    
+    ret.add(getComment(x));
+    
+    return ret.toArray(new String[]{});
+  }
+  
   private static void formatWithIndentation(String colName, String colType, String colComment,
       StringBuilder tableInfo, List<ColumnStatisticsObj> colStats) {
     tableInfo.append(String.format("%-" + ALIGNMENT + "s", colName)).append(FIELD_DELIM);
