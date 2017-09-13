@@ -139,8 +139,6 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Spark
-      Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -148,56 +146,38 @@ STAGE PLANS:
                 TableScan
                   alias: vectortab2korc
                   Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
                   Select Operator
                     expressions: CAST( t AS varchar(10)) (type: varchar(10)), CAST( si AS varchar(10)) (type: varchar(10)), CAST( i AS varchar(20)) (type: varchar(20)), CAST( b AS varchar(30)) (type: varchar(30)), CAST( f AS varchar(20)) (type: varchar(20)), CAST( d AS varchar(20)) (type: varchar(20)), CAST( s AS varchar(50)) (type: varchar(50))
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [13, 14, 15, 16, 17, 18, 19]
+                        selectExpressions: CastLongToVarChar(col 0, maxLength 10) -> 13:VarChar, CastLongToVarChar(col 1, maxLength 10) -> 14:VarChar, CastLongToVarChar(col 2, maxLength 20) -> 15:VarChar, CastLongToVarChar(col 3, maxLength 30) -> 16:VarChar, VectorUDFAdaptor(CAST( f AS varchar(20))) -> 17:varchar(20), VectorUDFAdaptor(CAST( d AS varchar(20))) -> 18:varchar(20), CastStringGroupToVarChar(col 8, maxLength 50) -> 19:VarChar
                     Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe
                           name: default.varchar_lazy_binary_columnar
-                    Select Operator
-                      expressions: _col0 (type: varchar(10)), _col1 (type: varchar(10)), _col2 (type: varchar(20)), _col3 (type: varchar(30)), _col4 (type: varchar(20)), _col5 (type: varchar(20)), _col6 (type: varchar(50))
-                      outputColumnNames: vt, vsi, vi, vb, vf, vd, vs
-                      Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: compute_stats(vt, 'hll'), compute_stats(vsi, 'hll'), compute_stats(vi, 'hll'), compute_stats(vb, 'hll'), compute_stats(vf, 'hll'), compute_stats(vd, 'hll'), compute_stats(vs, 'hll')
-                        mode: hash
-                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                        Statistics: Num rows: 1 Data size: 3080 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 3080 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col5 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col6 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+            Execution mode: vectorized
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
-                vectorized: false
-        Reducer 2 
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
-                vectorized: false
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3), compute_stats(VALUE._col4), compute_stats(VALUE._col5), compute_stats(VALUE._col6)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                Statistics: Num rows: 1 Data size: 3080 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 3080 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
 
   Stage: Stage-0
     Move Operator
@@ -210,10 +190,5 @@ STAGE PLANS:
               name: default.varchar_lazy_binary_columnar
 
   Stage: Stage-2
-    Stats Work
-      Basic Stats Work:
-      Column Stats Desc:
-          Columns: vt, vsi, vi, vb, vf, vd, vs
-          Column Types: varchar(10), varchar(10), varchar(20), varchar(30), varchar(20), varchar(20), varchar(50)
-          Table: default.varchar_lazy_binary_columnar
+    Stats-Aggr Operator
 

@@ -91,18 +91,18 @@ STAGE PLANS:
           TableScan
             alias: orc_llap
             filterExpr: cint is not null (type: boolean)
-            Statistics: Num rows: 20 Data size: 320 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 20 Data size: 296 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: cint is not null (type: boolean)
-              Statistics: Num rows: 20 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 20 Data size: 296 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cint (type: int), csmallint (type: smallint), cbigint (type: bigint)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 20 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 20 Data size: 296 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: smallint), _col0 (type: int)
                   sort order: ++
-                  Statistics: Num rows: 20 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 296 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: bigint)
       Execution mode: vectorized
       LLAP IO: may be used (ACID table)
@@ -110,10 +110,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey1 (type: int), KEY.reducesinkkey0 (type: smallint), VALUE._col0 (type: bigint)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 20 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 20 Data size: 296 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 20 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 20 Data size: 296 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -141,26 +141,24 @@ POSTHOOK: Input: default@orc_llap@csmallint=1
 POSTHOOK: Input: default@orc_llap@csmallint=2
 POSTHOOK: Input: default@orc_llap@csmallint=3
 #### A masked pattern was here ####
--970918963	1	-588508542
--734267047	1	895807844
--548534304	1	-1900081338
--546972460	1	665899329
--469581869	1	1033373031
--101217409	1	183045850
--37908611	1	-1378658304
-274816197	1	-437339127
-371876492	1	1862746855
-927956889	1	-935575737
--970918963	2	-588508542
--734267047	2	895807844
--548534304	2	-1900081338
--546972460	2	665899329
--469581869	2	1033373031
--101217409	2	183045850
--37908611	2	-1378658304
-274816197	2	-437339127
-371876492	2	1862746855
-927956889	2	-935575737
+-285355633	1	-1241163445
+-109813638	1	-58941842
+164554497	1	1161977292
+199879534	1	123351087
+246423894	1	-1645852809
+354670578	1	562841852
+455419170	1	1108177470
+665801232	1	480783141
+708885482	1	-1645852809
+-285355633	2	-1241163445
+-109813638	2	-58941842
+164554497	2	1161977292
+199879534	2	123351087
+246423894	2	-1645852809
+354670578	2	562841852
+455419170	2	1108177470
+665801232	2	480783141
+708885482	2	-1645852809
 -923308739	3	-1887561756
 -3728	3	-1887561756
 762	3	-1645852809
@@ -218,18 +216,18 @@ STAGE PLANS:
           TableScan
             alias: orc_llap
             filterExpr: cint is not null (type: boolean)
-            Statistics: Num rows: 20 Data size: 320 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 20 Data size: 296 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: cint is not null (type: boolean)
-              Statistics: Num rows: 20 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 20 Data size: 296 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cint (type: int), csmallint (type: smallint), cbigint (type: bigint)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 20 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 20 Data size: 296 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: smallint), _col0 (type: int)
                   sort order: ++
-                  Statistics: Num rows: 20 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 296 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: bigint)
       Execution mode: vectorized
       LLAP IO: may be used (ACID table)
@@ -237,10 +235,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey1 (type: int), KEY.reducesinkkey0 (type: smallint), VALUE._col0 (type: bigint)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 20 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 20 Data size: 296 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 20 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 20 Data size: 296 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -268,27 +266,25 @@ POSTHOOK: Input: default@orc_llap@csmallint=1
 POSTHOOK: Input: default@orc_llap@csmallint=2
 POSTHOOK: Input: default@orc_llap@csmallint=3
 #### A masked pattern was here ####
--970918963	1	-588508542
--734267047	1	895807844
--548534304	1	-1900081338
--546972460	1	665899329
--469581869	1	1033373031
--101217409	1	183045850
--37908611	1	-1378658304
+-285355633	1	-1241163445
+-109813638	1	-58941842
 1	1	2
-274816197	1	-437339127
-371876492	1	1862746855
-927956889	1	-935575737
--970918963	2	-588508542
--734267047	2	895807844
--548534304	2	-1900081338
--546972460	2	665899329
--469581869	2	1033373031
--101217409	2	183045850
--37908611	2	-1378658304
-274816197	2	-437339127
-371876492	2	1862746855
-927956889	2	-935575737
+164554497	1	1161977292
+199879534	1	123351087
+246423894	1	-1645852809
+354670578	1	562841852
+455419170	1	1108177470
+665801232	1	480783141
+708885482	1	-1645852809
+-285355633	2	-1241163445
+-109813638	2	-58941842
+164554497	2	1161977292
+199879534	2	123351087
+246423894	2	-1645852809
+354670578	2	562841852
+455419170	2	1108177470
+665801232	2	480783141
+708885482	2	-1645852809
 -923308739	3	-1887561756
 -3728	3	-1887561756
 762	3	-1645852809
