@@ -302,15 +302,12 @@
   <value>true</value>
 </property>
 
+
 <property>
   <name>hive.llap.io.allocator.direct</name>
   <value>false</value>
 </property>
 
-<property>
-  <name>hive.stats.column.autogather</name>
-  <value>true</value>
-</property>
 
 <property>
   <name>hive.materializedview.rewriting</name>
