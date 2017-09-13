@@ -139,8 +139,8 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       } else {
         List<String[]> table=new ArrayList<String[]>();
         table.add(MetaDataFormatUtils.getColumnsHeader(colStats));
-        for (FieldSchema x : cols) {
-          table.add(MetaDataFormatUtils.extractColumnValues(x,colStats!=null,MetaDataFormatUtils.getColumnStatisticsObject(x.getName(),x.getType(),colStats)));
+        for (FieldSchema col : cols) {
+          table.add(MetaDataFormatUtils.extractColumnValues(col,colStats!=null,MetaDataFormatUtils.getColumnStatisticsObject(col.getName(),col.getType(),colStats)));
         }
         output="# ";
         for (String[] row: table) {
@@ -150,7 +150,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
           
         }
         
-//        output = MetaDataFormatUtils.getAllColumnsInformation(cols, isFormatted, isOutputPadded, colStats);
+        output = MetaDataFormatUtils.getAllColumnsInformation(cols, isFormatted, isOutputPadded, colStats);
         String statsState;
         if (tbl.getParameters() != null && (statsState = tbl.getParameters().get(StatsSetupConst.COLUMN_STATS_ACCURATE)) != null) {
           StringBuilder str = new StringBuilder();
