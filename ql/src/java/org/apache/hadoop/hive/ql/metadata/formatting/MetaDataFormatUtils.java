@@ -636,7 +636,7 @@ public final class MetaDataFormatUtils {
    * @param isLastLinePadded Is the last field could be printed in multiple lines, if contains
    *                         newlines?
    */
-  private static void formatOutput(String[] fields, StringBuilder tableInfo,
+  public static void formatOutput(String[] fields, StringBuilder tableInfo,
       boolean isLastLinePadded) {
     int[] paddings = new int[fields.length-1];
     if (fields.length > 1) {
@@ -740,8 +740,10 @@ public final class MetaDataFormatUtils {
               convertToString(dcsd.getHighValue()), ""+dcsd.getNumNulls(), ""+dcsd.getNumDVs(),
               convertToString(dcsd.getBitVectors()), "", "", "", ""));
         }
-
+      }else{
+        ret.addAll(Lists.newArrayList("", "", "", "", "", "", "", "", ""));
       }
+      
     }
     
     ret.add(getComment(x));
