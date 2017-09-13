@@ -151,7 +151,6 @@ class TextMetaDataFormatter implements MetaDataFormatter {
           output = output.concat(str.toString());
         }
         
-        output = MetaDataFormatUtils.getAllColumnsInformation(cols, isFormatted, isOutputPadded, colStats);
         String statsState;
         if (tbl.getParameters() != null && (statsState = tbl.getParameters().get(StatsSetupConst.COLUMN_STATS_ACCURATE)) != null) {
           StringBuilder str = new StringBuilder();
