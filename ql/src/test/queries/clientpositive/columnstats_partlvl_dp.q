@@ -31,6 +31,7 @@ analyze table Employee_Part partition (employeeSalary) compute statistics for co
 analyze table Employee_Part partition (employeeSalary) compute statistics for columns employeeID;
 
 describe formatted Employee_Part partition (employeeSalary='3000.0', country='UK') employeeID;
+describe formatted Employee_Part;
 explain	
 analyze table Employee_Part partition (employeeSalary,country) compute statistics for columns;	
 analyze table Employee_Part partition (employeeSalary,country) compute statistics for columns;
