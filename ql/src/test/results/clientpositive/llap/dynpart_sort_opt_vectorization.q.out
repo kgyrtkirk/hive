@@ -223,7 +223,8 @@ STAGE PLANS:
               name: default.over1k_part_orc
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain insert overwrite table over1k_part_limit_orc partition(ds="foo", t) select si,i,b,f,t from over1k_orc where t is null or t=27 limit 10
 PREHOOK: type: QUERY
@@ -316,7 +317,8 @@ STAGE PLANS:
               name: default.over1k_part_limit_orc
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain insert overwrite table over1k_part_buck_orc partition(t) select si,i,b,f,t from over1k_orc where t is null or t=27
 PREHOOK: type: QUERY
@@ -389,7 +391,8 @@ STAGE PLANS:
               name: default.over1k_part_buck_orc
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain insert overwrite table over1k_part_buck_sort_orc partition(t) select si,i,b,f,t from over1k_orc where t is null or t=27
 PREHOOK: type: QUERY
@@ -462,7 +465,8 @@ STAGE PLANS:
               name: default.over1k_part_buck_sort_orc
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table over1k_part_orc partition(ds="foo", t) select si,i,b,f,t from over1k_orc where t is null or t=27 order by si
 PREHOOK: type: QUERY
@@ -604,7 +608,8 @@ STAGE PLANS:
               name: default.over1k_part_orc
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain insert into table over1k_part_limit_orc partition(ds="foo", t) select si,i,b,f,t from over1k_orc where t is null or t=27 limit 10
 PREHOOK: type: QUERY
@@ -697,7 +702,8 @@ STAGE PLANS:
               name: default.over1k_part_limit_orc
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain insert into table over1k_part_buck_orc partition(t) select si,i,b,f,t from over1k_orc where t is null or t=27
 PREHOOK: type: QUERY
@@ -770,7 +776,8 @@ STAGE PLANS:
               name: default.over1k_part_buck_orc
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain insert into table over1k_part_buck_sort_orc partition(t) select si,i,b,f,t from over1k_orc where t is null or t=27
 PREHOOK: type: QUERY
@@ -843,7 +850,8 @@ STAGE PLANS:
               name: default.over1k_part_buck_sort_orc
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert into table over1k_part_orc partition(ds="foo", t) select si,i,b,f,t from over1k_orc where t is null or t=27 order by si
 PREHOOK: type: QUERY
@@ -1385,7 +1393,8 @@ STAGE PLANS:
               name: default.over1k_part2_orc
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain insert overwrite table over1k_part2_orc partition(ds="foo",t) select si,i,b,f,t from over1k_orc where t is null or t=27 order by i
 PREHOOK: type: QUERY
@@ -1459,7 +1468,8 @@ STAGE PLANS:
               name: default.over1k_part2_orc
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain insert overwrite table over1k_part2_orc partition(ds="foo",t) select si,i,b,f,t from (select * from over1k_orc order by i limit 10) tmp where t is null or t=27
 PREHOOK: type: QUERY
@@ -1554,7 +1564,8 @@ STAGE PLANS:
               name: default.over1k_part2_orc
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain insert overwrite table over1k_part2_orc partition(ds="foo",t) select si,i,b,f,t from over1k_orc where t is null or t=27 group by si,i,b,f,t
 PREHOOK: type: QUERY
@@ -1632,7 +1643,8 @@ STAGE PLANS:
               name: default.over1k_part2_orc
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain insert overwrite table over1k_part2_orc partition(ds="foo",t) select si,i,b,f,t from over1k_orc where t is null or t=27 group by si,i,b,f,t
 PREHOOK: type: QUERY
@@ -1711,7 +1723,8 @@ STAGE PLANS:
               name: default.over1k_part2_orc
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table over1k_part2_orc partition(ds="foo",t) select si,i,b,f,t from over1k_orc where t is null or t=27 order by i
 PREHOOK: type: QUERY
@@ -2095,7 +2108,8 @@ STAGE PLANS:
               name: default.over1k_part_buck_sort2_orc
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain insert overwrite table over1k_part_buck_sort2_orc partition(t) select si,i,b,f,t from over1k_orc where t is null or t=27
 PREHOOK: type: QUERY
@@ -2168,7 +2182,8 @@ STAGE PLANS:
               name: default.over1k_part_buck_sort2_orc
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table over1k_part_buck_sort2_orc partition(t) select si,i,b,f,t from over1k_orc where t is null or t=27
 PREHOOK: type: QUERY
