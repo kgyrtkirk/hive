@@ -59,9 +59,7 @@ public class StatsWork implements Serializable {
 
   @Override
   public String toString() {
-    String ret;
-    ret = fWork.toString();
-    return ret;
+    return String.format("StatWork; fetch: %s", fWork );
   }
 
   public FetchWork getfWork() {
