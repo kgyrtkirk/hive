@@ -838,7 +838,8 @@ STAGE PLANS:
               name: default.orc_create_complex
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 Warning: Map Join MAPJOIN[15][bigTable=?] in task 'Map 4' is a cross product
 PREHOOK: query: INSERT INTO TABLE orc_create_complex

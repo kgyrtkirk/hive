@@ -144,7 +144,8 @@ STAGE PLANS:
               name: default.stats_non_partitioned
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
 PREHOOK: query: insert overwrite table stats_non_partitioned
@@ -731,7 +732,8 @@ STAGE PLANS:
               name: default.stats_partitioned
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table stats_partitioned partition (ds='1')
 select * from src
@@ -1470,7 +1472,8 @@ STAGE PLANS:
               name: default.stats_non_partitioned
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
   Stage: Stage-3
@@ -2251,7 +2254,8 @@ STAGE PLANS:
               name: default.stats_partitioned
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-3
     Map Reduce

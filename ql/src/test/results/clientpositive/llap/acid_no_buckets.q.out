@@ -168,7 +168,8 @@ STAGE PLANS:
               name: default.srcpart_acid
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: update srcpart_acid set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
@@ -346,7 +347,8 @@ STAGE PLANS:
               name: default.srcpart_acid
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: delete from srcpart_acid where key in( '1001', '213', '43')
 PREHOOK: type: QUERY
@@ -662,7 +664,8 @@ STAGE PLANS:
               name: default.srcpart_acidb
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: update srcpart_acidb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
@@ -841,7 +844,8 @@ STAGE PLANS:
               name: default.srcpart_acidb
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: delete from srcpart_acidb where key in( '1001', '213', '43')
 PREHOOK: type: QUERY
@@ -1156,7 +1160,8 @@ STAGE PLANS:
               name: default.srcpart_acidv
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: update srcpart_acidv set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
@@ -1334,7 +1339,8 @@ STAGE PLANS:
               name: default.srcpart_acidv
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: delete from srcpart_acidv where key in( '1001', '213', '43')
 PREHOOK: type: QUERY
@@ -1650,7 +1656,8 @@ STAGE PLANS:
               name: default.srcpart_acidvb
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: update srcpart_acidvb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
@@ -1829,7 +1836,8 @@ STAGE PLANS:
               name: default.srcpart_acidvb
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: delete from srcpart_acidvb where key in( '1001', '213', '43')
 PREHOOK: type: QUERY
