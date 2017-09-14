@@ -20,7 +20,7 @@ POSTHOOK: Lineage: smalltbl1.value SIMPLE [(src)src.FieldSchema(name:value, type
 RUN: Stage-1:MAPRED
 RUN: Stage-2:DEPENDENCY_COLLECTION
 RUN: Stage-0:MOVE
-RUN: Stage-3:STATS
+RUN: Stage-3:COLUMNSTATS
 PREHOOK: query: create table smallTbl2(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -43,7 +43,7 @@ POSTHOOK: Lineage: smalltbl2.value SIMPLE [(src)src.FieldSchema(name:value, type
 RUN: Stage-1:MAPRED
 RUN: Stage-2:DEPENDENCY_COLLECTION
 RUN: Stage-0:MOVE
-RUN: Stage-3:STATS
+RUN: Stage-3:COLUMNSTATS
 PREHOOK: query: create table smallTbl3(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -66,7 +66,7 @@ POSTHOOK: Lineage: smalltbl3.value SIMPLE [(src)src.FieldSchema(name:value, type
 RUN: Stage-1:MAPRED
 RUN: Stage-2:DEPENDENCY_COLLECTION
 RUN: Stage-0:MOVE
-RUN: Stage-3:STATS
+RUN: Stage-3:COLUMNSTATS
 PREHOOK: query: create table smallTbl4(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -89,7 +89,7 @@ POSTHOOK: Lineage: smalltbl4.value SIMPLE [(src)src.FieldSchema(name:value, type
 RUN: Stage-1:MAPRED
 RUN: Stage-2:DEPENDENCY_COLLECTION
 RUN: Stage-0:MOVE
-RUN: Stage-3:STATS
+RUN: Stage-3:COLUMNSTATS
 PREHOOK: query: create table bigTbl(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -156,7 +156,7 @@ POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, typ
 RUN: Stage-1:MAPRED
 RUN: Stage-2:DEPENDENCY_COLLECTION
 RUN: Stage-0:MOVE
-RUN: Stage-3:STATS
+RUN: Stage-3:COLUMNSTATS
 PREHOOK: query: explain
 select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
@@ -741,7 +741,7 @@ POSTHOOK: Lineage: bigtbl.value EXPRESSION [(src)src.FieldSchema(name:value, typ
 RUN: Stage-1:MAPRED
 RUN: Stage-2:DEPENDENCY_COLLECTION
 RUN: Stage-0:MOVE
-RUN: Stage-3:STATS
+RUN: Stage-3:COLUMNSTATS
 PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),

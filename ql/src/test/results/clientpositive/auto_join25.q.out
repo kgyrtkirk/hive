@@ -37,7 +37,7 @@ RUN: Stage-6:CONDITIONAL
 RUN: Stage-7:MAPREDLOCAL
 RUN: Stage-1:MAPRED
 RUN: Stage-0:MOVE
-RUN: Stage-2:STATS
+RUN: Stage-2:COLUMNSTATS
 PREHOOK: query: SELECT sum(hash(dest1.key,dest1.value)) FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
@@ -80,7 +80,7 @@ RUN: Stage-8:CONDITIONAL
 RUN: Stage-12:MAPREDLOCAL
 RUN: Stage-2:MAPRED
 RUN: Stage-0:MOVE
-RUN: Stage-3:STATS
+RUN: Stage-3:COLUMNSTATS
 PREHOOK: query: SELECT sum(hash(dest_j2.key,dest_j2.value)) FROM dest_j2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j2
@@ -118,7 +118,7 @@ RUN: Stage-6:CONDITIONAL
 RUN: Stage-7:MAPREDLOCAL
 RUN: Stage-1:MAPRED
 RUN: Stage-0:MOVE
-RUN: Stage-2:STATS
+RUN: Stage-2:COLUMNSTATS
 PREHOOK: query: SELECT sum(hash(dest_j1.key,dest_j1.value)) FROM dest_j1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1

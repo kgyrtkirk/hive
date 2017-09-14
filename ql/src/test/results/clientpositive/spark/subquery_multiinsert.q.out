@@ -257,7 +257,8 @@ STAGE PLANS:
               name: default.src_5
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-0
     Move Operator
@@ -270,7 +271,8 @@ STAGE PLANS:
               name: default.src_4
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 Warning: Shuffle Join JOIN[31][tables = [sq_2_notin_nullcheck]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: from src b 
@@ -312,8 +314,8 @@ POSTHOOK: Lineage: src_5.value SIMPLE [(src)b.FieldSchema(name:value, type:strin
 RUN: Stage-2:MAPRED
 RUN: Stage-1:MOVE
 RUN: Stage-0:MOVE
-RUN: Stage-3:STATS
-RUN: Stage-4:STATS
+RUN: Stage-3:COLUMNSTATS
+RUN: Stage-4:COLUMNSTATS
 PREHOOK: query: select * from src_4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_4
@@ -680,7 +682,8 @@ STAGE PLANS:
               name: default.src_4
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -693,7 +696,8 @@ STAGE PLANS:
               name: default.src_5
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 Warning: Map Join MAPJOIN[47][bigTable=b] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: from src b 
@@ -736,8 +740,8 @@ RUN: Stage-5:MAPRED
 RUN: Stage-2:MAPRED
 RUN: Stage-0:MOVE
 RUN: Stage-1:MOVE
-RUN: Stage-3:STATS
-RUN: Stage-4:STATS
+RUN: Stage-3:COLUMNSTATS
+RUN: Stage-4:COLUMNSTATS
 PREHOOK: query: select * from src_4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_4

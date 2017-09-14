@@ -1641,7 +1641,7 @@ POSTHOOK: Lineage: part_table PARTITION(partitionid=1).value SIMPLE [(src)src.Fi
 RUN: Stage-1:MAPRED
 RUN: Stage-2:DEPENDENCY_COLLECTION
 RUN: Stage-0:MOVE
-RUN: Stage-3:STATS
+RUN: Stage-3:COLUMNSTATS
 PREHOOK: query: INSERT OVERWRITE TABLE part_table PARTITION (partitionId=2)
   SELECT key, value FROM src1 ORDER BY key, value
 PREHOOK: type: QUERY
@@ -1657,7 +1657,7 @@ POSTHOOK: Lineage: part_table PARTITION(partitionid=2).value SIMPLE [(src1)src1.
 RUN: Stage-1:MAPRED
 RUN: Stage-2:DEPENDENCY_COLLECTION
 RUN: Stage-0:MOVE
-RUN: Stage-3:STATS
+RUN: Stage-3:COLUMNSTATS
 PREHOOK: query: EXPLAIN
 SELECT count(*)
 FROM part_table x JOIN src1 y ON (x.key = y.key)
