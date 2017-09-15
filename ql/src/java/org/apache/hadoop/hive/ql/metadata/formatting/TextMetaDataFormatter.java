@@ -137,27 +137,36 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       }
       String output = "";
 
+      boolean isColStatsAvailable = colStats != null;
+
+      TextMetaDataTable mdt = new TextMetaDataTable();
+      if (isFormatted && !isColStatsAvailable) {
+        output = "# ";
+      }
+      if (isFormatted) {
+        mdt.addRow(MetaDataFormatUtils.getColumnsHeader(colStats));
+      }
+      for (FieldSchema col : cols) {
+        mdt.addRow(MetaDataFormatUtils.extractColumnValues(col, isColStatsAvailable,
+            MetaDataFormatUtils.getColumnStatisticsObject(col.getName(), col.getType(), colStats)));
+      }
+      if (isColStatsAvailable) {
+        mdt.transpose();
+      }
+      output += mdt.renderTable(isOutputPadded);
+
       if (colPath.equals(tableName)) {
-        output = MetaDataFormatUtils.getAllColumnsInformation(cols, partCols, isFormatted, isOutputPadded, showPartColsSeparately);
+        if ((partCols != null) && !partCols.isEmpty() && showPartColsSeparately) {
+
+          mdt = new TextMetaDataTable();
+          output += MetaDataFormatUtils.LINE_DELIM + "# Partition Information" + MetaDataFormatUtils.LINE_DELIM + "# ";
+          mdt.addRow(MetaDataFormatUtils.getColumnsHeader(null));
+          for (FieldSchema col : partCols) {
+            mdt.addRow(MetaDataFormatUtils.extractColumnValues(col));
+          }
+          output += mdt.renderTable(isOutputPadded);
+        }
       } else {
-        boolean isColStatsAvailable = colStats != null;
-
-        TextMetaDataTable mdt = new TextMetaDataTable();
-        if (isFormatted && !isColStatsAvailable) {
-          output = "# ";
-        }
-        if (isFormatted) {
-          mdt.addRow(MetaDataFormatUtils.getColumnsHeader(colStats));
-        }
-        for (FieldSchema col : cols) {
-          mdt.addRow(MetaDataFormatUtils.extractColumnValues(col, isColStatsAvailable,
-              MetaDataFormatUtils.getColumnStatisticsObject(col.getName(), col.getType(), colStats)));
-        }
-        if (isColStatsAvailable) {
-          mdt.transpose();
-        }
-        output += mdt.renderTable(isOutputPadded);
-
 
         String statsState;
         if (tbl.getParameters() != null && (statsState = tbl.getParameters().get(StatsSetupConst.COLUMN_STATS_ACCURATE)) != null) {

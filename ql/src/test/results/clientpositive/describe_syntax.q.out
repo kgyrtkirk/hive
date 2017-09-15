@@ -52,7 +52,6 @@ part                	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 part                	string              	                    
 PREHOOK: query: DESCRIBE EXTENDED t1
@@ -68,7 +67,6 @@ part                	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 part                	string              	                    
 	 	 
@@ -80,13 +78,11 @@ POSTHOOK: query: DESCRIBE FORMATTED t1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@t1
 # col_name            	data_type           	comment             
-	 	 
 key1                	int                 	                    
 value1              	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 part                	string              	                    
 	 	 
@@ -128,7 +124,6 @@ part                	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 part                	string              	                    
 PREHOOK: query: DESCRIBE EXTENDED db1.t1
@@ -144,7 +139,6 @@ part                	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 part                	string              	                    
 	 	 
@@ -156,13 +150,11 @@ POSTHOOK: query: DESCRIBE FORMATTED db1.t1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@t1
 # col_name            	data_type           	comment             
-	 	 
 key1                	int                 	                    
 value1              	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 part                	string              	                    
 	 	 
@@ -303,7 +295,6 @@ part                	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 part                	string              	                    
 PREHOOK: query: DESCRIBE EXTENDED t1 PARTITION(ds='4', part='5')
@@ -319,7 +310,6 @@ part                	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 part                	string              	                    
 	 	 
@@ -331,13 +321,11 @@ POSTHOOK: query: DESCRIBE FORMATTED t1 PARTITION(ds='4', part='5')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@t1
 # col_name            	data_type           	comment             
-	 	 
 key1                	int                 	                    
 value1              	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 part                	string              	                    
 	 	 
@@ -377,7 +365,6 @@ part                	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 part                	string              	                    
 PREHOOK: query: DESCRIBE EXTENDED db1.t1 PARTITION(ds='4', part='5')
@@ -393,7 +380,6 @@ part                	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 part                	string              	                    
 	 	 
@@ -405,13 +391,11 @@ POSTHOOK: query: DESCRIBE FORMATTED db1.t1 PARTITION(ds='4', part='5')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@t1
 # col_name            	data_type           	comment             
-	 	 
 key1                	int                 	                    
 value1              	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 part                	string              	                    
 	 	 

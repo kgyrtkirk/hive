@@ -696,6 +696,10 @@ public final class MetaDataFormatUtils {
     formatOutput(name, unescapedValue, tableInfo);
   }
 
+  public static String[] extractColumnValues(FieldSchema col) {
+    return extractColumnValues(col, false, null);
+  }
+
   public static String[] extractColumnValues(FieldSchema col, boolean isColStatsAvailable, ColumnStatisticsObj columnStatisticsObj){
     List<String> ret = new ArrayList<>();
     ret.add(col.getName());
@@ -887,4 +891,5 @@ public final class MetaDataFormatUtils {
       return new TextMetaDataFormatter(conf.getIntVar(HiveConf.ConfVars.CLIPRETTYOUTPUTNUMCOLS), conf.getBoolVar(ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY));
     }
   }
+
 }
