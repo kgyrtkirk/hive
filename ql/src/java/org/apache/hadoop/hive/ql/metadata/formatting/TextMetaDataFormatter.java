@@ -136,6 +136,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
                 cols, partCols, prettyOutputNumCols)
                 :
                   MetaDataFormatUtils.getAllColumnsInformation(cols, partCols, isFormatted, isOutputPadded, showPartColsSeparately);
+        outStream.write(output.getBytes("UTF-8"));
       } else {
         // MetaDataTable mdt = new MetaDataTable();
         // mdt.setHeaders(MetaDataFormatUtils.getColumnsHeader(colStats));
@@ -167,8 +168,8 @@ class TextMetaDataFormatter implements MetaDataFormatter {
               str, isOutputPadded);
           output = output.concat(str.toString());
         }
+        outStream.write(output.getBytes("UTF-8"));
       }
-      outStream.write(output.getBytes("UTF-8"));
 
       if (tableName.equals(colPath)) {
         if (isFormatted) {
