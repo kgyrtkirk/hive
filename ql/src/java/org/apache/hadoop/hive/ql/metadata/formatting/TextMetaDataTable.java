@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.metadata.formatting;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.spark_project.guava.collect.Lists;
+import com.google.common.collect.Lists;
 
 public class TextMetaDataTable {
 
