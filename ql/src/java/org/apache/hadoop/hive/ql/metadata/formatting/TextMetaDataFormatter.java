@@ -143,8 +143,11 @@ class TextMetaDataFormatter implements MetaDataFormatter {
         boolean isColStatsAvailable = colStats != null;
 
         TextMetaDataTable mdt = new TextMetaDataTable();
+        if (isFormatted && !isColStatsAvailable) {
+          output = "# ";
+        }
         if (isFormatted) {
-          mdt.addHeader(MetaDataFormatUtils.getColumnsHeader(colStats));
+          mdt.addRow(MetaDataFormatUtils.getColumnsHeader(colStats));
         }
         for (FieldSchema col : cols) {
           mdt.addRow(MetaDataFormatUtils.extractColumnValues(col, isColStatsAvailable,
@@ -153,7 +156,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
         if (isColStatsAvailable) {
           mdt.transpose();
         }
-        output = mdt.renderTable(isOutputPadded);
+        output += mdt.renderTable(isOutputPadded);
 
 
         String statsState;
