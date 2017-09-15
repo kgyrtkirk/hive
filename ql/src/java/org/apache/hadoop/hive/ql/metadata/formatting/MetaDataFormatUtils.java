@@ -662,32 +662,6 @@ public final class MetaDataFormatUtils {
     }
   }
 
-  private static void appendColumnStats(StringBuilder sb, Object min, Object max, Object numNulls,
-      Object ndv, Object bitVector, Object avgColLen, Object maxColLen, Object numTrues, Object numFalses) {
-    sb.append(String.format("%-" + ALIGNMENT + "s", min)).append(FIELD_DELIM);
-    sb.append(String.format("%-" + ALIGNMENT + "s", max)).append(FIELD_DELIM);
-    sb.append(String.format("%-" + ALIGNMENT + "s", numNulls)).append(FIELD_DELIM);
-    sb.append(String.format("%-" + ALIGNMENT + "s", ndv)).append(FIELD_DELIM);
-    sb.append(String.format("%-" + ALIGNMENT + "s", avgColLen)).append(FIELD_DELIM);
-    sb.append(String.format("%-" + ALIGNMENT + "s", maxColLen)).append(FIELD_DELIM);
-    sb.append(String.format("%-" + ALIGNMENT + "s", numTrues)).append(FIELD_DELIM);
-    sb.append(String.format("%-" + ALIGNMENT + "s", numFalses)).append(FIELD_DELIM);
-    sb.append(String.format("%-" + ALIGNMENT + "s", bitVector)).append(FIELD_DELIM);
-  }
-
-  private static void appendColumnStatsNoFormatting(StringBuilder sb, Object min,
-      Object max, Object numNulls, Object ndv, Object avgColLen, Object maxColLen,
-      Object numTrues, Object numFalses) {
-    sb.append(min).append(FIELD_DELIM);
-    sb.append(max).append(FIELD_DELIM);
-    sb.append(numNulls).append(FIELD_DELIM);
-    sb.append(ndv).append(FIELD_DELIM);
-    sb.append(avgColLen).append(FIELD_DELIM);
-    sb.append(maxColLen).append(FIELD_DELIM);
-    sb.append(numTrues).append(FIELD_DELIM);
-    sb.append(numFalses).append(FIELD_DELIM);
-  }
-
   public static String[] getColumnsHeader(List<ColumnStatisticsObj> colStats) {
     boolean showColStats = false;
     if (colStats != null) {
