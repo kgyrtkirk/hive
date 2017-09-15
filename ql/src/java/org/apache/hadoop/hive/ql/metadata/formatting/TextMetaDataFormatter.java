@@ -128,37 +128,33 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
       UniqueConstraint ukInfo, NotNullConstraint nnInfo) throws HiveException {
     try {
-      String output = "";
-      if (colPath.equals(tableName)) {
-        List<FieldSchema> partCols = tbl.isPartitioned() ? tbl.getPartCols() : null;
-        output = isPretty ?
-            MetaDataPrettyFormatUtils.getAllColumnsInformation(
-                cols, partCols, prettyOutputNumCols)
-                :
-                  MetaDataFormatUtils.getAllColumnsInformation(cols, partCols, isFormatted, isOutputPadded, showPartColsSeparately);
-        outStream.write(output.getBytes("UTF-8"));
-      } else {
-        // MetaDataTable mdt = new MetaDataTable();
-        // mdt.setHeaders(MetaDataFormatUtils.getColumnsHeader(colStats));
-        // for (FieldSchema col : cols) {
-        // mdt.addRow(MetaDataFormatUtils.extractColumnValues(col, colStats != null,
-        // MetaDataFormatUtils.getColumnStatisticsObject(col.getName(), col.getType(), colStats)));
-        // }
-        // output = mdt.renderTable(isOutputPadded);
+      List<FieldSchema> partCols = tbl.isPartitioned() ? tbl.getPartCols() : null;
 
-        List<String[]> table=new ArrayList<String[]>();
+      if (isPretty) {
+        String output = MetaDataPrettyFormatUtils.getAllColumnsInformation(cols, partCols, prettyOutputNumCols);
+        outStream.write(output.getBytes("UTF-8"));
+        return;
+      }
+      String output = "";
+
+      if (colPath.equals(tableName)) {
+        output = MetaDataFormatUtils.getAllColumnsInformation(cols, partCols, isFormatted, isOutputPadded, showPartColsSeparately);
+      } else {
+        boolean isColStatsAvailable = colStats != null;
+
+        TextMetaDataTable mdt = new TextMetaDataTable();
         if (isFormatted) {
-          output = "# ";
-          table.add(MetaDataFormatUtils.getColumnsHeader(colStats));
+          mdt.addHeader(MetaDataFormatUtils.getColumnsHeader(colStats));
         }
         for (FieldSchema col : cols) {
-          table.add(MetaDataFormatUtils.extractColumnValues(col,colStats!=null,MetaDataFormatUtils.getColumnStatisticsObject(col.getName(),col.getType(),colStats)));
+          mdt.addRow(MetaDataFormatUtils.extractColumnValues(col, isColStatsAvailable,
+              MetaDataFormatUtils.getColumnStatisticsObject(col.getName(), col.getType(), colStats)));
         }
-        for (String[] row: table) {
-          StringBuilder str = new StringBuilder();
-          MetaDataFormatUtils.formatOutput(row, str, isOutputPadded);
-          output = output.concat(str.toString());
-        }
+        // if (isColStatsAvailable) {
+        // mdt.transpose();
+        // }
+        output = mdt.renderTable(isOutputPadded);
+
 
         String statsState;
         if (tbl.getParameters() != null && (statsState = tbl.getParameters().get(StatsSetupConst.COLUMN_STATS_ACCURATE)) != null) {
@@ -168,8 +164,8 @@ class TextMetaDataFormatter implements MetaDataFormatter {
               str, isOutputPadded);
           output = output.concat(str.toString());
         }
-        outStream.write(output.getBytes("UTF-8"));
       }
+      outStream.write(output.getBytes("UTF-8"));
 
       if (tableName.equals(colPath)) {
         if (isFormatted) {
