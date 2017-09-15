@@ -47,7 +47,36 @@ public class TextMetaDataTable {
   }
 
   public void transpose() {
-    throw new RuntimeException();
+    if (table.size() == 0) {
+      return;
+    }
+
+    List<List<String>> newTable = new ArrayList<List<String>>() {
+      private static final long serialVersionUID = 1L;
+      @Override
+      public List<String> get(int idx) {
+        List<String> r = super.get(idx);
+        if (r == null) {
+          List<String> l = new ArrayList<String>();
+          add(l);
+          if (size() != idx) {
+            throw new RuntimeException("expected at-most 1 outside");
+          }
+          r = l;
+        }
+        return r;
+      }
+    };
+
+    for (List<String> srcRow : table) {
+      if (table.size() != 0 && table.size() != srcRow.size()) {
+        throw new RuntimeException("invalid table size");
+      }
+      for (int i = 0; i < srcRow.size(); i++) {
+        newTable.get(i).add(srcRow.get(i));
+      }
+    }
+    table = newTable;
   }
 
 }

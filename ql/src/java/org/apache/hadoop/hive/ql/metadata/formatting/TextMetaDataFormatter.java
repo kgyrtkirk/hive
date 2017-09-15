@@ -150,9 +150,9 @@ class TextMetaDataFormatter implements MetaDataFormatter {
           mdt.addRow(MetaDataFormatUtils.extractColumnValues(col, isColStatsAvailable,
               MetaDataFormatUtils.getColumnStatisticsObject(col.getName(), col.getType(), colStats)));
         }
-        // if (isColStatsAvailable) {
-        // mdt.transpose();
-        // }
+        if (isColStatsAvailable) {
+          mdt.transpose();
+        }
         output = mdt.renderTable(isOutputPadded);
 
 
