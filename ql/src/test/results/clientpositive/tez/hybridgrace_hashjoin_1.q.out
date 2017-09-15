@@ -1,28 +1,13 @@
-PREHOOK: query: -- Hybrid Grace Hash Join
--- Test basic functionalities:
--- 1. Various cases when hash partitions spill
--- 2. Partitioned table spilling
--- 3. Vectorization
-
-
-SELECT 1
+PREHOOK: query: SELECT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: -- Hybrid Grace Hash Join
--- Test basic functionalities:
--- 1. Various cases when hash partitions spill
--- 2. Partitioned table spilling
--- 3. Vectorization
-
-
-SELECT 1
+POSTHOOK: query: SELECT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1
-PREHOOK: query: -- Base result for inner join
-explain
+PREHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
@@ -30,8 +15,7 @@ select count(*) from
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Base result for inner join
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
@@ -49,7 +33,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -72,7 +56,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 26150 Data size: 209200 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 25044 Data size: 200352 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -139,9 +123,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 3152013
-PREHOOK: query: -- Two partitions are created. One in memory, one on disk on creation.
--- The one in memory will eventually exceed memory limit, but won't spill.
-explain
+PREHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
@@ -149,9 +131,7 @@ select count(*) from
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Two partitions are created. One in memory, one on disk on creation.
--- The one in memory will eventually exceed memory limit, but won't spill.
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
@@ -169,7 +149,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -192,7 +172,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 26150 Data size: 209200 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 25044 Data size: 200352 Basic stats: COMPLETE Column stats: COMPLETE
                         HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
@@ -260,16 +240,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 3152013
-PREHOOK: query: -- Base result for inner join
-explain
+PREHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
  inner join alltypesorc cd
  on cd.cint = c.cint) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Base result for inner join
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
@@ -286,7 +264,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -309,7 +287,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 19518 Data size: 156144 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 18694 Data size: 149552 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -374,18 +352,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 3152013
-PREHOOK: query: -- 16 partitions are created: 3 in memory, 13 on disk on creation.
--- 1 partition is spilled during first round processing, which ends up having 2 in memory, 14 on disk
-explain
+PREHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
  inner join alltypesorc cd
  on cd.cint = c.cint) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 16 partitions are created: 3 in memory, 13 on disk on creation.
--- 1 partition is spilled during first round processing, which ends up having 2 in memory, 14 on disk
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
@@ -402,7 +376,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -425,7 +399,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 19518 Data size: 156144 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 18694 Data size: 149552 Basic stats: COMPLETE Column stats: COMPLETE
                         HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
@@ -491,16 +465,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 3152013
-PREHOOK: query: -- Base result for outer join
-explain
+PREHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
  left outer join alltypesorc cd
  on cd.cint = c.cint) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Base result for outer join
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
@@ -517,7 +489,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -531,13 +503,13 @@ STAGE PLANS:
                     Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
-                           Left Outer Join0 to 1
+                           Left Outer Join 0 to 1
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 26150 Data size: 209200 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 25044 Data size: 200352 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -599,16 +571,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 3155128
-PREHOOK: query: -- 32 partitions are created. 3 in memory, 29 on disk on creation.
-explain
+PREHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
  left outer join alltypesorc cd
  on cd.cint = c.cint) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 32 partitions are created. 3 in memory, 29 on disk on creation.
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
@@ -625,7 +595,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -639,13 +609,13 @@ STAGE PLANS:
                     Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
-                           Left Outer Join0 to 1
+                           Left Outer Join 0 to 1
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 26150 Data size: 209200 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 25044 Data size: 200352 Basic stats: COMPLETE Column stats: COMPLETE
                       HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()
@@ -708,13 +678,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 3155128
-PREHOOK: query: -- Partitioned table
-create table parttbl (key string, value char(20)) partitioned by (dt char(10))
+PREHOOK: query: create table parttbl (key string, value char(20)) partitioned by (dt char(10))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parttbl
-POSTHOOK: query: -- Partitioned table
-create table parttbl (key string, value char(20)) partitioned by (dt char(10))
+POSTHOOK: query: create table parttbl (key string, value char(20)) partitioned by (dt char(10))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parttbl
@@ -742,16 +710,14 @@ POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@parttbl@dt=2000-01-02
 POSTHOOK: Lineage: parttbl PARTITION(dt=2000-01-02).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: parttbl PARTITION(dt=2000-01-02).value EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- No spill, base result
-explain
+PREHOOK: query: explain
 select count(*) from
 (select p1.value
  from parttbl p1
  inner join parttbl p2
  on p1.key = p2.key) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- No spill, base result
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select p1.value
  from parttbl p1
@@ -768,21 +734,21 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: p1
-                  Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 525 Data size: 104474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -791,7 +757,7 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 577 Data size: 18341 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 548 Data size: 109230 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -805,19 +771,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p2
-                  Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 525 Data size: 104474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -860,16 +826,14 @@ POSTHOOK: Input: default@parttbl@dt=2000-01-01
 POSTHOOK: Input: default@parttbl@dt=2000-01-02
 #### A masked pattern was here ####
 1217
-PREHOOK: query: -- No spill, 2 partitions created in memory
-explain
+PREHOOK: query: explain
 select count(*) from
 (select p1.value
  from parttbl p1
  inner join parttbl p2
  on p1.key = p2.key) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- No spill, 2 partitions created in memory
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select p1.value
  from parttbl p1
@@ -886,21 +850,21 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: p1
-                  Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 525 Data size: 104474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -909,7 +873,7 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 577 Data size: 18341 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 548 Data size: 109230 Basic stats: COMPLETE Column stats: NONE
                         HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
@@ -924,19 +888,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p2
-                  Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 525 Data size: 104474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -979,16 +943,14 @@ POSTHOOK: Input: default@parttbl@dt=2000-01-01
 POSTHOOK: Input: default@parttbl@dt=2000-01-02
 #### A masked pattern was here ####
 1217
-PREHOOK: query: -- Spill case base result
-explain
+PREHOOK: query: explain
 select count(*) from
 (select p1.value
  from parttbl p1
  inner join parttbl p2
  on p1.key = p2.key) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Spill case base result
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select p1.value
  from parttbl p1
@@ -1004,58 +966,63 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: p1
-                  Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 525 Data size: 104474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: string)
-                          1 _col0 (type: string)
-                        input vertices:
-                          1 Map 3
-                        Statistics: Num rows: 577 Data size: 18341 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: p2
-                  Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: p2
+                  Statistics: Num rows: 525 Data size: 104474 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                Statistics: Num rows: 548 Data size: 109230 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1097,16 +1064,14 @@ POSTHOOK: Input: default@parttbl@dt=2000-01-01
 POSTHOOK: Input: default@parttbl@dt=2000-01-02
 #### A masked pattern was here ####
 1217
-PREHOOK: query: -- Spill case, one partition in memory, one spilled on creation
-explain
+PREHOOK: query: explain
 select count(*) from
 (select p1.value
  from parttbl p1
  inner join parttbl p2
  on p1.key = p2.key) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Spill case, one partition in memory, one spilled on creation
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select p1.value
  from parttbl p1
@@ -1122,59 +1087,63 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: p1
-                  Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 525 Data size: 104474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: string)
-                          1 _col0 (type: string)
-                        input vertices:
-                          1 Map 3
-                        Statistics: Num rows: 577 Data size: 18341 Basic stats: COMPLETE Column stats: NONE
-                        HybridGraceHashJoin: true
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: p2
-                  Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 525 Data size: 16674 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: p2
+                  Statistics: Num rows: 525 Data size: 104474 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 499 Data size: 99300 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                Statistics: Num rows: 548 Data size: 109230 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1224,9 +1193,7 @@ POSTHOOK: query: drop table parttbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parttbl
 POSTHOOK: Output: default@parttbl
-PREHOOK: query: -- Test vectorization
--- Test case borrowed from vector_decimal_mapjoin.q
-CREATE TABLE decimal_mapjoin STORED AS ORC AS
+PREHOOK: query: CREATE TABLE decimal_mapjoin STORED AS ORC AS
   SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1,
   CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2,
   cint
@@ -1235,9 +1202,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_mapjoin
-POSTHOOK: query: -- Test vectorization
--- Test case borrowed from vector_decimal_mapjoin.q
-CREATE TABLE decimal_mapjoin STORED AS ORC AS
+POSTHOOK: query: CREATE TABLE decimal_mapjoin STORED AS ORC AS
   SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1,
   CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2,
   cint
@@ -1277,14 +1242,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: l
-                  Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 1354300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cint = 6981) (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 551 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdecimal1 (type: decimal(20,10))
                       outputColumnNames: _col0
-                      Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 551 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1294,14 +1259,14 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col2
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 37748736 Data size: 13339877376 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: 6981 (type: int), 6981 (type: int), _col0 (type: decimal(20,10)), _col2 (type: decimal(23,14))
                           outputColumnNames: _col0, _col1, _col2, _col3
-                          Statistics: Num rows: 37748736 Data size: 13339877376 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 37748736 Data size: 13339877376 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1311,17 +1276,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: r
-                  Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 1354300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (6981 = cint) (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 551 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdecimal2 (type: decimal(23,14))
                       outputColumnNames: _col0
-                      Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 551 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 5 Data size: 551 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: decimal(23,14))
             Execution mode: vectorized
 
@@ -1473,14 +1438,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: l
-                  Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 1354300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cint = 6981) (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 551 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdecimal1 (type: decimal(20,10))
                       outputColumnNames: _col0
-                      Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 551 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1490,14 +1455,14 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col2
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 37748736 Data size: 13339877376 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: 6981 (type: int), 6981 (type: int), _col0 (type: decimal(20,10)), _col2 (type: decimal(23,14))
                           outputColumnNames: _col0, _col1, _col2, _col3
-                          Statistics: Num rows: 37748736 Data size: 13339877376 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 37748736 Data size: 13339877376 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1507,17 +1472,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: r
-                  Statistics: Num rows: 12288 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 1354300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (6981 = cint) (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 551 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdecimal2 (type: decimal(23,14))
                       outputColumnNames: _col0
-                      Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 551 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 6144 Data size: 1082530 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 5 Data size: 551 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: decimal(23,14))
             Execution mode: vectorized
 

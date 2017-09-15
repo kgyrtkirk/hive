@@ -200,7 +200,7 @@ public class TestCompactor {
     Initiator initiator = new Initiator();
     initiator.setThreadId((int)initiator.getId());
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
-    initiator.setHiveConf(conf);
+    initiator.setConf(conf);
     AtomicBoolean stop = new AtomicBoolean();
     stop.set(true);
     initiator.init(stop, new AtomicBoolean());
@@ -303,7 +303,7 @@ public class TestCompactor {
     initiator.setThreadId((int)initiator.getId());
     // Set to 1 so insert doesn't set it off but update does
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 1);
-    initiator.setHiveConf(conf);
+    initiator.setConf(conf);
     AtomicBoolean stop = new AtomicBoolean();
     stop.set(true);
     initiator.init(stop, new AtomicBoolean());
@@ -412,7 +412,7 @@ public class TestCompactor {
     Assert.assertEquals("maxColLen b", 3, colBStats.getMaxColLen());
     Assert.assertEquals("avgColLen b", 3.0, colBStats.getAvgColLen(), 0.01);
     Assert.assertEquals("numNulls b", 0, colBStats.getNumNulls());
-    Assert.assertEquals("nunDVs", 2, colBStats.getNumDVs());
+    Assert.assertEquals("nunDVs", 3, colBStats.getNumDVs());
 
     //now save stats for partition we won't modify
     stats = msClient.getPartitionColumnStatistics(ciPart2.dbname,
@@ -455,7 +455,7 @@ public class TestCompactor {
     txnHandler.compact(rqst);
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(conf);
+    t.setConf(conf);
     AtomicBoolean stop = new AtomicBoolean();
     AtomicBoolean looped = new AtomicBoolean();
     stop.set(true);
@@ -484,7 +484,7 @@ public class TestCompactor {
     //cast it to long to get rid of periodic decimal
     Assert.assertEquals("avgColLen b", (long)6.1111111111, (long)colBStats.getAvgColLen());
     Assert.assertEquals("numNulls b", 0, colBStats.getNumNulls());
-    Assert.assertEquals("nunDVs", 10, colBStats.getNumDVs());
+    Assert.assertEquals("nunDVs", 8, colBStats.getNumDVs());
 
     //now check that stats for partition we didn't modify did not change
     stats = msClient.getPartitionColumnStatistics(ciPart2.dbname, ciPart2.tableName,
@@ -511,7 +511,7 @@ public class TestCompactor {
     Initiator initiator = new Initiator();
     initiator.setThreadId((int)initiator.getId());
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
-    initiator.setHiveConf(conf);
+    initiator.setConf(conf);
     AtomicBoolean stop = new AtomicBoolean();
     stop.set(true);
     initiator.init(stop, new AtomicBoolean());
@@ -551,7 +551,7 @@ public class TestCompactor {
     initiator.setThreadId((int)initiator.getId());
     // Set to 1 so insert doesn't set it off but update does
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 1);
-    initiator.setHiveConf(conf);
+    initiator.setConf(conf);
     AtomicBoolean stop = new AtomicBoolean();
     stop.set(true);
     initiator.init(stop, new AtomicBoolean());
@@ -593,7 +593,7 @@ public class TestCompactor {
     initiator.setThreadId((int)initiator.getId());
     // Set to 2 so insert and update don't set it off but delete does
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 2);
-    initiator.setHiveConf(conf);
+    initiator.setConf(conf);
     AtomicBoolean stop = new AtomicBoolean();
     stop.set(true);
     initiator.init(stop, new AtomicBoolean());
@@ -643,7 +643,7 @@ public class TestCompactor {
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
       Worker t = new Worker();
       t.setThreadId((int) t.getId());
-      t.setHiveConf(conf);
+      t.setConf(conf);
       AtomicBoolean stop = new AtomicBoolean(true);
       AtomicBoolean looped = new AtomicBoolean();
       t.init(stop, looped);
@@ -659,17 +659,17 @@ public class TestCompactor {
       Path resultFile = null;
       for (int i = 0; i < names.length; i++) {
         names[i] = stat[i].getPath().getName();
-        if (names[i].equals("delta_0000001_0000004")) {
+        if (names[i].equals("delta_0000003_0000006")) {
           resultFile = stat[i].getPath();
         }
       }
       Arrays.sort(names);
-      String[] expected = new String[]{"delta_0000001_0000002",
-          "delta_0000001_0000004", "delta_0000003_0000004", "delta_0000005_0000006"};
+      String[] expected = new String[]{"delta_0000003_0000004",
+          "delta_0000003_0000006", "delta_0000005_0000006", "delta_0000007_0000008"};
       if (!Arrays.deepEquals(expected, names)) {
         Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names));
       }
-      checkExpectedTxnsPresent(null, new Path[]{resultFile},columnNamesProperty, columnTypesProperty,  0, 1L, 4L);
+      checkExpectedTxnsPresent(null, new Path[]{resultFile},columnNamesProperty, columnTypesProperty,  0, 3L, 6L);
 
     } finally {
       connection.close();
@@ -705,7 +705,7 @@ public class TestCompactor {
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MAJOR));
       Worker t = new Worker();
       t.setThreadId((int) t.getId());
-      t.setHiveConf(conf);
+      t.setConf(conf);
       AtomicBoolean stop = new AtomicBoolean(true);
       AtomicBoolean looped = new AtomicBoolean();
       t.init(stop, looped);
@@ -718,11 +718,11 @@ public class TestCompactor {
       FileStatus[] stat =
           fs.listStatus(new Path(table.getSd().getLocation()), AcidUtils.baseFileFilter);
       if (1 != stat.length) {
-        Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
+        Assert.fail("Expecting 1 file \"base_0000006\" and found " + stat.length + " files " + Arrays.toString(stat));
       }
       String name = stat[0].getPath().getName();
-      Assert.assertEquals(name, "base_0000004");
-      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L);
+      Assert.assertEquals(name, "base_0000006");
+      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 3L, 6L);
     } finally {
       connection.close();
     }
@@ -762,7 +762,7 @@ public class TestCompactor {
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
       Worker t = new Worker();
       t.setThreadId((int) t.getId());
-      t.setHiveConf(conf);
+      t.setConf(conf);
       AtomicBoolean stop = new AtomicBoolean(true);
       AtomicBoolean looped = new AtomicBoolean();
       t.init(stop, looped);
@@ -778,17 +778,17 @@ public class TestCompactor {
       Path resultDelta = null;
       for (int i = 0; i < names.length; i++) {
         names[i] = stat[i].getPath().getName();
-        if (names[i].equals("delta_0000001_0000004")) {
+        if (names[i].equals("delta_0000003_0000006")) {
           resultDelta = stat[i].getPath();
         }
       }
       Arrays.sort(names);
-      String[] expected = new String[]{"delta_0000001_0000002",
-          "delta_0000001_0000004", "delta_0000003_0000004"};
+      String[] expected = new String[]{"delta_0000003_0000004",
+          "delta_0000003_0000006", "delta_0000005_0000006"};
       if (!Arrays.deepEquals(expected, names)) {
         Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names));
       }
-      checkExpectedTxnsPresent(null, new Path[]{resultDelta}, columnNamesProperty, columnTypesProperty, 0, 1L, 4L);
+      checkExpectedTxnsPresent(null, new Path[]{resultDelta}, columnNamesProperty, columnTypesProperty, 0, 3L, 6L);
     } finally {
       connection.close();
     }
@@ -828,7 +828,7 @@ public class TestCompactor {
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MAJOR));
       Worker t = new Worker();
       t.setThreadId((int) t.getId());
-      t.setHiveConf(conf);
+      t.setConf(conf);
       AtomicBoolean stop = new AtomicBoolean(true);
       AtomicBoolean looped = new AtomicBoolean();
       t.init(stop, looped);
@@ -844,13 +844,13 @@ public class TestCompactor {
         Assert.fail("majorCompactAfterAbort FileStatus[] stat " + Arrays.toString(stat));
       }
       if (1 != stat.length) {
-        Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
+        Assert.fail("Expecting 1 file \"base_0000006\" and found " + stat.length + " files " + Arrays.toString(stat));
       }
       String name = stat[0].getPath().getName();
-      if (!name.equals("base_0000004")) {
-        Assert.fail("majorCompactAfterAbort name " + name + " not equals to base_0000004");
+      if (!name.equals("base_0000006")) {
+        Assert.fail("majorCompactAfterAbort name " + name + " not equals to base_0000006");
       }
-      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L);
+      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 3L, 6L);
     } finally {
       connection.close();
     }
@@ -886,7 +886,7 @@ public class TestCompactor {
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MAJOR));
       Worker t = new Worker();
       t.setThreadId((int) t.getId());
-      t.setHiveConf(conf);
+      t.setConf(conf);
       AtomicBoolean stop = new AtomicBoolean(true);
       AtomicBoolean looped = new AtomicBoolean();
       t.init(stop, looped);
@@ -899,11 +899,11 @@ public class TestCompactor {
       FileStatus[] stat =
           fs.listStatus(new Path(table.getSd().getLocation()), AcidUtils.baseFileFilter);
       if (1 != stat.length) {
-        Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
+        Assert.fail("Expecting 1 file \"base_0000006\" and found " + stat.length + " files " + Arrays.toString(stat));
       }
       String name = stat[0].getPath().getName();
-      Assert.assertEquals(name, "base_0000004");
-      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L);
+      Assert.assertEquals(name, "base_0000006");
+      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 3L, 6L);
     } finally {
       connection.close();
     }
@@ -923,23 +923,23 @@ public class TestCompactor {
         " STORED AS ORC  TBLPROPERTIES ('transactional'='true',"
         + "'transactional_properties'='default')", driver);
 
-    // Insert some data -> this will generate only insert deltas and no delete deltas: delta_1_1
+    // Insert some data -> this will generate only insert deltas and no delete deltas: delta_3_3
     executeStatementOnDriver("INSERT INTO " + tblName +"(a,b) VALUES(1, 'foo')", driver);
 
-    // Insert some data -> this will again generate only insert deltas and no delete deltas: delta_2_2
+    // Insert some data -> this will again generate only insert deltas and no delete deltas: delta_4_4
     executeStatementOnDriver("INSERT INTO " + tblName +"(a,b) VALUES(2, 'bar')", driver);
 
-    // Delete some data -> this will generate only delete deltas and no insert deltas: delete_delta_3_3
+    // Delete some data -> this will generate only delete deltas and no insert deltas: delete_delta_5_5
     executeStatementOnDriver("DELETE FROM " + tblName +" WHERE a = 2", driver);
 
     // Now, compact -> Compaction produces a single range for both delta and delete delta
-    // That is, both delta and delete_deltas would be compacted into delta_1_3 and delete_delta_1_3
-    // even though there are only two delta_1_1, delta_2_2 and one delete_delta_3_3.
+    // That is, both delta and delete_deltas would be compacted into delta_3_5 and delete_delta_3_5
+    // even though there are only two delta_3_3, delta_4_4 and one delete_delta_5_5.
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(conf);
+    t.setConf(conf);
     AtomicBoolean stop = new AtomicBoolean(true);
     AtomicBoolean looped = new AtomicBoolean();
     t.init(stop, looped);
@@ -957,16 +957,16 @@ public class TestCompactor {
     Path minorCompactedDelta = null;
     for (int i = 0; i < deltas.length; i++) {
       deltas[i] = stat[i].getPath().getName();
-      if (deltas[i].equals("delta_0000001_0000003")) {
+      if (deltas[i].equals("delta_0000003_0000005")) {
         minorCompactedDelta = stat[i].getPath();
       }
     }
     Arrays.sort(deltas);
-    String[] expectedDeltas = new String[]{"delta_0000001_0000001_0000", "delta_0000001_0000003", "delta_0000002_0000002_0000"};
+    String[] expectedDeltas = new String[]{"delta_0000003_0000003_0000", "delta_0000003_0000005", "delta_0000004_0000004_0000"};
     if (!Arrays.deepEquals(expectedDeltas, deltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeltas) + ", found: " + Arrays.toString(deltas));
     }
-    checkExpectedTxnsPresent(null, new Path[]{minorCompactedDelta}, columnNamesProperty, columnTypesProperty, 0, 1L, 2L);
+    checkExpectedTxnsPresent(null, new Path[]{minorCompactedDelta}, columnNamesProperty, columnTypesProperty, 0, 3L, 4L);
 
     // Verify that we have got correct set of delete_deltas.
     FileStatus[] deleteDeltaStat =
@@ -975,16 +975,16 @@ public class TestCompactor {
     Path minorCompactedDeleteDelta = null;
     for (int i = 0; i < deleteDeltas.length; i++) {
       deleteDeltas[i] = deleteDeltaStat[i].getPath().getName();
-      if (deleteDeltas[i].equals("delete_delta_0000001_0000003")) {
+      if (deleteDeltas[i].equals("delete_delta_0000003_0000005")) {
         minorCompactedDeleteDelta = deleteDeltaStat[i].getPath();
       }
     }
     Arrays.sort(deleteDeltas);
-    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000001_0000003", "delete_delta_0000003_0000003_0000"};
+    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000003_0000005", "delete_delta_0000005_0000005_0000"};
     if (!Arrays.deepEquals(expectedDeleteDeltas, deleteDeltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeleteDeltas) + ", found: " + Arrays.toString(deleteDeltas));
     }
-    checkExpectedTxnsPresent(null, new Path[]{minorCompactedDeleteDelta}, columnNamesProperty, columnTypesProperty, 0, 2L, 2L);
+    checkExpectedTxnsPresent(null, new Path[]{minorCompactedDeleteDelta}, columnNamesProperty, columnTypesProperty, 0, 4L, 4L);
   }
 
   @Test
@@ -1016,7 +1016,7 @@ public class TestCompactor {
     txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(conf);
+    t.setConf(conf);
     AtomicBoolean stop = new AtomicBoolean(true);
     AtomicBoolean looped = new AtomicBoolean();
     t.init(stop, looped);
@@ -1034,16 +1034,16 @@ public class TestCompactor {
     Path minorCompactedDelta = null;
     for (int i = 0; i < deltas.length; i++) {
       deltas[i] = stat[i].getPath().getName();
-      if (deltas[i].equals("delta_0000001_0000002")) {
+      if (deltas[i].equals("delta_0000003_0000004")) {
         minorCompactedDelta = stat[i].getPath();
       }
     }
     Arrays.sort(deltas);
-    String[] expectedDeltas = new String[]{"delta_0000001_0000001_0000", "delta_0000001_0000002", "delta_0000002_0000002_0000"};
+    String[] expectedDeltas = new String[]{"delta_0000003_0000003_0000", "delta_0000003_0000004", "delta_0000004_0000004_0000"};
     if (!Arrays.deepEquals(expectedDeltas, deltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeltas) + ", found: " + Arrays.toString(deltas));
     }
-    checkExpectedTxnsPresent(null, new Path[]{minorCompactedDelta}, columnNamesProperty, columnTypesProperty, 0, 1L, 2L);
+    checkExpectedTxnsPresent(null, new Path[]{minorCompactedDelta}, columnNamesProperty, columnTypesProperty, 0, 3L, 4L);
 
     // Verify that we have got correct set of delete_deltas.
     FileStatus[] deleteDeltaStat =
@@ -1052,12 +1052,12 @@ public class TestCompactor {
     Path minorCompactedDeleteDelta = null;
     for (int i = 0; i < deleteDeltas.length; i++) {
       deleteDeltas[i] = deleteDeltaStat[i].getPath().getName();
-      if (deleteDeltas[i].equals("delete_delta_0000001_0000002")) {
+      if (deleteDeltas[i].equals("delete_delta_0000003_0000004")) {
         minorCompactedDeleteDelta = deleteDeltaStat[i].getPath();
       }
     }
     Arrays.sort(deleteDeltas);
-    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000001_0000002"};
+    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000003_0000004"};
     if (!Arrays.deepEquals(expectedDeleteDeltas, deleteDeltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeleteDeltas) + ", found: " + Arrays.toString(deleteDeltas));
     }
@@ -1095,7 +1095,7 @@ public class TestCompactor {
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
       Worker t = new Worker();
       t.setThreadId((int) t.getId());
-      t.setHiveConf(conf);
+      t.setConf(conf);
       AtomicBoolean stop = new AtomicBoolean(true);
       AtomicBoolean looped = new AtomicBoolean();
       t.init(stop, looped);
@@ -1111,17 +1111,17 @@ public class TestCompactor {
       Path resultFile = null;
       for (int i = 0; i < names.length; i++) {
         names[i] = stat[i].getPath().getName();
-        if (names[i].equals("delta_0000001_0000004")) {
+        if (names[i].equals("delta_0000003_0000006")) {
           resultFile = stat[i].getPath();
         }
       }
       Arrays.sort(names);
-      String[] expected = new String[]{"delta_0000001_0000002",
-          "delta_0000001_0000004", "delta_0000003_0000004", "delta_0000005_0000006"};
+      String[] expected = new String[]{"delta_0000003_0000004",
+          "delta_0000003_0000006", "delta_0000005_0000006", "delta_0000007_0000008"};
       if (!Arrays.deepEquals(expected, names)) {
         Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names));
       }
-      checkExpectedTxnsPresent(null, new Path[]{resultFile},columnNamesProperty, columnTypesProperty,  0, 1L, 4L);
+      checkExpectedTxnsPresent(null, new Path[]{resultFile},columnNamesProperty, columnTypesProperty,  0, 3L, 6L);
 
       // Verify that we have got correct set of delete_deltas also
       FileStatus[] deleteDeltaStat =
@@ -1130,12 +1130,12 @@ public class TestCompactor {
       Path minorCompactedDeleteDelta = null;
       for (int i = 0; i < deleteDeltas.length; i++) {
         deleteDeltas[i] = deleteDeltaStat[i].getPath().getName();
-        if (deleteDeltas[i].equals("delete_delta_0000001_0000004")) {
+        if (deleteDeltas[i].equals("delete_delta_0000003_0000006")) {
           minorCompactedDeleteDelta = deleteDeltaStat[i].getPath();
         }
       }
       Arrays.sort(deleteDeltas);
-      String[] expectedDeleteDeltas = new String[]{"delete_delta_0000001_0000004"};
+      String[] expectedDeleteDeltas = new String[]{"delete_delta_0000003_0000006"};
       if (!Arrays.deepEquals(expectedDeleteDeltas, deleteDeltas)) {
         Assert.fail("Expected: " + Arrays.toString(expectedDeleteDeltas) + ", found: " + Arrays.toString(deleteDeltas));
       }
@@ -1165,7 +1165,7 @@ public class TestCompactor {
         "'transactional'='true'," +
         "'compactor.mapreduce.map.memory.mb'='2048'," + // 2048 MB memory for compaction map job
         "'compactorthreshold.hive.compactor.delta.num.threshold'='4'," +  // minor compaction if more than 4 delta dirs
-        "'compactorthreshold.hive.compactor.delta.pct.threshold'='0.5'" + // major compaction if more than 50%
+        "'compactorthreshold.hive.compactor.delta.pct.threshold'='0.49'" + // major compaction if more than 49%
         ")", driver);
 
     // Insert 5 rows to both tables
@@ -1203,7 +1203,7 @@ public class TestCompactor {
     AtomicBoolean stop = new AtomicBoolean(true);
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(conf);
+    t.setConf(conf);
     AtomicBoolean looped = new AtomicBoolean();
     t.init(stop, looped);
     t.run();
@@ -1213,7 +1213,7 @@ public class TestCompactor {
     stop = new AtomicBoolean(true);
     t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(conf);
+    t.setConf(conf);
     looped = new AtomicBoolean();
     t.init(stop, looped);
     t.run();
@@ -1265,7 +1265,7 @@ public class TestCompactor {
     stop = new AtomicBoolean(true);
     t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(conf);
+    t.setConf(conf);
     looped = new AtomicBoolean();
     t.init(stop, looped);
     t.run();
@@ -1331,6 +1331,16 @@ public class TestCompactor {
       @Override
       public boolean isValidBase(long txnid) {
         return true;
+      }
+
+      @Override
+      public boolean isTxnAborted(long txnid) {
+        return true;
+      }
+
+      @Override
+      public RangeResponse isTxnRangeAborted(long minTxnId, long maxTxnId) {
+        return RangeResponse.ALL;
       }
     };
 
@@ -1406,7 +1416,7 @@ public class TestCompactor {
     AtomicBoolean stop = new AtomicBoolean(true);
     Initiator t = new Initiator();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(hiveConf);
+    t.setConf(hiveConf);
     AtomicBoolean looped = new AtomicBoolean();
     t.init(stop, looped);
     t.run();
@@ -1416,7 +1426,7 @@ public class TestCompactor {
     AtomicBoolean stop = new AtomicBoolean(true);
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(hiveConf);
+    t.setConf(hiveConf);
     AtomicBoolean looped = new AtomicBoolean();
     t.init(stop, looped);
     t.run();
@@ -1426,7 +1436,7 @@ public class TestCompactor {
     AtomicBoolean stop = new AtomicBoolean(true);
     Cleaner t = new Cleaner();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(hiveConf);
+    t.setConf(hiveConf);
     AtomicBoolean looped = new AtomicBoolean();
     t.init(stop, looped);
     t.run();

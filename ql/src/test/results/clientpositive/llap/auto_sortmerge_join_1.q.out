@@ -1,13 +1,9 @@
-PREHOOK: query: -- small 1 part, 2 bucket & big 2 part, 4 bucket
-
-CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) 
+PREHOOK: query: CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) 
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket_small
-POSTHOOK: query: -- small 1 part, 2 bucket & big 2 part, 4 bucket
-
-CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) 
+POSTHOOK: query: CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) 
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -103,11 +99,9 @@ POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket4outof4.t
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big@ds=2008-04-09
-PREHOOK: query: -- Since size is being used to find the big table, the order of the tables in the join does not matter
-explain extended select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+PREHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since size is being used to find the big table, the order of the tables in the join does not matter
-explain extended select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+POSTHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -119,29 +113,29 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 2 <- Map 1 (BROADCAST_EDGE)
-        Reducer 3 <- Map 2 (SIMPLE_EDGE)
+        Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 1 Data size: 122 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 122 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 122 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 122 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         auto parallelism: true
             Execution mode: llap
@@ -159,6 +153,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -182,6 +177,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string
@@ -202,16 +198,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 116 Data size: 12552 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 116 Data size: 32232 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 116 Data size: 12552 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 111 Data size: 30842 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 116 Data size: 12552 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 111 Data size: 30842 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -222,7 +218,7 @@ STAGE PLANS:
                         input vertices:
                           0 Map 1
                         Position of Big Table: 1
-                        Statistics: Num rows: 127 Data size: 13807 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 122 Data size: 33926 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -250,6 +246,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 4
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -273,6 +270,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string
@@ -297,6 +295,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 4
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -320,6 +319,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string
@@ -406,23 +406,23 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 116 Data size: 12552 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 116 Data size: 32232 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 116 Data size: 12552 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 111 Data size: 30842 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 116 Data size: 12552 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 111 Data size: 30842 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -433,7 +433,7 @@ STAGE PLANS:
                         input vertices:
                           1 Map 3
                         Position of Big Table: 0
-                        Statistics: Num rows: 127 Data size: 13807 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 122 Data size: 33926 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -461,6 +461,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 4
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -484,6 +485,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string
@@ -508,6 +510,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 4
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -531,6 +534,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string
@@ -552,22 +556,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1 Data size: 122 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 122 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 122 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 122 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         auto parallelism: true
             Execution mode: llap
@@ -585,6 +589,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -608,6 +613,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string
@@ -693,23 +699,23 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 116 Data size: 12552 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 116 Data size: 32232 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 116 Data size: 12552 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 111 Data size: 30842 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 116 Data size: 12552 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 111 Data size: 30842 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -720,7 +726,7 @@ STAGE PLANS:
                         input vertices:
                           1 Map 3
                         Position of Big Table: 0
-                        Statistics: Num rows: 127 Data size: 13807 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 122 Data size: 33926 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -748,6 +754,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 4
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -771,6 +778,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string
@@ -795,6 +803,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 4
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -818,6 +827,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string
@@ -839,22 +849,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1 Data size: 122 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 122 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 122 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 122 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         auto parallelism: true
             Execution mode: llap
@@ -872,6 +882,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -895,6 +906,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string

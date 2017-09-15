@@ -22,6 +22,9 @@ package org.apache.hadoop.hive.common.metrics.common;
  */
 public class MetricsConstant {
 
+  public static final String API_PREFIX = "api_";
+  public static final String ACTIVE_CALLS = "active_calls_";
+
   public static final String JVM_PAUSE_INFO = "jvm.pause.info-threshold";
   public static final String JVM_PAUSE_WARN = "jvm.pause.warn-threshold";
   public static final String JVM_EXTRA_SLEEP = "jvm.pause.extraSleepTime";
@@ -44,20 +47,6 @@ public class MetricsConstant {
   public static final String SQL_OPERATION_PREFIX = "hs2_sql_operation_";
   public static final String COMPLETED_SQL_OPERATION_PREFIX = "hs2_completed_sql_operation_";
 
-  public static final String INIT_TOTAL_DATABASES = "init_total_count_dbs";
-  public static final String INIT_TOTAL_TABLES = "init_total_count_tables";
-  public static final String INIT_TOTAL_PARTITIONS = "init_total_count_partitions";
-
-  public static final String CREATE_TOTAL_DATABASES = "create_total_count_dbs";
-  public static final String CREATE_TOTAL_TABLES = "create_total_count_tables";
-  public static final String CREATE_TOTAL_PARTITIONS = "create_total_count_partitions";
-
-  public static final String DELETE_TOTAL_DATABASES = "delete_total_count_dbs";
-  public static final String DELETE_TOTAL_TABLES = "delete_total_count_tables";
-  public static final String DELETE_TOTAL_PARTITIONS = "delete_total_count_partitions";
-
-  public static final String DIRECTSQL_ERRORS = "directsql_errors";
-
   // The number of Hive operations that are waiting to enter the compile block
   public static final String WAITING_COMPILE_OPS = "waiting_compile_ops";
 
@@ -73,4 +62,9 @@ public class MetricsConstant {
   public static final String HS2_AVG_OPEN_SESSION_TIME = "hs2_avg_open_session_time";
   public static final String HS2_AVG_ACTIVE_SESSION_TIME = "hs2_avg_active_session_time";
 
+  public static final String HS2_SUBMITTED_QURIES = "hs2_submitted_queries";
+  public static final String HS2_COMPILING_QUERIES = "hs2_compiling_queries";
+  public static final String HS2_EXECUTING_QUERIES = "hs2_executing_queries";
+  public static final String HS2_FAILED_QUERIES = "hs2_failed_queries";
+  public static final String HS2_SUCCEEDED_QUERIES = "hs2_succeeded_queries";
 }

@@ -22,6 +22,7 @@
  */
 package org.apache.hive.beeline;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.EOFException;
@@ -29,6 +30,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.SequenceInputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -59,6 +61,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -124,7 +127,8 @@ import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 public class BeeLine implements Closeable {
   private static final ResourceBundle resourceBundle =
       ResourceBundle.getBundle(BeeLine.class.getSimpleName());
-  private final BeeLineSignalHandler signalHandler = null;
+  private final BeeLineSignalHandler signalHandler;
+  private final Runnable shutdownHook;
   private static final String separator = System.getProperty("line.separator");
   private boolean exit = false;
   private final DatabaseConnections connections = new DatabaseConnections();
@@ -138,6 +142,7 @@ public class BeeLine implements Closeable {
   private OutputFile recordOutputFile = null;
   private PrintStream outputStream = new PrintStream(System.out, true);
   private PrintStream errorStream = new PrintStream(System.err, true);
+  private InputStream inputStream = System.in;
   private ConsoleReader consoleReader;
   private List<String> batch = null;
   private final Reflector reflector = new Reflector(this);
@@ -147,6 +152,10 @@ public class BeeLine implements Closeable {
   private FileHistory history;
   // Indicates if this instance of beeline is running in compatibility mode, or beeline mode
   private boolean isBeeLine = true;
+
+  // Indicates that we are in test mode.
+  // Print only the errors, the operation log and the query results.
+  private boolean isTestMode = false;
 
   private static final Options options = new Options();
 
@@ -274,6 +283,8 @@ public class BeeLine implements Closeable {
       new ReflectiveCommandHandler(this, new String[]{"addlocaldriverjar"},
           null),
       new ReflectiveCommandHandler(this, new String[]{"addlocaldrivername"},
+          null),
+      new ReflectiveCommandHandler(this, new String[]{"delimiter"},
           null)
   };
 
@@ -532,12 +543,27 @@ public class BeeLine implements Closeable {
 
   public BeeLine(boolean isBeeLine) {
     this.isBeeLine = isBeeLine;
+    this.signalHandler = new SunSignalHandler(this);
+    this.shutdownHook = new Runnable() {
+      @Override
+      public void run() {
+        try {
+          if (history != null) {
+            history.setMaxSize(getOpts().getMaxHistoryRows());
+            history.flush();
+          }
+        } catch (IOException e) {
+          error(e);
+        } finally {
+          close();
+        }
+      }
+    };
   }
 
   DatabaseConnection getDatabaseConnection() {
     return getDatabaseConnections().current();
   }
-
 
   Connection getConnection() throws SQLException {
     if (getDatabaseConnections().current() == null
@@ -985,6 +1011,9 @@ public class BeeLine implements Closeable {
 
     setupHistory();
 
+    //add shutdown hook to cleanup the beeline for smooth exit
+    addBeelineShutdownHook();
+
     //this method also initializes the consoleReader which is
     //needed by initArgs for certain execution paths
     ConsoleReader reader = initializeConsoleReader(inputStream);
@@ -1140,7 +1169,6 @@ public class BeeLine implements Closeable {
       return ERRNO_OTHER;
     } finally {
       IOUtils.closeStream(fileStream);
-      output("");   // dummy new line
     }
   }
 
@@ -1184,17 +1212,11 @@ public class BeeLine implements Closeable {
     }
 
     this.history = new FileHistory(new File(getOpts().getHistoryFile()));
-    // add shutdown hook to flush the history to history file
-    ShutdownHookManager.addShutdownHook(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          history.flush();
-        } catch (IOException e) {
-          error(e);
-        }
-      }
-    });
+  }
+
+  private void addBeelineShutdownHook() throws IOException {
+    // add shutdown hook to flush the history to history file and it also close all open connections
+    ShutdownHookManager.addShutdownHook(getShutdownHook());
   }
 
   public ConsoleReader initializeConsoleReader(InputStream inputStream) throws IOException {
@@ -1204,10 +1226,10 @@ public class BeeLine implements Closeable {
       // by appending a newline to the end of inputstream
       InputStream inputStreamAppendedNewline = new SequenceInputStream(inputStream,
           new ByteArrayInputStream((new String("\n")).getBytes()));
-      consoleReader = new ConsoleReader(inputStreamAppendedNewline, getOutputStream());
+      consoleReader = new ConsoleReader(inputStreamAppendedNewline, getErrorStream());
       consoleReader.setCopyPasteDetection(true); // jline will detect if <tab> is regular character
     } else {
-      consoleReader = new ConsoleReader();
+      consoleReader = new ConsoleReader(getInputStream(), getErrorStream());
     }
 
     //disable the expandEvents for the purpose of backward compatibility
@@ -1338,7 +1360,7 @@ public class BeeLine implements Closeable {
       return false;
     }
 
-    return !trimmed.endsWith(";");
+    return !trimmed.endsWith(getOpts().getDelimiter());
   }
 
   /**
@@ -1366,6 +1388,55 @@ public class BeeLine implements Closeable {
     // beeline also supports shell-style "#" prefix
     String lineTrimmed = line.trim();
     return lineTrimmed.startsWith("#") || lineTrimmed.startsWith("--");
+  }
+
+  String[] getCommands(File file) throws IOException {
+    List<String> cmds = new LinkedList<String>();
+    try (BufferedReader reader =
+             new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))) {
+      StringBuilder cmd = null;
+      while (true) {
+        String scriptLine = reader.readLine();
+
+        if (scriptLine == null) {
+          break;
+        }
+
+        String trimmedLine = scriptLine.trim();
+        if (getOpts().getTrimScripts()) {
+          scriptLine = trimmedLine;
+        }
+
+        if (cmd != null) {
+          // we're continuing an existing command
+          cmd.append("\n");
+          cmd.append(scriptLine);
+          if (trimmedLine.endsWith(getOpts().getDelimiter())) {
+            // this command has terminated
+            cmds.add(cmd.toString());
+            cmd = null;
+          }
+        } else {
+          // we're starting a new command
+          if (needsContinuation(scriptLine)) {
+            // multi-line
+            cmd = new StringBuilder(scriptLine);
+          } else {
+            // single-line
+            cmds.add(scriptLine);
+          }
+        }
+      }
+
+      if (cmd != null) {
+        // ### REVIEW: oops, somebody left the last command
+        // unterminated; should we fix it for them or complain?
+        // For now be nice and fix it.
+        cmd.append(getOpts().getDelimiter());
+        cmds.add(cmd.toString());
+      }
+    }
+    return cmds.toArray(new String[0]);
   }
 
   /**
@@ -2170,6 +2241,10 @@ public class BeeLine implements Closeable {
     return connections;
   }
 
+  Runnable getShutdownHook() {
+    return shutdownHook;
+  }
+
   Completer getCommandCompletor() {
     return beeLineCommandCompleter;
   }
@@ -2230,6 +2305,10 @@ public class BeeLine implements Closeable {
     return errorStream;
   }
 
+  InputStream getInputStream() {
+    return inputStream;
+  }
+
   ConsoleReader getConsoleReader() {
     return consoleReader;
   }
@@ -2267,5 +2346,20 @@ public class BeeLine implements Closeable {
 
   public void setCurrentDatabase(String currentDatabase) {
     this.currentDatabase = currentDatabase;
+  }
+
+  /**
+   * Setting the BeeLine into test mode.
+   * Print only the errors, the operation log and the query results.
+   * Should be used only by tests.
+   *
+   * @param isTestMode
+   */
+  void setIsTestMode(boolean isTestMode) {
+    this.isTestMode = isTestMode;
+  }
+
+  boolean isTestMode() {
+    return isTestMode;
   }
 }

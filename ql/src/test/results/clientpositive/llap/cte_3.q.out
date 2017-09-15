@@ -54,13 +54,11 @@ POSTHOOK: Output: default@q1
 5
 5
 5
-PREHOOK: query: -- in subquery
-explain
+PREHOOK: query: explain
 with q1 as ( select key from src where key = '5')
 select * from (select key from q1) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- in subquery
-explain
+POSTHOOK: query: explain
 with q1 as ( select key from src where key = '5')
 select * from (select key from q1) a
 POSTHOOK: type: QUERY
@@ -108,14 +106,12 @@ POSTHOOK: Output: default@q1
 5
 5
 5
-PREHOOK: query: -- chaining
-explain
+PREHOOK: query: explain
 with q1 as ( select key from q2 where key = '5'),
 q2 as ( select key from src where key = '5')
 select * from (select key from q1) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- chaining
-explain
+POSTHOOK: query: explain
 with q1 as ( select key from q2 where key = '5'),
 q2 as ( select key from src where key = '5')
 select * from (select key from q1) a
@@ -128,12 +124,12 @@ Stage-5
       Map 2 llap
       File Output Operator [FS_8]
         table:{"name:":"default.q1"}
-        Select Operator [SEL_7] (rows=1 width=0)
+        Select Operator [SEL_7] (rows=1 width=184)
           Output:["_col0"]
-          Filter Operator [FIL_9] (rows=1 width=0)
+          Filter Operator [FIL_9] (rows=1 width=184)
             predicate:(key = '5')
-            TableScan [TS_5] (rows=1 width=0)
-              default@q2,q2,Tbl:PARTIAL,Col:NONE,Output:["key"]
+            TableScan [TS_5] (rows=1 width=184)
+              default@q2,q2,Tbl:COMPLETE,Col:NONE,Output:["key"]
         Stage-2
           Dependency Collection{}
             Stage-1

@@ -1,6 +1,6 @@
 set hive.mapred.mode=nonstrict;
-SET hive.vectorized.execution.enabled=true;
-set hive.explain.user=true;
+set hive.explain.user=false;
+set hive.llap.cache.allow.synthetic.fileid=true;
 
 DROP TABLE parquet_types_staging;
 DROP TABLE parquet_types;
@@ -47,20 +47,22 @@ INSERT OVERWRITE TABLE parquet_types
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
 unhex(cbinary), cdecimal FROM parquet_types_staging;
 
+SET hive.vectorized.execution.enabled=true;
+
 -- select
-explain
+explain vectorization expression
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
 hex(cbinary), cdecimal FROM parquet_types;
 
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
 hex(cbinary), cdecimal FROM parquet_types;
 
-explain
+explain vectorization expression
 SELECT cchar, LENGTH(cchar), cvarchar, LENGTH(cvarchar), cdecimal, SIGN(cdecimal) FROM parquet_types;
 
 SELECT cchar, LENGTH(cchar), cvarchar, LENGTH(cvarchar), cdecimal, SIGN(cdecimal) FROM parquet_types;
 
-explain
+explain vectorization expression
 SELECT ctinyint,
   MAX(cint),
   MIN(csmallint),

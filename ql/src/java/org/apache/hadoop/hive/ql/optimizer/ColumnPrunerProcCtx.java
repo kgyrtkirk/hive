@@ -41,6 +41,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import static org.apache.hadoop.hive.ql.optimizer.FieldNode.mergeFieldNodes;
 
@@ -237,23 +239,35 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
     FieldNode pathToRoot,
     List<FieldNode> paths) {
     if (desc instanceof ExprNodeColumnDesc) {
-      String f = ((ExprNodeColumnDesc) desc).getColumn();
-      FieldNode p = new FieldNode(f);
-      p.addFieldNodes(pathToRoot);
+      ExprNodeColumnDesc columnDesc = (ExprNodeColumnDesc) desc;
+      FieldNode p = new FieldNode(columnDesc.getColumn());
+      checkListAndMap(columnDesc, pathToRoot, p);
       paths.add(p);
     } else if (desc instanceof ExprNodeFieldDesc) {
-      String f = ((ExprNodeFieldDesc) desc).getFieldName();
-      FieldNode p = new FieldNode(f);
-      p.addFieldNodes(pathToRoot);
-      getNestedColsFromExprNodeDesc(((ExprNodeFieldDesc) desc).getDesc(), p, paths);
+      ExprNodeFieldDesc fieldDesc = (ExprNodeFieldDesc) desc;
+      ExprNodeDesc childDesc = fieldDesc.getDesc();
+      FieldNode p = new FieldNode(fieldDesc.getFieldName());
+      checkListAndMap(fieldDesc, pathToRoot, p);
+      getNestedColsFromExprNodeDesc(childDesc, p, paths);
     } else {
       List<ExprNodeDesc> children = desc.getChildren();
-      if (children == null || children.isEmpty()) {
-        return;
+      if (children != null) {
+        for (ExprNodeDesc c : children) {
+          getNestedColsFromExprNodeDesc(c, pathToRoot, paths);
+        }
       }
-      for (ExprNodeDesc c : children) {
-        getNestedColsFromExprNodeDesc(c, pathToRoot, paths);
-      }
+    }
+  }
+
+  private static void checkListAndMap(ExprNodeDesc desc, FieldNode pathToRoot, FieldNode fn) {
+    TypeInfo ti = desc.getTypeInfo();
+
+    // Check cases for arr[i].f and map[key].v
+    // For these we should not generate paths like arr.f or map.v
+    // Otherwise we would have a mismatch between type info and path
+    if (ti.getCategory() != ObjectInspector.Category.LIST
+        && ti.getCategory() != ObjectInspector.Category.MAP) {
+      fn.addFieldNodes(pathToRoot);
     }
   }
 

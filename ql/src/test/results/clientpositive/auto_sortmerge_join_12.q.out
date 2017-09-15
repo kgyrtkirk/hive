@@ -1,13 +1,9 @@
-PREHOOK: query: -- small 1 part, 2 bucket & big 2 part, 4 bucket
-
-CREATE TABLE bucket_small (key string, value string) partitioned by (ds string)
+PREHOOK: query: CREATE TABLE bucket_small (key string, value string) partitioned by (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket_small
-POSTHOOK: query: -- small 1 part, 2 bucket & big 2 part, 4 bucket
-
-CREATE TABLE bucket_small (key string, value string) partitioned by (ds string)
+POSTHOOK: query: CREATE TABLE bucket_small (key string, value string) partitioned by (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -152,7 +148,7 @@ STAGE PLANS:
   Stage: Stage-9
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:a 
+        $hdt$_1:a 
           Fetch Operator
             limit: -1
             Partition Description:
@@ -165,6 +161,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -188,6 +185,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string
@@ -202,7 +200,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.bucket_small
                   name: default.bucket_small
-        $hdt$_1:b 
+        $hdt$_2:b 
           Fetch Operator
             limit: -1
             Partition Description:
@@ -215,6 +213,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 3
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -238,6 +237,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string
@@ -265,6 +265,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 3
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -288,6 +289,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string
@@ -303,7 +305,7 @@ STAGE PLANS:
                     name: default.bucket_medium
                   name: default.bucket_medium
       Alias -> Map Local Operator Tree:
-        $hdt$_0:a 
+        $hdt$_1:a 
           TableScan
             alias: a
             Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
@@ -322,7 +324,7 @@ STAGE PLANS:
                     1 _col0 (type: string)
                     2 _col0 (type: string)
                   Position of Big Table: 2
-        $hdt$_1:b 
+        $hdt$_2:b 
           TableScan
             alias: b
             Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: NONE
@@ -414,6 +416,7 @@ STAGE PLANS:
             properties:
               bucket_count 4
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types string:string
@@ -437,6 +440,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 4
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
@@ -461,6 +465,7 @@ STAGE PLANS:
             properties:
               bucket_count 4
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types string:string
@@ -484,6 +489,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 4
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
@@ -508,6 +514,7 @@ STAGE PLANS:
             properties:
               bucket_count 3
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types string:string
@@ -531,6 +538,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
@@ -555,6 +563,7 @@ STAGE PLANS:
             properties:
               bucket_count 2
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types string:string
@@ -578,6 +587,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
@@ -593,8 +603,8 @@ STAGE PLANS:
               name: default.bucket_small
             name: default.bucket_small
       Truncated Path -> Alias:
-        /bucket_big/ds=2008-04-08 [$hdt$_2:c]
-        /bucket_big/ds=2008-04-09 [$hdt$_2:c]
+        /bucket_big/ds=2008-04-08 [$hdt$_0:c]
+        /bucket_big/ds=2008-04-09 [$hdt$_0:c]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator

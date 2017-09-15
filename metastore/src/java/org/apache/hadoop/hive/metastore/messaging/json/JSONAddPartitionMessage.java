@@ -19,11 +19,18 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
 import org.apache.thrift.TException;
 import org.codehaus.jackson.annotate.JsonProperty;
+
+import javax.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -36,7 +43,7 @@ import java.util.Map;
 public class JSONAddPartitionMessage extends AddPartitionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableObjJson;
+  String server, servicePrincipal, db, table, tableType, tableObjJson;
 
   @JsonProperty
   Long timestamp;
@@ -47,32 +54,26 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
   @JsonProperty
   List<String> partitionListJson;
 
+  @JsonProperty
+  List<PartitionFiles> partitionFiles;
+
   /**
    * Default Constructor. Required for Jackson.
    */
   public JSONAddPartitionMessage() {
   }
 
-  public JSONAddPartitionMessage(String server, String servicePrincipal, String db, String table,
-      List<Map<String, String>> partitions, Long timestamp) {
-    this.server = server;
-    this.servicePrincipal = servicePrincipal;
-    this.db = db;
-    this.table = table;
-    this.partitions = partitions;
-    this.timestamp = timestamp;
-    checkValid();
-  }
-
   /**
    * Note that we get an Iterator rather than an Iterable here: so we can only walk thru the list once
    */
   public JSONAddPartitionMessage(String server, String servicePrincipal, Table tableObj,
-      Iterator<Partition> partitionsIterator, Long timestamp) {
+      Iterator<Partition> partitionsIterator, Iterator<PartitionFiles> partitionFileIter,
+      Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = tableObj.getDbName();
     this.table = tableObj.getTableName();
+    this.tableType = tableObj.getTableType();
     this.timestamp = timestamp;
     partitions = new ArrayList<Map<String, String>>();
     partitionListJson = new ArrayList<String>();
@@ -87,6 +88,7 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
     }
+    this.partitionFiles = Lists.newArrayList(partitionFileIter);
     checkValid();
   }
 
@@ -111,6 +113,16 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
   }
 
   @Override
+  public String getTableType() {
+    if (tableType != null) return tableType; else return "";
+  }
+
+  @Override
+  public Table getTableObj() throws Exception {
+    return (Table) JSONMessageFactory.getTObj(tableObjJson,Table.class);
+  }
+
+  @Override
   public Long getTimestamp() {
     return timestamp;
   }
@@ -118,6 +130,20 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
   @Override
   public List<Map<String, String>> getPartitions() {
     return partitions;
+  }
+
+  @Override
+  public Iterable<Partition> getPartitionObjs() throws Exception {
+    // glorified cast from Iterable<TBase> to Iterable<Partition>
+    return Iterables.transform(
+        JSONMessageFactory.getTObjs(partitionListJson,Partition.class),
+        new Function<Object, Partition>() {
+      @Nullable
+      @Override
+      public Partition apply(@Nullable Object input) {
+        return (Partition) input;
+      }
+    });
   }
 
   public String getTableObjJson() {
@@ -136,4 +162,10 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
       throw new IllegalArgumentException("Could not serialize: ", exception);
     }
   }
+
+  @Override
+  public Iterable<PartitionFiles> getPartitionFilesIter() {
+    return partitionFiles;
+  }
+
 }

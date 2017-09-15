@@ -17,9 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-
 import java.util.Collection;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -40,9 +38,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
-
 import javax.security.auth.login.LoginException;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -83,6 +79,7 @@ import org.apache.tez.serviceplugins.api.TaskCommunicatorDescriptor;
 import org.apache.tez.serviceplugins.api.TaskSchedulerDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 
 /**
  * Holds session state related to Tez
@@ -96,7 +93,7 @@ public class TezSessionState {
   private static final String LLAP_LAUNCHER = LlapContainerLauncher.class.getName();
   private static final String LLAP_TASK_COMMUNICATOR = LlapTaskCommunicator.class.getName();
 
-  private HiveConf conf;
+  private final HiveConf conf;
   private Path tezScratchDir;
   private LocalResource appJarLr;
   private TezClient session;
@@ -119,8 +116,9 @@ public class TezSessionState {
    * Constructor. We do not automatically connect, because we only want to
    * load tez classes when the user has tez installed.
    */
-  public TezSessionState(DagUtils utils) {
+  public TezSessionState(DagUtils utils, HiveConf conf) {
     this.utils = utils;
+    this.conf = conf;
   }
 
   public String toString() {
@@ -132,8 +130,8 @@ public class TezSessionState {
    * Constructor. We do not automatically connect, because we only want to
    * load tez classes when the user has tez installed.
    */
-  public TezSessionState(String sessionId) {
-    this(DagUtils.getInstance());
+  public TezSessionState(String sessionId, HiveConf conf) {
+    this(DagUtils.getInstance(), conf);
     this.sessionId = sessionId;
   }
 
@@ -179,10 +177,9 @@ public class TezSessionState {
     return UUID.randomUUID().toString();
   }
 
-  public void open(HiveConf conf)
-      throws IOException, LoginException, URISyntaxException, TezException {
+  public void open() throws IOException, LoginException, URISyntaxException, TezException {
     Set<String> noFiles = null;
-    open(conf, noFiles, null);
+    open(noFiles, null);
   }
 
   /**
@@ -194,9 +191,9 @@ public class TezSessionState {
    * @throws TezException
    * @throws InterruptedException
    */
-  public void open(HiveConf conf, String[] additionalFiles)
-    throws IOException, LoginException, IllegalArgumentException, URISyntaxException, TezException {
-    openInternal(conf, setFromArray(additionalFiles), false, null, null);
+  public void open(String[] additionalFiles)
+      throws IOException, LoginException, URISyntaxException, TezException {
+    openInternal(setFromArray(additionalFiles), false, null, null);
   }
 
   private static Set<String> setFromArray(String[] additionalFiles) {
@@ -208,22 +205,26 @@ public class TezSessionState {
     return files;
   }
 
-  public void beginOpen(HiveConf conf, String[] additionalFiles, LogHelper console)
-    throws IOException, LoginException, IllegalArgumentException, URISyntaxException, TezException {
-    openInternal(conf, setFromArray(additionalFiles), true, console, null);
+  public void beginOpen(String[] additionalFiles, LogHelper console)
+      throws IOException, LoginException, URISyntaxException, TezException {
+    openInternal(setFromArray(additionalFiles), true, console, null);
   }
 
-  public void open(HiveConf conf, Collection<String> additionalFiles, Path scratchDir)
+  public void open(Collection<String> additionalFiles, Path scratchDir)
       throws LoginException, IOException, URISyntaxException, TezException {
-    openInternal(conf, additionalFiles, false, null, scratchDir);
+    openInternal(additionalFiles, false, null, scratchDir);
   }
 
-  protected void openInternal(final HiveConf conf, Collection<String> additionalFiles,
-      boolean isAsync, LogHelper console, Path scratchDir) throws IOException, LoginException,
-        IllegalArgumentException, URISyntaxException, TezException {
-    this.conf = conf;
+  protected void openInternal(Collection<String> additionalFiles,
+      boolean isAsync, LogHelper console, Path scratchDir)
+          throws IOException, LoginException, URISyntaxException, TezException {
     // TODO Why is the queue name set again. It has already been setup via setQueueName. Do only one of the two.
-    this.queueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
+    String confQueueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
+    if (queueName != null && !queueName.equals(confQueueName)) {
+      LOG.warn("Resetting a queue name that was already set: was "
+          + queueName + ", now " + confQueueName);
+    }
+    this.queueName = confQueueName;
     this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
 
     final boolean llapMode = "llap".equalsIgnoreCase(HiveConf.getVar(
@@ -306,6 +307,8 @@ public class TezSessionState {
       tezConfig.setInt(TezConfiguration.TEZ_AM_SESSION_MIN_HELD_CONTAINERS, n);
     }
 
+    setupSessionAcls(tezConfig, conf);
+
     final TezClient session = TezClient.newBuilder("HIVE-" + sessionId, tezConfig)
         .setIsSession(true).setLocalResources(commonLocalResources)
         .setCredentials(llapCredentials).setServicePluginDescriptor(servicePluginsDescriptor)
@@ -341,6 +344,7 @@ public class TezSessionState {
       String user, final Configuration conf) throws IOException {
     // TODO: parts of this should be moved out of TezSession to reuse the clients, but there's
     //       no good place for that right now (HIVE-13698).
+    // TODO: De-link from SessionState. A TezSession can be linked to different Hive Sessions via the pool.
     SessionState session = SessionState.get();
     boolean isInHs2 = session != null && session.isHiveServerQuery();
     Token<LlapTokenIdentifier> token = null;
@@ -431,8 +435,35 @@ public class TezSessionState {
     }
   }
 
+  private void setupSessionAcls(Configuration tezConf, HiveConf hiveConf) throws
+      IOException {
+
+    // TODO: De-link from SessionState. A TezSession can be linked to different Hive Sessions via the pool.
+    String user = SessionState.getUserFromAuthenticator();
+    UserGroupInformation loginUserUgi = UserGroupInformation.getLoginUser();
+    String loginUser =
+        loginUserUgi == null ? null : loginUserUgi.getShortUserName();
+    boolean addHs2User =
+        HiveConf.getBoolVar(hiveConf, ConfVars.HIVETEZHS2USERACCESS);
+
+    String viewStr = Utilities.getAclStringWithHiveModification(tezConf,
+            TezConfiguration.TEZ_AM_VIEW_ACLS, addHs2User, user, loginUser);
+    String modifyStr = Utilities.getAclStringWithHiveModification(tezConf,
+            TezConfiguration.TEZ_AM_MODIFY_ACLS, addHs2User, user, loginUser);
+
+    if (LOG.isDebugEnabled()) {
+      // TODO: De-link from SessionState. A TezSession can be linked to different Hive Sessions via the pool.
+      LOG.debug(
+          "Setting Tez Session access for sessionId={} with viewAclString={}, modifyStr={}",
+          SessionState.get().getSessionId(), viewStr, modifyStr);
+    }
+
+    tezConf.set(TezConfiguration.TEZ_AM_VIEW_ACLS, viewStr);
+    tezConf.set(TezConfiguration.TEZ_AM_MODIFY_ACLS, modifyStr);
+  }
+
   public void refreshLocalResourcesFromConf(HiveConf conf)
-    throws IOException, LoginException, IllegalArgumentException, URISyntaxException, TezException {
+      throws IOException, LoginException, URISyntaxException, TezException {
 
     String dir = tezScratchDir.toString();
 
@@ -444,9 +475,10 @@ public class TezSessionState {
       localizedResources.addAll(lrs);
     }
 
-    // these are local resources that are set through the mr "tmpjars" property
+    // these are local resources that are set through the mr "tmpjars" property; skip session files.
     List<LocalResource> handlerLr = utils.localizeTempFiles(dir, conf,
-      additionalFilesNotFromConf.toArray(new String[additionalFilesNotFromConf.size()]));
+      additionalFilesNotFromConf.toArray(new String[additionalFilesNotFromConf.size()]),
+      DagUtils.getTempFilesFromConf(conf));
 
     if (handlerLr != null) {
       localizedResources.addAll(handlerLr);
@@ -498,7 +530,6 @@ public class TezSessionState {
     sessionFuture = null;
     console = null;
     tezScratchDir = null;
-    conf = null;
     appJarLr = null;
     additionalFilesNotFromConf.clear();
     localizedResources.clear();
@@ -563,6 +594,7 @@ public class TezSessionState {
    */
   private Path createTezDir(String sessionId) throws IOException {
     // tez needs its own scratch dir (per session)
+    // TODO: De-link from SessionState. A TezSession can be linked to different Hive Sessions via the pool.
     Path tezDir = new Path(SessionState.get().getHdfsScratchDirURIString(), TEZ_DIR);
     tezDir = new Path(tezDir, sessionId);
     FileSystem fs = tezDir.getFileSystem(conf);
@@ -666,7 +698,7 @@ public class TezSessionState {
   }
 
   public List<LocalResource> getLocalizedResources() {
-    return new ArrayList<LocalResource>(localizedResources);
+    return new ArrayList<>(localizedResources);
   }
 
   public String getUser() {
@@ -693,4 +725,5 @@ public class TezSessionState {
       }
     } while (!ownerThread.compareAndSet(null, newName));
   }
+
 }

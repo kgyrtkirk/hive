@@ -21,7 +21,6 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -43,11 +42,16 @@ import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeUtil;
+import org.apache.calcite.util.DateString;
+import org.apache.calcite.util.TimeString;
+import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -59,13 +63,11 @@ import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitioningSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.CurrentRowSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.RangeBoundarySpec;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.ValueBoundarySpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFrameSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -265,8 +267,12 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       case INTERVAL_MINUTE_SECOND:
       case INTERVAL_SECOND:
         return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo, null);
+      case NULL:
       case OTHER:
       default:
+        if (lType instanceof HiveType && ((HiveType) lType).getTypeClass() == TimestampTZ.class) {
+          return new ExprNodeConstantDesc(TypeInfoFactory.timestampLocalTZTypeInfo, null);
+        }
         return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, null);
       }
     } else {
@@ -295,15 +301,13 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
             Double.valueOf(((Number) literal.getValue3()).doubleValue()));
       case DATE:
         return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo,
-          new Date(((Calendar)literal.getValue()).getTimeInMillis()));
+            Date.valueOf(literal.getValueAs(DateString.class).toString()));
       case TIME:
-      case TIMESTAMP: {
-        Object value = literal.getValue3();
-        if (value instanceof Long) {
-          value = new Timestamp((Long)value);
-        }
-        return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo, value);
-      }
+        return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo,
+            Timestamp.valueOf(literal.getValueAs(TimeString.class).toString()));
+      case TIMESTAMP:
+        return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo,
+            Timestamp.valueOf(literal.getValueAs(TimestampString.class).toString()));
       case BINARY:
         return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, literal.getValue3());
       case DECIMAL:
@@ -336,8 +340,12 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
                 new HiveIntervalDayTime(secsBd));
       }
+      case NULL:
       case OTHER:
       default:
+        if (lType instanceof HiveType && ((HiveType) lType).getTypeClass() == TimestampTZ.class) {
+          return new ExprNodeConstantDesc(TypeInfoFactory.timestampLocalTZTypeInfo, literal.getValue3());
+        }
         return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, literal.getValue3());
       }
     }
@@ -426,38 +434,26 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
 
   private WindowFrameSpec getWindowRange(RexWindow window) {
     // NOTE: in Hive AST Rows->Range(Physical) & Range -> Values (logical)
-
-    WindowFrameSpec windowFrame = new WindowFrameSpec();
-
     BoundarySpec start = null;
     RexWindowBound ub = window.getUpperBound();
     if (ub != null) {
-      start = getWindowBound(ub, window.isRows());
+      start = getWindowBound(ub);
     }
 
     BoundarySpec end = null;
     RexWindowBound lb = window.getLowerBound();
     if (lb != null) {
-      end = getWindowBound(lb, window.isRows());
+      end = getWindowBound(lb);
     }
 
-    if (start != null || end != null) {
-      if (start != null) {
-        windowFrame.setStart(start);
-      }
-      if (end != null) {
-        windowFrame.setEnd(end);
-      }
-    }
-
-    return windowFrame;
+    return new WindowFrameSpec(window.isRows() ? WindowType.ROWS : WindowType.RANGE, start, end);
   }
 
-  private BoundarySpec getWindowBound(RexWindowBound wb, boolean isRows) {
+  private BoundarySpec getWindowBound(RexWindowBound wb) {
     BoundarySpec boundarySpec;
 
     if (wb.isCurrentRow()) {
-      boundarySpec = new CurrentRowSpec();
+      boundarySpec = new BoundarySpec(Direction.CURRENT);
     } else {
       final Direction direction;
       final int amt;
@@ -471,11 +467,8 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       } else {
         amt = RexLiteral.intValue(wb.getOffset());
       }
-      if (isRows) {
-        boundarySpec = new RangeBoundarySpec(direction, amt);
-      } else {
-        boundarySpec = new ValueBoundarySpec(direction, amt);
-      }
+
+      boundarySpec = new BoundarySpec(direction, amt);
     }
 
     return boundarySpec;

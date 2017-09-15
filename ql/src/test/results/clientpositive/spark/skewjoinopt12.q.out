@@ -34,18 +34,10 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@t2
-PREHOOK: query: -- Both the join tables are skewed by 2 keys, and one of the skewed values
--- is common to both the tables. The join key matches the skewed key set.
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Both the join tables are skewed by 2 keys, and one of the skewed values
--- is common to both the tables. The join key matches the skewed key set.
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key and a.val = b.val
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -100,7 +92,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key is not null and val is not null and (not ((((key = '2') and (val = '12')) or ((key = '8') and (val = '18'))) or ((key = '3') and (val = '13'))))) (type: boolean)
+                    predicate: (key is not null and val is not null and ((((key <> '2') or (val <> '12')) and ((key <> '8') or (val <> '18'))) and ((key <> '3') or (val <> '13')))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), val (type: string)
@@ -117,7 +109,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key is not null and val is not null and (not ((((key = '2') and (val = '12')) or ((key = '8') and (val = '18'))) or ((key = '3') and (val = '13'))))) (type: boolean)
+                    predicate: (key is not null and val is not null and ((((key <> '2') or (val <> '12')) and ((key <> '8') or (val <> '18'))) and ((key <> '3') or (val <> '13')))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), val (type: string)

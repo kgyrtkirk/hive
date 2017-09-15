@@ -22,11 +22,11 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.security.PrivilegedExceptionAction;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -48,6 +48,7 @@ import org.apache.hadoop.security.token.delegation.web.DelegationTokenAuthentica
 import org.apache.hive.service.CookieSigner;
 import org.apache.hive.service.auth.AuthenticationProviderFactory;
 import org.apache.hive.service.auth.AuthenticationProviderFactory.AuthMethods;
+import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.HttpAuthenticationException;
@@ -83,7 +84,7 @@ public class ThriftHttpServlet extends TServlet {
   // Class members for cookie based authentication.
   private CookieSigner signer;
   public static final String AUTH_COOKIE = "hive.server2.auth";
-  private static final Random RAN = new Random();
+  private static final SecureRandom RAN = new SecureRandom();
   private boolean isCookieAuthEnabled;
   private String cookieDomain;
   private String cookiePath;
@@ -192,7 +193,7 @@ public class ThriftHttpServlet extends TServlet {
 
       // Generate new cookie and add it to the response
       if (requireNewCookie &&
-          !authType.equalsIgnoreCase(HiveAuthFactory.AuthTypes.NOSASL.toString())) {
+          !authType.equalsIgnoreCase(HiveAuthConstants.AuthTypes.NOSASL.toString())) {
         String cookieToken = HttpAuthUtils.createCookieToken(clientUserName);
         Cookie hs2Cookie = createCookie(signer.signCookie(cookieToken));
 
@@ -354,7 +355,7 @@ public class ThriftHttpServlet extends TServlet {
       throws HttpAuthenticationException {
     String userName = getUsername(request, authType);
     // No-op when authType is NOSASL
-    if (!authType.equalsIgnoreCase(HiveAuthFactory.AuthTypes.NOSASL.toString())) {
+    if (!authType.equalsIgnoreCase(HiveAuthConstants.AuthTypes.NOSASL.toString())) {
       try {
         AuthMethods authMethod = AuthMethods.getValidAuthMethod(authType);
         PasswdAuthenticationProvider provider =
@@ -567,7 +568,7 @@ public class ThriftHttpServlet extends TServlet {
   }
 
   private boolean isKerberosAuthMode(String authType) {
-    return authType.equalsIgnoreCase(HiveAuthFactory.AuthTypes.KERBEROS.toString());
+    return authType.equalsIgnoreCase(HiveAuthConstants.AuthTypes.KERBEROS.toString());
   }
 
   private static String getDoAsQueryParam(String queryString) {

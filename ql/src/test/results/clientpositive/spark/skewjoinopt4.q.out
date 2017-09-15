@@ -32,18 +32,10 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@t2
-PREHOOK: query: -- only of the tables of the join (the left table of the join) is skewed
--- the skewed filter would still be applied to both the tables
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- only of the tables of the join (the left table of the join) is skewed
--- the skewed filter would still be applied to both the tables
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -64,7 +56,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key is not null and (key = '2')) (type: boolean)
+                    predicate: (key = '2') (type: boolean)
                     Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), val (type: string)
@@ -82,7 +74,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key is not null and (key = '2')) (type: boolean)
+                    predicate: (key = '2') (type: boolean)
                     Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), val (type: string)
@@ -100,7 +92,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key is not null and (not (key = '2'))) (type: boolean)
+                    predicate: (key is not null and (key <> '2')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), val (type: string)
@@ -118,7 +110,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key is not null and (not (key = '2'))) (type: boolean)
+                    predicate: (key is not null and (key <> '2')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), val (type: string)
@@ -183,12 +175,10 @@ POSTHOOK: Input: default@t2
 8	18	8	18
 8	28	8	18
 8	28	8	18
-PREHOOK: query: -- the order of the join should not matter, just confirming
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T2 a JOIN T1 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- the order of the join should not matter, just confirming
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T2 a JOIN T1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -209,7 +199,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key is not null and (key = '2')) (type: boolean)
+                    predicate: (key = '2') (type: boolean)
                     Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), val (type: string)
@@ -227,7 +217,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key is not null and (key = '2')) (type: boolean)
+                    predicate: (key = '2') (type: boolean)
                     Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), val (type: string)
@@ -245,7 +235,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key is not null and (not (key = '2'))) (type: boolean)
+                    predicate: (key is not null and (key <> '2')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), val (type: string)
@@ -263,7 +253,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key is not null and (not (key = '2'))) (type: boolean)
+                    predicate: (key is not null and (key <> '2')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), val (type: string)

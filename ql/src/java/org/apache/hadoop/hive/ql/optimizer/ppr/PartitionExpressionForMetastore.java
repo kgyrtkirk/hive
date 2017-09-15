@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.ql.optimizer.ppr;
 
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.FileFormatProxy;
@@ -31,8 +33,11 @@ import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,10 +53,21 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
   }
 
   @Override
-  public boolean filterPartitionsByExpr(List<String> partColumnNames,
-      List<PrimitiveTypeInfo> partColumnTypeInfos, byte[] exprBytes,
-      String defaultPartitionName, List<String> partitionNames) throws MetaException {
+  public boolean filterPartitionsByExpr(List<FieldSchema> partColumns,
+      byte[] exprBytes, String defaultPartitionName, List<String> partitionNames) throws MetaException {
+    List<String> partColumnNames = new ArrayList<>();
+    List<PrimitiveTypeInfo> partColumnTypeInfos = new ArrayList<>();
+    for (FieldSchema fs : partColumns) {
+      partColumnNames.add(fs.getName());
+      partColumnTypeInfos.add(TypeInfoFactory.getPrimitiveTypeInfo(fs.getType()));
+    }
     ExprNodeGenericFuncDesc expr = deserializeExpr(exprBytes);
+    try {
+      ExprNodeDescUtils.replaceEqualDefaultPartition(expr, defaultPartitionName);
+    } catch (SemanticException ex) {
+      LOG.error("Failed to replace default partition", ex);
+      throw new MetaException(ex.getMessage());
+    }
     try {
       long startTime = System.nanoTime(), len = partitionNames.size();
       boolean result = PartitionPruner.prunePartitionNames(

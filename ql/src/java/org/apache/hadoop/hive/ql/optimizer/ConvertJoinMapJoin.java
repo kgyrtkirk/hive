@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,17 +37,24 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
 import org.apache.hadoop.hive.ql.exec.MuxOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.optimizer.physical.LlapClusterStateForCompile;
+import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -59,9 +65,12 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * ConvertJoinMapJoin is an optimization that replaces a common join
@@ -89,16 +98,21 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     JoinOperator joinOp = (JoinOperator) nd;
     long maxSize = context.conf.getLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
+    // adjust noconditional task size threshold for LLAP
+    MemoryMonitorInfo memoryMonitorInfo = getMemoryMonitorInfo(maxSize, context.conf);
+    joinOp.getConf().setMemoryMonitorInfo(memoryMonitorInfo);
 
     TezBucketJoinProcCtx tezBucketJoinProcCtx = new TezBucketJoinProcCtx(context.conf);
-    if (!context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN)) {
+    boolean hiveConvertJoin = context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) &
+            !context.parseContext.getDisableMapJoin();
+    if (!hiveConvertJoin) {
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
-      Object retval = checkAndConvertSMBJoin(context, joinOp, tezBucketJoinProcCtx);
+      Object retval = checkAndConvertSMBJoin(context, joinOp, tezBucketJoinProcCtx, maxSize);
       if (retval == null) {
         return retval;
       } else {
-        fallbackToReduceSideJoin(joinOp, context);
+        fallbackToReduceSideJoin(joinOp, context, maxSize);
         return null;
       }
     }
@@ -113,15 +127,15 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       numBuckets = 1;
     }
     LOG.info("Estimated number of buckets " + numBuckets);
-    int mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, numBuckets, false, maxSize);
+    int mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, numBuckets, false, maxSize, true);
     if (mapJoinConversionPos < 0) {
-      Object retval = checkAndConvertSMBJoin(context, joinOp, tezBucketJoinProcCtx);
+      Object retval = checkAndConvertSMBJoin(context, joinOp, tezBucketJoinProcCtx, maxSize);
       if (retval == null) {
         return retval;
       } else {
         // only case is full outer join with SMB enabled which is not possible. Convert to regular
         // join.
-        fallbackToReduceSideJoin(joinOp, context);
+        fallbackToReduceSideJoin(joinOp, context, maxSize);
         return null;
       }
     }
@@ -137,12 +151,12 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // check if we can convert to map join no bucket scaling.
     LOG.info("Convert to non-bucketed map join");
     if (numBuckets != 1) {
-      mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, 1, false, maxSize);
+      mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, 1, false, maxSize, true);
     }
     if (mapJoinConversionPos < 0) {
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
-      fallbackToReduceSideJoin(joinOp, context);
+      fallbackToReduceSideJoin(joinOp, context, maxSize);
       return null;
     }
 
@@ -159,15 +173,58 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return null;
   }
 
+  @VisibleForTesting
+  public MemoryMonitorInfo getMemoryMonitorInfo(final long maxSize, final HiveConf conf) {
+    final double overSubscriptionFactor = conf.getFloatVar(ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR);
+    final int maxSlotsPerQuery = conf.getIntVar(ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY);
+    final long memoryCheckInterval = conf.getLongVar(ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL);
+    final float inflationFactor = conf.getFloatVar(ConfVars.HIVE_HASH_TABLE_INFLATION_FACTOR);
+    final MemoryMonitorInfo memoryMonitorInfo;
+    if ("llap".equalsIgnoreCase(conf.getVar(ConfVars.HIVE_EXECUTION_MODE))) {
+      LlapClusterStateForCompile llapInfo = LlapClusterStateForCompile.getClusterInfo(conf);
+      llapInfo.initClusterInfo();
+      final int executorsPerNode;
+      if (!llapInfo.hasClusterInfo()) {
+        LOG.warn("LLAP cluster information not available. Falling back to getting #executors from hiveconf..");
+        executorsPerNode = conf.getIntVar(ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
+      } else {
+        final int numExecutorsPerNodeFromCluster = llapInfo.getNumExecutorsPerNode();
+        if (numExecutorsPerNodeFromCluster == -1) {
+          LOG.warn("Cannot determine executor count from LLAP cluster information. Falling back to getting #executors" +
+            " from hiveconf..");
+          executorsPerNode = conf.getIntVar(ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
+        } else {
+          executorsPerNode = numExecutorsPerNodeFromCluster;
+        }
+      }
+
+      // bounded by max executors
+      final int slotsPerQuery = Math.min(maxSlotsPerQuery, executorsPerNode);
+      final long llapMaxSize = (long) (maxSize + (maxSize * overSubscriptionFactor * slotsPerQuery));
+      // prevents under subscription
+      final long adjustedMaxSize = Math.max(maxSize, llapMaxSize);
+      memoryMonitorInfo = new MemoryMonitorInfo(true, executorsPerNode, maxSlotsPerQuery,
+        overSubscriptionFactor, maxSize, adjustedMaxSize, memoryCheckInterval, inflationFactor);
+    } else {
+      // for non-LLAP mode most of these are not relevant. Only noConditionalTaskSize is used by shared scan optimizer.
+      memoryMonitorInfo = new MemoryMonitorInfo(false, 1, maxSlotsPerQuery, overSubscriptionFactor, maxSize, maxSize,
+        memoryCheckInterval, inflationFactor);
+    }
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Memory monitor info set to : {}", memoryMonitorInfo);
+    }
+    return memoryMonitorInfo;
+  }
+
   @SuppressWarnings("unchecked")
   private Object checkAndConvertSMBJoin(OptimizeTezProcContext context, JoinOperator joinOp,
-      TezBucketJoinProcCtx tezBucketJoinProcCtx) throws SemanticException {
+    TezBucketJoinProcCtx tezBucketJoinProcCtx, final long maxSize) throws SemanticException {
     // we cannot convert to bucket map join, we cannot convert to
     // map join either based on the size. Check if we can convert to SMB join.
     if ((HiveConf.getBoolVar(context.conf, ConfVars.HIVE_AUTO_SORTMERGE_JOIN) == false)
       || ((!HiveConf.getBoolVar(context.conf, ConfVars.HIVE_AUTO_SORTMERGE_JOIN_REDUCE))
           && joinOp.getOpTraits().getNumReduceSinks() >= 2)) {
-      fallbackToReduceSideJoin(joinOp, context);
+      fallbackToReduceSideJoin(joinOp, context, maxSize);
       return null;
     }
     Class<? extends BigTableSelectorForAutoSMJ> bigTableMatcherClass = null;
@@ -196,7 +253,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       // contains aliases from sub-query
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
-      fallbackToReduceSideJoin(joinOp, context);
+      fallbackToReduceSideJoin(joinOp, context, maxSize);
       return null;
     }
 
@@ -206,7 +263,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     } else {
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
-      fallbackToReduceSideJoin(joinOp, context);
+      fallbackToReduceSideJoin(joinOp, context, maxSize);
     }
     return null;
   }
@@ -230,7 +287,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
                   joinOp.getConf().getBaseSrc(), joinOp).getSecond(),
                   null, joinDesc.getExprs(), null, null,
                   joinDesc.getOutputColumnNames(), mapJoinConversionPos, joinDesc.getConds(),
-                  joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null);
+                  joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null,
+                  joinDesc.getMemoryMonitorInfo(), joinDesc.getInMemoryDataSize());
       mapJoinDesc.setNullSafes(joinDesc.getNullSafes());
       mapJoinDesc.setFilterMap(joinDesc.getFilterMap());
       mapJoinDesc.setResidualFilterExprs(joinDesc.getResidualFilterExprs());
@@ -368,7 +426,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       // each side better have 0 or more RS. if either side is unbalanced, cannot convert.
       // This is a workaround for now. Right fix would be to refactor code in the
       // MapRecordProcessor and ReduceRecordProcessor with respect to the sources.
-      @SuppressWarnings({"rawtypes","unchecked"})
       Set<ReduceSinkOperator> set =
           OperatorUtils.findOperatorsUpstream(parentOp.getParentOperators(),
               ReduceSinkOperator.class);
@@ -515,8 +572,22 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return false;
   }
 
+  /**
+   * Obtain big table position for join.
+   *
+   * @param joinOp join operator
+   * @param context optimization context
+   * @param buckets bucket count for Bucket Map Join conversion consideration or reduce count
+   * for Dynamic Hash Join conversion consideration
+   * @param skipJoinTypeChecks whether to skip join type checking
+   * @param maxSize size threshold for Map Join conversion
+   * @param checkMapJoinThresholds whether to check thresholds to convert to Map Join
+   * @return returns big table position or -1 if it cannot be determined
+   * @throws SemanticException
+   */
   public int getMapJoinConversionPos(JoinOperator joinOp, OptimizeTezProcContext context,
-      int buckets, boolean skipJoinTypeChecks, long maxSize) throws SemanticException {
+      int buckets, boolean skipJoinTypeChecks, long maxSize, boolean checkMapJoinThresholds)
+              throws SemanticException {
     if (!skipJoinTypeChecks) {
       /*
        * HIVE-9038: Join tests fail in tez when we have more than 1 join on the same key and there is
@@ -564,6 +635,9 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     // total size of the inputs
     long totalSize = 0;
+
+    // convert to DPHJ
+    boolean convertDPHJ = false;
 
     for (int pos = 0; pos < joinOp.getParentOperators().size(); pos++) {
       Operator<? extends OperatorDesc> parentOp = joinOp.getParentOperators().get(pos);
@@ -624,10 +698,20 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         // We are replacing the current big table with a new one, thus
         // we need to count the current one as a map table then.
         totalSize += bigInputStat.getDataSize();
+        // Check if number of distinct keys is greater than given max number of entries
+        // for HashMap
+        if (checkMapJoinThresholds && !checkNumberOfEntriesForHashTable(joinOp, bigTablePosition, context)) {
+          convertDPHJ = true;
+        }
       } else if (!selectedBigTable) {
         // This is not the first table and we are not using it as big table,
         // in fact, we're adding this table as a map table
         totalSize += inputSize;
+        // Check if number of distinct keys is greater than given max number of entries
+        // for HashMap
+        if (checkMapJoinThresholds && !checkNumberOfEntriesForHashTable(joinOp, pos, context)) {
+          convertDPHJ = true;
+        }
       }
 
       if (totalSize/buckets > maxSize) {
@@ -643,6 +727,18 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       }
 
     }
+
+    // Check if size of data to shuffle (larger table) is less than given max size
+    if (checkMapJoinThresholds && convertDPHJ
+            && checkShuffleSizeForLargeTable(joinOp, bigTablePosition, context)) {
+      LOG.debug("Conditions to convert to MapJoin are not met");
+      return -1;
+    }
+
+    // We store the total memory that this MapJoin is going to use,
+    // which is calculated as totalSize/buckets, with totalSize
+    // equal to sum of small tables size.
+    joinOp.getConf().setInMemoryDataSize(totalSize/buckets);
 
     return bigTablePosition;
   }
@@ -717,6 +813,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     Operator<? extends OperatorDesc> parentBigTableOp =
         mapJoinOp.getParentOperators().get(bigTablePosition);
     if (parentBigTableOp instanceof ReduceSinkOperator) {
+      Operator<?> parentSelectOpOfBigTableOp = parentBigTableOp.getParentOperators().get(0);
       if (removeReduceSink) {
         for (Operator<?> p : parentBigTableOp.getParentOperators()) {
           // we might have generated a dynamic partition operator chain. Since
@@ -759,9 +856,90 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         }
         op.getChildOperators().remove(joinOp);
       }
+
+      // Remove semijoin Op if there is any.
+      // The semijoin branch can potentially create a task level cycle
+      // with the hashjoin except when it is dynamically partitioned hash
+      // join which takes place in a separate task.
+      if (context.parseContext.getRsToSemiJoinBranchInfo().size() > 0
+              && removeReduceSink) {
+        removeCycleCreatingSemiJoinOps(mapJoinOp, parentSelectOpOfBigTableOp,
+                context.parseContext);
+      }
     }
 
     return mapJoinOp;
+  }
+
+  // Remove any semijoin branch associated with hashjoin's parent's operator
+  // pipeline which can cause a cycle after hashjoin optimization.
+  private void removeCycleCreatingSemiJoinOps(MapJoinOperator mapjoinOp,
+                                              Operator<?> parentSelectOpOfBigTable,
+                                              ParseContext parseContext) throws SemanticException {
+    Map<ReduceSinkOperator, TableScanOperator> semiJoinMap =
+            new HashMap<ReduceSinkOperator, TableScanOperator>();
+    for (Operator<?> op : parentSelectOpOfBigTable.getChildOperators()) {
+      if (!(op instanceof SelectOperator)) {
+        continue;
+      }
+
+      while (op.getChildOperators().size() > 0) {
+        op = op.getChildOperators().get(0);
+      }
+
+      // If not ReduceSink Op, skip
+      if (!(op instanceof ReduceSinkOperator)) {
+        continue;
+      }
+
+      ReduceSinkOperator rs = (ReduceSinkOperator) op;
+      TableScanOperator ts = parseContext.getRsToSemiJoinBranchInfo().get(rs).getTsOp();
+      if (ts == null) {
+        // skip, no semijoin branch
+        continue;
+      }
+
+      // Found a semijoin branch.
+      // There can be more than one semijoin branch coming from the parent
+      // GBY Operator of the RS Operator.
+      Operator<?> parentGB = op.getParentOperators().get(0);
+      for (Operator<?> childRS : parentGB.getChildOperators()) {
+        // Get the RS and TS for this branch
+        rs = (ReduceSinkOperator) childRS;
+        ts = parseContext.getRsToSemiJoinBranchInfo().get(rs).getTsOp();
+        assert ts != null;
+        for (Operator<?> parent : mapjoinOp.getParentOperators()) {
+          if (!(parent instanceof ReduceSinkOperator)) {
+            continue;
+          }
+
+          Set<TableScanOperator> tsOps = OperatorUtils.findOperatorsUpstream(parent,
+                  TableScanOperator.class);
+          boolean found = false;
+          for (TableScanOperator parentTS : tsOps) {
+            // If the parent is same as the ts, then we have a cycle.
+            if (ts == parentTS) {
+              semiJoinMap.put(rs, ts);
+              found = true;
+              break;
+            }
+          }
+          if (found) break;
+        }
+      }
+    }
+    if (semiJoinMap.size() > 0) {
+      for (ReduceSinkOperator rs : semiJoinMap.keySet()) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Found semijoin optimization from the big table side of a map join, which will cause a task cycle. "
+              + "Removing semijoin "
+              + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(semiJoinMap.get(rs)));
+        }
+        GenTezUtils.removeBranch(rs);
+        GenTezUtils.removeSemiJoinOperator(parseContext, rs,
+                semiJoinMap.get(rs));
+      }
+    }
   }
 
   private AppMasterEventOperator findDynamicPartitionBroadcast(Operator<?> parent) {
@@ -829,15 +1007,14 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return numBuckets;
   }
 
-  private boolean convertJoinDynamicPartitionedHashJoin(JoinOperator joinOp, OptimizeTezProcContext context)
+  private boolean convertJoinDynamicPartitionedHashJoin(JoinOperator joinOp, OptimizeTezProcContext context,
+    final long maxSize)
     throws SemanticException {
     // Attempt dynamic partitioned hash join
     // Since we don't have big table index yet, must start with estimate of numReducers
     int numReducers = estimateNumBuckets(joinOp, false);
     LOG.info("Try dynamic partitioned hash join with estimated " + numReducers + " reducers");
-    int bigTablePos = getMapJoinConversionPos(joinOp, context, numReducers, false,
-                          context.conf.getLongVar(
-                              HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD));
+    int bigTablePos = getMapJoinConversionPos(joinOp, context, numReducers, false, maxSize,false);
     if (bigTablePos >= 0) {
       // Now that we have the big table index, get real numReducers value based on big table RS
       ReduceSinkOperator bigTableParentRS =
@@ -872,17 +1049,17 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return false;
   }
 
-  private void fallbackToReduceSideJoin(JoinOperator joinOp, OptimizeTezProcContext context)
+  private void fallbackToReduceSideJoin(JoinOperator joinOp, OptimizeTezProcContext context, final long maxSize)
       throws SemanticException {
     if (context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) &&
         context.conf.getBoolVar(HiveConf.ConfVars.HIVEDYNAMICPARTITIONHASHJOIN)) {
-      if (convertJoinDynamicPartitionedHashJoin(joinOp, context)) {
+      if (convertJoinDynamicPartitionedHashJoin(joinOp, context, maxSize)) {
         return;
       }
     }
 
     int pos = getMapJoinConversionPos(joinOp, context, estimateNumBuckets(joinOp, false),
-                  true, Long.MAX_VALUE);
+                  true, Long.MAX_VALUE, false);
     if (pos < 0) {
       LOG.info("Could not get a valid join position. Defaulting to position 0");
       pos = 0;
@@ -891,5 +1068,95 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // join in map-reduce case.
     LOG.info("Fallback to common merge join operator");
     convertJoinSMBJoin(joinOp, context, pos, 0, false);
+  }
+
+  /* Returns true if it passes the test, false otherwise. */
+  private boolean checkNumberOfEntriesForHashTable(JoinOperator joinOp, int position,
+          OptimizeTezProcContext context) {
+    long max = HiveConf.getLongVar(context.parseContext.getConf(),
+            HiveConf.ConfVars.HIVECONVERTJOINMAXENTRIESHASHTABLE);
+    if (max < 1) {
+      // Max is disabled, we can safely return true
+      return true;
+    }
+    // Calculate number of different entries and evaluate
+    ReduceSinkOperator rsOp = (ReduceSinkOperator) joinOp.getParentOperators().get(position);
+    List<String> keys = StatsUtils.getQualifedReducerKeyNames(rsOp.getConf().getOutputKeyColumnNames());
+    Statistics inputStats = rsOp.getStatistics();
+    List<ColStatistics> columnStats = new ArrayList<>();
+    for (String key : keys) {
+      ColStatistics cs = inputStats.getColumnStatisticsFromColName(key);
+      if (cs == null) {
+        LOG.debug("Couldn't get statistics for: {}", key);
+        return true;
+      }
+      columnStats.add(cs);
+    }
+    long numRows = inputStats.getNumRows();
+    long estimation = estimateNDV(numRows, columnStats);
+    LOG.debug("Estimated NDV for input {}: {}; Max NDV for MapJoin conversion: {}",
+            position, estimation, max);
+    if (estimation > max) {
+      // Estimation larger than max
+      LOG.debug("Number of different entries for HashTable is greater than the max; "
+          + "we do not convert to MapJoin");
+      return false;
+    }
+    // We can proceed with the conversion
+    return true;
+  }
+
+  /* Returns true if it passes the test, false otherwise. */
+  private boolean checkShuffleSizeForLargeTable(JoinOperator joinOp, int position,
+          OptimizeTezProcContext context) {
+    long max = HiveConf.getLongVar(context.parseContext.getConf(),
+            HiveConf.ConfVars.HIVECONVERTJOINMAXSHUFFLESIZE);
+    if (max < 1) {
+      // Max is disabled, we can safely return true
+      return true;
+    }
+    // Evaluate
+    ReduceSinkOperator rsOp = (ReduceSinkOperator) joinOp.getParentOperators().get(position);
+    Statistics inputStats = rsOp.getStatistics();
+    long inputSize = inputStats.getDataSize();
+    LOG.debug("Estimated size for input {}: {}; Max size for DPHJ conversion: {}",
+        position, inputSize, max);
+    if (inputSize > max) {
+      LOG.debug("Size of input is greater than the max; "
+          + "we do not convert to DPHJ");
+      return false;
+    }
+    return true;
+  }
+
+  private static long estimateNDV(long numRows, List<ColStatistics> columnStats) {
+    // If there is a single column, return the number of distinct values
+    if (columnStats.size() == 1) {
+      return columnStats.get(0).getCountDistint();
+    }
+
+    // The expected number of distinct values when choosing p values
+    // with replacement from n integers is n . (1 - ((n - 1) / n) ^ p).
+    //
+    // If we have several uniformly distributed attributes A1 ... Am
+    // with N1 ... Nm distinct values, they behave as one uniformly
+    // distributed attribute with N1 * ... * Nm distinct values.
+    long n = 1L;
+    for (ColStatistics cs : columnStats) {
+      final long ndv = cs.getCountDistint();
+      if (ndv > 1) {
+        n = StatsUtils.safeMult(n, ndv);
+      }
+    }
+    final double nn = (double) n;
+    final double a = (nn - 1d) / nn;
+    if (a == 1d) {
+      // A under-flows if nn is large.
+      return numRows;
+    }
+    final double v = nn * (1d - Math.pow(a, numRows));
+    // Cap at fact-row-count, because numerical artifacts can cause it
+    // to go a few % over.
+    return Math.min(Math.round(v), numRows);
   }
 }

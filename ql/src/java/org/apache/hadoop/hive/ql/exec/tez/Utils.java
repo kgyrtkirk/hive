@@ -21,10 +21,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.llap.registry.ServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.split.SplitLocationProvider;
@@ -34,17 +35,20 @@ public class Utils {
   public static SplitLocationProvider getSplitLocationProvider(Configuration conf, Logger LOG) throws
       IOException {
     boolean useCustomLocations =
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS);
+        HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE).equals("llap")
+        && HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS);
     SplitLocationProvider splitLocationProvider;
     LOG.info("SplitGenerator using llap affinitized locations: " + useCustomLocations);
     if (useCustomLocations) {
-      LlapRegistryService serviceRegistry;
-      serviceRegistry = LlapRegistryService.getClient(conf);
+      LlapRegistryService serviceRegistry = LlapRegistryService.getClient(conf);
+      LOG.info("Using LLAP instance " + serviceRegistry.getApplicationId());
 
-      Collection<ServiceInstance> serviceInstances =
+      Collection<LlapServiceInstance> serviceInstances =
           serviceRegistry.getInstances().getAllInstancesOrdered(true);
+      Preconditions.checkArgument(!serviceInstances.isEmpty(),
+          "No running LLAP daemons! Please check LLAP service status and zookeeper configuration");
       ArrayList<String> locations = new ArrayList<>(serviceInstances.size());
-      for (ServiceInstance serviceInstance : serviceInstances) {
+      for (LlapServiceInstance serviceInstance : serviceInstances) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Adding " + serviceInstance.getWorkerIdentity() + " with hostname=" +
               serviceInstance.getHost() + " to list for split locations");

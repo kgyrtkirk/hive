@@ -23,10 +23,9 @@ import java.util.Set;
 
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelOptCost;
-import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
@@ -36,6 +35,7 @@ import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 
 import com.google.common.collect.Sets;
 
@@ -63,11 +63,6 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
   public void implement(Implementor implementor) {
   }
 
-  @Override
-  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
-    return mq.getNonCumulativeCost(this);
-  }
-
   // getRows will call estimateRowCount
   @Override
   public double estimateRowCount(RelMetadataQuery mq) {
@@ -75,7 +70,8 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
   }
 
   public boolean isBucketedInput() {
-    return RelMetadataQuery.instance().distribution(this.getInput()).getKeys().
+    final RelMetadataQuery mq = this.getInput().getCluster().getMetadataQuery();
+    return mq.distribution(this.getInput()).getKeys().
             containsAll(groupSet.asList());
   }
 
@@ -135,6 +131,14 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
 
   public LinkedHashSet<Integer> getAggregateColumnsOrder() {
     return this.aggregateColumnsOrder;
+  }
+
+  //required for HiveRelDecorrelator
+  @Override public RelNode accept(RelShuttle shuttle) {
+    if(shuttle instanceof HiveRelShuttle) {
+      return ((HiveRelShuttle)shuttle).visit(this);
+    }
+    return shuttle.visit(this);
   }
 
 }

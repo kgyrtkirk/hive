@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
 import org.apache.hadoop.io.NullWritable;
 
@@ -45,9 +44,12 @@ public class DruidTimeseriesQueryRecordReader
   }
 
   @Override
-  protected List<Result<TimeseriesResultValue>> createResultsList(InputStream content) throws IOException {
+  protected List<Result<TimeseriesResultValue>> createResultsList(InputStream content)
+          throws IOException {
     return DruidStorageHandlerUtils.SMILE_MAPPER.readValue(content,
-            new TypeReference<List<Result<TimeseriesResultValue>>>(){});
+            new TypeReference<List<Result<TimeseriesResultValue>>>() {
+            }
+    );
   }
 
   @Override
@@ -68,7 +70,7 @@ public class DruidTimeseriesQueryRecordReader
   public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
     DruidWritable value = new DruidWritable();
-    value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
+    value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
     value.getValue().putAll(current.getValue().getBaseObject());
     return value;
   }
@@ -78,7 +80,7 @@ public class DruidTimeseriesQueryRecordReader
     if (nextKeyValue()) {
       // Update value
       value.getValue().clear();
-      value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
+      value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
       value.getValue().putAll(current.getValue().getBaseObject());
       return true;
     }

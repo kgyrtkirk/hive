@@ -24,15 +24,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
+import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 public class OperatorUtils {
@@ -329,5 +334,125 @@ public class OperatorUtils {
       }
     }
     return numberOperators;
+  }
+
+  public static void setMemoryAvailable(final List<Operator<? extends OperatorDesc>> operators,
+    final long memoryAvailableToTask) {
+    if (operators == null) {
+      return;
+    }
+
+    for (Operator<? extends OperatorDesc> op : operators) {
+      if (op.getConf() != null) {
+        op.getConf().setMaxMemoryAvailable(memoryAvailableToTask);
+      }
+      if (op.getChildOperators() != null && !op.getChildOperators().isEmpty()) {
+        setMemoryAvailable(op.getChildOperators(), memoryAvailableToTask);
+      }
+    }
+  }
+
+  /**
+   * Given the input operator 'op', walk up the operator tree from 'op', and collect all the
+   * roots that can be reached from it. The results are stored in 'roots'.
+   */
+  public static void findRoots(Operator<?> op, Collection<Operator<?>> roots) {
+    List<Operator<?>> parents = op.getParentOperators();
+    if (parents == null || parents.isEmpty()) {
+      roots.add(op);
+      return;
+    }
+    for (Operator<?> p : parents) {
+      findRoots(p, roots);
+    }
+  }
+
+  /**
+   * Remove the branch that contains the specified operator. Do nothing if there's no branching,
+   * i.e. all the upstream operators have only one child.
+   */
+  public static void removeBranch(SparkPartitionPruningSinkOperator op) {
+    Operator<?> child = op;
+    Operator<?> curr = op;
+
+    while (curr.getChildOperators().size() <= 1) {
+      child = curr;
+      if (curr.getParentOperators() == null || curr.getParentOperators().isEmpty()) {
+        return;
+      }
+      curr = curr.getParentOperators().get(0);
+    }
+
+    curr.removeChild(child);
+  }
+
+  /**
+   * Remove operator from the tree, disconnecting it from its
+   * parents and children.
+   */
+  public static void removeOperator(Operator<?> op) {
+    if (op.getNumParent() != 0) {
+      List<Operator<? extends OperatorDesc>> allParent =
+              Lists.newArrayList(op.getParentOperators());
+      for (Operator<?> parentOp : allParent) {
+        parentOp.removeChild(op);
+      }
+    }
+    if (op.getNumChild() != 0) {
+      List<Operator<? extends OperatorDesc>> allChildren =
+              Lists.newArrayList(op.getChildOperators());
+      for (Operator<?> childOp : allChildren) {
+        childOp.removeParent(op);
+      }
+    }
+  }
+
+  public static String getOpNamePretty(Operator<?> op) {
+    if (op instanceof TableScanOperator) {
+      return op.toString() + " (" + ((TableScanOperator) op).getConf().getAlias() + ")";
+    }
+    return op.toString();
+  }
+
+  /**
+   * Return true if contain branch otherwise return false
+   */
+  public static boolean isInBranch(SparkPartitionPruningSinkOperator op) {
+    Operator<?> curr = op;
+    while (curr.getChildOperators().size() <= 1) {
+      if (curr.getParentOperators() == null || curr.getParentOperators().isEmpty()) {
+        return false;
+      }
+      curr = curr.getParentOperators().get(0);
+    }
+    return true;
+  }
+
+  public static Set<Operator<?>> getOp(BaseWork work, Class<?> clazz) {
+    Set<Operator<?>> ops = new HashSet<Operator<?>>();
+    if (work instanceof MapWork) {
+      Collection<Operator<?>> opSet = ((MapWork) work).getAliasToWork().values();
+      Stack<Operator<?>> opStack = new Stack<Operator<?>>();
+      opStack.addAll(opSet);
+
+      while (!opStack.empty()) {
+        Operator<?> op = opStack.pop();
+        ops.add(op);
+        if (op.getChildOperators() != null) {
+          opStack.addAll(op.getChildOperators());
+        }
+      }
+    } else {
+      ops.addAll(work.getAllOperators());
+    }
+
+    Set<Operator<? extends OperatorDesc>> matchingOps =
+      new HashSet<Operator<? extends OperatorDesc>>();
+    for (Operator<? extends OperatorDesc> op : ops) {
+      if (clazz.isInstance(op)) {
+        matchingOps.add(op);
+      }
+    }
+    return matchingOps;
   }
 }

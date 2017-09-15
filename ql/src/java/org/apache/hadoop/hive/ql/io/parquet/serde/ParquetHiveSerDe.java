@@ -21,7 +21,9 @@ import java.util.Map;
 import java.util.Properties;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.FieldNode;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -29,6 +31,7 @@ import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -95,11 +98,12 @@ public class ParquetHiveSerDe extends AbstractSerDe {
     // Get column names and sort order
     final String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
     final String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-
+    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
+        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
     if (columnNameProperty.length() == 0) {
       columnNames = new ArrayList<String>();
     } else {
-      columnNames = Arrays.asList(columnNameProperty.split(","));
+      columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
     }
     if (columnTypeProperty.length() == 0) {
       columnTypes = new ArrayList<TypeInfo>();
@@ -179,6 +183,14 @@ public class ParquetHiveSerDe extends AbstractSerDe {
   }
 
   /**
+   * @param table
+   * @return true if the table has the parquet serde defined
+   */
+  public static boolean isParquetTable(Table table) {
+    return  table == null ? false : ParquetHiveSerDe.class.getName().equals(table.getSerializationLib());
+  }
+
+  /**
    * Given a list of raw pruned paths separated by ',', return a list of merged pruned paths.
    * For instance, if the 'prunedPaths' is "s.a, s, s", this returns ["s"].
    */
@@ -217,7 +229,7 @@ public class ParquetHiveSerDe extends AbstractSerDe {
 
   private static void pruneFromSinglePath(PrunedStructTypeInfo prunedInfo, String path) {
     Preconditions.checkArgument(prunedInfo != null,
-      "PrunedStructTypeInfo for path " + path + " should not be null");
+      "PrunedStructTypeInfo for path '" + path + "' should not be null");
 
     int index = path.indexOf('.');
     if (index < 0) {

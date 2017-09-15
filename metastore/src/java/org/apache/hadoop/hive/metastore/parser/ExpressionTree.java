@@ -26,13 +26,13 @@ import java.util.Stack;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.serde.serdeConstants;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
@@ -230,8 +230,7 @@ public class ExpressionTree {
      *        tables that match the filter.
      * @param params
      *        A map of parameter key to values for the filter statement.
-     * @param filterBuilder The filter builder that is used to build filter.
-     * @return a JDO filter statement
+     * @param filterBuffer The filter builder that is used to build filter.
      * @throws MetaException
      */
     public void generateJDOFilter(Configuration conf, Table table,
@@ -284,7 +283,7 @@ public class ExpressionTree {
     //can only support "=" and "!=" for now, because our JDO lib is buggy when
     // using objects from map.get()
     private static final Set<Operator> TABLE_FILTER_OPS = Sets.newHashSet(
-        Operator.EQUALS, Operator.NOTEQUALS, Operator.NOTEQUALS2);
+        Operator.EQUALS, Operator.NOTEQUALS, Operator.NOTEQUALS2, Operator.LIKE);
 
     private void generateJDOFilterOverTables(Map<String, Object> params,
         FilterBuilder filterBuilder) throws MetaException {
@@ -385,7 +384,6 @@ public class ExpressionTree {
     }
 
     /**
-     * @param operator operator
      * @return true iff filter pushdown for this operator can be done for integral types.
      */
     public boolean canJdoUseStringsWithIntegral() {
@@ -434,8 +432,8 @@ public class ExpressionTree {
       boolean isIntegralSupported = canPushDownIntegral && canJdoUseStringsWithIntegral();
       String colType = table.getPartitionKeys().get(partColIndex).getType();
       // Can only support partitions whose types are string, or maybe integers
-      if (!colType.equals(serdeConstants.STRING_TYPE_NAME)
-          && (!isIntegralSupported || !serdeConstants.IntegralTypes.contains(colType))) {
+      if (!colType.equals(ColumnType.STRING_TYPE_NAME)
+          && (!isIntegralSupported || !ColumnType.IntegralTypes.contains(colType))) {
         filterBuilder.setError("Filtering is supported only on partition keys of type " +
             "string" + (isIntegralSupported ? ", or integral types" : ""));
         return null;
