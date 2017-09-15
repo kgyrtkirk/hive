@@ -128,7 +128,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
       UniqueConstraint ukInfo, NotNullConstraint nnInfo) throws HiveException {
     try {
-      String output;
+      String output = "";
       if (colPath.equals(tableName)) {
         List<FieldSchema> partCols = tbl.isPartitioned() ? tbl.getPartCols() : null;
         output = isPretty ?
@@ -139,18 +139,18 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       } else {
         List<String[]> table=new ArrayList<String[]>();
         if (isFormatted) {
+          output = "# ";
           table.add(MetaDataFormatUtils.getColumnsHeader(colStats));
         }
         for (FieldSchema col : cols) {
           table.add(MetaDataFormatUtils.extractColumnValues(col,colStats!=null,MetaDataFormatUtils.getColumnStatisticsObject(col.getName(),col.getType(),colStats)));
         }
-        output="# ";
         for (String[] row: table) {
           StringBuilder str = new StringBuilder();
           MetaDataFormatUtils.formatOutput(row, str, isOutputPadded);
           output = output.concat(str.toString());
         }
-        
+
         String statsState;
         if (tbl.getParameters() != null && (statsState = tbl.getParameters().get(StatsSetupConst.COLUMN_STATS_ACCURATE)) != null) {
           StringBuilder str = new StringBuilder();
