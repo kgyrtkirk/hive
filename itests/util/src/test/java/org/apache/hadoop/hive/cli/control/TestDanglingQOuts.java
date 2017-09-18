@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.cli.control;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.HashMap;
@@ -25,10 +27,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.junit.Test;
+
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
 
-public class UnusedQOutWiper {
+public class TestDanglingQOuts {
 
   public static class QOutFilter implements FilenameFilter {
 
@@ -47,13 +53,10 @@ public class UnusedQOutWiper {
 
   }
 
-  public static void main(String[] args) throws Exception {
+  private Set<File> outsFound = new HashSet<>();
+  private Map<File, AbstractCliConfig> outsNeeded = new HashMap<>();
 
-    Params params = new Params();
-    new JCommander(params, args);
-
-    Set<File> outsFound = new HashSet<>();
-    Map<File, AbstractCliConfig> outsNeeded = new HashMap<>();
+  public TestDanglingQOuts() throws Exception {
 
     for (Class<?> clz : CliConfigs.class.getDeclaredClasses()) {
       if (clz == CliConfigs.DummyConfig.class) {
@@ -77,9 +80,31 @@ public class UnusedQOutWiper {
         outsFound.add(file);
       }
     }
+  }
 
-    outsFound.removeAll(outsNeeded.keySet());
-    for (File file : outsFound) {
+  @Test
+  public void checkDanglingQOut() {
+    SetView<File> dangling = Sets.difference(outsFound, outsNeeded.keySet());
+    assertTrue(dangling.isEmpty());
+  }
+
+  @Test
+  public void checkMissingQOut() {
+    SetView<File> dangling = Sets.difference(outsNeeded.keySet(), outsFound);
+    System.out.println(dangling);
+    assertTrue(dangling.isEmpty());
+  }
+
+  public static void main(String[] args) throws Exception {
+
+    Params params = new Params();
+    new JCommander(params, args);
+
+    TestDanglingQOuts c = new TestDanglingQOuts();
+
+    Set<File> unused = Sets.difference(c.outsFound, c.outsNeeded.keySet());
+
+    for (File file : unused) {
       System.out.println(file);
       if (params.delete) {
         file.delete();
