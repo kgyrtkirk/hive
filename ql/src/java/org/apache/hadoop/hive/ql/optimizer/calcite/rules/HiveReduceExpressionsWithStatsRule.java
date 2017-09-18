@@ -242,6 +242,8 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
             return rexBuilder.makeLiteral(false);
           }
           return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
+        } else if (call.getOperands().get(0).getKind() == SqlKind.IS_NULL) {
+
         }
 
         // We cannot apply the reduction
