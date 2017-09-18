@@ -35,6 +35,11 @@ import com.beust.jcommander.Parameter;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 
+/**
+ * This test ensures that there are no dangling q.out files in the project
+ *
+ * It has a cli functionlity to remove them if there are any.
+ */
 public class TestDanglingQOuts {
 
   public static class QOutFilter implements FilenameFilter {
@@ -45,7 +50,6 @@ public class TestDanglingQOuts {
     public boolean accept(File dir, String fileName) {
       return pattern.matcher(fileName).matches();
     }
-
   }
 
   public static class Params {
