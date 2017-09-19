@@ -245,30 +245,29 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
             return rexBuilder.makeLiteral(false);
           }
           return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
-        } else if (call.getOperands().get(0).getKind() == SqlKind.IS_NULL || call.getOperands().get(0).getKind() == SqlKind.IS_NOT_NULL) {
-          if (call.operands.get(0) instanceof RexInputRef) {
-            RexInputRef ref = (RexInputRef) call.operands.get(0);
-
-            ColStatistics stat = extractMaxMin0(ref);
-
-            // StatsUtils.getNumRows(table)
-            //
-//            if( stat.getNumNulls() == 0 || stat.getNumNulls()== )
-//            switch (call.getOperator().getKind()) {
-//            case IS_NULL:
-//              break;
-//            case IS_NOT_NULL;
-//            break;
-            // }
-            // if (stat.getNumNulls() == 0) {
-            // return rexBuilder.makeLiteral(true);
-            // }
-          }
-
         }
-
         // We cannot apply the reduction
         return call;
+      } else if (call.getOperator().getKind() == SqlKind.IS_NULL || call.getOperator().getKind() == SqlKind.IS_NOT_NULL) {
+        SqlKind kind = call.getOperands().get(0).getKind();
+
+        if (call.operands.get(0) instanceof RexInputRef) {
+          RexInputRef ref = (RexInputRef) call.operands.get(0);
+
+          ColStatistics stat = extractColStats(ref);
+          Long rowCount = extractRowCount(ref);
+          if (stat != null && rowCount != null) {
+            if (stat.getNumNulls() == 0 || stat.getNumNulls() == rowCount) {
+              boolean allNulls = (stat.getNumNulls() == rowCount);
+
+              if (kind == SqlKind.IS_NULL) {
+                return rexBuilder.makeLiteral(allNulls);
+              } else {
+                return rexBuilder.makeLiteral(!allNulls);
+              }
+            }
+          }
+        }
       }
 
       // If we did not reduce, check the children nodes
@@ -279,10 +278,9 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
       return node;
     }
 
-
     private Pair<Number,Number> extractMaxMin(RexInputRef ref) {
 
-      ColStatistics cs = extractMaxMin0(ref);
+      ColStatistics cs = extractColStats(ref);
       Number max = null;
       Number min = null;
       if (cs != null && cs.getRange()!=null) {
@@ -290,12 +288,9 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
         min = cs.getRange().minValue;
       }
       return Pair.<Number, Number> of(max, min);
-
     }
 
-    private ColStatistics extractMaxMin0(RexInputRef ref) {
-      Number max = null;
-      Number min = null;
+    private ColStatistics extractColStats(RexInputRef ref) {
       RelColumnOrigin columnOrigin = this.metadataProvider.getColumnOrigin(filterOp, ref.getIndex());
       if (columnOrigin != null) {
         RelOptHiveTable table = (RelOptHiveTable) columnOrigin.getOriginTable();
