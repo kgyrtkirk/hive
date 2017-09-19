@@ -249,7 +249,7 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
         // We cannot apply the reduction
         return call;
       } else if (call.getOperator().getKind() == SqlKind.IS_NULL || call.getOperator().getKind() == SqlKind.IS_NOT_NULL) {
-        SqlKind kind = call.getOperands().get(0).getKind();
+        SqlKind kind = call.getOperator().getKind();
 
         if (call.operands.get(0) instanceof RexInputRef) {
           RexInputRef ref = (RexInputRef) call.operands.get(0);

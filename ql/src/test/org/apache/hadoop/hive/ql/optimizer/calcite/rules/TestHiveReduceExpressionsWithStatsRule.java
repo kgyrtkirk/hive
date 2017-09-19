@@ -1,6 +1,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -75,6 +76,7 @@ public class TestHiveReduceExpressionsWithStatsRule {
     builder = HiveRelFactories.HIVE_BUILDER.create(optCluster, schemaMock);
 
     StatsSetupConst.setStatsStateForCreateTable(tableParams, Lists.newArrayList("_int"), "TRUE");
+    tableParams.put(StatsSetupConst.ROW_COUNT, "3");
 
   }
 
@@ -95,7 +97,6 @@ public class TestHiveReduceExpressionsWithStatsRule {
     statObj.setRange(100, 200);
     planner.setRoot(basePlan);
     RelNode optimizedRelNode = planner.findBestExp();
-    // System.out.println(RelOptUtil.toString(optimizedRelNode));
     assertEquals("missing literal", SqlKind.LITERAL, optimizedRelNode.getChildExps().get(0).getKind());
     RexLiteral val = (RexLiteral) optimizedRelNode.getChildExps().get(0);
     assertEquals(true, val.getValue());
@@ -103,7 +104,7 @@ public class TestHiveReduceExpressionsWithStatsRule {
   }
 
   @Test
-  public void testIsNull() {
+  public void testIsNull_zero() {
 
     // @formatter:off
     final RelNode basePlan = builder
@@ -124,6 +125,78 @@ public class TestHiveReduceExpressionsWithStatsRule {
     assertEquals("missing literal", SqlKind.LITERAL, optimizedRelNode.getChildExps().get(0).getKind());
     RexLiteral val = (RexLiteral) optimizedRelNode.getChildExps().get(0);
     assertEquals(false, val.getValue());
+
+  }
+
+  @Test
+  public void testIsNull_one() {
+
+    // @formatter:off
+    final RelNode basePlan = builder
+          .scan("t")
+          .filter(
+              builder.call(SqlStdOperatorTable.IS_NULL,
+                    builder.field("_str")
+                    )
+              )
+          .build();
+    // @formatter:on
+
+    statObj.setNumNulls(1);
+    planner.setRoot(basePlan);
+    System.out.println(RelOptUtil.toString(basePlan));
+    RelNode optimizedRelNode = planner.findBestExp();
+    System.out.println(RelOptUtil.toString(optimizedRelNode));
+    assertNotEquals("should not be a literal", SqlKind.LITERAL, optimizedRelNode.getChildExps().get(0).getKind());
+  }
+
+  @Test
+  public void testIsNull_all() {
+
+    // @formatter:off
+    final RelNode basePlan = builder
+          .scan("t")
+          .filter(
+              builder.call(SqlStdOperatorTable.IS_NULL,
+                    builder.field("_str")
+                    )
+              )
+          .build();
+    // @formatter:on
+
+    statObj.setNumNulls(3);
+    planner.setRoot(basePlan);
+    System.out.println(RelOptUtil.toString(basePlan));
+    RelNode optimizedRelNode = planner.findBestExp();
+    System.out.println(RelOptUtil.toString(optimizedRelNode));
+    assertEquals("missing literal", SqlKind.LITERAL, optimizedRelNode.getChildExps().get(0).getKind());
+    RexLiteral val = (RexLiteral) optimizedRelNode.getChildExps().get(0);
+    assertEquals(true, val.getValue());
+
+  }
+
+  @Test
+  public void testIsNotNull() {
+
+    // @formatter:off
+    final RelNode basePlan = builder
+          .scan("t")
+          .filter(
+              builder.call(SqlStdOperatorTable.IS_NOT_NULL,
+                    builder.field("_str")
+                    )
+              )
+          .build();
+    // @formatter:on
+
+    statObj.setNumNulls(0);
+    planner.setRoot(basePlan);
+    System.out.println(RelOptUtil.toString(basePlan));
+    RelNode optimizedRelNode = planner.findBestExp();
+    System.out.println(RelOptUtil.toString(optimizedRelNode));
+    assertEquals("missing literal", SqlKind.LITERAL, optimizedRelNode.getChildExps().get(0).getKind());
+    RexLiteral val = (RexLiteral) optimizedRelNode.getChildExps().get(0);
+    assertEquals(true, val.getValue());
 
   }
 
