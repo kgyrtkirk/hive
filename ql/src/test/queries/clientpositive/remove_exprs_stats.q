@@ -53,3 +53,13 @@ explain select * from loc_orc where locid IN (5,2,3);
 explain select * from loc_orc where locid IN (1,6,9);
 -- always false
 explain select * from loc_orc where locid IN (40,30);
+
+
+set hive.stats.column.autogather=false;
+
+create table o2 stored as orc as select * from loc_orc ;
+
+analyze table o2 compute statistics for columns zip,locid;
+insert into o2 values ('x',1,1,1);
+
+explain select * from o2 where locid <= 30;
