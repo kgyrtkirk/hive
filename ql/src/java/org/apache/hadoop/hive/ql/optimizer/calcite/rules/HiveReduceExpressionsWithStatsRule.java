@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -304,6 +305,19 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
           if (colStats != null && StatsSetupConst.areColumnStatsUptoDate(
                   table.getHiveTableMD().getParameters(), colStats.getColumnName())) {
             return colStats;
+          }
+        }
+      }
+      return null;
+    }
+
+    private Long extractRowCount(RexInputRef ref) {
+      RelColumnOrigin columnOrigin = this.metadataProvider.getColumnOrigin(filterOp, ref.getIndex());
+      if (columnOrigin != null) {
+        RelOptHiveTable table = (RelOptHiveTable) columnOrigin.getOriginTable();
+        if (table != null) {
+          if (StatsSetupConst.areBasicStatsUptoDate(table.getHiveTableMD().getParameters())) {
+            return StatsUtils.getNumRows(table.getHiveTableMD());
           }
         }
       }
