@@ -77,12 +77,10 @@ POSTHOOK: query: describe formatted unicode_comments_tbl1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: unicode_comments_db@unicode_comments_tbl1
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	第一列                 
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	分割                  
 	 	 
 # Detailed Table Information	 	 
@@ -125,7 +123,6 @@ POSTHOOK: query: describe formatted unicode_comments_view1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: unicode_comments_db@unicode_comments_view1
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	第一列                 
 	 	 
 # Detailed Table Information	 	 
