@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
-import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,8 +55,11 @@ import com.google.common.collect.Lists;
  * we can infer that the predicate will evaluate to false if the max
  * value for column a is 4.
  *
- * Currently we support the simplification of =, >=, <=, >, <, and
- * IN operations.
+ * Currently we support the simplification of:
+ *  - =, >=, <=, >, <
+ *  - IN
+ *  - ROW
+ *  - IS_NULL / IS_NOT_NULL
  */
 public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
 
@@ -258,7 +260,21 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
       return node;
     }
 
+
     private Pair<Number,Number> extractMaxMin(RexInputRef ref) {
+
+      ColStatistics cs = extractMaxMin0(ref);
+      Number max = null;
+      Number min = null;
+      if (cs != null && cs.getRange()!=null) {
+        max = cs.getRange().maxValue;
+        min = cs.getRange().minValue;
+      }
+      return Pair.<Number, Number> of(max, min);
+
+    }
+
+    private ColStatistics extractMaxMin0(RexInputRef ref) {
       Number max = null;
       Number min = null;
       RelColumnOrigin columnOrigin = this.metadataProvider.getColumnOrigin(filterOp, ref.getIndex());
@@ -269,15 +285,11 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
                   table.getColStat(Lists.newArrayList(columnOrigin.getOriginColumnOrdinal())).get(0);
           if (colStats != null && StatsSetupConst.areColumnStatsUptoDate(
                   table.getHiveTableMD().getParameters(), colStats.getColumnName())) {
-            Range range = colStats.getRange();
-            if (range != null) {
-              max = range.maxValue;
-              min = range.minValue;
-            }
+            return colStats;
           }
         }
       }
-      return Pair.<Number,Number>of(max, min);
+      return null;
     }
 
     @SuppressWarnings("unchecked")

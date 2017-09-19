@@ -56,10 +56,8 @@ public class TestHiveReduceExpressionsWithStatsRule {
 
   @Before
   public void before() {
-    HiveReduceExpressionsWithStatsRule i = HiveReduceExpressionsWithStatsRule.INSTANCE;
-
     HepProgramBuilder programBuilder = new HepProgramBuilder();
-    programBuilder.addRuleInstance(i);
+    programBuilder.addRuleInstance(HiveReduceExpressionsWithStatsRule.INSTANCE);
 
     planner = new HepPlanner(programBuilder.build());
 
