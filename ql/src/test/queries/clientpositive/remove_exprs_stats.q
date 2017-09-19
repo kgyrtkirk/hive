@@ -55,11 +55,21 @@ explain select * from loc_orc where locid IN (1,6,9);
 explain select * from loc_orc where locid IN (40,30);
 
 
-set hive.stats.column.autogather=false;
 
-create table o2 stored as orc as select * from loc_orc ;
+create table t ( s string);
+insert into t values (null),(null);
+analyze table t compute statistics for columns s;
 
-analyze table o2 compute statistics for columns zip,locid;
-insert into o2 values ('x',1,1,1);
+-- true
+explain select * from t where s is null;
+explain select * from loc_orc where locid is not null;
+-- false
+explain select * from t where s is not null;
+explain select * from loc_orc where locid is null;
 
-explain select * from o2 where locid <= 30;
+insert into t values ('val1');
+analyze table t compute statistics for columns s;
+
+-- untouched
+explain select * from t where s is not null;
+explain select * from t where s is null;
