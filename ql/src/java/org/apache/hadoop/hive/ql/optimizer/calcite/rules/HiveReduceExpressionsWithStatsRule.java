@@ -244,7 +244,25 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
             return rexBuilder.makeLiteral(false);
           }
           return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
-        } else if (call.getOperands().get(0).getKind() == SqlKind.IS_NULL) {
+        } else if (call.getOperands().get(0).getKind() == SqlKind.IS_NULL || call.getOperands().get(0).getKind() == SqlKind.IS_NOT_NULL) {
+          if (call.operands.get(0) instanceof RexInputRef) {
+            RexInputRef ref = (RexInputRef) call.operands.get(0);
+
+            ColStatistics stat = extractMaxMin0(ref);
+
+            // StatsUtils.getNumRows(table)
+            //
+//            if( stat.getNumNulls() == 0 || stat.getNumNulls()== )
+//            switch (call.getOperator().getKind()) {
+//            case IS_NULL:
+//              break;
+//            case IS_NOT_NULL;
+//            break;
+            // }
+            // if (stat.getNumNulls() == 0) {
+            // return rexBuilder.makeLiteral(true);
+            // }
+          }
 
         }
 
