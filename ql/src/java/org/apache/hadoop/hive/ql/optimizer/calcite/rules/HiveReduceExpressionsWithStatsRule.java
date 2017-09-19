@@ -59,7 +59,6 @@ import com.google.common.collect.Lists;
  * Currently we support the simplification of:
  *  - =, >=, <=, >, <
  *  - IN
- *  - ROW
  *  - IS_NULL / IS_NOT_NULL
  */
 public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
