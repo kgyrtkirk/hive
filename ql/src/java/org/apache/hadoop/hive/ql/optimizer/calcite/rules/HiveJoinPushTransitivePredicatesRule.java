@@ -181,6 +181,13 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
       }
       return super.visitCall(call);
     }
+    
+    @Override
+    public Void visitInputRef(RexInputRef inputRef) {
+    	
+    	
+    	return super.visitInputRef(inputRef);
+    }
   }
 }
 
