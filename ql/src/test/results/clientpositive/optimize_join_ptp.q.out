@@ -1,0 +1,43 @@
+PREHOOK: query: create table t1 (v string, k int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (v string, k int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1 values ('people', 10), ('strangers', 20), ('parents', 30)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 values ('people', 10), ('strangers', 20), ('parents', 30)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.k EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: t1.v SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: create table t2 (v string, k double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: create table t2 (v string, k double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: insert into t2 values ('people', 10), ('strangers', 20), ('parents', 30)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@t2
+POSTHOOK: query: insert into t2 values ('people', 10), ('strangers', 20), ('parents', 30)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.k EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: t2.v SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: select 	* from t1 where t1.k in (select t2.k from t2 where t2.v='people') and t1.k<15
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: select 	* from t1 where t1.k in (select t2.k from t2 where t2.v='people') and t1.k<15
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+people	10
