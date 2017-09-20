@@ -11,16 +11,17 @@ explain
 select t1.* from t1,t2
 where
 	t1.v=t2.v and t1.k=t2.k
-and	t1.v='people'
-and	t2.k=10
+and	t2.v='people'
+and	t1.k=10
 ;
 
 select t1.* from t1,t2
 where
 	t1.v=t2.v and t1.k=t2.k
-and	t1.v='people'
-and	t2.k=10
+and	t2.v='people'
+and	t1.k=10
 ;
 
+select 	* from t1 where t1.k in (select t2.k from t2 where t2.v='people') and t1.k<15;
 
 
