@@ -184,9 +184,9 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     @Override
     public Void visitInputRef(RexInputRef inputRef) {
       if (types.get(inputRef.getIndex()).getType() != inputRef.getType()) {
-            throw new Util.FoundOne(inputRef);
-    	}
-    	return super.visitInputRef(inputRef);
+        throw new Util.FoundOne(inputRef);
+      }
+      return super.visitInputRef(inputRef);
     }
   }
 }
