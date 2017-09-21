@@ -358,7 +358,8 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     if (partition != null) {
       return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
     }
-    return prefix;
+    String aggKey = prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
+    return aggKey;
   }
 
   private StatsAggregator createStatsAggregator(StatsCollectionContext scc, HiveConf conf) throws HiveException {
@@ -394,6 +395,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     return scc;
   }
 
+  @Deprecated
   private boolean existStats(Map<String, String> parameters) {
     return parameters.containsKey(StatsSetupConst.ROW_COUNT)
         || parameters.containsKey(StatsSetupConst.NUM_FILES)
@@ -403,10 +405,9 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
   }
 
   private void updateStats(StatsAggregator statsAggregator,
-      Map<String, String> parameters, String prefix, boolean atomic)
+      Map<String, String> parameters, String aggKey, boolean atomic)
       throws HiveException {
 
-    String aggKey = prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
 
     for (String statType : StatsSetupConst.statsRequireCompute) {
       String value = statsAggregator.aggregateStats(aggKey, statType);
