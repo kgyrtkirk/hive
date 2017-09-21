@@ -1488,7 +1488,6 @@ public final class GenMapRedUtils {
     }
     assert statsWork != null : "Error when generating StatsTask";
 
-    statsWork.setSourceTask(currTask);
     statsWork.setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
     statsWork.setStatsTmpDir(nd.getConf().getStatsTmpDir());
     if (currTask.getWork() instanceof MapredWork) {
@@ -1513,6 +1512,7 @@ public final class GenMapRedUtils {
     // in FileSinkDesc is used for stats publishing. They should be consistent.
     statsWork.setAggKey(nd.getConf().getStatsAggPrefix());
     StatsWork columnStatsWork = new StatsWork(statsWork);
+    columnStatsWork.setSourceTask(currTask);
     Task<? extends Serializable> statsTask = TaskFactory.get(columnStatsWork, hconf);
 
     // subscribe feeds from the MoveTask so that MoveTask can forward the list

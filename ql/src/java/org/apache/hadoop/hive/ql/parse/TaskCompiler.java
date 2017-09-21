@@ -20,25 +20,18 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context;
@@ -46,8 +39,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.BasicStatsTask;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -62,7 +53,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
-import org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.plan.BasicStatsNoJobWork;
@@ -464,10 +454,10 @@ public abstract class TaskCompiler {
       BasicStatsWork statsWork = new BasicStatsWork(tableScan.getConf().getTableMetadata().getTableSpec());
       statsWork.setAggKey(tableScan.getConf().getStatsAggPrefix());
       statsWork.setStatsTmpDir(tableScan.getConf().getTmpStatsDir());
-      statsWork.setSourceTask(currentTask);
       statsWork.setStatsReliable(parseContext.getConf().getBoolVar(
           HiveConf.ConfVars.HIVE_STATS_RELIABLE));
       StatsWork columnStatsWork = new StatsWork(statsWork);
+      columnStatsWork.setSourceTask(currentTask);
       return TaskFactory.get(columnStatsWork, parseContext.getConf());
     }
   }
@@ -525,7 +515,7 @@ public abstract class TaskCompiler {
    * @param loadFileWork
    * @param rootTasks
    * @param outerQueryLimit
-   * @throws SemanticException 
+   * @throws SemanticException
    */
   @SuppressWarnings("unchecked")
   protected void genColumnStatsTask(AnalyzeRewriteContext analyzeRewrite,

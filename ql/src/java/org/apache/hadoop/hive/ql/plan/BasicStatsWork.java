@@ -64,7 +64,7 @@ public class BasicStatsWork implements Serializable {
 
   // used by FS based stats collector
   private String statsTmpDir;
-  
+
   public BasicStatsWork() {
   }
 
@@ -165,7 +165,7 @@ public class BasicStatsWork implements Serializable {
     return sourceTask;
   }
 
-  public void setSourceTask(Task sourceTask) {
+  public void setSourceTask2(Task sourceTask) {
     this.sourceTask = sourceTask;
   }
 

@@ -125,11 +125,11 @@ public class GenMRTableScan1 implements NodeProcessor {
             BasicStatsWork statsWork = new BasicStatsWork(op.getConf().getTableMetadata().getTableSpec());
             statsWork.setAggKey(op.getConf().getStatsAggPrefix());
             statsWork.setStatsTmpDir(op.getConf().getTmpStatsDir());
-            statsWork.setSourceTask(currTask);
             statsWork.setNoScanAnalyzeCommand(noScan);
             statsWork.setPartialScanAnalyzeCommand(partialScan);
             statsWork.setStatsReliable(parseCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
             StatsWork columnStatsWork = new StatsWork(statsWork);
+            columnStatsWork.setSourceTask(currTask);
             Task<StatsWork> columnStatsTask = TaskFactory.get(columnStatsWork, parseCtx.getConf());
             currTask.addDependentTask(columnStatsTask);
             if (!ctx.getRootTasks().contains(currTask)) {

@@ -133,9 +133,10 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
         BasicStatsWork basicStatsWork = new BasicStatsWork(tableScan.getConf().getTableMetadata().getTableSpec());
         basicStatsWork.setAggKey(tableScan.getConf().getStatsAggPrefix());
         basicStatsWork.setStatsTmpDir(tableScan.getConf().getTmpStatsDir());
-        basicStatsWork.setSourceTask(context.currentTask);
         basicStatsWork.setStatsReliable(parseContext.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+        basicStatsWork.setNoScanAnalyzeCommand(parseContext.getQueryProperties().isNoScanAnalyzeCommand());
         StatsWork columnStatsWork = new StatsWork(basicStatsWork);
+        columnStatsWork.setSourceTask(context.currentTask);
         Task<StatsWork> statsTask = TaskFactory.get(columnStatsWork, parseContext.getConf());
         context.currentTask.addDependentTask(statsTask);
 
@@ -143,14 +144,14 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
         // The plan consists of a StatsTask only.
         if (parseContext.getQueryProperties().isNoScanAnalyzeCommand()) {
           statsTask.setParentTasks(null);
-          basicStatsWork.setNoScanAnalyzeCommand(true);
           context.rootTasks.remove(context.currentTask);
           context.rootTasks.add(statsTask);
         }
 
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
         if (parseContext.getQueryProperties().isPartialScanAnalyzeCommand()) {
-          handlePartialScanCommand(tableScan, parseContext, basicStatsWork, context, statsTask);
+          basicStatsWork.setPartialScanAnalyzeCommand(true);
+          handlePartialScanCommand(tableScan, parseContext, columnStatsWork, context, statsTask);
         }
 
         // NOTE: here we should use the new partition predicate pushdown API to get a list of pruned list,
@@ -178,7 +179,7 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
    * It is composed of PartialScanTask followed by StatsTask.
    */
   private void handlePartialScanCommand(TableScanOperator tableScan, ParseContext parseContext,
-      BasicStatsWork statsWork, GenSparkProcContext context, Task<StatsWork> statsTask)
+      StatsWork statsWork, GenSparkProcContext context, Task<StatsWork> statsTask)
               throws SemanticException {
     String aggregationKey = tableScan.getConf().getStatsAggPrefix();
     StringBuilder aggregationKeyBuffer = new StringBuilder(aggregationKey);
@@ -190,9 +191,6 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
     scanWork.setMapperCannotSpanPartns(true);
     scanWork.setAggKey(aggregationKey);
     scanWork.setStatsTmpDir(tableScan.getConf().getTmpStatsDir(), parseContext.getConf());
-
-    // stats work
-    statsWork.setPartialScanAnalyzeCommand(true);
 
     // partial scan task
     DriverContext driverCxt = new DriverContext();

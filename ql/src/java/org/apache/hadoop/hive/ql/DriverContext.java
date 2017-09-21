@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.NodeUtils;
 import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.BasicStatsTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
@@ -224,7 +223,7 @@ public class DriverContext {
       }
     });
     for (String statKey : statKeys) {
-      statsTasks.get(statKey).getWork().getBasicStatsWork().setSourceTask(mapredTask);
+      statsTasks.get(statKey).getWork().setSourceTask(mapredTask);
     }
   }
 }

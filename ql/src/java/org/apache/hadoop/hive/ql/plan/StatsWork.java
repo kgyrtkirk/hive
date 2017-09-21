@@ -22,6 +22,7 @@ import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
@@ -38,6 +39,8 @@ public class StatsWork implements Serializable {
   private FetchWork fWork;
   private ColumnStatsDesc colStats;
   private static final int LIMIT = -1;
+
+  private transient Task<?> sourceTask;
 
   public StatsWork() {
   }
@@ -111,6 +114,11 @@ public class StatsWork implements Serializable {
 
   public void setBasicStatsNoJobWork(BasicStatsNoJobWork basicStatsNoJobWork) {
     this.basicStatsNoJobWork = basicStatsNoJobWork;
+  }
+
+  public void setSourceTask(Task<?> sourceTask) {
+    this.sourceTask = sourceTask;
+    basicStatsWork.setSourceTask2(sourceTask);
   }
 
 }
