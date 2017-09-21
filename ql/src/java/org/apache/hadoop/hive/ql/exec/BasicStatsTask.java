@@ -228,17 +228,18 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         }
         // non-partitioned tables:
         // XXX: I don't aggree with this logic
-        // FIXME: deprecate atomic
+        // FIXME: deprecate atomic? what its purpose?
         if (!existStats(parameters) && atomic) {
           return 0;
         }
 
         // The collectable stats for the aggregator needs to be cleared.
         // For eg. if a file is being loaded, the old number of rows are not valid
-        if (work.isClearAggregatorStats()) {
-          // we choose to keep the invalid stats and only change the setting.
-          StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
-        }
+        // XXX: makes no sense for me... possibly not needed anymore
+        // if (work.isClearAggregatorStats()) {
+        // // we choose to keep the invalid stats and only change the setting.
+        // StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
+        // }
 
         updateQuickStats(parameters, wh.getFileStatusesForSD(p.getPartSd()));
         if (StatsSetupConst.areBasicStatsUptoDate(parameters)) {
