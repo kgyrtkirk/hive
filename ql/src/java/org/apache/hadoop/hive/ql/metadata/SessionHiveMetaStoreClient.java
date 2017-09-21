@@ -196,7 +196,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     Collections.sort(tableNames);
     return tableNames;
   }
-  
+
   @Override
   public List<TableMeta> getTableMeta(String dbPatterns, String tablePatterns, List<String> tableTypes)
       throws MetaException {
@@ -236,7 +236,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     }
     return tableMetas;
   }
-  
+
   private boolean matchesAny(String string, List<Matcher> matchers) {
     for (Matcher matcher : matchers) {
       if (matcher.reset(string).matches()) {
@@ -435,7 +435,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     // Add temp table info to current session
     Table tTable = new Table(tbl);
     StatsSetupConst.setStatsStateForCreateTable(tbl.getParameters(),
-        MetaStoreUtils.getColumnNamesForTable(tbl), StatsSetupConst.TRUE);
+        MetaStoreUtils.getColumnNamesForTable(tbl), StatsSetupConst.FALSE);
     if (tables == null) {
       tables = new HashMap<String, Table>();
       ss.getTempTables().put(dbName, tables);
@@ -657,7 +657,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   public static Map<String, Table> getTempTablesForDatabase(String dbName) {
     return getTempTables().get(dbName);
   }
-  
+
   public static Map<String, Map<String, Table>> getTempTables() {
     SessionState ss = SessionState.get();
     if (ss == null) {
@@ -713,7 +713,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
           ssTableColStats);
     }
     mergeColumnStats(ssTableColStats, colStats);
-    
+
     List<String> colNames = new ArrayList<>();
     for (ColumnStatisticsObj obj : colStats.getStatsObj()) {
       colNames.add(obj.getColName());
