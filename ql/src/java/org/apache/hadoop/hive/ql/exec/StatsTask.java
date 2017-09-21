@@ -128,6 +128,10 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         }
       }
 
+      // partColSchema
+      // fields.subList(fields.size() - partColSchema.size(), partColSchema.size())
+      // list.subList(fields.size() - partColSchema.size(), partColSchema.size())
+
       if (!isTblLevel) {
         List<String> partVals = new ArrayList<String>();
         // Iterate over partition columns to figure out partition name
@@ -200,8 +204,8 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     }
     int ret = 0;
     if (work.getBasicStatsWork() != null) {
-      work.getBasicStatsWork().setFollowedByColStats(work.getfWork() != null);
       BasicStatsTask task = (BasicStatsTask) TaskFactory.get(work.getBasicStatsWork(), conf);
+      task.followedColStats = work.getfWork() != null;
       task.initialize(queryState, queryPlan, driverContext, null);
       task.setDpPartSpecs(dpPartSpecs);
       ret = task.execute(driverContext);

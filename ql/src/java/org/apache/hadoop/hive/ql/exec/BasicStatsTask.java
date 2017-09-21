@@ -79,6 +79,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
 
   private Table table;
   private Collection<Partition> dpPartSpecs;
+  public boolean followedColStats;
 
   public BasicStatsTask() {
     super();
@@ -182,7 +183,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         // work.getTableSpecs() == null means it is not analyze command
         // and then if it is not followed by column stats, we should clean
         // column stats
-        if (work.getTableSpecs() == null && !work.isFollowedByColStats()) {
+        if (work.getTableSpecs() == null && !followedColStats) {
           StatsSetupConst.clearColumnStatsState(parameters);
         }
         // non-partitioned tables:
@@ -289,7 +290,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
           // work.getTableSpecs() == null means it is not analyze command
           // and then if it is not followed by column stats, we should clean
           // column stats
-          if (work.getTableSpecs() == null && !work.isFollowedByColStats()) {
+          if (work.getTableSpecs() == null && !followedColStats) {
             StatsSetupConst.clearColumnStatsState(parameters);
           }
           //only when the stats exist, it is added to fileStatusMap

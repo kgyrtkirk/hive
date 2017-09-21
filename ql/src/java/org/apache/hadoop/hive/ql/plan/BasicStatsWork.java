@@ -169,11 +169,11 @@ public class BasicStatsWork implements Serializable {
     this.sourceTask = sourceTask;
   }
 
-  public boolean isFollowedByColStats() {
+  public boolean isFollowedByColStats1() {
     return isFollowedByColStats;
   }
 
-  public void setFollowedByColStats(boolean isFollowedByColStats) {
+  public void setFollowedByColStats1(boolean isFollowedByColStats) {
     this.isFollowedByColStats = isFollowedByColStats;
   }
 
