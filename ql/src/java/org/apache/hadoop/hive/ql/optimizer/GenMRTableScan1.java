@@ -28,7 +28,6 @@ import java.util.Stack;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -127,8 +126,9 @@ public class GenMRTableScan1 implements NodeProcessor {
             statsWork.setAggKey(op.getConf().getStatsAggPrefix());
             statsWork.setStatsTmpDir(op.getConf().getTmpStatsDir());
             statsWork.setSourceTask(currTask);
-            statsWork.setStatsReliable(parseCtx.getConf().getBoolVar(
-                HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+            statsWork.setNoScanAnalyzeCommand(noScan);
+            statsWork.setPartialScanAnalyzeCommand(partialScan);
+            statsWork.setStatsReliable(parseCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
             StatsWork columnStatsWork = new StatsWork(statsWork);
             Task<StatsWork> columnStatsTask = TaskFactory.get(columnStatsWork, parseCtx.getConf());
             currTask.addDependentTask(columnStatsTask);
@@ -140,14 +140,13 @@ public class GenMRTableScan1 implements NodeProcessor {
             // The plan consists of a StatsTask only.
             if (noScan) {
               columnStatsTask.setParentTasks(null);
-              statsWork.setNoScanAnalyzeCommand(true);
               ctx.getRootTasks().remove(currTask);
               ctx.getRootTasks().add(columnStatsTask);
             }
 
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
             if (partialScan) {
-              handlePartialScanCommand(op, ctx, parseCtx, currTask, statsWork, columnStatsTask);
+              handlePartialScanCommand(op, ctx, parseCtx, currTask, columnStatsTask);
             }
 
             currWork.getMapWork().setGatheringStats(true);
@@ -190,8 +189,7 @@ public class GenMRTableScan1 implements NodeProcessor {
    * @throws SemanticException
    */
   private void handlePartialScanCommand(TableScanOperator op, GenMRProcContext ctx,
-      ParseContext parseCtx, Task<? extends Serializable> currTask,
-      BasicStatsWork statsWork, Task<StatsWork> statsTask) throws SemanticException {
+      ParseContext parseCtx, Task<? extends Serializable> currTask, Task<StatsWork> statsTask) throws SemanticException {
     String aggregationKey = op.getConf().getStatsAggPrefix();
     StringBuilder aggregationKeyBuffer = new StringBuilder(aggregationKey);
     List<Path> inputPaths = GenMapRedUtils.getInputPathsForPartialScan(op, aggregationKeyBuffer);
@@ -202,9 +200,6 @@ public class GenMRTableScan1 implements NodeProcessor {
     scanWork.setMapperCannotSpanPartns(true);
     scanWork.setAggKey(aggregationKey);
     scanWork.setStatsTmpDir(op.getConf().getTmpStatsDir(), parseCtx.getConf());
-
-    // stats work
-    statsWork.setPartialScanAnalyzeCommand(true);
 
     // partial scan task
     DriverContext driverCxt = new DriverContext();
