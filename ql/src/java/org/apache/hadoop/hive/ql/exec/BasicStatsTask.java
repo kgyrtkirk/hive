@@ -88,10 +88,6 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
 
   @Override
   public int execute(DriverContext driverContext) {
-    return execute1(driverContext);
-  }
-
-  public int execute1(DriverContext driverContext) {
     if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
       return 0;
     }
