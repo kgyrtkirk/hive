@@ -163,6 +163,31 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       }
     }
 
+    static class PPart extends Partish {
+      private Table table;
+      private org.apache.hadoop.hive.metastore.api.Partition tPart;
+
+      public PPart(Table table, org.apache.hadoop.hive.metastore.api.Partition tPart) {
+        this.table = table;
+        this.tPart = tPart;
+      }
+
+      @Override
+      public Table getTable() {
+        return table;
+      }
+
+      @Override
+      public Map<String, String> getPartParameters() {
+        return tPart.getParameters();
+      }
+
+      @Override
+      public StorageDescriptor getPartSd() {
+        return tPart.getSd();
+      }
+    }
+
     public boolean isAcid() {
       return AcidUtils.isAcidTable(getTable());
     }
@@ -222,13 +247,13 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         // work.getTableSpecs() == null means it is not analyze command
         // and then if it is not followed by column stats, we should clean
         // column stats
-        // XXX: move this to Col related part
+        // XXX: move this to ColStat related part
         if (!work.isExplicitAnalyze() && !followedColStats) {
           StatsSetupConst.clearColumnStatsState(parameters);
         }
         // non-partitioned tables:
         // XXX: I don't aggree with this logic
-        // FIXME: deprecate atomic? what its purpose?
+        // FIXME: deprecate atomic? what's its purpose?
         if (!existStats(parameters) && atomic) {
           return 0;
         }
@@ -249,6 +274,9 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
           }
           // write table stats to metastore
           if (!getWork().getNoStatsAggregator()) {
+            // FIXME: this seems meaningless...
+            // instead of this; disabling the MS side statscollector would seem to be a better idea
+            // since we'just collected it...
             environmentContext = new EnvironmentContext();
             environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED,
                 StatsSetupConst.TASK);
@@ -282,6 +310,9 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
           for(final Partition partn : partitions) {
             final String partitionName = partn.getName();
             final org.apache.hadoop.hive.metastore.api.Partition tPart = partn.getTPartition();
+            Partish p;
+            partishes.add(p = new Partish.PPart(table, partn.getTPartition()));
+
             Map<String, String> parameters = tPart.getParameters();
 
             if (!existStats(parameters) && atomic) {
@@ -290,7 +321,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
             futures.add(pool.submit(new Callable<Void>() {
               @Override
               public Void call() throws Exception {
-                FileStatus[] partfileStatus = wh.getFileStatusesForSD(tPart.getSd());
+                FileStatus[] partfileStatus = wh.getFileStatusesForSD(p.getPartSd());
                 fileStatusMap.put(partitionName,  partfileStatus);
                 return null;
               }
@@ -325,12 +356,11 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
           Map<String, String> parameters = tPart.getParameters();
           if (work.getTableSpecs() == null && AcidUtils.isAcidTable(table)) {
             StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
-          } else if (work.getTableSpecs() != null
-              || (work.getLoadTableDesc() != null && work.getLoadTableDesc().getReplace())
-              || (work.getLoadFileDesc() != null && !work.getLoadFileDesc()
-                  .getDestinationCreateTable().isEmpty())) {
+          }
+          if (work.isTargetRewritten()) {
             StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
           }
+
           // work.getTableSpecs() == null means it is not analyze command
           // and then if it is not followed by column stats, we should clean
           // column stats
@@ -339,7 +369,6 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
           }
           //only when the stats exist, it is added to fileStatusMap
           if (!fileStatusMap.containsKey(partn.getName())) {
-            // probability: 0
             continue;
           }
 
