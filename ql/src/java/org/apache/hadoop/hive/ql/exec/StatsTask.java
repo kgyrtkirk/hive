@@ -201,15 +201,15 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     int ret = 0;
     if (work.getBasicStatsWork() != null) {
       work.getBasicStatsWork().setFollowedByColStats(work.getfWork() != null);
-      BasicStatsTask basicStatsTask = (BasicStatsTask) TaskFactory.get(work.getBasicStatsWork(), conf);
-      basicStatsTask.initialize(queryState, queryPlan, driverContext, null);
-      basicStatsTask.setDpPartSpecs(dpPartSpecs);
-      ret = basicStatsTask.execute(driverContext);
+      BasicStatsTask task = (BasicStatsTask) TaskFactory.get(work.getBasicStatsWork(), conf);
+      task.initialize(queryState, queryPlan, driverContext, null);
+      task.setDpPartSpecs(dpPartSpecs);
+      ret = task.execute(driverContext);
     }
     if (work.getBasicStatsNoJobWork() != null) {
-      BasicStatsNoJobTask basicStatsTask = (BasicStatsNoJobTask) TaskFactory.get(work.getBasicStatsNoJobWork(), conf);
-      basicStatsTask.initialize(queryState, queryPlan, driverContext, null);
-      ret = basicStatsTask.execute(driverContext);
+      BasicStatsNoJobTask task = (BasicStatsNoJobTask) TaskFactory.get(work.getBasicStatsNoJobWork(), conf);
+      task.initialize(queryState, queryPlan, driverContext, null);
+      ret = task.execute(driverContext);
     }
     if (ret != 0) {
       return ret;
