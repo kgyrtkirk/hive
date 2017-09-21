@@ -88,9 +88,8 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       MetaException, IOException {
 
     String[] names = Utilities.getDbTableName(SessionState.get().getCurrentDatabase(), work.getColStats().getTableName());
+    Table tbl = db.getTable(names[0], names[1]);
 
-    String currentDb = names[0];
-    String tableName = names[1];
     String partName = null;
     List<String> colName = work.getColStats().getColName();
     List<String> colType = work.getColStats().getColType();
@@ -98,7 +97,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
     List<ColumnStatistics> stats = new ArrayList<ColumnStatistics>();
     InspectableObject packedRow;
-    Table tbl = db.getTable(currentDb, tableName);
     while ((packedRow = ftOp.getNextRow()) != null) {
       if (packedRow.oi.getCategory() != ObjectInspector.Category.STRUCT) {
         throw new HiveException("Unexpected object type encountered while unpacking row");
