@@ -28,7 +28,6 @@ import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.RelFactories.FilterFactory;
-import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
@@ -181,10 +180,10 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
       }
       return super.visitCall(call);
     }
-    
+
     @Override
     public Void visitInputRef(RexInputRef inputRef) {
-    	if(types.get(inputRef.getIndex()) != inputRef.getType() ) {
+      if (!inputRef.getType().equals(types.get(inputRef.getIndex()).getType())) {
             throw new Util.FoundOne(inputRef);
     	}
     	return super.visitInputRef(inputRef);
