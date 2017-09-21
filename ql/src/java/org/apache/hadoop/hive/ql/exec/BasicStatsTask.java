@@ -240,7 +240,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
           StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
         }
 
-        updateQuickStats(wh, parameters, p.getPartSd());
+        updateQuickStats(parameters, wh.getFileStatusesForSD(p.getPartSd()));
         if (StatsSetupConst.areBasicStatsUptoDate(parameters)) {
           if (statsAggregator != null) {
             String prefix = getAggregationPrefix(table, null);
@@ -475,6 +475,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     }
   }
 
+  @Deprecated
   private void updateQuickStats(Warehouse wh, Map<String, String> parameters,
       StorageDescriptor desc) throws MetaException {
     /**
