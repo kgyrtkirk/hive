@@ -166,15 +166,20 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       public Object getOutput() throws HiveException {
         return new Table(getTable().getTTable());
       }
+
+      @Override
+      public Partition getPartition() {
+        return null;
+      }
     }
 
     static class PPart extends Partish {
       private Table table;
-      private org.apache.hadoop.hive.metastore.api.Partition tPart;
+      private Partition partition;
 
-      public PPart(Table table, org.apache.hadoop.hive.metastore.api.Partition tPart) {
+      public PPart(Table table, Partition partiton) {
         this.table = table;
-        this.tPart = tPart;
+        partition = partiton;
       }
 
       @Override
@@ -184,18 +189,24 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
 
       @Override
       public Map<String, String> getPartParameters() {
-        return tPart.getParameters();
+        return partition.getTPartition().getParameters();
       }
 
       @Override
       public StorageDescriptor getPartSd() {
-        return tPart.getSd();
+        return partition.getTPartition().getSd();
       }
 
       @Override
       public Object getOutput() throws HiveException {
-        return new Partition(table, tPart);
+        return new Partition(table, partition.getTPartition());
       }
+
+      @Override
+      public Partition getPartition() {
+        return partition;
+      }
+
     }
 
     public boolean isAcid() {
@@ -209,6 +220,8 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     public abstract StorageDescriptor getPartSd();
 
     public abstract Object getOutput() throws HiveException;
+
+    public abstract Partition getPartition();
   }
 
   private class BasicStatsProcessor {
@@ -246,6 +259,9 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       if (!existStats(parameters) && atomic) {
         return null;
       }
+      if(partfileStatus == null){
+        return null;
+      }
 
       // The collectable stats for the aggregator needs to be cleared.
       // For eg. if a file is being loaded, the old number of rows are not valid
@@ -258,7 +274,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       updateQuickStats(parameters, partfileStatus);
       if (StatsSetupConst.areBasicStatsUptoDate(parameters)) {
         if (statsAggregator != null) {
-          String prefix = getAggregationPrefix(table, null);
+          String prefix = getAggregationPrefix(table, p.getPartition());
           updateStats(statsAggregator, parameters, prefix, atomic);
         }
         // write table stats to metastore
@@ -289,6 +305,9 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     int ret = 0;
     StatsCollectionContext scc = null;
     EnvironmentContext environmentContext = null;
+    environmentContext = new EnvironmentContext();
+    environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
+
     try {
       // Stats setup:
       final Warehouse wh = new Warehouse(conf);
@@ -319,10 +338,12 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         basicStatsProcessor.collectFileStatus(wh);
         Object res = basicStatsProcessor.process(statsAggregator, atomic, wh);
 
-        environmentContext = new EnvironmentContext();
-        environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED,
-            StatsSetupConst.TASK);
-
+//        environmentContext = new EnvironmentContext();
+//        environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED,
+//            StatsSetupConst.TASK);
+        if (res == null) {
+          return 0;
+        }
         getHive().alterTable(tableFullName, (Table) res, environmentContext);
 
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
@@ -354,7 +375,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         try {
           for(final Partition partn : partitions) {
             Partish p;
-            BasicStatsProcessor bsp = new BasicStatsProcessor(p = new Partish.PPart(table, partn.getTPartition()));
+            BasicStatsProcessor bsp = new BasicStatsProcessor(p = new Partish.PPart(table, partn));
             processors.add(bsp);
 
             // final String partitionName = partn.getName();
@@ -401,9 +422,14 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
 
         for (BasicStatsProcessor basicStatsProcessor : processors) {
           Object res = basicStatsProcessor.process(statsAggregator, atomic, wh);
-          if (res != null) {
-            updates.add((Partition) res);
+          if (res == null) {
+            continue;
           }
+          updates.add((Partition) res);
+          if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
+            console.printInfo("Partition " + tableFullName + "partn.getSpec()" + " stats: [" + toString(basicStatsProcessor.partish.getPartParameters()) + ']');
+          }
+          LOG.info("Partition " + tableFullName + "partn.getSpec()" + " stats: [" + toString(basicStatsProcessor.partish.getPartParameters()) + ']');
         }
         if (false) {
           for (Partition partn : partitions) {
@@ -451,17 +477,11 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
             }
             updates.add(new Partition(table, tPart));
 
-            if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
-              console.printInfo("Partition " + tableFullName + partn.getSpec() +
-              " stats: [" + toString(parameters) + ']');
-            }
-            LOG.info("Partition " + tableFullName + partn.getSpec() +
-                " stats: [" + toString(parameters) + ']');
           }
         }
         if (!updates.isEmpty()) {
-          environmentContext = new EnvironmentContext();
-          environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
+//          environmentContext = new EnvironmentContext();
+//          environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
 
           db.alterPartitions(tableFullName, updates, environmentContext);
         }
