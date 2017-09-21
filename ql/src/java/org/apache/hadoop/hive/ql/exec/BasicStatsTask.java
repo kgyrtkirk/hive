@@ -168,7 +168,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         Map<String, String> parameters = tTable.getParameters();
         // In the following scenarios, we need to reset the stats to true.
         // work.getTableSpecs() != null means analyze command
-        // work.getLoadTableDesc().getReplace() is true means insert overwrite command 
+        // work.getLoadTableDesc().getReplace() is true means insert overwrite command
         // work.getLoadFileDesc().getDestinationCreateTable().isEmpty() means CTAS etc.
         // acidTable will not have accurate stats unless it is set through analyze command.
         if (work.getTableSpecs() == null && AcidUtils.isAcidTable(table)) {
@@ -353,7 +353,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       throws MetaException {
 
     // prefix is of the form dbName.tblName
-    String prefix = table.getDbName() + "." + MetaStoreUtils.encodeTableName(table.getTableName());
+    String prefix = table.getDbName() + "." + org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(table.getTableName());
     if (partition != null) {
       return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
     }
