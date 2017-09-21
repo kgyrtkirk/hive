@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.stats.ColumnStatisticsObjTranslator;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -86,8 +87,10 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
   private List<ColumnStatistics> constructColumnStatsFromPackedRows(Hive db) throws HiveException,
       MetaException, IOException {
 
-    String currentDb = SessionState.get().getCurrentDatabase();
-    String tableName = work.getColStats().getTableName();
+    String[] names = Utilities.getDbTableName(SessionState.get().getCurrentDatabase(), work.getColStats().getTableName());
+
+    String currentDb = names[0];
+    String tableName = names[1];
     String partName = null;
     List<String> colName = work.getColStats().getColName();
     List<String> colType = work.getColStats().getColType();
@@ -139,8 +142,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         }
         partName = Warehouse.makePartName(partColSchema, partVals);
       }
-      assert !tableName.contains(".");
-      ColumnStatisticsDesc statsDesc = getColumnStatsDesc(currentDb, tableName, partName, isTblLevel);
+      ColumnStatisticsDesc statsDesc = buildColumnStatsDesc(tbl, partName, isTblLevel);
       ColumnStatistics colStats = new ColumnStatistics();
       colStats.setStatsDesc(statsDesc);
       colStats.setStatsObj(statsObjs);
@@ -152,8 +154,14 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     return stats;
   }
 
+  private ColumnStatisticsDesc buildColumnStatsDesc(Table table, String partName, boolean isTblLevel) {
+    return getColumnStatsDesc(table.getDbName(), table.getTableName(), partName, isTblLevel);
+  }
+
+  @Deprecated
   private ColumnStatisticsDesc getColumnStatsDesc(String dbName, String tableName, String partName,
       boolean isTblLevel) {
+    assert dbName != null;
     ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
     statsDesc.setDbName(dbName);
     statsDesc.setTableName(tableName);
