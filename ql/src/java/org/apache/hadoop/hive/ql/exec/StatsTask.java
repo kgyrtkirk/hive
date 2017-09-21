@@ -196,7 +196,10 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
       return 0;
     }
+    return execute1(driverContext);
+  }
 
+  public int execute1(DriverContext driverContext) {
     // TODO: merge BasicStatsWork and BasicStatsNoJobWork
     if (work.getBasicStatsWork() != null && work.getBasicStatsNoJobWork() != null) {
       LOG.error("Can not have both basic stats work and stats no job work!");
