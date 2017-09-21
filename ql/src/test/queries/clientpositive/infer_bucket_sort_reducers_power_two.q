@@ -1,4 +1,3 @@
-set hive.stats.column.autogather=false;
 set hive.mapred.mode=nonstrict;
 set hive.exec.infer.bucket.sort=true;
 set hive.exec.infer.bucket.sort.num.buckets.power.two=true;

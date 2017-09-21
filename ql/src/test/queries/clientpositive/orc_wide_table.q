@@ -1,5 +1,4 @@
 set hive.mapred.mode=nonstrict;
-set hive.stats.column.autogather=false;
 drop table if exists test_txt;
 drop table if exists test_orc;
 create table test_txt(

@@ -1,5 +1,4 @@
 set hive.fetch.task.conversion=more;
-set hive.stats.column.autogather=false;
 
 -- test for NaN (not-a-number)
 create table tstTbl1(n double);

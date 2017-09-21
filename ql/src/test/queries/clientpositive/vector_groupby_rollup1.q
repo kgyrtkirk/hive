@@ -1,4 +1,3 @@
-set hive.stats.column.autogather=false;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 SET hive.vectorized.execution.reduce.enabled=true;

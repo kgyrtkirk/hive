@@ -1,5 +1,3 @@
--- tid is flaky when compute column stats
-set hive.stats.column.autogather=false;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 drop table if exists hello_acid;

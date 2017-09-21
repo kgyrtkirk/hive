@@ -1,5 +1,4 @@
 -- SORT_QUERY_RESULTS;
-set hive.stats.column.autogather=false;
 
 -- we're setting this so that TestNegaiveCliDriver.vm doesn't stop processing after ALTER TABLE fails;
 

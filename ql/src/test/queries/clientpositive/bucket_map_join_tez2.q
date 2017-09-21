@@ -1,4 +1,3 @@
-set hive.stats.column.autogather=false;
 set hive.strict.checks.bucketing=false;
 
 set hive.mapred.mode=nonstrict;
