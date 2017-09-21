@@ -138,6 +138,10 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     return "STATS";
   }
 
+  static class Partish {
+
+  }
+
   private int aggregateStats(Hive db) {
 
     StatsAggregator statsAggregator = null;
@@ -163,6 +167,8 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       boolean atomic = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_ATOMIC);
 
       String tableFullName = table.getDbName() + "." + table.getTableName();
+
+      List<Partish> partishes = new ArrayList<>();
 
       if (partitions == null) {
         org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
@@ -295,6 +301,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
           }
           //only when the stats exist, it is added to fileStatusMap
           if (!fileStatusMap.containsKey(partn.getName())) {
+            // probability: 0
             continue;
           }
 
