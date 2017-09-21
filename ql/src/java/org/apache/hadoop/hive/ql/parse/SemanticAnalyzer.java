@@ -953,11 +953,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (firstRow) {
             fields.add(new FieldSchema("tmp_values_col" + nextColNum++, "string", ""));
           }
-          if (isFirst) {
-            isFirst = false;
-          } else {
-            writeAsText("\u0001", out);
-          }
+          if (isFirst) isFirst = false;
+          else writeAsText("\u0001", out);
           writeAsText(unparseExprForValuesClause(value), out);
         }
         writeAsText("\n", out);
@@ -975,7 +972,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       table.setStoredAsSubDirectories(false);
       table.setInputFormatClass(format.getInputFormat());
       table.setOutputFormatClass(format.getOutputFormat());
-      StatsSetupConst.setBasicStatsState(table.getParameters(), StatsSetupConst.FALSE);
       db.createTable(table, false);
     } catch (Exception e) {
       String errMsg = ErrorMsg.INSERT_CANNOT_CREATE_TEMP_FILE.getMsg() + e.getMessage();
@@ -1472,9 +1468,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
 
-        if ((ast.getChild(posn).getChild(0).getType() == HiveParser.TOK_TRANSFORM)) {
+        if ((ast.getChild(posn).getChild(0).getType() == HiveParser.TOK_TRANSFORM))
           queryProperties.setUsesScript(true);
-        }
 
         LinkedHashMap<String, ASTNode> aggregations = doPhase1GetAggregationsFromSelect(ast,
             qb, ctx_1.dest);
@@ -1486,9 +1481,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       case HiveParser.TOK_WHERE:
         qbp.setWhrExprForClause(ctx_1.dest, ast);
-        if (!SubQueryUtils.findSubQueries((ASTNode) ast.getChild(0)).isEmpty()) {
-          queryProperties.setFilterWithSubQuery(true);
-        }
+        if (!SubQueryUtils.findSubQueries((ASTNode) ast.getChild(0)).isEmpty())
+            queryProperties.setFilterWithSubQuery(true);
         break;
 
       case HiveParser.TOK_INSERT_INTO:
@@ -8291,9 +8285,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (reduceKeys.size() == 0) {
       numReds = 1;
       String error = StrictChecks.checkCartesian(conf);
-      if (error != null) {
-        throw new SemanticException(error);
-      }
+      if (error != null) throw new SemanticException(error);
     }
 
     ReduceSinkDesc rsDesc = PlanUtils.getReduceSinkDesc(reduceKeys,
@@ -9070,16 +9062,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *  2. TableName, ColumnName, Target-TableName
    *  */
   private Map<String, List<SemiJoinHint>> parseSemiJoinHint(List<ASTNode> hints) throws SemanticException {
-    if (hints == null || hints.size() == 0) {
-      return null;
-    }
+    if (hints == null || hints.size() == 0) return null;
     Map<String, List<SemiJoinHint>> result = null;
     for (ASTNode hintNode : hints) {
       for (Node node : hintNode.getChildren()) {
         ASTNode hint = (ASTNode) node;
-        if (hint.getChild(0).getType() != HintParser.TOK_LEFTSEMIJOIN) {
-          continue;
-        }
+        if (hint.getChild(0).getType() != HintParser.TOK_LEFTSEMIJOIN) continue;
         if (result == null) {
           result = new HashMap<>();
         }
@@ -9154,15 +9142,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   private boolean disableMapJoinWithHint(List<ASTNode> hints) throws SemanticException {
-    if (hints == null || hints.size() == 0) {
-      return false;
-    }
+    if (hints == null || hints.size() == 0) return false;
     for (ASTNode hintNode : hints) {
       for (Node node : hintNode.getChildren()) {
         ASTNode hint = (ASTNode) node;
-        if (hint.getChild(0).getType() != HintParser.TOK_MAPJOIN) {
-          continue;
-        }
+        if (hint.getChild(0).getType() != HintParser.TOK_MAPJOIN) continue;
         Tree args = hint.getChild(1);
         if (args.getChildCount() == 1) {
           String text = args.getChild(0).getText();
@@ -11273,17 +11257,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           continue;
         }
         ASTNode n = (ASTNode) ((ASTNode) child).getFirstChildWithType(HiveParser.TOK_INSERT_INTO);
-        if (n == null) {
-          continue;
-        }
+        if (n == null) continue;
         n = (ASTNode) n.getFirstChildWithType(HiveParser.TOK_TAB);
-        if (n == null) {
-          continue;
-        }
+        if (n == null) continue;
         n = (ASTNode) n.getFirstChildWithType(HiveParser.TOK_TABNAME);
-        if (n == null) {
-          continue;
-        }
+        if (n == null) continue;
         String[] dbTab = getQualifiedTableName(n);
         Table t = db.getTable(dbTab[0], dbTab[1]);
         Path tablePath = t.getPath();
@@ -13642,12 +13620,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Don't know the characteristics of non-native tables,
     // and don't have a rational way to guess, so assume the most
     // conservative case.
-    if (isNonNativeTable) {
-      return WriteEntity.WriteType.INSERT_OVERWRITE;
-    } else {
-      return (ltd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE :
-        getWriteType(dest));
-    }
+    if (isNonNativeTable) return WriteEntity.WriteType.INSERT_OVERWRITE;
+    else return (ltd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE :
+      getWriteType(dest));
   }
 
   private WriteEntity.WriteType getWriteType(String dest) {
