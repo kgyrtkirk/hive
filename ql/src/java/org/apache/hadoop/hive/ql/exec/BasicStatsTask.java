@@ -236,10 +236,10 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         // The collectable stats for the aggregator needs to be cleared.
         // For eg. if a file is being loaded, the old number of rows are not valid
         // XXX: makes no sense for me... possibly not needed anymore
-        // if (work.isClearAggregatorStats()) {
-        // // we choose to keep the invalid stats and only change the setting.
-        // StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
-        // }
+        if (work.isClearAggregatorStats()) {
+          // we choose to keep the invalid stats and only change the setting.
+          StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
+        }
 
         updateQuickStats(parameters, wh.getFileStatusesForSD(p.getPartSd()));
         if (StatsSetupConst.areBasicStatsUptoDate(parameters)) {
@@ -357,7 +357,6 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
               updateStats(statsAggregator, parameters, prefix, atomic);
             }
             if (!getWork().getNoStatsAggregator()) {
-              // tricky no-op call...
               environmentContext = new EnvironmentContext();
               environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED,
                   StatsSetupConst.TASK);
