@@ -161,6 +161,11 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       public StorageDescriptor getPartSd() {
         return table.getTTable().getSd();
       }
+
+      @Override
+      public Object getOutput() throws HiveException {
+        return new Table(getTable().getTTable());
+      }
     }
 
     static class PPart extends Partish {
@@ -186,6 +191,11 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       public StorageDescriptor getPartSd() {
         return tPart.getSd();
       }
+
+      @Override
+      public Object getOutput() throws HiveException {
+        return new Partition(table, tPart);
+      }
     }
 
     public boolean isAcid() {
@@ -198,7 +208,80 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
 
     public abstract StorageDescriptor getPartSd();
 
+    public abstract Object getOutput() throws HiveException;
   }
+
+  private class BasicStatsProcessor {
+
+    private Partish partish;
+    private FileStatus[] partfileStatus;
+
+    public BasicStatsProcessor(Partish partish) {
+      this.partish = partish;
+    }
+
+    public Object process(StatsAggregator statsAggregator, boolean atomic, Warehouse wh) throws HiveException, MetaException {
+      Partish p = partish;
+      // org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
+      Map<String, String> parameters = p.getPartParameters();
+      // tTable.getParameters();
+      if (p.isAcid()) {
+        StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
+      }
+
+      if (work.isTargetRewritten()) {
+        StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
+      }
+
+      // work.getTableSpecs() == null means it is not analyze command
+      // and then if it is not followed by column stats, we should clean
+      // column stats
+      // XXX: move this to ColStat related part
+      if (!work.isExplicitAnalyze() && !followedColStats) {
+        StatsSetupConst.clearColumnStatsState(parameters);
+      }
+      // non-partitioned tables:
+      // XXX: I don't aggree with this logic
+      // FIXME: deprecate atomic? what's its purpose?
+      if (!existStats(parameters) && atomic) {
+        return null;
+      }
+
+      // The collectable stats for the aggregator needs to be cleared.
+      // For eg. if a file is being loaded, the old number of rows are not valid
+      // XXX: makes no sense for me... possibly not needed anymore
+      if (work.isClearAggregatorStats()) {
+        // we choose to keep the invalid stats and only change the setting.
+        StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
+      }
+
+      updateQuickStats(parameters, partfileStatus);
+      if (StatsSetupConst.areBasicStatsUptoDate(parameters)) {
+        if (statsAggregator != null) {
+          String prefix = getAggregationPrefix(table, null);
+          updateStats(statsAggregator, parameters, prefix, atomic);
+        }
+        // write table stats to metastore
+        if (!getWork().getNoStatsAggregator()) {
+          // FIXME: this seems meaningless...
+          // instead of this; disabling the MS side statscollector would seem to be a better idea
+          // since we'just collected it...
+          // environmentContext = new EnvironmentContext();
+          // environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED,
+          // StatsSetupConst.TASK);
+
+        }
+      }
+
+      return p.getOutput();
+    }
+
+    public void collectFileStatus(Warehouse wh) throws MetaException {
+      partfileStatus = wh.getFileStatusesForSD(partish.getPartSd());
+    }
+
+  }
+
 
   private int aggregateStats(Hive db) {
 
@@ -232,67 +315,27 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         Partish p;
         partishes.add(p = new Partish.PTable(table));
 
-        // org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
-        Map<String, String> parameters = p.getPartParameters();
-        // tTable.getParameters();
+        BasicStatsProcessor basicStatsProcessor = new BasicStatsProcessor(p);
+        basicStatsProcessor.collectFileStatus(wh);
+        Object res = basicStatsProcessor.process(statsAggregator, atomic, wh);
 
-        if (p.isAcid()) {
-          StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
-        }
+        environmentContext = new EnvironmentContext();
+        environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED,
+            StatsSetupConst.TASK);
 
-        if (work.isTargetRewritten()) {
-          StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
-        }
+        getHive().alterTable(tableFullName, (Table) res, environmentContext);
 
-        // work.getTableSpecs() == null means it is not analyze command
-        // and then if it is not followed by column stats, we should clean
-        // column stats
-        // XXX: move this to ColStat related part
-        if (!work.isExplicitAnalyze() && !followedColStats) {
-          StatsSetupConst.clearColumnStatsState(parameters);
-        }
-        // non-partitioned tables:
-        // XXX: I don't aggree with this logic
-        // FIXME: deprecate atomic? what's its purpose?
-        if (!existStats(parameters) && atomic) {
-          return 0;
-        }
-
-        // The collectable stats for the aggregator needs to be cleared.
-        // For eg. if a file is being loaded, the old number of rows are not valid
-        // XXX: makes no sense for me... possibly not needed anymore
-        if (work.isClearAggregatorStats()) {
-          // we choose to keep the invalid stats and only change the setting.
-          StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
-        }
-
-        updateQuickStats(parameters, wh.getFileStatusesForSD(p.getPartSd()));
-        if (StatsSetupConst.areBasicStatsUptoDate(parameters)) {
-          if (statsAggregator != null) {
-            String prefix = getAggregationPrefix(table, null);
-            updateStats(statsAggregator, parameters, prefix, atomic);
-          }
-          // write table stats to metastore
-          if (!getWork().getNoStatsAggregator()) {
-            // FIXME: this seems meaningless...
-            // instead of this; disabling the MS side statscollector would seem to be a better idea
-            // since we'just collected it...
-            environmentContext = new EnvironmentContext();
-            environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED,
-                StatsSetupConst.TASK);
-          }
-        }
-
-        // FIXME: not sure why this Table is recreated...maybe there is a reason for it
-        getHive().alterTable(tableFullName, new Table(p.getTable().getTTable()), environmentContext);
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
-          console.printInfo("Table " + tableFullName + " stats: [" + toString(parameters) + ']');
+
+          console.printInfo("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
         }
-        LOG.info("Table " + tableFullName + " stats: [" + toString(parameters) + ']');
+        LOG.info("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
+
       } else {
         // Partitioned table:
         // Need to get the old stats of the partition
         // and update the table stats based on the old and new stats.
+
         List<Partition> updates = new ArrayList<Partition>();
 
         //Get the file status up-front for all partitions. Beneficial in cases of blob storage systems
@@ -305,30 +348,38 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
             .setNameFormat("stats-updater-thread-%d")
             .build());
         final List<Future<Void>> futures = Lists.newLinkedList();
+        List<BasicStatsProcessor> processors = Lists.newLinkedList();
+
         LOG.debug("Getting file stats of all partitions. threadpool size:" + poolSize);
         try {
           for(final Partition partn : partitions) {
-            final String partitionName = partn.getName();
-            final org.apache.hadoop.hive.metastore.api.Partition tPart = partn.getTPartition();
             Partish p;
-            partishes.add(p = new Partish.PPart(table, partn.getTPartition()));
+            BasicStatsProcessor bsp = new BasicStatsProcessor(p = new Partish.PPart(table, partn.getTPartition()));
+            processors.add(bsp);
 
-            Map<String, String> parameters = tPart.getParameters();
+            // final String partitionName = partn.getName();
+            // final org.apache.hadoop.hive.metastore.api.Partition tPart = partn.getTPartition();
+            // Partish p;
+            // partishes.add(p = new Partish.PPart(table, partn.getTPartition()));
 
-            if (!existStats(parameters) && atomic) {
+            // Map<String, String> parameters = tPart.getParameters();
+
+            if (!existStats(p.getPartParameters()) && atomic) {
               continue;
             }
+            // return new BasicStatsProcessor(new Partish.PPart(table,
+            // partn.getTPartition())).process(statsAggregator, atomic, wh);
+
             futures.add(pool.submit(new Callable<Void>() {
               @Override
               public Void call() throws Exception {
-                FileStatus[] partfileStatus = wh.getFileStatusesForSD(p.getPartSd());
-                fileStatusMap.put(partitionName,  partfileStatus);
+                bsp.collectFileStatus(wh);
                 return null;
               }
             }));
           }
           pool.shutdown();
-          for(Future<Void> future : futures) {
+          for (Future<Void> future : futures) {
             future.get();
           }
         } catch (InterruptedException e) {
@@ -348,59 +399,70 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
           LOG.debug("Finished getting file stats of all partitions");
         }
 
-        for (Partition partn : partitions) {
-          //
-          // get the old partition stats
-          //
-          org.apache.hadoop.hive.metastore.api.Partition tPart = partn.getTPartition();
-          Map<String, String> parameters = tPart.getParameters();
-          if (work.getTableSpecs() == null && AcidUtils.isAcidTable(table)) {
-            StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
+        for (BasicStatsProcessor basicStatsProcessor : processors) {
+          Object res = basicStatsProcessor.process(statsAggregator, atomic, wh);
+          if (res != null) {
+            updates.add((Partition) res);
           }
-          if (work.isTargetRewritten()) {
-            StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
-          }
-
-          // work.getTableSpecs() == null means it is not analyze command
-          // and then if it is not followed by column stats, we should clean
-          // column stats
-          if (work.getTableSpecs() == null && !followedColStats) {
-            StatsSetupConst.clearColumnStatsState(parameters);
-          }
-          //only when the stats exist, it is added to fileStatusMap
-          if (!fileStatusMap.containsKey(partn.getName())) {
-            continue;
-          }
-
-          // The collectable stats for the aggregator needs to be cleared.
-          // For eg. if a file is being loaded, the old number of rows are not valid
-          if (work.isClearAggregatorStats()) {
-            // we choose to keep the invalid stats and only change the setting.
-            StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
-          }
-
-          updateQuickStats(parameters, fileStatusMap.get(partn.getName()));
-          if (StatsSetupConst.areBasicStatsUptoDate(parameters)) {
-            if (statsAggregator != null) {
-              String prefix = getAggregationPrefix(table, partn);
-              updateStats(statsAggregator, parameters, prefix, atomic);
+        }
+        if (false) {
+          for (Partition partn : partitions) {
+            //
+            // get the old partition stats
+            //
+            org.apache.hadoop.hive.metastore.api.Partition tPart = partn.getTPartition();
+            Map<String, String> parameters = tPart.getParameters();
+            if (work.getTableSpecs() == null && AcidUtils.isAcidTable(table)) {
+              StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
             }
-            if (!getWork().getNoStatsAggregator()) {
-              environmentContext = new EnvironmentContext();
-              environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED,
-                  StatsSetupConst.TASK);
+            if (work.isTargetRewritten()) {
+              StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
             }
-          }
-          updates.add(new Partition(table, tPart));
 
-          if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
-            console.printInfo("Partition " + tableFullName + partn.getSpec() +
-            " stats: [" + toString(parameters) + ']');
-          }
-          LOG.info("Partition " + tableFullName + partn.getSpec() +
+            // work.getTableSpecs() == null means it is not analyze command
+            // and then if it is not followed by column stats, we should clean
+            // column stats
+            if (work.getTableSpecs() == null && !followedColStats) {
+              StatsSetupConst.clearColumnStatsState(parameters);
+            }
+            //only when the stats exist, it is added to fileStatusMap
+            if (!fileStatusMap.containsKey(partn.getName())) {
+              continue;
+            }
+
+            // The collectable stats for the aggregator needs to be cleared.
+            // For eg. if a file is being loaded, the old number of rows are not valid
+            if (work.isClearAggregatorStats()) {
+              // we choose to keep the invalid stats and only change the setting.
+              StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
+            }
+
+            updateQuickStats(parameters, fileStatusMap.get(partn.getName()));
+            if (StatsSetupConst.areBasicStatsUptoDate(parameters)) {
+              if (statsAggregator != null) {
+                String prefix = getAggregationPrefix(table, partn);
+                updateStats(statsAggregator, parameters, prefix, atomic);
+              }
+              if (!getWork().getNoStatsAggregator()) {
+                environmentContext = new EnvironmentContext();
+                environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED,
+                    StatsSetupConst.TASK);
+              }
+            }
+            updates.add(new Partition(table, tPart));
+
+            if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
+              console.printInfo("Partition " + tableFullName + partn.getSpec() +
               " stats: [" + toString(parameters) + ']');
+            }
+            LOG.info("Partition " + tableFullName + partn.getSpec() +
+                " stats: [" + toString(parameters) + ']');
+          }
         }
         if (!updates.isEmpty()) {
+          environmentContext = new EnvironmentContext();
+          environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
+
           db.alterPartitions(tableFullName, updates, environmentContext);
         }
       }
