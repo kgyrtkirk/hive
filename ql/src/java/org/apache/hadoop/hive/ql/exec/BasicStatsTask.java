@@ -138,7 +138,40 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     return "STATS";
   }
 
-  static class Partish {
+  static abstract class Partish {
+
+    static class PTable extends Partish {
+      private Table table;
+
+      public PTable(Table table) {
+        this.table = table;
+      }
+
+      @Override
+      public Table getTable() {
+        return table;
+      }
+
+      @Override
+      public Map<String, String> getPartParameters() {
+        return table.getTTable().getParameters();
+      }
+
+      @Override
+      public StorageDescriptor getPartSd() {
+        return table.getTTable().getSd();
+      }
+    }
+
+    public boolean isAcid() {
+      return AcidUtils.isAcidTable(getTable());
+    }
+
+    public abstract Table getTable();
+
+    public abstract Map<String, String> getPartParameters();
+
+    public abstract StorageDescriptor getPartSd();
 
   }
 
@@ -171,28 +204,31 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       List<Partish> partishes = new ArrayList<>();
 
       if (partitions == null) {
-        org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
-        Map<String, String> parameters = tTable.getParameters();
-        // In the following scenarios, we need to reset the stats to true.
-        // work.getTableSpecs() != null means analyze command
-        // work.getLoadTableDesc().getReplace() is true means insert overwrite command
-        // work.getLoadFileDesc().getDestinationCreateTable().isEmpty() means CTAS etc.
-        // acidTable will not have accurate stats unless it is set through analyze command.
-        if (work.getTableSpecs() == null && AcidUtils.isAcidTable(table)) {
+        Partish p;
+        partishes.add(p = new Partish.PTable(table));
+
+        // org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
+        Map<String, String> parameters = p.getPartParameters();
+        // tTable.getParameters();
+
+        if (p.isAcid()) {
           StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
-        } else if (work.getTableSpecs() != null
-            || (work.getLoadTableDesc() != null && work.getLoadTableDesc().getReplace())
-            || (work.getLoadFileDesc() != null && !work.getLoadFileDesc()
-                .getDestinationCreateTable().isEmpty())) {
+        }
+
+        if (work.isTargetRewritten()) {
           StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
         }
+
         // work.getTableSpecs() == null means it is not analyze command
         // and then if it is not followed by column stats, we should clean
         // column stats
-        if (work.getTableSpecs() == null && !followedColStats) {
+        // XXX: move this to Col related part
+        if (!work.isExplicitAnalyze() && !followedColStats) {
           StatsSetupConst.clearColumnStatsState(parameters);
         }
         // non-partitioned tables:
+        // XXX: I don't aggree with this logic
+        // FIXME: deprecate atomic
         if (!existStats(parameters) && atomic) {
           return 0;
         }
@@ -204,7 +240,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
           StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
         }
 
-        updateQuickStats(wh, parameters, tTable.getSd());
+        updateQuickStats(wh, parameters, p.getPartSd());
         if (StatsSetupConst.areBasicStatsUptoDate(parameters)) {
           if (statsAggregator != null) {
             String prefix = getAggregationPrefix(table, null);
@@ -218,7 +254,8 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
           }
         }
 
-        getHive().alterTable(tableFullName, new Table(tTable), environmentContext);
+        // FIXME: not sure why this Table is recreated...maybe there is a reason for it
+        getHive().alterTable(tableFullName, new Table(p.getTable().getTTable()), environmentContext);
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
           console.printInfo("Table " + tableFullName + " stats: [" + toString(parameters) + ']');
         }
@@ -319,6 +356,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
               updateStats(statsAggregator, parameters, prefix, atomic);
             }
             if (!getWork().getNoStatsAggregator()) {
+              // tricky no-op call...
               environmentContext = new EnvironmentContext();
               environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED,
                   StatsSetupConst.TASK);

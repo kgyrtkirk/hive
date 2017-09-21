@@ -177,4 +177,24 @@ public class BasicStatsWork implements Serializable {
     this.isFollowedByColStats = isFollowedByColStats;
   }
 
+  public boolean isExplicitAnalyze() {
+    // ANALYZE TABLE
+    return (getTableSpecs() != null);
+  }
+  public boolean isTargetRewritten() {
+    // ANALYZE TABLE
+    if (isExplicitAnalyze()) {
+      return true;
+    }
+    // INSERT OVERWRITE
+    if (getLoadTableDesc() != null && getLoadTableDesc().getReplace()) {
+      return true;
+    }
+    // CREATE TABLE ... AS
+    if (getLoadFileDesc() != null && !getLoadFileDesc().getDestinationCreateTable().isEmpty()) {
+      return true;
+    }
+    return false;
+  }
+
 }
