@@ -139,8 +139,8 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         }
         partName = Warehouse.makePartName(partColSchema, partVals);
       }
-      String[] names = Utilities.getDbTableName(currentDb, tableName);
-      ColumnStatisticsDesc statsDesc = getColumnStatsDesc(names[0], names[1], partName, isTblLevel);
+      assert !tableName.contains(".");
+      ColumnStatisticsDesc statsDesc = getColumnStatsDesc(currentDb, tableName, partName, isTblLevel);
       ColumnStatistics colStats = new ColumnStatistics();
       colStats.setStatsDesc(statsDesc);
       colStats.setStatsObj(statsObjs);
