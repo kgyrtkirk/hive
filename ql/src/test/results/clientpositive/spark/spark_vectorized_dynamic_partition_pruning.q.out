@@ -1396,7 +1396,7 @@ STAGE PLANS:
                   filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -1461,7 +1461,7 @@ STAGE PLANS:
                   filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -1571,7 +1571,7 @@ STAGE PLANS:
                   filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -2747,7 +2747,7 @@ STAGE PLANS:
                   filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -2845,7 +2845,7 @@ STAGE PLANS:
                   filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -2910,7 +2910,7 @@ STAGE PLANS:
                   filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -5017,7 +5017,7 @@ STAGE PLANS:
                   filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)

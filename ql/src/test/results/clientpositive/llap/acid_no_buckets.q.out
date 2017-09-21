@@ -166,6 +166,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.srcpart_acid
+          Write Type: UPDATE
 
   Stage: Stage-3
     Stats Work
@@ -345,6 +346,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.srcpart_acid
+          Write Type: DELETE
 
   Stage: Stage-3
     Stats Work
@@ -662,6 +664,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.srcpart_acidb
+          Write Type: UPDATE
 
   Stage: Stage-3
     Stats Work
@@ -842,6 +845,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.srcpart_acidb
+          Write Type: DELETE
 
   Stage: Stage-3
     Stats Work
@@ -1158,6 +1162,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.srcpart_acidv
+          Write Type: UPDATE
 
   Stage: Stage-3
     Stats Work
@@ -1337,6 +1342,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.srcpart_acidv
+          Write Type: DELETE
 
   Stage: Stage-3
     Stats Work
@@ -1654,6 +1660,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.srcpart_acidvb
+          Write Type: UPDATE
 
   Stage: Stage-3
     Stats Work
@@ -1834,6 +1841,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.srcpart_acidvb
+          Write Type: DELETE
 
   Stage: Stage-3
     Stats Work
