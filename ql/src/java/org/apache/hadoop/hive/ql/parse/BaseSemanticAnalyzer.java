@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
+import org.apache.hadoop.hive.ql.plan.PartitionAware;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -89,6 +90,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.spark_project.guava.collect.Lists;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -1096,7 +1098,7 @@ public abstract class BaseSemanticAnalyzer {
    * TableSpec.
    *
    */
-  public static class TableSpec {
+  public static class TableSpec implements PartitionAware {
     public String tableName;
     public Table tableHandle;
     public Map<String, String> partSpec; // has to use LinkedHashMap to enforce order
@@ -1288,6 +1290,19 @@ public abstract class BaseSemanticAnalyzer {
       } else {
         return tableHandle.toString();
       }
+    }
+
+    @Override
+    public List<Partition> getPartitions() {
+      ArrayList<Partition> list = Lists.newArrayList();
+      if (!tableHandle.isPartitioned()) {
+        return null;
+      }
+      List<Partition> partitions = this.partitions;
+      if (partitions != null) {
+        list.addAll(partitions);
+      }
+      return list;
     }
   }
 
@@ -1726,7 +1741,10 @@ public abstract class BaseSemanticAnalyzer {
   @VisibleForTesting
   static void normalizeColSpec(Map<String, String> partSpec, String colName,
       String colType, String originalColSpec, Object colValue) throws SemanticException {
-    if (colValue == null) return; // nothing to do with nulls
+    if (colValue == null)
+     {
+      return; // nothing to do with nulls
+    }
     String normalizedColSpec = originalColSpec;
     if (colType.equals(serdeConstants.DATE_TYPE_NAME)) {
       normalizedColSpec = normalizeDateCol(colValue, originalColSpec);

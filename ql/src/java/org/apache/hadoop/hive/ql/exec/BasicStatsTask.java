@@ -345,7 +345,6 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         getHive().alterTable(tableFullName, (Table) res, environmentContext);
 
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
-
           console.printInfo("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
         }
         LOG.info("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
