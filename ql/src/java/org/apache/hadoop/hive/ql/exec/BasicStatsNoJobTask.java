@@ -159,7 +159,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
             InputFormat<?, ?> inputFormat = ReflectionUtil.newInstance(
                 partish.getInputFormatClass(), jc);
             InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0,
-                new String[] { partn.getLocation() });
+                new String[] { partish.getLocation() });
             org.apache.hadoop.mapred.RecordReader<?, ?> recordReader =
                 inputFormat.getRecordReader(dummySplit, jc, Reporter.NULL);
             StatsProvidingRecordReader statsRR;

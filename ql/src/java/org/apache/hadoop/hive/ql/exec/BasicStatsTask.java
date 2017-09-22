@@ -195,6 +195,12 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       public Class<? extends OutputFormat> getOutputFormatClass() {
         return table.getOutputFormatClass();
       }
+
+      @Override
+      public String getLocation() {
+        return table.getDataLocation().toString();
+
+      }
     }
 
     static class PPart extends Partish {
@@ -241,6 +247,11 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       public Class<? extends OutputFormat> getOutputFormatClass() throws HiveException {
         return partition.getOutputFormatClass();
       }
+
+      @Override
+      public String getLocation() {
+        return partition.getLocation();
+      }
     }
 
     public boolean isAcid() {
@@ -260,6 +271,8 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     public abstract Class<? extends InputFormat> getInputFormatClass() throws HiveException;
 
     public abstract Class<? extends OutputFormat> getOutputFormatClass() throws HiveException;
+
+    public abstract String getLocation();
   }
 
   private class BasicStatsProcessor {
