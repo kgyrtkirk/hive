@@ -204,8 +204,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
 
       @Override
       public String getSimpleName() {
-        throw new RuntimeException("UNIMPLEMENTED");
-
+        return String.format("Table %s.%s", table.getDbName(), table.getTableName());
       }
     }
 
