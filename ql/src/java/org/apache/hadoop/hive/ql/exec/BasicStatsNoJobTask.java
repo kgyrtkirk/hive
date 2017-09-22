@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.exec.BasicStatsTask.Partish;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -130,9 +131,11 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
   class StatsCollection implements Runnable {
 
     private final Partition partn;
+    private Partish partish;
 
-    public StatsCollection(Partition part) {
+    public StatsCollection(Partition part, Partish partish) {
       this.partn = part;
+      this.partish = partish;
     }
 
     @Override
@@ -140,9 +143,9 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
       // get the list of partitions
       org.apache.hadoop.hive.metastore.api.Partition tPart = partn.getTPartition();
-      Map<String, String> parameters = tPart.getParameters();
+      Map<String, String> parameters = partish.getPartParameters();
       try {
-        Path dir = new Path(tPart.getSd().getLocation());
+        Path dir = new Path(partish.getPartSd().getLocation());
         long numRows = 0;
         long rawDataSize = 0;
         long fileSize = 0;
@@ -154,7 +157,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
         for(FileStatus file: fileList) {
           if (!file.isDir()) {
             InputFormat<?, ?> inputFormat = ReflectionUtil.newInstance(
-                partn.getInputFormatClass(), jc);
+                partish.getInputFormatClass(), jc);
             InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0,
                 new String[] { partn.getLocation() });
             org.apache.hadoop.mapred.RecordReader<?, ?> recordReader =
@@ -297,7 +300,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
         // Partitioned table
         for (Partition partn : partitions) {
-          threadPool.execute(new StatsCollection(partn));
+          threadPool.execute(new StatsCollection(partn, Partish.buildFor(partn)));
         }
 
         LOG.debug("Stats collection waiting for threadpool to shutdown..");

@@ -57,6 +57,8 @@ import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
+import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -183,6 +185,16 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       public Partition getPartition() {
         return null;
       }
+
+      @Override
+      public Class<? extends InputFormat> getInputFormatClass() {
+        return table.getInputFormatClass();
+      }
+
+      @Override
+      public Class<? extends OutputFormat> getOutputFormatClass() {
+        return table.getOutputFormatClass();
+      }
     }
 
     static class PPart extends Partish {
@@ -219,6 +231,16 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       public Partition getPartition() {
         return partition;
       }
+
+      @Override
+      public Class<? extends InputFormat> getInputFormatClass() throws HiveException {
+        return partition.getInputFormatClass();
+      }
+
+      @Override
+      public Class<? extends OutputFormat> getOutputFormatClass() throws HiveException {
+        return partition.getOutputFormatClass();
+      }
     }
 
     public boolean isAcid() {
@@ -234,6 +256,10 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     public abstract Object getOutput() throws HiveException;
 
     public abstract Partition getPartition();
+
+    public abstract Class<? extends InputFormat> getInputFormatClass() throws HiveException;
+
+    public abstract Class<? extends OutputFormat> getOutputFormatClass() throws HiveException;
   }
 
   private class BasicStatsProcessor {
