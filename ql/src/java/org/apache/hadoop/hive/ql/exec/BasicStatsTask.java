@@ -201,6 +201,12 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         return table.getDataLocation().toString();
 
       }
+
+      @Override
+      public String getSimpleName() {
+        throw new RuntimeException("UNIMPLEMENTED");
+
+      }
     }
 
     static class PPart extends Partish {
@@ -252,9 +258,15 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       public String getLocation() {
         return partition.getLocation();
       }
+
+      @Override
+      public String getSimpleName() {
+        return String.format("Partition %s.%s %s", table.getDbName(), table.getTableName(), partition.getSpec());
+      }
+
     }
 
-    public boolean isAcid() {
+    public final boolean isAcid() {
       return AcidUtils.isAcidTable(getTable());
     }
 
@@ -273,6 +285,8 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     public abstract Class<? extends OutputFormat> getOutputFormatClass() throws HiveException;
 
     public abstract String getLocation();
+
+    public abstract String getSimpleName();
   }
 
   private class BasicStatsProcessor {

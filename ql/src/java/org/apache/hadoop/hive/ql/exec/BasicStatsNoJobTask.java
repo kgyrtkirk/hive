@@ -182,22 +182,21 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
           parameters.put(StatsSetupConst.TOTAL_SIZE, String.valueOf(fileSize));
           parameters.put(StatsSetupConst.NUM_FILES, String.valueOf(numFiles));
 
-          partUpdates.put(tPart.getSd().getLocation(), new Partition(table, tPart));
+          partUpdates.put(partish.getPartSd().getLocation(), new Partition(partish.getTable(), tPart));
 
           // printout console and debug logs
           String threadName = Thread.currentThread().getName();
-          String msg = "Partition " + tableFullName + partn.getSpec() + " stats: ["
-              + toString(parameters) + ']';
+          //          partish.getSimpleName();
+          String msg = partish.getSimpleName() + " stats: [" + toString(parameters) + ']';
           LOG.debug(threadName + ": " + msg);
           console.printInfo(msg);
         } else {
           String threadName = Thread.currentThread().getName();
-          String msg = "Partition " + tableFullName + partn.getSpec() + " does not provide stats.";
+          String msg = partish.getSimpleName() + " does not provide stats.";
           LOG.debug(threadName + ": " + msg);
         }
       } catch (Exception e) {
-        console.printInfo("[Warning] could not update stats for " + tableFullName + partn.getSpec()
-            + ".",
+        console.printInfo("[Warning] could not update stats for " + partish.getSimpleName() + ".",
             "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
 
         // Before updating the partition params, if any partition params is null
@@ -300,7 +299,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
         // Partitioned table
         for (Partition partn : partitions) {
-          threadPool.execute(new StatsCollection(partn, Partish.buildFor(partn)));
+          threadPool.execute(new StatsCollection(partn, Partish.buildFor(table, partn)));
         }
 
         LOG.debug("Stats collection waiting for threadpool to shutdown..");
