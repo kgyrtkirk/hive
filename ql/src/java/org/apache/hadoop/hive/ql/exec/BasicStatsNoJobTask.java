@@ -76,6 +76,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
   private static final long serialVersionUID = 1L;
   private static transient final Logger LOG = LoggerFactory.getLogger(BasicStatsNoJobTask.class);
+  @Deprecated
   private ConcurrentMap<String, Partition> partUpdates;
   private Table table;
   private String tableFullName;
@@ -132,6 +133,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
     private final Partition partn;
     private Partish partish;
+    private Object result;
 
     public StatsCollection(Partition part, Partish partish) {
       this.partn = part;
@@ -184,7 +186,11 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
           parameters.put(StatsSetupConst.TOTAL_SIZE, String.valueOf(fileSize));
           parameters.put(StatsSetupConst.NUM_FILES, String.valueOf(numFiles));
 
-          partUpdates.put(partish.getPartSd().getLocation(), new Partition(partish.getTable(), tPart));
+          if(partish.getPartition() != null ) {
+            result = new Partition(partish.getTable(), partish.getPartition().getTPartition());
+          }else {
+            result = new Table(partish.getTable().getTTable());
+          }
 
           // printout console and debug logs
           String threadName = Thread.currentThread().getName();
