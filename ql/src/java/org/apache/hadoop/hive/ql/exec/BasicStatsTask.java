@@ -138,7 +138,19 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     return "STATS";
   }
 
-  static abstract class Partish {
+  public static abstract class Partish {
+
+    public static Partish buildFor(Table table) {
+      return new PTable(table);
+    }
+
+    public static Partish buildFor(Partition part) {
+      return new PPart(part.getTable(), part);
+    }
+
+    public static Partish buildFor(Table table, Partition part) {
+      return new PPart(table, part);
+    }
 
     static class PTable extends Partish {
       private Table table;
@@ -177,6 +189,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       private Table table;
       private Partition partition;
 
+      // FIXME: possibly the distinction between table/partition is not need; however it was like this before....will change it later
       public PPart(Table table, Partition partiton) {
         this.table = table;
         partition = partiton;
@@ -206,7 +219,6 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       public Partition getPartition() {
         return partition;
       }
-
     }
 
     public boolean isAcid() {
