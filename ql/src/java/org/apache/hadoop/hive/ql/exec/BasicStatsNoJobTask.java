@@ -154,14 +154,11 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
         FileStatus[] fileList = HiveStatsUtils.getFileStatusRecurse(dir, -1, fs);
 
         boolean statsAvailable = false;
-        for(FileStatus file: fileList) {
+        for (FileStatus file : fileList) {
           if (!file.isDir()) {
-            InputFormat<?, ?> inputFormat = ReflectionUtil.newInstance(
-                partish.getInputFormatClass(), jc);
-            InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0,
-                new String[] { partish.getLocation() });
-            org.apache.hadoop.mapred.RecordReader<?, ?> recordReader =
-                inputFormat.getRecordReader(dummySplit, jc, Reporter.NULL);
+            InputFormat<?, ?> inputFormat = ReflectionUtil.newInstance(partish.getInputFormatClass(), jc);
+            InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0, new String[] { partish.getLocation() });
+            org.apache.hadoop.mapred.RecordReader<?, ?> recordReader = inputFormat.getRecordReader(dummySplit, jc, Reporter.NULL);
             StatsProvidingRecordReader statsRR;
             if (recordReader instanceof StatsProvidingRecordReader) {
               statsRR = (StatsProvidingRecordReader) recordReader;
@@ -196,8 +193,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
           LOG.debug(threadName + ": " + msg);
         }
       } catch (Exception e) {
-        console.printInfo("[Warning] could not update stats for " + partish.getSimpleName() + ".",
-            "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
+        console.printInfo("[Warning] could not update stats for " + partish.getSimpleName() + ".", "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
 
         // Before updating the partition params, if any partition params is null
         // and if statsReliable is true then updatePartition() function  will fail
