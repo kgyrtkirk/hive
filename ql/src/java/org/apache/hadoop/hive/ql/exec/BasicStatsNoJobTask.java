@@ -158,12 +158,13 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
           if (!file.isDir()) {
             InputFormat<?, ?> inputFormat = ReflectionUtil.newInstance(partish.getInputFormatClass(), jc);
             InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0, new String[] { partish.getLocation() });
-            org.apache.hadoop.mapred.RecordReader<?, ?> recordReader = inputFormat.getRecordReader(dummySplit, jc, Reporter.NULL);
-            StatsProvidingRecordReader statsRR;
             if (file.getLen() == 0) {
-              int asd = 1;
+              numFiles += 1;
+              statsAvailable = true;
             } else {
+              org.apache.hadoop.mapred.RecordReader<?, ?> recordReader = inputFormat.getRecordReader(dummySplit, jc, Reporter.NULL);
               if (recordReader instanceof StatsProvidingRecordReader) {
+                StatsProvidingRecordReader statsRR;
                 statsRR = (StatsProvidingRecordReader) recordReader;
                 rawDataSize += statsRR.getStats().getRawDataSize();
                 numRows += statsRR.getStats().getRowCount();
@@ -171,8 +172,8 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
                 numFiles += 1;
                 statsAvailable = true;
               }
+              recordReader.close();
             }
-            recordReader.close();
           }
         }
 
