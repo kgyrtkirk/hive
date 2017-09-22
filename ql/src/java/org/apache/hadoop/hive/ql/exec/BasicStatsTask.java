@@ -506,7 +506,13 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     return ret;
   }
 
-  private String getAggregationPrefix(Table table, Partition partition)
+  private String getAggregationPrefix(Table table, Partition partition) throws MetaException {
+    String prefix = getAggregationPrefix0(table, partition);
+    String aggKey = prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
+    return aggKey;
+  }
+
+  private String getAggregationPrefix0(Table table, Partition partition)
       throws MetaException {
 
     // prefix is of the form dbName.tblName
@@ -514,8 +520,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     if (partition != null) {
       return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
     }
-    String aggKey = prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
-    return aggKey;
+    return prefix;
   }
 
   private StatsAggregator createStatsAggregator(StatsCollectionContext scc, HiveConf conf) throws HiveException {
