@@ -233,11 +233,9 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       this.partish = partish;
     }
 
-    public Object process(StatsAggregator statsAggregator, boolean atomic, Warehouse wh) throws HiveException, MetaException {
+    public Object process(StatsAggregator statsAggregator, boolean atomic) throws HiveException, MetaException {
       Partish p = partish;
-      // org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
       Map<String, String> parameters = p.getPartParameters();
-      // tTable.getParameters();
       if (p.isAcid()) {
         StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
       }
@@ -336,7 +334,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
 
         BasicStatsProcessor basicStatsProcessor = new BasicStatsProcessor(p);
         basicStatsProcessor.collectFileStatus(wh);
-        Object res = basicStatsProcessor.process(statsAggregator, atomic, wh);
+        Object res = basicStatsProcessor.process(statsAggregator, atomic);
 
 //        environmentContext = new EnvironmentContext();
 //        environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED,
@@ -378,18 +376,9 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
             BasicStatsProcessor bsp = new BasicStatsProcessor(p = new Partish.PPart(table, partn));
             processors.add(bsp);
 
-            // final String partitionName = partn.getName();
-            // final org.apache.hadoop.hive.metastore.api.Partition tPart = partn.getTPartition();
-            // Partish p;
-            // partishes.add(p = new Partish.PPart(table, partn.getTPartition()));
-
-            // Map<String, String> parameters = tPart.getParameters();
-
             if (!existStats(p.getPartParameters()) && atomic) {
               continue;
             }
-            // return new BasicStatsProcessor(new Partish.PPart(table,
-            // partn.getTPartition())).process(statsAggregator, atomic, wh);
 
             futures.add(pool.submit(new Callable<Void>() {
               @Override
@@ -421,7 +410,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         }
 
         for (BasicStatsProcessor basicStatsProcessor : processors) {
-          Object res = basicStatsProcessor.process(statsAggregator, atomic, wh);
+          Object res = basicStatsProcessor.process(statsAggregator, atomic);
           if (res == null) {
             continue;
           }
@@ -435,6 +424,9 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
 
         if (!updates.isEmpty()) {
           db.alterPartitions(tableFullName, updates, environmentContext);
+        }
+        if (work.isStatsReliable() && updates.size() != partishes.size()) {
+          ret = 1;
         }
       }
 
@@ -543,8 +535,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
   }
 
   @Deprecated
-  private void updateQuickStats(Warehouse wh, Map<String, String> parameters,
-      StorageDescriptor desc) throws MetaException {
+  private void updateQuickStats(Warehouse wh, Map<String, String> parameters, StorageDescriptor desc) throws MetaException {
     /**
      * calculate fast statistics
      */
@@ -552,8 +543,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     updateQuickStats(parameters, partfileStatus);
   }
 
-  private void updateQuickStats(Map<String, String> parameters,
-      FileStatus[] partfileStatus) throws MetaException {
+  private void updateQuickStats(Map<String, String> parameters, FileStatus[] partfileStatus) throws MetaException {
     MetaStoreUtils.populateQuickStats(partfileStatus, parameters);
   }
 
