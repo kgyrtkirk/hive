@@ -20,21 +20,17 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-
-import com.clearspring.analytics.util.Lists;
 
 /**
  * LoadTableDesc.
  *
  */
-public class LoadTableDesc extends LoadDesc implements Serializable, PartitionAware {
+public class LoadTableDesc extends LoadDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private boolean replace;
   private DynamicPartitionCtx dpCtx;
@@ -176,29 +172,6 @@ public class LoadTableDesc extends LoadDesc implements Serializable, PartitionAw
    */
   public void setLbCtx(ListBucketingCtx lbCtx) {
     this.lbCtx = lbCtx;
-  }
-
-  @Override
-  public List<Partition> getPartitions() {
-    List<Partition> list = Lists.newArrayList();
-    // INSERT OVERWRITE command
-    LoadTableDesc tbd = this;
-//    table = db.getTable(getTable().getTableName());
-    if (!table.isPartitioned()) {
-      return null;
-    }
-    DynamicPartitionCtx dpCtx = tbd.getDPCtx();
-    if (dpCtx != null && dpCtx.getNumDPCols() > 0) { // dynamic partitions
-      // If no dynamic partitions are generated, dpPartSpecs may not be initialized
-      if (dpPartSpecs != null) {
-        // load the list of DP partitions and return the list of partition specs
-        list.addAll(dpPartSpecs);
-      }
-    } else { // static partition
-      Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
-      list.add(partn);
-    }
-    return list;
   }
 
 }

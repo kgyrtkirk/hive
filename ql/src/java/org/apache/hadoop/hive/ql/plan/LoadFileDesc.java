@@ -19,17 +19,15 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Partition;
 
 /**
  * LoadFileDesc.
  *
  */
-public class LoadFileDesc extends LoadDesc implements Serializable, PartitionAware {
+public class LoadFileDesc extends LoadDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private transient Path targetDir;
   private boolean isDfsDir;
@@ -132,10 +130,5 @@ public class LoadFileDesc extends LoadDesc implements Serializable, PartitionAwa
    */
   public String getDestinationCreateTable(){
     return destinationCreateTable;
-  }
-
-  @Override
-  public List<Partition> getPartitions() {
-    return null;
   }
 }
