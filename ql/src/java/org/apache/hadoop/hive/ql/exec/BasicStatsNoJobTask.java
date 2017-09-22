@@ -59,8 +59,12 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
 
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
+import com.google.common.collect.Multimaps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
@@ -129,22 +133,37 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     return "STATS-NO-JOB";
   }
 
+  public static final Function<StatsCollection, String> SIMPLE_NAME_FUNCTION = new Function<StatsCollection, String>() {
+
+    @Override
+    public String apply(StatsCollection sc) {
+      return sc.partish.getSimpleName();
+    }
+  };
+  private static final Function<StatsCollection, Partition> EXTRACT_RESULT_FUNCTION = new Function<StatsCollection, Partition>() {
+    @Override
+    public Partition apply(StatsCollection input) {
+      return (Partition) input.result;
+    }
+  };
+
   class StatsCollection implements Runnable {
 
-    private final Partition partn;
+
     private Partish partish;
     private Object result;
 
-    public StatsCollection(Partition part, Partish partish) {
-      this.partn = part;
+    public StatsCollection(Partish partish) {
       this.partish = partish;
     }
 
+    private boolean isValid() {
+      return result == null;
+
+    }
     @Override
     public void run() {
 
-      // get the list of partitions
-      org.apache.hadoop.hive.metastore.api.Partition tPart = partn.getTPartition();
       Map<String, String> parameters = partish.getPartParameters();
       try {
         Path dir = new Path(partish.getPartSd().getLocation());
@@ -205,13 +224,6 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
         }
       } catch (Exception e) {
         console.printInfo("[Warning] could not update stats for " + partish.getSimpleName() + ".", "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
-
-        // Before updating the partition params, if any partition params is null
-        // and if statsReliable is true then updatePartition() function  will fail
-        // the task by returning 1
-        if (work.isStatsReliable()) {
-          partUpdates.put(tPart.getSd().getLocation(), null);
-        }
       }
     }
 
@@ -242,80 +254,101 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
         partitions = work.getPrunedPartitionList().getPartitions();
       }
 
+      List<StatsCollection> scs = Lists.newArrayList();
+      if (partitions == null) {
+        scs.add(new StatsCollection(Partish.buildFor(table)));
+      } else {
+        for (Partition part : partitions) {
+          scs.add(new StatsCollection(Partish.buildFor(table, part)));
+        }
+      }
+
+      for (StatsCollection sc : scs) {
+        threadPool.execute(sc);
+      }
+
+      LOG.debug("Stats collection waiting for threadpool to shutdown..");
+      shutdownAndAwaitTermination(threadPool);
+      LOG.debug("Stats collection threadpool shutdown successful.");
+
+      ret = updatePartitions(db, scs);
 
       // non-partitioned table
-      if (partitions == null) {
-        org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
-        Map<String, String> parameters = tTable.getParameters();
-        try {
-          Path dir = new Path(tTable.getSd().getLocation());
-          long numRows = 0;
-          long rawDataSize = 0;
-          long fileSize = 0;
-          long numFiles = 0;
-          FileSystem fs = dir.getFileSystem(conf);
-          FileStatus[] fileList = HiveStatsUtils.getFileStatusRecurse(dir, -1, fs);
+      if (false) {
+        if (partitions == null) {
+          org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
+          Map<String, String> parameters = tTable.getParameters();
+          try {
+            Path dir = new Path(tTable.getSd().getLocation());
+            long numRows = 0;
+            long rawDataSize = 0;
+            long fileSize = 0;
+            long numFiles = 0;
+            FileSystem fs = dir.getFileSystem(conf);
+            FileStatus[] fileList = HiveStatsUtils.getFileStatusRecurse(dir, -1, fs);
 
-          boolean statsAvailable = false;
-          for(FileStatus file: fileList) {
-            if (!file.isDir()) {
-              InputFormat<?, ?> inputFormat = ReflectionUtil.newInstance(
-                  table.getInputFormatClass(), jc);
-              InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0, new String[] { table
-                  .getDataLocation().toString() });
-              if (file.getLen() == 0) {
-                numFiles += 1;
-                statsAvailable = true;
-              } else {
-                org.apache.hadoop.mapred.RecordReader<?, ?> recordReader =
-                    inputFormat.getRecordReader(dummySplit, jc, Reporter.NULL);
-                StatsProvidingRecordReader statsRR;
-                if (recordReader instanceof StatsProvidingRecordReader) {
-                  statsRR = (StatsProvidingRecordReader) recordReader;
-                  numRows += statsRR.getStats().getRowCount();
-                  rawDataSize += statsRR.getStats().getRawDataSize();
-                  fileSize += file.getLen();
+            boolean statsAvailable = false;
+            for(FileStatus file: fileList) {
+              if (!file.isDir()) {
+                InputFormat<?, ?> inputFormat = ReflectionUtil.newInstance(
+                    table.getInputFormatClass(), jc);
+                InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0, new String[] { table
+                    .getDataLocation().toString() });
+                if (file.getLen() == 0) {
                   numFiles += 1;
                   statsAvailable = true;
+                } else {
+                  org.apache.hadoop.mapred.RecordReader<?, ?> recordReader =
+                      inputFormat.getRecordReader(dummySplit, jc, Reporter.NULL);
+                  StatsProvidingRecordReader statsRR;
+                  if (recordReader instanceof StatsProvidingRecordReader) {
+                    statsRR = (StatsProvidingRecordReader) recordReader;
+                    numRows += statsRR.getStats().getRowCount();
+                    rawDataSize += statsRR.getStats().getRawDataSize();
+                    fileSize += file.getLen();
+                    numFiles += 1;
+                    statsAvailable = true;
+                  }
+                  recordReader.close();
                 }
-                recordReader.close();
               }
             }
+
+            if (statsAvailable) {
+              parameters.put(StatsSetupConst.ROW_COUNT, String.valueOf(numRows));
+              parameters.put(StatsSetupConst.RAW_DATA_SIZE, String.valueOf(rawDataSize));
+              parameters.put(StatsSetupConst.TOTAL_SIZE, String.valueOf(fileSize));
+              parameters.put(StatsSetupConst.NUM_FILES, String.valueOf(numFiles));
+              EnvironmentContext environmentContext = new EnvironmentContext();
+              environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
+              db.alterTable(tableFullName, new Table(tTable), environmentContext);
+
+              String msg = "Table " + tableFullName + " stats: [" + toString(parameters) + ']';
+              LOG.debug(msg);
+              console.printInfo(msg);
+            } else {
+              String msg = "Table " + tableFullName + " does not provide stats.";
+              LOG.debug(msg);
+            }
+          } catch (Exception e) {
+            console.printInfo("[Warning] could not update stats for " + tableFullName + ".",
+                "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
+          }
+        } else {
+
+          // Partitioned table
+          for (Partition partn : partitions) {
+            threadPool.execute(new StatsCollection(Partish.buildFor(table, partn)));
           }
 
-          if (statsAvailable) {
-            parameters.put(StatsSetupConst.ROW_COUNT, String.valueOf(numRows));
-            parameters.put(StatsSetupConst.RAW_DATA_SIZE, String.valueOf(rawDataSize));
-            parameters.put(StatsSetupConst.TOTAL_SIZE, String.valueOf(fileSize));
-            parameters.put(StatsSetupConst.NUM_FILES, String.valueOf(numFiles));
-            EnvironmentContext environmentContext = new EnvironmentContext();
-            environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
-            db.alterTable(tableFullName, new Table(tTable), environmentContext);
+          LOG.debug("Stats collection waiting for threadpool to shutdown..");
+          shutdownAndAwaitTermination(threadPool);
+          LOG.debug("Stats collection threadpool shutdown successful.");
 
-            String msg = "Table " + tableFullName + " stats: [" + toString(parameters) + ']';
-            LOG.debug(msg);
-            console.printInfo(msg);
-          } else {
-            String msg = "Table " + tableFullName + " does not provide stats.";
-            LOG.debug(msg);
-          }
-        } catch (Exception e) {
-          console.printInfo("[Warning] could not update stats for " + tableFullName + ".",
-              "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
+          ret = updatePartitions(db);
         }
-      } else {
-
-        // Partitioned table
-        for (Partition partn : partitions) {
-          threadPool.execute(new StatsCollection(partn, Partish.buildFor(table, partn)));
-        }
-
-        LOG.debug("Stats collection waiting for threadpool to shutdown..");
-        shutdownAndAwaitTermination(threadPool);
-        LOG.debug("Stats collection threadpool shutdown successful.");
-
-        ret = updatePartitions(db);
       }
+
 
     } catch (Exception e) {
       // Fail the query if the stats are supposed to be reliable
@@ -329,9 +362,80 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     return ret;
   }
 
+  private int updatePartitions(Hive db, List<StatsCollection> scs) throws InvalidOperationException, HiveException {
+    if (scs.isEmpty()) {
+      return 0;
+    }
+    if (work.isStatsReliable()) {
+      for (StatsCollection statsCollection : scs) {
+        if (statsCollection.result == null) {
+          LOG.debug("Stats requested to be reliable. Empty stats found: " + statsCollection.partish.getSimpleName());
+          return -1;
+        }
+      }
+    }
+    List<StatsCollection> validColectors = Lists.newArrayList();
+    for (StatsCollection statsCollection : scs) {
+      if (statsCollection.isValid()) {
+        validColectors.add(statsCollection);
+      }
+    }
+
+    EnvironmentContext environmentContext = new EnvironmentContext();
+    environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
+    // should be later:            environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+
+    ImmutableListMultimap<String, StatsCollection> xx = Multimaps.index(validColectors, SIMPLE_NAME_FUNCTION);
+
+    for (String partName : xx.keys()) {
+      ImmutableList<StatsCollection> values = xx.get(partName);
+
+
+      if (values .get(0).result instanceof Table) {
+        db.alterTable(tableFullName,  (Table) values.get(0).result, environmentContext);
+      } else {
+        if (values.get(0).result instanceof Partition) {
+          List<Partition> results = Lists.transform(values, EXTRACT_RESULT_FUNCTION);
+
+          db.alterPartitions(tableFullName, results, environmentContext);
+        } else {
+          throw new RuntimeException("inconsistent");
+        }
+      }
+
+      //        LOG.debug("Bulk updating partitions..");
+      //        EnvironmentContext environmentContext = new EnvironmentContext();
+      //        environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
+      //        db.alterPartitions(tableFullName, Lists.newArrayList(partUpdates.values()),
+      //            environmentContext);
+      //        LOG.debug("Bulk updated " + partUpdates.values().size() + " partitions.");
+    }
+    return 0;
+
+    //    {
+    //    List<Partition> updatedParts = Lists.newArrayList(partUpdates.values());
+    //      // XXX: for the partition which we were unable to collect stats; we must clean
+    //
+    //      if (updatedParts.contains(null) && work.isStatsReliable()) {
+    //        LOG.debug("Stats requested to be reliable. Empty stats found and hence failing the task.");
+    //        return -1;
+    //      } else {
+    //        LOG.debug("Bulk updating partitions..");
+    //        EnvironmentContext environmentContext = new EnvironmentContext();
+    //        environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
+    //        db.alterPartitions(tableFullName, Lists.newArrayList(partUpdates.values()),
+    //            environmentContext);
+    //        LOG.debug("Bulk updated " + partUpdates.values().size() + " partitions.");
+    //      }
+    //    }
+    //    return 0;
+  }
+
   private int updatePartitions(Hive db) throws InvalidOperationException, HiveException {
     if (!partUpdates.isEmpty()) {
       List<Partition> updatedParts = Lists.newArrayList(partUpdates.values());
+      // XXX: for the partition which we were unable to collect stats; we must clean
+
       if (updatedParts.contains(null) && work.isStatsReliable()) {
         LOG.debug("Stats requested to be reliable. Empty stats found and hence failing the task.");
         return -1;
