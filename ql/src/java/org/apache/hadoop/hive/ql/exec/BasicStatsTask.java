@@ -427,62 +427,13 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
           }
           updates.add((Partition) res);
           if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
+            // FIXME: partn.getSpec()
             console.printInfo("Partition " + tableFullName + "partn.getSpec()" + " stats: [" + toString(basicStatsProcessor.partish.getPartParameters()) + ']');
           }
           LOG.info("Partition " + tableFullName + "partn.getSpec()" + " stats: [" + toString(basicStatsProcessor.partish.getPartParameters()) + ']');
         }
-        if (false) {
-          for (Partition partn : partitions) {
-            //
-            // get the old partition stats
-            //
-            org.apache.hadoop.hive.metastore.api.Partition tPart = partn.getTPartition();
-            Map<String, String> parameters = tPart.getParameters();
-            if (work.getTableSpecs() == null && AcidUtils.isAcidTable(table)) {
-              StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
-            }
-            if (work.isTargetRewritten()) {
-              StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
-            }
 
-            // work.getTableSpecs() == null means it is not analyze command
-            // and then if it is not followed by column stats, we should clean
-            // column stats
-            if (work.getTableSpecs() == null && !followedColStats) {
-              StatsSetupConst.clearColumnStatsState(parameters);
-            }
-            //only when the stats exist, it is added to fileStatusMap
-            if (!fileStatusMap.containsKey(partn.getName())) {
-              continue;
-            }
-
-            // The collectable stats for the aggregator needs to be cleared.
-            // For eg. if a file is being loaded, the old number of rows are not valid
-            if (work.isClearAggregatorStats()) {
-              // we choose to keep the invalid stats and only change the setting.
-              StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
-            }
-
-            updateQuickStats(parameters, fileStatusMap.get(partn.getName()));
-            if (StatsSetupConst.areBasicStatsUptoDate(parameters)) {
-              if (statsAggregator != null) {
-                String prefix = getAggregationPrefix(table, partn);
-                updateStats(statsAggregator, parameters, prefix, atomic);
-              }
-              if (!getWork().getNoStatsAggregator()) {
-                environmentContext = new EnvironmentContext();
-                environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED,
-                    StatsSetupConst.TASK);
-              }
-            }
-            updates.add(new Partition(table, tPart));
-
-          }
-        }
         if (!updates.isEmpty()) {
-//          environmentContext = new EnvironmentContext();
-//          environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
-
           db.alterPartitions(tableFullName, updates, environmentContext);
         }
       }
