@@ -306,7 +306,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     StatsCollectionContext scc = null;
     EnvironmentContext environmentContext = null;
     environmentContext = new EnvironmentContext();
-    environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
+    environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
 
     try {
       // Stats setup:
