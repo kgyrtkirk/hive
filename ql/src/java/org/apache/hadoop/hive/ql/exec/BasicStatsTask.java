@@ -199,7 +199,6 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       @Override
       public String getLocation() {
         return table.getDataLocation().toString();
-
       }
 
       @Override

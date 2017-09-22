@@ -235,6 +235,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
         partitions = work.getPrunedPartitionList().getPartitions();
       }
 
+
       // non-partitioned table
       if (partitions == null) {
         org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
