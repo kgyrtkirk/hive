@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * Stats Work, may include basic stats work and column stats desc
@@ -41,6 +42,7 @@ public class StatsWork implements Serializable {
   private static final int LIMIT = -1;
 
   private transient Task<?> sourceTask;
+  private String currentDatabase;
 
   public StatsWork() {
   }
@@ -48,15 +50,18 @@ public class StatsWork implements Serializable {
   public StatsWork(BasicStatsWork basicStatsWork) {
     super();
     this.basicStatsWork = basicStatsWork;
+    this.currentDatabase = SessionState.get().getCurrentDatabase();
   }
 
   public StatsWork(BasicStatsNoJobWork basicStatsNoJobWork) {
     super();
     this.basicStatsNoJobWork = basicStatsNoJobWork;
+    this.currentDatabase = SessionState.get().getCurrentDatabase();
   }
 
   public StatsWork(FetchWork work, ColumnStatsDesc colStats) {
     this.fWork = work;
+    this.currentDatabase = SessionState.get().getCurrentDatabase();
     this.setColStats(colStats);
   }
 
@@ -119,6 +124,10 @@ public class StatsWork implements Serializable {
   public void setSourceTask(Task<?> sourceTask) {
     this.sourceTask = sourceTask;
     basicStatsWork.setSourceTask2(sourceTask);
+  }
+
+  public String getCurrentDatabaseName() {
+    return currentDatabase;
   }
 
 }

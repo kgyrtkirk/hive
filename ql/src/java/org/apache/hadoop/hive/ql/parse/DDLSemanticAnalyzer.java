@@ -587,13 +587,14 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    if (colType == null)
+    if (colType == null) {
       throw new SemanticException("column type not found");
+    }
 
     ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tbl.getDbName() + "." + tbl.getTableName(),
         Arrays.asList(colName), Arrays.asList(colType), partSpec == null);
     ColumnStatsUpdateTask cStatsUpdateTask = (ColumnStatsUpdateTask) TaskFactory
-        .get(new ColumnStatsUpdateWork(cStatsDesc, partName, mapProp), conf);
+        .get(new ColumnStatsUpdateWork(cStatsDesc, partName, mapProp, SessionState.get().getCurrentDatabase()), conf);
     rootTasks.add(cStatsUpdateTask);
   }
 
@@ -1084,9 +1085,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
         truncateTblDesc.setOutputDir(queryTmpdir);
         LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
-            partSpec == null ? new HashMap<String, String>() : partSpec);
+            partSpec == null ? new HashMap<>() : partSpec);
         ltd.setLbCtx(lbCtx);
-        Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
+        Task<MoveWork> moveTsk = TaskFactory
+            .get(new MoveWork(null, null, ltd, null, false, SessionState.get().getLineageState()),
             conf);
         truncateTask.addDependentTask(moveTsk);
 
@@ -1721,7 +1723,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
           partSpec == null ? new HashMap<>() : partSpec);
       ltd.setLbCtx(lbCtx);
-      Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
+      Task<MoveWork> moveTsk = TaskFactory
+          .get(new MoveWork(null, null, ltd, null, false, SessionState.get().getLineageState()),
           conf);
       mergeTask.addDependentTask(moveTsk);
 
@@ -1795,7 +1798,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     LinkedHashMap<String, String> newPartSpec = null;
-    if (partSpec != null) newPartSpec = new LinkedHashMap<String, String>(partSpec);
+    if (partSpec != null) {
+      newPartSpec = new LinkedHashMap<String, String>(partSpec);
+    }
 
     HashMap<String, String> mapProp = null;
     boolean isBlocking = false;
@@ -1838,7 +1843,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     switch (child.getToken().getType()) {
       case HiveParser.TOK_UNIQUE:
         BaseSemanticAnalyzer.processUniqueConstraints(qualifiedTabName[0], qualifiedTabName[1],
-                child, uniqueConstraints);        
+                child, uniqueConstraints);
         break;
       case HiveParser.TOK_PRIMARY_KEY:
         BaseSemanticAnalyzer.processPrimaryKeys(qualifiedTabName[0], qualifiedTabName[1],
@@ -2863,7 +2868,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs =
         getFullPartitionSpecs(ast, tab, canGroupExprs);
-    if (partSpecs.isEmpty()) return; // nothing to do
+    if (partSpecs.isEmpty())
+     {
+      return; // nothing to do
+    }
 
     validateAlterTableType(tab, AlterTableTypes.DROPPARTITION, expectView);
     ReadEntity re = new ReadEntity(tab);
@@ -3198,7 +3206,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         new HashMap<Integer, List<ExprNodeGenericFuncDesc>>();
     for (int childIndex = 0; childIndex < ast.getChildCount(); childIndex++) {
       Tree partSpecTree = ast.getChild(childIndex);
-      if (partSpecTree.getType() != HiveParser.TOK_PARTSPEC) continue;
+      if (partSpecTree.getType() != HiveParser.TOK_PARTSPEC) {
+        continue;
+      }
       ExprNodeGenericFuncDesc expr = null;
       HashSet<String> names = new HashSet<String>(partSpecTree.getChildCount());
       for (int i = 0; i < partSpecTree.getChildCount(); ++i) {
@@ -3250,7 +3260,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         expr = (expr == null) ? op : makeBinaryPredicate("and", expr, op);
         names.add(key);
       }
-      if (expr == null) continue;
+      if (expr == null) {
+        continue;
+      }
       // We got the expr for one full partition spec. Determine the prefix length.
       int prefixLength = calculatePartPrefix(tab, names);
       List<ExprNodeGenericFuncDesc> orExpr = result.get(prefixLength);
@@ -3289,7 +3301,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private int calculatePartPrefix(Table tbl, HashSet<String> partSpecKeys) {
     int partPrefixToDrop = 0;
     for (FieldSchema fs : tbl.getPartCols()) {
-      if (!partSpecKeys.contains(fs.getName())) break;
+      if (!partSpecKeys.contains(fs.getName())) {
+        break;
+      }
       ++partPrefixToDrop;
     }
     return partPrefixToDrop;

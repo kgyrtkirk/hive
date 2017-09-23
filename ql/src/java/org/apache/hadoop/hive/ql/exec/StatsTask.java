@@ -87,7 +87,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
   private List<ColumnStatistics> constructColumnStatsFromPackedRows(Hive db) throws HiveException,
       MetaException, IOException {
 
-    String[] names = Utilities.getDbTableName(SessionState.get().getCurrentDatabase(), work.getColStats().getTableName());
+    String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), work.getColStats().getTableName());
     Table tbl = db.getTable(names[0], names[1]);
 
     String partName = null;

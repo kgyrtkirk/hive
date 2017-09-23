@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
@@ -54,10 +52,10 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.InputFormat;
 
 import com.google.common.collect.Lists;
-import org.apache.orc.impl.OrcAcidUtils;
 
 /**
  * LoadSemanticAnalyzer.
@@ -224,8 +222,10 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     List<String> bucketCols = ts.tableHandle.getBucketCols();
     if (bucketCols != null && !bucketCols.isEmpty()) {
       String error = StrictChecks.checkBucketing(conf);
-      if (error != null) throw new SemanticException("Please load into an intermediate table"
-          + " and use 'insert... select' to allow Hive to enforce bucketing. " + error);
+      if (error != null) {
+        throw new SemanticException("Please load into an intermediate table"
+            + " and use 'insert... select' to allow Hive to enforce bucketing. " + error);
+      }
     }
 
     if(AcidUtils.isAcidTable(ts.tableHandle)) {
@@ -285,8 +285,10 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       loadTableWork.setInheritTableSpecs(false);
     }
 
-    Task<? extends Serializable> childTask = TaskFactory.get(new MoveWork(getInputs(),
-        getOutputs(), loadTableWork, null, true, isLocal), conf);
+    Task<? extends Serializable> childTask = TaskFactory.get(
+        new MoveWork(getInputs(), getOutputs(), loadTableWork, null, true,
+            isLocal, SessionState.get().getLineageState()), conf
+    );
     if (rTask != null) {
       rTask.addDependentTask(childTask);
     } else {
