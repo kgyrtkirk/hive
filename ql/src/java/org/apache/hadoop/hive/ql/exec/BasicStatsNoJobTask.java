@@ -176,7 +176,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
         boolean statsAvailable = false;
         for (FileStatus file : fileList) {
-          if (!file.isDir()) {
+          if (!file.isDirectory()) {
             InputFormat<?, ?> inputFormat = ReflectionUtil.newInstance(partish.getInputFormatClass(), jc);
             InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0, new String[] { partish.getLocation() });
             if (file.getLen() == 0) {
