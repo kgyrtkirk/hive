@@ -343,6 +343,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     try {
 
       // Wait a while for existing tasks to terminate
+      // XXX this will wait forever... :)
       while (!threadPool.awaitTermination(10, TimeUnit.SECONDS)) {
         LOG.debug("Waiting for all stats tasks to finish...");
       }
