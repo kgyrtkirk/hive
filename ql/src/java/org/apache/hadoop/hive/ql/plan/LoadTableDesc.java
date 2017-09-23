@@ -18,53 +18,54 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
+import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * LoadTableDesc.
  *
  */
-public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
-    implements Serializable {
+public class LoadTableDesc extends LoadDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private boolean replace;
   private DynamicPartitionCtx dpCtx;
   private ListBucketingCtx lbCtx;
   private boolean inheritTableSpecs = true; //For partitions, flag controlling whether the current
                                             //table specs are to be used
-  // Need to remember whether this is an acid compliant operation, and if so whether it is an
-  // insert, update, or delete.
-  private AcidUtils.Operation writeType;
+  /*
+  if the writeType above is NOT_ACID then the currentTransactionId will be null
+   */
+  private final Long currentTransactionId;
 
   // TODO: the below seems like they should just be combined into partitionDesc
   private org.apache.hadoop.hive.ql.plan.TableDesc table;
   private Map<String, String> partitionSpec; // NOTE: this partitionSpec has to be ordered map
 
   public LoadTableDesc(final LoadTableDesc o) {
-    super(o.getSourcePath());
+    super(o.getSourcePath(), o.getWriteType());
 
     this.replace = o.replace;
     this.dpCtx = o.dpCtx;
     this.lbCtx = o.lbCtx;
     this.inheritTableSpecs = o.inheritTableSpecs;
-    this.writeType = o.writeType;
+    this.currentTransactionId = o.currentTransactionId;
     this.table = o.table;
     this.partitionSpec = o.partitionSpec;
   }
 
   public LoadTableDesc(final Path sourcePath,
-      final org.apache.hadoop.hive.ql.plan.TableDesc table,
+      final TableDesc table,
       final Map<String, String> partitionSpec,
       final boolean replace,
-      final AcidUtils.Operation writeType) {
-    super(sourcePath);
-    init(table, partitionSpec, replace, writeType);
+      final AcidUtils.Operation writeType, Long currentTransactionId) {
+    super(sourcePath, writeType);
+    this.currentTransactionId = currentTransactionId;
+    init(table, partitionSpec, replace);
   }
 
   /**
@@ -75,17 +76,18 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
    * @param replace
    */
   public LoadTableDesc(final Path sourcePath,
-                       final TableDesc table,
-                       final Map<String, String> partitionSpec,
-                       final boolean replace) {
-    this(sourcePath, table, partitionSpec, replace, AcidUtils.Operation.NOT_ACID);
+      final TableDesc table,
+      final Map<String, String> partitionSpec,
+      final boolean replace) {
+    this(sourcePath, table, partitionSpec, replace, AcidUtils.Operation.NOT_ACID,
+        null);
   }
 
   public LoadTableDesc(final Path sourcePath,
-      final org.apache.hadoop.hive.ql.plan.TableDesc table,
+      final TableDesc table,
       final Map<String, String> partitionSpec,
-      final AcidUtils.Operation writeType) {
-    this(sourcePath, table, partitionSpec, true, writeType);
+      final AcidUtils.Operation writeType, Long currentTransactionId) {
+    this(sourcePath, table, partitionSpec, true, writeType, currentTransactionId);
   }
 
   /**
@@ -95,33 +97,32 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
    * @param partitionSpec
    */
   public LoadTableDesc(final Path sourcePath,
-                       final org.apache.hadoop.hive.ql.plan.TableDesc table,
-                       final Map<String, String> partitionSpec) {
-    this(sourcePath, table, partitionSpec, true, AcidUtils.Operation.NOT_ACID);
+      final TableDesc table,
+      final Map<String, String> partitionSpec) {
+    this(sourcePath, table, partitionSpec, true, AcidUtils.Operation.NOT_ACID, null);
   }
 
   public LoadTableDesc(final Path sourcePath,
-      final org.apache.hadoop.hive.ql.plan.TableDesc table,
+      final TableDesc table,
       final DynamicPartitionCtx dpCtx,
-      final AcidUtils.Operation writeType) {
-    super(sourcePath);
+      final AcidUtils.Operation writeType, Long currentTransactionId) {
+    super(sourcePath, writeType);
     this.dpCtx = dpCtx;
+    this.currentTransactionId = currentTransactionId;
     if (dpCtx != null && dpCtx.getPartSpec() != null && partitionSpec == null) {
-      init(table, dpCtx.getPartSpec(), true, writeType);
+      init(table, dpCtx.getPartSpec(), true);
     } else {
-      init(table, new LinkedHashMap<String, String>(), true, writeType);
+      init(table, new LinkedHashMap<>(), true);
     }
   }
 
   private void init(
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final Map<String, String> partitionSpec,
-      final boolean replace,
-      AcidUtils.Operation writeType) {
+      final boolean replace) {
     this.table = table;
     this.partitionSpec = partitionSpec;
     this.replace = replace;
-    this.writeType = writeType;
   }
 
   @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -181,7 +182,7 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
     this.lbCtx = lbCtx;
   }
 
-  public AcidUtils.Operation getWriteType() {
-    return writeType;
+  public long getCurrentTransactionId() {
+    return writeType == AcidUtils.Operation.NOT_ACID ? 0L : currentTransactionId;
   }
 }

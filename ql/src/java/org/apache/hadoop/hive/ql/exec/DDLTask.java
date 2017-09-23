@@ -2413,7 +2413,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (tbl.getStorageHandler() == null) {
         // If serialization.format property has the default value, it will not to be included in
         // SERDE properties
-        if (MetaStoreUtils.DEFAULT_SERIALIZATION_FORMAT.equals(serdeParams.get(
+        if (Warehouse.DEFAULT_SERIALIZATION_FORMAT.equals(serdeParams.get(
             serdeConstants.SERIALIZATION_FORMAT))){
           serdeParams.remove(serdeConstants.SERIALIZATION_FORMAT);
         }
@@ -4198,7 +4198,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private void dropTable(Hive db, Table tbl, DropTableDesc dropTbl) throws HiveException {
     // This is a true DROP TABLE
-    if (tbl != null && dropTbl.getExpectedType() != null) {
+    if (tbl != null && dropTbl.getValidationRequired()) {
       if (tbl.isView()) {
         if (!dropTbl.getExpectView()) {
           if (dropTbl.getIfExists()) {
@@ -4823,11 +4823,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (!sd.isSetLocation())
     {
       // Location is not set, leave it as-is if this is not a default DB
-      if (databaseName.equalsIgnoreCase(MetaStoreUtils.DEFAULT_DATABASE_NAME))
+      if (databaseName.equalsIgnoreCase(Warehouse.DEFAULT_DATABASE_NAME))
       {
         // Default database name path is always ignored, use METASTOREWAREHOUSE and object name
         // instead
-        path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE), MetaStoreUtils.encodeTableName(name.toLowerCase()));
+        path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE), org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(name.toLowerCase()));
       }
     }
     else
@@ -4855,7 +4855,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (crtIndex.getLocation() == null) {
       // Location is not set, leave it as-is if index doesn't belong to default DB
       // Currently all indexes are created in current DB only
-      if (Utilities.getDatabaseName(name).equalsIgnoreCase(MetaStoreUtils.DEFAULT_DATABASE_NAME)) {
+      if (Utilities.getDatabaseName(name).equalsIgnoreCase(Warehouse.DEFAULT_DATABASE_NAME)) {
         // Default database name path is always ignored, use METASTOREWAREHOUSE and object name
         // instead
         String warehouse = HiveConf.getVar(conf, ConfVars.METASTOREWAREHOUSE);
@@ -4940,5 +4940,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
               && !sh.equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID);
     }
     return retval;
+  }
+
+  /*
+  uses the authorizer from SessionState will need some more work to get this to run in parallel,
+  however this should not be a bottle neck so might not need to parallelize this.
+   */
+  @Override
+  public boolean canExecuteInParallel() {
+    return false;
   }
 }
