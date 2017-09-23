@@ -285,6 +285,10 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     public abstract String getLocation();
 
     public abstract String getSimpleName();
+
+    public final String getPartishType() {
+      return getClass().getSimpleName();
+    }
   }
 
   private class BasicStatsProcessor {

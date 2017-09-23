@@ -137,7 +137,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
     @Override
     public String apply(StatsCollection sc) {
-      return sc.partish.getSimpleName();
+      return String.format("%s#%s", sc.partish.getTable().getCompleteName(), sc.partish.getPartishType());
     }
   };
   private static final Function<StatsCollection, Partition> EXTRACT_RESULT_FUNCTION = new Function<StatsCollection, Partition>() {
@@ -308,10 +308,13 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
     // should be later:            environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
 
-    ImmutableListMultimap<String, StatsCollection> xx = Multimaps.index(validColectors, SIMPLE_NAME_FUNCTION);
+    ImmutableListMultimap<String, StatsCollection> collectorsByTable = Multimaps.index(validColectors, SIMPLE_NAME_FUNCTION);
 
-    for (String partName : xx.keys()) {
-      ImmutableList<StatsCollection> values = xx.get(partName);
+    // for now this should be true...
+    assert (collectorsByTable.keySet().size() == 1);
+
+    for (String partName : collectorsByTable.keys()) {
+      ImmutableList<StatsCollection> values = collectorsByTable.get(partName);
 
 
       if (values .get(0).result instanceof Table) {
