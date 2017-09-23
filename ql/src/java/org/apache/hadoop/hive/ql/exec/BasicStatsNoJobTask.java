@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -63,7 +62,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.MapMaker;
 import com.google.common.collect.Multimaps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -80,8 +78,6 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
   private static final long serialVersionUID = 1L;
   private static transient final Logger LOG = LoggerFactory.getLogger(BasicStatsNoJobTask.class);
-  @Deprecated
-  private ConcurrentMap<String, Partition> partUpdates;
   private Table table;
   private String tableFullName;
   private JobConf jc = null;
@@ -113,7 +109,6 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
       threadPool = Executors.newFixedThreadPool(numThreads,
           new ThreadFactoryBuilder().setDaemon(true).setNameFormat("StatsNoJobTask-Thread-%d")
               .build());
-      partUpdates = new MapMaker().concurrencyLevel(numThreads).makeMap();
       LOG.info("Initialized threadpool for stats computation with " + numThreads + " threads");
     } catch (HiveException e) {
       LOG.error("Cannot get table " + tableName, e);
