@@ -336,26 +336,6 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     return 0;
   }
 
-  private int updatePartitions(Hive db) throws InvalidOperationException, HiveException {
-    if (!partUpdates.isEmpty()) {
-      List<Partition> updatedParts = Lists.newArrayList(partUpdates.values());
-      // XXX: for the partition which we were unable to collect stats; we must clean
-
-      if (updatedParts.contains(null) && work.isStatsReliable()) {
-        LOG.debug("Stats requested to be reliable. Empty stats found and hence failing the task.");
-        return -1;
-      } else {
-        LOG.debug("Bulk updating partitions..");
-        EnvironmentContext environmentContext = new EnvironmentContext();
-        environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
-        db.alterPartitions(tableFullName, Lists.newArrayList(partUpdates.values()),
-            environmentContext);
-        LOG.debug("Bulk updated " + partUpdates.values().size() + " partitions.");
-      }
-    }
-    return 0;
-  }
-
   private void shutdownAndAwaitTermination(ExecutorService threadPool) {
 
     // Disable new tasks from being submitted
