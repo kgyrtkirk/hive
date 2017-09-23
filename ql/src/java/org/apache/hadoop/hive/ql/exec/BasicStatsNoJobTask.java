@@ -313,48 +313,27 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     // for now this should be true...
     assert (collectorsByTable.keySet().size() == 1);
 
+    LOG.debug("Updating stats for: {}", tableFullName);
+
     for (String partName : collectorsByTable.keys()) {
       ImmutableList<StatsCollection> values = collectorsByTable.get(partName);
 
-
       if (values .get(0).result instanceof Table) {
         db.alterTable(tableFullName,  (Table) values.get(0).result, environmentContext);
+        LOG.debug("Updated stats for {}.", tableFullName);
       } else {
         if (values.get(0).result instanceof Partition) {
           List<Partition> results = Lists.transform(values, EXTRACT_RESULT_FUNCTION);
 
           db.alterPartitions(tableFullName, results, environmentContext);
+          LOG.debug("Bulk updated {} partitions of {}.", results.size(), tableFullName);
         } else {
           throw new RuntimeException("inconsistent");
         }
       }
-
-      //        LOG.debug("Bulk updating partitions..");
-      //        EnvironmentContext environmentContext = new EnvironmentContext();
-      //        environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
-      //        db.alterPartitions(tableFullName, Lists.newArrayList(partUpdates.values()),
-      //            environmentContext);
-      //        LOG.debug("Bulk updated " + partUpdates.values().size() + " partitions.");
     }
+    LOG.debug("Updated stats for: {}", tableFullName);
     return 0;
-
-    //    {
-    //    List<Partition> updatedParts = Lists.newArrayList(partUpdates.values());
-    //      // XXX: for the partition which we were unable to collect stats; we must clean
-    //
-    //      if (updatedParts.contains(null) && work.isStatsReliable()) {
-    //        LOG.debug("Stats requested to be reliable. Empty stats found and hence failing the task.");
-    //        return -1;
-    //      } else {
-    //        LOG.debug("Bulk updating partitions..");
-    //        EnvironmentContext environmentContext = new EnvironmentContext();
-    //        environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
-    //        db.alterPartitions(tableFullName, Lists.newArrayList(partUpdates.values()),
-    //            environmentContext);
-    //        LOG.debug("Bulk updated " + partUpdates.values().size() + " partitions.");
-    //      }
-    //    }
-    //    return 0;
   }
 
   private int updatePartitions(Hive db) throws InvalidOperationException, HiveException {
