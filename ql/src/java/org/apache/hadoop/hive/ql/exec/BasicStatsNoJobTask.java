@@ -364,20 +364,6 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     }
   }
 
-  private String toString(Map<String, String> parameters) {
-    StringBuilder builder = new StringBuilder();
-    for (String statType : StatsSetupConst.supportedStats) {
-      String value = parameters.get(statType);
-      if (value != null) {
-        if (builder.length() > 0) {
-          builder.append(", ");
-        }
-        builder.append(statType).append('=').append(value);
-      }
-    }
-    return builder.toString();
-  }
-
   private List<Partition> getPartitionsList() throws HiveException {
     if (work.getTableSpecs() != null) {
       TableSpec tblSpec = work.getTableSpecs();
