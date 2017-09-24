@@ -325,6 +325,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         return null;
       }
       if(partfileStatus == null){
+        LOG.warn("Partition/partfiles is null for: " + partish.getPartition().getSpec());
         return null;
       }
 
@@ -473,12 +474,13 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
           if (pool != null) {
             pool.shutdownNow();
           }
-          LOG.debug("Finished getting file stats of all partitions");
+          LOG.debug("Finished getting file stats of all partitions!");
         }
 
         for (BasicStatsProcessor basicStatsProcessor : processors) {
           Object res = basicStatsProcessor.process(statsAggregator, atomic);
           if (res == null) {
+            LOG.info("Partition " + basicStatsProcessor.partish.getPartition().getSpec() + " stats: [0]");
             continue;
           }
           updates.add((Partition) res);
@@ -492,7 +494,8 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         if (!updates.isEmpty()) {
           db.alterPartitions(tableFullName, updates, environmentContext);
         }
-        if (work.isStatsReliable() && updates.size() != partishes.size()) {
+        if (work.isStatsReliable() && updates.size() != processors.size()) {
+          LOG.info("Stats should be reliadble...however seems like there were some issue.. => ret 1");
           ret = 1;
         }
       }
