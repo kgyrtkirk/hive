@@ -153,7 +153,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     }
 
     private boolean isValid() {
-      return result == null;
+      return result != null;
 
     }
     @Override
@@ -188,12 +188,18 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
                 numFiles += 1;
                 statsAvailable = true;
               }
+              // XXX: missing?
+              //              else{
+              //                statsAvailable=false;
+              //              }
               recordReader.close();
             }
           }
         }
 
         if (statsAvailable) {
+
+          StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
 
           parameters.put(StatsSetupConst.ROW_COUNT, String.valueOf(numRows));
           parameters.put(StatsSetupConst.RAW_DATA_SIZE, String.valueOf(rawDataSize));
@@ -218,6 +224,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
           LOG.debug(threadName + ": " + msg);
         }
       } catch (Exception e) {
+        // XXX: possibly a bad idea?
         console.printInfo("[Warning] could not update stats for " + partish.getSimpleName() + ".", "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
       }
     }
@@ -300,20 +307,29 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     }
 
     EnvironmentContext environmentContext = new EnvironmentContext();
-    environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
-    // should be later:            environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+    //    environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
+    // should be later:
+    environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
 
     ImmutableListMultimap<String, StatsCollection> collectorsByTable = Multimaps.index(validColectors, SIMPLE_NAME_FUNCTION);
 
     LOG.debug("Collectors.size(): {}", collectorsByTable.keySet());
+
+    if (collectorsByTable.keySet().size() < 1) {
+      LOG.warn("Collectors are empty! ; {}",tableFullName);
+    }
 
     // for now this should be true...
     assert (collectorsByTable.keySet().size() <= 1);
 
     LOG.debug("Updating stats for: {}", tableFullName);
 
-    for (String partName : collectorsByTable.keys()) {
+    for (String partName : collectorsByTable.keySet()) {
       ImmutableList<StatsCollection> values = collectorsByTable.get(partName);
+
+      if (values == null) {
+        throw new RuntimeException("very intresting");
+      }
 
       if (values .get(0).result instanceof Table) {
         db.alterTable(tableFullName,  (Table) values.get(0).result, environmentContext);
