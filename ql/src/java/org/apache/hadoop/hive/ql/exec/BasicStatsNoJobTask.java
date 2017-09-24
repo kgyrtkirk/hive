@@ -305,8 +305,10 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
     ImmutableListMultimap<String, StatsCollection> collectorsByTable = Multimaps.index(validColectors, SIMPLE_NAME_FUNCTION);
 
+    LOG.debug("Collectors.size(): {}", collectorsByTable.keySet());
+
     // for now this should be true...
-    assert (collectorsByTable.keySet().size() == 1);
+    assert (collectorsByTable.keySet().size() <= 1);
 
     LOG.debug("Updating stats for: {}", tableFullName);
 
