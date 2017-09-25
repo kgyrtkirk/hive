@@ -164,8 +164,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.uservisits_web_text_none
               numFiles 1
-              numRows 0
-              rawDataSize 0
               serialization.ddl struct uservisits_web_text_none { string sourceip, string desturl, string visitdate, float adrevenue, string useragent, string ccode, string lcode, string skeyword, i32 avgtimeonsite}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -185,8 +183,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.uservisits_web_text_none
                 numFiles 1
-                numRows 0
-                rawDataSize 0
                 serialization.ddl struct uservisits_web_text_none { string sourceip, string desturl, string visitdate, float adrevenue, string useragent, string ccode, string lcode, string skeyword, i32 avgtimeonsite}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -255,7 +251,7 @@ POSTHOOK: Input: default@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
 sourceIP            	string              	                    	                    	0                   	55                  	12.763636363636364  	13                  	                    	                    	HL                  	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted UserVisits_web_text_none avgTimeOnSite
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@uservisits_web_text_none
@@ -265,7 +261,7 @@ POSTHOOK: Input: default@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
 avgTimeOnSite       	int                 	1                   	9                   	0                   	9                   	                    	                    	                    	                    	HL                  	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted UserVisits_web_text_none adRevenue
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@uservisits_web_text_none
@@ -275,7 +271,7 @@ POSTHOOK: Input: default@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
 adRevenue           	float               	13.099044799804688  	492.98870849609375  	0                   	55                  	                    	                    	                    	                    	HL                  	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: CREATE TEMPORARY TABLE empty_tab(
    a int,
    b double,
@@ -305,7 +301,6 @@ POSTHOOK: Input: default@empty_tab
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
 a                   	int                 	                    	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain
 analyze table empty_tab compute statistics for columns a,b,c,d,e
 PREHOOK: type: QUERY
@@ -377,7 +372,7 @@ POSTHOOK: Input: default@empty_tab
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
 a                   	int                 	0                   	0                   	0                   	0                   	                    	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted empty_tab b
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@empty_tab
@@ -387,7 +382,7 @@ POSTHOOK: Input: default@empty_tab
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
 b                   	double              	0.0                 	0.0                 	0                   	0                   	                    	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: CREATE DATABASE test
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:test
@@ -457,7 +452,7 @@ POSTHOOK: query: desc extended default.UserVisits_web_text_none sourceIP
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
 sourceIP            	string              	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}	 
 PREHOOK: query: desc formatted UserVisits_web_text_none sourceIP
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: test@uservisits_web_text_none
@@ -485,7 +480,7 @@ POSTHOOK: Input: default@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
 sourceIP            	string              	                    	                    	0                   	55                  	12.763636363636364  	13                  	                    	                    	HL                  	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table UserVisits_web_text_none compute statistics for columns sKeyword
 PREHOOK: type: QUERY
 PREHOOK: Input: test@uservisits_web_text_none
@@ -503,7 +498,7 @@ POSTHOOK: query: desc extended UserVisits_web_text_none sKeyword
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: test@uservisits_web_text_none
 sKeyword            	string              	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sKeyword\":\"true\"}}	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sKeyword\":\"true\"}}	 
 PREHOOK: query: desc formatted UserVisits_web_text_none sKeyword
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: test@uservisits_web_text_none
@@ -513,7 +508,7 @@ POSTHOOK: Input: test@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
 sKeyword            	string              	                    	                    	0                   	54                  	7.872727272727273   	19                  	                    	                    	HL                  	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sKeyword\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sKeyword\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted test.UserVisits_web_text_none sKeyword
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: test@uservisits_web_text_none
@@ -523,4 +518,4 @@ POSTHOOK: Input: test@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
 sKeyword            	string              	                    	                    	0                   	54                  	7.872727272727273   	19                  	                    	                    	HL                  	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sKeyword\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sKeyword\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
