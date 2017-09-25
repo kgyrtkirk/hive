@@ -36,6 +36,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
@@ -183,10 +184,21 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
 
     @Override
     public Void visitInputRef(RexInputRef inputRef) {
-      if (types.get(inputRef.getIndex()).getType() != inputRef.getType()) {
+      if (!areTypesCompatible(inputRef.getType(), types.get(inputRef.getIndex()).getType())) {
         throw new Util.FoundOne(inputRef);
       }
       return super.visitInputRef(inputRef);
+    }
+
+    private boolean areTypesCompatible(RelDataType type1, RelDataType type2) {
+      if (type1.equals(type2)) {
+        return true;
+      }
+      SqlTypeName sqlType1 = type1.getSqlTypeName();
+      if (sqlType1 != null) {
+        return sqlType1.equals(type2.getSqlTypeName());
+      }
+      return false;
     }
   }
 }
