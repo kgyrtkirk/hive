@@ -108,8 +108,8 @@ public final class MetaDataFormatUtils {
       return "";
     }
     byte[] sub = new byte[2];
-    sub[0] = (byte) buf[0];
-    sub[1] = (byte) buf[1];
+    sub[0] = buf[0];
+    sub[1] = buf[1];
     return new String(sub);
   }
 
@@ -160,7 +160,7 @@ public final class MetaDataFormatUtils {
     String comment = index.getParameters().get("comment");
     indexColumns.add(comment == null ? null : HiveStringUtils.escapeJava(comment));
 
-    formatOutput(indexColumns.toArray(new String[0]), indexInfo, isOutputPadded);
+    formatOutput(indexColumns.toArray(new String[0]), indexInfo, isOutputPadded, true);
 
     return indexInfo.toString();
   }
@@ -510,26 +510,33 @@ public final class MetaDataFormatUtils {
    *                         newlines?
    */
   public static void formatOutput(String[] fields, StringBuilder tableInfo,
-      boolean isLastLinePadded) {
-    int[] paddings = new int[fields.length-1];
-    if (fields.length > 1) {
-      for (int i = 0; i < fields.length - 1; i++) {
-        if (fields[i] == null) {
-          tableInfo.append(FIELD_DELIM);
-          continue;
+      boolean isLastLinePadded, boolean isFormatted) {
+    if (!isFormatted) {
+      for (int i = 0; i < fields.length; i++) {
+        if (fields[i] != null) {
+          tableInfo.append(fields[i]);
         }
-        tableInfo.append(String.format("%-" + ALIGNMENT + "s", fields[i])).append(FIELD_DELIM);
-        paddings[i] = ALIGNMENT > fields[i].length() ? ALIGNMENT : fields[i].length();
+        tableInfo.append((i == fields.length - 1) ? LINE_DELIM : FIELD_DELIM);
       }
-    }
-    if (fields.length > 0) {
-      String value = fields[fields.length-1];
-      String unescapedValue =
-          (isLastLinePadded && value != null) ? value.replaceAll("\\\\n|\\\\r|\\\\r\\\\n","\n")
-              :value;
-      indentMultilineValue(unescapedValue, tableInfo, paddings, false);
     } else {
-      tableInfo.append(LINE_DELIM);
+      int[] paddings = new int[fields.length - 1];
+      if (fields.length > 1) {
+        for (int i = 0; i < fields.length - 1; i++) {
+          if (fields[i] == null) {
+            tableInfo.append(FIELD_DELIM);
+            continue;
+          }
+          tableInfo.append(String.format("%-" + ALIGNMENT + "s", fields[i])).append(FIELD_DELIM);
+          paddings[i] = ALIGNMENT > fields[i].length() ? ALIGNMENT : fields[i].length();
+        }
+      }
+      if (fields.length > 0) {
+        String value = fields[fields.length - 1];
+        String unescapedValue = (isLastLinePadded && value != null) ? value.replaceAll("\\\\n|\\\\r|\\\\r\\\\n", "\n") : value;
+        indentMultilineValue(unescapedValue, tableInfo, paddings, false);
+      } else {
+        tableInfo.append(LINE_DELIM);
+      }
     }
   }
 
@@ -539,7 +546,7 @@ public final class MetaDataFormatUtils {
    * @param tableInfo The target builder
    */
   private static void formatOutput(String[] fields, StringBuilder tableInfo) {
-    formatOutput(fields, tableInfo, false);
+    formatOutput(fields, tableInfo, false, false);
   }
 
   /**

@@ -153,7 +153,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       if (isColStatsAvailable) {
         mdt.transpose();
       }
-      output += mdt.renderTable(isOutputPadded);
+      output += mdt.renderTable(isOutputPadded, isFormatted);
 
       if (colPath.equals(tableName)) {
         if ((partCols != null) && !partCols.isEmpty() && showPartColsSeparately) {
@@ -164,7 +164,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
           for (FieldSchema col : partCols) {
             mdt.addRow(MetaDataFormatUtils.extractColumnValues(col));
           }
-          output += mdt.renderTable(isOutputPadded);
+          output += mdt.renderTable(isOutputPadded, isFormatted);
         }
       } else {
 

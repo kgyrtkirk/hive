@@ -38,10 +38,10 @@ public class TextMetaDataTable {
     table.add(Lists.<String> newArrayList(values));
   }
 
-  public String renderTable(boolean isOutputPadded) {
+  public String renderTable(boolean isOutputPadded, boolean isFormatted) {
     StringBuilder str = new StringBuilder();
     for (List<String> row : table) {
-      MetaDataFormatUtils.formatOutput(row.toArray(new String[] {}), str, isOutputPadded);
+      MetaDataFormatUtils.formatOutput(row.toArray(new String[] {}), str, isOutputPadded, isFormatted);
     }
     return str.toString();
   }

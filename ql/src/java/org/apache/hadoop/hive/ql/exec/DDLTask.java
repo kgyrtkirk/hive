@@ -2644,7 +2644,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       for (FieldSchema fieldSchema : cols) {
         tmd.addRow(MetaDataFormatUtils.extractColumnValues(fieldSchema));
       }
-      outStream.writeBytes(tmd.renderTable(isOutputPadded));
+      outStream.writeBytes(tmd.renderTable(isOutputPadded, false));
     } catch (IOException e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     } finally {
