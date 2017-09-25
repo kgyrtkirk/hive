@@ -158,9 +158,9 @@ public final class MetaDataFormatUtils {
     indexColumns.add(indexType.getName());
 
     String comment = index.getParameters().get("comment");
-    indexColumns.add(comment == null ? null : HiveStringUtils.escapeJava(comment));
+    indexColumns.add(comment);
 
-    formatOutput(indexColumns.toArray(new String[0]), indexInfo, isOutputPadded, true);
+    formatOutput(indexColumns.toArray(new String[0]), indexInfo, isOutputPadded, isOutputPadded);
 
     return indexInfo.toString();
   }
@@ -513,8 +513,9 @@ public final class MetaDataFormatUtils {
       boolean isLastLinePadded, boolean isFormatted) {
     if (!isFormatted) {
       for (int i = 0; i < fields.length; i++) {
-        if (fields[i] != null) {
-          tableInfo.append(fields[i]);
+        Object value = HiveStringUtils.escapeJava(fields[i]);
+        if (value != null) {
+          tableInfo.append(value);
         }
         tableInfo.append((i == fields.length - 1) ? LINE_DELIM : FIELD_DELIM);
       }

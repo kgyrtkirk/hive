@@ -41,7 +41,7 @@ public class TextMetaDataTable {
   public String renderTable(boolean isOutputPadded, boolean isFormatted) {
     StringBuilder str = new StringBuilder();
     for (List<String> row : table) {
-      MetaDataFormatUtils.formatOutput(row.toArray(new String[] {}), str, isOutputPadded, isFormatted);
+      MetaDataFormatUtils.formatOutput(row.toArray(new String[] {}), str, isOutputPadded, isOutputPadded);
     }
     return str.toString();
   }
