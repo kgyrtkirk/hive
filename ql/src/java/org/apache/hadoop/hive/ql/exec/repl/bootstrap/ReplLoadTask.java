@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.exec.repl.bootstrap;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -42,7 +41,6 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table.TableContext;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
-import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
 import java.io.Serializable;
@@ -72,7 +70,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   protected int execute(DriverContext driverContext) {
     try {
       int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
-      Context context = new Context(conf, getHive());
+      Context context = new Context(conf, getHive(), work.sessionStateLineageState,
+          work.currentTransactionId);
       TaskTracker loadTaskTracker = new TaskTracker(maxTasks);
       /*
           for now for simplicity we are doing just one directory ( one database ), come back to use
@@ -208,7 +207,15 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         work.updateDbEventState(null);
       }
       this.childTasks = scope.rootTasks;
+      /*
+      Since there can be multiple rounds of this run all of which will be tied to the same
+      query id -- generated in compile phase , adding a additional UUID to the end to print each run
+      in separate files.
+       */
       LOG.info("Root Tasks / Total Tasks : {} / {} ", childTasks.size(), loadTaskTracker.numberOfTasks());
+
+      // Populate the driver context with the scratch dir info from the repl context, so that the temp dirs will be cleaned up later
+      driverContext.getCtx().getFsScratchDirs().putAll(context.pathInfo.getFsScratchDirs());
     } catch (Exception e) {
       LOG.error("failed replication", e);
       setException(e);

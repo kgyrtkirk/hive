@@ -39,7 +39,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.StringUtils;
-
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
@@ -90,6 +89,7 @@ import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
+import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContextImpl;
@@ -100,7 +100,6 @@ import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
-import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -108,11 +107,11 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.ByteStream;
@@ -121,9 +120,7 @@ import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.MRJobConfig;
-
 import org.apache.hive.common.util.ShutdownHookManager;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1199,7 +1196,11 @@ public class Driver implements CommandProcessor {
       }
       // Set the transaction id in all of the acid file sinks
       if (haveAcidWrite()) {
-        for (FileSinkDesc desc : plan.getAcidSinks()) {
+        List<FileSinkDesc> acidSinks = new ArrayList<>(plan.getAcidSinks());
+        //sorting makes tests easier to write since file names and ROW__IDs depend on statementId
+        //so this makes (file name -> data) mapping stable
+        acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) -> fsd1.getDirName().compareTo(fsd2.getDirName()));
+        for (FileSinkDesc desc : acidSinks) {
           desc.setTransactionId(txnMgr.getCurrentTxnId());
           //it's possible to have > 1 FileSink writing to the same table/partition
           //e.g. Merge stmt, multi-insert stmt when mixing DP and SP writes
@@ -1805,9 +1806,9 @@ public class Driver implements CommandProcessor {
       ctx.setHDFSCleanup(true);
       this.driverCxt = driverCxt; // for canceling the query (should be bound to session?)
 
-      SessionState.get().setMapRedStats(new LinkedHashMap<String, MapRedStats>());
-      SessionState.get().setStackTraces(new HashMap<String, List<List<String>>>());
-      SessionState.get().setLocalMapRedErrors(new HashMap<String, List<String>>());
+      SessionState.get().setMapRedStats(new LinkedHashMap<>());
+      SessionState.get().setStackTraces(new HashMap<>());
+      SessionState.get().setLocalMapRedErrors(new HashMap<>());
 
       // Add root Tasks to runnable
       for (Task<? extends Serializable> tsk : plan.getRootTasks()) {
@@ -2077,11 +2078,28 @@ public class Driver implements CommandProcessor {
 
   private void setQueryDisplays(List<Task<? extends Serializable>> tasks) {
     if (tasks != null) {
-      for (Task<? extends Serializable> task : tasks) {
-        task.setQueryDisplay(queryDisplay);
-        setQueryDisplays(task.getDependentTasks());
+      Set<Task<? extends Serializable>> visited = new HashSet<Task<? extends Serializable>>();
+      while (!tasks.isEmpty()) {
+        tasks = setQueryDisplays(tasks, visited);
       }
     }
+  }
+
+  private List<Task<? extends Serializable>> setQueryDisplays(
+          List<Task<? extends Serializable>> tasks,
+          Set<Task<? extends Serializable>> visited) {
+    List<Task<? extends Serializable>> childTasks = new ArrayList<>();
+    for (Task<? extends Serializable> task : tasks) {
+      if (visited.contains(task)) {
+        continue;
+      }
+      task.setQueryDisplay(queryDisplay);
+      if (task.getDependentTasks() != null) {
+        childTasks.addAll(task.getDependentTasks());
+      }
+      visited.add(task);
+    }
+    return childTasks;
   }
 
   private void logMrWarning(int mrJobs) {
@@ -2159,7 +2177,7 @@ public class Driver implements CommandProcessor {
 
     cxt.launching(tskRun);
     // Launch Task
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.EXECPARALLEL) && tsk.isMapRedTask()) {
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.EXECPARALLEL) && tsk.canExecuteInParallel()) {
       // Launch it in the parallel mode, as a separate thread only for MR tasks
       if (LOG.isInfoEnabled()){
         LOG.info("Starting task [" + tsk + "] in parallel");

@@ -18,8 +18,8 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_COMMENT;
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMENT;
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
 
 import java.io.IOException;
@@ -136,6 +136,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
@@ -3588,8 +3589,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     }
     private void deleteParentRecursive(Path parent, int depth, boolean mustPurge) throws IOException, MetaException {
-      if (depth > 0 && parent != null && wh.isWritable(parent) && wh.isEmpty(parent)) {
-        wh.deleteDir(parent, true, mustPurge);
+      if (depth > 0 && parent != null && wh.isWritable(parent)) {
+        if (wh.isDir(parent) && wh.isEmpty(parent)) {
+          wh.deleteDir(parent, true, mustPurge);
+        }
         deleteParentRecursive(parent.getParent(), depth - 1, mustPurge);
       }
     }
@@ -4140,6 +4143,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public PartitionValuesResponse get_partition_values(PartitionValuesRequest request) throws MetaException {
+      String dbName = request.getDbName();
+      String tblName = request.getTblName();
+      List<FieldSchema> partCols = new ArrayList<FieldSchema>();
+      partCols.add(request.getPartitionKeys().get(0));
+      return getMS().listPartitionValues(dbName, tblName, request.getPartitionKeys(),
+          request.isApplyDistinct(), request.getFilter(), request.isAscending(),
+          request.getPartitionOrder(), request.getMaxParts());
+    }
+
+    @Override
     public void alter_partition(final String db_name, final String tbl_name,
         final Partition new_part)
         throws InvalidOperationException, MetaException, TException {
@@ -4423,10 +4437,29 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                 envContext, this);
         success = true;
         if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-                                                EventType.ALTER_TABLE,
-                                                new AlterTableEvent(oldt, newTable, false, true, this),
-                                                envContext);
+          if (oldt.getDbName().equalsIgnoreCase(newTable.getDbName())) {
+            MetaStoreListenerNotifier.notifyEvent(listeners,
+                    EventType.ALTER_TABLE,
+                    new AlterTableEvent(oldt, newTable, false, true, this),
+                    envContext);
+          } else {
+            MetaStoreListenerNotifier.notifyEvent(listeners,
+                    EventType.DROP_TABLE,
+                    new DropTableEvent(oldt, true, false, this),
+                    envContext);
+            MetaStoreListenerNotifier.notifyEvent(listeners,
+                    EventType.CREATE_TABLE,
+                    new CreateTableEvent(newTable, true, this),
+                    envContext);
+            if (newTable.getPartitionKeysSize() != 0) {
+              List<Partition> partitions
+                      = getMS().getPartitions(newTable.getDbName(), newTable.getTableName(), -1);
+              MetaStoreListenerNotifier.notifyEvent(listeners,
+                      EventType.ADD_PARTITION,
+                      new AddPartitionEvent(newTable, partitions, true, this),
+                      envContext);
+            }
+          }
         }
       } catch (NoSuchObjectException e) {
         // thrown when the table to be altered does not exist
@@ -7629,6 +7662,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean useCompactProtocol = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_COMPACT_PROTOCOL);
       boolean useSSL = conf.getBoolVar(ConfVars.HIVE_METASTORE_USE_SSL);
       useSasl = conf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL);
+
+      if (useSasl) {
+        // we are in secure mode. Login using keytab
+        String kerberosName = SecurityUtil
+            .getServerPrincipal(conf.getVar(ConfVars.METASTORE_KERBEROS_PRINCIPAL), "0.0.0.0");
+        String keyTabFile = conf.getVar(ConfVars.METASTORE_KERBEROS_KEYTAB_FILE);
+        UserGroupInformation.loginUserFromKeytab(kerberosName, keyTabFile);
+      }
 
       TProcessor processor;
       TTransportFactory transFactory;
