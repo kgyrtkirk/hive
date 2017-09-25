@@ -81,8 +81,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
   }
 
   @Override
-  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext,
-      CompilationOpContext opContext) {
+  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext, CompilationOpContext opContext) {
     super.initialize(queryState, queryPlan, driverContext, opContext);
     jc = new JobConf(conf);
   }
@@ -124,7 +123,6 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
   class StatsCollection implements Runnable {
 
-
     private Partish partish;
     private Object result;
 
@@ -136,6 +134,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
       return result != null;
 
     }
+
     @Override
     public void run() {
 
@@ -186,9 +185,9 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
           parameters.put(StatsSetupConst.TOTAL_SIZE, String.valueOf(fileSize));
           parameters.put(StatsSetupConst.NUM_FILES, String.valueOf(numFiles));
 
-          if(partish.getPartition() != null ) {
+          if (partish.getPartition() != null) {
             result = new Partition(partish.getTable(), partish.getPartition().getTPartition());
-          }else {
+          } else {
             result = new Table(partish.getTable().getTTable());
           }
 
@@ -304,8 +303,6 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     }
 
     EnvironmentContext environmentContext = new EnvironmentContext();
-    //    environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
-    // should be later:
     environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
 
     ImmutableListMultimap<String, StatsCollection> collectorsByTable = Multimaps.index(validColectors, SIMPLE_NAME_FUNCTION);
@@ -328,7 +325,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
         throw new RuntimeException("very intresting");
       }
 
-      if (values .get(0).result instanceof Table) {
+      if (values.get(0).result instanceof Table) {
         db.alterTable(tableFullName, (Table) values.get(0).result, environmentContext);
         LOG.debug("Updated stats for {}.", tableFullName);
       } else {
@@ -377,13 +374,13 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
   @Deprecated
   //crap
   private List<Partition> getPartitionsList(TableSpec ts) throws HiveException {
-      TableSpec tblSpec = work.getTableSpecs();
-      Table table = tblSpec.tableHandle;
-      if (!table.isPartitioned()) {
-        return null;
-      } else {
-        return tblSpec.partitions;
-      }
+    TableSpec tblSpec = work.getTableSpecs();
+    Table table = tblSpec.tableHandle;
+    if (!table.isPartitioned()) {
+      return null;
+    } else {
+      return tblSpec.partitions;
+    }
   }
 
 }
