@@ -442,11 +442,11 @@ public class HiveConf extends Configuration {
         "Inteval for cmroot cleanup thread."),
     REPL_FUNCTIONS_ROOT_DIR("hive.repl.replica.functions.root.dir","/user/hive/repl/functions/",
         "Root directory on the replica warehouse where the repl sub-system will store jars from the primary warehouse"),
-    REPL_APPROX_MAX_LOAD_TASKS("hive.repl.approx.max.load.tasks", 1000,
-        "Provide and approximate of the max number of tasks that should be executed in before  \n" +
-            "dynamically generating the next set of tasks. The number is an approximate as we \n" +
-            "will stop at slightly higher number than above, the reason being some events might \n" +
-            "lead to an task increment that would cross the above limit"),
+    REPL_APPROX_MAX_LOAD_TASKS("hive.repl.approx.max.load.tasks", 10000,
+        "Provide an approximation of the maximum number of tasks that should be executed before \n"
+            + "dynamically generating the next set of tasks. The number is approximate as Hive \n"
+            + "will stop at a slightly higher number, the reason being some events might lead to a \n"
+            + "task increment that would cross the specified limit."),
     REPL_PARTITIONS_DUMP_PARALLELISM("hive.repl.partitions.dump.parallelism",5,
         "Number of threads that will be used to dump partition data information during repl dump."),
     REPL_DUMPDIR_CLEAN_FREQ("hive.repl.dumpdir.clean.freq", "0s",
@@ -1656,7 +1656,10 @@ public class HiveConf extends Configuration {
 
     HIVE_SHARED_WORK_OPTIMIZATION("hive.optimize.shared.work", true,
         "Whether to enable shared work optimizer. The optimizer finds scan operator over the same table\n" +
-        "and follow-up operators in the query plan and merges them if they meet some preconditions."),
+        "and follow-up operators in the query plan and merges them if they meet some preconditions. Tez only."),
+    HIVE_COMBINE_EQUIVALENT_WORK_OPTIMIZATION("hive.combine.equivalent.work.optimization", true, "Whether to " +
+            "combine equivalent work objects during physical optimization.\n This optimization looks for equivalent " +
+            "work objects and combines them if they meet certain preconditions. Spark only."),
     HIVE_REMOVE_SQ_COUNT_CHECK("hive.optimize.remove.sq_count_check", false,
         "Whether to remove an extra join with sq_count_check for scalar subqueries "
             + "with constant group by keys."),
@@ -4463,10 +4466,41 @@ public class HiveConf extends Configuration {
     "hive\\.strict\\..*",
     "hive\\.tez\\..*",
     "hive\\.vectorized\\..*",
+    "fs\\.defaultFS",
+    "ssl\\.client\\.truststore\\.location",
+    "distcp\\.atomic",
+    "distcp\\.ignore\\.failures",
+    "distcp\\.preserve\\.status",
+    "distcp\\.preserve\\.rawxattrs",
+    "distcp\\.sync\\.folders",
+    "distcp\\.delete\\.missing\\.source",
+    "distcp\\.keystore\\.resource",
+    "distcp\\.liststatus\\.threads",
+    "distcp\\.max\\.maps",
+    "distcp\\.copy\\.strategy",
+    "distcp\\.skip\\.crc",
+    "distcp\\.copy\\.overwrite",
+    "distcp\\.copy\\.append",
+    "distcp\\.map\\.bandwidth\\.mb",
+    "distcp\\.dynamic\\..*",
+    "distcp\\.meta\\.folder",
+    "distcp\\.copy\\.listing\\.class",
+    "distcp\\.filters\\.class",
+    "distcp\\.options\\.skipcrccheck",
+    "distcp\\.options\\.m",
+    "distcp\\.options\\.numListstatusThreads",
+    "distcp\\.options\\.mapredSslConf",
+    "distcp\\.options\\.bandwidth",
+    "distcp\\.options\\.overwrite",
+    "distcp\\.options\\.strategy",
+    "distcp\\.options\\.i",
+    "distcp\\.options\\.p",
+    "distcp\\.options\\.update",
+    "distcp\\.options\\.delete",
     "mapred\\.map\\..*",
     "mapred\\.reduce\\..*",
     "mapred\\.output\\.compression\\.codec",
-    "mapred\\.job\\.queuename",
+    "mapred\\.job\\.queue\\.name",
     "mapred\\.output\\.compression\\.type",
     "mapred\\.min\\.split\\.size",
     "mapreduce\\.job\\.reduce\\.slowstart\\.completedmaps",
