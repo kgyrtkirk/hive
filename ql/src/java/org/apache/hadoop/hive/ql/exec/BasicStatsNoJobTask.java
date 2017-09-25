@@ -231,18 +231,21 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
       JobConf jc = new JobConf(conf);
 
       TableSpec tableSpecs = work.getTableSpecs();
+
       if (tableSpecs == null) {
         throw new RuntimeException("this is unexpected...needs some investigation");
       }
+      Table table = tableSpecs.tableHandle;
 
       Collection<Partition> partitions = null;
       if (work.getPrunedPartitionList() == null) {
-        partitions = getPartitionsList(tableSpecs);
+        if (table.isPartitioned()) {
+          partitions = tableSpecs.partitions;
+        }
       } else {
         partitions = work.getPrunedPartitionList().getPartitions();
       }
 
-      Table table = tableSpecs.tableHandle;
       List<StatsCollection> scs = Lists.newArrayList();
       if (partitions == null) {
         scs.add(new StatsCollection(jc, Partish.buildFor(table)));
@@ -362,18 +365,6 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
       // Preserve interrupt status
       Thread.currentThread().interrupt();
-    }
-  }
-
-  @Deprecated
-  //crap
-  private List<Partition> getPartitionsList(TableSpec ts) throws HiveException {
-    TableSpec tblSpec = work.getTableSpecs();
-    Table table = tblSpec.tableHandle;
-    if (!table.isPartitioned()) {
-      return null;
-    } else {
-      return tblSpec.partitions;
     }
   }
 
