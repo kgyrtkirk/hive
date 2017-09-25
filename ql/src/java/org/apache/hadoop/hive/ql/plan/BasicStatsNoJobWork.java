@@ -42,6 +42,8 @@ public class BasicStatsNoJobWork implements Serializable {
     this.tableSpecs = tableSpecs;
   }
 
+  // this constructor is never even called?
+  @Deprecated
   public BasicStatsNoJobWork(boolean statsReliable) {
     this.statsReliable = statsReliable;
   }

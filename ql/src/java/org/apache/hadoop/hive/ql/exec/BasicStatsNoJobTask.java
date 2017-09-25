@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -33,8 +32,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -63,7 +60,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * StatsNoJobTask is used in cases where stats collection is the only task for the given query (no
@@ -78,7 +74,6 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
   private static final long serialVersionUID = 1L;
   private static transient final Logger LOG = LoggerFactory.getLogger(BasicStatsNoJobTask.class);
-  private Table table;
   private JobConf jc = null;
 
   public BasicStatsNoJobTask() {
@@ -97,21 +92,16 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
     LOG.info("Executing stats (no job) task");
 
-    String tableName = "";
-    ExecutorService threadPool = null;
+    ExecutorService threadPool = StatsTask.newThreadPool(conf);
     Hive db = getHive();
-    try {
-      tableName = work.getTableSpecs().tableName;
-      table = db.getTable(tableName);
-      int numThreads = HiveConf.getIntVar(conf, ConfVars.HIVE_STATS_GATHER_NUM_THREADS);
-      threadPool = Executors.newFixedThreadPool(numThreads,
-          new ThreadFactoryBuilder().setDaemon(true).setNameFormat("StatsNoJobTask-Thread-%d")
-              .build());
-      LOG.info("Initialized threadpool for stats computation with " + numThreads + " threads");
-    } catch (HiveException e) {
-      LOG.error("Cannot get table " + tableName, e);
-      console.printError("Cannot get table " + tableName, e.toString());
-    }
+    //    try {
+    //      tableName = work.getTableSpecs().tableName;
+    //      table = db.getTable(tableName);
+
+    //    } catch (HiveException e) {
+    //      LOG.error("Cannot get table " + tableName, e);
+    //      console.printError("Cannot get table " + tableName, e.toString());
+    //    }
 
     return aggregateStats(threadPool, db);
   }
@@ -247,13 +237,27 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     int ret = 0;
 
     try {
+
+      TableSpec tableSpecs = work.getTableSpecs();
+      //      if ( != null) {
+      //        TableSpec tblSpec = work.getTableSpecs();
+      //        table = tblSpec.tableHandle;
+      //        if (!table.isPartitioned()) {
+      //          return null;
+      //        } else {
+      //          return tblSpec.partitions;
+      //        }
+      //      }
+      //      return null;
+
       Collection<Partition> partitions = null;
       if (work.getPrunedPartitionList() == null) {
-        partitions = getPartitionsList();
+        partitions = getPartitionsList(tableSpecs);
       } else {
         partitions = work.getPrunedPartitionList().getPartitions();
       }
 
+      Table table = tableSpecs.tableHandle;
       List<StatsCollection> scs = Lists.newArrayList();
       if (partitions == null) {
         scs.add(new StatsCollection(Partish.buildFor(table)));
@@ -271,7 +275,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
       shutdownAndAwaitTermination(threadPool);
       LOG.debug("Stats collection threadpool shutdown successful.");
 
-      ret = updatePartitions(db, scs);
+      ret = updatePartitions(db, scs, table);
 
     } catch (Exception e) {
       // Fail the query if the stats are supposed to be reliable
@@ -285,7 +289,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     return ret;
   }
 
-  private int updatePartitions(Hive db, List<StatsCollection> scs) throws InvalidOperationException, HiveException {
+  private int updatePartitions(Hive db, List<StatsCollection> scs, Table table) throws InvalidOperationException, HiveException {
     if (scs.isEmpty()) {
       return 0;
     }
@@ -314,13 +318,13 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     LOG.debug("Collectors.size(): {}", collectorsByTable.keySet());
 
     if (collectorsByTable.keySet().size() < 1) {
-      LOG.warn("Collectors are empty! ; {}",getTableFullName());
+      LOG.warn("Collectors are empty! ; {}", getTableFullName(table));
     }
 
     // for now this should be true...
     assert (collectorsByTable.keySet().size() <= 1);
 
-    LOG.debug("Updating stats for: {}", getTableFullName());
+    LOG.debug("Updating stats for: {}", getTableFullName(table));
 
     for (String partName : collectorsByTable.keySet()) {
       ImmutableList<StatsCollection> values = collectorsByTable.get(partName);
@@ -330,20 +334,20 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
       }
 
       if (values .get(0).result instanceof Table) {
-        db.alterTable(getTableFullName(),  (Table) values.get(0).result, environmentContext);
-        LOG.debug("Updated stats for {}.", getTableFullName());
+        db.alterTable(getTableFullName(table), (Table) values.get(0).result, environmentContext);
+        LOG.debug("Updated stats for {}.", getTableFullName(table));
       } else {
         if (values.get(0).result instanceof Partition) {
           List<Partition> results = Lists.transform(values, EXTRACT_RESULT_FUNCTION);
 
-          db.alterPartitions(getTableFullName(), results, environmentContext);
-          LOG.debug("Bulk updated {} partitions of {}.", results.size(), getTableFullName());
+          db.alterPartitions(getTableFullName(table), results, environmentContext);
+          LOG.debug("Bulk updated {} partitions of {}.", results.size(), getTableFullName(table));
         } else {
           throw new RuntimeException("inconsistent");
         }
       }
     }
-    LOG.debug("Updated stats for: {}", getTableFullName());
+    LOG.debug("Updated stats for: {}", getTableFullName(table));
     return 0;
   }
 
@@ -375,20 +379,19 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     }
   }
 
-  private List<Partition> getPartitionsList() throws HiveException {
-    if (work.getTableSpecs() != null) {
+  @Deprecated
+  //crap
+  private List<Partition> getPartitionsList(TableSpec ts) throws HiveException {
       TableSpec tblSpec = work.getTableSpecs();
-      table = tblSpec.tableHandle;
+      Table table = tblSpec.tableHandle;
       if (!table.isPartitioned()) {
         return null;
       } else {
         return tblSpec.partitions;
       }
-    }
-    return null;
   }
 
-  public String getTableFullName() {
+  public String getTableFullName(Table table) {
     return table.getDbName() + "." + table.getTableName();
   }
 
