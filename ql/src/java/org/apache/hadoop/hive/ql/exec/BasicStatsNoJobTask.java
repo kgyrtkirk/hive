@@ -94,14 +94,6 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
     ExecutorService threadPool = StatsTask.newThreadPool(conf);
     Hive db = getHive();
-    //    try {
-    //      tableName = work.getTableSpecs().tableName;
-    //      table = db.getTable(tableName);
-
-    //    } catch (HiveException e) {
-    //      LOG.error("Cannot get table " + tableName, e);
-    //      console.printError("Cannot get table " + tableName, e.toString());
-    //    }
 
     return aggregateStats(threadPool, db);
   }
@@ -290,6 +282,9 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
   }
 
   private int updatePartitions(Hive db, List<StatsCollection> scs, Table table) throws InvalidOperationException, HiveException {
+
+    String tableFullName = table.getDbName() + "." + table.getTableName();
+
     if (scs.isEmpty()) {
       return 0;
     }
@@ -318,13 +313,13 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     LOG.debug("Collectors.size(): {}", collectorsByTable.keySet());
 
     if (collectorsByTable.keySet().size() < 1) {
-      LOG.warn("Collectors are empty! ; {}", getTableFullName(table));
+      LOG.warn("Collectors are empty! ; {}", tableFullName);
     }
 
     // for now this should be true...
     assert (collectorsByTable.keySet().size() <= 1);
 
-    LOG.debug("Updating stats for: {}", getTableFullName(table));
+    LOG.debug("Updating stats for: {}", tableFullName);
 
     for (String partName : collectorsByTable.keySet()) {
       ImmutableList<StatsCollection> values = collectorsByTable.get(partName);
@@ -334,20 +329,20 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
       }
 
       if (values .get(0).result instanceof Table) {
-        db.alterTable(getTableFullName(table), (Table) values.get(0).result, environmentContext);
-        LOG.debug("Updated stats for {}.", getTableFullName(table));
+        db.alterTable(tableFullName, (Table) values.get(0).result, environmentContext);
+        LOG.debug("Updated stats for {}.", tableFullName);
       } else {
         if (values.get(0).result instanceof Partition) {
           List<Partition> results = Lists.transform(values, EXTRACT_RESULT_FUNCTION);
 
-          db.alterPartitions(getTableFullName(table), results, environmentContext);
-          LOG.debug("Bulk updated {} partitions of {}.", results.size(), getTableFullName(table));
+          db.alterPartitions(tableFullName, results, environmentContext);
+          LOG.debug("Bulk updated {} partitions of {}.", results.size(), tableFullName);
         } else {
           throw new RuntimeException("inconsistent");
         }
       }
     }
-    LOG.debug("Updated stats for: {}", getTableFullName(table));
+    LOG.debug("Updated stats for: {}", tableFullName);
     return 0;
   }
 
@@ -389,10 +384,6 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
       } else {
         return tblSpec.partitions;
       }
-  }
-
-  public String getTableFullName(Table table) {
-    return table.getDbName() + "." + table.getTableName();
   }
 
 }
