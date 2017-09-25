@@ -74,7 +74,6 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
   private static final long serialVersionUID = 1L;
   private static transient final Logger LOG = LoggerFactory.getLogger(BasicStatsNoJobTask.class);
-  private JobConf jc = null;
 
   public BasicStatsNoJobTask() {
     super();
@@ -83,11 +82,11 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
   @Override
   public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext, CompilationOpContext opContext) {
     super.initialize(queryState, queryPlan, driverContext, opContext);
-    jc = new JobConf(conf);
   }
 
   @Override
   public int execute(DriverContext driverContext) {
+
 
     LOG.info("Executing stats (no job) task");
 
@@ -125,8 +124,10 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
     private Partish partish;
     private Object result;
+    private JobConf jc;
 
-    public StatsCollection(Partish partish) {
+    public StatsCollection(JobConf jc, Partish partish) {
+      this.jc = jc;
       this.partish = partish;
     }
 
@@ -229,6 +230,8 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
     try {
 
+      JobConf jc = new JobConf(conf);
+
       TableSpec tableSpecs = work.getTableSpecs();
       //      if ( != null) {
       //        TableSpec tblSpec = work.getTableSpecs();
@@ -251,10 +254,10 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
       Table table = tableSpecs.tableHandle;
       List<StatsCollection> scs = Lists.newArrayList();
       if (partitions == null) {
-        scs.add(new StatsCollection(Partish.buildFor(table)));
+        scs.add(new StatsCollection(jc, Partish.buildFor(table)));
       } else {
         for (Partition part : partitions) {
-          scs.add(new StatsCollection(Partish.buildFor(table, part)));
+          scs.add(new StatsCollection(jc, Partish.buildFor(table, part)));
         }
       }
 
