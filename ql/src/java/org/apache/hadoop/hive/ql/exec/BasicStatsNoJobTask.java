@@ -227,22 +227,13 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
   private int aggregateStats(ExecutorService threadPool, Hive db) {
     int ret = 0;
-
     try {
-
       JobConf jc = new JobConf(conf);
 
       TableSpec tableSpecs = work.getTableSpecs();
-      //      if ( != null) {
-      //        TableSpec tblSpec = work.getTableSpecs();
-      //        table = tblSpec.tableHandle;
-      //        if (!table.isPartitioned()) {
-      //          return null;
-      //        } else {
-      //          return tblSpec.partitions;
-      //        }
-      //      }
-      //      return null;
+      if (tableSpecs == null) {
+        throw new RuntimeException("this is unexpected...needs some investigation");
+      }
 
       Collection<Partition> partitions = null;
       if (work.getPrunedPartitionList() == null) {
