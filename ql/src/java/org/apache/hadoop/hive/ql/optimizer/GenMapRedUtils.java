@@ -1492,6 +1492,7 @@ public final class GenMapRedUtils {
 
     statsWork.setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
     statsWork.setStatsTmpDir(nd.getConf().getStatsTmpDir());
+
     if (currTask.getWork() instanceof MapredWork) {
       MapredWork mrWork = (MapredWork) currTask.getWork();
       mrWork.getMapWork().setGatheringStats(true);

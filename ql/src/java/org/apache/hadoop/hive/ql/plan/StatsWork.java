@@ -59,12 +59,6 @@ public class StatsWork implements Serializable {
     this.currentDatabase = SessionState.get().getCurrentDatabase();
   }
 
-  public StatsWork(FetchWork work, ColumnStatsDesc colStats) {
-    this.fWork = work;
-    this.currentDatabase = SessionState.get().getCurrentDatabase();
-    this.setColStats(colStats);
-  }
-
   @Override
   public String toString() {
     return String.format("StatWork; fetch: %s", fWork );
