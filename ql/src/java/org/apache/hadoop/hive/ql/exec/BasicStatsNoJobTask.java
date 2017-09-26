@@ -110,6 +110,18 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
   static class FooterStatCollector implements Runnable {
 
+    private Partish partish;
+    private Object result;
+    private JobConf jc;
+    private Path dir;
+    private FileSystem fs;
+    private LogHelper console;
+
+    public FooterStatCollector(JobConf jc, Partish partish) {
+      this.jc = jc;
+      this.partish = partish;
+    }
+
     public static final Function<FooterStatCollector, String> SIMPLE_NAME_FUNCTION = new Function<FooterStatCollector, String>() {
 
       @Override
@@ -123,20 +135,6 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
         return (Partition) input.result;
       }
     };
-
-
-
-    private Partish partish;
-    private Object result;
-    private JobConf jc;
-    private Path dir;
-    private FileSystem fs;
-    private LogHelper console;
-
-    public FooterStatCollector(JobConf jc, Partish partish) {
-      this.jc = jc;
-      this.partish = partish;
-    }
 
     private boolean isValid() {
       return result != null;
