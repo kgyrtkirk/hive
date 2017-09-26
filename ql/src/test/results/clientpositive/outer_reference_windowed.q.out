@@ -120,6 +120,41 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e011_03
 POSTHOOK: Output: default@e011_03
 #### A masked pattern was here ####
+PREHOOK: query: describe formatted e011_01
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@e011_01
+POSTHOOK: query: describe formatted e011_01
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@e011_01
+# col_name            	data_type           	comment             
+	 	 
+c1                  	decimal(15,2)       	                    
+c2                  	decimal(15,2)       	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\",\"c2\":\"true\"}}
+	numFiles            	1                   
+	numRows             	4                   
+	rawDataSize         	12                  
+	totalSize           	16                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: explain select sum(sum(c1)) over() from e011_01
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select sum(sum(c1)) over() from e011_01

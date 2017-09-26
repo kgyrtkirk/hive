@@ -244,6 +244,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
       if (tableSpecs == null) {
         throw new RuntimeException("this is unexpected...needs some investigation");
       }
+
       Table table = tableSpecs.tableHandle;
 
       Collection<Partition> partitions = null;
@@ -266,7 +267,6 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
       List<FooterStatCollector> scs = Lists.newArrayList();
       for (Partish partish : partishes) {
-
         scs.add(new FooterStatCollector(jc, partish));
       }
 
@@ -345,7 +345,6 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
       } else {
         if (values.get(0).result instanceof Partition) {
           List<Partition> results = Lists.transform(values, FooterStatCollector.EXTRACT_RESULT_FUNCTION);
-
           db.alterPartitions(tableFullName, results, environmentContext);
           LOG.debug("Bulk updated {} partitions of {}.", results.size(), tableFullName);
         } else {
