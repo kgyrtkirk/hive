@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
-import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -70,10 +69,10 @@ public class ColStatsProcessor implements IStatsProcessor {
 
   @Override
   public void initialize(CompilationOpContext opContext) {
-    initializeForFetch(opContext);
     try {
+      fWork.initializeForFetch(opContext);
       JobConf job = new JobConf(conf);
-      ftOp = new FetchOperator(getfWork(), job);
+      ftOp = new FetchOperator(fWork, job);
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new RuntimeException(e);
@@ -83,23 +82,6 @@ public class ColStatsProcessor implements IStatsProcessor {
   @Override
   public int process(Hive db, Table tbl) throws Exception {
     return persistColumnStats(db, tbl);
-  }
-
-  public ListSinkOperator getSink() {
-    return getfWork().getSink();
-  }
-
-  @Deprecated
-  private FetchWork getfWork() {
-    return fWork;
-  }
-
-  private void initializeForFetch(CompilationOpContext ctx) {
-    getfWork().initializeForFetch(ctx);
-  }
-
-  public int getLeastNumRows() {
-    return getfWork().getLeastNumRows();
   }
 
   private List<ColumnStatistics> constructColumnStatsFromPackedRows(Table tbl1) throws HiveException, MetaException, IOException {
