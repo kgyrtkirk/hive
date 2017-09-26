@@ -18,6 +18,14 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
+import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.Table;
+
 public interface IStatsProcessor {
+
+  void initialize(CompilationOpContext opContext);
+
+  int process(Hive db, Table tbl) throws Exception;
 
 }

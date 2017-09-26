@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.stats.ColStatsProcessor;
+import org.apache.hadoop.hive.ql.stats.IStatsProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +56,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     super();
   }
 
-  List<ColStatsProcessor> processors = new ArrayList<>();
+  List<IStatsProcessor> processors = new ArrayList<>();
 
   @Override
   public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext ctx,
@@ -66,7 +67,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       processors.add(new ColStatsProcessor(work.getColStats(), conf, work.getBasicStatsWork()));
     }
 
-    for (ColStatsProcessor p : processors) {
+    for (IStatsProcessor p : processors) {
       p.initialize(opContext);
     }
   }
@@ -108,8 +109,8 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         Hive db = getHive();
         String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), work.getColStats().getTableName());
         Table tbl = db.getTable(names[0], names[1]);
-        for (ColStatsProcessor task : processors) {
-          return task.persistColumnStats(db, tbl);
+        for (IStatsProcessor task : processors) {
+          return task.process(db, tbl);
         }
       } catch (Exception e) {
         LOG.error("Failed to run stats task", e);

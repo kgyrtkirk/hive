@@ -68,6 +68,7 @@ public class ColStatsProcessor implements IStatsProcessor {
     isStatsReliable = conf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE);
   }
 
+  @Override
   public void initialize(CompilationOpContext opContext) {
     initializeForFetch(opContext);
     try {
@@ -77,6 +78,11 @@ public class ColStatsProcessor implements IStatsProcessor {
       LOG.error(StringUtils.stringifyException(e));
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public int process(Hive db, Table tbl) throws Exception {
+    return persistColumnStats(db, tbl);
   }
 
   public ListSinkOperator getSink() {
