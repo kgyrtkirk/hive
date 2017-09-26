@@ -106,27 +106,27 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     return "STATS-NO-JOB";
   }
 
-  public static final Function<StatsCollection, String> SIMPLE_NAME_FUNCTION = new Function<StatsCollection, String>() {
+  public static final Function<FooterStatCollector, String> SIMPLE_NAME_FUNCTION = new Function<FooterStatCollector, String>() {
 
     @Override
-    public String apply(StatsCollection sc) {
+    public String apply(FooterStatCollector sc) {
       return String.format("%s#%s", sc.partish.getTable().getCompleteName(), sc.partish.getPartishType());
     }
   };
-  private static final Function<StatsCollection, Partition> EXTRACT_RESULT_FUNCTION = new Function<StatsCollection, Partition>() {
+  private static final Function<FooterStatCollector, Partition> EXTRACT_RESULT_FUNCTION = new Function<FooterStatCollector, Partition>() {
     @Override
-    public Partition apply(StatsCollection input) {
+    public Partition apply(FooterStatCollector input) {
       return (Partition) input.result;
     }
   };
 
-  class StatsCollection implements Runnable {
+  static class FooterStatCollector implements Runnable {
 
     private Partish partish;
     private Object result;
     private JobConf jc;
 
-    public StatsCollection(JobConf jc, Partish partish) {
+    public FooterStatCollector(JobConf jc, Partish partish) {
       this.jc = jc;
       this.partish = partish;
     }
@@ -246,16 +246,16 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
         partitions = work.getPartitions();
       }
 
-      List<StatsCollection> scs = Lists.newArrayList();
+      List<FooterStatCollector> scs = Lists.newArrayList();
       if (partitions == null) {
-        scs.add(new StatsCollection(jc, Partish.buildFor(table)));
+        scs.add(new FooterStatCollector(jc, Partish.buildFor(table)));
       } else {
         for (Partition part : partitions) {
-          scs.add(new StatsCollection(jc, Partish.buildFor(table, part)));
+          scs.add(new FooterStatCollector(jc, Partish.buildFor(table, part)));
         }
       }
 
-      for (StatsCollection sc : scs) {
+      for (FooterStatCollector sc : scs) {
         threadPool.execute(sc);
       }
 
@@ -277,7 +277,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     return ret;
   }
 
-  private int updatePartitions(Hive db, List<StatsCollection> scs, Table table) throws InvalidOperationException, HiveException {
+  private int updatePartitions(Hive db, List<FooterStatCollector> scs, Table table) throws InvalidOperationException, HiveException {
 
     String tableFullName = table.getDbName() + "." + table.getTableName();
 
@@ -285,15 +285,15 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
       return 0;
     }
     if (work.isStatsReliable()) {
-      for (StatsCollection statsCollection : scs) {
+      for (FooterStatCollector statsCollection : scs) {
         if (statsCollection.result == null) {
           LOG.debug("Stats requested to be reliable. Empty stats found: " + statsCollection.partish.getSimpleName());
           return -1;
         }
       }
     }
-    List<StatsCollection> validColectors = Lists.newArrayList();
-    for (StatsCollection statsCollection : scs) {
+    List<FooterStatCollector> validColectors = Lists.newArrayList();
+    for (FooterStatCollector statsCollection : scs) {
       if (statsCollection.isValid()) {
         validColectors.add(statsCollection);
       }
@@ -302,7 +302,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     EnvironmentContext environmentContext = new EnvironmentContext();
     environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
 
-    ImmutableListMultimap<String, StatsCollection> collectorsByTable = Multimaps.index(validColectors, SIMPLE_NAME_FUNCTION);
+    ImmutableListMultimap<String, FooterStatCollector> collectorsByTable = Multimaps.index(validColectors, SIMPLE_NAME_FUNCTION);
 
     LOG.debug("Collectors.size(): {}", collectorsByTable.keySet());
 
@@ -316,7 +316,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     LOG.debug("Updating stats for: {}", tableFullName);
 
     for (String partName : collectorsByTable.keySet()) {
-      ImmutableList<StatsCollection> values = collectorsByTable.get(partName);
+      ImmutableList<FooterStatCollector> values = collectorsByTable.get(partName);
 
       if (values == null) {
         throw new RuntimeException("very intresting");
