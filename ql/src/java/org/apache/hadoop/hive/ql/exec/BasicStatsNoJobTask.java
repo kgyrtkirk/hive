@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -138,7 +139,6 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
     private boolean isValid() {
       return result != null;
-
     }
 
     public void init(HiveConf conf, LogHelper console) throws IOException {
@@ -255,13 +255,19 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
         partitions = work.getPartitions();
       }
 
-      List<FooterStatCollector> scs = Lists.newArrayList();
+      LinkedList<Partish> partishes = Lists.newLinkedList();
       if (partitions == null) {
-        scs.add(new FooterStatCollector(jc, Partish.buildFor(table)));
+        partishes.add(Partish.buildFor(table));
       } else {
         for (Partition part : partitions) {
-          scs.add(new FooterStatCollector(jc, Partish.buildFor(table, part)));
+          partishes.add(Partish.buildFor(table, part));
         }
+      }
+
+      List<FooterStatCollector> scs = Lists.newArrayList();
+      for (Partish partish : partishes) {
+
+        scs.add(new FooterStatCollector(jc, partish));
       }
 
       for (FooterStatCollector sc : scs) {
