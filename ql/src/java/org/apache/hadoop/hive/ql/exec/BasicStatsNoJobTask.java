@@ -108,21 +108,23 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     return "STATS-NO-JOB";
   }
 
-  public static final Function<FooterStatCollector, String> SIMPLE_NAME_FUNCTION = new Function<FooterStatCollector, String>() {
-
-    @Override
-    public String apply(FooterStatCollector sc) {
-      return String.format("%s#%s", sc.partish.getTable().getCompleteName(), sc.partish.getPartishType());
-    }
-  };
-  private static final Function<FooterStatCollector, Partition> EXTRACT_RESULT_FUNCTION = new Function<FooterStatCollector, Partition>() {
-    @Override
-    public Partition apply(FooterStatCollector input) {
-      return (Partition) input.result;
-    }
-  };
-
   static class FooterStatCollector implements Runnable {
+
+    public static final Function<FooterStatCollector, String> SIMPLE_NAME_FUNCTION = new Function<FooterStatCollector, String>() {
+
+      @Override
+      public String apply(FooterStatCollector sc) {
+        return String.format("%s#%s", sc.partish.getTable().getCompleteName(), sc.partish.getPartishType());
+      }
+    };
+    private static final Function<FooterStatCollector, Partition> EXTRACT_RESULT_FUNCTION = new Function<FooterStatCollector, Partition>() {
+      @Override
+      public Partition apply(FooterStatCollector input) {
+        return (Partition) input.result;
+      }
+    };
+
+
 
     private Partish partish;
     private Object result;
@@ -313,7 +315,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     EnvironmentContext environmentContext = new EnvironmentContext();
     environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
 
-    ImmutableListMultimap<String, FooterStatCollector> collectorsByTable = Multimaps.index(validColectors, SIMPLE_NAME_FUNCTION);
+    ImmutableListMultimap<String, FooterStatCollector> collectorsByTable = Multimaps.index(validColectors, FooterStatCollector.SIMPLE_NAME_FUNCTION);
 
     LOG.debug("Collectors.size(): {}", collectorsByTable.keySet());
 
@@ -338,7 +340,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
         LOG.debug("Updated stats for {}.", tableFullName);
       } else {
         if (values.get(0).result instanceof Partition) {
-          List<Partition> results = Lists.transform(values, EXTRACT_RESULT_FUNCTION);
+          List<Partition> results = Lists.transform(values, FooterStatCollector.EXTRACT_RESULT_FUNCTION);
 
           db.alterPartitions(tableFullName, results, environmentContext);
           LOG.debug("Bulk updated {} partitions of {}.", results.size(), tableFullName);
