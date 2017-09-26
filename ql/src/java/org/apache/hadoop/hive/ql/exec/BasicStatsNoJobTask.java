@@ -238,12 +238,12 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
       Table table = tableSpecs.tableHandle;
 
       Collection<Partition> partitions = null;
-      if (work.getPrunedPartitionList() == null) {
+      if (work.getPartitions() == null) {
         if (table.isPartitioned()) {
           partitions = tableSpecs.partitions;
         }
       } else {
-        partitions = work.getPrunedPartitionList().getPartitions();
+        partitions = work.getPartitions();
       }
 
       List<StatsCollection> scs = Lists.newArrayList();
