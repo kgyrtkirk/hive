@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -149,9 +148,6 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       this.work = work;
       atomic = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_ATOMIC);
       followedColStats1 = followedColStats2;
-    }
-
-    public void init1(HiveConf conf) {
     }
 
     public Object process(StatsAggregator statsAggregator) throws HiveException, MetaException {
@@ -311,7 +307,6 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         getHive().alterTable(tableFullName, (Table) res, environmentContext);
 
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
-
           console.printInfo("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
         }
         LOG.info("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
@@ -323,19 +318,11 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
 
         List<Partition> updates = new ArrayList<Partition>();
 
-        //Get the file status up-front for all partitions. Beneficial in cases of blob storage systems
-        final Map<String, FileStatus[]> fileStatusMap = new ConcurrentHashMap<String, FileStatus[]>();
-        int poolSize = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 1);
-        // In case thread count is set to 0, use single thread.
-        poolSize = Math.max(poolSize, 1);
-        final ExecutorService pool = Executors.newFixedThreadPool(poolSize,
-          new ThreadFactoryBuilder().setDaemon(true)
-            .setNameFormat("stats-updater-thread-%d")
-            .build());
+        final ExecutorService pool = buildBasicStatsExecutor();
+
         final List<Future<Void>> futures = Lists.newLinkedList();
         List<BasicStatsProcessor> processors = Lists.newLinkedList();
 
-        LOG.debug("Getting file stats of all partitions. threadpool size:" + poolSize);
         try {
           for(final Partition partn : partitions) {
             Partish p;
@@ -411,6 +398,16 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     // The return value of 0 indicates success,
     // anything else indicates failure
     return ret;
+  }
+
+  private ExecutorService buildBasicStatsExecutor() {
+    //Get the file status up-front for all partitions. Beneficial in cases of blob storage systems
+    int poolSize = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 1);
+    // In case thread count is set to 0, use single thread.
+    poolSize = Math.max(poolSize, 1);
+    final ExecutorService pool = Executors.newFixedThreadPool(poolSize, new ThreadFactoryBuilder().setDaemon(true).setNameFormat("stats-updater-thread-%d").build());
+    LOG.debug("Getting file stats of all partitions. threadpool size:" + poolSize);
+    return pool;
   }
 
   private StatsAggregator createStatsAggregator(StatsCollectionContext scc, HiveConf conf) throws HiveException {
