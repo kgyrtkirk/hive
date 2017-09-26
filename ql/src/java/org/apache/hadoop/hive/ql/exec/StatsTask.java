@@ -270,7 +270,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       return ret;
     }
 
-    if (work.getfWork() != null) {
+    if (work.hasColStats()) {
       try {
         Hive db = getHive();
         String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), work.getColStats().getTableName());
