@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.Set;
 
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 
@@ -58,12 +60,18 @@ public class BasicStatsNoJobWork implements Serializable {
     return statsReliable;
   }
 
+  @Deprecated
   public void setPrunedPartitionList(PrunedPartitionList prunedPartitionList) {
     this.prunedPartitionList = prunedPartitionList;
   }
 
+  @Deprecated
   public PrunedPartitionList getPrunedPartitionList() {
     return prunedPartitionList;
+  }
+
+  public Set<Partition> getPartitions() {
+    return prunedPartitionList == null ? null : prunedPartitionList.getPartitions();
   }
 
 }

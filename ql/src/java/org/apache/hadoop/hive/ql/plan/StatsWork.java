@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 @Explain(displayName = "Stats Work", explainLevels = { Level.USER, Level.DEFAULT,
     Level.EXTENDED })
 public class StatsWork implements Serializable {
+
   private static final long serialVersionUID = 1L;
   // this is for basic stats
   private BasicStatsWork basicStatsWork;
