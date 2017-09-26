@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -47,6 +49,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.plan.BasicStatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
@@ -125,6 +128,9 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
     private Partish partish;
     private Object result;
     private JobConf jc;
+    private Path dir;
+    private FileSystem fs;
+    private LogHelper console;
 
     public FooterStatCollector(JobConf jc, Partish partish) {
       this.jc = jc;
@@ -136,17 +142,21 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
 
     }
 
+    public void init(HiveConf conf, LogHelper console) throws IOException {
+      this.console = console;
+      dir = new Path(partish.getPartSd().getLocation());
+      fs = dir.getFileSystem(conf);
+    }
+
     @Override
     public void run() {
 
       Map<String, String> parameters = partish.getPartParameters();
       try {
-        Path dir = new Path(partish.getPartSd().getLocation());
         long numRows = 0;
         long rawDataSize = 0;
         long fileSize = 0;
         long numFiles = 0;
-        FileSystem fs = dir.getFileSystem(conf);
         FileStatus[] fileList = HiveStatsUtils.getFileStatusRecurse(dir, -1, fs);
 
         boolean statsAvailable = false;
@@ -256,6 +266,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
       }
 
       for (FooterStatCollector sc : scs) {
+        sc.init(conf, console);
         threadPool.execute(sc);
       }
 
@@ -266,6 +277,7 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
       ret = updatePartitions(db, scs, table);
 
     } catch (Exception e) {
+      console.printError("Failed to collect footer statistics.", "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
       // Fail the query if the stats are supposed to be reliable
       if (work.isStatsReliable()) {
         ret = -1;
