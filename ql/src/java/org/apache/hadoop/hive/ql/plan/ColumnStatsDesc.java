@@ -38,16 +38,6 @@ public class ColumnStatsDesc extends DDLDesc implements Serializable, Cloneable 
   private List<String> colType;
 
 
-  public ColumnStatsDesc(String tableName, List<String> colName, List<String> colType,
-      boolean isTblLevel) {
-    this.tableName = tableName;
-    this.colName = colName;
-    this.colType = colType;
-    this.isTblLevel = isTblLevel;
-    this.numBitVector = 0;
-    this.needMerge = false;
-  }
-
   public ColumnStatsDesc(String tableName, List<String> colName,
       List<String> colType, boolean isTblLevel, int numBitVector, FetchWork fWork1) {
     this.tableName = tableName;

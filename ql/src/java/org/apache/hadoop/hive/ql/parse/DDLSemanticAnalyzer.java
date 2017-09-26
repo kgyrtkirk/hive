@@ -591,8 +591,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("column type not found");
     }
 
+    // FIXME: this should really not use columnStatDesc...it seems it only relies on tablename/coltype/colname on the other end
     ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tbl.getDbName() + "." + tbl.getTableName(),
-        Arrays.asList(colName), Arrays.asList(colType), partSpec == null);
+        Arrays.asList(colName), Arrays.asList(colType), partSpec == null, 0, null);
     ColumnStatsUpdateTask cStatsUpdateTask = (ColumnStatsUpdateTask) TaskFactory
         .get(new ColumnStatsUpdateWork(cStatsDesc, partName, mapProp, SessionState.get().getCurrentDatabase()), conf);
     rootTasks.add(cStatsUpdateTask);
@@ -1106,6 +1107,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           basicStatsWork.setClearAggregatorStats(true);
           basicStatsWork.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
           StatsWork columnStatsWork = new StatsWork(basicStatsWork);
+
           Task<? extends Serializable> statTask = TaskFactory.get(columnStatsWork, conf);
           moveTsk.addDependentTask(statTask);
         }
