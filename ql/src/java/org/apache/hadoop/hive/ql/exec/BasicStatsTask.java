@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -57,8 +56,6 @@ import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
-import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -138,157 +135,6 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
   @Override
   public String getName() {
     return "STATS";
-  }
-
-  public static abstract class Partish {
-
-    public static Partish buildFor(Table table) {
-      return new PTable(table);
-    }
-
-    public static Partish buildFor(Partition part) {
-      return new PPart(part.getTable(), part);
-    }
-
-    public static Partish buildFor(Table table, Partition part) {
-      return new PPart(table, part);
-    }
-
-    static class PTable extends Partish {
-      private Table table;
-
-      public PTable(Table table) {
-        this.table = table;
-      }
-
-      @Override
-      public Table getTable() {
-        return table;
-      }
-
-      @Override
-      public Map<String, String> getPartParameters() {
-        return table.getTTable().getParameters();
-      }
-
-      @Override
-      public StorageDescriptor getPartSd() {
-        return table.getTTable().getSd();
-      }
-
-      @Override
-      public Object getOutput() throws HiveException {
-        return new Table(getTable().getTTable());
-      }
-
-      @Override
-      public Partition getPartition() {
-        return null;
-      }
-
-      @Override
-      public Class<? extends InputFormat> getInputFormatClass() {
-        return table.getInputFormatClass();
-      }
-
-      @Override
-      public Class<? extends OutputFormat> getOutputFormatClass() {
-        return table.getOutputFormatClass();
-      }
-
-      @Override
-      public String getLocation() {
-        return table.getDataLocation().toString();
-      }
-
-      @Override
-      public String getSimpleName() {
-        return String.format("Table %s.%s", table.getDbName(), table.getTableName());
-      }
-    }
-
-    static class PPart extends Partish {
-      private Table table;
-      private Partition partition;
-
-      // FIXME: possibly the distinction between table/partition is not need; however it was like this before....will change it later
-      public PPart(Table table, Partition partiton) {
-        this.table = table;
-        partition = partiton;
-      }
-
-      @Override
-      public Table getTable() {
-        return table;
-      }
-
-      @Override
-      public Map<String, String> getPartParameters() {
-        return partition.getTPartition().getParameters();
-      }
-
-      @Override
-      public StorageDescriptor getPartSd() {
-        return partition.getTPartition().getSd();
-      }
-
-      @Override
-      public Object getOutput() throws HiveException {
-        return new Partition(table, partition.getTPartition());
-      }
-
-      @Override
-      public Partition getPartition() {
-        return partition;
-      }
-
-      @Override
-      public Class<? extends InputFormat> getInputFormatClass() throws HiveException {
-        return partition.getInputFormatClass();
-      }
-
-      @Override
-      public Class<? extends OutputFormat> getOutputFormatClass() throws HiveException {
-        return partition.getOutputFormatClass();
-      }
-
-      @Override
-      public String getLocation() {
-        return partition.getLocation();
-      }
-
-      @Override
-      public String getSimpleName() {
-        return String.format("Partition %s.%s %s", table.getDbName(), table.getTableName(), partition.getSpec());
-      }
-
-    }
-
-    public final boolean isAcid() {
-      return AcidUtils.isAcidTable(getTable());
-    }
-
-    public abstract Table getTable();
-
-    public abstract Map<String, String> getPartParameters();
-
-    public abstract StorageDescriptor getPartSd();
-
-    public abstract Object getOutput() throws HiveException;
-
-    public abstract Partition getPartition();
-
-    public abstract Class<? extends InputFormat> getInputFormatClass() throws HiveException;
-
-    public abstract Class<? extends OutputFormat> getOutputFormatClass() throws HiveException;
-
-    public abstract String getLocation();
-
-    public abstract String getSimpleName();
-
-    public final String getPartishType() {
-      return getClass().getSimpleName();
-    }
   }
 
   private class BasicStatsProcessor {
