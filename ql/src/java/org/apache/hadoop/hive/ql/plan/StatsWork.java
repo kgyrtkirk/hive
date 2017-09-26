@@ -40,7 +40,6 @@ public class StatsWork implements Serializable {
   private ColumnStatsDesc colStats;
   private static final int LIMIT = -1;
 
-  private transient Task<?> sourceTask;
   private String currentDatabase;
 
   public StatsWork() {
@@ -111,7 +110,6 @@ public class StatsWork implements Serializable {
   }
 
   public void setSourceTask(Task<?> sourceTask) {
-    this.sourceTask = sourceTask;
     basicStatsWork.setSourceTask2(sourceTask);
   }
 
