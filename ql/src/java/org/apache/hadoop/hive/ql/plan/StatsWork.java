@@ -37,7 +37,6 @@ public class StatsWork implements Serializable {
   // this is for basic stats
   private BasicStatsWork basicStatsWork;
   private BasicStatsNoJobWork basicStatsNoJobWork;
-  private FetchWork fWork;
   private ColumnStatsDesc colStats;
   private static final int LIMIT = -1;
 
@@ -61,15 +60,11 @@ public class StatsWork implements Serializable {
 
   @Override
   public String toString() {
-    return String.format("StatWork; fetch: %s", fWork );
+    return String.format("StatWork; fetch: %s", "N/A!");
   }
 
   public FetchWork getfWork() {
-    return fWork;
-  }
-
-  public void setfWork(FetchWork fWork) {
-    this.fWork = fWork;
+    return colStats == null ? null : colStats.getFWork();
   }
 
   @Explain(displayName = "Column Stats Desc")
@@ -82,15 +77,15 @@ public class StatsWork implements Serializable {
   }
 
   public ListSinkOperator getSink() {
-    return fWork.getSink();
+    return getfWork().getSink();
   }
 
   public void initializeForFetch(CompilationOpContext ctx) {
-    fWork.initializeForFetch(ctx);
+    getfWork().initializeForFetch(ctx);
   }
 
   public int getLeastNumRows() {
-    return fWork.getLeastNumRows();
+    return getfWork().getLeastNumRows();
   }
 
   public static int getLimit() {

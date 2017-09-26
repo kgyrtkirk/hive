@@ -544,12 +544,11 @@ public abstract class TaskCompiler {
     fetch = new FetchWork(loadFileWork.get(0).getSourcePath(), resultTab, outerQueryLimit);
 
     ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tableName,
-        colName, colType, isTblLevel, numBitVector);
+        colName, colType, isTblLevel, numBitVector, fetch);
     StatsTask columnStatsTask = map.get(tableName);
     if (columnStatsTask == null) {
       throw new SemanticException("Can not find " + tableName + " in genColumnStatsTask");
     } else {
-      columnStatsTask.getWork().setfWork(fetch);
       columnStatsTask.getWork().setColStats(cStatsDesc);
     }
   }
