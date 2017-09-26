@@ -137,16 +137,25 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     return "STATS";
   }
 
-  private class BasicStatsProcessor {
+  private static class BasicStatsProcessor {
 
     private Partish partish;
     private FileStatus[] partfileStatus;
+    private BasicStatsWork work;
+    private boolean atomic;
+    private boolean followedColStats1;
 
-    public BasicStatsProcessor(Partish partish) {
+    public BasicStatsProcessor(Partish partish, BasicStatsWork work, HiveConf conf, boolean followedColStats2) {
       this.partish = partish;
+      this.work = work;
+      atomic = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_ATOMIC);
+      followedColStats1 = followedColStats2;
     }
 
-    public Object process(StatsAggregator statsAggregator, boolean atomic) throws HiveException, MetaException {
+    public void init1(HiveConf conf) {
+    }
+
+    public Object process(StatsAggregator statsAggregator) throws HiveException, MetaException {
       Partish p = partish;
       Map<String, String> parameters = p.getPartParameters();
       if (p.isAcid()) {
@@ -161,7 +170,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       // and then if it is not followed by column stats, we should clean
       // column stats
       // XXX: move this to ColStat related part
-      if (!work.isExplicitAnalyze() && !followedColStats) {
+      if (!work.isExplicitAnalyze() && !followedColStats1) {
         StatsSetupConst.clearColumnStatsState(parameters);
       }
       // non-partitioned tables:
@@ -186,18 +195,8 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       updateQuickStats(parameters, partfileStatus);
       if (StatsSetupConst.areBasicStatsUptoDate(parameters)) {
         if (statsAggregator != null) {
-          String prefix = getAggregationPrefix(table, p.getPartition());
+          String prefix = getAggregationPrefix(p.getTable(), p.getPartition());
           updateStats(statsAggregator, parameters, prefix, atomic);
-        }
-        // write table stats to metastore
-        if (!getWork().getNoStatsAggregator()) {
-          // FIXME: this seems meaningless...
-          // instead of this; disabling the MS side statscollector would seem to be a better idea
-          // since we'just collected it...
-          // environmentContext = new EnvironmentContext();
-          // environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED,
-          // StatsSetupConst.TASK);
-
         }
       }
 
@@ -205,7 +204,71 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     }
 
     public void collectFileStatus(Warehouse wh) throws MetaException {
+      Map<String, String> parameters = partish.getPartParameters();
+      if (!existStats(parameters) && atomic) {
+
+      }
       partfileStatus = wh.getFileStatusesForSD(partish.getPartSd());
+    }
+
+    @Deprecated
+    private boolean existStats(Map<String, String> parameters) {
+      return parameters.containsKey(StatsSetupConst.ROW_COUNT)
+          || parameters.containsKey(StatsSetupConst.NUM_FILES)
+          || parameters.containsKey(StatsSetupConst.TOTAL_SIZE)
+          || parameters.containsKey(StatsSetupConst.RAW_DATA_SIZE)
+          || parameters.containsKey(StatsSetupConst.NUM_PARTITIONS);
+    }
+
+    @Deprecated
+    private void updateQuickStats(Warehouse wh, Map<String, String> parameters, StorageDescriptor desc) throws MetaException {
+      /**
+       * calculate fast statistics
+       */
+      FileStatus[] partfileStatus = wh.getFileStatusesForSD(desc);
+      updateQuickStats(parameters, partfileStatus);
+    }
+
+    private void updateQuickStats(Map<String, String> parameters, FileStatus[] partfileStatus) throws MetaException {
+      MetaStoreUtils.populateQuickStats(partfileStatus, parameters);
+    }
+
+    private String getAggregationPrefix(Table table, Partition partition) throws MetaException {
+      String prefix = getAggregationPrefix0(table, partition);
+      String aggKey = prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
+      return aggKey;
+    }
+
+    private String getAggregationPrefix0(Table table, Partition partition) throws MetaException {
+
+      // prefix is of the form dbName.tblName
+      String prefix = table.getDbName() + "." + org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(table.getTableName());
+      if (partition != null) {
+        return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
+      }
+      return prefix;
+    }
+
+    private void updateStats(StatsAggregator statsAggregator, Map<String, String> parameters, String aggKey, boolean atomic) throws HiveException {
+
+      for (String statType : StatsSetupConst.statsRequireCompute) {
+        String value = statsAggregator.aggregateStats(aggKey, statType);
+        if (value != null && !value.isEmpty()) {
+          long longValue = Long.parseLong(value);
+
+          if (work.getLoadTableDesc() != null && !work.getLoadTableDesc().getReplace()) {
+            String originalValue = parameters.get(statType);
+            if (originalValue != null) {
+              longValue += Long.parseLong(originalValue); // todo: invalid + valid = invalid
+            }
+          }
+          parameters.put(statType, String.valueOf(longValue));
+        } else {
+          if (atomic) {
+            throw new HiveException(ErrorMsg.STATSAGGREGATOR_MISSED_SOMESTATS, statType);
+          }
+        }
+      }
     }
 
   }
@@ -236,7 +299,6 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
       }
 
       List<Partition> partitions = getPartitionsList(db);
-      boolean atomic = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_ATOMIC);
 
       String tableFullName = table.getDbName() + "." + table.getTableName();
 
@@ -246,9 +308,9 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         Partish p;
         partishes.add(p = new Partish.PTable(table));
 
-        BasicStatsProcessor basicStatsProcessor = new BasicStatsProcessor(p);
+        BasicStatsProcessor basicStatsProcessor = new BasicStatsProcessor(p, work, conf, followedColStats);
         basicStatsProcessor.collectFileStatus(wh);
-        Object res = basicStatsProcessor.process(statsAggregator, atomic);
+        Object res = basicStatsProcessor.process(statsAggregator);
 
 //        environmentContext = new EnvironmentContext();
 //        environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED,
@@ -287,12 +349,8 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         try {
           for(final Partition partn : partitions) {
             Partish p;
-            BasicStatsProcessor bsp = new BasicStatsProcessor(p = new Partish.PPart(table, partn));
+            BasicStatsProcessor bsp = new BasicStatsProcessor(p = new Partish.PPart(table, partn), work, conf, followedColStats);
             processors.add(bsp);
-
-            if (!existStats(p.getPartParameters()) && atomic) {
-              continue;
-            }
 
             futures.add(pool.submit(new Callable<Void>() {
               @Override
@@ -324,7 +382,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         }
 
         for (BasicStatsProcessor basicStatsProcessor : processors) {
-          Object res = basicStatsProcessor.process(statsAggregator, atomic);
+          Object res = basicStatsProcessor.process(statsAggregator);
           if (res == null) {
             LOG.info("Partition " + basicStatsProcessor.partish.getPartition().getSpec() + " stats: [0]");
             continue;
@@ -365,23 +423,6 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     return ret;
   }
 
-  private String getAggregationPrefix(Table table, Partition partition) throws MetaException {
-    String prefix = getAggregationPrefix0(table, partition);
-    String aggKey = prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
-    return aggKey;
-  }
-
-  private String getAggregationPrefix0(Table table, Partition partition)
-      throws MetaException {
-
-    // prefix is of the form dbName.tblName
-    String prefix = table.getDbName() + "." + org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(table.getTableName());
-    if (partition != null) {
-      return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
-    }
-    return prefix;
-  }
-
   private StatsAggregator createStatsAggregator(StatsCollectionContext scc, HiveConf conf) throws HiveException {
     String statsImpl = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
     StatsFactory factory = StatsFactory.newFactory(statsImpl, conf);
@@ -415,53 +456,6 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     return scc;
   }
 
-  @Deprecated
-  private boolean existStats(Map<String, String> parameters) {
-    return parameters.containsKey(StatsSetupConst.ROW_COUNT)
-        || parameters.containsKey(StatsSetupConst.NUM_FILES)
-        || parameters.containsKey(StatsSetupConst.TOTAL_SIZE)
-        || parameters.containsKey(StatsSetupConst.RAW_DATA_SIZE)
-        || parameters.containsKey(StatsSetupConst.NUM_PARTITIONS);
-  }
-
-  private void updateStats(StatsAggregator statsAggregator,
-      Map<String, String> parameters, String aggKey, boolean atomic)
-      throws HiveException {
-
-
-    for (String statType : StatsSetupConst.statsRequireCompute) {
-      String value = statsAggregator.aggregateStats(aggKey, statType);
-      if (value != null && !value.isEmpty()) {
-        long longValue = Long.parseLong(value);
-
-        if (work.getLoadTableDesc() != null &&
-            !work.getLoadTableDesc().getReplace()) {
-          String originalValue = parameters.get(statType);
-          if (originalValue != null) {
-            longValue += Long.parseLong(originalValue); // todo: invalid + valid = invalid
-          }
-        }
-        parameters.put(statType, String.valueOf(longValue));
-      } else {
-        if (atomic) {
-          throw new HiveException(ErrorMsg.STATSAGGREGATOR_MISSED_SOMESTATS, statType);
-        }
-      }
-    }
-  }
-
-  @Deprecated
-  private void updateQuickStats(Warehouse wh, Map<String, String> parameters, StorageDescriptor desc) throws MetaException {
-    /**
-     * calculate fast statistics
-     */
-    FileStatus[] partfileStatus = wh.getFileStatusesForSD(desc);
-    updateQuickStats(parameters, partfileStatus);
-  }
-
-  private void updateQuickStats(Map<String, String> parameters, FileStatus[] partfileStatus) throws MetaException {
-    MetaStoreUtils.populateQuickStats(partfileStatus, parameters);
-  }
 
   private String toString(Map<String, String> parameters) {
     StringBuilder builder = new StringBuilder();
