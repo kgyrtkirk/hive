@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -59,7 +57,7 @@ public class StatsWork implements Serializable {
 
   @Override
   public String toString() {
-    return String.format("StatWork; fetch: %s", "N/A!");
+    return String.format("StatWork; fetch: %s", getfWork());
   }
 
   public FetchWork getfWork() {
@@ -73,18 +71,6 @@ public class StatsWork implements Serializable {
 
   public void setColStats(ColumnStatsDesc colStats) {
     this.colStats = colStats;
-  }
-
-  public ListSinkOperator getSink() {
-    return getfWork().getSink();
-  }
-
-  public void initializeForFetch(CompilationOpContext ctx) {
-    getfWork().initializeForFetch(ctx);
-  }
-
-  public int getLeastNumRows() {
-    return getfWork().getLeastNumRows();
   }
 
   public static int getLimit() {
@@ -115,6 +101,10 @@ public class StatsWork implements Serializable {
 
   public String getCurrentDatabaseName() {
     return currentDatabase;
+  }
+
+  public boolean hasColStats() {
+    return colStats != null;
   }
 
 }

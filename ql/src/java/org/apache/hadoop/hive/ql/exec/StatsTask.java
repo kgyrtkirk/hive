@@ -44,6 +44,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
+import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
+import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
+import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.stats.ColumnStatisticsObjTranslator;
@@ -65,135 +68,177 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class StatsTask extends Task<StatsWork> implements Serializable {
   private static final long serialVersionUID = 1L;
-  private FetchOperator ftOp;
   private static transient final Logger LOG = LoggerFactory.getLogger(StatsTask.class);
 
   public StatsTask() {
     super();
   }
 
-  @Override
-  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext ctx,
-      CompilationOpContext opContext) {
-    super.initialize(queryState, queryPlan, ctx, opContext);
-    if (work.getfWork() != null) {
-      work.initializeForFetch(opContext);
+  static class ColStatsProcessor {
+    private FetchOperator ftOp;
+    private FetchWork fWork;
+    private ColumnStatsDesc colStatDesc;
+    private HiveConf conf;
+    @Deprecated
+    private boolean isStatsReliable;
+
+    public ColStatsProcessor(ColumnStatsDesc colStats, HiveConf conf, BasicStatsWork bsw) {
+      this.conf = conf;
+      fWork = colStats.getFWork();
+      colStatDesc = colStats;
+      isStatsReliable = bsw.isStatsReliable();
+    }
+
+    public void initialize(CompilationOpContext opContext) {
+      initializeForFetch(opContext);
       try {
         JobConf job = new JobConf(conf);
-        ftOp = new FetchOperator(work.getfWork(), job);
+        ftOp = new FetchOperator(getfWork(), job);
       } catch (Exception e) {
         LOG.error(StringUtils.stringifyException(e));
         throw new RuntimeException(e);
       }
     }
-  }
 
-  private List<ColumnStatistics> constructColumnStatsFromPackedRows(Hive db) throws HiveException,
-      MetaException, IOException {
+    public ListSinkOperator getSink() {
+      return getfWork().getSink();
+    }
 
-    String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), work.getColStats().getTableName());
-    Table tbl = db.getTable(names[0], names[1]);
+    @Deprecated
+    private FetchWork getfWork() {
+      return fWork;
+    }
 
-    String partName = null;
-    List<String> colName = work.getColStats().getColName();
-    List<String> colType = work.getColStats().getColType();
-    boolean isTblLevel = work.getColStats().isTblLevel();
+    private void initializeForFetch(CompilationOpContext ctx) {
+      getfWork().initializeForFetch(ctx);
+    }
 
-    List<ColumnStatistics> stats = new ArrayList<ColumnStatistics>();
-    InspectableObject packedRow;
-    while ((packedRow = ftOp.getNextRow()) != null) {
-      if (packedRow.oi.getCategory() != ObjectInspector.Category.STRUCT) {
-        throw new HiveException("Unexpected object type encountered while unpacking row");
-      }
+    public int getLeastNumRows() {
+      return getfWork().getLeastNumRows();
+    }
 
-      List<ColumnStatisticsObj> statsObjs = new ArrayList<ColumnStatisticsObj>();
-      StructObjectInspector soi = (StructObjectInspector) packedRow.oi;
-      List<? extends StructField> fields = soi.getAllStructFieldRefs();
-      List<Object> list = soi.getStructFieldsDataAsList(packedRow.o);
+    private List<ColumnStatistics> constructColumnStatsFromPackedRows(Table tbl1) throws HiveException, MetaException, IOException {
 
-      List<FieldSchema> partColSchema = tbl.getPartCols();
-      // Partition columns are appended at end, we only care about stats column
-      int numOfStatCols = isTblLevel ? fields.size() : fields.size() - partColSchema.size();
-      assert list != null;
-      for (int i = 0; i < numOfStatCols; i++) {
-        StructField structField = fields.get(i);
-         String columnName = colName.get(i);
-        String columnType = colType.get(i);
-        Object values = list.get(i);
-        try{
-          ColumnStatisticsObj statObj = ColumnStatisticsObjTranslator.readHiveStruct(columnName, columnType, structField, values);
-          statsObjs.add(statObj);
-        }catch(HiveException e){
-          if(work.getBasicStatsWork().isStatsReliable()){
-            throw new HiveException("Statistics collection failed while (hive.stats.reliable)",e);
-          }else{
-            LOG.debug("Because " + columnName + " is infinite or NaN, we skip stats.",e);
+      Table tbl = tbl1;
+
+      String partName = null;
+      List<String> colName = colStatDesc.getColName();
+      List<String> colType = colStatDesc.getColType();
+      boolean isTblLevel = colStatDesc.isTblLevel();
+
+      List<ColumnStatistics> stats = new ArrayList<ColumnStatistics>();
+      InspectableObject packedRow;
+      while ((packedRow = ftOp.getNextRow()) != null) {
+        if (packedRow.oi.getCategory() != ObjectInspector.Category.STRUCT) {
+          throw new HiveException("Unexpected object type encountered while unpacking row");
+        }
+
+        List<ColumnStatisticsObj> statsObjs = new ArrayList<ColumnStatisticsObj>();
+        StructObjectInspector soi = (StructObjectInspector) packedRow.oi;
+        List<? extends StructField> fields = soi.getAllStructFieldRefs();
+        List<Object> list = soi.getStructFieldsDataAsList(packedRow.o);
+
+        List<FieldSchema> partColSchema = tbl.getPartCols();
+        // Partition columns are appended at end, we only care about stats column
+        int numOfStatCols = isTblLevel ? fields.size() : fields.size() - partColSchema.size();
+        assert list != null;
+        for (int i = 0; i < numOfStatCols; i++) {
+          StructField structField = fields.get(i);
+          String columnName = colName.get(i);
+          String columnType = colType.get(i);
+          Object values = list.get(i);
+          try {
+            ColumnStatisticsObj statObj = ColumnStatisticsObjTranslator.readHiveStruct(columnName, columnType, structField, values);
+            statsObjs.add(statObj);
+          } catch (Exception e) {
+            if (isStatsReliable) {
+              throw new HiveException("Statistics collection failed while (hive.stats.reliable)", e);
+            } else {
+              LOG.debug("Because " + columnName + " is infinite or NaN, we skip stats.", e);
+            }
           }
         }
-      }
 
-      // partColSchema
-      // fields.subList(fields.size() - partColSchema.size(), partColSchema.size())
-      // list.subList(fields.size() - partColSchema.size(), partColSchema.size())
+        // partColSchema
+        // fields.subList(fields.size() - partColSchema.size(), partColSchema.size())
+        // list.subList(fields.size() - partColSchema.size(), partColSchema.size())
+
+        if (!isTblLevel) {
+          List<String> partVals = new ArrayList<String>();
+          // Iterate over partition columns to figure out partition name
+          for (int i = fields.size() - partColSchema.size(); i < fields.size(); i++) {
+            Object partVal = ((PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector()).getPrimitiveJavaObject(list.get(i));
+            partVals.add(partVal == null ? // could be null for default partition
+              this.conf.getVar(ConfVars.DEFAULTPARTITIONNAME) : partVal.toString());
+          }
+          partName = Warehouse.makePartName(partColSchema, partVals);
+        }
+        ColumnStatisticsDesc statsDesc = buildColumnStatsDesc(tbl, partName, isTblLevel);
+        ColumnStatistics colStats = new ColumnStatistics();
+        colStats.setStatsDesc(statsDesc);
+        colStats.setStatsObj(statsObjs);
+        if (!colStats.getStatsObj().isEmpty()) {
+          stats.add(colStats);
+        }
+      }
+      ftOp.clearFetchContext();
+      return stats;
+    }
+
+    private ColumnStatisticsDesc buildColumnStatsDesc(Table table, String partName, boolean isTblLevel) {
+      return getColumnStatsDesc(table.getDbName(), table.getTableName(), partName, isTblLevel);
+    }
+
+    @Deprecated
+    private ColumnStatisticsDesc getColumnStatsDesc(String dbName, String tableName, String partName, boolean isTblLevel) {
+      assert dbName != null;
+      ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
+      statsDesc.setDbName(dbName);
+      statsDesc.setTableName(tableName);
+      statsDesc.setIsTblLevel(isTblLevel);
 
       if (!isTblLevel) {
-        List<String> partVals = new ArrayList<String>();
-        // Iterate over partition columns to figure out partition name
-        for (int i = fields.size() - partColSchema.size(); i < fields.size(); i++) {
-          Object partVal = ((PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector())
-              .getPrimitiveJavaObject(list.get(i));
-          partVals.add(partVal == null ? // could be null for default partition
-          this.conf.getVar(ConfVars.DEFAULTPARTITIONNAME)
-              : partVal.toString());
-        }
-        partName = Warehouse.makePartName(partColSchema, partVals);
+        statsDesc.setPartName(partName);
+      } else {
+        statsDesc.setPartName(null);
       }
-      ColumnStatisticsDesc statsDesc = buildColumnStatsDesc(tbl, partName, isTblLevel);
-      ColumnStatistics colStats = new ColumnStatistics();
-      colStats.setStatsDesc(statsDesc);
-      colStats.setStatsObj(statsObjs);
-      if (!colStats.getStatsObj().isEmpty()) {
-        stats.add(colStats);
+      return statsDesc;
+    }
+
+    private int persistColumnStats(Hive db, Table tbl) throws HiveException, MetaException, IOException {
+      // Construct a column statistics object from the result
+
+      List<ColumnStatistics> colStats = constructColumnStatsFromPackedRows(tbl);
+      // Persist the column statistics object to the metastore
+      // Note, this function is shared for both table and partition column stats.
+      if (colStats.isEmpty()) {
+        return 0;
       }
-    }
-    ftOp.clearFetchContext();
-    return stats;
-  }
-
-  private ColumnStatisticsDesc buildColumnStatsDesc(Table table, String partName, boolean isTblLevel) {
-    return getColumnStatsDesc(table.getDbName(), table.getTableName(), partName, isTblLevel);
-  }
-
-  @Deprecated
-  private ColumnStatisticsDesc getColumnStatsDesc(String dbName, String tableName, String partName,
-      boolean isTblLevel) {
-    assert dbName != null;
-    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
-    statsDesc.setDbName(dbName);
-    statsDesc.setTableName(tableName);
-    statsDesc.setIsTblLevel(isTblLevel);
-
-    if (!isTblLevel) {
-      statsDesc.setPartName(partName);
-    } else {
-      statsDesc.setPartName(null);
-    }
-    return statsDesc;
-  }
-
-  private int persistColumnStats(Hive db) throws HiveException, MetaException, IOException {
-    // Construct a column statistics object from the result
-    List<ColumnStatistics> colStats = constructColumnStatsFromPackedRows(db);
-    // Persist the column statistics object to the metastore
-    // Note, this function is shared for both table and partition column stats.
-    if (colStats.isEmpty()) {
+      SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats);
+      request.setNeedMerge(colStatDesc.isNeedMerge());
+      db.setPartitionColumnStatistics(request);
       return 0;
     }
-    SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats);
-    request.setNeedMerge(work.getColStats().isNeedMerge());
-    db.setPartitionColumnStatistics(request);
-    return 0;
+
   }
+
+  List<ColStatsProcessor> processors = new ArrayList<>();
+
+  @Override
+  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext ctx,
+      CompilationOpContext opContext) {
+    super.initialize(queryState, queryPlan, ctx, opContext);
+
+    if (work.hasColStats()) {
+      processors.add(new ColStatsProcessor(work.getColStats(), conf, work.getBasicStatsWork()));
+    }
+
+
+    for (ColStatsProcessor p : processors) {
+      p.initialize(opContext);
+    }
+  }
+
 
   @Override
   public int execute(DriverContext driverContext) {
@@ -229,7 +274,11 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     if (work.getfWork() != null) {
       try {
         Hive db = getHive();
-        return persistColumnStats(db);
+        for (ColStatsProcessor task : processors) {
+          String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), work.getColStats().getTableName());
+          Table tbl = db.getTable(names[0], names[1]);
+          return task.persistColumnStats(db, tbl);
+        }
       } catch (Exception e) {
         LOG.error("Failed to run column stats task", e);
         return 1;
