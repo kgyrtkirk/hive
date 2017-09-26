@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.stats.ColumnStatisticsObjTranslator;
@@ -57,10 +56,9 @@ public class ColStatsProcessor implements IStatsProcessor {
   private FetchWork fWork;
   private ColumnStatsDesc colStatDesc;
   private HiveConf conf;
-  @Deprecated
   private boolean isStatsReliable;
 
-  public ColStatsProcessor(ColumnStatsDesc colStats, HiveConf conf, BasicStatsWork bsw) {
+  public ColStatsProcessor(ColumnStatsDesc colStats, HiveConf conf) {
     this.conf = conf;
     fWork = colStats.getFWork();
     colStatDesc = colStats;

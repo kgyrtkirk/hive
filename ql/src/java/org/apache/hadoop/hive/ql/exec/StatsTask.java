@@ -64,7 +64,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     super.initialize(queryState, queryPlan, ctx, opContext);
 
     if (work.hasColStats()) {
-      processors.add(new ColStatsProcessor(work.getColStats(), conf, work.getBasicStatsWork()));
+      processors.add(new ColStatsProcessor(work.getColStats(), conf));
     }
 
     for (IStatsProcessor p : processors) {
