@@ -108,8 +108,6 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
         // There will not be any Spark job above this task
         BasicStatsNoJobWork snjWork = new BasicStatsNoJobWork(tableScan.getConf().getTableMetadata().getTableSpec());
-        snjWork.setStatsReliable(parseContext.getConf().getBoolVar(
-            HiveConf.ConfVars.HIVE_STATS_RELIABLE));
         // If partition is specified, get pruned partition list
         Set<Partition> confirmedParts = GenMapRedUtils.getConfirmedPartitionsForScan(tableScan);
         if (confirmedParts.size() > 0) {
@@ -119,7 +117,8 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
               false);
           snjWork.setPrunedPartitionList(partList);
         }
-        Task<BasicStatsNoJobWork> snjTask = TaskFactory.get(snjWork, parseContext.getConf());
+        StatsWork statWork = new StatsWork(snjWork, parseContext.getConf());
+        Task<StatsWork> snjTask = TaskFactory.get(statWork, parseContext.getConf());
         snjTask.setParentTasks(null);
         context.rootTasks.remove(context.currentTask);
         context.rootTasks.add(snjTask);

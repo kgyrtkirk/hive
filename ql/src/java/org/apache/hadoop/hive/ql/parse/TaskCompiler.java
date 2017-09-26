@@ -445,13 +445,11 @@ public abstract class TaskCompiler {
       // For ORC, there is no Tez Job for table stats.
       BasicStatsNoJobWork snjWork = new BasicStatsNoJobWork(tableScan.getConf().getTableMetadata()
           .getTableSpec());
-      snjWork.setStatsReliable(parseContext.getConf().getBoolVar(
-          HiveConf.ConfVars.HIVE_STATS_RELIABLE));
       // If partition is specified, get pruned partition list
       if (partitions.size() > 0) {
         snjWork.setPrunedPartitionList(parseContext.getPrunedPartitions(tableScan));
       }
-      StatsWork columnStatsWork = new StatsWork(snjWork);
+      StatsWork columnStatsWork = new StatsWork(snjWork, parseContext.getConf());
       return TaskFactory.get(columnStatsWork, parseContext.getConf());
     } else {
       BasicStatsWork statsWork = new BasicStatsWork(tableScan.getConf().getTableMetadata().getTableSpec());

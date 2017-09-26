@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -39,9 +40,7 @@ public class StatsWork implements Serializable {
   private static final int LIMIT = -1;
 
   private String currentDatabase;
-
-  public StatsWork() {
-  }
+  private boolean statsReliable;
 
   public StatsWork(BasicStatsWork basicStatsWork) {
     super();
@@ -49,10 +48,12 @@ public class StatsWork implements Serializable {
     this.currentDatabase = SessionState.get().getCurrentDatabase();
   }
 
-  public StatsWork(BasicStatsNoJobWork basicStatsNoJobWork) {
+  public StatsWork(BasicStatsNoJobWork basicStatsNoJobWork, HiveConf hiveConf) {
     super();
     this.basicStatsNoJobWork = basicStatsNoJobWork;
     this.currentDatabase = SessionState.get().getCurrentDatabase();
+    statsReliable = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE);
+    basicStatsNoJobWork.setStatsReliable(statsReliable);
   }
 
   @Override

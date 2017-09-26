@@ -279,7 +279,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           return task.persistColumnStats(db, tbl);
         }
       } catch (Exception e) {
-        LOG.error("Failed to run column stats task", e);
+        LOG.error("Failed to run stats task", e);
         return 1;
       }
     }
