@@ -273,9 +273,9 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     if (work.getfWork() != null) {
       try {
         Hive db = getHive();
+        String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), work.getColStats().getTableName());
+        Table tbl = db.getTable(names[0], names[1]);
         for (ColStatsProcessor task : processors) {
-          String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), work.getColStats().getTableName());
-          Table tbl = db.getTable(names[0], names[1]);
           return task.persistColumnStats(db, tbl);
         }
       } catch (Exception e) {
