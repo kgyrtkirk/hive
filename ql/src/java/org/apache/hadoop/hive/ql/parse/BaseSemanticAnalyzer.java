@@ -1120,12 +1120,15 @@ public abstract class BaseSemanticAnalyzer {
     public TableSpec(Hive db, String tableName, Map<String, String> partSpec)
         throws HiveException {
       Table table = db.getTable(tableName);
-      final Partition partition = partSpec == null ? null : db.getPartition(table, partSpec, false);
       tableHandle = table;
       this.tableName = table.getDbName() + "." + table.getTableName();
-      if (partition == null) {
+      if (partSpec == null) {
         specType = SpecType.TABLE_ONLY;
       } else {
+        Partition partition = db.getPartition(table, partSpec, false);
+        if (partition == null) {
+          throw new SemanticException("partition is unknown: " + table + "/" + partSpec);
+        }
         partHandle = partition;
         partitions = Collections.singletonList(partHandle);
         specType = SpecType.STATIC_PARTITION;
@@ -1726,7 +1729,9 @@ public abstract class BaseSemanticAnalyzer {
   @VisibleForTesting
   static void normalizeColSpec(Map<String, String> partSpec, String colName,
       String colType, String originalColSpec, Object colValue) throws SemanticException {
-    if (colValue == null) return; // nothing to do with nulls
+    if (colValue == null) {
+      return; // nothing to do with nulls
+    }
     String normalizedColSpec = originalColSpec;
     if (colType.equals(serdeConstants.DATE_TYPE_NAME)) {
       normalizedColSpec = normalizeDateCol(colValue, originalColSpec);
