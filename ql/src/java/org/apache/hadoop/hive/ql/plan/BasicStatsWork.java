@@ -121,7 +121,7 @@ public class BasicStatsWork implements Serializable {
     return statsReliable;
   }
 
-  public void setStatsReliable(boolean statsReliable) {
+  public void setStatsReliable2(boolean statsReliable) {
     this.statsReliable = statsReliable;
   }
 
@@ -196,5 +196,6 @@ public class BasicStatsWork implements Serializable {
     }
     return false;
   }
+
 
 }

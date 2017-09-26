@@ -1490,7 +1490,6 @@ public final class GenMapRedUtils {
     }
     assert statsWork != null : "Error when generating StatsTask";
 
-    statsWork.setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
     statsWork.setStatsTmpDir(nd.getConf().getStatsTmpDir());
 
     if (currTask.getWork() instanceof MapredWork) {
@@ -1514,7 +1513,7 @@ public final class GenMapRedUtils {
     // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
     // in FileSinkDesc is used for stats publishing. They should be consistent.
     statsWork.setAggKey(nd.getConf().getStatsAggPrefix());
-    StatsWork columnStatsWork = new StatsWork(statsWork);
+    StatsWork columnStatsWork = new StatsWork(statsWork, hconf);
     columnStatsWork.setSourceTask(currTask);
     Task<? extends Serializable> statsTask = TaskFactory.get(columnStatsWork, hconf);
 

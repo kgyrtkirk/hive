@@ -1105,8 +1105,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           basicStatsWork.setNoStatsAggregator(true);
           basicStatsWork.setClearAggregatorStats(true);
-          basicStatsWork.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
-          StatsWork columnStatsWork = new StatsWork(basicStatsWork);
+          StatsWork columnStatsWork = new StatsWork(basicStatsWork, conf);
 
           Task<? extends Serializable> statTask = TaskFactory.get(columnStatsWork, conf);
           moveTsk.addDependentTask(statTask);
@@ -1741,8 +1740,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         basicStatsWork.setNoStatsAggregator(true);
         basicStatsWork.setClearAggregatorStats(true);
-        basicStatsWork.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
-        StatsWork columnStatsWork = new StatsWork(basicStatsWork);
+        StatsWork columnStatsWork = new StatsWork(basicStatsWork, conf);
         Task<? extends Serializable> statTask = TaskFactory.get(columnStatsWork, conf);
         moveTsk.addDependentTask(statTask);
       }

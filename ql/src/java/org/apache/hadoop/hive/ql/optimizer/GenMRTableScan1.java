@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -126,8 +125,7 @@ public class GenMRTableScan1 implements NodeProcessor {
             statsWork.setStatsTmpDir(op.getConf().getTmpStatsDir());
             statsWork.setNoScanAnalyzeCommand(noScan);
             statsWork.setPartialScanAnalyzeCommand(partialScan);
-            statsWork.setStatsReliable(parseCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
-            StatsWork columnStatsWork = new StatsWork(statsWork);
+            StatsWork columnStatsWork = new StatsWork(statsWork, parseCtx.getConf());
             columnStatsWork.setSourceTask(currTask);
             Task<StatsWork> columnStatsTask = TaskFactory.get(columnStatsWork, parseCtx.getConf());
             currTask.addDependentTask(columnStatsTask);

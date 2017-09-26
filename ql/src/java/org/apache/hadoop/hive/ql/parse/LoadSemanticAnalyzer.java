@@ -306,8 +306,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       BasicStatsWork basicStatsWork = new BasicStatsWork(loadTableWork);
       basicStatsWork.setNoStatsAggregator(true);
       basicStatsWork.setClearAggregatorStats(true);
-      basicStatsWork.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
-      StatsWork columnStatsWork = new StatsWork(basicStatsWork);
+      StatsWork columnStatsWork = new StatsWork(basicStatsWork, conf);
       statTask = TaskFactory.get(columnStatsWork, conf);
     }
 

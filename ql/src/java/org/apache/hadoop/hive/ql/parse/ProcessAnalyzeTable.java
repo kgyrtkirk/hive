@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -127,9 +126,7 @@ public class ProcessAnalyzeTable implements NodeProcessor {
         basicStatsWork.setStatsTmpDir(tableScan.getConf().getTmpStatsDir());
         basicStatsWork.setNoScanAnalyzeCommand(parseContext.getQueryProperties().isNoScanAnalyzeCommand());
         basicStatsWork.setPartialScanAnalyzeCommand(parseContext.getQueryProperties().isPartialScanAnalyzeCommand());
-        basicStatsWork.setStatsReliable(parseContext.getConf().getBoolVar(
-            HiveConf.ConfVars.HIVE_STATS_RELIABLE));
-        StatsWork columnStatsWork = new StatsWork(basicStatsWork);
+        StatsWork columnStatsWork = new StatsWork(basicStatsWork, parseContext.getConf());
         columnStatsWork.setSourceTask(context.currentTask);
         Task<StatsWork> statsTask = TaskFactory.get(columnStatsWork, parseContext.getConf());
         context.currentTask.addDependentTask(statsTask);
