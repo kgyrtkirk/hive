@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -218,15 +217,6 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
           || parameters.containsKey(StatsSetupConst.TOTAL_SIZE)
           || parameters.containsKey(StatsSetupConst.RAW_DATA_SIZE)
           || parameters.containsKey(StatsSetupConst.NUM_PARTITIONS);
-    }
-
-    @Deprecated
-    private void updateQuickStats(Warehouse wh, Map<String, String> parameters, StorageDescriptor desc) throws MetaException {
-      /**
-       * calculate fast statistics
-       */
-      FileStatus[] partfileStatus = wh.getFileStatusesForSD(desc);
-      updateQuickStats(parameters, partfileStatus);
     }
 
     private void updateQuickStats(Map<String, String> parameters, FileStatus[] partfileStatus) throws MetaException {
