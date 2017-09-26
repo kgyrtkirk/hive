@@ -86,7 +86,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       this.conf = conf;
       fWork = colStats.getFWork();
       colStatDesc = colStats;
-      isStatsReliable = bsw.isStatsReliable();
+      isStatsReliable = conf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE);
     }
 
     public void initialize(CompilationOpContext opContext) {
@@ -232,7 +232,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     if (work.hasColStats()) {
       processors.add(new ColStatsProcessor(work.getColStats(), conf, work.getBasicStatsWork()));
     }
-
 
     for (ColStatsProcessor p : processors) {
       p.initialize(opContext);
