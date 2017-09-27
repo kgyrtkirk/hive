@@ -16,7 +16,7 @@ explain
 analyze table Employee_Part partition (employeeSalary='4000.0', country) compute statistics for columns employeeName, employeeID;
 analyze table Employee_Part partition (employeeSalary='4000.0', country) compute statistics for columns employeeName, employeeID;
 
-describe formatted Employee_Part partition(employeeSalary=2000.0);
+describe formatted Employee_Part partition (employeeSalary='4000.0', country='USA');
 
 describe formatted Employee_Part partition (employeeSalary='4000.0', country='USA') employeeName;
 
