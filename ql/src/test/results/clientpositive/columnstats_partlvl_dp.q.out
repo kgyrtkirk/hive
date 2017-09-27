@@ -140,6 +140,47 @@ POSTHOOK: Input: default@employee_part@employeesalary=4000.0/country=USA
 POSTHOOK: Output: default@employee_part
 POSTHOOK: Output: default@employee_part@employeesalary=4000.0/country=USA
 #### A masked pattern was here ####
+PREHOOK: query: describe formatted Employee_Part partition (employeeSalary='4000.0', country='USA')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@employee_part
+POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary='4000.0', country='USA')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@employee_part
+# col_name            	data_type           	comment             
+	 	 
+employeeid          	int                 	                    
+employeename        	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+employeesalary      	double              	                    
+country             	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[4000.0, USA]       	 
+Database:           	default             	 
+Table:              	employee_part       	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"employeeid\":\"true\",\"employeename\":\"true\"}}
+	numFiles            	1                   
+	numRows             	7                   
+	rawDataSize         	57                  
+	totalSize           	64                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	field.delim         	|                   
+	serialization.format	|                   
 PREHOOK: query: describe formatted Employee_Part partition (employeeSalary='4000.0', country='USA') employeeName
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
