@@ -80,19 +80,18 @@ public class BasicStatsWork implements Serializable {
     this.loadFileDesc = loadFileDesc;
   }
 
-  public TableSpec getTableSpecsX() {
+  public TableSpec getTableSpecs() {
     return tableSpecs;
   }
 
-  public LoadTableDesc getLoadTableDescX() {
+  public LoadTableDesc getLoadTableDesc() {
     return loadTableDesc;
   }
 
-  public LoadFileDesc getLoadFileDescX() {
+  public LoadFileDesc getLoadFileDesc() {
     return loadFileDesc;
   }
 
-  @Deprecated
   public void setAggKey(String aggK) {
     aggKey = aggK;
   }
@@ -106,7 +105,6 @@ public class BasicStatsWork implements Serializable {
     return statsTmpDir;
   }
 
-  @Deprecated
   public void setStatsTmpDir(String statsTmpDir) {
     this.statsTmpDir = statsTmpDir;
   }

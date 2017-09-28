@@ -90,29 +90,29 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     }
     LOG.info("Executing stats task");
     // Make sure that it is either an ANALYZE, INSERT OVERWRITE (maybe load) or CTAS command
-    //    short workComponentsPresent = 0;
-    //    if (work.getLoadTableDesc() != null) {
-    //      workComponentsPresent++;
-    //    }
-    //    if (work.getTableSpecs() != null) {
-    //      workComponentsPresent++;
-    //    }
-    //    if (work.getLoadFileDesc() != null) {
-    //      workComponentsPresent++;
-    //    }
-    //
-    //    assert (workComponentsPresent == 1);
+    short workComponentsPresent = 0;
+    if (work.getLoadTableDesc() != null) {
+      workComponentsPresent++;
+    }
+    if (work.getTableSpecs() != null) {
+      workComponentsPresent++;
+    }
+    if (work.getLoadFileDesc() != null) {
+      workComponentsPresent++;
+    }
 
-    String tableName;
+    assert (workComponentsPresent == 1);
+
+    String tableName = "";
     Hive hive = getHive();
     try {
-      //      if (work.getLoadTableDesc() != null) {
-      //        tableName = work.getLoadTableDesc().getTable().getTableName();
-      //      } else if (work.getTableSpecs() != null){
-      //        tableName = work.getTableSpecs().tableName;
-      //      } else {
-      //        tableName = work.getLoadFileDesc().getDestinationCreateTable();
-      //      }
+      if (work.getLoadTableDesc() != null) {
+        tableName = work.getLoadTableDesc().getTable().getTableName();
+      } else if (work.getTableSpecs() != null){
+        tableName = work.getTableSpecs().tableName;
+      } else {
+        tableName = work.getLoadFileDesc().getDestinationCreateTable();
+      }
 
       table = hive.getTable(tableName);
 

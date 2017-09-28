@@ -1482,6 +1482,15 @@ public final class GenMapRedUtils {
       Task<? extends Serializable> currTask, HiveConf hconf) {
 
     MoveWork mvWork = mvTask.getWork();
+    BasicStatsWork statsWork = null;
+    if (mvWork.getLoadTableWork() != null) {
+      statsWork = new BasicStatsWork(mvWork.getLoadTableWork());
+    } else if (mvWork.getLoadFileWork() != null) {
+      statsWork = new BasicStatsWork(mvWork.getLoadFileWork());
+    }
+    assert statsWork != null : "Error when generating StatsTask";
+
+    statsWork.setStatsTmpDir(nd.getConf().getStatsTmpDir());
 
     if (currTask.getWork() instanceof MapredWork) {
       MapredWork mrWork = (MapredWork) currTask.getWork();
@@ -1501,52 +1510,10 @@ public final class GenMapRedUtils {
       }
     }
 
-    BasicStatsWork statsWork = null;
-    if (mvWork.getLoadTableWork() != null) {
-      statsWork = new BasicStatsWork(mvWork.getLoadTableWork());
-    } else if (mvWork.getLoadFileWork() != null) {
-      statsWork = new BasicStatsWork(mvWork.getLoadFileWork());
-    }
-    assert statsWork != null : "Error when generating StatsTask";
-
-    statsWork.setStatsTmpDir(nd.getConf().getStatsTmpDir());
+    // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
+    // in FileSinkDesc is used for stats publishing. They should be consistent.
     statsWork.setAggKey(nd.getConf().getStatsAggPrefix());
-
-    String tableName = null;
-    boolean truncate = false;
-    if (mvWork.getLoadTableWork() != null) {
-      // insert overwrite
-      LoadTableDesc loadTableWork = mvWork.getLoadTableWork();
-      tableName = loadTableWork.getTable().getTableName();
-      truncate = loadTableWork.getReplace();
-      if (loadTableWork.getDPCtx() != null) {
-
-      } else {
-        Table table = Hive.get().getTable(tableName);
-        Partition partn = Hive.get().getPartition(table, loadTableWork.getPartitionSpec(), false);
-
-      }
-
-    } else if (mvWork.getLoadFileWork() != null) {
-      //      statsWork = new BasicStatsWork(mvWork.getLoadFileWork());
-      tableName = mvWork.getLoadFileWork().getDestinationCreateTable();
-      truncate = !tableName.isEmpty();
-      if (tableName.isEmpty()) {
-        throw new RuntimeException("unexpected: tableName is empty");
-      }
-    }
-    if (tableName == null) {
-      throw new RuntimeException("unexpected: tableName is null");
-    }
-
-
-    StatsWork columnStatsWork = new StatsWork(tableName, hconf);
-    //    StatsWork columnStatsWork = new StatsWork(statsWork, hconf);
-    StatsWork sw = columnStatsWork;
-
-    sw.truncateExisting(truncate);
-    sw.collectStatsFromAggregator(nd.getConf());
-
+    StatsWork columnStatsWork = new StatsWork(statsWork, hconf);
     columnStatsWork.setSourceTask(currTask);
     Task<? extends Serializable> statsTask = TaskFactory.get(columnStatsWork, hconf);
 
