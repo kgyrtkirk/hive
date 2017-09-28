@@ -124,10 +124,6 @@ public class ColStatsProcessor implements IStatsProcessor {
         }
       }
 
-      // partColSchema
-      // fields.subList(fields.size() - partColSchema.size(), partColSchema.size())
-      // list.subList(fields.size() - partColSchema.size(), partColSchema.size())
-
       if (!statsObjs.isEmpty()) {
 
         if (!isTblLevel) {
