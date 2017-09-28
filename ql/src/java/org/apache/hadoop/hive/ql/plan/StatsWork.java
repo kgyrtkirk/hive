@@ -112,4 +112,14 @@ public class StatsWork implements Serializable {
     return colStats != null;
   }
 
+  public String getTableName() {
+    if (getColStats() != null) {
+      return getColStats().getTableName();
+    }
+    if (getBasicStatsNoJobWork() != null) {
+      return getBasicStatsNoJobWork().getTableSpecs().tableName;
+    }
+    return null;
+  }
+
 }

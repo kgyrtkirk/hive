@@ -99,7 +99,8 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     try {
     if (work.getBasicStatsNoJobWork() != null) {
       Hive db = getHive();
-      String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), work.getColStats().getTableName());
+        String tableName = work.getTableName();
+        String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), tableName);
       Table tbl = db.getTable(names[0], names[1]);
 
         BasicStatsNoJobTask t = new BasicStatsNoJobTask(conf, work.getBasicStatsNoJobWork(), console);
@@ -113,8 +114,9 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     }
 
     if (work.hasColStats()) {
+        String tableName = work.getTableName();
         Hive db = getHive();
-        String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), work.getColStats().getTableName());
+        String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), tableName);
         Table tbl = db.getTable(names[0], names[1]);
         for (IStatsProcessor task : processors) {
           return task.process(db, tbl);
