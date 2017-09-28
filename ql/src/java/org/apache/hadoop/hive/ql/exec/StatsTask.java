@@ -96,27 +96,33 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       task.setDpPartSpecs(dpPartSpecs);
       ret = task.execute(driverContext);
     }
+    try {
     if (work.getBasicStatsNoJobWork() != null) {
-      BasicStatsNoJobTask task = (BasicStatsNoJobTask) TaskFactory.get(work.getBasicStatsNoJobWork(), conf);
-      task.initialize(queryState, queryPlan, driverContext, null);
-      ret = task.execute(driverContext);
+      Hive db = getHive();
+      String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), work.getColStats().getTableName());
+      Table tbl = db.getTable(names[0], names[1]);
+
+        BasicStatsNoJobTask t = new BasicStatsNoJobTask(conf, work.getBasicStatsNoJobWork(), console);
+      ret = t.process(db, tbl);
+      //      BasicStatsNoJobTask task = (BasicStatsNoJobTask) TaskFactory.get(work.getBasicStatsNoJobWork(), conf);
+      //      task.initialize(queryState, queryPlan, driverContext, null);
+      //      ret = task.execute(driverContext);
     }
     if (ret != 0) {
       return ret;
     }
 
     if (work.hasColStats()) {
-      try {
         Hive db = getHive();
         String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), work.getColStats().getTableName());
         Table tbl = db.getTable(names[0], names[1]);
         for (IStatsProcessor task : processors) {
           return task.process(db, tbl);
         }
-      } catch (Exception e) {
-        LOG.error("Failed to run stats task", e);
-        return 1;
-      }
+    }
+    } catch (Exception e) {
+      LOG.error("Failed to run stats task", e);
+      return 1;
     }
     return 0;
   }

@@ -36,12 +36,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Partish;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
-import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -76,41 +72,52 @@ import com.google.common.collect.Multimaps;
  * rows. This task can be used for computing basic stats like numFiles, numRows, fileSize,
  * rawDataSize from ORC footer.
  **/
-public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Serializable {
+public class BasicStatsNoJobTask implements Serializable, IStatsProcessor {
 
   private static final long serialVersionUID = 1L;
   private static transient final Logger LOG = LoggerFactory.getLogger(BasicStatsNoJobTask.class);
+  private HiveConf conf;
 
-  public BasicStatsNoJobTask() {
-    super();
+  BasicStatsNoJobWork work;
+  @Deprecated
+  // probably it would be ok the create a local loghelper-ed one
+  private LogHelper console;
+
+  public BasicStatsNoJobTask(HiveConf conf0, BasicStatsNoJobWork work0, LogHelper console0) {
+    conf = conf0;
+    work = work0;
+    console= console0;
   }
 
+
   @Override
-  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext, CompilationOpContext opContext) {
-    super.initialize(queryState, queryPlan, driverContext, opContext);
+  public void initialize(CompilationOpContext opContext) {
+
   }
 
-  @Override
-  public int execute(DriverContext driverContext) {
+  //  @Override
+  //  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext, CompilationOpContext opContext) {
+  //    super.initialize(queryState, queryPlan, driverContext, opContext);
+  //  }
 
+  @Override
+  public int process(Hive db, Table tbl) throws Exception {
 
     LOG.info("Executing stats (no job) task");
 
     ExecutorService threadPool = StatsTask.newThreadPool(conf);
-    Hive db = getHive();
 
     return aggregateStats(threadPool, db);
   }
 
-  @Override
   public StageType getType() {
     return StageType.STATS;
   }
 
-  @Override
   public String getName() {
     return "STATS-NO-JOB";
   }
+
 
   static class FooterStatCollector implements Runnable {
 
@@ -386,5 +393,4 @@ public class BasicStatsNoJobTask extends Task<BasicStatsNoJobWork> implements Se
       Thread.currentThread().interrupt();
     }
   }
-
 }
