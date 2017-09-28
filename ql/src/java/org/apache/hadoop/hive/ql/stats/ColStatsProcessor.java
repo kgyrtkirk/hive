@@ -128,21 +128,23 @@ public class ColStatsProcessor implements IStatsProcessor {
       // fields.subList(fields.size() - partColSchema.size(), partColSchema.size())
       // list.subList(fields.size() - partColSchema.size(), partColSchema.size())
 
-      if (!isTblLevel) {
-        List<String> partVals = new ArrayList<String>();
-        // Iterate over partition columns to figure out partition name
-        for (int i = fields.size() - partColSchema.size(); i < fields.size(); i++) {
-          Object partVal = ((PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector()).getPrimitiveJavaObject(list.get(i));
-          partVals.add(partVal == null ? // could be null for default partition
-            this.conf.getVar(ConfVars.DEFAULTPARTITIONNAME) : partVal.toString());
+      if (!statsObjs.isEmpty()) {
+
+        if (!isTblLevel) {
+          List<String> partVals = new ArrayList<String>();
+          // Iterate over partition columns to figure out partition name
+          for (int i = fields.size() - partColSchema.size(); i < fields.size(); i++) {
+            Object partVal = ((PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector()).getPrimitiveJavaObject(list.get(i));
+            partVals.add(partVal == null ? // could be null for default partition
+              this.conf.getVar(ConfVars.DEFAULTPARTITIONNAME) : partVal.toString());
+          }
+          partName = Warehouse.makePartName(partColSchema, partVals);
         }
-        partName = Warehouse.makePartName(partColSchema, partVals);
-      }
-      ColumnStatisticsDesc statsDesc = buildColumnStatsDesc(tbl, partName, isTblLevel);
-      ColumnStatistics colStats = new ColumnStatistics();
-      colStats.setStatsDesc(statsDesc);
-      colStats.setStatsObj(statsObjs);
-      if (!colStats.getStatsObj().isEmpty()) {
+
+        ColumnStatisticsDesc statsDesc = buildColumnStatsDesc(tbl, partName, isTblLevel);
+        ColumnStatistics colStats = new ColumnStatistics();
+        colStats.setStatsDesc(statsDesc);
+        colStats.setStatsObj(statsObjs);
         stats.add(colStats);
       }
     }
@@ -157,7 +159,7 @@ public class ColStatsProcessor implements IStatsProcessor {
     statsDesc.setDbName(dbName);
     statsDesc.setTableName(table.getTableName());
     statsDesc.setIsTblLevel(isTblLevel);
-    
+
     if (!isTblLevel) {
       statsDesc.setPartName(partName);
     } else {
