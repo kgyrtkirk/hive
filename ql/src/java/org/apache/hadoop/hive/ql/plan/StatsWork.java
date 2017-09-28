@@ -119,7 +119,10 @@ public class StatsWork implements Serializable {
     if (getBasicStatsNoJobWork() != null) {
       return getBasicStatsNoJobWork().getTableSpecs().tableName;
     }
-    return null;
+    if (getBasicStatsWork() != null) {
+      return getBasicStatsWork().getTableName();
+    }
+    throw new RuntimeException("invalid state");
   }
 
 }

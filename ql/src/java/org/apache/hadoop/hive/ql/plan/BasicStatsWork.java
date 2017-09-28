@@ -197,5 +197,16 @@ public class BasicStatsWork implements Serializable {
     return false;
   }
 
+  public String getTableName() {
+    BasicStatsWork work = this;
+    String tableName;
+    if (work.getLoadTableDesc() != null) {
+      return tableName = work.getLoadTableDesc().getTable().getTableName();
+    } else if (work.getTableSpecs() != null) {
+      return tableName = work.getTableSpecs().tableName;
+    } else {
+      return tableName = work.getLoadFileDesc().getDestinationCreateTable();
+    }
+  }
 
 }
