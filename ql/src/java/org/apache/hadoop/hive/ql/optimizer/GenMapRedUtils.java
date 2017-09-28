@@ -1482,15 +1482,6 @@ public final class GenMapRedUtils {
       Task<? extends Serializable> currTask, HiveConf hconf) {
 
     MoveWork mvWork = mvTask.getWork();
-    BasicStatsWork statsWork = null;
-    if (mvWork.getLoadTableWork() != null) {
-      statsWork = new BasicStatsWork(mvWork.getLoadTableWork());
-    } else if (mvWork.getLoadFileWork() != null) {
-      statsWork = new BasicStatsWork(mvWork.getLoadFileWork());
-    }
-    assert statsWork != null : "Error when generating StatsTask";
-
-    statsWork.setStatsTmpDir(nd.getConf().getStatsTmpDir());
 
     if (currTask.getWork() instanceof MapredWork) {
       MapredWork mrWork = (MapredWork) currTask.getWork();
@@ -1510,10 +1501,39 @@ public final class GenMapRedUtils {
       }
     }
 
-    // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
-    // in FileSinkDesc is used for stats publishing. They should be consistent.
+    BasicStatsWork statsWork = null;
+    if (mvWork.getLoadTableWork() != null) {
+      statsWork = new BasicStatsWork(mvWork.getLoadTableWork());
+    } else if (mvWork.getLoadFileWork() != null) {
+      statsWork = new BasicStatsWork(mvWork.getLoadFileWork());
+    }
+    assert statsWork != null : "Error when generating StatsTask";
+
+    statsWork.setStatsTmpDir(nd.getConf().getStatsTmpDir());
     statsWork.setAggKey(nd.getConf().getStatsAggPrefix());
-    StatsWork columnStatsWork = new StatsWork(statsWork, hconf);
+
+    String tableName;
+    boolean truncate;
+    if (mvWork.getLoadTableWork() != null) {
+      tableName = mvWork.getLoadTableWork().getTable().getTableName();
+      truncate = mvWork.getLoadTableWork().getReplace();
+    } else if (mvWork.getLoadFileWork() != null) {
+      //      statsWork = new BasicStatsWork(mvWork.getLoadFileWork());
+      tableName = mvWork.getLoadFileWork().getDestinationCreateTable();
+      truncate = !tableName.isEmpty();
+      if (tableName.isEmpty()) {
+        throw new RuntimeException("unexpected: tableName is empty");
+      }
+    }
+
+
+    StatsWork columnStatsWork = new StatsWork(tableName, hconf);
+    //    StatsWork columnStatsWork = new StatsWork(statsWork, hconf);
+    StatsWork sw = columnStatsWork;
+
+    sw.truncateExisting(truncate);
+    sw.collectStatsFromAggregator(nd.getConf());
+
     columnStatsWork.setSourceTask(currTask);
     Task<? extends Serializable> statsTask = TaskFactory.get(columnStatsWork, hconf);
 

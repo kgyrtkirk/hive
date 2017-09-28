@@ -92,6 +92,7 @@ public class BasicStatsWork implements Serializable {
     return loadFileDesc;
   }
 
+  @Deprecated
   public void setAggKey(String aggK) {
     aggKey = aggK;
   }
@@ -105,6 +106,7 @@ public class BasicStatsWork implements Serializable {
     return statsTmpDir;
   }
 
+  @Deprecated
   public void setStatsTmpDir(String statsTmpDir) {
     this.statsTmpDir = statsTmpDir;
   }

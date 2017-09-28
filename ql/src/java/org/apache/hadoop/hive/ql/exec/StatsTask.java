@@ -83,6 +83,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
   public int execute1(DriverContext driverContext) {
     // TODO: merge BasicStatsWork and BasicStatsNoJobWork
+
     if (work.getBasicStatsWork() != null && work.getBasicStatsNoJobWork() != null) {
       LOG.error("Can not have both basic stats work and stats no job work!");
       return 1;

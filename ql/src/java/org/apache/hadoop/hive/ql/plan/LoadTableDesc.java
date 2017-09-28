@@ -143,6 +143,8 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
     this.partitionSpec = partitionSpec;
   }
 
+  /** return true in case insert overwrite is happening
+   */
   @Explain(displayName = "replace")
   public boolean getReplace() {
     return replace;

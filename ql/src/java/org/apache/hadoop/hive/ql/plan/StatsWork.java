@@ -36,6 +36,7 @@ public class StatsWork implements Serializable {
 
   private static final long serialVersionUID = 1L;
   // this is for basic stats
+  @Deprecated
   private BasicStatsWork basicStatsWork;
   private BasicStatsNoJobWork basicStatsNoJobWork;
   private ColumnStatsDesc colStats;
@@ -43,7 +44,17 @@ public class StatsWork implements Serializable {
 
   private String currentDatabase;
   private boolean statsReliable;
+  private String subjectTableName;
+  private boolean truncate;
 
+  public StatsWork(String tableName, HiveConf hconf) {
+    super();
+    this.subjectTableName = tableName;
+    this.currentDatabase = SessionState.get().getCurrentDatabase();
+    statsReliable = hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE);
+  }
+
+  @Deprecated
   public StatsWork(BasicStatsWork basicStatsWork, HiveConf hconf) {
     super();
     this.basicStatsWork = basicStatsWork;
@@ -110,6 +121,22 @@ public class StatsWork implements Serializable {
 
   public boolean hasColStats() {
     return colStats != null;
+  }
+
+  public void collectStatsFromAggregator(FileSinkDesc conf) {
+    basicStatsWork = new BasicStatsWork();
+
+    // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
+    // in FileSinkDesc is used for stats publishing. They should be consistent.
+    basicStatsWork.setAggKey(conf.getStatsAggPrefix());
+    basicStatsWork.setStatsTmpDir(conf.getStatsTmpDir());
+
+    basicStatsWork.setStatsReliable2(statsReliable);
+
+  }
+
+  public void truncateExisting(boolean truncate) {
+    this.truncate = truncate;
   }
 
 }
