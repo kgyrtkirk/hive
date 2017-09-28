@@ -151,17 +151,13 @@ public class ColStatsProcessor implements IStatsProcessor {
   }
 
   private ColumnStatisticsDesc buildColumnStatsDesc(Table table, String partName, boolean isTblLevel) {
-    return getColumnStatsDesc(table.getDbName(), table.getTableName(), partName, isTblLevel);
-  }
-
-  @Deprecated
-  private ColumnStatisticsDesc getColumnStatsDesc(String dbName, String tableName, String partName, boolean isTblLevel) {
+    String dbName = table.getDbName();
     assert dbName != null;
     ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
     statsDesc.setDbName(dbName);
-    statsDesc.setTableName(tableName);
+    statsDesc.setTableName(table.getTableName());
     statsDesc.setIsTblLevel(isTblLevel);
-
+    
     if (!isTblLevel) {
       statsDesc.setPartName(partName);
     } else {
