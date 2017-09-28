@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.BasicStatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.stats.BasicStatsNoJobTask;
 
 /**
  * TaskFactory implementation.
