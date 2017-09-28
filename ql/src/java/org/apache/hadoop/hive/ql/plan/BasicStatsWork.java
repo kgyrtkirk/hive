@@ -80,15 +80,15 @@ public class BasicStatsWork implements Serializable {
     this.loadFileDesc = loadFileDesc;
   }
 
-  public TableSpec getTableSpecs() {
+  public TableSpec getTableSpecsX() {
     return tableSpecs;
   }
 
-  public LoadTableDesc getLoadTableDesc() {
+  public LoadTableDesc getLoadTableDescX() {
     return loadTableDesc;
   }
 
-  public LoadFileDesc getLoadFileDesc() {
+  public LoadFileDesc getLoadFileDescX() {
     return loadFileDesc;
   }
 

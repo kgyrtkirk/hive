@@ -1512,11 +1512,21 @@ public final class GenMapRedUtils {
     statsWork.setStatsTmpDir(nd.getConf().getStatsTmpDir());
     statsWork.setAggKey(nd.getConf().getStatsAggPrefix());
 
-    String tableName;
-    boolean truncate;
+    String tableName = null;
+    boolean truncate = false;
     if (mvWork.getLoadTableWork() != null) {
-      tableName = mvWork.getLoadTableWork().getTable().getTableName();
-      truncate = mvWork.getLoadTableWork().getReplace();
+      // insert overwrite
+      LoadTableDesc loadTableWork = mvWork.getLoadTableWork();
+      tableName = loadTableWork.getTable().getTableName();
+      truncate = loadTableWork.getReplace();
+      if (loadTableWork.getDPCtx() != null) {
+
+      } else {
+        Table table = Hive.get().getTable(tableName);
+        Partition partn = Hive.get().getPartition(table, loadTableWork.getPartitionSpec(), false);
+
+      }
+
     } else if (mvWork.getLoadFileWork() != null) {
       //      statsWork = new BasicStatsWork(mvWork.getLoadFileWork());
       tableName = mvWork.getLoadFileWork().getDestinationCreateTable();
@@ -1524,6 +1534,9 @@ public final class GenMapRedUtils {
       if (tableName.isEmpty()) {
         throw new RuntimeException("unexpected: tableName is empty");
       }
+    }
+    if (tableName == null) {
+      throw new RuntimeException("unexpected: tableName is null");
     }
 
 
