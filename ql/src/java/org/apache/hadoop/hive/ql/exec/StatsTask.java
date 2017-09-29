@@ -107,6 +107,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       if (work.isFooterScan()) {
 
         BasicStatsNoJobWork basicStatsNoJobWork = new BasicStatsNoJobWork(tbl.getTableSpec());
+        basicStatsNoJobWork.setStatsReliable(work.getStatsReliable());
         basicStatsNoJobWork.setPartitions(work.getPartitions());
         BasicStatsNoJobTask t = new BasicStatsNoJobTask(conf, basicStatsNoJobWork);
         ret = t.process(db, tbl);

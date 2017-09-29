@@ -67,7 +67,6 @@ public class StatsWork implements Serializable {
     this.table = table;
     this.currentDatabase = SessionState.get().getCurrentDatabase();
     statsReliable = hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE);
-    basicStatsWork.setStatsReliable2(statsReliable);
   }
 
   public StatsWork(Table table, BasicStatsNoJobWork basicStatsNoJobWork, HiveConf hiveConf) {
@@ -176,5 +175,8 @@ public class StatsWork implements Serializable {
     return footerScan;
   }
 
+  public boolean getStatsReliable() {
+    return statsReliable;
+  }
 
 }
