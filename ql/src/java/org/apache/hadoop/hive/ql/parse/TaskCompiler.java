@@ -449,7 +449,7 @@ public abstract class TaskCompiler {
       if (partitions.size() > 0) {
         snjWork.setPrunedPartitionList(parseContext.getPrunedPartitions(tableScan));
       }
-      StatsWork columnStatsWork = new StatsWork(snjWork, parseContext.getConf());
+      StatsWork columnStatsWork = new StatsWork(table, snjWork, parseContext.getConf());
       return TaskFactory.get(columnStatsWork, parseContext.getConf());
     } else {
       BasicStatsWork statsWork = new BasicStatsWork(tableScan.getConf().getTableMetadata().getTableSpec());

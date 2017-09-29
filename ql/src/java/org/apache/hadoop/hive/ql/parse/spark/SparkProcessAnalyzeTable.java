@@ -114,7 +114,7 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
           PrunedPartitionList partList = new PrunedPartitionList(table, confirmedParts, partCols, false);
           snjWork.setPrunedPartitionList(partList);
         }
-        StatsWork statWork = new StatsWork(snjWork, parseContext.getConf());
+        StatsWork statWork = new StatsWork(table, snjWork, parseContext.getConf());
         Task<StatsWork> snjTask = TaskFactory.get(statWork, parseContext.getConf());
         snjTask.setParentTasks(null);
         context.rootTasks.remove(context.currentTask);

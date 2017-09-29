@@ -53,7 +53,7 @@ public class StatsWork implements Serializable {
     basicStatsWork.setStatsReliable2(statsReliable);
   }
 
-  public StatsWork(BasicStatsNoJobWork basicStatsNoJobWork, HiveConf hiveConf) {
+  public StatsWork(Table table, BasicStatsNoJobWork basicStatsNoJobWork, HiveConf hiveConf) {
     super();
     this.basicStatsNoJobWork = basicStatsNoJobWork;
     this.currentDatabase = SessionState.get().getCurrentDatabase();

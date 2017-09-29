@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -72,8 +71,8 @@ public class GenMRTableScan1 implements NodeProcessor {
     TableScanOperator op = (TableScanOperator) nd;
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
     ParseContext parseCtx = ctx.getParseCtx();
-    Class<? extends InputFormat> inputFormat = op.getConf().getTableMetadata()
-        .getInputFormatClass();
+    Table table = op.getConf().getTableMetadata();
+    Class<? extends InputFormat> inputFormat = table.getInputFormatClass();
     Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
 
     // create a dummy MapReduce task
@@ -92,7 +91,6 @@ public class GenMRTableScan1 implements NodeProcessor {
         if (parseCtx.getQueryProperties().isAnalyzeCommand()) {
           boolean partialScan = parseCtx.getQueryProperties().isPartialScanAnalyzeCommand();
           boolean noScan = parseCtx.getQueryProperties().isNoScanAnalyzeCommand();
-          TableSpec tableSpec = op.getConf().getTableMetadata().getTableSpec();
           if (OrcInputFormat.class.isAssignableFrom(inputFormat) ||
                   MapredParquetInputFormat.class.isAssignableFrom(inputFormat)) {
             // For ORC and Parquet, all the following statements are the same
@@ -101,14 +99,13 @@ public class GenMRTableScan1 implements NodeProcessor {
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
 
             // There will not be any MR or Tez job above this task
-            BasicStatsNoJobWork snjWork = new BasicStatsNoJobWork(tableSpec);
-            StatsWork statWork = new StatsWork(snjWork, parseCtx.getConf());
+            BasicStatsNoJobWork snjWork = new BasicStatsNoJobWork(table.getTableSpec());
+            StatsWork statWork = new StatsWork(table, snjWork, parseCtx.getConf());
             // If partition is specified, get pruned partition list
             Set<Partition> confirmedParts = GenMapRedUtils.getConfirmedPartitionsForScan(op);
             if (confirmedParts.size() > 0) {
-              Table source = op.getConf().getTableMetadata();
               List<String> partCols = GenMapRedUtils.getPartitionColumns(op);
-              PrunedPartitionList partList = new PrunedPartitionList(source, confirmedParts,
+              PrunedPartitionList partList = new PrunedPartitionList(table, confirmedParts,
                   partCols, false);
               snjWork.setPrunedPartitionList(partList);
               //              statWork.setPartitions(partList.getPartitions());
@@ -124,8 +121,7 @@ public class GenMRTableScan1 implements NodeProcessor {
             // The plan consists of a simple MapRedTask followed by a StatsTask.
             // The MR task is just a simple TableScanOperator
 
-            Table table = tableSpec.tableHandle;
-            BasicStatsWork statsWork = new BasicStatsWork(tableSpec);
+            BasicStatsWork statsWork = new BasicStatsWork(table.getTableSpec());
             statsWork.setAggKey(op.getConf().getStatsAggPrefix());
             statsWork.setStatsTmpDir(op.getConf().getTmpStatsDir());
             statsWork.setNoScanAnalyzeCommand(noScan);
@@ -162,9 +158,8 @@ public class GenMRTableScan1 implements NodeProcessor {
             Set<Partition> confirmedPartns = GenMapRedUtils
                 .getConfirmedPartitionsForScan(op);
             if (confirmedPartns.size() > 0) {
-              Table source = op.getConf().getTableMetadata();
               List<String> partCols = GenMapRedUtils.getPartitionColumns(op);
-              PrunedPartitionList partList = new PrunedPartitionList(source, confirmedPartns, partCols, false);
+              PrunedPartitionList partList = new PrunedPartitionList(table, confirmedPartns, partCols, false);
               GenMapRedUtils.setTaskPlan(currAliasId, op, currTask, false, ctx, partList);
             } else { // non-partitioned table
               GenMapRedUtils.setTaskPlan(currAliasId, op, currTask, false, ctx);
