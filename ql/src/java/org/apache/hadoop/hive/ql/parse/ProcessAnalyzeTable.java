@@ -126,7 +126,8 @@ public class ProcessAnalyzeTable implements NodeProcessor {
         basicStatsWork.setStatsTmpDir(tableScan.getConf().getTmpStatsDir());
         basicStatsWork.setNoScanAnalyzeCommand(parseContext.getQueryProperties().isNoScanAnalyzeCommand());
         basicStatsWork.setPartialScanAnalyzeCommand(parseContext.getQueryProperties().isPartialScanAnalyzeCommand());
-        StatsWork columnStatsWork = new StatsWork(basicStatsWork, parseContext.getConf());
+        Table table = tableScan.getConf().getTableMetadata();
+        StatsWork columnStatsWork = new StatsWork(table, basicStatsWork, parseContext.getConf());
         columnStatsWork.setSourceTask(context.currentTask);
         Task<StatsWork> statsTask = TaskFactory.get(columnStatsWork, parseContext.getConf());
         context.currentTask.addDependentTask(statsTask);

@@ -306,7 +306,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       BasicStatsWork basicStatsWork = new BasicStatsWork(loadTableWork);
       basicStatsWork.setNoStatsAggregator(true);
       basicStatsWork.setClearAggregatorStats(true);
-      StatsWork columnStatsWork = new StatsWork(basicStatsWork, conf);
+      StatsWork columnStatsWork = new StatsWork(ts.tableHandle, basicStatsWork, conf);
       statTask = TaskFactory.get(columnStatsWork, conf);
     }
 

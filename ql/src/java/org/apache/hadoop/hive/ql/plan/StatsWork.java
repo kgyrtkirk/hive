@@ -23,6 +23,7 @@ import java.io.Serializable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -44,7 +45,7 @@ public class StatsWork implements Serializable {
   private String currentDatabase;
   private boolean statsReliable;
 
-  public StatsWork(BasicStatsWork basicStatsWork, HiveConf hconf) {
+  public StatsWork(Table table, BasicStatsWork basicStatsWork, HiveConf hconf) {
     super();
     this.basicStatsWork = basicStatsWork;
     this.currentDatabase = SessionState.get().getCurrentDatabase();

@@ -80,9 +80,9 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
 
     ParseContext parseContext = context.parseContext;
 
+    Table table = tableScan.getConf().getTableMetadata();
     @SuppressWarnings("rawtypes")
-    Class<? extends InputFormat> inputFormat = tableScan.getConf().getTableMetadata()
-        .getInputFormatClass();
+    Class<? extends InputFormat> inputFormat = table.getInputFormatClass();
 
     if (parseContext.getQueryProperties().isAnalyzeCommand()) {
       Preconditions.checkArgument(tableScan.getChildOperators() == null
@@ -106,14 +106,12 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
         // There will not be any Spark job above this task
-        BasicStatsNoJobWork snjWork = new BasicStatsNoJobWork(tableScan.getConf().getTableMetadata().getTableSpec());
+        BasicStatsNoJobWork snjWork = new BasicStatsNoJobWork(table.getTableSpec());
         // If partition is specified, get pruned partition list
         Set<Partition> confirmedParts = GenMapRedUtils.getConfirmedPartitionsForScan(tableScan);
         if (confirmedParts.size() > 0) {
-          Table source = tableScan.getConf().getTableMetadata();
           List<String> partCols = GenMapRedUtils.getPartitionColumns(tableScan);
-          PrunedPartitionList partList = new PrunedPartitionList(source, confirmedParts, partCols,
-              false);
+          PrunedPartitionList partList = new PrunedPartitionList(table, confirmedParts, partCols, false);
           snjWork.setPrunedPartitionList(partList);
         }
         StatsWork statWork = new StatsWork(snjWork, parseContext.getConf());
@@ -128,11 +126,11 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
         // The plan consists of a simple SparkTask followed by a StatsTask.
         // The Spark task is just a simple TableScanOperator
 
-        BasicStatsWork basicStatsWork = new BasicStatsWork(tableScan.getConf().getTableMetadata().getTableSpec());
+        BasicStatsWork basicStatsWork = new BasicStatsWork(table.getTableSpec());
         basicStatsWork.setAggKey(tableScan.getConf().getStatsAggPrefix());
         basicStatsWork.setStatsTmpDir(tableScan.getConf().getTmpStatsDir());
         basicStatsWork.setNoScanAnalyzeCommand(parseContext.getQueryProperties().isNoScanAnalyzeCommand());
-        StatsWork columnStatsWork = new StatsWork(basicStatsWork, parseContext.getConf());
+        StatsWork columnStatsWork = new StatsWork(table, basicStatsWork, parseContext.getConf());
         columnStatsWork.setSourceTask(context.currentTask);
         Task<StatsWork> statsTask = TaskFactory.get(columnStatsWork, parseContext.getConf());
         context.currentTask.addDependentTask(statsTask);
@@ -156,9 +154,8 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
         Set<Partition> confirmedPartns = GenMapRedUtils.getConfirmedPartitionsForScan(tableScan);
         PrunedPartitionList partitions = null;
         if (confirmedPartns.size() > 0) {
-          Table source = tableScan.getConf().getTableMetadata();
           List<String> partCols = GenMapRedUtils.getPartitionColumns(tableScan);
-          partitions = new PrunedPartitionList(source, confirmedPartns, partCols, false);
+          partitions = new PrunedPartitionList(table, confirmedPartns, partCols, false);
         }
 
         MapWork w = utils.createMapWork(context, tableScan, sparkWork, partitions);

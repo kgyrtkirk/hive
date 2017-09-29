@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -91,6 +92,7 @@ public class GenMRTableScan1 implements NodeProcessor {
         if (parseCtx.getQueryProperties().isAnalyzeCommand()) {
           boolean partialScan = parseCtx.getQueryProperties().isPartialScanAnalyzeCommand();
           boolean noScan = parseCtx.getQueryProperties().isNoScanAnalyzeCommand();
+          TableSpec tableSpec = op.getConf().getTableMetadata().getTableSpec();
           if (OrcInputFormat.class.isAssignableFrom(inputFormat) ||
                   MapredParquetInputFormat.class.isAssignableFrom(inputFormat)) {
             // For ORC and Parquet, all the following statements are the same
@@ -99,7 +101,7 @@ public class GenMRTableScan1 implements NodeProcessor {
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
 
             // There will not be any MR or Tez job above this task
-            BasicStatsNoJobWork snjWork = new BasicStatsNoJobWork(op.getConf().getTableMetadata().getTableSpec());
+            BasicStatsNoJobWork snjWork = new BasicStatsNoJobWork(tableSpec);
             StatsWork statWork = new StatsWork(snjWork, parseCtx.getConf());
             // If partition is specified, get pruned partition list
             Set<Partition> confirmedParts = GenMapRedUtils.getConfirmedPartitionsForScan(op);
@@ -122,12 +124,13 @@ public class GenMRTableScan1 implements NodeProcessor {
             // The plan consists of a simple MapRedTask followed by a StatsTask.
             // The MR task is just a simple TableScanOperator
 
-            BasicStatsWork statsWork = new BasicStatsWork(op.getConf().getTableMetadata().getTableSpec());
+            Table table = tableSpec.tableHandle;
+            BasicStatsWork statsWork = new BasicStatsWork(tableSpec);
             statsWork.setAggKey(op.getConf().getStatsAggPrefix());
             statsWork.setStatsTmpDir(op.getConf().getTmpStatsDir());
             statsWork.setNoScanAnalyzeCommand(noScan);
             statsWork.setPartialScanAnalyzeCommand(partialScan);
-            StatsWork columnStatsWork = new StatsWork(statsWork, parseCtx.getConf());
+            StatsWork columnStatsWork = new StatsWork(table, statsWork, parseCtx.getConf());
             columnStatsWork.setSourceTask(currTask);
             Task<StatsWork> columnStatsTask = TaskFactory.get(columnStatsWork, parseCtx.getConf());
             currTask.addDependentTask(columnStatsTask);

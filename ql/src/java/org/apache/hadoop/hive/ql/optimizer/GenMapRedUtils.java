@@ -1483,12 +1483,22 @@ public final class GenMapRedUtils {
 
     MoveWork mvWork = mvTask.getWork();
     BasicStatsWork statsWork = null;
+    String tableName = null;
     if (mvWork.getLoadTableWork() != null) {
       statsWork = new BasicStatsWork(mvWork.getLoadTableWork());
+      tableName = mvWork.getLoadTableWork().getTable().getTableName();
     } else if (mvWork.getLoadFileWork() != null) {
       statsWork = new BasicStatsWork(mvWork.getLoadFileWork());
+      tableName = mvWork.getLoadFileWork().getDestinationCreateTable();
     }
     assert statsWork != null : "Error when generating StatsTask";
+
+    Table table;
+    try {
+      table = Hive.get().getTable(tableName);
+    } catch (HiveException e) {
+      throw new RuntimeException("can't lookup table: " + tableName, e);
+    }
 
     statsWork.setStatsTmpDir(nd.getConf().getStatsTmpDir());
 
@@ -1513,7 +1523,7 @@ public final class GenMapRedUtils {
     // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
     // in FileSinkDesc is used for stats publishing. They should be consistent.
     statsWork.setAggKey(nd.getConf().getStatsAggPrefix());
-    StatsWork columnStatsWork = new StatsWork(statsWork, hconf);
+    StatsWork columnStatsWork = new StatsWork(table, statsWork, hconf);
     columnStatsWork.setSourceTask(currTask);
     Task<? extends Serializable> statsTask = TaskFactory.get(columnStatsWork, hconf);
 

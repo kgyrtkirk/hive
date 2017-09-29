@@ -455,7 +455,7 @@ public abstract class TaskCompiler {
       BasicStatsWork statsWork = new BasicStatsWork(tableScan.getConf().getTableMetadata().getTableSpec());
       statsWork.setAggKey(tableScan.getConf().getStatsAggPrefix());
       statsWork.setStatsTmpDir(tableScan.getConf().getTmpStatsDir());
-      StatsWork columnStatsWork = new StatsWork(statsWork, parseContext.getConf());
+      StatsWork columnStatsWork = new StatsWork(table, statsWork, parseContext.getConf());
       columnStatsWork.setSourceTask(currentTask);
       return TaskFactory.get(columnStatsWork, parseContext.getConf());
     }
