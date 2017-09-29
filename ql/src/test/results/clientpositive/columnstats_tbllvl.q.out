@@ -417,7 +417,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@uservisits_web_text_none
 PREHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
-Cannot get table uservisits_web_text_none
 POSTHOOK: query: analyze table default.UserVisits_web_text_none compute statistics for columns destURL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@uservisits_web_text_none
@@ -658,7 +657,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: dummydb@uservisits_in_dummy_db
 PREHOOK: Output: dummydb@uservisits_in_dummy_db
 #### A masked pattern was here ####
-Cannot get table uservisits_in_dummy_db
 POSTHOOK: query: analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 POSTHOOK: type: QUERY
 POSTHOOK: Input: dummydb@uservisits_in_dummy_db
@@ -721,7 +719,6 @@ PREHOOK: type: QUERY
 PREHOOK: Input: dummydb@uservisits_in_dummy_db
 PREHOOK: Output: dummydb@uservisits_in_dummy_db
 #### A masked pattern was here ####
-Cannot get table uservisits_in_dummy_db
 POSTHOOK: query: analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: dummydb@uservisits_in_dummy_db

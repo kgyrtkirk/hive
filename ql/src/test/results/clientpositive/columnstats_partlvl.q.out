@@ -777,7 +777,6 @@ PREHOOK: Input: default@employee_part@employeesalary=2000.0
 PREHOOK: Output: default@employee_part
 PREHOOK: Output: default@employee_part@employeesalary=2000.0
 #### A masked pattern was here ####
-Cannot get table employee_part
 POSTHOOK: query: analyze table default.Employee_Part partition (employeeSalary=2000.0) compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee_part
@@ -804,7 +803,6 @@ PREHOOK: Output: default@employee_part
 PREHOOK: Output: default@employee_part@employeesalary=2000.0
 PREHOOK: Output: default@employee_part@employeesalary=4000.0
 #### A masked pattern was here ####
-Cannot get table employee_part
 POSTHOOK: query: analyze table default.Employee_Part  compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee_part
