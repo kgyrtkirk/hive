@@ -459,15 +459,12 @@ public abstract class TaskCompiler {
       }
     }
 
-    // find all leaf tasks and make the DDLTask as a dependent task of all of
-    // them
-    HashSet<Task<? extends Serializable>> leaves =
-        new LinkedHashSet<>();
+    // find all leaf tasks and make the DDLTask as a dependent task on all of them
+    HashSet<Task<? extends Serializable>> leaves = new LinkedHashSet<>();
     getLeafTasks(rootTasks, leaves);
     assert (leaves.size() > 0);
     for (Task<? extends Serializable> task : leaves) {
-      if (task instanceof StatsTask
-          && ((StatsTask) task).getWork().getBasicStatsWork() != null) {
+      if (task instanceof StatsTask) {
         // StatsTask require table to already exist
         for (Task<? extends Serializable> parentOfStatsTask : task.getParentTasks()) {
           parentOfStatsTask.addDependentTask(createTask);
