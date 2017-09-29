@@ -169,7 +169,7 @@ public class StatsWork implements Serializable {
     return statsReliable;
   }
 
-  public String getTableKey() {
+  public String getFullTableName() {
     return table.getDbName() + "." + table.getTableName();
   }
 

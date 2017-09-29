@@ -404,7 +404,7 @@ public abstract class TaskCompiler {
   }
 
   private String extractTableFullName(StatsTask tsk) throws SemanticException {
-    return tsk.getWork().getTableKey();
+    return tsk.getWork().getFullTableName();
   }
 
   private Task<?> genTableStats(ParseContext parseContext, TableScanOperator tableScan, Task currentTask, final HashSet<WriteEntity> outputs)
