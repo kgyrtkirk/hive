@@ -54,7 +54,6 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.ReplCopyWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
-import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 
 /**
@@ -98,7 +97,6 @@ public final class TaskFactory {
 
     taskvec.add(new TaskTuple<MapredLocalWork>(MapredLocalWork.class,
         MapredLocalTask.class));
-    taskvec.add(new TaskTuple<BasicStatsWork>(BasicStatsWork.class, BasicStatsTask.class));
     taskvec.add(new TaskTuple<StatsWork>(StatsWork.class, StatsTask.class));
     taskvec.add(new TaskTuple<ColumnStatsUpdateWork>(ColumnStatsUpdateWork.class, ColumnStatsUpdateTask.class));
     taskvec.add(new TaskTuple<MergeFileWork>(MergeFileWork.class,

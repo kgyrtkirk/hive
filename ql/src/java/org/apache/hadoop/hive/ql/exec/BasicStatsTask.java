@@ -39,18 +39,17 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
-import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.IStatsProcessor;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
@@ -71,7 +70,9 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * MetaStore layer covers all Thrift calls and provides better guarantees about the accuracy of
  * those stats.
  **/
-public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable, IStatsProcessor {
+public class BasicStatsTask
+
+    implements Serializable, IStatsProcessor {
 
   private static final long serialVersionUID = 1L;
   private static transient final Logger LOG = LoggerFactory.getLogger(BasicStatsTask.class);
@@ -79,54 +80,26 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
   private Table table;
   private Collection<Partition> dpPartSpecs;
   public boolean followedColStats;
+  private BasicStatsWork work;
+  private HiveConf conf;
 
-  public BasicStatsTask() {
+  protected transient LogHelper console;
+
+  public BasicStatsTask(HiveConf conf, BasicStatsWork w0) {
     super();
     dpPartSpecs = null;
-  }
-
-
-  @Override
-  public int execute(DriverContext driverContext) {
-    if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
-      return 0;
-    }
-    LOG.info("Executing stats task");
-    // Make sure that it is either an ANALYZE, INSERT OVERWRITE (maybe load) or CTAS command
-    short workComponentsPresent = 0;
-    if (work.getLoadTableDesc() != null) {
-      workComponentsPresent++;
-    }
-    if (work.getTableSpecs() != null) {
-      workComponentsPresent++;
-    }
-    if (work.getLoadFileDesc() != null) {
-      workComponentsPresent++;
-    }
-
-    assert (workComponentsPresent == 1);
-
-    String tableName = "";
-    Hive hive = getHive();
-    try {
-      tableName = work.getTableName();
-
-      table = hive.getTable(tableName);
-
-    } catch (HiveException e) {
-      LOG.error("Cannot get table " + tableName, e);
-      console.printError("Cannot get table " + tableName, e.toString());
-    }
-
-    return aggregateStats(hive);
+    this.conf = conf;
+    console = new LogHelper(LOG);
+    work = w0;
 
   }
+
 
   @Override
   public int process(Hive db, Table tbl) throws Exception {
 
     LOG.info("Executing stats task");
-    //    
+    //
     //    // Make sure that it is either an ANALYZE, INSERT OVERWRITE (maybe load) or CTAS command
     //    short workComponentsPresent = 0;
     //    if (work.getLoadTableDesc() != null) {
@@ -162,12 +135,10 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
 
   }
 
-  @Override
   public StageType getType() {
     return StageType.STATS;
   }
 
-  @Override
   public String getName() {
     return "STATS";
   }
@@ -341,7 +312,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
         if (res == null) {
           return 0;
         }
-        getHive().alterTable(tableFullName, (Table) res, environmentContext);
+        db.alterTable(tableFullName, (Table) res, environmentContext);
 
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
           console.printInfo("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
@@ -435,6 +406,10 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     // The return value of 0 indicates success,
     // anything else indicates failure
     return ret;
+  }
+
+  private BasicStatsWork getWork() {
+    return work;
   }
 
   private ExecutorService buildBasicStatsExecutor() {

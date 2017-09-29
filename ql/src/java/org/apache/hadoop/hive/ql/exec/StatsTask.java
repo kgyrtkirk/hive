@@ -96,11 +96,11 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), tableName);
         Table tbl = db.getTable(names[0], names[1]);
 
-      BasicStatsTask task = (BasicStatsTask) TaskFactory.get(work.getBasicStatsWork(), conf);
+        BasicStatsTask task = new BasicStatsTask(conf, work.getBasicStatsWork());
         task.followedColStats = work.hasColStats();
-      task.initialize(queryState, queryPlan, driverContext, null);
+        //      task.initialize(queryState, queryPlan, driverContext, null);
       task.setDpPartSpecs(dpPartSpecs);
-      ret = task.execute(driverContext);
+        ret = task.process(db, tbl);
     }
       if (work.getBasicStatsNoJobWork() != null) {
         Hive db = getHive();
