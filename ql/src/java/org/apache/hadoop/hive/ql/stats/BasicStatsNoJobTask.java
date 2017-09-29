@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -72,21 +71,18 @@ import com.google.common.collect.Multimaps;
  * rows. This task can be used for computing basic stats like numFiles, numRows, fileSize,
  * rawDataSize from ORC footer.
  **/
-public class BasicStatsNoJobTask implements Serializable, IStatsProcessor {
+public class BasicStatsNoJobTask implements IStatsProcessor {
 
-  private static final long serialVersionUID = 1L;
   private static transient final Logger LOG = LoggerFactory.getLogger(BasicStatsNoJobTask.class);
   private HiveConf conf;
 
-  BasicStatsNoJobWork work;
-  @Deprecated
-  // probably it would be ok the create a local loghelper-ed one
+  private BasicStatsNoJobWork work;
   private LogHelper console;
 
   public BasicStatsNoJobTask(HiveConf conf0, BasicStatsNoJobWork work0, LogHelper console0) {
     conf = conf0;
     work = work0;
-    console= console0;
+    console = new LogHelper(LOG);
   }
 
 
@@ -94,11 +90,6 @@ public class BasicStatsNoJobTask implements Serializable, IStatsProcessor {
   public void initialize(CompilationOpContext opContext) {
 
   }
-
-  //  @Override
-  //  public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext, CompilationOpContext opContext) {
-  //    super.initialize(queryState, queryPlan, driverContext, opContext);
-  //  }
 
   @Override
   public int process(Hive db, Table tbl) throws Exception {
@@ -178,20 +169,26 @@ public class BasicStatsNoJobTask implements Serializable, IStatsProcessor {
               statsAvailable = true;
             } else {
               org.apache.hadoop.mapred.RecordReader<?, ?> recordReader = inputFormat.getRecordReader(dummySplit, jc, Reporter.NULL);
-              if (recordReader instanceof StatsProvidingRecordReader) {
-                StatsProvidingRecordReader statsRR;
-                statsRR = (StatsProvidingRecordReader) recordReader;
-                rawDataSize += statsRR.getStats().getRawDataSize();
-                numRows += statsRR.getStats().getRowCount();
-                fileSize += file.getLen();
-                numFiles += 1;
-                statsAvailable = true;
+              try {
+                if (recordReader instanceof StatsProvidingRecordReader) {
+                  StatsProvidingRecordReader statsRR;
+                  statsRR = (StatsProvidingRecordReader) recordReader;
+                  rawDataSize += statsRR.getStats().getRawDataSize();
+                  numRows += statsRR.getStats().getRowCount();
+                  fileSize += file.getLen();
+                  numFiles += 1;
+                  statsAvailable = true;
+                } else {
+                  String msg = String.format("Unexpected file(%s) found during reading footers for: %s ", file, partish.getSimpleName());
+                  console.printError(msg);
+                  if (isStatsReliable()) {
+                    throw new HiveException(msg);
+                  }
+                  statsAvailable = false;
+                }
+              } finally {
+                recordReader.close();
               }
-              // XXX: missing?
-              //              else{
-              //                statsAvailable=false;
-              //              }
-              recordReader.close();
             }
           }
         }
@@ -221,11 +218,17 @@ public class BasicStatsNoJobTask implements Serializable, IStatsProcessor {
           String threadName = Thread.currentThread().getName();
           String msg = partish.getSimpleName() + " does not provide stats.";
           LOG.debug(threadName + ": " + msg);
+          // XXX: okay...but what will clear the stats in this case?
+          // it seems inconsistent to me...
         }
       } catch (Exception e) {
         // XXX: possibly a bad idea?
         console.printInfo("[Warning] could not update stats for " + partish.getSimpleName() + ".", "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
       }
+    }
+
+    private boolean isStatsReliable() {
+      return false;
     }
 
     private String toString(Map<String, String> parameters) {
