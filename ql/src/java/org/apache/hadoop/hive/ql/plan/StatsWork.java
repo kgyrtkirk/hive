@@ -173,4 +173,7 @@ public class StatsWork implements Serializable {
     return table.getDbName() + "." + table.getTableName();
   }
 
+  public Task getSourceTask() {
+    return basicStatsWork.getSourceTask();
+  }
 }
