@@ -447,7 +447,7 @@ public class HiveConf extends Configuration {
             + "dynamically generating the next set of tasks. The number is approximate as Hive \n"
             + "will stop at a slightly higher number, the reason being some events might lead to a \n"
             + "task increment that would cross the specified limit."),
-    REPL_PARTITIONS_DUMP_PARALLELISM("hive.repl.partitions.dump.parallelism",5,
+    REPL_PARTITIONS_DUMP_PARALLELISM("hive.repl.partitions.dump.parallelism",100,
         "Number of threads that will be used to dump partition data information during repl dump."),
     REPL_DUMPDIR_CLEAN_FREQ("hive.repl.dumpdir.clean.freq", "0s",
         new TimeValidator(TimeUnit.SECONDS),
@@ -794,6 +794,9 @@ public class HiveConf extends Configuration {
     METASTORE_EVENT_DB_LISTENER_TTL("hive.metastore.event.db.listener.timetolive", "86400s",
         new TimeValidator(TimeUnit.SECONDS),
         "time after which events will be removed from the database listener queue"),
+    METASTORE_EVENT_DB_NOTIFICATION_API_AUTH("hive.metastore.event.db.notification.api.auth", true,
+        "Should metastore do authorization against database notification related APIs such as get_next_notification.\n" +
+        "If set to true, then only the superusers in proxy settings have the permission"),
     METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS("hive.metastore.authorization.storage.checks", false,
         "Should the metastore do authorization checks against the underlying storage (usually hdfs) \n" +
         "for operations like drop-partition (disallow the drop-partition if the user in\n" +
