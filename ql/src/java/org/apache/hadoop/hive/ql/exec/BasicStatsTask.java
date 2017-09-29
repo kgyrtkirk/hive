@@ -106,13 +106,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     String tableName = "";
     Hive hive = getHive();
     try {
-      if (work.getLoadTableDesc() != null) {
-        tableName = work.getLoadTableDesc().getTable().getTableName();
-      } else if (work.getTableSpecs() != null){
-        tableName = work.getTableSpecs().tableName;
-      } else {
-        tableName = work.getLoadFileDesc().getDestinationCreateTable();
-      }
+      tableName = work.getTableName();
 
       table = hive.getTable(tableName);
 
