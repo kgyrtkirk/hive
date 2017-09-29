@@ -191,8 +191,8 @@ public class DriverContext {
     NodeUtils.iterateTask(rootTasks, StatsTask.class, new Function<StatsTask>() {
       @Override
       public void apply(StatsTask statsTask) {
-        if(statsTask.getWork().getBasicStatsWork()!=null) {
-          statsTasks.put(statsTask.getWork().getBasicStatsWork().getAggKey(), statsTask);
+        if (statsTask.getWork().isAggregating()) {
+          statsTasks.put(statsTask.getWork().getAggKey(), statsTask);
         }
       }
     });

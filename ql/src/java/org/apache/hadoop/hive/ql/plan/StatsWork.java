@@ -105,10 +105,6 @@ public class StatsWork implements Serializable {
     return basicStatsWork;
   }
 
-  public void setBasicStatsWork(BasicStatsWork basicStatsWork) {
-    this.basicStatsWork = basicStatsWork;
-  }
-
   // only explain uses it
   @Deprecated
   @Explain(displayName = "Basic Stats NoJob Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -173,5 +169,13 @@ public class StatsWork implements Serializable {
 
   public Task getSourceTask() {
     return basicStatsWork.getSourceTask2();
+  }
+
+  public String getAggKey() {
+    return basicStatsWork.getAggKey();
+  }
+
+  public boolean isAggregating() {
+    return basicStatsWork.getAggKey() != null;
   }
 }
