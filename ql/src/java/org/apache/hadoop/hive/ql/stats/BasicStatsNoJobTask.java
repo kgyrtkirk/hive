@@ -79,9 +79,9 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
   private BasicStatsNoJobWork work;
   private LogHelper console;
 
-  public BasicStatsNoJobTask(HiveConf conf0, BasicStatsNoJobWork work0) {
-    conf = conf0;
-    work = work0;
+  public BasicStatsNoJobTask(HiveConf conf, BasicStatsNoJobWork work) {
+    this.conf = conf;
+    this.work = work;
     console = new LogHelper(LOG);
   }
 
