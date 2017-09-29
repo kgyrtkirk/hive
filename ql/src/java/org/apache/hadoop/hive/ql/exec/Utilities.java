@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -93,7 +92,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InputEstimator;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -113,7 +111,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.Serializer;
@@ -145,7 +142,6 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
-import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hive.common.util.ACLConfigurationParser;
@@ -2161,7 +2157,9 @@ public final class Utilities {
    */
   @VisibleForTesting
   static int getMaxExecutorsForInputListing(final Configuration conf, int inputLocationListSize) {
-    if (inputLocationListSize < 1) return 0;
+    if (inputLocationListSize < 1) {
+      return 0;
+    }
 
     int maxExecutors = 1;
 
@@ -3096,8 +3094,9 @@ public final class Utilities {
       boolean hasLogged = false;
       // Note: this copies the list because createDummyFileForEmptyPartition may modify the map.
       for (Path file : new LinkedList<Path>(work.getPathToAliases().keySet())) {
-        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
+        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT) {
           throw new IOException("Operation is Canceled.");
+        }
 
         List<String> aliases = work.getPathToAliases().get(file);
         if (aliases.contains(alias)) {
@@ -3593,8 +3592,9 @@ public final class Utilities {
   public static boolean skipHeader(RecordReader<WritableComparable, Writable> currRecReader,
       int headerCount, WritableComparable key, Writable value) throws IOException {
     while (headerCount > 0) {
-      if (!currRecReader.next(key, value))
+      if (!currRecReader.next(key, value)) {
         return false;
+      }
       headerCount--;
     }
     return true;
@@ -3754,7 +3754,7 @@ public final class Utilities {
       OperatorDesc desc = op.getConf();
       String statsTmpDir = null;
       if (desc instanceof FileSinkDesc) {
-         statsTmpDir = ((FileSinkDesc)desc).getStatsTmpDir();
+        statsTmpDir = ((FileSinkDesc) desc).getTmpStatsDir();
       } else if (desc instanceof TableScanDesc) {
         statsTmpDir = ((TableScanDesc) desc).getTmpStatsDir();
       }

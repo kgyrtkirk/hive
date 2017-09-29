@@ -136,7 +136,7 @@ public class StatsWork implements Serializable {
     // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
     // in FileSinkDesc is used for stats publishing. They should be consistent.
     basicStatsWork.setAggKeyX(conf.getStatsAggPrefix());
-    basicStatsWork.setStatsTmpDir(conf.getStatsTmpDir());
+    basicStatsWork.setStatsTmpDir(conf.getTmpStatsDir());
 
     basicStatsWork.setStatsReliable2(statsReliable);
 
