@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.stats.IStatsProcessor;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
@@ -69,7 +71,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * MetaStore layer covers all Thrift calls and provides better guarantees about the accuracy of
  * those stats.
  **/
-public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable {
+public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable, IStatsProcessor {
 
   private static final long serialVersionUID = 1L;
   private static transient final Logger LOG = LoggerFactory.getLogger(BasicStatsTask.class);
@@ -82,6 +84,7 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     super();
     dpPartSpecs = null;
   }
+
 
   @Override
   public int execute(DriverContext driverContext) {
@@ -116,6 +119,46 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
     }
 
     return aggregateStats(hive);
+
+  }
+
+  @Override
+  public int process(Hive db, Table tbl) throws Exception {
+
+    LOG.info("Executing stats task");
+    //    
+    //    // Make sure that it is either an ANALYZE, INSERT OVERWRITE (maybe load) or CTAS command
+    //    short workComponentsPresent = 0;
+    //    if (work.getLoadTableDesc() != null) {
+    //      workComponentsPresent++;
+    //    }
+    //    if (work.getTableSpecs() != null) {
+    //      workComponentsPresent++;
+    //    }
+    //    if (work.getLoadFileDesc() != null) {
+    //      workComponentsPresent++;
+    //    }
+    //
+    //    assert (workComponentsPresent == 1);
+
+    //    String tableName = "";
+    //    Hive hive = getHive();
+    //    try {
+    //      tableName = work.getTableName();
+
+    table = tbl;//hive.getTable(tableName);
+
+    //    } catch (HiveException e) {
+    //      LOG.error("Cannot get table " + tableName, e);
+    //      console.printError("Cannot get table " + tableName, e.toString());
+    //    }
+
+    return aggregateStats(db);
+  }
+
+  @Override
+  public void initialize(CompilationOpContext opContext) {
+    // TODO Auto-generated method stub
 
   }
 
@@ -512,4 +555,5 @@ public class BasicStatsTask extends Task<BasicStatsWork> implements Serializable
   public void setDpPartSpecs(Collection<Partition> dpPartSpecs) {
     this.dpPartSpecs = dpPartSpecs;
   }
+
 }
