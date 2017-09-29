@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.plan.BasicStatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.stats.BasicStatsNoJobTask;
+import org.apache.hadoop.hive.ql.stats.BasicStatsTask;
 import org.apache.hadoop.hive.ql.stats.ColStatsProcessor;
 import org.apache.hadoop.hive.ql.stats.IStatsProcessor;
 import org.slf4j.Logger;
