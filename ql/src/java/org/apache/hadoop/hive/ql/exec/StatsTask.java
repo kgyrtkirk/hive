@@ -32,9 +32,11 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.stats.BasicStatsNoJobTask;
@@ -91,10 +93,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     int ret = 0;
     try {
       Hive db = getHive();
-      String tableName = work.getTableName();
-
-      String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), tableName);
-      Table tbl = db.getTable(names[0], names[1]);
+      Table tbl = getTable(db);
 
       if (work.getBasicStatsWork() != null) {
 
@@ -123,6 +122,15 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       return 1;
     }
     return 0;
+  }
+
+
+  private Table getTable(Hive db) throws SemanticException, HiveException {
+    String tableName = work.getTableName();
+
+    String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), tableName);
+    Table tbl = db.getTable(names[0], names[1]);
+    return tbl;
   }
 
   @Override
