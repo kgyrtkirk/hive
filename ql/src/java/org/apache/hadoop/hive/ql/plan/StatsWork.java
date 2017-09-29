@@ -176,6 +176,6 @@ public class StatsWork implements Serializable {
   }
 
   public boolean isAggregating() {
-    return basicStatsWork.getAggKey() != null;
+    return basicStatsWork != null && basicStatsWork.getAggKey() != null;
   }
 }
