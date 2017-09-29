@@ -19,10 +19,14 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -46,6 +50,8 @@ public class StatsWork implements Serializable {
   private boolean statsReliable;
   private Table table;
   private boolean truncate;
+  private boolean footerScan;
+  private List<Partition> partitions = new LinkedList<>();
 
   @Deprecated
   public StatsWork(Table table, BasicStatsWork basicStatsWork, HiveConf hconf) {
@@ -153,6 +159,14 @@ public class StatsWork implements Serializable {
 
     basicStatsWork.setStatsReliable2(statsReliable);
 
+  }
+
+  public void setFooterScan() {
+    footerScan = true;
+  }
+
+  public void addInputPartitions(Set<Partition> partitions) {
+    this.partitions.addAll(partitions);
   }
 
 }

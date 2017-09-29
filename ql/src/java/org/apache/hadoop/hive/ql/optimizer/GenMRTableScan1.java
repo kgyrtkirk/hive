@@ -101,16 +101,16 @@ public class GenMRTableScan1 implements NodeProcessor {
             // There will not be any MR or Tez job above this task
             BasicStatsNoJobWork snjWork = new BasicStatsNoJobWork(table.getTableSpec());
             StatsWork statWork = new StatsWork(table, snjWork, parseCtx.getConf());
+            statWork.setFooterScan();
+
             // If partition is specified, get pruned partition list
             Set<Partition> confirmedParts = GenMapRedUtils.getConfirmedPartitionsForScan(op);
             if (confirmedParts.size() > 0) {
               List<String> partCols = GenMapRedUtils.getPartitionColumns(op);
-              PrunedPartitionList partList = new PrunedPartitionList(table, confirmedParts,
-                  partCols, false);
+              PrunedPartitionList partList = new PrunedPartitionList(table, confirmedParts, partCols, false);
+              statWork.addInputPartitions(partList.getPartitions());
               snjWork.setPrunedPartitionList(partList);
-              //              statWork.setPartitions(partList.getPartitions());
             }
-            //            statWork.collect(StatsWork.FOOTER_STATS);
             Task<StatsWork> snjTask = TaskFactory.get(statWork, parseCtx.getConf());
             ctx.setCurrTask(snjTask);
             ctx.setCurrTopOp(null);
