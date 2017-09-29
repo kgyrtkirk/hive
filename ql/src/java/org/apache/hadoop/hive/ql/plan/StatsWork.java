@@ -174,6 +174,6 @@ public class StatsWork implements Serializable {
   }
 
   public Task getSourceTask() {
-    return basicStatsWork.getSourceTask();
+    return basicStatsWork.getSourceTask2();
   }
 }

@@ -443,7 +443,7 @@ public class BasicStatsTask
   private StatsCollectionContext getContext() throws HiveException {
 
     StatsCollectionContext scc = new StatsCollectionContext(conf);
-    Task sourceTask = getWork().getSourceTask();
+    Task sourceTask = getWork().getSourceTask2();
     if (sourceTask == null) {
       throw new HiveException(ErrorMsg.STATSAGGREGATOR_SOURCETASK_NULL.getErrorCodedMsg());
     }

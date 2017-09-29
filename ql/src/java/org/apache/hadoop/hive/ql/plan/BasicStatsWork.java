@@ -162,7 +162,7 @@ public class BasicStatsWork implements Serializable {
     this.isPartialScanAnalyzeCommand = isPartialScanAnalyzeCommand;
   }
 
-  public Task getSourceTask() {
+  public Task getSourceTask2() {
     return sourceTask;
   }
 
