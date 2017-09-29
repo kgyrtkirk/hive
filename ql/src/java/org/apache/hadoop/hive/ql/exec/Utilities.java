@@ -96,6 +96,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.IStatsGatherDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
@@ -104,7 +105,6 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.Adjacency;
 import org.apache.hadoop.hive.ql.plan.api.Graph;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -3753,10 +3753,8 @@ public final class Utilities {
     for (Operator<? extends OperatorDesc> op : ops) {
       OperatorDesc desc = op.getConf();
       String statsTmpDir = null;
-      if (desc instanceof FileSinkDesc) {
-        statsTmpDir = ((FileSinkDesc) desc).getTmpStatsDir();
-      } else if (desc instanceof TableScanDesc) {
-        statsTmpDir = ((TableScanDesc) desc).getTmpStatsDir();
+      if (desc instanceof IStatsGatherDesc) {
+        statsTmpDir = ((IStatsGatherDesc) desc).getTmpStatsDir();
       }
       if (statsTmpDir != null && !statsTmpDir.isEmpty()) {
         statsTmpDirs.add(statsTmpDir);
