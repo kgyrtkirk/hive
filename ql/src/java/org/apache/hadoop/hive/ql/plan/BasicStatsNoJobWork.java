@@ -35,9 +35,6 @@ public class BasicStatsNoJobWork implements Serializable {
   private boolean statsReliable;
   private PrunedPartitionList prunedPartitionList;
 
-  public BasicStatsNoJobWork() {
-  }
-
   public BasicStatsNoJobWork(TableSpec tableSpecs) {
     this.tableSpecs = tableSpecs;
   }
