@@ -179,12 +179,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
                   numFiles += 1;
                   statsAvailable = true;
                 } else {
-                  String msg = String.format("Unexpected file(%s) found during reading footers for: %s ", file, partish.getSimpleName());
-                  console.printError(msg);
-                  if (isStatsReliable()) {
-                    throw new HiveException(msg);
-                  }
-                  statsAvailable = false;
+                  throw new HiveException(String.format("Unexpected file found during reading footers for: %s ", file));
                 }
               } finally {
                 recordReader.close();
@@ -222,8 +217,12 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
           // it seems inconsistent to me...
         }
       } catch (Exception e) {
-        // XXX: possibly a bad idea?
         console.printInfo("[Warning] could not update stats for " + partish.getSimpleName() + ".", "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
+        if (isStatsReliable()) {
+          // XXX: possibly a bad idea?
+          // notify somehow!
+          //          throw new HiveException("Could not update stats for: " + partish.getSimpleName(), e);
+        }
       }
     }
 
