@@ -126,10 +126,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
 
   private Table getTable(Hive db) throws SemanticException, HiveException {
-    String tableName = work.getTableName();
-
-    String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), tableName);
-    Table tbl = db.getTable(names[0], names[1]);
+    Table tbl = work.getTable();
     return tbl;
   }
 

@@ -44,9 +44,11 @@ public class StatsWork implements Serializable {
 
   private String currentDatabase;
   private boolean statsReliable;
+  private Table table;
 
   public StatsWork(Table table, BasicStatsWork basicStatsWork, HiveConf hconf) {
     super();
+    this.table = table;
     this.basicStatsWork = basicStatsWork;
     this.currentDatabase = SessionState.get().getCurrentDatabase();
     statsReliable = hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE);
@@ -55,6 +57,7 @@ public class StatsWork implements Serializable {
 
   public StatsWork(Table table, BasicStatsNoJobWork basicStatsNoJobWork, HiveConf hiveConf) {
     super();
+    this.table = table;
     this.basicStatsNoJobWork = basicStatsNoJobWork;
     this.currentDatabase = SessionState.get().getCurrentDatabase();
     statsReliable = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE);
@@ -113,6 +116,7 @@ public class StatsWork implements Serializable {
     return colStats != null;
   }
 
+  @Deprecated
   public String getTableName() {
     if (getColStats() != null) {
       return getColStats().getTableName();
@@ -126,4 +130,7 @@ public class StatsWork implements Serializable {
     throw new RuntimeException("invalid state");
   }
 
+  public Table getTable() {
+    return table;
+  }
 }
