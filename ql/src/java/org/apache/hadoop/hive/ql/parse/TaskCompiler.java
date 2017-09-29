@@ -404,24 +404,7 @@ public abstract class TaskCompiler {
   }
 
   private String extractTableFullName(StatsTask tsk) throws SemanticException {
-    if (((StatsTask) tsk).getWork().getBasicStatsWork() != null) {
-      if (((StatsTask) tsk).getWork().getBasicStatsWork().getTableSpecs() != null) {
-        // this is the case for insert
-        Table tab = ((StatsTask) tsk).getWork().getBasicStatsWork().getTableSpecs().tableHandle;
-        return tab.getDbName() + "." + tab.getTableName();
-      } else if (((StatsTask) tsk).getWork().getBasicStatsWork().getLoadTableDesc() != null) {
-        // this is the case for CTAS
-        return ((StatsTask) tsk).getWork().getBasicStatsWork().getLoadTableDesc().getTable()
-            .getTableName();
-      } else {
-        throw new SemanticException("can not find table name in ColumnStatsTask");
-      }
-    } else if (((StatsTask) tsk).getWork().getBasicStatsNoJobWork() != null) {
-      Table tab = ((StatsTask) tsk).getWork().getBasicStatsNoJobWork().getTableSpecs().tableHandle;
-      return tab.getDbName() + "." + tab.getTableName();
-    } else {
-      throw new SemanticException("can not find table name in ColumnStatsTask");
-    }
+    return tsk.getWork().getTableKey();
   }
 
   private Task<?> genTableStats(ParseContext parseContext, TableScanOperator tableScan, Task currentTask, final HashSet<WriteEntity> outputs)

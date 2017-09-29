@@ -169,4 +169,8 @@ public class StatsWork implements Serializable {
     return statsReliable;
   }
 
+  public String getTableKey() {
+    return table.getDbName() + "." + table.getTableName();
+  }
+
 }
