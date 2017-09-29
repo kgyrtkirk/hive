@@ -100,23 +100,23 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         BasicStatsTask task = new BasicStatsTask(conf, work.getBasicStatsWork());
         task.followedColStats = work.hasColStats();
         //      task.initialize(queryState, queryPlan, driverContext, null);
-      task.setDpPartSpecs(dpPartSpecs);
+        task.setDpPartSpecs(dpPartSpecs);
         ret = task.process(db, tbl);
-    }
+      }
       if (work.getBasicStatsNoJobWork() != null) {
 
         BasicStatsNoJobTask t = new BasicStatsNoJobTask(conf, work.getBasicStatsNoJobWork(), console);
         ret = t.process(db, tbl);
       }
       if (ret != 0) {
-      return ret;
-    }
+        return ret;
+      }
 
-    if (work.hasColStats()) {
+      if (work.hasColStats()) {
         for (IStatsProcessor task : processors) {
           return task.process(db, tbl);
         }
-    }
+      }
     } catch (Exception e) {
       LOG.error("Failed to run stats task", e);
       return 1;
