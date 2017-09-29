@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.BasicStatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.mapred.InputFormat;
@@ -98,16 +97,16 @@ public class ProcessAnalyzeTable implements NodeProcessor {
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
 
         // There will not be any Tez job above this task
-        BasicStatsNoJobWork snjWork = new BasicStatsNoJobWork(table
-            .getTableSpec());
+        StatsWork statWork = new StatsWork(table, parseContext.getConf());
+        statWork.setFooterScan();
+
         // If partition is specified, get pruned partition list
         Set<Partition> confirmedParts = GenMapRedUtils.getConfirmedPartitionsForScan(tableScan);
         if (confirmedParts.size() > 0) {
           List<String> partCols = GenMapRedUtils.getPartitionColumns(tableScan);
           PrunedPartitionList partList = new PrunedPartitionList(table, confirmedParts, partCols, false);
-          snjWork.setPrunedPartitionList(partList);
+          statWork.addInputPartitions(partList.getPartitions());
         }
-        StatsWork statWork = new StatsWork(table, snjWork, parseContext.getConf());
         Task<StatsWork> snjTask = TaskFactory.get(statWork, parseContext.getConf());
         snjTask.setParentTasks(null);
         context.rootTasks.remove(context.currentTask);

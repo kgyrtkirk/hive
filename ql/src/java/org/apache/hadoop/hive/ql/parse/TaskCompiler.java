@@ -54,7 +54,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
-import org.apache.hadoop.hive.ql.plan.BasicStatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
@@ -443,13 +442,13 @@ public abstract class TaskCompiler {
 
     if (inputFormat.equals(OrcInputFormat.class)) {
       // For ORC, there is no Tez Job for table stats.
-      BasicStatsNoJobWork snjWork = new BasicStatsNoJobWork(tableScan.getConf().getTableMetadata()
-          .getTableSpec());
+      StatsWork columnStatsWork = new StatsWork(table, parseContext.getConf());
+      columnStatsWork.setFooterScan();
       // If partition is specified, get pruned partition list
       if (partitions.size() > 0) {
-        snjWork.setPrunedPartitionList(parseContext.getPrunedPartitions(tableScan));
+        columnStatsWork.addInputPartitions(parseContext.getPrunedPartitions(tableScan).getPartitions());
+        //        snjWork.setPrunedPartitionList(parseContext.getPrunedPartitions(tableScan));
       }
-      StatsWork columnStatsWork = new StatsWork(table, snjWork, parseContext.getConf());
       return TaskFactory.get(columnStatsWork, parseContext.getConf());
     } else {
       BasicStatsWork statsWork = new BasicStatsWork(tableScan.getConf().getTableMetadata().getTableSpec());

@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.BasicStatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.mapred.InputFormat;
 
@@ -99,8 +98,7 @@ public class GenMRTableScan1 implements NodeProcessor {
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
 
             // There will not be any MR or Tez job above this task
-            BasicStatsNoJobWork snjWork = new BasicStatsNoJobWork(table.getTableSpec());
-            StatsWork statWork = new StatsWork(table, snjWork, parseCtx.getConf());
+            StatsWork statWork = new StatsWork(table, parseCtx.getConf());
             statWork.setFooterScan();
 
             // If partition is specified, get pruned partition list
@@ -109,7 +107,7 @@ public class GenMRTableScan1 implements NodeProcessor {
               List<String> partCols = GenMapRedUtils.getPartitionColumns(op);
               PrunedPartitionList partList = new PrunedPartitionList(table, confirmedParts, partCols, false);
               statWork.addInputPartitions(partList.getPartitions());
-              snjWork.setPrunedPartitionList(partList);
+              //              snjWork.setPrunedPartitionList(partList);
             }
             Task<StatsWork> snjTask = TaskFactory.get(statWork, parseCtx.getConf());
             ctx.setCurrTask(snjTask);

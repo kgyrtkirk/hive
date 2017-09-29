@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
-import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 
 /**
  * Client-side stats aggregator task.
@@ -33,9 +32,13 @@ public class BasicStatsNoJobWork implements Serializable {
 
   private TableSpec tableSpecs;
   private boolean statsReliable;
-  private PrunedPartitionList prunedPartitionList;
+  //  private PrunedPartitionList prunedPartitionList;
 
-  public BasicStatsNoJobWork(TableSpec tableSpecs) {
+  private Set<Partition> pp;
+
+  public
+  //public
+  BasicStatsNoJobWork(TableSpec tableSpecs) {
     this.tableSpecs = tableSpecs;
   }
 
@@ -51,13 +54,18 @@ public class BasicStatsNoJobWork implements Serializable {
     return statsReliable;
   }
 
-  @Deprecated
-  public void setPrunedPartitionList(PrunedPartitionList prunedPartitionList) {
-    this.prunedPartitionList = prunedPartitionList;
+  //  @Deprecated
+  //  public void setPrunedPartitionList(PrunedPartitionList prunedPartitionList) {
+  //    this.prunedPartitionList = prunedPartitionList;
+  //  }
+  //
+  public Set<Partition> getPartitions() {
+    return pp;
   }
 
-  public Set<Partition> getPartitions() {
-    return prunedPartitionList == null ? null : prunedPartitionList.getPartitions();
+  public void setPartitions(Set<Partition> partitions) {
+   pp=partitions;
+
   }
 
 }

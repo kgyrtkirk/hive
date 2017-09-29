@@ -19,8 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -51,7 +50,7 @@ public class StatsWork implements Serializable {
   private Table table;
   private boolean truncate;
   private boolean footerScan;
-  private List<Partition> partitions = new LinkedList<>();
+  private Set<Partition> partitions = new HashSet<>();
 
   @Deprecated
   public StatsWork(Table table, BasicStatsWork basicStatsWork, HiveConf hconf) {
@@ -168,5 +167,14 @@ public class StatsWork implements Serializable {
   public void addInputPartitions(Set<Partition> partitions) {
     this.partitions.addAll(partitions);
   }
+
+  public Set<Partition> getPartitions() {
+    return partitions;
+  }
+
+  public boolean isFooterScan() {
+    return footerScan;
+  }
+
 
 }
