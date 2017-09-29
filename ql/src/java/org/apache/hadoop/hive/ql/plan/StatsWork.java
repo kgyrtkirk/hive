@@ -45,11 +45,21 @@ public class StatsWork implements Serializable {
   private String currentDatabase;
   private boolean statsReliable;
   private Table table;
+  private boolean truncate;
 
+  @Deprecated
   public StatsWork(Table table, BasicStatsWork basicStatsWork, HiveConf hconf) {
     super();
     this.table = table;
     this.basicStatsWork = basicStatsWork;
+    this.currentDatabase = SessionState.get().getCurrentDatabase();
+    statsReliable = hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE);
+    basicStatsWork.setStatsReliable2(statsReliable);
+  }
+
+  public StatsWork(Table table, HiveConf hconf) {
+    super();
+    this.table = table;
     this.currentDatabase = SessionState.get().getCurrentDatabase();
     statsReliable = hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE);
     basicStatsWork.setStatsReliable2(statsReliable);
@@ -116,21 +126,24 @@ public class StatsWork implements Serializable {
     return colStats != null;
   }
 
-  @Deprecated
-  public String getTableName() {
-    if (getColStats() != null) {
-      return getColStats().getTableName();
-    }
-    if (getBasicStatsNoJobWork() != null) {
-      return getBasicStatsNoJobWork().getTableSpecs().tableName;
-    }
-    if (getBasicStatsWork() != null) {
-      return getBasicStatsWork().getTableName();
-    }
-    throw new RuntimeException("invalid state");
-  }
-
   public Table getTable() {
     return table;
   }
+
+  public void collectStatsFromAggregator(FileSinkDesc conf) {
+    basicStatsWork = new BasicStatsWork();
+
+    // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
+    // in FileSinkDesc is used for stats publishing. They should be consistent.
+    basicStatsWork.setAggKey(conf.getStatsAggPrefix());
+    basicStatsWork.setStatsTmpDir(conf.getStatsTmpDir());
+
+    basicStatsWork.setStatsReliable2(statsReliable);
+
+  }
+
+  public void truncateExisting(boolean truncate) {
+    this.truncate = truncate;
+  }
+
 }

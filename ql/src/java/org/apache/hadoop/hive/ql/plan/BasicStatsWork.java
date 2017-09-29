@@ -92,6 +92,7 @@ public class BasicStatsWork implements Serializable {
     return loadFileDesc;
   }
 
+  @Deprecated
   public void setAggKey(String aggK) {
     aggKey = aggK;
   }
@@ -199,13 +200,12 @@ public class BasicStatsWork implements Serializable {
 
   public String getTableName() {
     BasicStatsWork work = this;
-    String tableName;
     if (work.getLoadTableDesc() != null) {
-      return tableName = work.getLoadTableDesc().getTable().getTableName();
+      return work.getLoadTableDesc().getTable().getTableName();
     } else if (work.getTableSpecs() != null) {
-      return tableName = work.getTableSpecs().tableName;
+      return work.getTableSpecs().tableName;
     } else {
-      return tableName = getLoadFileDesc().getCtasCreateTableDesc().getTableName();
+      return getLoadFileDesc().getCtasCreateTableDesc().getTableName();
     }
   }
 

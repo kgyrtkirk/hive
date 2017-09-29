@@ -1746,6 +1746,24 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         basicStatsWork.setNoStatsAggregator(true);
         basicStatsWork.setClearAggregatorStats(true);
         StatsWork columnStatsWork = new StatsWork(tblObj, basicStatsWork, conf);
+
+        ////////        BasicStatsWork basicStatsWork;
+        //        if (oldTblPartLoc.equals(newTblPartLoc)) {
+        //          // If we're merging to the same location, we can avoid some metastore calls
+        //          TableSpec tableSpec = new TableSpec(db, tableName, partSpec);
+        //          basicStatsWork = new BasicStatsWork(tableSpec);
+        //        } else {
+        //          basicStatsWork = new BasicStatsWork(ltd);
+        //        }
+        //
+        //        basicStatsWork.setNoStatsAggregator(true);
+        //        basicStatsWork.setClearAggregatorStats(true);
+        //        //        StatsWork columnStatsWork2 = new StatsWork(tblObj, basicStatsWork, conf);
+        //        //        columnStatsWork2.addPartition(partSpec);
+        //        //    
+        //        //        columnStatsWork2.tru
+
+
         Task<? extends Serializable> statTask = TaskFactory.get(columnStatsWork, conf);
         moveTsk.addDependentTask(statTask);
       }
