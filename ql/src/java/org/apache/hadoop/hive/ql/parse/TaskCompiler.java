@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
-import org.apache.hadoop.hive.ql.plan.StatsWork.TableKey;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -404,11 +403,24 @@ public abstract class TaskCompiler {
     }
   }
 
-  private TableKey extractTableFullName(StatsTask tsk) throws SemanticException {
-    try {
-      return tsk.getWork().getTableKey();
-    } catch (Exception e) {
-      throw new SemanticException("Can not find table name in ColumnStatsTask", e);
+  private String extractTableFullName(StatsTask tsk) throws SemanticException {
+    if (((StatsTask) tsk).getWork().getBasicStatsWork() != null) {
+      if (((StatsTask) tsk).getWork().getBasicStatsWork().getTableSpecs() != null) {
+        // this is the case for insert
+        Table tab = ((StatsTask) tsk).getWork().getBasicStatsWork().getTableSpecs().tableHandle;
+        return tab.getDbName() + "." + tab.getTableName();
+      } else if (((StatsTask) tsk).getWork().getBasicStatsWork().getLoadTableDesc() != null) {
+        // this is the case for CTAS
+        return ((StatsTask) tsk).getWork().getBasicStatsWork().getLoadTableDesc().getTable()
+            .getTableName();
+      } else {
+        throw new SemanticException("can not find table name in ColumnStatsTask");
+      }
+    } else if (((StatsTask) tsk).getWork().getBasicStatsNoJobWork() != null) {
+      Table tab = ((StatsTask) tsk).getWork().getBasicStatsNoJobWork().getTableSpecs().tableHandle;
+      return tab.getDbName() + "." + tab.getTableName();
+    } else {
+      throw new SemanticException("can not find table name in ColumnStatsTask");
     }
   }
 

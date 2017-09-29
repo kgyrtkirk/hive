@@ -30,8 +30,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
-import com.google.common.base.Objects;
-
 /**
  * Stats Work, may include basic stats work and column stats desc
  *
@@ -169,42 +167,6 @@ public class StatsWork implements Serializable {
 
   public boolean getStatsReliable() {
     return statsReliable;
-  }
-
-  public static class TableKey implements Comparable<TableKey> {
-
-    private String dbName;
-    private String tableName;
-
-    public TableKey(String dbName, String tableName) {
-      this.dbName = dbName;
-      this.tableName = tableName;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (obj == null) {
-        return false;
-      }
-      if(!(obj instanceof TableKey)){
-        return false;
-      }
-      TableKey o=(TableKey) obj;
-      return Objects.equal(dbName, o.dbName) && Objects.equal(tableName, o.tableName);
-    }
-
-    @Override
-    public int compareTo(TableKey o) {
-      int i = dbName.compareTo(o.dbName);
-      if (i != 0) {
-        return i;
-      }
-      return tableName.compareTo(o.tableName);
-    }
-
-  }
-  public TableKey getTableKey() {
-    return new TableKey(table.getDbName(), table.getTableName());
   }
 
 }
