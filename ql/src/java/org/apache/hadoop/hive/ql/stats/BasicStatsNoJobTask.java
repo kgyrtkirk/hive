@@ -159,14 +159,12 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
         long numFiles = 0;
         FileStatus[] fileList = HiveStatsUtils.getFileStatusRecurse(dir, -1, fs);
 
-        boolean statsAvailable = false;
         for (FileStatus file : fileList) {
           if (!file.isDirectory()) {
             InputFormat<?, ?> inputFormat = ReflectionUtil.newInstance(partish.getInputFormatClass(), jc);
             InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0, new String[] { partish.getLocation() });
             if (file.getLen() == 0) {
               numFiles += 1;
-              statsAvailable = true;
             } else {
               org.apache.hadoop.mapred.RecordReader<?, ?> recordReader = inputFormat.getRecordReader(dummySplit, jc, Reporter.NULL);
               try {
@@ -177,7 +175,6 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
                   numRows += statsRR.getStats().getRowCount();
                   fileSize += file.getLen();
                   numFiles += 1;
-                  statsAvailable = true;
                 } else {
                   throw new HiveException(String.format("Unexpected file found during reading footers for: %s ", file));
                 }
@@ -188,34 +185,26 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
           }
         }
 
-        if (statsAvailable) {
+        StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
 
-          StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
+        parameters.put(StatsSetupConst.ROW_COUNT, String.valueOf(numRows));
+        parameters.put(StatsSetupConst.RAW_DATA_SIZE, String.valueOf(rawDataSize));
+        parameters.put(StatsSetupConst.TOTAL_SIZE, String.valueOf(fileSize));
+        parameters.put(StatsSetupConst.NUM_FILES, String.valueOf(numFiles));
 
-          parameters.put(StatsSetupConst.ROW_COUNT, String.valueOf(numRows));
-          parameters.put(StatsSetupConst.RAW_DATA_SIZE, String.valueOf(rawDataSize));
-          parameters.put(StatsSetupConst.TOTAL_SIZE, String.valueOf(fileSize));
-          parameters.put(StatsSetupConst.NUM_FILES, String.valueOf(numFiles));
-
-          if (partish.getPartition() != null) {
-            result = new Partition(partish.getTable(), partish.getPartition().getTPartition());
-          } else {
-            result = new Table(partish.getTable().getTTable());
-          }
-
-          // printout console and debug logs
-          String threadName = Thread.currentThread().getName();
-          //          partish.getSimpleName();
-          String msg = partish.getSimpleName() + " stats: [" + toString(parameters) + ']';
-          LOG.debug(threadName + ": " + msg);
-          console.printInfo(msg);
+        if (partish.getPartition() != null) {
+          result = new Partition(partish.getTable(), partish.getPartition().getTPartition());
         } else {
-          String threadName = Thread.currentThread().getName();
-          String msg = partish.getSimpleName() + " does not provide stats.";
-          LOG.debug(threadName + ": " + msg);
-          // XXX: okay...but what will clear the stats in this case?
-          // it seems inconsistent to me...
+          result = new Table(partish.getTable().getTTable());
         }
+
+        // printout console and debug logs
+        String threadName = Thread.currentThread().getName();
+        //          partish.getSimpleName();
+        String msg = partish.getSimpleName() + " stats: [" + toString(parameters) + ']';
+        LOG.debug(threadName + ": " + msg);
+        console.printInfo(msg);
+
       } catch (Exception e) {
         console.printInfo("[Warning] could not update stats for " + partish.getSimpleName() + ".", "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
         if (isStatsReliable()) {
