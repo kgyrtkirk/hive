@@ -131,11 +131,11 @@ public class StatsWork implements Serializable {
   }
 
   public void collectStatsFromAggregator(FileSinkDesc conf) {
-    basicStatsWork = new BasicStatsWork();
+    //    basicStatsWork = new BasicStatsWork();
 
     // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
     // in FileSinkDesc is used for stats publishing. They should be consistent.
-    basicStatsWork.setAggKey(conf.getStatsAggPrefix());
+    basicStatsWork.setAggKeyX(conf.getStatsAggPrefix());
     basicStatsWork.setStatsTmpDir(conf.getStatsTmpDir());
 
     basicStatsWork.setStatsReliable2(statsReliable);
@@ -144,6 +144,15 @@ public class StatsWork implements Serializable {
 
   public void truncateExisting(boolean truncate) {
     this.truncate = truncate;
+  }
+
+  @Deprecated
+  public void collectStatsFromAggregator(TableScanDesc conf) {
+    basicStatsWork.setAggKeyX(conf.getStatsAggPrefix());
+    basicStatsWork.setStatsTmpDir(conf.getTmpStatsDir());
+
+    basicStatsWork.setStatsReliable2(statsReliable);
+
   }
 
 }

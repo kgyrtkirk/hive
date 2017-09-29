@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
  * things will be added here as table scan is invoked as part of local work.
  **/
 @Explain(displayName = "TableScan", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class TableScanDesc extends AbstractOperatorDesc {
+public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherer {
   private static final long serialVersionUID = 1L;
 
   private String alias;
@@ -260,6 +260,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
     this.gatherStats = gatherStats;
   }
 
+  @Override
   @Explain(displayName = "GatherStats", explainLevels = { Level.EXTENDED })
   public boolean isGatherStats() {
     return gatherStats;

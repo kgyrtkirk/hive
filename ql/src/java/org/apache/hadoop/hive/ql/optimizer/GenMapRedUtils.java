@@ -1510,8 +1510,6 @@ public final class GenMapRedUtils {
     }
     assert statsWork != null : "Error when generating StatsTask";
 
-    statsWork.setStatsTmpDir(nd.getConf().getStatsTmpDir());
-
     if (currTask.getWork() instanceof MapredWork) {
       MapredWork mrWork = (MapredWork) currTask.getWork();
       mrWork.getMapWork().setGatheringStats(true);
@@ -1530,8 +1528,8 @@ public final class GenMapRedUtils {
       }
     }
 
-    statsWork.setAggKey(nd.getConf().getStatsAggPrefix());
     StatsWork columnStatsWork = new StatsWork(table, statsWork, hconf);
+    columnStatsWork.collectStatsFromAggregator(nd.getConf());
 
     //    columnStatsWork.truncateExisting(truncate);
     //    columnStatsWork.collectStatsFromAggregator(nd.getConf());

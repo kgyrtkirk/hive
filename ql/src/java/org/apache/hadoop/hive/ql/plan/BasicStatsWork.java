@@ -93,7 +93,7 @@ public class BasicStatsWork implements Serializable {
   }
 
   @Deprecated
-  public void setAggKey(String aggK) {
+  public void setAggKeyX(String aggK) {
     aggKey = aggK;
   }
 

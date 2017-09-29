@@ -120,11 +120,11 @@ public class ProcessAnalyzeTable implements NodeProcessor {
         // The Tez task is just a simple TableScanOperator
 
         BasicStatsWork basicStatsWork = new BasicStatsWork(table.getTableSpec());
-        basicStatsWork.setAggKey(tableScan.getConf().getStatsAggPrefix());
-        basicStatsWork.setStatsTmpDir(tableScan.getConf().getTmpStatsDir());
         basicStatsWork.setNoScanAnalyzeCommand(parseContext.getQueryProperties().isNoScanAnalyzeCommand());
         basicStatsWork.setPartialScanAnalyzeCommand(parseContext.getQueryProperties().isPartialScanAnalyzeCommand());
         StatsWork columnStatsWork = new StatsWork(table, basicStatsWork, parseContext.getConf());
+        columnStatsWork.collectStatsFromAggregator(tableScan.getConf());
+
         columnStatsWork.setSourceTask(context.currentTask);
         Task<StatsWork> statsTask = TaskFactory.get(columnStatsWork, parseContext.getConf());
         context.currentTask.addDependentTask(statsTask);
