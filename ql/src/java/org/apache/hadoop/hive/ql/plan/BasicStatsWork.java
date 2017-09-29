@@ -191,7 +191,7 @@ public class BasicStatsWork implements Serializable {
       return true;
     }
     // CREATE TABLE ... AS
-    if (getLoadFileDesc() != null && !getLoadFileDesc().getDestinationCreateTable().isEmpty()) {
+    if (getLoadFileDesc() != null && getLoadFileDesc().getCtasCreateTableDesc() != null) {
       return true;
     }
     return false;
@@ -205,7 +205,7 @@ public class BasicStatsWork implements Serializable {
     } else if (work.getTableSpecs() != null) {
       return tableName = work.getTableSpecs().tableName;
     } else {
-      return tableName = work.getLoadFileDesc().getDestinationCreateTable();
+      return tableName = getLoadFileDesc().getCtasCreateTableDesc().getTableName();
     }
   }
 

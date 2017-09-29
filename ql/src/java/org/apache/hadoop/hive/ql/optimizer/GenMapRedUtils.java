@@ -1483,22 +1483,28 @@ public final class GenMapRedUtils {
 
     MoveWork mvWork = mvTask.getWork();
     BasicStatsWork statsWork = null;
-    String tableName = null;
+    Table table = null;
     if (mvWork.getLoadTableWork() != null) {
       statsWork = new BasicStatsWork(mvWork.getLoadTableWork());
-      tableName = mvWork.getLoadTableWork().getTable().getTableName();
+      String tableName = mvWork.getLoadTableWork().getTable().getTableName();
+      try {
+        table = Hive.get().getTable(SessionState.get().getCurrentDatabase(), tableName);
+      } catch (HiveException e) {
+        throw new RuntimeException("unexpected; table should be present already..: " + tableName, e);
+      }
     } else if (mvWork.getLoadFileWork() != null) {
       statsWork = new BasicStatsWork(mvWork.getLoadFileWork());
-      tableName = mvWork.getLoadFileWork().getDestinationCreateTable();
+      if (mvWork.getLoadFileWork().getCtasCreateTableDesc() == null) {
+        throw new RuntimeException("unexpected; this should be a CTAS - however no desc present");
+      }
+      try {
+        table = mvWork.getLoadFileWork().getCtasCreateTableDesc().toTable(hconf);
+      } catch (HiveException e) {
+        LOG.debug("can pre-create table", e);
+        table = null;
+      }
     }
     assert statsWork != null : "Error when generating StatsTask";
-
-    Table table;
-    try {
-      table = Hive.get().getTable(tableName);
-    } catch (HiveException e) {
-      throw new RuntimeException("can't lookup table: " + tableName, e);
-    }
 
     statsWork.setStatsTmpDir(nd.getConf().getStatsTmpDir());
 

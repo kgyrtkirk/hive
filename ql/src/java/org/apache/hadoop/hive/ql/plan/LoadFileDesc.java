@@ -34,7 +34,8 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
   // list of columns, comma separated
   private String columns;
   private String columnTypes;
-  private String destinationCreateTable;
+  //  private String destinationCreateTable;
+  private transient CreateTableDesc ctasCreateTableDesc;
 
   public LoadFileDesc(final LoadFileDesc o) {
     super(o.getSourcePath(), o.getWriteType());
@@ -43,23 +44,27 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
     this.isDfsDir = o.isDfsDir;
     this.columns = o.columns;
     this.columnTypes = o.columnTypes;
-    this.destinationCreateTable = o.destinationCreateTable;
+    //    this.destinationCreateTable = o.destinationCreateTable;
   }
 
   public LoadFileDesc(final CreateTableDesc createTableDesc, final CreateViewDesc  createViewDesc,
                       final Path sourcePath, final Path targetDir, final boolean isDfsDir,
                       final String columns, final String columnTypes, AcidUtils.Operation writeType) {
     this(sourcePath, targetDir, isDfsDir, columns, columnTypes, writeType);
-    if (createTableDesc != null && createTableDesc.getDatabaseName() != null
-        && createTableDesc.getTableName() != null) {
-      destinationCreateTable = (createTableDesc.getTableName().contains(".") ? "" : createTableDesc
-          .getDatabaseName() + ".")
-          + createTableDesc.getTableName();
-    } else if (createViewDesc != null) {
-      // The work is already done in analyzeCreateView to assure that the view name is fully
-      // qualified.
-      destinationCreateTable = createViewDesc.getViewName();
+    if (createTableDesc != null && createTableDesc.isCTAS()) {
+      ctasCreateTableDesc = createTableDesc;
     }
+    //    if (createTableDesc != null && createTableDesc.getDatabaseName() != null
+    //        && createTableDesc.getTableName() != null) {
+    //
+    //      destinationCreateTable = (createTableDesc.getTableName().contains(".") ? "" : createTableDesc
+    //          .getDatabaseName() + ".")
+    //          + createTableDesc.getTableName();
+    //    } else if (createViewDesc != null) {
+    //      // The work is already done in analyzeCreateView to assure that the view name is fully
+    //      // qualified.
+    //      destinationCreateTable = createViewDesc.getViewName();
+    //    }
   }
 
   public LoadFileDesc(final Path sourcePath, final Path targetDir,
@@ -125,10 +130,8 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
     this.columnTypes = columnTypes;
   }
 
-  /**
-   * @return the destinationCreateTable
-   */
-  public String getDestinationCreateTable(){
-    return destinationCreateTable;
+  public CreateTableDesc getCtasCreateTableDesc() {
+    return ctasCreateTableDesc;
   }
+
 }
