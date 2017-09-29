@@ -109,13 +109,11 @@ public class StatsWork implements Serializable {
     this.basicStatsWork = basicStatsWork;
   }
 
+  // only explain uses it
+  @Deprecated
   @Explain(displayName = "Basic Stats NoJob Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public BasicStatsNoJobWork getBasicStatsNoJobWork() {
     return basicStatsNoJobWork;
-  }
-
-  public void setBasicStatsNoJobWork(BasicStatsNoJobWork basicStatsNoJobWork) {
-    this.basicStatsNoJobWork = basicStatsNoJobWork;
   }
 
   public void setSourceTask(Task<?> sourceTask) {
