@@ -79,7 +79,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
   private BasicStatsNoJobWork work;
   private LogHelper console;
 
-  public BasicStatsNoJobTask(HiveConf conf0, BasicStatsNoJobWork work0, LogHelper console0) {
+  public BasicStatsNoJobTask(HiveConf conf0, BasicStatsNoJobWork work0) {
     conf = conf0;
     work = work0;
     console = new LogHelper(LOG);
@@ -109,6 +109,11 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     return "STATS-NO-JOB";
   }
 
+  static class StatItem {
+    Partish partish;
+    Map<String, String> params;
+    Object result;
+  }
 
   static class FooterStatCollector implements Runnable {
 

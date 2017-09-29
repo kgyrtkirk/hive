@@ -105,7 +105,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       }
       if (work.getBasicStatsNoJobWork() != null) {
 
-        BasicStatsNoJobTask t = new BasicStatsNoJobTask(conf, work.getBasicStatsNoJobWork(), console);
+        BasicStatsNoJobTask t = new BasicStatsNoJobTask(conf, work.getBasicStatsNoJobWork());
         ret = t.process(db, tbl);
       }
       if (ret != 0) {
