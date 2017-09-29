@@ -18,7 +18,11 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-public interface IStatsGatherer {
+public interface IStatsGatherDesc {
   public boolean isGatherStats();
+
+  String getTmpStatsDir();
+
+  String getStatsAggPrefix();
 
 }

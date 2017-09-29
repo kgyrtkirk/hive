@@ -147,7 +147,7 @@ public class StatsWork implements Serializable {
   }
 
   @Deprecated
-  public void collectStatsFromAggregator(TableScanDesc conf) {
+  public void collectStatsFromAggregator(IStatsGatherDesc conf) {
     basicStatsWork.setAggKeyX(conf.getStatsAggPrefix());
     basicStatsWork.setStatsTmpDir(conf.getTmpStatsDir());
 

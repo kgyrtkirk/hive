@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
  * things will be added here as table scan is invoked as part of local work.
  **/
 @Explain(displayName = "TableScan", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherer {
+public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherDesc {
   private static final long serialVersionUID = 1L;
 
   private String alias;
@@ -266,6 +266,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGathere
     return gatherStats;
   }
 
+  @Override
   public String getTmpStatsDir() {
     return tmpStatsDir;
   }
@@ -294,6 +295,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGathere
     statsAggKeyPrefix = k;
   }
 
+  @Override
   @Explain(displayName = "Statistics Aggregation Key Prefix", explainLevels = { Level.EXTENDED })
   public String getStatsAggPrefix() {
     return statsAggKeyPrefix;
