@@ -90,11 +90,13 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     }
     int ret = 0;
     try {
-    if (work.getBasicStatsWork() != null) {
       Hive db = getHive();
       String tableName = work.getTableName();
-        String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), tableName);
-        Table tbl = db.getTable(names[0], names[1]);
+
+      String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), tableName);
+      Table tbl = db.getTable(names[0], names[1]);
+
+      if (work.getBasicStatsWork() != null) {
 
         BasicStatsTask task = new BasicStatsTask(conf, work.getBasicStatsWork());
         task.followedColStats = work.hasColStats();
@@ -103,10 +105,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         ret = task.process(db, tbl);
     }
       if (work.getBasicStatsNoJobWork() != null) {
-        Hive db = getHive();
-        String tableName = work.getTableName();
-        String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), tableName);
-        Table tbl = db.getTable(names[0], names[1]);
 
         BasicStatsNoJobTask t = new BasicStatsNoJobTask(conf, work.getBasicStatsNoJobWork(), console);
         ret = t.process(db, tbl);
@@ -116,10 +114,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     }
 
     if (work.hasColStats()) {
-        String tableName = work.getTableName();
-        Hive db = getHive();
-        String[] names = Utilities.getDbTableName(work.getCurrentDatabaseName(), tableName);
-        Table tbl = db.getTable(names[0], names[1]);
         for (IStatsProcessor task : processors) {
           return task.process(db, tbl);
         }
