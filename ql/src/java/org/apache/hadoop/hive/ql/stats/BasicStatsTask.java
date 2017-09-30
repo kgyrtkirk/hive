@@ -225,16 +225,18 @@ public class BasicStatsTask
     }
 
     private String getAggregationPrefix(Table table, Partition partition) throws MetaException {
-      // FIXME: currently this is a secret contract; probably reuse getAggrKey() param which is in a more closer relation to the StatsGather
       String prefix = getAggregationPrefix0(table, partition);
       String aggKey = prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
-      return aggKey.toLowerCase();
+      return aggKey;
     }
 
     private String getAggregationPrefix0(Table table, Partition partition) throws MetaException {
 
       // prefix is of the form dbName.tblName
       String prefix = table.getDbName() + "." + org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(table.getTableName());
+      // FIXME: this is a secret contract; reusein getAggrKey() creates a more closer relation to the StatsGatherer
+      // prefix = work.getAggKey();
+      prefix = prefix.toLowerCase();
       if (partition != null) {
         return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
       }
