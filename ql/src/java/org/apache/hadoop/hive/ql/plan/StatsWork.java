@@ -168,7 +168,7 @@ public class StatsWork implements Serializable {
   }
 
   public Task getSourceTask() {
-    return basicStatsWork.getSourceTask2();
+    return basicStatsWork == null ? null : basicStatsWork.getSourceTask2();
   }
 
   public String getAggKey() {
