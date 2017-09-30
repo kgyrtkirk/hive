@@ -253,7 +253,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       Table table = tableSpecs.tableHandle;
 
       Collection<Partition> partitions = null;
-      if (work.getPartitions() == null) {
+      if (work.getPartitions() == null || work.getPartitions().isEmpty()) {
         if (table.isPartitioned()) {
           partitions = tableSpecs.partitions;
         }
