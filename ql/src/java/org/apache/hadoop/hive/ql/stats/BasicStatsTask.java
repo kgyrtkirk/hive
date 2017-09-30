@@ -225,9 +225,10 @@ public class BasicStatsTask
     }
 
     private String getAggregationPrefix(Table table, Partition partition) throws MetaException {
+      // FIXME: currently this is a secret contract; probably reuse getAggrKey() param which is in a more closer relation to the StatsGather
       String prefix = getAggregationPrefix0(table, partition);
       String aggKey = prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
-      return aggKey;
+      return aggKey.toLowerCase();
     }
 
     private String getAggregationPrefix0(Table table, Partition partition) throws MetaException {

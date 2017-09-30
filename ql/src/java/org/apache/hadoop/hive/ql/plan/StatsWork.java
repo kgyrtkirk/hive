@@ -34,8 +34,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  * Stats Work, may include basic stats work and column stats desc
  *
  */
-@Explain(displayName = "Stats Work", explainLevels = { Level.USER, Level.DEFAULT,
-    Level.EXTENDED })
+@Explain(displayName = "Stats Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class StatsWork implements Serializable {
 
   private static final long serialVersionUID = 1L;
