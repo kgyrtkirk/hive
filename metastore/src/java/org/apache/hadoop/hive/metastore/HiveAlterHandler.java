@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.ipc.RemoteException;
 import org.apache.hive.common.util.HiveStringUtils;
 
 import java.io.IOException;
@@ -299,17 +298,6 @@ public class HiveAlterHandler implements AlterHandler {
             LOG.warn("Alter table does not cascade changes to its partitions.");
           }
         } else {
-          if (isPartitionedTable
-              && !MetaStoreUtils.areSameColumns(oldt.getSd().getCols(), newt.getSd().getCols())) {
-            parts = msdb.getPartitions(dbname, name, -1);
-            for (Partition part : parts) {
-              List<FieldSchema> oldCols = part.getSd().getCols();
-              ColumnStatistics colStats = updateOrGetPartitionColumnStats(msdb, dbname, name,
-                  part.getValues(), oldCols, oldt, part, newt.getSd().getCols());
-              assert (colStats == null);
-              msdb.alterPartition(dbname, name, part.getValues(), part);
-            }
-          }         
           alterTableUpdateTableColumnStats(msdb, oldt, newt);
         }
       }
