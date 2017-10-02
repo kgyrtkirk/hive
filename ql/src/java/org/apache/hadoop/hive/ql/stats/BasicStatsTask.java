@@ -96,40 +96,12 @@ public class BasicStatsTask
   public int process(Hive db, Table tbl) throws Exception {
 
     LOG.info("Executing stats task");
-    //
-    //    // Make sure that it is either an ANALYZE, INSERT OVERWRITE (maybe load) or CTAS command
-    //    short workComponentsPresent = 0;
-    //    if (work.getLoadTableDesc() != null) {
-    //      workComponentsPresent++;
-    //    }
-    //    if (work.getTableSpecs() != null) {
-    //      workComponentsPresent++;
-    //    }
-    //    if (work.getLoadFileDesc() != null) {
-    //      workComponentsPresent++;
-    //    }
-    //
-    //    assert (workComponentsPresent == 1);
-
-    //    String tableName = "";
-    //    Hive hive = getHive();
-    //    try {
-    //      tableName = work.getTableName();
-
-    table = tbl;//hive.getTable(tableName);
-
-    //    } catch (HiveException e) {
-    //      LOG.error("Cannot get table " + tableName, e);
-    //      console.printError("Cannot get table " + tableName, e.toString());
-    //    }
-
+    table = tbl;
     return aggregateStats(db);
   }
 
   @Override
   public void initialize(CompilationOpContext opContext) {
-    // TODO Auto-generated method stub
-
   }
 
   public StageType getType() {
@@ -307,9 +279,6 @@ public class BasicStatsTask
         basicStatsProcessor.collectFileStatus(wh);
         Object res = basicStatsProcessor.process(statsAggregator);
 
-//        environmentContext = new EnvironmentContext();
-//        environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED,
-//            StatsSetupConst.TASK);
         if (res == null) {
           return 0;
         }
@@ -375,10 +344,9 @@ public class BasicStatsTask
           }
           updates.add((Partition) res);
           if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
-            // FIXME: partn.getSpec()
-            console.printInfo("Partition " + tableFullName + "partn.getSpec()" + " stats: [" + toString(basicStatsProcessor.partish.getPartParameters()) + ']');
+            console.printInfo("Partition " + basicStatsProcessor.partish.getPartition().getSpec() + " stats: [" + toString(basicStatsProcessor.partish.getPartParameters()) + ']');
           }
-          LOG.info("Partition " + tableFullName + "partn.getSpec()" + " stats: [" + toString(basicStatsProcessor.partish.getPartParameters()) + ']');
+          LOG.info("Partition " + basicStatsProcessor.partish.getPartition().getSpec() + " stats: [" + toString(basicStatsProcessor.partish.getPartParameters()) + ']');
         }
 
         if (!updates.isEmpty()) {

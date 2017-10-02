@@ -101,7 +101,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
         BasicStatsTask task = new BasicStatsTask(conf, work.getBasicStatsWork());
         task.followedColStats = work.hasColStats();
-        //      task.initialize(queryState, queryPlan, driverContext, null);
         task.setDpPartSpecs(dpPartSpecs);
         ret = task.process(db, tbl);
       }
