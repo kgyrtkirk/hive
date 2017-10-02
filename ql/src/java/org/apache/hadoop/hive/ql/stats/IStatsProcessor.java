@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 
 public interface IStatsProcessor {
 
-  @Deprecated
   void initialize(CompilationOpContext opContext);
 
   int process(Hive db, Table tbl) throws Exception;
