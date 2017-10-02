@@ -67,9 +67,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * MetaStore layer covers all Thrift calls and provides better guarantees about the accuracy of
  * those stats.
  **/
-public class BasicStatsTask
-
-    implements Serializable, IStatsProcessor {
+public class BasicStatsTask implements Serializable, IStatsProcessor {
 
   private static final long serialVersionUID = 1L;
   private static transient final Logger LOG = LoggerFactory.getLogger(BasicStatsTask.class);
@@ -82,12 +80,12 @@ public class BasicStatsTask
 
   protected transient LogHelper console;
 
-  public BasicStatsTask(HiveConf conf, BasicStatsWork w0) {
+  public BasicStatsTask(HiveConf conf, BasicStatsWork work) {
     super();
     dpPartSpecs = null;
     this.conf = conf;
     console = new LogHelper(LOG);
-    work = w0;
+    this.work = work;
 
   }
 
