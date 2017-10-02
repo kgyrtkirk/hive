@@ -221,7 +221,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         if (value != null && !value.isEmpty()) {
           long longValue = Long.parseLong(value);
 
-          if (work.getLoadTableDesc() != null && !work.getLoadTableDesc().getReplace()) {
+          if (!work.isTargetRewritten()) {
             String originalValue = parameters.get(statType);
             if (originalValue != null) {
               longValue += Long.parseLong(originalValue); // todo: invalid + valid = invalid
