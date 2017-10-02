@@ -199,6 +199,7 @@ public class BasicStatsTask
           updateStats(statsAggregator, parameters, prefix, atomic);
         }
       }
+      // FIXME: if not collected remove fields!
 
       return p.getOutput();
     }

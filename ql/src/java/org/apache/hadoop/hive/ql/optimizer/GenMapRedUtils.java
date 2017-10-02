@@ -1531,7 +1531,7 @@ public final class GenMapRedUtils {
     StatsWork columnStatsWork = new StatsWork(table, statsWork, hconf);
     columnStatsWork.collectStatsFromAggregator(nd.getConf());
 
-    //    columnStatsWork.truncateExisting(truncate);
+    columnStatsWork.truncateExisting(truncate);
     //    columnStatsWork.collectStatsFromAggregator(nd.getConf());
 
 
