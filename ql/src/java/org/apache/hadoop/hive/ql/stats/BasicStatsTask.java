@@ -177,7 +177,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     public void collectFileStatus(Warehouse wh) throws MetaException {
       Map<String, String> parameters = partish.getPartParameters();
       if (!existStats(parameters) && atomic) {
-
+        return;
       }
       partfileStatus = wh.getFileStatusesForSD(partish.getPartSd());
     }
