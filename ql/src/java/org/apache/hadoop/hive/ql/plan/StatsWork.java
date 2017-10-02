@@ -68,15 +68,6 @@ public class StatsWork implements Serializable {
     statsReliable = hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE);
   }
 
-  public StatsWork(Table table, BasicStatsNoJobWork basicStatsNoJobWork, HiveConf hiveConf) {
-    super();
-    this.table = table;
-    this.basicStatsNoJobWork = basicStatsNoJobWork;
-    this.currentDatabase = SessionState.get().getCurrentDatabase();
-    statsReliable = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE);
-    basicStatsNoJobWork.setStatsReliable(statsReliable);
-  }
-
   @Override
   public String toString() {
     return String.format("StatWork; fetch: %s", getfWork());
@@ -143,6 +134,7 @@ public class StatsWork implements Serializable {
 
 
   public void setFooterScan() {
+    basicStatsNoJobWork = new BasicStatsNoJobWork(table.getTableSpec());
     footerScan = true;
   }
 
