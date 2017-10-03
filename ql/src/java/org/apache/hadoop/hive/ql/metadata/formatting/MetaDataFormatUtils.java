@@ -160,7 +160,7 @@ public final class MetaDataFormatUtils {
     String comment = index.getParameters().get("comment");
     indexColumns.add(comment);
 
-    formatOutput(indexColumns.toArray(new String[0]), indexInfo, isOutputPadded, isOutputPadded);
+    formatOutput(indexColumns.toArray(new String[0]), indexInfo, isOutputPadded, true);
 
     return indexInfo.toString();
   }
@@ -547,7 +547,7 @@ public final class MetaDataFormatUtils {
    * @param tableInfo The target builder
    */
   private static void formatOutput(String[] fields, StringBuilder tableInfo) {
-    formatOutput(fields, tableInfo, false, false);
+    formatOutput(fields, tableInfo, false, true);
   }
 
   /**
