@@ -71,8 +71,6 @@ public class QBParseInfo {
 
   private boolean isAnalyzeCommand; // used for the analyze command (statistics)
   private boolean isNoScanAnalyzeCommand; // used for the analyze command (statistics) (noscan)
-  private boolean isPartialScanAnalyzeCommand; // used for the analyze command (statistics)
-                                               // (partialscan)
 
   private final HashMap<String, TableSpec> tableSpecs; // used for statistics
 

@@ -95,7 +95,6 @@ public class ProcessAnalyzeTable implements NodeProcessor {
           MapredParquetInputFormat.class.isAssignableFrom(inputFormat)) {
         // For ORC & Parquet, all the following statements are the same
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS
-        // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
 
         // There will not be any Tez job above this task

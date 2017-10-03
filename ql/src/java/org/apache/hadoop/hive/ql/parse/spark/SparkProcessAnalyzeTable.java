@@ -49,7 +49,7 @@ import com.google.common.base.Preconditions;
 
 /**
  * ProcessAnalyzeTable sets up work for the several variants of analyze table
- * (normal, no scan, partial scan.) The plan at this point will be a single
+ * (normal, no scan) The plan at this point will be a single
  * table scan operator.
  *
  * Cloned from Tez ProcessAnalyzeTable.
@@ -100,7 +100,6 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
           MapredParquetInputFormat.class.isAssignableFrom(inputFormat)) {
         // For ORC & Parquet, all the following statements are the same
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS
-        // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
         // There will not be any Spark job above this task
         StatsNoJobWork snjWork = new StatsNoJobWork(tableScan.getConf().getTableMetadata().getTableSpec());
