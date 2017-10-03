@@ -25,14 +25,11 @@ import java.util.Stack;
 import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.io.rcfile.stats.PartialScanWork;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -146,11 +143,6 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
           context.rootTasks.add(statsTask);
         }
 
-        // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
-        if (parseContext.getQueryProperties().isPartialScanAnalyzeCommand()) {
-          handlePartialScanCommand(tableScan, parseContext, statsWork, context, statsTask);
-        }
-
         // NOTE: here we should use the new partition predicate pushdown API to get a list of pruned list,
         // and pass it to setTaskPlan as the last parameter
         Set<Partition> confirmedPartns = GenMapRedUtils.getConfirmedPartitionsForScan(tableScan);
@@ -168,44 +160,6 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
     }
 
     return null;
-  }
-
-  /**
-   * handle partial scan command.
-   *
-   * It is composed of PartialScanTask followed by StatsTask.
-   */
-  private void handlePartialScanCommand(TableScanOperator tableScan, ParseContext parseContext,
-      StatsWork statsWork, GenSparkProcContext context, Task<StatsWork> statsTask)
-              throws SemanticException {
-    String aggregationKey = tableScan.getConf().getStatsAggPrefix();
-    StringBuilder aggregationKeyBuffer = new StringBuilder(aggregationKey);
-    List<Path> inputPaths = GenMapRedUtils.getInputPathsForPartialScan(tableScan, aggregationKeyBuffer);
-    aggregationKey = aggregationKeyBuffer.toString();
-
-    // scan work
-    PartialScanWork scanWork = new PartialScanWork(inputPaths);
-    scanWork.setMapperCannotSpanPartns(true);
-    scanWork.setAggKey(aggregationKey);
-    scanWork.setStatsTmpDir(tableScan.getConf().getTmpStatsDir(), parseContext.getConf());
-
-    // stats work
-    statsWork.setPartialScanAnalyzeCommand(true);
-
-    // partial scan task
-    DriverContext driverCxt = new DriverContext();
-
-    @SuppressWarnings("unchecked")
-    Task<PartialScanWork> partialScanTask = TaskFactory.get(scanWork, parseContext.getConf());
-    partialScanTask.initialize(parseContext.getQueryState(), null, driverCxt,
-        tableScan.getCompilationOpContext());
-    partialScanTask.setWork(scanWork);
-    statsWork.setSourceTask(partialScanTask);
-
-    // task dependency
-    context.rootTasks.remove(context.currentTask);
-    context.rootTasks.add(partialScanTask);
-    partialScanTask.addDependentTask(statsTask);
   }
 
 }

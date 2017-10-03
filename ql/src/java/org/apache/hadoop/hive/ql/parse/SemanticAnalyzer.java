@@ -115,8 +115,6 @@ import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.NullRowsInputFormat;
-import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
@@ -220,7 +218,6 @@ import org.apache.hadoop.hive.serde2.NullStructSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -319,9 +316,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // flag for no scan during analyze ... compute statistics
   protected boolean noscan;
 
-  //flag for partial scan during analyze ... compute statistics
-  protected boolean partialscan;
-
   protected volatile boolean disableJoinMerge = false;
   protected final boolean defaultJoinMerge;
 
@@ -398,7 +392,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     globalLimitCtx = new GlobalLimitCtx();
     viewAliasToInput = new HashMap<String, ReadEntity>();
     mergeIsDirect = true;
-    noscan = partialscan = false;
+    noscan = false;
     tabNameToTabObject = new HashMap<>();
     defaultJoinMerge = false == HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MERGE_NWAY_JOINS);
     disableJoinMerge = defaultJoinMerge;
@@ -954,8 +948,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (firstRow) {
             fields.add(new FieldSchema("tmp_values_col" + nextColNum++, "string", ""));
           }
-          if (isFirst) isFirst = false;
-          else writeAsText("\u0001", out);
+          if (isFirst) {
+            isFirst = false;
+          } else {
+            writeAsText("\u0001", out);
+          }
           writeAsText(unparseExprForValuesClause(value), out);
         }
         writeAsText("\n", out);
@@ -1469,8 +1466,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
 
-        if ((ast.getChild(posn).getChild(0).getType() == HiveParser.TOK_TRANSFORM))
+        if ((ast.getChild(posn).getChild(0).getType() == HiveParser.TOK_TRANSFORM)) {
           queryProperties.setUsesScript(true);
+        }
 
         LinkedHashMap<String, ASTNode> aggregations = doPhase1GetAggregationsFromSelect(ast,
             qb, ctx_1.dest);
@@ -1482,8 +1480,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       case HiveParser.TOK_WHERE:
         qbp.setWhrExprForClause(ctx_1.dest, ast);
-        if (!SubQueryUtils.findSubQueries((ASTNode) ast.getChild(0)).isEmpty())
-            queryProperties.setFilterWithSubQuery(true);
+        if (!SubQueryUtils.findSubQueries((ASTNode) ast.getChild(0)).isEmpty()) {
+          queryProperties.setFilterWithSubQuery(true);
+        }
         break;
 
       case HiveParser.TOK_INSERT_INTO:
@@ -1692,7 +1691,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qb.addAlias(table_name);
         qb.getParseInfo().setIsAnalyzeCommand(true);
         qb.getParseInfo().setNoScanAnalyzeCommand(this.noscan);
-        qb.getParseInfo().setPartialScanAnalyzeCommand(this.partialscan);
         // Allow analyze the whole table and dynamic partitions
         HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
         HiveConf.setVar(conf, HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
@@ -2078,27 +2076,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException(generateErrorMessage(
                     qb.getParseInfo().getSrcForAlias(alias),
                     "Cannot get partitions for " + ts.partSpec), e);
-          }
-        }
-        // validate partial scan command
-        QBParseInfo qbpi = qb.getParseInfo();
-        if (qbpi.isPartialScanAnalyzeCommand()) {
-          Class<? extends InputFormat> inputFormatClass = null;
-          switch (ts.specType) {
-            case TABLE_ONLY:
-            case DYNAMIC_PARTITION:
-              inputFormatClass = ts.tableHandle.getInputFormatClass();
-              break;
-            case STATIC_PARTITION:
-              inputFormatClass = ts.partHandle.getInputFormatClass();
-              break;
-            default:
-              assert false;
-          }
-          // throw a HiveException for formats other than rcfile or orcfile.
-          if (!(inputFormatClass.equals(RCFileInputFormat.class) || inputFormatClass
-                  .equals(OrcInputFormat.class))) {
-            throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_NON_RCFILE.getMsg());
           }
         }
 
@@ -8291,7 +8268,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (reduceKeys.size() == 0) {
       numReds = 1;
       String error = StrictChecks.checkCartesian(conf);
-      if (error != null) throw new SemanticException(error);
+      if (error != null) {
+        throw new SemanticException(error);
+      }
     }
 
     ReduceSinkDesc rsDesc = PlanUtils.getReduceSinkDesc(reduceKeys,
@@ -9068,12 +9047,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *  2. TableName, ColumnName, Target-TableName
    *  */
   private Map<String, List<SemiJoinHint>> parseSemiJoinHint(List<ASTNode> hints) throws SemanticException {
-    if (hints == null || hints.size() == 0) return null;
+    if (hints == null || hints.size() == 0) {
+      return null;
+    }
     Map<String, List<SemiJoinHint>> result = null;
     for (ASTNode hintNode : hints) {
       for (Node node : hintNode.getChildren()) {
         ASTNode hint = (ASTNode) node;
-        if (hint.getChild(0).getType() != HintParser.TOK_LEFTSEMIJOIN) continue;
+        if (hint.getChild(0).getType() != HintParser.TOK_LEFTSEMIJOIN) {
+          continue;
+        }
         if (result == null) {
           result = new HashMap<>();
         }
@@ -9148,11 +9131,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   private boolean disableMapJoinWithHint(List<ASTNode> hints) throws SemanticException {
-    if (hints == null || hints.size() == 0) return false;
+    if (hints == null || hints.size() == 0) {
+      return false;
+    }
     for (ASTNode hintNode : hints) {
       for (Node node : hintNode.getChildren()) {
         ASTNode hint = (ASTNode) node;
-        if (hint.getChild(0).getType() != HintParser.TOK_MAPJOIN) continue;
+        if (hint.getChild(0).getType() != HintParser.TOK_MAPJOIN) {
+          continue;
+        }
         Tree args = hint.getChild(1);
         if (args.getChildCount() == 1) {
           String text = args.getChild(0).getText();
@@ -11275,11 +11262,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           continue;
         }
         ASTNode n = (ASTNode) ((ASTNode) child).getFirstChildWithType(HiveParser.TOK_INSERT_INTO);
-        if (n == null) continue;
+        if (n == null) {
+          continue;
+        }
         n = (ASTNode) n.getFirstChildWithType(HiveParser.TOK_TAB);
-        if (n == null) continue;
+        if (n == null) {
+          continue;
+        }
         n = (ASTNode) n.getFirstChildWithType(HiveParser.TOK_TABNAME);
-        if (n == null) continue;
+        if (n == null) {
+          continue;
+        }
         String[] dbTab = getQualifiedTableName(n);
         Table t = db.getTable(dbTab[0], dbTab[1]);
         Path tablePath = t.getPath();
@@ -12713,24 +12706,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * process analyze ... partial command
-   *
-   * separate it from noscan command process so that it provides us flexibility
-   *
-   * @param tree
-   * @throws SemanticException
-   */
-  protected void processPartialScanCommand (ASTNode tree) throws SemanticException {
-    // check if it is partial scan command
-    this.checkPartialScan(tree);
-
-    //validate partial scan
-    if (this.partialscan) {
-      validateAnalyzePartialscan(tree);
-    }
-  }
-
-  /**
    * process analyze ... noscan command
    * @param tree
    * @throws SemanticException
@@ -12775,45 +12750,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * Validate partialscan command
-   *
-   * @param tree
-   * @throws SemanticException
-   */
-  private void validateAnalyzePartialscan(ASTNode tree) throws SemanticException {
-    // since it is partialscan, it is true table name in command
-    String tableName = getUnescapedName((ASTNode) tree.getChild(0).getChild(0));
-    Table tbl;
-    try {
-      tbl = this.getTableObjectByName(tableName);
-    } catch (InvalidTableException e) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName), e);
-    } catch (HiveException e) {
-      throw new SemanticException(e.getMessage(), e);
-    }
-    /* partialscan uses hdfs apis to retrieve such information from Namenode.      */
-    /* But that will be specific to hdfs. Through storagehandler mechanism,   */
-    /* storage of table could be on any storage system: hbase, cassandra etc. */
-    /* A nice error message should be given to user. */
-    if (tbl.isNonNative()) {
-      throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_NON_NATIVE.getMsg(tbl
-          .getTableName()));
-    }
-
-    /**
-     * Partial scan doesn't support external table.
-     */
-    if(tbl.getTableType().equals(TableType.EXTERNAL_TABLE)) {
-      throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_EXTERNAL_TABLE.getMsg(tbl
-          .getTableName()));
-    }
-
-    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-      throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_AUTOGATHER.getMsg());
-    }
-  }
-
-  /**
    * It will check if this is analyze ... compute statistics noscan
    * @param tree
    */
@@ -12832,27 +12768,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
   }
-
-  /**
-   * It will check if this is analyze ... compute statistics partialscan
-   * @param tree
-   */
-  private void checkPartialScan(ASTNode tree) {
-    if (tree.getChildCount() > 1) {
-      ASTNode child0 = (ASTNode) tree.getChild(0);
-      ASTNode child1;
-      if (child0.getToken().getType() == HiveParser.TOK_TAB) {
-        child0 = (ASTNode) child0.getChild(0);
-        if (child0.getToken().getType() == HiveParser.TOK_TABNAME) {
-          child1 = (ASTNode) tree.getChild(1);
-          if (child1.getToken().getType() == HiveParser.KW_PARTIALSCAN) {
-            this.partialscan = true;
-          }
-        }
-      }
-    }
-  }
-
 
   public QB getQB() {
     return qb;
@@ -13640,9 +13555,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Don't know the characteristics of non-native tables,
     // and don't have a rational way to guess, so assume the most
     // conservative case.
-    if (isNonNativeTable) return WriteEntity.WriteType.INSERT_OVERWRITE;
-    else return (ltd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE :
-      getWriteType(dest));
+    if (isNonNativeTable) {
+      return WriteEntity.WriteType.INSERT_OVERWRITE;
+    } else {
+      return (ltd.getReplace() ? WriteEntity.WriteType.INSERT_OVERWRITE :
+        getWriteType(dest));
+    }
   }
 
   private WriteEntity.WriteType getWriteType(String dest) {
@@ -13721,7 +13639,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (qb != null) {
       queryProperties.setQuery(qb.getIsQuery());
       queryProperties.setAnalyzeCommand(qb.getParseInfo().isAnalyzeCommand());
-      queryProperties.setPartialScanAnalyzeCommand(qb.getParseInfo().isPartialScanAnalyzeCommand());
       queryProperties.setNoScanAnalyzeCommand(qb.getParseInfo().isNoScanAnalyzeCommand());
       queryProperties.setAnalyzeRewrite(qb.isAnalyzeRewrite());
       queryProperties.setCTAS(qb.getTableDesc() != null);

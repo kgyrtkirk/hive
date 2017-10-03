@@ -657,20 +657,6 @@ public class QBParseInfo {
   }
 
   /**
-   * @return the isPartialScanAnalyzeCommand
-   */
-  public boolean isPartialScanAnalyzeCommand() {
-    return isPartialScanAnalyzeCommand;
-  }
-
-  /**
-   * @param isPartialScanAnalyzeCommand the isPartialScanAnalyzeCommand to set
-   */
-  public void setPartialScanAnalyzeCommand(boolean isPartialScanAnalyzeCommand) {
-    this.isPartialScanAnalyzeCommand = isPartialScanAnalyzeCommand;
-  }
-
-  /**
    * See also {@link #isInsertIntoTable(String)}
    */
   public Map<String, ASTNode> getInsertOverwriteTables() {
