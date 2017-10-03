@@ -25,6 +25,11 @@ group by b grouping sets ((), b);
 select  sum(c),
         grouping(b)
 from    tx1
+group by b grouping sets (b);
+
+select  sum(c),
+        grouping(b)
+from    tx1
 group by rollup (b);
 
 
