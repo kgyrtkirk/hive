@@ -131,6 +131,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
   @Override
   public StageType getType() {
+    // FIXME: should be changed to STATS
     return StageType.COLUMNSTATS;
   }
 
