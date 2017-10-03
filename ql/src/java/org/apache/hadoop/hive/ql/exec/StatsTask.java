@@ -83,10 +83,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
       return 0;
     }
-    return execute1(driverContext);
-  }
-
-  public int execute1(DriverContext driverContext) {
     if (work.isAggregating() && work.isFooterScan()) {
       LOG.error("Can not have both basic stats work and stats no job work!");
       return 1;
