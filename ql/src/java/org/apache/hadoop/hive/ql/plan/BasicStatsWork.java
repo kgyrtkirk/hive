@@ -92,8 +92,7 @@ public class BasicStatsWork implements Serializable {
     return loadFileDesc;
   }
 
-  @Deprecated
-  public void setAggKeyX(String aggK) {
+  public void setAggKey(String aggK) {
     aggKey = aggK;
   }
 

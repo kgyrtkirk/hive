@@ -54,11 +54,6 @@ public class BasicStatsNoJobWork implements Serializable {
     return statsReliable;
   }
 
-  //  @Deprecated
-  //  public void setPrunedPartitionList(PrunedPartitionList prunedPartitionList) {
-  //    this.prunedPartitionList = prunedPartitionList;
-  //  }
-  //
   public Set<Partition> getPartitions() {
     return pp;
   }

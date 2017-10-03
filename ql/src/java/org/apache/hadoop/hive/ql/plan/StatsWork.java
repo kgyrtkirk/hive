@@ -51,7 +51,6 @@ public class StatsWork implements Serializable {
   private boolean footerScan;
   private Set<Partition> partitions = new HashSet<>();
 
-  @Deprecated
   public StatsWork(Table table, BasicStatsWork basicStatsWork, HiveConf hconf) {
     super();
     this.table = table;
@@ -73,7 +72,7 @@ public class StatsWork implements Serializable {
     return String.format("StatWork; fetch: %s", getfWork());
   }
 
-  public FetchWork getfWork() {
+  FetchWork getfWork() {
     return colStats == null ? null : colStats.getFWork();
   }
 
@@ -86,6 +85,8 @@ public class StatsWork implements Serializable {
     this.colStats = colStats;
   }
 
+  // unused / unknown reason
+  @Deprecated
   public static int getLimit() {
     return LIMIT;
   }
@@ -119,11 +120,9 @@ public class StatsWork implements Serializable {
   }
 
   public void collectStatsFromAggregator(IStatsGatherDesc conf) {
-    //    basicStatsWork = new BasicStatsWork();
-
     // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
     // in FileSinkDesc is used for stats publishing. They should be consistent.
-    basicStatsWork.setAggKeyX(conf.getStatsAggPrefix());
+    basicStatsWork.setAggKey(conf.getStatsAggPrefix());
     basicStatsWork.setStatsTmpDir(conf.getTmpStatsDir());
     basicStatsWork.setStatsReliable2(statsReliable);
   }
