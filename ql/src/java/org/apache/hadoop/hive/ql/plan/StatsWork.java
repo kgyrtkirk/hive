@@ -97,7 +97,6 @@ public class StatsWork implements Serializable {
   }
 
   // only explain uses it
-  @Deprecated
   @Explain(displayName = "Basic Stats NoJob Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public BasicStatsNoJobWork getBasicStatsNoJobWork() {
     return basicStatsNoJobWork;
