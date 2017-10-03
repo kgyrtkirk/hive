@@ -57,7 +57,7 @@ public class StatsWork implements Serializable {
     this.basicStatsWork = basicStatsWork;
     this.currentDatabase = SessionState.get().getCurrentDatabase();
     statsReliable = hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE);
-    basicStatsWork.setStatsReliable2(statsReliable);
+    basicStatsWork.setStatsReliable(statsReliable);
   }
 
   public StatsWork(Table table, HiveConf hconf) {
@@ -123,7 +123,7 @@ public class StatsWork implements Serializable {
     // in FileSinkDesc is used for stats publishing. They should be consistent.
     basicStatsWork.setAggKey(conf.getStatsAggPrefix());
     basicStatsWork.setStatsTmpDir(conf.getTmpStatsDir());
-    basicStatsWork.setStatsReliable2(statsReliable);
+    basicStatsWork.setStatsReliable(statsReliable);
   }
 
   public void truncateExisting(boolean truncate) {
