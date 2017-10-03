@@ -5,11 +5,17 @@ select sum(c) from tx1;
 -- select sum(c) from tx1 group by b;
 insert into tx1 values (1,2,3);
 
-explain
+explain 
 select  sum(c),
         grouping(b)
 from    tx1
 group by b grouping sets ((), b);
+
+explain 
+select  sum(c),
+        grouping(b)
+from    tx1
+group by b grouping sets (b);
 
 select  sum(c),
         grouping(b)
