@@ -152,8 +152,6 @@ PREHOOK: type: SHOWINDEXES
 POSTHOOK: query: show formatted index on unicode_comments_tbl1
 POSTHOOK: type: SHOWINDEXES
 idx_name            	tab_name            	col_names           	idx_tab_name        	idx_type            	comment             
-	 	 	 	 	 
-	 	 	 	 	 
 index2              	unicode_comments_tbl1	col1                	unicode_comments_db__unicode_comments_tbl1_index2__	compact             	索引                  
 PREHOOK: query: drop database unicode_comments_db cascade
 PREHOOK: type: DROPDATABASE

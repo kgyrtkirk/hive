@@ -157,7 +157,7 @@ public final class MetaDataFormatUtils {
     IndexType indexType = HiveIndex.getIndexTypeByClassName(indexHandlerClass);
     indexColumns.add(indexType.getName());
 
-    String comment = index.getParameters().get("comment");
+    String comment = HiveStringUtils.escapeJava(index.getParameters().get("comment"));
     indexColumns.add(comment);
 
     formatOutput(indexColumns.toArray(new String[0]), indexInfo, isOutputPadded, true);

@@ -191,10 +191,8 @@ PREHOOK: query: show formatted index on escape_comments_tbl1
 PREHOOK: type: SHOWINDEXES
 POSTHOOK: query: show formatted index on escape_comments_tbl1
 POSTHOOK: type: SHOWINDEXES
-idx_name	tab_name	col_names	idx_tab_name	idx_type	comment
-	NULL	NULL	NULL	NULL	NULL
-	NULL	NULL	NULL	NULL	NULL
-index2	escape_comments_tbl1	col1	escape_comments_db__escape_comments_tbl1_index2__	compact	a\nb
+idx_name            	tab_name            	col_names           	idx_tab_name        	idx_type            	comment             
+index2              	escape_comments_tbl1	col1                	escape_comments_db__escape_comments_tbl1_index2__	compact             	a\nb                
 PREHOOK: query: drop database escape_comments_db cascade
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:escape_comments_db

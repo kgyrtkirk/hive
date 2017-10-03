@@ -2529,7 +2529,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (showIndexes.isFormatted()) {
         // column headers
         outStream.write(MetaDataFormatUtils.getIndexColumnsHeader().getBytes(StandardCharsets.UTF_8));
-        outStream.write(terminator);
       }
 
       for (Index index : indexes)
