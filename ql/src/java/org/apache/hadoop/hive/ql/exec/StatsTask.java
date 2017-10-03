@@ -67,6 +67,15 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       CompilationOpContext opContext) {
     super.initialize(queryState, queryPlan, ctx, opContext);
 
+    if (work.getBasicStatsWork() != null) {
+      BasicStatsTask task = new BasicStatsTask(conf, work.getBasicStatsWork());
+      task.followedColStats = work.hasColStats();
+      processors.add(0, task);
+    }
+    if (work.isFooterScan()) {
+      BasicStatsNoJobTask t = new BasicStatsNoJobTask(conf, work.getBasicStatsNoJobWork());
+      processors.add(0, t);
+    }
     if (work.hasColStats()) {
       processors.add(new ColStatsProcessor(work.getColStats(), conf));
     }
@@ -96,19 +105,8 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       Hive db = getHive();
       Table tbl = getTable(db);
 
-      if (work.getBasicStatsWork() != null) {
-
-        BasicStatsTask task = new BasicStatsTask(conf, work.getBasicStatsWork());
-        task.followedColStats = work.hasColStats();
-        task.setDpPartSpecs(dpPartSpecs);
-        processors.add(0, task);
-      }
-      if (work.isFooterScan()) {
-        BasicStatsNoJobTask t = new BasicStatsNoJobTask(conf, work.getBasicStatsNoJobWork());
-        processors.add(0, t);
-      }
-
       for (IStatsProcessor task : processors) {
+        task.setDpPartSpecs(dpPartSpecs);
         ret = task.process(db, tbl);
         if (ret != 0) {
           return ret;
@@ -138,7 +136,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
   @Override
   public String getName() {
-    return "COLUMNSTATS TASK";
+    return "STATS TASK";
   }
 
   private Collection<Partition> dpPartSpecs;
