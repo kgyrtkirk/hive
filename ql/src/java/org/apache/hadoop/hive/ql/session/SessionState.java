@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.session;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -189,6 +190,10 @@ public class SessionState {
   private HiveAuthorizer authorizerV2;
   private volatile ProgressMonitor progressMonitor;
 
+  private String hiveServer2HostName;
+
+  private KillQuery killQuery;
+
   public enum AuthorizationMode{V1, V2};
 
   private HiveAuthenticationProvider authenticator;
@@ -285,6 +290,8 @@ public class SessionState {
   private List<String> forwardedAddresses;
 
   private String atsDomainId;
+
+  private List<Closeable> cleanupItems = new LinkedList<Closeable>();
 
   /**
    * Get the lineage state stored in this session.
@@ -396,6 +403,7 @@ public class SessionState {
     this.sessionConf.setClassLoader(currentLoader);
     resourceDownloader = new ResourceDownloader(conf,
         HiveConf.getVar(conf, ConfVars.DOWNLOADED_RESOURCES_DIR));
+    killQuery = new NullKillQuery();
   }
 
   public Map<String, String> getHiveVariables() {
@@ -1646,6 +1654,14 @@ public class SessionState {
   }
 
   public void close() throws IOException {
+    for (Closeable cleanupItem : cleanupItems) {
+      try {
+        cleanupItem.close();
+      } catch (Exception err) {
+        LOG.error("Error processing SessionState cleanup item " + cleanupItem.toString(), err);
+      }
+    }
+
     registry.clear();
     if (txnMgr != null) txnMgr.closeTxnManager();
     JavaUtils.closeClassLoadersTo(sessionConf.getClassLoader(), parentLoader);
@@ -1907,6 +1923,25 @@ public class SessionState {
     return progressMonitor;
   }
 
+  public void setHiveServer2Host(String hiveServer2HostName) {
+    this.hiveServer2HostName = hiveServer2HostName;
+  }
+
+  public String getHiveServer2Host() {
+    return hiveServer2HostName;
+  }
+
+  public void setKillQuery(KillQuery killQuery) {
+    this.killQuery = killQuery;
+  }
+
+  public KillQuery getKillQuery() {
+    return killQuery;
+  }
+
+  public void addCleanupItem(Closeable item) {
+    cleanupItems.add(item);
+  }
 }
 
 class ResourceMaps {

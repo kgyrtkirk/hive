@@ -3591,8 +3591,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     }
     private void deleteParentRecursive(Path parent, int depth, boolean mustPurge) throws IOException, MetaException {
-      if (depth > 0 && parent != null && wh.isWritable(parent) && wh.isEmpty(parent)) {
-        wh.deleteDir(parent, true, mustPurge);
+      if (depth > 0 && parent != null && wh.isWritable(parent)) {
+        if (wh.isDir(parent) && wh.isEmpty(parent)) {
+          wh.deleteDir(parent, true, mustPurge);
+        }
         deleteParentRecursive(parent.getParent(), depth - 1, mustPurge);
       }
     }
@@ -4437,10 +4439,29 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                 envContext, this);
         success = true;
         if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-                                                EventType.ALTER_TABLE,
-                                                new AlterTableEvent(oldt, newTable, false, true, this),
-                                                envContext);
+          if (oldt.getDbName().equalsIgnoreCase(newTable.getDbName())) {
+            MetaStoreListenerNotifier.notifyEvent(listeners,
+                    EventType.ALTER_TABLE,
+                    new AlterTableEvent(oldt, newTable, false, true, this),
+                    envContext);
+          } else {
+            MetaStoreListenerNotifier.notifyEvent(listeners,
+                    EventType.DROP_TABLE,
+                    new DropTableEvent(oldt, true, false, this),
+                    envContext);
+            MetaStoreListenerNotifier.notifyEvent(listeners,
+                    EventType.CREATE_TABLE,
+                    new CreateTableEvent(newTable, true, this),
+                    envContext);
+            if (newTable.getPartitionKeysSize() != 0) {
+              List<Partition> partitions
+                      = getMS().getPartitions(newTable.getDbName(), newTable.getTableName(), -1);
+              MetaStoreListenerNotifier.notifyEvent(listeners,
+                      EventType.ADD_PARTITION,
+                      new AddPartitionEvent(newTable, partitions, true, this),
+                      envContext);
+            }
+          }
         }
       } catch (NoSuchObjectException e) {
         // thrown when the table to be altered does not exist
@@ -7077,12 +7098,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public NotificationEventResponse get_next_notification(NotificationEventRequest rqst)
         throws TException {
+      try {
+        authorizeProxyPrivilege();
+      } catch (Exception ex) {
+        LOG.error("Not authorized to make the get_next_notification call. You can try to disable " +
+            HiveConf.ConfVars.METASTORE_EVENT_DB_NOTIFICATION_API_AUTH.varname, ex);
+        throw new TException(ex);
+      }
+
       RawStore ms = getMS();
       return ms.getNextNotification(rqst);
     }
 
     @Override
     public CurrentNotificationEventId get_current_notificationEventId() throws TException {
+      try {
+        authorizeProxyPrivilege();
+      } catch (Exception ex) {
+        LOG.error("Not authorized to make the get_current_notificationEventId call. You can try to disable " +
+            HiveConf.ConfVars.METASTORE_EVENT_DB_NOTIFICATION_API_AUTH.varname, ex);
+        throw new TException(ex);
+      }
+
       RawStore ms = getMS();
       return ms.getCurrentNotificationEventId();
     }
@@ -7090,8 +7127,33 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)
             throws TException {
+      try {
+        authorizeProxyPrivilege();
+      } catch (Exception ex) {
+        LOG.error("Not authorized to make the get_notification_events_count call. You can try to disable " +
+            HiveConf.ConfVars.METASTORE_EVENT_DB_NOTIFICATION_API_AUTH.varname, ex);
+        throw new TException(ex);
+      }
+
       RawStore ms = getMS();
       return ms.getNotificationEventsCount(rqst);
+    }
+
+    private void authorizeProxyPrivilege() throws Exception {
+      // Skip the auth in embedded mode or if the auth is disabled
+      if (!isMetaStoreRemote() || !hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_EVENT_DB_NOTIFICATION_API_AUTH)) {
+        return;
+      }
+      String user = null;
+      try {
+        user = Utils.getUGI().getShortUserName();
+      } catch (Exception ex) {
+        LOG.error("Cannot obtain username", ex);
+        throw ex;
+      }
+      if (!MetaStoreUtils.checkUserHasHostProxyPrivileges(user, hiveConf, getIPAddress())) {
+        throw new MetaException("User " + user + " is not allowed to perform this API call");
+      }
     }
 
     @Override
@@ -7716,7 +7778,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         saslServer = bridge.createServer(
             conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_KEYTAB_FILE),
-            conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL));
+            conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL),
+            conf.getVar(HiveConf.ConfVars.METASTORE_CLIENT_KERBEROS_PRINCIPAL));
         // Start delegation token manager
         delegationTokenManager = new MetastoreDelegationTokenManager();
         delegationTokenManager.startDelegationTokenSecretManager(conf, baseHandler,

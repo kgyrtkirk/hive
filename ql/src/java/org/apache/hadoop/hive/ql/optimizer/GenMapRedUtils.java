@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.io.orc.OrcFileStripeMergeInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -1228,7 +1229,6 @@ public final class GenMapRedUtils {
 
   /**
    * @param fsInput The FileSink operator.
-   * @param ctx The MR processing context.
    * @param finalName the final destination path the merge job should output.
    * @param dependencyTask
    * @param mvTasks
@@ -1315,8 +1315,10 @@ public final class GenMapRedUtils {
     //
     // 2. Constructing a conditional task consisting of a move task and a map reduce task
     //
+    HiveTxnManager txnMgr = SessionState.get().getTxnMgr();
     MoveWork dummyMv = new MoveWork(null, null, null,
-         new LoadFileDesc(fsInputDesc.getFinalDirName(), finalName, true, null, null), false);
+         new LoadFileDesc(fsInputDesc.getFinalDirName(), finalName, true, null,
+             null), false, SessionState.get().getLineageState());
     MapWork cplan;
     Serializable work;
 

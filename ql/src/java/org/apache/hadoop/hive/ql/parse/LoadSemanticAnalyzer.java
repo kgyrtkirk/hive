@@ -19,7 +19,10 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
+<<<<<<< HEAD
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+=======
+>>>>>>> asf/master
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -53,11 +56,15 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
+<<<<<<< HEAD
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
+=======
+import org.apache.hadoop.hive.ql.plan.StatsWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
+>>>>>>> asf/master
 import org.apache.hadoop.mapred.InputFormat;
 
 import com.google.common.collect.Lists;
-import org.apache.orc.impl.OrcAcidUtils;
 
 /**
  * LoadSemanticAnalyzer.
@@ -285,8 +292,10 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       loadTableWork.setInheritTableSpecs(false);
     }
 
-    Task<? extends Serializable> childTask = TaskFactory.get(new MoveWork(getInputs(),
-        getOutputs(), loadTableWork, null, true, isLocal), conf);
+    Task<? extends Serializable> childTask = TaskFactory.get(
+        new MoveWork(getInputs(), getOutputs(), loadTableWork, null, true,
+            isLocal, SessionState.get().getLineageState()), conf
+    );
     if (rTask != null) {
       rTask.addDependentTask(childTask);
     } else {

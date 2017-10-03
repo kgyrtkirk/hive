@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
@@ -68,6 +69,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -132,21 +134,11 @@ public class DruidSerDe extends AbstractSerDe {
                   properties.getProperty(serdeConstants.LIST_COLUMNS));
         }
         columnTypes.addAll(Lists.transform(Utilities.getColumnTypes(properties),
-                new Function<String, PrimitiveTypeInfo>() {
-                  @Override
-                  public PrimitiveTypeInfo apply(String type) {
-                    return TypeInfoFactory.getPrimitiveTypeInfo(type);
-                  }
-                }
+                type -> TypeInfoFactory.getPrimitiveTypeInfo(type)
         ));
         inspectors.addAll(Lists.transform(columnTypes,
-                new Function<PrimitiveTypeInfo, ObjectInspector>() {
-                  @Override
-                  public ObjectInspector apply(PrimitiveTypeInfo type) {
-                    return PrimitiveObjectInspectorFactory
-                            .getPrimitiveWritableObjectInspector(type);
-                  }
-                }
+                (Function<PrimitiveTypeInfo, ObjectInspector>) type -> PrimitiveObjectInspectorFactory
+                        .getPrimitiveWritableObjectInspector(type)
         ));
         columns = columnNames.toArray(new String[columnNames.size()]);
         types = columnTypes.toArray(new PrimitiveTypeInfo[columnTypes.size()]);
@@ -273,7 +265,7 @@ public class DruidSerDe extends AbstractSerDe {
     InputStream response;
     try {
       response = DruidStorageHandlerUtils.submitRequest(DruidStorageHandler.getHttpClient(),
-              DruidStorageHandlerUtils.createRequest(address, query)
+              DruidStorageHandlerUtils.createSmileRequest(address, query)
       );
     } catch (Exception e) {
       throw new SerDeException(StringUtils.stringifyException(e));
@@ -504,6 +496,10 @@ public class DruidSerDe extends AbstractSerDe {
           res = ((StringObjectInspector) fields.get(i).getFieldObjectInspector())
                   .getPrimitiveJavaObject(values.get(i));
           break;
+        case BOOLEAN:
+          res = ((BooleanObjectInspector) fields.get(i).getFieldObjectInspector())
+                  .get(values.get(i));
+          break;
         default:
           throw new SerDeException("Unknown type: " + types[i].getPrimitiveCategory());
       }
@@ -573,6 +569,9 @@ public class DruidSerDe extends AbstractSerDe {
           break;
         case STRING:
           output.add(new Text(value.toString()));
+          break;
+        case BOOLEAN:
+          output.add(new BooleanWritable(Boolean.valueOf(value.toString())));
           break;
         default:
           throw new SerDeException("Unknown type: " + types[i].getPrimitiveCategory());

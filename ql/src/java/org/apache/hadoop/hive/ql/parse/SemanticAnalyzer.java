@@ -221,6 +221,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -6902,7 +6903,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
           checkAcidConstraints(qb, table_desc, dest_tab);
         }
-        ltd = new LoadTableDesc(queryTmpdir, table_desc, dpCtx, acidOp);
+        Long currentTransactionId = acidOp == Operation.NOT_ACID ? null :
+            SessionState.get().getTxnMgr().getCurrentTxnId();
+        ltd = new LoadTableDesc(queryTmpdir, table_desc, dpCtx, acidOp,
+            currentTransactionId);
         // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
         // deltas and base and leave them up to the cleaner to clean up
         ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
@@ -7017,7 +7021,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
         checkAcidConstraints(qb, table_desc, dest_tab);
       }
-      ltd = new LoadTableDesc(queryTmpdir, table_desc, dest_part.getSpec(), acidOp);
+      Long currentTransactionId = (acidOp == Operation.NOT_ACID) ? null :
+          SessionState.get().getTxnMgr().getCurrentTxnId();
+      ltd = new LoadTableDesc(queryTmpdir, table_desc, dest_part.getSpec(), acidOp,
+          currentTransactionId);
       // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
       // deltas and base and leave them up to the cleaner to clean up
       ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
@@ -7164,7 +7171,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               fileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
               Class<? extends Deserializer> serdeClass = LazySimpleSerDe.class;
               if (fileFormat.equals(PlanUtils.LLAP_OUTPUT_FORMAT_KEY)) {
-                serdeClass = LazyBinarySerDe.class;
+                serdeClass = LazyBinarySerDe2.class;
               }
               table_desc =
                          PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, fileFormat,
@@ -10962,7 +10969,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   @Override
   @SuppressWarnings("nls")
   public void analyzeInternal(ASTNode ast) throws SemanticException {
-    analyzeInternal(ast, new PlannerContext());
+    analyzeInternal(ast, new PlannerContextFactory() {
+      @Override
+      public PlannerContext create() {
+        return new PlannerContext();
+      }
+    });
+  }
+
+  protected static interface PlannerContextFactory {
+    PlannerContext create();
   }
 
   /**
@@ -11356,11 +11372,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  void analyzeInternal(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
+  void analyzeInternal(ASTNode ast, PlannerContextFactory pcf) throws SemanticException {
     // 1. Generate Resolved Parse tree from syntax tree
     LOG.info("Starting Semantic Analysis");
     //change the location of position alias process here
     processPositionAlias(ast);
+    PlannerContext plannerCtx = pcf.create();
     if (!genResolvedParseTree(ast, plannerCtx)) {
       return;
     }
@@ -11379,6 +11396,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Here we rewrite the * and also the masking table
       ASTNode tree = rewriteASTWithMaskAndFilter(ast);
       if (tree != ast) {
+        plannerCtx = pcf.create();
         ctx.setSkipTableMasking(true);
         init(true);
         //change the location of position alias process here
@@ -13648,7 +13666,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private AcidUtils.Operation getAcidType(Class<? extends OutputFormat> of, String dest) {
-    if (SessionState.get() == null || !SessionState.get().getTxnMgr().supportsAcid()) {
+    if (SessionState.get() == null || !getTxnMgr().supportsAcid()) {
       return AcidUtils.Operation.NOT_ACID;
     } else if (isAcidOutputFormat(of)) {
       return getAcidType(dest);
@@ -13667,7 +13685,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // Make sure the proper transaction manager that supports ACID is being used
   protected void checkAcidTxnManager(Table table) throws SemanticException {
-    if (SessionState.get() != null && !SessionState.get().getTxnMgr().supportsAcid()) {
+    if (SessionState.get() != null && !getTxnMgr().supportsAcid()) {
       throw new SemanticException(ErrorMsg.TXNMGR_NOT_ACID, table.getDbName(), table.getTableName());
     }
   }

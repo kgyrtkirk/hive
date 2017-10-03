@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
 import org.apache.hadoop.hive.ql.index.HiveIndex;
 import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
@@ -106,6 +107,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.plan.KillQueryDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
@@ -402,6 +404,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_ABORT_TRANSACTIONS:
       analyzeAbortTxns(ast);
       break;
+    case HiveParser.TOK_KILL_QUERY:
+      analyzeKillQuery(ast);
+      break;
     case HiveParser.TOK_SHOWCONF:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowConf(ast);
@@ -593,7 +598,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tbl.getDbName() + "." + tbl.getTableName(),
         Arrays.asList(colName), Arrays.asList(colType), partSpec == null);
     ColumnStatsUpdateTask cStatsUpdateTask = (ColumnStatsUpdateTask) TaskFactory
-        .get(new ColumnStatsUpdateWork(cStatsDesc, partName, mapProp), conf);
+        .get(new ColumnStatsUpdateWork(cStatsDesc, partName, mapProp, SessionState.get().getCurrentDatabase()), conf);
     rootTasks.add(cStatsUpdateTask);
   }
 
@@ -1084,9 +1089,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
         truncateTblDesc.setOutputDir(queryTmpdir);
         LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
-            partSpec == null ? new HashMap<String, String>() : partSpec);
+            partSpec == null ? new HashMap<>() : partSpec);
         ltd.setLbCtx(lbCtx);
-        Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
+        Task<MoveWork> moveTsk = TaskFactory
+            .get(new MoveWork(null, null, ltd, null, false, SessionState.get().getLineageState()),
             conf);
         truncateTask.addDependentTask(moveTsk);
 
@@ -1721,7 +1727,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
           partSpec == null ? new HashMap<>() : partSpec);
       ltd.setLbCtx(lbCtx);
-      Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
+      Task<MoveWork> moveTsk = TaskFactory
+          .get(new MoveWork(null, null, ltd, null, false, SessionState.get().getLineageState()),
           conf);
       mergeTask.addDependentTask(moveTsk);
 
@@ -2565,6 +2572,36 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
    /**
+   * Add a task to execute "Kill query"
+   * @param ast The parsed command tree
+   * @throws SemanticException Parsing failed
+   */
+  private void analyzeKillQuery(ASTNode ast) throws SemanticException {
+    List<String> queryIds = new ArrayList<String>();
+    int numChildren = ast.getChildCount();
+    for (int i = 0; i < numChildren; i++) {
+      queryIds.add(stripQuotes(ast.getChild(i).getText()));
+    }
+    KillQueryDesc desc = new KillQueryDesc(queryIds);
+    String hs2Hostname = getHS2Host();
+    if (hs2Hostname != null) {
+      outputs.add(new WriteEntity(hs2Hostname, Type.SERVICE_NAME));
+    }
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
+  }
+
+  private String getHS2Host() throws SemanticException {
+    if (SessionState.get().isHiveServerQuery()) {
+      return SessionState.get().getHiveServer2Host();
+    }
+    if (conf.getBoolVar(ConfVars.HIVE_TEST_AUTHORIZATION_SQLSTD_HS2_MODE)) {
+      // dummy value for use in tests
+      return "dummyHostnameForTest";
+    }
+    throw new SemanticException("Kill query is only supported in HiveServer2 (not hive cli)");
+  }
+
+  /**
    * Add the task according to the parsed command tree. This is used for the CLI
    * command "UNLOCK TABLE ..;".
    *
