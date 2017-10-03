@@ -413,7 +413,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
   private StatsCollectionContext getContext() throws HiveException {
 
     StatsCollectionContext scc = new StatsCollectionContext(conf);
-    Task sourceTask = getWork().getSourceTask2();
+    Task sourceTask = getWork().getSourceTask();
     if (sourceTask == null) {
       throw new HiveException(ErrorMsg.STATSAGGREGATOR_SOURCETASK_NULL.getErrorCodedMsg());
     }

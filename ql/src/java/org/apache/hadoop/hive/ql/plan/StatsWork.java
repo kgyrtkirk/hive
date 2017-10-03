@@ -103,7 +103,7 @@ public class StatsWork implements Serializable {
   }
 
   public void setSourceTask(Task<?> sourceTask) {
-    basicStatsWork.setSourceTask2(sourceTask);
+    basicStatsWork.setSourceTask(sourceTask);
   }
 
   public String getCurrentDatabaseName() {
@@ -159,7 +159,7 @@ public class StatsWork implements Serializable {
   }
 
   public Task getSourceTask() {
-    return basicStatsWork == null ? null : basicStatsWork.getSourceTask2();
+    return basicStatsWork == null ? null : basicStatsWork.getSourceTask();
   }
 
   public String getAggKey() {
