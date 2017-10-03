@@ -67,8 +67,6 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-import com.google.common.math.IntMath;
-
 import javolution.util.FastBitSet;
 
 /**
@@ -1096,7 +1094,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     if (!abort) {
       try {
         // If there is no grouping key and no row came to this operator
-        if (firstRow && (keyFields.length == 0)) {
+        if (firstRow && isEmptyGroupingSetPresent()) {
           firstRow = false;
 
           // There is no grouping key - simulate a null row
@@ -1119,8 +1117,12 @@ public class GroupByOperator extends Operator<GroupByDesc> {
             aggregationEvaluators[ai].aggregate(aggregations[ai], o);
           }
 
-          // create dummy keys - size 0
-          forward(new Object[0], aggregations);
+
+          Object[] keys=new Object[outputKeyLength];
+          if (groupingSetsPresent) {
+            keys[groupingSetsPosition] = new IntWritable((1 << groupingSetsPosition) - 1);
+          }
+          forward(keys, aggregations);
         } else {
           flush();
         }
@@ -1130,6 +1132,21 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     }
     hashAggregations = null;
     super.closeOp(abort);
+  }
+
+  private boolean isEmptyGroupingSetPresent() {
+    if (keyFields.length == 0) {
+      return true;
+    }
+    if (groupingSetsPresent) {
+      for (FastBitSet bitset : groupingSetsBitSet) {
+        if (bitset.nextClearBit(0) >= groupingSetsPosition) {
+          // we have a bitset which ignores all the keys
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   // Group by contains the columns needed - no need to aggregate from children
