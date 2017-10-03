@@ -494,6 +494,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     return dpPartSpecs;
   }
 
+  @Override
   public void setDpPartSpecs(Collection<Partition> dpPartSpecs) {
     this.dpPartSpecs = dpPartSpecs;
   }

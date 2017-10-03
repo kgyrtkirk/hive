@@ -89,6 +89,9 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     int ret = 0;
     try {
 
+      if (work.isFooterScan()) {
+        work.getBasicStatsNoJobWork().setPartitions(work.getPartitions());
+      }
 
       Hive db = getHive();
       Table tbl = getTable(db);
@@ -98,21 +101,17 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         BasicStatsTask task = new BasicStatsTask(conf, work.getBasicStatsWork());
         task.followedColStats = work.hasColStats();
         task.setDpPartSpecs(dpPartSpecs);
-        ret = task.process(db, tbl);
+        processors.add(0, task);
       }
       if (work.isFooterScan()) {
-        work.getBasicStatsNoJobWork().setPartitions(work.getPartitions());
-
         BasicStatsNoJobTask t = new BasicStatsNoJobTask(conf, work.getBasicStatsNoJobWork());
-        ret = t.process(db, tbl);
-      }
-      if (ret != 0) {
-        return ret;
+        processors.add(0, t);
       }
 
-      if (work.hasColStats()) {
-        for (IStatsProcessor task : processors) {
-          return task.process(db, tbl);
+      for (IStatsProcessor task : processors) {
+        ret = task.process(db, tbl);
+        if (ret != 0) {
+          return ret;
         }
       }
     } catch (Exception e) {

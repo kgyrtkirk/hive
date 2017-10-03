@@ -388,4 +388,8 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       Thread.currentThread().interrupt();
     }
   }
+
+  @Override
+  public void setDpPartSpecs(Collection<Partition> dpPartSpecs) {
+  }
 }

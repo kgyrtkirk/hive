@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.stats;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
@@ -177,6 +179,10 @@ public class ColStatsProcessor implements IStatsProcessor {
     request.setNeedMerge(colStatDesc.isNeedMerge());
     db.setPartitionColumnStatistics(request);
     return 0;
+  }
+
+  @Override
+  public void setDpPartSpecs(Collection<Partition> dpPartSpecs) {
   }
 
 }
