@@ -27,13 +27,6 @@ public class TextMetaDataTable {
 
   List<List<String>> table = new ArrayList<>();
 
-  public void addHeader(String... values) {
-    assert (values.length > 0);
-    ArrayList<String> v = Lists.<String> newArrayList(values);
-    v.set(0, "# " + v.get(0));
-    table.add(v);
-  }
-
   public void addRow(String... values) {
     table.add(Lists.<String> newArrayList(values));
   }
