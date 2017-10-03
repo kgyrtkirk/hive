@@ -123,7 +123,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
   @Override
   public void describeTable(DataOutputStream outStream,  String colPath,
       String tableName, Table tbl, Partition part, List<FieldSchema> cols,
-      boolean isFormatted, boolean isExt, boolean isPretty,
+      boolean isFormatted, boolean isExt,
       boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
       PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
       UniqueConstraint ukInfo, NotNullConstraint nnInfo) throws HiveException {
@@ -131,11 +131,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       String output;
       if (colPath.equals(tableName)) {
         List<FieldSchema> partCols = tbl.isPartitioned() ? tbl.getPartCols() : null;
-        output = isPretty ?
-            MetaDataPrettyFormatUtils.getAllColumnsInformation(
-                cols, partCols, prettyOutputNumCols)
-                :
-                  MetaDataFormatUtils.getAllColumnsInformation(cols, partCols, isFormatted, isOutputPadded, showPartColsSeparately);
+        output = MetaDataFormatUtils.getAllColumnsInformation(cols, partCols, isFormatted, isOutputPadded, showPartColsSeparately);
       } else {
         output = MetaDataFormatUtils.getAllColumnsInformation(cols, isFormatted, isOutputPadded, colStats);
         String statsState;

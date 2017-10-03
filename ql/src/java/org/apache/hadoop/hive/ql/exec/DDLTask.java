@@ -2015,7 +2015,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             for (String val : vals) {
               String escapedPath = FileUtils.escapePathName(val);
               assert escapedPath != null;
-              if (escapedPath.equals(val)) continue;
+              if (escapedPath.equals(val)) {
+                continue;
+              }
               String errorMsg = "Repair: Cannot add partition " + msckDesc.getTableName()
                   + ':' + part.getPartitionName() + " due to invalid characters in the name";
               if (doSkip) {
@@ -2719,7 +2721,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     HiveTxnManager txnManager = ctx.getHiveTxnManager();
     HiveLockManager lockMgr = txnManager.getLockManager();
 
-    if (txnManager.useNewShowLocksFormat()) return showLocksNewFormat(showLocks, lockMgr);
+    if (txnManager.useNewShowLocksFormat()) {
+      return showLocksNewFormat(showLocks, lockMgr);
+    }
 
     boolean isExt = showLocks.isExt();
     if (lockMgr == null) {
@@ -3493,7 +3497,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
       formatter.describeTable(outStream, colPath, tableName, tbl, part,
           cols, descTbl.isFormatted(), descTbl.isExt(),
-          descTbl.isPretty(), isOutputPadded, colStats,
+          isOutputPadded, colStats,
           pkInfo, fkInfo, ukInfo, nnInfo);
 
       LOG.debug("DDLTask: written data for " + tbl.getTableName());
