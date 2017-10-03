@@ -134,6 +134,7 @@ public class StatsWork implements Serializable {
 
   public void setFooterScan() {
     basicStatsNoJobWork = new BasicStatsNoJobWork(table.getTableSpec());
+    basicStatsNoJobWork.setStatsReliable(getStatsReliable());
     footerScan = true;
   }
 

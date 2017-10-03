@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.BasicStatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.stats.BasicStatsNoJobTask;
@@ -89,6 +88,8 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     }
     int ret = 0;
     try {
+
+
       Hive db = getHive();
       Table tbl = getTable(db);
 
@@ -100,11 +101,9 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         ret = task.process(db, tbl);
       }
       if (work.isFooterScan()) {
+        work.getBasicStatsNoJobWork().setPartitions(work.getPartitions());
 
-        BasicStatsNoJobWork basicStatsNoJobWork = new BasicStatsNoJobWork(tbl.getTableSpec());
-        basicStatsNoJobWork.setStatsReliable(work.getStatsReliable());
-        basicStatsNoJobWork.setPartitions(work.getPartitions());
-        BasicStatsNoJobTask t = new BasicStatsNoJobTask(conf, basicStatsNoJobWork);
+        BasicStatsNoJobTask t = new BasicStatsNoJobTask(conf, work.getBasicStatsNoJobWork());
         ret = t.process(db, tbl);
       }
       if (ret != 0) {
