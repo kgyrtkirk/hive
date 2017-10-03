@@ -1,6 +1,6 @@
 set hive.explain.user=true;
 -- set hive.vectorized.execution.enabled=false;
-set hive.llap.execution.mode=none;
+-- set hive.llap.execution.mode=none;
 
 drop table if exists tx1;
 create table tx1 (a integer,b integer,c integer);
