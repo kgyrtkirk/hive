@@ -113,7 +113,7 @@ public final class MetaDataFormatUtils {
     return new String(sub);
   }
 
-  public static ColumnStatisticsObj getColumnStatisticsObject(String colName,
+  static ColumnStatisticsObj getColumnStatisticsObject(String colName,
       String colType, List<ColumnStatisticsObj> colStats) {
     if (colStats != null && !colStats.isEmpty()) {
       for (ColumnStatisticsObj cso : colStats) {
@@ -509,7 +509,7 @@ public final class MetaDataFormatUtils {
    * @param isLastLinePadded Is the last field could be printed in multiple lines, if contains
    *                         newlines?
    */
-  public static void formatOutput(String[] fields, StringBuilder tableInfo,
+  static void formatOutput(String[] fields, StringBuilder tableInfo,
       boolean isLastLinePadded, boolean isFormatted) {
     if (!isFormatted) {
       for (int i = 0; i < fields.length; i++) {
@@ -572,7 +572,7 @@ public final class MetaDataFormatUtils {
    * @param tableInfo The target builder
    * @param isOutputPadded Should the value printed as a padded string?
    */
-  protected static void formatOutput(String name, String value, StringBuilder tableInfo,
+  static void formatOutput(String name, String value, StringBuilder tableInfo,
       boolean isOutputPadded) {
     String unescapedValue =
         (isOutputPadded && value != null) ? value.replaceAll("\\\\n|\\\\r|\\\\r\\\\n","\n"):value;
