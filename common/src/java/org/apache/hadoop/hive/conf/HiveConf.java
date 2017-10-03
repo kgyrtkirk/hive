@@ -447,7 +447,7 @@ public class HiveConf extends Configuration {
             + "dynamically generating the next set of tasks. The number is approximate as Hive \n"
             + "will stop at a slightly higher number, the reason being some events might lead to a \n"
             + "task increment that would cross the specified limit."),
-    REPL_PARTITIONS_DUMP_PARALLELISM("hive.repl.partitions.dump.parallelism",5,
+    REPL_PARTITIONS_DUMP_PARALLELISM("hive.repl.partitions.dump.parallelism",100,
         "Number of threads that will be used to dump partition data information during repl dump."),
     REPL_DUMPDIR_CLEAN_FREQ("hive.repl.dumpdir.clean.freq", "0s",
         new TimeValidator(TimeUnit.SECONDS),
@@ -685,6 +685,9 @@ public class HiveConf extends Configuration {
         "hive-metastore/_HOST@EXAMPLE.COM",
         "The service principal for the metastore Thrift server. \n" +
         "The special string _HOST will be replaced automatically with the correct host name."),
+    METASTORE_CLIENT_KERBEROS_PRINCIPAL("hive.metastore.client.kerberos.principal",
+        "", // E.g. "hive-metastore/_HOST@EXAMPLE.COM".
+        "The Kerberos principal associated with the HA cluster of hcat_servers."),
     METASTORE_USE_THRIFT_SASL("hive.metastore.sasl.enabled", false,
         "If true, the metastore Thrift interface will be secured with SASL. Clients must authenticate with Kerberos."),
     METASTORE_USE_THRIFT_FRAMED_TRANSPORT("hive.metastore.thrift.framed.transport.enabled", false,
@@ -794,6 +797,9 @@ public class HiveConf extends Configuration {
     METASTORE_EVENT_DB_LISTENER_TTL("hive.metastore.event.db.listener.timetolive", "86400s",
         new TimeValidator(TimeUnit.SECONDS),
         "time after which events will be removed from the database listener queue"),
+    METASTORE_EVENT_DB_NOTIFICATION_API_AUTH("hive.metastore.event.db.notification.api.auth", true,
+        "Should metastore do authorization against database notification related APIs such as get_next_notification.\n" +
+        "If set to true, then only the superusers in proxy settings have the permission"),
     METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS("hive.metastore.authorization.storage.checks", false,
         "Should the metastore do authorization checks against the underlying storage (usually hdfs) \n" +
         "for operations like drop-partition (disallow the drop-partition if the user in\n" +
@@ -2397,6 +2403,13 @@ public class HiveConf extends Configuration {
         "The maximum number of past queries to show in HiverSever2 WebUI."),
 
     // Tez session settings
+    HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE("hive.server2.tez.interactive.queue", "",
+        "A single YARN queues to use for Hive Interactive sessions. When this is specified,\n" +
+        "workload management is enabled and used for these sessions."),
+    HIVE_SERVER2_TEZ_WM_AM_REGISTRY_TIMEOUT("hive.server2.tez.wm.am.registry.timeout", "30s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "The timeout for AM registry registration, after which (on attempting to use the\n" +
+        "session), we kill it and try to get another one."),
     HIVE_SERVER2_TEZ_DEFAULT_QUEUES("hive.server2.tez.default.queues", "",
         "A list of comma separated values corresponding to YARN queues of the same name.\n" +
         "When HiveServer2 is launched in Tez mode, this configuration needs to be set\n" +
@@ -2554,6 +2567,8 @@ public class HiveConf extends Configuration {
         "Kerberos keytab file for server principal"),
     HIVE_SERVER2_KERBEROS_PRINCIPAL("hive.server2.authentication.kerberos.principal", "",
         "Kerberos server principal"),
+    HIVE_SERVER2_CLIENT_KERBEROS_PRINCIPAL("hive.server2.authentication.client.kerberos.principal", "",
+        "Kerberos principal used by the HA hive_server2s."),
     HIVE_SERVER2_SPNEGO_KEYTAB("hive.server2.authentication.spnego.keytab", "",
         "keytab file for SPNego principal, optional,\n" +
         "typical value would look like /etc/security/keytabs/spnego.service.keytab,\n" +
@@ -3175,8 +3190,6 @@ public class HiveConf extends Configuration {
 
     LLAP_DAEMON_RPC_NUM_HANDLERS("hive.llap.daemon.rpc.num.handlers", 5,
       "Number of RPC handlers for LLAP daemon.", "llap.daemon.rpc.num.handlers"),
-    LLAP_PLUGIN_RPC_PORT("hive.llap.plugin.rpc.port", 15005,
-        "RPC port for AM LLAP daemon plugin endpoint."),
 
     LLAP_PLUGIN_RPC_NUM_HANDLERS("hive.llap.plugin.rpc.num.handlers", 1,
       "Number of RPC handlers for AM LLAP plugin endpoint."),
@@ -3274,6 +3287,8 @@ public class HiveConf extends Configuration {
     LLAP_DAEMON_COMMUNICATOR_NUM_THREADS("hive.llap.daemon.communicator.num.threads", 10,
       "Number of threads to use in LLAP task communicator in Tez AM.",
       "llap.daemon.communicator.num.threads"),
+    LLAP_PLUGIN_CLIENT_NUM_THREADS("hive.llap.plugin.client.num.threads", 10,
+        "Number of threads to use in LLAP task plugin client."),
     LLAP_DAEMON_DOWNLOAD_PERMANENT_FNS("hive.llap.daemon.download.permanent.fns", false,
         "Whether LLAP daemon should localize the resources for permanent UDFs."),
     LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME("hive.llap.task.scheduler.am.registry", "llap",
@@ -3499,6 +3514,8 @@ public class HiveConf extends Configuration {
             "hive.spark.client.rpc.server.address," +
             "hive.spark.client.rpc.server.port," +
             "bonecp.,"+
+            "hive.druid.broker.address.default,"+
+            "hive.druid.coordinator.address.default,"+
             "hikari.",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
@@ -4433,6 +4450,7 @@ public class HiveConf extends Configuration {
     "hive\\.auto\\..*",
     "hive\\.cbo\\..*",
     "hive\\.convert\\..*",
+    "hive\\.druid\\..*",
     "hive\\.exec\\.dynamic\\.partition.*",
     "hive\\.exec\\.max\\.dynamic\\.partitions.*",
     "hive\\.exec\\.compress\\..*",
