@@ -113,13 +113,15 @@ public class TezRuntimeStatisticsHook implements ExecuteWithHookContext {
         String shuffleCounterName = TaskCounter.SHUFFLE_BYTES.toString();
         List<Task<? extends Serializable>> parentTasks = tezTask.getParentTasks();
         long shuffleBytesTotal = 0;
-        for (Task<? extends Serializable> pTask : parentTasks) {
-          String currTaskName = vertexName.replaceAll("\\s+", "_");
-          String pTaskName = pTask.getName().replaceAll("\\s+", "_");
-          String groupName = TaskCounter.class.getSimpleName() + "_" + currTaskName + "_INPUT_" + pTaskName;
-          TezCounter tezCounter = counters.getGroup(groupName).findCounter(shuffleCounterName, false);
-          if (tezCounter != null) {
-            shuffleBytesTotal += tezCounter.getValue();
+        if (parentTasks != null) {
+          for (Task<? extends Serializable> pTask : parentTasks) {
+            String currTaskName = vertexName.replaceAll("\\s+", "_");
+            String pTaskName = pTask.getName().replaceAll("\\s+", "_");
+            String groupName = TaskCounter.class.getSimpleName() + "_" + currTaskName + "_INPUT_" + pTaskName;
+            TezCounter tezCounter = counters.getGroup(groupName).findCounter(shuffleCounterName, false);
+            if (tezCounter != null) {
+              shuffleBytesTotal += tezCounter.getValue();
+            }
           }
         }
       }
