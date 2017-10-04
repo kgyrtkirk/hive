@@ -1,3 +1,4 @@
+set hive.explain.user=true;
 set hive.exec.post.hooks = org.apache.hadoop.hive.ql.hooks.TezRuntimeStatisticsHook;
 
 create view vx1 as
