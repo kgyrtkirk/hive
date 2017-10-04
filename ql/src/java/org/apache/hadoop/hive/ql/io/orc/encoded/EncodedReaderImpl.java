@@ -63,7 +63,6 @@ import org.apache.orc.OrcProto;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.CodedInputStream;
 
-import sun.misc.Cleaner;
 
 
 /**
@@ -1608,9 +1607,9 @@ class EncodedReaderImpl implements EncodedReader {
     Field localCf = cleanerField;
     if (!bb.isDirect() || localCf == null) return;
     try {
-      Cleaner cleaner = (Cleaner) localCf.get(bb);
+      Object cleaner = null;//(Cleaner) localCf.get(bb);
       if (cleaner != null) {
-        cleaner.clean();
+//        cleaner.clean();
       } else {
         LOG.debug("Unable to clean a buffer using cleaner - no cleaner");
       }
