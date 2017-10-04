@@ -1117,7 +1117,6 @@ public class GroupByOperator extends Operator<GroupByDesc> {
             aggregationEvaluators[ai].aggregate(aggregations[ai], o);
           }
 
-
           Object[] keys=new Object[outputKeyLength];
           if (groupingSetsPresent) {
             keys[groupingSetsPosition] = new IntWritable((1 << groupingSetsPosition) - 1);
