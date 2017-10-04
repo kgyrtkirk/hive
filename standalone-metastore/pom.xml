@@ -252,7 +252,8 @@
           <api>JDO</api>
           <verbose>true</verbose>
           <metadataIncludes>**/*.jdo</metadataIncludes>
-          <fork>false</fork>
+          <fork>true</fork>
+<jvmArg>--add-modules=ALL-SYSTEM</jvmArg>
         </configuration>
         <executions>
           <execution>
