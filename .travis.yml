@@ -23,9 +23,15 @@ dist: trusty
 # that requires full git history, enable this
 # before_install: git fetch --unshallow
 
+
 language: java
 jdk:
-  - oraclejdk8
+  - oraclejdk9
+
+addons:
+  apt:
+    packages:
+      - oracle-java9-installer
 
 cache:
   directories:
@@ -33,7 +39,7 @@ cache:
 
 env:
   MAVEN_SKIP_RC=true
-  MAVEN_OPTS="-Xmx2g"
+  MAVEN_OPTS="-Xmx2g --add-modules=ALL-SYSTEM"
 
 # workaround added: https://github.com/travis-ci/travis-ci/issues/4629
 before_install:
@@ -42,4 +48,5 @@ before_install:
 
 install: true
 
-script: mvn clean install -DskipTests -T 4 -q -Pitests
+script:
+  - mvn clean install -DskipTests -T 4 -q -Pitests
