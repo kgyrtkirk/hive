@@ -49,4 +49,4 @@ install: true
 
 script:
   - mvn --version
-  - mvn clean install -DskipTests -T 4 -q -Pitests -DskipSparkTests
+  - mvn clean install -DskipTests -q -Pitests -DskipSparkTests
