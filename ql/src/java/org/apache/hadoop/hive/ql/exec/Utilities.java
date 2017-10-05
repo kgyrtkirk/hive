@@ -1831,6 +1831,9 @@ public final class Utilities {
    * @return
    */
   private static URL urlFromPathString(String onestr) {
+    if (onestr == null || onestr.isEmpty()) {
+      return null;
+    }
     URL oneurl = null;
     try {
       if (StringUtils.indexOf(onestr, "file:/") == 0) {
@@ -1876,16 +1879,20 @@ public final class Utilities {
     }
   }
 
-  public static ClassLoader createUDFClassLoader(URLClassLoader loader, String[] newPaths) {
-    final Set<URL> curPathsSet = Sets.newHashSet(loader.getURLs());
-    final List<URL> curPaths = Lists.newArrayList(curPathsSet);
+  public static ClassLoader createUDFClassLoader(ClassLoader parentLoader, String[] newPaths) {
+    final Set<URL> curPaths = Sets.newLinkedHashSet();
+    if (parentLoader instanceof URLClassLoader) {
+      URLClassLoader urlClassLoader = (URLClassLoader) parentLoader;
+      final Set<URL> curPathsSet = Sets.newHashSet(urlClassLoader.getURLs());
+      curPaths.addAll(curPathsSet);
+    }
     for (String onestr : newPaths) {
       final URL oneurl = urlFromPathString(onestr);
-      if (oneurl != null && !curPathsSet.contains(oneurl)) {
+      if (oneurl != null) {
         curPaths.add(oneurl);
       }
     }
-    return new UDFClassLoader(curPaths.toArray(new URL[0]), loader);
+    return new UDFClassLoader(curPaths.toArray(new URL[0]), parentLoader);
   }
 
   /**
