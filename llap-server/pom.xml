@@ -372,7 +372,7 @@
       <artifactId>hbase-client</artifactId>
       <version>${hbase.version}</version>
     </dependency>
-    <dependency>
+<!--    <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-server</artifactId>
       <version>${hbase.version}</version>
@@ -386,7 +386,7 @@
           <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
+    </dependency> -->
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-common</artifactId>
