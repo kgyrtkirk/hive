@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
-import sun.misc.Cleaner;
+// import sun.misc.Cleaner;
 
 public final class SimpleAllocator implements Allocator, BuddyAllocatorMXBean {
   private final boolean isDirect;
@@ -81,12 +81,14 @@ public final class SimpleAllocator implements Allocator, BuddyAllocatorMXBean {
     if (!bb.isDirect()) return;
     Field field = cleanerField;
     if (field == null) return;
+/* JDK9 unsupported
     try {
       ((Cleaner)field.get(bb)).clean();
     } catch (Throwable t) {
       LlapIoImpl.LOG.warn("Error using DirectByteBuffer cleaner; stopping its use", t);
       cleanerField = null;
     }
+*/
   }
 
   @Override
