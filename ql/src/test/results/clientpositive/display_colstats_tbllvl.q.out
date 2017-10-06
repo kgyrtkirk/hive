@@ -51,9 +51,24 @@ PREHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: query: desc formatted UserVisits_web_text_none sourceIP
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
+<<<<<<< HEAD
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	bitVector           	comment             
 	 	 	 	 	 	 	 	 	 	 	 
 sourceIP            	string              	                    	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+=======
+col_name            	sourceIP            	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	                    	 	 	 	 	 	 	 	 	 	 
+distinct_count      	                    	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	                    	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+>>>>>>> asf/master
 PREHOOK: query: explain
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 PREHOOK: type: QUERY
@@ -242,9 +257,24 @@ PREHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: query: desc formatted UserVisits_web_text_none sourceIP
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
+<<<<<<< HEAD
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	bitVector           	comment             
 	 	 	 	 	 	 	 	 	 	 	 
 sourceIP            	string              	                    	                    	0                   	55                  	12.763636363636364  	13                  	                    	                    	HL                  	from deserializer   
+=======
+col_name            	sourceIP            	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	55                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	12.763636363636364  	 	 	 	 	 	 	 	 	 	 
+max_col_len         	13                  	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+>>>>>>> asf/master
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted UserVisits_web_text_none avgTimeOnSite
 PREHOOK: type: DESCTABLE
@@ -252,9 +282,24 @@ PREHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: query: desc formatted UserVisits_web_text_none avgTimeOnSite
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
+<<<<<<< HEAD
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	bitVector           	comment             
 	 	 	 	 	 	 	 	 	 	 	 
 avgTimeOnSite       	int                 	1                   	9                   	0                   	9                   	                    	                    	                    	                    	HL                  	from deserializer   
+=======
+col_name            	avgTimeOnSite       	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	1                   	 	 	 	 	 	 	 	 	 	 
+max                 	9                   	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	9                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+>>>>>>> asf/master
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted UserVisits_web_text_none adRevenue
 PREHOOK: type: DESCTABLE
@@ -262,9 +307,24 @@ PREHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: query: desc formatted UserVisits_web_text_none adRevenue
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
+<<<<<<< HEAD
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	bitVector           	comment             
 	 	 	 	 	 	 	 	 	 	 	 
 adRevenue           	float               	13.099044799804688  	492.98870849609375  	0                   	55                  	                    	                    	                    	                    	HL                  	from deserializer   
+=======
+col_name            	adRevenue           	 	 	 	 	 	 	 	 	 	 
+data_type           	float               	 	 	 	 	 	 	 	 	 	 
+min                 	13.099044799804688  	 	 	 	 	 	 	 	 	 	 
+max                 	492.98870849609375  	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	55                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+>>>>>>> asf/master
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: CREATE TABLE empty_tab(
    a int,
@@ -292,9 +352,24 @@ PREHOOK: Input: default@empty_tab
 POSTHOOK: query: desc formatted empty_tab a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@empty_tab
+<<<<<<< HEAD
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	bitVector           	comment             
 	 	 	 	 	 	 	 	 	 	 	 
 a                   	int                 	                    	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+=======
+col_name            	a                   	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	                    	 	 	 	 	 	 	 	 	 	 
+distinct_count      	                    	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	                    	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+>>>>>>> asf/master
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain
 analyze table empty_tab compute statistics for columns a,b,c,d,e
@@ -361,9 +436,24 @@ PREHOOK: Input: default@empty_tab
 POSTHOOK: query: desc formatted empty_tab a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@empty_tab
+<<<<<<< HEAD
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	bitVector           	comment             
 	 	 	 	 	 	 	 	 	 	 	 
 a                   	int                 	0                   	0                   	0                   	0                   	                    	                    	                    	                    	                    	from deserializer   
+=======
+col_name            	a                   	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	0                   	 	 	 	 	 	 	 	 	 	 
+max                 	0                   	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	0                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	                    	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+>>>>>>> asf/master
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted empty_tab b
 PREHOOK: type: DESCTABLE
@@ -371,9 +461,24 @@ PREHOOK: Input: default@empty_tab
 POSTHOOK: query: desc formatted empty_tab b
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@empty_tab
+<<<<<<< HEAD
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	bitVector           	comment             
 	 	 	 	 	 	 	 	 	 	 	 
 b                   	double              	0.0                 	0.0                 	0                   	0                   	                    	                    	                    	                    	                    	from deserializer   
+=======
+col_name            	b                   	 	 	 	 	 	 	 	 	 	 
+data_type           	double              	 	 	 	 	 	 	 	 	 	 
+min                 	0.0                 	 	 	 	 	 	 	 	 	 	 
+max                 	0.0                 	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	0                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	                    	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+>>>>>>> asf/master
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: CREATE DATABASE test
 PREHOOK: type: CREATEDATABASE
@@ -451,27 +556,72 @@ PREHOOK: Input: test@uservisits_web_text_none
 POSTHOOK: query: desc formatted UserVisits_web_text_none sourceIP
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: test@uservisits_web_text_none
+<<<<<<< HEAD
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	bitVector           	comment             
 	 	 	 	 	 	 	 	 	 	 	 
 sourceIP            	string              	                    	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+=======
+col_name            	sourceIP            	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	                    	 	 	 	 	 	 	 	 	 	 
+distinct_count      	                    	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	                    	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+>>>>>>> asf/master
 PREHOOK: query: desc formatted test.UserVisits_web_text_none sourceIP
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: test@uservisits_web_text_none
 POSTHOOK: query: desc formatted test.UserVisits_web_text_none sourceIP
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: test@uservisits_web_text_none
+<<<<<<< HEAD
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	bitVector           	comment             
 	 	 	 	 	 	 	 	 	 	 	 
 sourceIP            	string              	                    	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+=======
+col_name            	sourceIP            	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	                    	 	 	 	 	 	 	 	 	 	 
+distinct_count      	                    	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	                    	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+>>>>>>> asf/master
 PREHOOK: query: desc formatted default.UserVisits_web_text_none sourceIP
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: query: desc formatted default.UserVisits_web_text_none sourceIP
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
+<<<<<<< HEAD
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	bitVector           	comment             
 	 	 	 	 	 	 	 	 	 	 	 
 sourceIP            	string              	                    	                    	0                   	55                  	12.763636363636364  	13                  	                    	                    	HL                  	from deserializer   
+=======
+col_name            	sourceIP            	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	55                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	12.763636363636364  	 	 	 	 	 	 	 	 	 	 
+max_col_len         	13                  	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+>>>>>>> asf/master
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table UserVisits_web_text_none compute statistics for columns sKeyword
 PREHOOK: type: QUERY
@@ -495,9 +645,24 @@ PREHOOK: Input: test@uservisits_web_text_none
 POSTHOOK: query: desc formatted UserVisits_web_text_none sKeyword
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: test@uservisits_web_text_none
+<<<<<<< HEAD
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	bitVector           	comment             
 	 	 	 	 	 	 	 	 	 	 	 
 sKeyword            	string              	                    	                    	0                   	54                  	7.872727272727273   	19                  	                    	                    	HL                  	from deserializer   
+=======
+col_name            	sKeyword            	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	54                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	7.872727272727273   	 	 	 	 	 	 	 	 	 	 
+max_col_len         	19                  	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+>>>>>>> asf/master
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"skeyword\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted test.UserVisits_web_text_none sKeyword
 PREHOOK: type: DESCTABLE
@@ -505,7 +670,22 @@ PREHOOK: Input: test@uservisits_web_text_none
 POSTHOOK: query: desc formatted test.UserVisits_web_text_none sKeyword
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: test@uservisits_web_text_none
+<<<<<<< HEAD
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	bitVector           	comment             
 	 	 	 	 	 	 	 	 	 	 	 
 sKeyword            	string              	                    	                    	0                   	54                  	7.872727272727273   	19                  	                    	                    	HL                  	from deserializer   
+=======
+col_name            	sKeyword            	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	54                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	7.872727272727273   	 	 	 	 	 	 	 	 	 	 
+max_col_len         	19                  	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+>>>>>>> asf/master
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"skeyword\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
