@@ -42,6 +42,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
@@ -166,8 +167,6 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.thrift.TException;
@@ -178,11 +177,9 @@ import org.datanucleus.NucleusContext;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
-import org.datanucleus.store.scostore.Store;
-import org.datanucleus.util.WeakValueMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.datanucleus.store.types.scostore.Store;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -691,6 +688,7 @@ public class ObjectStore implements RawStore, Configurable {
    * @return true if there is an active transaction. If the current transaction
    *         is either committed or rolled back it returns false
    */
+  @Override
   public boolean isActiveTransaction() {
     if (currentTransaction == null) {
       return false;
@@ -2087,7 +2085,9 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public void dropPartitions(String dbName, String tblName, List<String> partNames)
       throws MetaException, NoSuchObjectException {
-    if (partNames.isEmpty()) return;
+    if (partNames.isEmpty()) {
+      return;
+    }
     boolean success = false;
     openTransaction();
     try {
@@ -3225,6 +3225,7 @@ public class ObjectStore implements RawStore, Configurable {
         return "Partition count";
       }
 
+      @Override
       protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
         return directSql.generateSqlFilterForPushdown(ctx.getTable(), exprTree, filter);
       };
@@ -3256,6 +3257,7 @@ public class ObjectStore implements RawStore, Configurable {
         return "Partition count";
       }
 
+      @Override
       protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
         return directSql.generateSqlFilterForPushdown(ctx.getTable(), exprTree, filter);
       };
@@ -7508,7 +7510,9 @@ public class ObjectStore implements RawStore, Configurable {
 
         try {
         List<MTableColumnStatistics> mStats = getMTableColumnStatistics(getTable(), colNames, queryWrapper);
-        if (mStats == null || mStats.isEmpty()) return null;
+        if (mStats == null || mStats.isEmpty()) {
+          return null;
+        }
         // LastAnalyzed is stored per column, but thrift object has it per multiple columns.
         // Luckily, nobody actually uses it, so we will set to lowest value of all columns for now.
         ColumnStatisticsDesc desc = StatObjectConverter.getTableColumnStatisticsDesc(mStats.get(0));
@@ -8835,7 +8839,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     Map<String,Class> map = (Map<String, Class>) mapField.get(clri);
     long sz = map.size();
-    mapField.set(clri, Collections.synchronizedMap(new WeakValueMap()));
+    mapField.set(clri, Collections.synchronizedMap(new WeakHashMap<>()));
     return sz;
   }
 
