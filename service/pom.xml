@@ -299,7 +299,7 @@
     <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <resources>
       <resource>
-        <directory>${project.build.directory}</directory>
+        <directory>${basedir}/src/resources/</directory>
         <includes>
           <include>hive-webapps/**</include>
         </includes>
