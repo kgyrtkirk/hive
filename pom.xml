@@ -156,7 +156,7 @@
     <jackson.version>1.9.13</jackson.version>
     <!-- jackson 1 and 2 lines can coexist without issue, as they have different artifactIds -->
     <jackson.new.version>2.6.5</jackson.new.version>
-    <jasper.version>9.0.1</jasper.version>
+    <jasper.version>8.5.21</jasper.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.3.1</jamon-runtime.version>
     <javaewah.version>0.3.2</javaewah.version>
