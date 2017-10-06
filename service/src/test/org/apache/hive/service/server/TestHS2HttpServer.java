@@ -33,6 +33,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
@@ -89,6 +90,7 @@ public class TestHS2HttpServer {
   }
 
   @Test
+@Ignore
   public void testContextRootUrlRewrite() throws Exception {
     String datePattern = "[a-zA-Z]{3} [a-zA-Z]{3} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}";
     String dateMask = "xxxMasked_DateTime_xxx";
