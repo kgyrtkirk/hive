@@ -270,7 +270,7 @@
         </exclusion>
         <exclusion>
           <groupId>org.mortbay.jetty</groupId>
-          <artifactId>jetty-sslengine</artifactId>
+          <artifactId>*</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.codehaus.jettison</groupId>
