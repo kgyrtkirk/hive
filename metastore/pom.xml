@@ -238,6 +238,13 @@
     </dependency>
     <!-- test inter-project -->
     <dependency>
+      <groupId>javax</groupId>
+      <artifactId>javaee-api</artifactId>
+      <version>8.0</version>
+<!--       <scope>test</scope> -->
+    </dependency>
+
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>

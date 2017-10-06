@@ -19,9 +19,15 @@ import org.junit.Test;
  */
 
 public class TestJDK9 {
+  //  TransactionManager  m1;
   @Test
   public void tx1() throws ClassNotFoundException {
     Class.forName("javax.transaction.TransactionManager");
   }
+
+  //  @Test
+  //  public void tx2() throws ClassNotFoundException {
+  //    Class.forName("NonExistent");
+  //  }
 
 }
