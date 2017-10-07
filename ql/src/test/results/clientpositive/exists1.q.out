@@ -262,6 +262,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx1
 #### A masked pattern was here ####
 6	3
+PREHOOK: query: select count(*) as result,3 as expected from tx1 u
+where exists (select v.a from tx1 v where u.a=v.a and u.b <> v.b group by v.a)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tx1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) as result,3 as expected from tx1 u
+where exists (select v.a from tx1 v where u.a=v.a and u.b <> v.b group by v.a)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx1
+#### A masked pattern was here ####
+6	3
 PREHOOK: query: explain
 select count(*) as result,3 as expected from tx1 u
 where exists (select * from tx1 v where u.a=v.a and u.b <> v.b limit 1)

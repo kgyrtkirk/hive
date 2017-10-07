@@ -16,7 +16,7 @@ select count(*) as result,3 as expected from tx1 u
 where exists (select * from tx1 v where u.a=v.a and u.b <> v.b);
 
 select count(*) as result,3 as expected from tx1 u
-where exists (select count(*) from tx1 v where u.a=v.a and u.b <> v.b);
+where exists (select v.a from tx1 v where u.a=v.a and u.b <> v.b group by v.a);
 
 explain
 select count(*) as result,3 as expected from tx1 u
