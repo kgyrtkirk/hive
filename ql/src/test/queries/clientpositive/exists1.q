@@ -6,6 +6,10 @@ insert into tx1	values  (1, 1),
 
 explain
 select count(*) as result,3 as expected from tx1 u
+where exists (select * from tx1 v where u.a=v.a);
+
+explain
+select count(*) as result,3 as expected from tx1 u
 where exists (select * from tx1 v where u.a=v.a and u.b <> v.b);
 
 select count(*) as result,3 as expected from tx1 u
