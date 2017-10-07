@@ -1,3 +1,5 @@
+set hive.cbo.enable=false;
+
 drop table if exists tx1;
 create table tx1 (a integer,b integer);
 insert into tx1	values  (1, 1),
@@ -15,8 +17,8 @@ where exists (select * from tx1 v where u.a=v.a and u.b <> v.b);
 select count(*) as result,3 as expected from tx1 u
 where exists (select * from tx1 v where u.a=v.a and u.b <> v.b);
 
-select count(*) as result,3 as expected from tx1 u
-where exists (select v.a from tx1 v where u.a=v.a and u.b <> v.b group by v.a);
+-- select count(*) as result,3 as expected from tx1 u
+-- where exists (select v.a from tx1 v where u.a=v.a and u.b <> v.b group by v.a);
 
 explain
 select count(*) as result,3 as expected from tx1 u
