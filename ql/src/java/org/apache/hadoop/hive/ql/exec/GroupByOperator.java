@@ -207,7 +207,6 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     heartbeatInterval = HiveConf.getIntVar(hconf,
         HiveConf.ConfVars.HIVESENDHEARTBEAT);
     countAfterReport = 0;
-    groupingSetsPresent = conf.isGroupingSetsPresent();
     ObjectInspector rowInspector = inputObjInspectors[0];
 
     // init keyFields
@@ -226,9 +225,10 @@ public class GroupByOperator extends Operator<GroupByDesc> {
 
     // Initialize the constants for the grouping sets, so that they can be re-used for
     // each row
+    groupingSetsPresent = conf.isGroupingSetsPresent();
+    groupingSets = conf.getListGroupingSets();
+    groupingSetsPosition = conf.getGroupingSetPosition();
     if (groupingSetsPresent) {
-      groupingSets = conf.getListGroupingSets();
-      groupingSetsPosition = conf.getGroupingSetPosition();
       newKeysGroupingSets = new IntWritable[groupingSets.size()];
       groupingSetsBitSet = new FastBitSet[groupingSets.size()];
 
@@ -1118,7 +1118,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
           }
 
           Object[] keys=new Object[outputKeyLength];
-          if (groupingSetsPresent) {
+          if (groupingSetsPosition >= 0) {
             keys[groupingSetsPosition] = new IntWritable((1 << groupingSetsPosition) - 1);
           }
           forward(keys, aggregations);
@@ -1131,21 +1131,6 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     }
     hashAggregations = null;
     super.closeOp(abort);
-  }
-
-  private boolean isEmptyGroupingSetPresent() {
-    if (keyFields.length == 0) {
-      return true;
-    }
-    if (groupingSetsPresent) {
-      for (FastBitSet bitset : groupingSetsBitSet) {
-        if (bitset.nextClearBit(0) >= groupingSetsPosition) {
-          // we have a bitset which ignores all the keys
-          return true;
-        }
-      }
-    }
-    return false;
   }
 
   // Group by contains the columns needed - no need to aggregate from children
@@ -1195,4 +1180,20 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     return getConf().getMode() == GroupByDesc.Mode.MERGEPARTIAL ||
         getConf().getMode() == GroupByDesc.Mode.COMPLETE;
   }
+
+  public boolean isEmptyGroupingSetPresent() {
+    if (keyFields.length == 0) {
+      return true;
+    }
+    // groupingSets are known at map/reducer side; but have to do real processing
+    // hence grouppingSetsPresent is true only at map side
+    if (groupingSetsPosition >= 0 && groupingSets != null) {
+      Integer emptyGrouping = (1 << groupingSetsPosition) - 1;
+      if (groupingSets.contains(emptyGrouping)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
 }

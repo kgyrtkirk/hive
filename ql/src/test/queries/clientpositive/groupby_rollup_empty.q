@@ -1,6 +1,10 @@
 drop table if exists tx1;
 create table tx1 (a integer,b integer,c integer);
 
+select sum(c)
+from tx1
+;
+
 select  sum(c),
         grouping(b),
 	'NULL,1' as expected
