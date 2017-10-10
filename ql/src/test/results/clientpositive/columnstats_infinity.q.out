@@ -72,7 +72,6 @@ POSTHOOK: query: desc formatted table_change_numeric_group_string_group_floating
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
 # col_name            	data_type           	comment             
-	 	 
 insert_num          	int                 	                    
 c1                  	decimal(38,18)      	                    
 c2                  	float               	                    
@@ -132,7 +131,6 @@ POSTHOOK: query: desc formatted table_change_numeric_group_string_group_floating
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
 # col_name            	data_type           	comment             
-	 	 
 insert_num          	int                 	                    
 c1                  	decimal(38,18)      	                    
 c2                  	float               	                    
@@ -252,7 +250,6 @@ POSTHOOK: query: desc formatted table_change_numeric_group_string_group_floating
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
 # col_name            	data_type           	comment             
-	 	 
 insert_num          	int                 	                    
 c1                  	decimal(38,18)      	                    
 c2                  	float               	                    

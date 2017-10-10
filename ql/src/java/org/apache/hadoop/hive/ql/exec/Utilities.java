@@ -81,8 +81,6 @@ import org.apache.hadoop.hive.ql.io.ReworkMapredInputFormat;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
-import org.apache.hadoop.hive.ql.io.rcfile.stats.PartialScanMapper;
-import org.apache.hadoop.hive.ql.io.rcfile.stats.PartialScanWork;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateMapper;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateWork;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -443,8 +441,6 @@ public final class Utilities {
             gWork = SerializationUtilities.deserializePlan(kryo, in, MergeFileWork.class);
           } else if(ColumnTruncateMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
             gWork = SerializationUtilities.deserializePlan(kryo, in, ColumnTruncateWork.class);
-          } else if(PartialScanMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, PartialScanWork.class);
           } else {
             throw new RuntimeException("unable to determine work from configuration ."
                 + MAPRED_MAPPER_CLASS + " was "+ conf.get(MAPRED_MAPPER_CLASS)) ;
@@ -1759,9 +1755,27 @@ public final class Utilities {
   }
 
   public static String getResourceFiles(Configuration conf, SessionState.ResourceType t) {
-    // fill in local files to be added to the task environment
+    // fill in local files (includes copy of HDFS files) to be added to the task environment
     SessionState ss = SessionState.get();
     Set<String> files = (ss == null) ? null : ss.list_resource(t, null);
+    return validateFiles(conf, files);
+  }
+
+  public static String getHdfsResourceFiles(Configuration conf, SessionState.ResourceType type) {
+    // fill in HDFS files to be added to the task environment
+    SessionState ss = SessionState.get();
+    Set<String> files = (ss == null) ? null : ss.list_hdfs_resource(type);
+    return validateFiles(conf, files);
+  }
+
+  public static String getLocalResourceFiles(Configuration conf, SessionState.ResourceType type) {
+    // fill in local only files (excludes copy of HDFS files) to be added to the task environment
+    SessionState ss = SessionState.get();
+    Set<String> files = (ss == null) ? null : ss.list_local_resource(type);
+    return validateFiles(conf, files);
+  }
+
+  private static String validateFiles(Configuration conf, Set<String> files){
     if (files != null) {
       List<String> realFiles = new ArrayList<String>(files.size());
       for (String one : files) {

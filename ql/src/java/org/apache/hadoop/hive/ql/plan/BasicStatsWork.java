@@ -23,6 +23,7 @@ import java.io.Serializable;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 
 
 /**
@@ -52,8 +53,6 @@ public class BasicStatsWork implements Serializable {
   private boolean noStatsAggregator = false;
 
   private boolean isNoScanAnalyzeCommand = false;
-
-  private boolean isPartialScanAnalyzeCommand = false;
 
   // sourceTask for TS is not changed (currently) but that of FS might be changed
   // by various optimizers (auto.convert.join, for example)
@@ -147,20 +146,6 @@ public class BasicStatsWork implements Serializable {
     this.isNoScanAnalyzeCommand = isNoScanAnalyzeCommand;
   }
 
-  /**
-   * @return the isPartialScanAnalyzeCommand
-   */
-  public boolean isPartialScanAnalyzeCommand() {
-    return isPartialScanAnalyzeCommand;
-  }
-
-  /**
-   * @param isPartialScanAnalyzeCommand the isPartialScanAnalyzeCommand to set
-   */
-  public void setPartialScanAnalyzeCommand(boolean isPartialScanAnalyzeCommand) {
-    this.isPartialScanAnalyzeCommand = isPartialScanAnalyzeCommand;
-  }
-
   public Task getSourceTask() {
     return sourceTask;
   }
@@ -187,7 +172,7 @@ public class BasicStatsWork implements Serializable {
       return true;
     }
     // INSERT OVERWRITE
-    if (getLoadTableDesc() != null && getLoadTableDesc().getReplace()) {
+    if (getLoadTableDesc() != null && getLoadTableDesc().getLoadFileType() == LoadFileType.REPLACE_ALL) {
       return true;
     }
     // CREATE TABLE ... AS

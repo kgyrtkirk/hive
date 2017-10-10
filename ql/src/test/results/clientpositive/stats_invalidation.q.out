@@ -35,7 +35,6 @@ POSTHOOK: query: desc formatted stats_invalid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_invalid
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -78,7 +77,6 @@ POSTHOOK: query: desc formatted stats_invalid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_invalid
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 new_col             	string              	                    

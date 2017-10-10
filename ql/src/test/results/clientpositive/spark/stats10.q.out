@@ -410,13 +410,11 @@ POSTHOOK: query: describe formatted bucket3_1 partition (ds='1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@bucket3_1
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -449,13 +447,11 @@ POSTHOOK: query: describe formatted bucket3_1 partition (ds='2')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@bucket3_1
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -488,13 +484,11 @@ POSTHOOK: query: describe formatted bucket3_1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@bucket3_1
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 

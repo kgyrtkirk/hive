@@ -25,13 +25,10 @@ import java.util.Stack;
 import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.io.rcfile.stats.PartialScanWork;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -46,7 +43,7 @@ import org.apache.hadoop.mapred.InputFormat;
 
 /**
  * ProcessAnalyzeTable sets up work for the several variants of analyze table
- * (normal, no scan, partial scan.) The plan at this point will be a single
+ * (normal, no scan.) The plan at this point will be a single
  * table scan operator.
  */
 public class ProcessAnalyzeTable implements NodeProcessor {
@@ -93,7 +90,6 @@ public class ProcessAnalyzeTable implements NodeProcessor {
           MapredParquetInputFormat.class.isAssignableFrom(inputFormat)) {
         // For ORC & Parquet, all the following statements are the same
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS
-        // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
 
         // There will not be any Tez job above this task
@@ -120,7 +116,6 @@ public class ProcessAnalyzeTable implements NodeProcessor {
 
         BasicStatsWork basicStatsWork = new BasicStatsWork(table.getTableSpec());
         basicStatsWork.setNoScanAnalyzeCommand(parseContext.getQueryProperties().isNoScanAnalyzeCommand());
-        basicStatsWork.setPartialScanAnalyzeCommand(parseContext.getQueryProperties().isPartialScanAnalyzeCommand());
         StatsWork columnStatsWork = new StatsWork(table, basicStatsWork, parseContext.getConf());
         columnStatsWork.collectStatsFromAggregator(tableScan.getConf());
 
@@ -134,12 +129,6 @@ public class ProcessAnalyzeTable implements NodeProcessor {
           statsTask.setParentTasks(null);
           context.rootTasks.remove(context.currentTask);
           context.rootTasks.add(statsTask);
-        }
-
-        // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
-        if (parseContext.getQueryProperties().isPartialScanAnalyzeCommand()) {
-
-          handlePartialScanCommand(tableScan, parseContext, columnStatsWork, context, statsTask);
         }
 
         // NOTE: here we should use the new partition predicate pushdown API to
@@ -160,40 +149,5 @@ public class ProcessAnalyzeTable implements NodeProcessor {
     }
 
     return null;
-  }
-
-  /**
-   * handle partial scan command.
-   *
-   * It is composed of PartialScanTask followed by StatsTask.
-   */
-  private void handlePartialScanCommand(TableScanOperator tableScan, ParseContext parseContext,
-      StatsWork columnStatsWork, GenTezProcContext context, Task<StatsWork> statsTask)
-      throws SemanticException {
-
-    String aggregationKey = tableScan.getConf().getStatsAggPrefix();
-    StringBuilder aggregationKeyBuffer = new StringBuilder(aggregationKey);
-    List<Path> inputPaths = GenMapRedUtils.getInputPathsForPartialScan(tableScan,
-        aggregationKeyBuffer);
-    aggregationKey = aggregationKeyBuffer.toString();
-
-    // scan work
-    PartialScanWork scanWork = new PartialScanWork(inputPaths);
-    scanWork.setMapperCannotSpanPartns(true);
-    scanWork.setAggKey(aggregationKey);
-    scanWork.setStatsTmpDir(tableScan.getConf().getTmpStatsDir(), parseContext.getConf());
-
-    // partial scan task
-    DriverContext driverCxt = new DriverContext();
-    Task<PartialScanWork> partialScanTask = TaskFactory.get(scanWork, parseContext.getConf());
-    partialScanTask.initialize(parseContext.getQueryState(), null, driverCxt,
-        tableScan.getCompilationOpContext());
-    partialScanTask.setWork(scanWork);
-    columnStatsWork.setSourceTask(partialScanTask);
-
-    // task dependency
-    context.rootTasks.remove(context.currentTask);
-    context.rootTasks.add(partialScanTask);
-    partialScanTask.addDependentTask(statsTask);
   }
 }

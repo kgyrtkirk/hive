@@ -17,13 +17,11 @@ POSTHOOK: query: desc formatted acid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -80,13 +78,11 @@ POSTHOOK: query: desc formatted acid partition(ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -197,13 +193,11 @@ POSTHOOK: query: desc formatted acid partition(ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -250,13 +244,11 @@ POSTHOOK: query: desc formatted acid partition(ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -378,13 +370,11 @@ POSTHOOK: query: desc formatted acid partition(ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -427,13 +417,11 @@ POSTHOOK: query: desc formatted acid partition(ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -601,13 +589,11 @@ POSTHOOK: query: desc formatted acid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -663,13 +649,11 @@ POSTHOOK: query: desc formatted acid partition(ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 

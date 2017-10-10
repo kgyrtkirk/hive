@@ -185,13 +185,11 @@ POSTHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452617)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ss_part
 # col_name            	data_type           	comment             
-	 	 
 ss_net_paid_inc_tax 	float               	                    
 ss_net_profit       	float               	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ss_sold_date_sk     	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -245,13 +243,11 @@ POSTHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452638)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ss_part
 # col_name            	data_type           	comment             
-	 	 
 ss_net_paid_inc_tax 	float               	                    
 ss_net_profit       	float               	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ss_sold_date_sk     	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -418,13 +414,11 @@ POSTHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452617)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ss_part
 # col_name            	data_type           	comment             
-	 	 
 ss_net_paid_inc_tax 	float               	                    
 ss_net_profit       	float               	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ss_sold_date_sk     	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -478,13 +472,11 @@ POSTHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452638)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ss_part
 # col_name            	data_type           	comment             
-	 	 
 ss_net_paid_inc_tax 	float               	                    
 ss_net_profit       	float               	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ss_sold_date_sk     	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -667,13 +659,11 @@ POSTHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452617)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ss_part
 # col_name            	data_type           	comment             
-	 	 
 ss_net_paid_inc_tax 	float               	                    
 ss_net_profit       	float               	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ss_sold_date_sk     	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -727,13 +717,11 @@ POSTHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452638)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ss_part
 # col_name            	data_type           	comment             
-	 	 
 ss_net_paid_inc_tax 	float               	                    
 ss_net_profit       	float               	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ss_sold_date_sk     	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -898,13 +886,11 @@ POSTHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452617)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ss_part
 # col_name            	data_type           	comment             
-	 	 
 ss_net_paid_inc_tax 	float               	                    
 ss_net_profit       	float               	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ss_sold_date_sk     	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -958,13 +944,11 @@ POSTHOOK: query: desc formatted ss_part partition(ss_sold_date_sk=2452638)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ss_part
 # col_name            	data_type           	comment             
-	 	 
 ss_net_paid_inc_tax 	float               	                    
 ss_net_profit       	float               	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ss_sold_date_sk     	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -1202,13 +1186,11 @@ POSTHOOK: query: desc formatted ss_part_orc partition(ss_sold_date_sk=2452617)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ss_part_orc
 # col_name            	data_type           	comment             
-	 	 
 ss_net_paid_inc_tax 	float               	                    
 ss_net_profit       	float               	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ss_sold_date_sk     	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -1262,13 +1244,11 @@ POSTHOOK: query: desc formatted ss_part_orc partition(ss_sold_date_sk=2452638)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ss_part_orc
 # col_name            	data_type           	comment             
-	 	 
 ss_net_paid_inc_tax 	float               	                    
 ss_net_profit       	float               	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ss_sold_date_sk     	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -1433,13 +1413,11 @@ POSTHOOK: query: desc formatted ss_part_orc partition(ss_sold_date_sk=2452617)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ss_part_orc
 # col_name            	data_type           	comment             
-	 	 
 ss_net_paid_inc_tax 	float               	                    
 ss_net_profit       	float               	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ss_sold_date_sk     	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -1493,13 +1471,11 @@ POSTHOOK: query: desc formatted ss_part_orc partition(ss_sold_date_sk=2452638)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ss_part_orc
 # col_name            	data_type           	comment             
-	 	 
 ss_net_paid_inc_tax 	float               	                    
 ss_net_profit       	float               	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ss_sold_date_sk     	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
