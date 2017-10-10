@@ -1,0 +1,105 @@
+PREHOOK: query: CREATE TEMPORARY TABLE empty_tab(
+    a int,
+    b double,
+    c string,
+    d boolean,
+    e binary)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@empty_tab
+POSTHOOK: query: CREATE TEMPORARY TABLE empty_tab(
+    a int,
+    b double,
+    c string,
+    d boolean,
+    e binary)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@empty_tab
+PREHOOK: query: analyze table empty_tab compute statistics for columns a,b,c,d,e
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty_tab
+PREHOOK: Output: default@empty_tab
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table empty_tab compute statistics for columns a,b,c,d,e
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty_tab
+POSTHOOK: Output: default@empty_tab
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted empty_tab a
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@empty_tab
+POSTHOOK: query: desc formatted empty_tab a
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@empty_tab
+col_name            	a                   	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	0                   	 	 	 	 	 	 	 	 	 	 
+max                 	0                   	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	0                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	                    	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: insert into table empty_tab values (1,2,'3',4,null)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@empty_tab
+POSTHOOK: query: insert into table empty_tab values (1,2,'3',4,null)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@empty_tab
+POSTHOOK: Lineage: empty_tab.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: empty_tab.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: empty_tab.c SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: empty_tab.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: empty_tab.e EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+PREHOOK: query: desc formatted empty_tab a
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@empty_tab
+POSTHOOK: query: desc formatted empty_tab a
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@empty_tab
+col_name            	a                   	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	                    	 	 	 	 	 	 	 	 	 	 
+distinct_count      	                    	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	                    	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: insert into table empty_tab values (1,2,'3',4,null)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@empty_tab
+POSTHOOK: query: insert into table empty_tab values (1,2,'3',4,null)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@empty_tab
+POSTHOOK: Lineage: empty_tab.a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: empty_tab.b EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: empty_tab.c SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: empty_tab.d EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: empty_tab.e EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+PREHOOK: query: desc formatted empty_tab a
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@empty_tab
+POSTHOOK: query: desc formatted empty_tab a
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@empty_tab
+col_name            	a                   	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	                    	 	 	 	 	 	 	 	 	 	 
+distinct_count      	                    	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	                    	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
