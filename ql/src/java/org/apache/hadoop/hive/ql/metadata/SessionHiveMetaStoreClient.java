@@ -435,7 +435,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     // Add temp table info to current session
     Table tTable = new Table(tbl);
     StatsSetupConst.setStatsStateForCreateTable(tbl.getParameters(),
-        MetaStoreUtils.getColumnNamesForTable(tbl), StatsSetupConst.FALSE);
+        MetaStoreUtils.getColumnNamesForTable(tbl), StatsSetupConst.TRUE);
     if (tables == null) {
       tables = new HashMap<String, Table>();
       ss.getTempTables().put(dbName, tables);
