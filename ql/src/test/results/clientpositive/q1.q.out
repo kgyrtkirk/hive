@@ -26,6 +26,42 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty_tab
 POSTHOOK: Output: default@empty_tab
 #### A masked pattern was here ####
+PREHOOK: query: desc formatted empty_tab
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@empty_tab
+POSTHOOK: query: desc formatted empty_tab
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@empty_tab
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	double              	                    
+c                   	string              	                    
+d                   	boolean             	                    
+e                   	binary              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: desc formatted empty_tab a
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@empty_tab
@@ -44,7 +80,7 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: insert into table empty_tab values (1,2,'3',4,null)
 PREHOOK: type: QUERY
 PREHOOK: Output: default@empty_tab
@@ -56,6 +92,42 @@ POSTHOOK: Lineage: empty_tab.b EXPRESSION [(values__tmp__table__1)values__tmp__t
 POSTHOOK: Lineage: empty_tab.c SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 POSTHOOK: Lineage: empty_tab.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: empty_tab.e EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+PREHOOK: query: desc formatted empty_tab
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@empty_tab
+POSTHOOK: query: desc formatted empty_tab
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@empty_tab
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	double              	                    
+c                   	string              	                    
+d                   	boolean             	                    
+e                   	binary              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	15                  
+	totalSize           	16                  
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: desc formatted empty_tab a
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@empty_tab
@@ -74,6 +146,7 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: insert into table empty_tab values (1,2,'3',4,null)
 PREHOOK: type: QUERY
 PREHOOK: Output: default@empty_tab
@@ -85,6 +158,42 @@ POSTHOOK: Lineage: empty_tab.b EXPRESSION [(values__tmp__table__2)values__tmp__t
 POSTHOOK: Lineage: empty_tab.c SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 POSTHOOK: Lineage: empty_tab.d EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: empty_tab.e EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+PREHOOK: query: desc formatted empty_tab
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@empty_tab
+POSTHOOK: query: desc formatted empty_tab
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@empty_tab
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	double              	                    
+c                   	string              	                    
+d                   	boolean             	                    
+e                   	binary              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	2                   
+	numRows             	2                   
+	rawDataSize         	30                  
+	totalSize           	32                  
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: desc formatted empty_tab a
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@empty_tab
@@ -103,3 +212,4 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 	 
