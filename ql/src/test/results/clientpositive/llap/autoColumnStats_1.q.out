@@ -381,12 +381,10 @@ POSTHOOK: query: desc formatted nzhang_part14
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_part14
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -446,12 +444,10 @@ POSTHOOK: query: desc formatted nzhang_part14 partition (value=' ')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_part14
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 # Detailed Partition Information	 	 

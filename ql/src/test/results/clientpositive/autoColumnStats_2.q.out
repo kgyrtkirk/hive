@@ -49,7 +49,6 @@ POSTHOOK: query: describe formatted src_multi1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_multi1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -125,9 +124,18 @@ PREHOOK: Input: default@a
 POSTHOOK: query: describe formatted a key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@a
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
+max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted b key
 PREHOOK: type: DESCTABLE
@@ -135,9 +143,18 @@ PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
+max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: from src
 insert overwrite table a select *
@@ -164,7 +181,6 @@ POSTHOOK: query: describe formatted a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@a
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -199,7 +215,6 @@ POSTHOOK: query: describe formatted b
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -233,9 +248,18 @@ PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
+max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted b value
 PREHOOK: type: DESCTABLE
@@ -243,9 +267,18 @@ PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	309                 	6.812               	7                   	                    	                    	HL                  	from deserializer   
+col_name            	value               	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	6.812               	 	 	 	 	 	 	 	 	 	 
+max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: insert into table b select NULL, NULL from src limit 10
 PREHOOK: type: QUERY
@@ -263,9 +296,18 @@ PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	10                  	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	10                  	 	 	 	 	 	 	 	 	 	 
+distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
+max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted b value
 PREHOOK: type: DESCTABLE
@@ -273,9 +315,18 @@ PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	10                  	309                 	6.812               	7                   	                    	                    	HL                  	from deserializer   
+col_name            	value               	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	10                  	 	 	 	 	 	 	 	 	 	 
+distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	6.812               	 	 	 	 	 	 	 	 	 	 
+max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: insert into table b(value) select key+100000 from src limit 10
 PREHOOK: type: QUERY
@@ -293,9 +344,18 @@ PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	20                  	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	20                  	 	 	 	 	 	 	 	 	 	 
+distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
+max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted b value
 PREHOOK: type: DESCTABLE
@@ -303,9 +363,18 @@ PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	10                  	319                 	8.0                 	8                   	                    	                    	HL                  	from deserializer   
+col_name            	value               	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	10                  	 	 	 	 	 	 	 	 	 	 
+distinct_count      	319                 	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	8.0                 	 	 	 	 	 	 	 	 	 	 
+max_col_len         	8                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table src_multi2
 PREHOOK: type: DROPTABLE
@@ -338,7 +407,6 @@ POSTHOOK: query: describe formatted src_multi2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_multi2
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -508,12 +576,10 @@ POSTHOOK: query: describe formatted alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter5
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -555,12 +621,10 @@ POSTHOOK: query: describe formatted alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter5
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -639,12 +703,10 @@ POSTHOOK: query: describe formatted alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter5
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -681,12 +743,10 @@ POSTHOOK: query: describe formatted alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter5
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -761,13 +821,11 @@ POSTHOOK: query: describe formatted src_stat_part PARTITION(partitionId=1)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 partitionid         	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -812,13 +870,11 @@ POSTHOOK: query: describe formatted src_stat_part PARTITION(partitionId=2)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 partitionid         	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -951,13 +1007,11 @@ POSTHOOK: query: describe formatted tab_part partition (ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tab_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -1012,13 +1066,11 @@ POSTHOOK: query: describe formatted tab partition (ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tab
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -1069,13 +1121,11 @@ POSTHOOK: query: describe formatted nzhang_part14
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_part14
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -1141,13 +1191,11 @@ POSTHOOK: query: desc formatted nzhang_part14 partition(ds='1', hr='3')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_part14
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -1204,13 +1252,11 @@ POSTHOOK: query: desc formatted nzhang_part14 PARTITION(ds='2010-03-03', hr='12'
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_part14
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -1285,13 +1331,11 @@ POSTHOOK: query: desc formatted nzhang_part14 PARTITION(ds='2010-03-03', hr='12'
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_part14
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

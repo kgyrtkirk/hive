@@ -27,12 +27,10 @@ POSTHOOK: query: describe formatted p1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p1
 # col_name            	data_type           	comment             
-	 	 
 i                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -67,12 +65,10 @@ POSTHOOK: query: describe formatted p1 partition(p='a')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p1
 # col_name            	data_type           	comment             
-	 	 
 i                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p                   	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -105,12 +101,10 @@ POSTHOOK: query: describe formatted p1 partition(p='A')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p1
 # col_name            	data_type           	comment             
-	 	 
 i                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p                   	string              	                    
 	 	 
 # Detailed Partition Information	 	 

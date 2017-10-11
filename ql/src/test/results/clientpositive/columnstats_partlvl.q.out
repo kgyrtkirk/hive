@@ -247,13 +247,11 @@ POSTHOOK: query: describe formatted Employee_Part partition(employeeSalary=2000.
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	comment             
-	 	 
 employeeid          	int                 	                    
 employeename        	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 employeesalary      	double              	                    
 	 	 
 # Detailed Partition Information	 	 
