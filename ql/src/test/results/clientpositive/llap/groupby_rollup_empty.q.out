@@ -10,15 +10,17 @@ POSTHOOK: query: create table tx1 (a integer,b integer,c integer)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tx1
-PREHOOK: query: insert into tx1 values (1,1,1)
+PREHOOK: query: select sum(c)
+from tx1
 PREHOOK: type: QUERY
-PREHOOK: Output: default@tx1
-POSTHOOK: query: insert into tx1 values (1,1,1)
+PREHOOK: Input: default@tx1
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(c)
+from tx1
 POSTHOOK: type: QUERY
-POSTHOOK: Output: default@tx1
-POSTHOOK: Lineage: tx1.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: tx1.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: tx1.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Input: default@tx1
+#### A masked pattern was here ####
+NULL
 PREHOOK: query: select  sum(c),
         grouping(b),
 	'NULL,1' as expected
@@ -38,6 +40,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx1
 #### A masked pattern was here ####
 NULL	1	NULL,1
+NULL	1	NULL,1	!!! these
+NULL	1	NULL,1  !!! should
+NULL	1	NULL,1  !!! not be here :)
 PREHOOK: query: select  sum(c),
         grouping(b),
 	'no rows' as expected
@@ -74,4 +79,38 @@ group by rollup (b)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx1
 #### A masked pattern was here ####
+NULL	1	NULL,1
+NULL	1	NULL,1
+NULL	1	NULL,1
+NULL	1	NULL,1
+PREHOOK: query: insert into tx1 values (1,1,1)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@tx1
+POSTHOOK: query: insert into tx1 values (1,1,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@tx1
+POSTHOOK: Lineage: tx1.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: tx1.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: tx1.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+PREHOOK: query: select  sum(c),
+        grouping(b),
+	'NULL,1' as expected
+from    tx1
+where	a<0
+group by rollup (b)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tx1
+#### A masked pattern was here ####
+POSTHOOK: query: select  sum(c),
+        grouping(b),
+	'NULL,1' as expected
+from    tx1
+where	a<0
+group by rollup (b)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx1
+#### A masked pattern was here ####
+NULL	1	NULL,1
+NULL	1	NULL,1
+NULL	1	NULL,1
 NULL	1	NULL,1
