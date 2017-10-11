@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -400,6 +401,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       EnvironmentContext envContext) throws AlreadyExistsException, InvalidObjectException,
       MetaException, NoSuchObjectException, TException {
 
+    boolean isVirtualTable = tbl.getTableName().startsWith(SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX);
+
     SessionState ss = SessionState.get();
     if (ss == null) {
       throw new MetaException("No current SessionState, cannot create temporary table"
@@ -434,8 +437,10 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
 
     // Add temp table info to current session
     Table tTable = new Table(tbl);
-    StatsSetupConst.setStatsStateForCreateTable(tbl.getParameters(),
-        MetaStoreUtils.getColumnNamesForTable(tbl), StatsSetupConst.TRUE);
+    if (!isVirtualTable) {
+      StatsSetupConst.setStatsStateForCreateTable(tbl.getParameters(),
+          MetaStoreUtils.getColumnNamesForTable(tbl), StatsSetupConst.TRUE);
+    }
     if (tables == null) {
       tables = new HashMap<String, Table>();
       ss.getTempTables().put(dbName, tables);

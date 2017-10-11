@@ -13575,9 +13575,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Don't know the characteristics of non-native tables,
     // and don't have a rational way to guess, so assume the most
     // conservative case.
-    if (isNonNativeTable) return WriteEntity.WriteType.INSERT_OVERWRITE;
-    else return ((ltd.getLoadFileType() == LoadFileType.REPLACE_ALL)
-                         ? WriteEntity.WriteType.INSERT_OVERWRITE : getWriteType(dest));
+    if (isNonNativeTable) {
+      return WriteEntity.WriteType.INSERT_OVERWRITE;
+    } else {
+      return ((ltd.getLoadFileType() == LoadFileType.REPLACE_ALL)
+                           ? WriteEntity.WriteType.INSERT_OVERWRITE : getWriteType(dest));
+    }
   }
 
   private WriteEntity.WriteType getWriteType(String dest) {

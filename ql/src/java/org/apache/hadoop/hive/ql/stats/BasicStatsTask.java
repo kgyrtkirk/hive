@@ -159,6 +159,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         // we choose to keep the invalid stats and only change the setting.
         // FIXME: invalidating numRows would be preferred here...instead keeping anything
         StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
+        removeStatsRelatedParams(parameters, StatsSetupConst.supportedStats);
       }
 
       updateQuickStats(parameters, partfileStatus);
@@ -168,12 +169,18 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
           updateStats(statsAggregator, parameters, prefix, atomic);
         }
       } else {
-        // FIXME: if not collected remove fields?
+        removeStatsRelatedParams(parameters, StatsSetupConst.statsRequireCompute);
       }
 
       return p.getOutput();
     }
 
+    private void removeStatsRelatedParams(Map<String, String> parameters, String[] statsrequirecompute) {
+      for (String string : statsrequirecompute) {
+        parameters.remove(string);
+      }
+
+    }
     public void collectFileStatus(Warehouse wh) throws MetaException {
       Map<String, String> parameters = partish.getPartParameters();
       if (!existStats(parameters) && atomic) {
