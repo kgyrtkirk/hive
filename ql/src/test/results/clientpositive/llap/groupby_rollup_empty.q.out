@@ -40,9 +40,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx1
 #### A masked pattern was here ####
 NULL	1	NULL,1
-NULL	1	NULL,1	!!! these
-NULL	1	NULL,1  !!! should
-NULL	1	NULL,1  !!! not be here :)
 PREHOOK: query: select  sum(c),
         grouping(b),
 	'no rows' as expected
@@ -79,9 +76,6 @@ group by rollup (b)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx1
 #### A masked pattern was here ####
-NULL	1	NULL,1
-NULL	1	NULL,1
-NULL	1	NULL,1
 NULL	1	NULL,1
 PREHOOK: query: insert into tx1 values (1,1,1)
 PREHOOK: type: QUERY
@@ -110,7 +104,4 @@ group by rollup (b)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx1
 #### A masked pattern was here ####
-NULL	1	NULL,1
-NULL	1	NULL,1
-NULL	1	NULL,1
 NULL	1	NULL,1

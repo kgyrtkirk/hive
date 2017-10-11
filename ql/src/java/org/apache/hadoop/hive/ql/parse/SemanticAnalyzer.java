@@ -6319,7 +6319,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean groupingSetsNeedAdditionalMRJob = false;
     if(groupingSetsPresent) {
       groupingSetsNeedAdditionalMRJob |= groupingSets.size() > newMRJobGroupingSetsThreshold;
-      groupingSetsNeedAdditionalMRJob |= true;
+      groupingSetsNeedAdditionalMRJob |= groupingSets.contains(getEmptyGroupingSetId(inputOperatorInfo, grpByExprs));
     }
 
     GroupByOperator groupByOperatorInfo =
@@ -6402,6 +6402,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           reduceSinkOperatorInfo2, GroupByDesc.Mode.FINAL,
           genericUDAFEvaluators, groupingSetsPresent);
     }
+  }
+
+  private Integer getEmptyGroupingSetId(Operator inputOperatorInfo, List<ASTNode> grpByExprs) throws SemanticException {
+    RowResolver groupByInputRowResolver = opParseCtx.get(inputOperatorInfo)
+        .getRowResolver();
+    List<ExprNodeDesc> groupByKeys = new ArrayList<>();
+    for (int i = 0; i < grpByExprs.size(); ++i) {
+      ASTNode grpbyExpr = grpByExprs.get(i);
+      ExprNodeDesc grpByExprNode = genExprNodeDesc(grpbyExpr, groupByInputRowResolver);
+
+      if ((grpByExprNode instanceof ExprNodeColumnDesc) && ExprNodeDescUtils.indexOf(grpByExprNode, groupByKeys) >= 0) {
+        // Skip duplicated grouping keys, it happens when define column alias.
+        continue;
+      }
+      groupByKeys.add(grpByExprNode);
+    }
+    return (1 << groupByKeys.size()) - 1;
   }
 
   /**
