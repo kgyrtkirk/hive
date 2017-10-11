@@ -6316,9 +6316,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Is the grouping sets data consumed in the current in MR job, or
     // does it need an additional MR job
-    boolean groupingSetsNeedAdditionalMRJob =
-        groupingSetsPresent && groupingSets.size() > newMRJobGroupingSetsThreshold ?
-            true : false;
+    boolean groupingSetsNeedAdditionalMRJob = false;
+    if(groupingSetsPresent) {
+      groupingSetsNeedAdditionalMRJob |= groupingSets.size() > newMRJobGroupingSetsThreshold;
+      groupingSetsNeedAdditionalMRJob |= true;
+    }
 
     GroupByOperator groupByOperatorInfo =
         (GroupByOperator) genGroupByPlanMapGroupByOperator(
@@ -13577,9 +13579,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Don't know the characteristics of non-native tables,
     // and don't have a rational way to guess, so assume the most
     // conservative case.
-    if (isNonNativeTable) return WriteEntity.WriteType.INSERT_OVERWRITE;
-    else return ((ltd.getLoadFileType() == LoadFileType.REPLACE_ALL)
-                         ? WriteEntity.WriteType.INSERT_OVERWRITE : getWriteType(dest));
+    if (isNonNativeTable) {
+      return WriteEntity.WriteType.INSERT_OVERWRITE;
+    } else {
+      return ((ltd.getLoadFileType() == LoadFileType.REPLACE_ALL)
+                           ? WriteEntity.WriteType.INSERT_OVERWRITE : getWriteType(dest));
+    }
   }
 
   private WriteEntity.WriteType getWriteType(String dest) {
