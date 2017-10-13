@@ -305,58 +305,7 @@ public abstract class TaskCompiler {
      * else it is ColumnStatsAutoGather, which should have a move task with a stats task already.
      */
     if (isCStats || !pCtx.getColumnStatsAutoGatherContexts().isEmpty()) {
-      // map from tablename to task (ColumnStatsTask which includes a BasicStatsTask)
-      Map<String, StatsTask> map = new LinkedHashMap<>();
-      if (isCStats) {
-        if (rootTasks == null || rootTasks.size() != 1 || pCtx.getTopOps() == null
-            || pCtx.getTopOps().size() != 1) {
-          throw new SemanticException("Can not find correct root task!");
-        }
-        try {
-          Task<? extends Serializable> root = rootTasks.iterator().next();
-          StatsTask tsk = (StatsTask) genTableStats(pCtx, pCtx.getTopOps().values()
-              .iterator().next(), root, outputs);
-          root.addDependentTask(tsk);
-          map.put(extractTableFullName((StatsTask) tsk), (StatsTask) tsk);
-        } catch (HiveException e) {
-          throw new SemanticException(e);
-        }
-        genColumnStatsTask(pCtx.getAnalyzeRewrite(), loadFileWork, map, outerQueryLimit, 0);
-      } else {
-        Set<Task<? extends Serializable>> leafTasks = new LinkedHashSet<Task<? extends Serializable>>();
-        getLeafTasks(rootTasks, leafTasks);
-        List<Task<? extends Serializable>> nonStatsLeafTasks = new ArrayList<>();
-        for (Task<? extends Serializable> tsk : leafTasks) {
-          // map table name to the correct ColumnStatsTask
-          if (tsk instanceof StatsTask) {
-            map.put(extractTableFullName((StatsTask) tsk), (StatsTask) tsk);
-          } else {
-            nonStatsLeafTasks.add(tsk);
-          }
-        }
-        // add cStatsTask as a dependent of all the nonStatsLeafTasks
-        for (Task<? extends Serializable> tsk : nonStatsLeafTasks) {
-          for (Task<? extends Serializable> cStatsTask : map.values()) {
-            tsk.addDependentTask(cStatsTask);
-          }
-        }
-        for (ColumnStatsAutoGatherContext columnStatsAutoGatherContext : pCtx
-            .getColumnStatsAutoGatherContexts()) {
-          if (!columnStatsAutoGatherContext.isInsertInto()) {
-            genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
-                columnStatsAutoGatherContext.getLoadFileWork(), map, outerQueryLimit, 0);
-          } else {
-            int numBitVector;
-            try {
-              numBitVector = HiveStatsUtils.getNumBitVectorsForNDVEstimation(conf);
-            } catch (Exception e) {
-              throw new SemanticException(e.getMessage());
-            }
-            genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
-                columnStatsAutoGatherContext.getLoadFileWork(), map, outerQueryLimit, numBitVector);
-          }
-        }
-      }
+      createColumnStatsTasks(pCtx, rootTasks, outputs, loadFileWork, isCStats, outerQueryLimit);
     }
 
     decideExecMode(rootTasks, ctx, globalLimitCtx);
@@ -400,6 +349,62 @@ public abstract class TaskCompiler {
     for (Task<? extends Serializable> rootTask : rootTasks) {
       GenMapRedUtils.internTableDesc(rootTask, interner);
       GenMapRedUtils.deriveFinalExplainAttributes(rootTask, pCtx.getConf());
+    }
+  }
+
+  private void createColumnStatsTasks(final ParseContext pCtx, final List<Task<? extends Serializable>> rootTasks, final HashSet<WriteEntity> outputs, List<LoadFileDesc> loadFileWork, boolean isCStats,
+      int outerQueryLimit) throws SemanticException {
+    // map from tablename to task (ColumnStatsTask which includes a BasicStatsTask)
+    Map<String, StatsTask> map = new LinkedHashMap<>();
+    if (isCStats) {
+      if (rootTasks == null || rootTasks.size() != 1 || pCtx.getTopOps() == null
+          || pCtx.getTopOps().size() != 1) {
+        throw new SemanticException("Can not find correct root task!");
+      }
+      try {
+        Task<? extends Serializable> root = rootTasks.iterator().next();
+        StatsTask tsk = (StatsTask) genTableStats(pCtx, pCtx.getTopOps().values()
+            .iterator().next(), root, outputs);
+        root.addDependentTask(tsk);
+        map.put(extractTableFullName((StatsTask) tsk), (StatsTask) tsk);
+      } catch (HiveException e) {
+        throw new SemanticException(e);
+      }
+      genColumnStatsTask(pCtx.getAnalyzeRewrite(), loadFileWork, map, outerQueryLimit, 0);
+    } else {
+      Set<Task<? extends Serializable>> leafTasks = new LinkedHashSet<Task<? extends Serializable>>();
+      getLeafTasks(rootTasks, leafTasks);
+      List<Task<? extends Serializable>> nonStatsLeafTasks = new ArrayList<>();
+      for (Task<? extends Serializable> tsk : leafTasks) {
+        // map table name to the correct ColumnStatsTask
+        if (tsk instanceof StatsTask) {
+          map.put(extractTableFullName((StatsTask) tsk), (StatsTask) tsk);
+        } else {
+          nonStatsLeafTasks.add(tsk);
+        }
+      }
+      // add cStatsTask as a dependent of all the nonStatsLeafTasks
+      for (Task<? extends Serializable> tsk : nonStatsLeafTasks) {
+        for (Task<? extends Serializable> cStatsTask : map.values()) {
+          tsk.addDependentTask(cStatsTask);
+        }
+      }
+      for (ColumnStatsAutoGatherContext columnStatsAutoGatherContext : pCtx
+          .getColumnStatsAutoGatherContexts()) {
+        if (!columnStatsAutoGatherContext.isInsertInto()) {
+          genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
+              columnStatsAutoGatherContext.getLoadFileWork(), map, outerQueryLimit, 0);
+        } else {
+          int numBitVector;
+          try {
+            numBitVector = HiveStatsUtils.getNumBitVectorsForNDVEstimation(conf);
+          } catch (Exception e) {
+            throw new SemanticException(e.getMessage());
+          }
+          genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
+              columnStatsAutoGatherContext.getLoadFileWork(), map, outerQueryLimit, numBitVector);
+        }
+      }
     }
   }
 
