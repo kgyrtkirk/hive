@@ -275,7 +275,28 @@ public abstract class TaskCompiler {
      * a column stats task instead of a fetch task to persist stats to the metastore.
      */
     if (isCStats || !pCtx.getColumnStatsAutoGatherContexts().isEmpty()) {
-      createColumnStatsTasks(pCtx, rootTasks, loadFileWork, isCStats, outerQueryLimit);
+      Set<Task<? extends Serializable>> leafTasks = new LinkedHashSet<Task<? extends Serializable>>();
+      getLeafTasks(rootTasks, leafTasks);
+      if (isCStats) {
+        genColumnStatsTask(pCtx.getAnalyzeRewrite(), loadFileWork, leafTasks, outerQueryLimit, 0);
+      } else {
+        for (ColumnStatsAutoGatherContext columnStatsAutoGatherContext : pCtx
+            .getColumnStatsAutoGatherContexts()) {
+          if (!columnStatsAutoGatherContext.isInsertInto()) {
+            genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
+                columnStatsAutoGatherContext.getLoadFileWork(), leafTasks, outerQueryLimit, 0);
+          } else {
+            int numBitVector;
+            try {
+              numBitVector = HiveStatsUtils.getNumBitVectorsForNDVEstimation(conf);
+            } catch (Exception e) {
+              throw new SemanticException(e.getMessage());
+            }
+            genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
+                columnStatsAutoGatherContext.getLoadFileWork(), leafTasks, outerQueryLimit, numBitVector);
+          }
+        }
+      }
     }
 
     decideExecMode(rootTasks, ctx, globalLimitCtx);
@@ -351,34 +372,6 @@ public abstract class TaskCompiler {
         + location + "; moving from " + lfd.getSourcePath());
     }
     lfd.setTargetDir(location);
-  }
-
-  private void createColumnStatsTasks(final ParseContext pCtx,
-      final List<Task<? extends Serializable>> rootTasks,
-      List<LoadFileDesc> loadFileWork, boolean isCStats, int outerQueryLimit)
-      throws SemanticException {
-    Set<Task<? extends Serializable>> leafTasks = new LinkedHashSet<Task<? extends Serializable>>();
-    getLeafTasks(rootTasks, leafTasks);
-    if (isCStats) {
-      genColumnStatsTask(pCtx.getAnalyzeRewrite(), loadFileWork, leafTasks, outerQueryLimit, 0);
-    } else {
-      for (ColumnStatsAutoGatherContext columnStatsAutoGatherContext : pCtx
-          .getColumnStatsAutoGatherContexts()) {
-        if (!columnStatsAutoGatherContext.isInsertInto()) {
-          genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
-              columnStatsAutoGatherContext.getLoadFileWork(), leafTasks, outerQueryLimit, 0);
-        } else {
-          int numBitVector;
-          try {
-            numBitVector = HiveStatsUtils.getNumBitVectorsForNDVEstimation(conf);
-          } catch (Exception e) {
-            throw new SemanticException(e.getMessage());
-          }
-          genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
-              columnStatsAutoGatherContext.getLoadFileWork(), leafTasks, outerQueryLimit, numBitVector);
-        }
-      }
-    }
   }
 
   private Path getDefaultCtasLocation(final ParseContext pCtx) throws SemanticException {
