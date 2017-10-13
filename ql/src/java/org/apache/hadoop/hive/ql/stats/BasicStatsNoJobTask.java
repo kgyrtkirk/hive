@@ -161,9 +161,11 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
         long rawDataSize = 0;
         long fileSize = 0;
         long numFiles = 0;
+        LOG.debug("Aggregating stats for {}", dir);
         FileStatus[] fileList = HiveStatsUtils.getFileStatusRecurse(dir, -1, fs);
 
         for (FileStatus file : fileList) {
+          LOG.debug("Computing stats for {}", file);
           if (!file.isDirectory()) {
             InputFormat<?, ?> inputFormat = ReflectionUtil.newInstance(partish.getInputFormatClass(), jc);
             InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0, new String[] { partish.getLocation() });

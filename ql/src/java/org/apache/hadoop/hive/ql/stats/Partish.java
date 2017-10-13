@@ -45,8 +45,10 @@ public abstract class Partish {
     return new PPart(table, part);
   }
 
+  // rename
+  @Deprecated
   public final boolean isAcid() {
-    return AcidUtils.isAcidTable(getTable());
+    return AcidUtils.isFullAcidTable(getTable());
   }
 
   public abstract Table getTable();

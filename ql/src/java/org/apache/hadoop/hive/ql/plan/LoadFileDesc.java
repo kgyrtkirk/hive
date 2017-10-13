@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 
 /**
@@ -34,8 +35,8 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
   // list of columns, comma separated
   private String columns;
   private String columnTypes;
-  //  private String destinationCreateTable;
   private transient CreateTableDesc ctasCreateTableDesc;
+  private boolean isMmCtas;
 
   public LoadFileDesc(final LoadFileDesc o) {
     super(o.getSourcePath(), o.getWriteType());
@@ -44,15 +45,16 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
     this.isDfsDir = o.isDfsDir;
     this.columns = o.columns;
     this.columnTypes = o.columnTypes;
-    //    this.destinationCreateTable = o.destinationCreateTable;
+    this.isMmCtas = o.isMmCtas;
+    this.ctasCreateTableDesc = o.ctasCreateTableDesc;
   }
 
   public LoadFileDesc(final CreateTableDesc createTableDesc, final CreateViewDesc  createViewDesc,
                       final Path sourcePath, final Path targetDir, final boolean isDfsDir,
-                      final String columns, final String columnTypes, AcidUtils.Operation writeType) {
-    this(sourcePath, targetDir, isDfsDir, columns, columnTypes, writeType);
-    if (createTableDesc != null && createTableDesc.isCTAS()) {
-      ctasCreateTableDesc = createTableDesc;
+      final String columns, final String columnTypes, AcidUtils.Operation writeType, boolean isMmCtas) {
+    this(sourcePath, targetDir, isDfsDir, columns, columnTypes, writeType, isMmCtas);
+      if (createTableDesc != null && createTableDesc.isCTAS()) {
+        ctasCreateTableDesc = createTableDesc;
     }
     //    if (createTableDesc != null && createTableDesc.getDatabaseName() != null
     //        && createTableDesc.getTableName() != null) {
@@ -68,18 +70,21 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
   }
 
   public LoadFileDesc(final Path sourcePath, final Path targetDir,
-                      final boolean isDfsDir, final String columns, final String columnTypes) {
-    this(sourcePath, targetDir, isDfsDir, columns, columnTypes, AcidUtils.Operation.NOT_ACID);
+                      final boolean isDfsDir, final String columns, final String columnTypes, boolean isMmCtas) {
+    this(sourcePath, targetDir, isDfsDir, columns, columnTypes, AcidUtils.Operation.NOT_ACID, isMmCtas);
   }
   private LoadFileDesc(final Path sourcePath, final Path targetDir,
       final boolean isDfsDir, final String columns,
-      final String columnTypes, AcidUtils.Operation writeType) {
-
+      final String columnTypes, AcidUtils.Operation writeType, boolean isMmCtas) {
     super(sourcePath, writeType);
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("creating LFD from " + sourcePath + " to " + targetDir);
+    }
     this.targetDir = targetDir;
     this.isDfsDir = isDfsDir;
     this.columns = columns;
     this.columnTypes = columnTypes;
+    this.isMmCtas = isMmCtas;
   }
 
   @Explain(displayName = "destination")
@@ -134,4 +139,7 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
     return ctasCreateTableDesc;
   }
 
+  public boolean isMmCtas() {
+    return isMmCtas;
+  }
 }
