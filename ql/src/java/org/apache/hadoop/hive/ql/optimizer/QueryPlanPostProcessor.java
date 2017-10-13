@@ -75,7 +75,7 @@ public class QueryPlanPostProcessor {
       }
       else if(work instanceof MapredLocalWork) {
         //I don't think this can have any FileSinkOperatorS - more future proofing
-        Set<FileSinkOperator> fileSinkOperatorSet = OperatorUtils.findOperators(((MapredLocalWork)work).getAliasToWork().values(), FileSinkOperator.class);
+        Set<FileSinkOperator> fileSinkOperatorSet = OperatorUtils.findOperators(((MapredLocalWork) work).getAliasToWork().values(), FileSinkOperator.class);
         for(FileSinkOperator fsop : fileSinkOperatorSet) {
           collectFileSinkDescs(fsop, acidSinks);
         }
