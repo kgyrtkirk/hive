@@ -439,7 +439,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     Table tTable = new Table(tbl);
     if (!isVirtualTable) {
       StatsSetupConst.setStatsStateForCreateTable(tbl.getParameters(),
-          MetaStoreUtils.getColumnNamesForTable(tbl), StatsSetupConst.TRUE);
+          org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getColumnNamesForTable(tbl), StatsSetupConst.TRUE);
     }
     if (tables == null) {
       tables = new HashMap<String, Table>();
