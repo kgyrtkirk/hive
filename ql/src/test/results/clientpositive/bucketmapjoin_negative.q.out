@@ -109,10 +109,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.srcbucket_mapjoin_part
                     numFiles 3
-                    numRows 0
                     partition_columns ds
                     partition_columns.types string
-                    rawDataSize 0
                     serialization.ddl struct srcbucket_mapjoin_part { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -161,12 +159,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 26 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 26 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -232,8 +230,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcbucket_mapjoin
               numFiles 2
-              numRows 0
-              rawDataSize 0
               serialization.ddl struct srcbucket_mapjoin { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -253,8 +249,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.srcbucket_mapjoin
                 numFiles 2
-                numRows 0
-                rawDataSize 0
                 serialization.ddl struct srcbucket_mapjoin { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

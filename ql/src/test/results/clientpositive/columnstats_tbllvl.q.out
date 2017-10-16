@@ -54,11 +54,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: uservisits_web_text_none
-            Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
               outputColumnNames: sourceip, adrevenue, avgtimeonsite
-              Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(sourceip, 'hll'), compute_stats(avgtimeonsite, 'hll'), compute_stats(adrevenue, 'hll')
                 mode: hash
@@ -106,13 +106,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: uservisits_web_text_none
-            Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
             Statistics Aggregation Key Prefix: default.uservisits_web_text_none/
             GatherStats: true
             Select Operator
               expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
               outputColumnNames: sourceip, adrevenue, avgtimeonsite
-              Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(sourceip, 'hll'), compute_stats(avgtimeonsite, 'hll'), compute_stats(adrevenue, 'hll')
                 mode: hash
@@ -143,8 +143,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.uservisits_web_text_none
               numFiles 1
-              numRows 0
-              rawDataSize 0
               serialization.ddl struct uservisits_web_text_none { string sourceip, string desturl, string visitdate, float adrevenue, string useragent, string ccode, string lcode, string skeyword, i32 avgtimeonsite}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -164,8 +162,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.uservisits_web_text_none
                 numFiles 1
-                numRows 0
-                rawDataSize 0
                 serialization.ddl struct uservisits_web_text_none { string sourceip, string desturl, string visitdate, float adrevenue, string useragent, string ccode, string lcode, string skeyword, i32 avgtimeonsite}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -526,11 +522,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: uservisits_in_dummy_db
-            Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
               outputColumnNames: sourceip, adrevenue, avgtimeonsite
-              Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(sourceip, 'hll'), compute_stats(avgtimeonsite, 'hll'), compute_stats(adrevenue, 'hll')
                 mode: hash
@@ -578,13 +574,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: uservisits_in_dummy_db
-            Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
             Statistics Aggregation Key Prefix: dummydb.uservisits_in_dummy_db/
             GatherStats: true
             Select Operator
               expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
               outputColumnNames: sourceip, adrevenue, avgtimeonsite
-              Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(sourceip, 'hll'), compute_stats(avgtimeonsite, 'hll'), compute_stats(adrevenue, 'hll')
                 mode: hash
@@ -615,8 +611,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name dummydb.uservisits_in_dummy_db
               numFiles 1
-              numRows 0
-              rawDataSize 0
               serialization.ddl struct uservisits_in_dummy_db { string sourceip, string desturl, string visitdate, float adrevenue, string useragent, string ccode, string lcode, string skeyword, i32 avgtimeonsite}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -636,8 +630,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name dummydb.uservisits_in_dummy_db
                 numFiles 1
-                numRows 0
-                rawDataSize 0
                 serialization.ddl struct uservisits_in_dummy_db { string sourceip, string desturl, string visitdate, float adrevenue, string useragent, string ccode, string lcode, string skeyword, i32 avgtimeonsite}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
