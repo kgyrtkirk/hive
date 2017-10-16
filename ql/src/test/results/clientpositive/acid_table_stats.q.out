@@ -93,8 +93,6 @@ Table:              	acid
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	2                   
-	numRows             	0                   
-	rawDataSize         	0                   
 	totalSize           	3950                
 #### A masked pattern was here ####
 	 	 
@@ -385,8 +383,6 @@ Table:              	acid
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	4                   
-	numRows             	1000                
-	rawDataSize         	208000              
 	totalSize           	7904                
 #### A masked pattern was here ####
 	 	 

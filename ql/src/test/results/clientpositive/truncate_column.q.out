@@ -96,8 +96,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numRows             	10                  
-	rawDataSize         	94                  
 	totalSize           	150                 
 #### A masked pattern was here ####
 	 	 
@@ -165,8 +163,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numRows             	10                  
-	rawDataSize         	94                  
 	totalSize           	75                  
 #### A masked pattern was here ####
 	 	 
@@ -224,8 +220,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numRows             	10                  
-	rawDataSize         	94                  
 	totalSize           	75                  
 #### A masked pattern was here ####
 	 	 
@@ -355,8 +349,6 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 #### A masked pattern was here ####
 	numFiles            	1                   
-	numRows             	10                  
-	rawDataSize         	94                  
 	totalSize           	150                 
 #### A masked pattern was here ####
 	 	 
@@ -415,8 +407,6 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 #### A masked pattern was here ####
 	numFiles            	1                   
-	numRows             	10                  
-	rawDataSize         	94                  
 	totalSize           	75                  
 #### A masked pattern was here ####
 	 	 
@@ -552,8 +542,6 @@ Table:              	test_tab_part
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	1                   
-	numRows             	10                  
-	rawDataSize         	94                  
 	totalSize           	150                 
 #### A masked pattern was here ####
 	 	 
