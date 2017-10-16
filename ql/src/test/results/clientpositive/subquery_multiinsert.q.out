@@ -341,8 +341,8 @@ RUN: Stage-6:MAPRED
 RUN: Stage-4:MAPRED
 RUN: Stage-0:MOVE
 RUN: Stage-1:MOVE
-RUN: Stage-7:COLUMNSTATS
-RUN: Stage-5:COLUMNSTATS
+RUN: Stage-7:STATS
+RUN: Stage-5:STATS
 PREHOOK: query: select * from src_4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_4
@@ -856,8 +856,8 @@ RUN: Stage-4:MAPRED
 RUN: Stage-12:MAPRED
 RUN: Stage-1:MOVE
 RUN: Stage-0:MOVE
-RUN: Stage-5:COLUMNSTATS
-RUN: Stage-7:COLUMNSTATS
+RUN: Stage-5:STATS
+RUN: Stage-7:STATS
 PREHOOK: query: select * from src_4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_4
