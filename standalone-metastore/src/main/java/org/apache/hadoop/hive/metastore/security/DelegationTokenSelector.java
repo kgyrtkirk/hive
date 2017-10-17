@@ -15,34 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.optimizer.calcite;
 
-import org.apache.calcite.sql.type.AbstractSqlType;
-import org.apache.calcite.sql.type.SqlTypeName;
+package org.apache.hadoop.hive.metastore.security;
+
+import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSelector;
 
 /**
- * Hive-specific type.
- *
- * TODO: Created to represent timestamp with time-zone type.
- * It can be removed once the type exists in Calcite.
+ * A delegation token that is specialized for Hive
  */
-public class HiveType extends AbstractSqlType {
-  private final Class clazz;
 
-  public HiveType(Class clazz) {
-    super(SqlTypeName.NULL, true, null);
-    this.clazz = clazz;
-    computeDigest();
+public class DelegationTokenSelector
+    extends AbstractDelegationTokenSelector<DelegationTokenIdentifier>{
+
+  public DelegationTokenSelector() {
+    super(DelegationTokenIdentifier.HIVE_DELEGATION_KIND);
   }
-
-  protected void generateTypeString(StringBuilder sb, boolean withDetail) {
-    sb.append("HiveType(");
-    sb.append(clazz);
-    sb.append(")");
-  }
-
-  public Class getTypeClass() {
-    return clazz;
-  }
-
 }
