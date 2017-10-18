@@ -38,3 +38,9 @@ from    tx1
 where	a<0
 group by rollup (b);
 
+select  sum(c),
+        grouping(b),
+	'1,1 and 1,0' as expected
+from    tx1
+group by rollup (b);
+

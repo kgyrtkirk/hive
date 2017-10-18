@@ -42,24 +42,6 @@ POSTHOOK: Input: default@tx1
 NULL	1	NULL,1
 PREHOOK: query: select  sum(c),
         grouping(b),
-	'no rows' as expected
-from    tx1
-where	a<0
-group by b grouping sets (b)
-PREHOOK: type: QUERY
-PREHOOK: Input: default@tx1
-#### A masked pattern was here ####
-POSTHOOK: query: select  sum(c),
-        grouping(b),
-	'no rows' as expected
-from    tx1
-where	a<0
-group by b grouping sets (b)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx1
-#### A masked pattern was here ####
-PREHOOK: query: select  sum(c),
-        grouping(b),
 	'NULL,1' as expected
 from    tx1
 where	a<0
@@ -105,3 +87,21 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx1
 #### A masked pattern was here ####
 NULL	1	NULL,1
+PREHOOK: query: select  sum(c),
+        grouping(b),
+	'NULL,1' as expected
+from    tx1
+group by rollup (b)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tx1
+#### A masked pattern was here ####
+POSTHOOK: query: select  sum(c),
+        grouping(b),
+	'NULL,1' as expected
+from    tx1
+group by rollup (b)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx1
+#### A masked pattern was here ####
+1	1	NULL,1
+1	0	NULL,1
