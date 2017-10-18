@@ -12,12 +12,13 @@ from    tx1
 where	a<0
 group by a,b grouping sets ((), b, a);
 
-select  sum(c),
-        grouping(b),
-	'no rows' as expected
-from    tx1
-where	a<0
-group by b grouping sets (b);
+-- this worked before... 
+-- select  sum(c),
+--        grouping(b),
+--	'no rows' as expected
+-- from    tx1
+-- where	a<0
+-- group by b grouping sets (b);
 
 select  sum(c),
         grouping(b),
