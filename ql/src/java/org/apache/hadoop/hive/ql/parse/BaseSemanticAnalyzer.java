@@ -42,7 +42,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -50,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -122,7 +122,8 @@ public abstract class BaseSemanticAnalyzer {
    */
   protected Set<FileSinkDesc> acidFileSinks = new HashSet<FileSinkDesc>();
 
-  // whether any ACID table is involved in a query
+  // whether any ACID table or Insert-only (mm) table is involved in a query
+  // They both require DbTxnManager and both need to recordValidTxns when acquiring locks in Driver
   protected boolean acidInQuery;
 
   protected HiveTxnManager txnManager;
@@ -1752,7 +1753,7 @@ public abstract class BaseSemanticAnalyzer {
     } else {
       throw new SemanticException("Unexpected date type " + colValue.getClass());
     }
-    return HiveMetaStore.PARTITION_DATE_FORMAT.get().format(value);
+    return MetaStoreUtils.PARTITION_DATE_FORMAT.get().format(value);
   }
 
   protected WriteEntity toWriteEntity(String location) throws SemanticException {

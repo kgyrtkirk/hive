@@ -23,6 +23,11 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.BeforeClass;
 
+/**
+ * Runs the tests defined in TestJdbcWithMiniKdc when DBTokenStore
+ * is configured in a remote secure HMS mode and impersonation
+ * is turned on
+ */
 public class TestJdbcWithDBTokenStore extends TestJdbcWithMiniKdc{
 
   @BeforeClass
@@ -32,6 +37,7 @@ public class TestJdbcWithDBTokenStore extends TestJdbcWithMiniKdc{
         SessionHookTest.class.getName());
 
     HiveConf hiveConf = new HiveConf();
+    //using old config value tests backwards compatibility
     hiveConf.setVar(ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS, "org.apache.hadoop.hive.thrift.DBTokenStore");
     miniHiveKdc = MiniHiveKdc.getMiniHiveKdc(hiveConf);
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerbWithRemoteHMS(miniHiveKdc, hiveConf);

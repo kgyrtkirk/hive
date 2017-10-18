@@ -61,8 +61,8 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     FileSystem dstFs = null;
     Path toPath = null;
     try {
-      Path fromPath = work.getFromPath();
-      toPath = work.getToPath();
+      Path fromPath = work.getFromPaths()[0];
+      toPath = work.getToPaths()[0];
 
       console.printInfo("Copying data from " + fromPath.toString(), " to "
           + toPath.toString());
@@ -223,10 +223,10 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
         rcwork.setDistCpDoAsUser(distCpDoAsUser);
       }
-      copyTask = TaskFactory.get(rcwork, conf);
+      copyTask = TaskFactory.get(rcwork, conf, true);
     } else {
       LOG.debug("ReplCopyTask:\tcwork");
-      copyTask = TaskFactory.get(new CopyWork(srcPath, dstPath, false), conf);
+      copyTask = TaskFactory.get(new CopyWork(srcPath, dstPath, false), conf, true);
     }
     return copyTask;
   }

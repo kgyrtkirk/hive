@@ -61,10 +61,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
@@ -99,9 +101,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    * doesn't have (e.g. a getting a table of a new type), it will get back failures when the
    * capability checking is enabled (the default).
    */
-  public final static ClientCapabilities VERSION = null; // No capabilities.
+  public final static ClientCapabilities VERSION = new ClientCapabilities(
+      Lists.newArrayList(ClientCapability.INSERT_ONLY_TABLES));
+  // Test capability for tests.
   public final static ClientCapabilities TEST_VERSION = new ClientCapabilities(
-      Lists.newArrayList(ClientCapability.TEST_CAPABILITY)); // Test capability for tests.
+      Lists.newArrayList(ClientCapability.INSERT_ONLY_TABLES, ClientCapability.TEST_CAPABILITY));
 
   ThriftHiveMetastore.Iface client = null;
   private TTransport transport = null;
@@ -239,7 +243,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             });
         String delegationTokenPropString = "DelegationTokenForHiveMetaStoreServer";
         String delegationTokenStr = getDelegationToken(proxyUser, proxyUser);
-        Utils.setTokenStr(UserGroupInformation.getCurrentUser(), delegationTokenStr,
+        SecurityUtils.setTokenStr(UserGroupInformation.getCurrentUser(), delegationTokenStr,
             delegationTokenPropString);
         this.conf.setVar(ConfVars.METASTORE_TOKEN_SIGNATURE, delegationTokenPropString);
         close();
@@ -452,7 +456,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
               // submission.
               String tokenSig = conf.getVar(ConfVars.METASTORE_TOKEN_SIGNATURE);
               // tokenSig could be null
-              tokenStrForm = Utils.getTokenStrForm(tokenSig);
+              tokenStrForm = SecurityUtils.getTokenStrForm(tokenSig);
 
               if(tokenStrForm != null) {
                 LOG.info("HMSC::open(): Found delegation token. Creating DIGEST-based thrift connection.");

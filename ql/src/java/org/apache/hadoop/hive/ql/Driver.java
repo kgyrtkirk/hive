@@ -114,6 +114,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.wm.TriggerContext;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.ClusterStatus;
@@ -484,6 +485,9 @@ public class Driver implements CommandProcessor {
 
     String queryId = queryState.getQueryId();
 
+    if (ctx != null) {
+      setTriggerContext(queryId);
+    }
     //save some info for webUI for use after plan is freed
     this.queryDisplay.setQueryStr(queryStr);
     this.queryDisplay.setQueryId(queryId);
@@ -528,6 +532,7 @@ public class Driver implements CommandProcessor {
       }
       if (ctx == null) {
         ctx = new Context(conf);
+        setTriggerContext(queryId);
       }
 
       ctx.setTryCount(getTryCount());
@@ -712,6 +717,20 @@ public class Driver implements CommandProcessor {
     }
   }
 
+  private void setTriggerContext(final String queryId) {
+    final long queryStartTime;
+    // query info is created by SQLOperation which will have start time of the operation. When JDBC Statement is not
+    // used queryInfo will be null, in which case we take creation of Driver instance as query start time (which is also
+    // the time when query display object is created)
+    if (queryInfo != null) {
+      queryStartTime = queryInfo.getBeginTime();
+    } else {
+      queryStartTime = queryDisplay.getQueryStartTime();
+    }
+    TriggerContext triggerContext = new TriggerContext(queryStartTime, queryId);
+    ctx.setTriggerContext(triggerContext);
+  }
+
   private boolean startImplicitTxn(HiveTxnManager txnManager) throws LockException {
     boolean shouldOpenImplicitTxn = !ctx.isExplainPlan();
     //this is dumb. HiveOperation is not always set. see HIVE-16447/HIVE-16443
@@ -843,7 +862,7 @@ public class Driver implements CommandProcessor {
     }
 
     // The following union operation returns a union, which traverses over the
-    // first set once and then  then over each element of second set, in order, 
+    // first set once and then  then over each element of second set, in order,
     // that is not contained in first. This means it doesn't replace anything
     // in first set, and would preserve the WriteType in WriteEntity in first
     // set in case of outputs list.
@@ -1239,7 +1258,7 @@ public class Driver implements CommandProcessor {
           desc.setStatementId(queryTxnMgr.getWriteIdAndIncrement());
         }
       }
-      /*It's imperative that {@code acquireLocks()} is called for all commands so that 
+      /*It's imperative that {@code acquireLocks()} is called for all commands so that
       HiveTxnManager can transition its state machine correctly*/
       queryTxnMgr.acquireLocks(plan, ctx, userFromUGI, lDrvState);
       if(queryTxnMgr.recordSnapshot(plan)) {
@@ -1893,7 +1912,19 @@ public class Driver implements CommandProcessor {
         if (tskRun == null) {
           continue;
         }
-        hookContext.addCompleteTask(tskRun);
+        /*
+          This should be removed eventually. HIVE-17814 gives more detail
+          explanation of whats happening and HIVE-17815 as to why this is done.
+          Briefly for replication the graph is huge and so memory pressure is going to be huge if
+          we keep a lot of references around.
+        */
+        String opName = plan.getOperationName();
+        boolean isReplicationOperation = opName.equals(HiveOperation.REPLDUMP.getOperationName())
+            || opName.equals(HiveOperation.REPLLOAD.getOperationName());
+        if (!isReplicationOperation) {
+          hookContext.addCompleteTask(tskRun);
+        }
+
         queryDisplay.setTaskResult(tskRun.getTask().getId(), tskRun.getTaskResult());
 
         Task<? extends Serializable> tsk = tskRun.getTask();
