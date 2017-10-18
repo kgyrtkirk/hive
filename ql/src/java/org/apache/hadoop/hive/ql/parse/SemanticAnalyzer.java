@@ -6315,11 +6315,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Is the grouping sets data consumed in the current in MR job, or
     // does it need an additional MR job
-    boolean groupingSetsNeedAdditionalMRJob = false;
-    if(groupingSetsPresent) {
-      groupingSetsNeedAdditionalMRJob |= groupingSets.size() > newMRJobGroupingSetsThreshold;
-      groupingSetsNeedAdditionalMRJob |= groupingSets.contains(getEmptyGroupingSetId(inputOperatorInfo, grpByExprs));
-    }
+    boolean groupingSetsNeedAdditionalMRJob =
+        groupingSetsPresent && groupingSets.size() > newMRJobGroupingSetsThreshold ?
+            true : false;
 
     GroupByOperator groupByOperatorInfo =
         (GroupByOperator) genGroupByPlanMapGroupByOperator(
@@ -6401,23 +6399,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           reduceSinkOperatorInfo2, GroupByDesc.Mode.FINAL,
           genericUDAFEvaluators, groupingSetsPresent);
     }
-  }
-
-  private Integer getEmptyGroupingSetId(Operator inputOperatorInfo, List<ASTNode> grpByExprs) throws SemanticException {
-    RowResolver groupByInputRowResolver = opParseCtx.get(inputOperatorInfo)
-        .getRowResolver();
-    List<ExprNodeDesc> groupByKeys = new ArrayList<>();
-    for (int i = 0; i < grpByExprs.size(); ++i) {
-      ASTNode grpbyExpr = grpByExprs.get(i);
-      ExprNodeDesc grpByExprNode = genExprNodeDesc(grpbyExpr, groupByInputRowResolver);
-
-      if ((grpByExprNode instanceof ExprNodeColumnDesc) && ExprNodeDescUtils.indexOf(grpByExprNode, groupByKeys) >= 0) {
-        // Skip duplicated grouping keys, it happens when define column alias.
-        continue;
-      }
-      groupByKeys.add(grpByExprNode);
-    }
-    return (1 << groupByKeys.size()) - 1;
   }
 
   /**
@@ -13663,12 +13644,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Don't know the characteristics of non-native tables,
     // and don't have a rational way to guess, so assume the most
     // conservative case.
-    if (isNonNativeTable) {
-      return WriteEntity.WriteType.INSERT_OVERWRITE;
-    } else {
-      return ((ltd.getLoadFileType() == LoadFileType.REPLACE_ALL)
-                           ? WriteEntity.WriteType.INSERT_OVERWRITE : getWriteType(dest));
-    }
+    if (isNonNativeTable) return WriteEntity.WriteType.INSERT_OVERWRITE;
+    else return ((ltd.getLoadFileType() == LoadFileType.REPLACE_ALL)
+                         ? WriteEntity.WriteType.INSERT_OVERWRITE : getWriteType(dest));
   }
 
   private WriteEntity.WriteType getWriteType(String dest) {
