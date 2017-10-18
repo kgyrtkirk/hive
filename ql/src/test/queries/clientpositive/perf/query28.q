@@ -1,5 +1,4 @@
 set hive.mapred.mode=nonstrict;
-set hive.optimize.metadataonly=true;
 
 -- start query 1 in stream 0 using template query28.tpl and seed 444293455
 explain
@@ -56,4 +55,3 @@ limit 100;
 
 -- end query 1 in stream 0 using template query28.tpl
 
-set hive.optimize.metadataonly=false;
