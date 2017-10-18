@@ -86,6 +86,7 @@ public class CorePerfCliDriver extends CliAdapter{
 
   @Override
   public void setUp() {
+      qt.clearPostTestEffects();
   }
 
   @Override
