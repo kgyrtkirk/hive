@@ -226,9 +226,9 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     // Initialize the constants for the grouping sets, so that they can be re-used for
     // each row
     groupingSetsPresent = conf.isGroupingSetsPresent();
-    groupingSets = conf.getListGroupingSets();
-    groupingSetsPosition = conf.getGroupingSetPosition();
     if (groupingSetsPresent) {
+      groupingSets = conf.getListGroupingSets();
+      groupingSetsPosition = conf.getGroupingSetPosition();
       newKeysGroupingSets = new IntWritable[groupingSets.size()];
       groupingSetsBitSet = new FastBitSet[groupingSets.size()];
 
@@ -1118,8 +1118,9 @@ public class GroupByOperator extends Operator<GroupByDesc> {
           }
 
           Object[] keys=new Object[outputKeyLength];
-          if (groupingSetsPosition >= 0) {
-            keys[groupingSetsPosition] = new IntWritable((1 << groupingSetsPosition) - 1);
+          int pos = conf.getGroupingSetPosition();
+          if (pos >= 0) {
+            keys[pos] = new IntWritable((1 << pos) - 1);
           }
           forward(keys, aggregations);
         } else {
