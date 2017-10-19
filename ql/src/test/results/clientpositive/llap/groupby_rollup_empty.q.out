@@ -89,7 +89,7 @@ POSTHOOK: Input: default@tx1
 NULL	1	NULL,1
 PREHOOK: query: select  sum(c),
         grouping(b),
-	'NULL,1' as expected
+	'1,1 and 1,0' as expected
 from    tx1
 group by rollup (b)
 PREHOOK: type: QUERY
@@ -97,11 +97,11 @@ PREHOOK: Input: default@tx1
 #### A masked pattern was here ####
 POSTHOOK: query: select  sum(c),
         grouping(b),
-	'NULL,1' as expected
+	'1,1 and 1,0' as expected
 from    tx1
 group by rollup (b)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx1
 #### A masked pattern was here ####
-1	1	NULL,1
-1	0	NULL,1
+1	1	1,1 and 1,0
+1	0	1,1 and 1,0
