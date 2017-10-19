@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.exec.tez.TezContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
@@ -1095,7 +1094,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     if (!abort) {
       try {
         // If there is no grouping key and no row came to this operator
-        if (firstRow && isEmptyGroupingSetPresent() && areWe()) {
+        if (firstRow && conf.shouldEmitSummaryRow()) {
           firstRow = false;
 
           // There is no grouping key - simulate a null row
@@ -1180,29 +1179,6 @@ public class GroupByOperator extends Operator<GroupByDesc> {
   public boolean acceptLimitPushdown() {
     return getConf().getMode() == GroupByDesc.Mode.MERGEPARTIAL ||
         getConf().getMode() == GroupByDesc.Mode.COMPLETE;
-  }
-
-  public boolean isEmptyGroupingSetPresent() {
-    if (keyFields.length == 0) {
-      return true;
-    }
-    // groupingSets are known at map/reducer side; but have to do real processing
-    // hence grouppingSetsPresent is true only at map side
-    if (groupingSetsPosition >= 0 && groupingSets != null) {
-      Integer emptyGrouping = (1 << groupingSetsPosition) - 1;
-      if (groupingSets.contains(emptyGrouping)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  public boolean areWe() {
-    if (!isTez) {
-      return true;
-    }
-    TezContext tezContext = (org.apache.hadoop.hive.ql.exec.tez.TezContext) org.apache.hadoop.hive.ql.exec.tez.TezContext.get();
-    return tezContext.getTezProcessorContext().getTaskIndex() == 0;
   }
 
 }
