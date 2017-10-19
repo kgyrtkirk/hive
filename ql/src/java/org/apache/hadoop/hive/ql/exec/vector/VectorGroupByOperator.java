@@ -36,18 +36,15 @@ import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc;
-import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc.ProcessingMode;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -844,6 +841,18 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
 
     @Override
     public void close(boolean aborted) throws HiveException {
+      if(true) {
+        VectorHashKeyWrapper kw = keyWrappersBatch.getVectorHashKeyWrappers()[0];
+        int pos = conf.getGroupingSetPosition();
+
+        long val = (1 << pos) - 1;
+        keyWrappersBatch.setLongValue(kw, pos, val);
+        //        ConstantVectorExpression gsExpr = (ConstantVectorExpression) keyExpressions[pos];
+        //        int oCol = pos;//gsExpr.getOutputColumn();
+        //        kw.assignLong(oCol, val);
+        //        VectorHashKeyWrapper kw =new VectorHashKeyWrapper;
+        writeSingleRow(kw , groupAggregators);
+      }
       if (!aborted && !first && !isLastGroupBatch) {
         writeGroupRow(groupAggregators, buffer);
       }

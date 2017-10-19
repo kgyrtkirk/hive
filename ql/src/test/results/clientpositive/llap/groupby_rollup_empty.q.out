@@ -109,11 +109,11 @@ POSTHOOK: Input: default@tx1
 #### A masked pattern was here ####
 1	1	1,1 and 1,0
 1	0	1,1 and 1,0
-PREHOOK: query: create table tx2 (a integer,b integer,c integer) stored as orc
+PREHOOK: query: create table tx2 (a integer,b integer,c integer,d double,u string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tx2
-POSTHOOK: query: create table tx2 (a integer,b integer,c integer) stored as orc
+POSTHOOK: query: create table tx2 (a integer,b integer,c integer,d double,u string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tx2
@@ -169,10 +169,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
                           Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col3 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -198,22 +198,37 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: select sum(c),'NULL' as expected
+from tx2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tx2
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(c),'NULL' as expected
+from tx2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx2
+#### A masked pattern was here ####
+NULL	NULL
 PREHOOK: query: select  sum(c),
+	max(u),
+	'asd',
         grouping(b),
 	'NULL,1' as expected
 from    tx2
 where	a<0
-group by a,b grouping sets ((), b, a)
+group by a,b,d grouping sets ((), b, a, d)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tx2
 #### A masked pattern was here ####
 POSTHOOK: query: select  sum(c),
+	max(u),
+	'asd',
         grouping(b),
 	'NULL,1' as expected
 from    tx2
 where	a<0
-group by a,b grouping sets ((), b, a)
+group by a,b,d grouping sets ((), b, a, d)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx2
 #### A masked pattern was here ####
-NULL	1	NULL,1
+NULL	NULL	asd	1	NULL,1
