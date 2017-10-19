@@ -10,6 +10,14 @@ POSTHOOK: query: create table tx1 (a integer,b integer,c integer)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tx1
+PREHOOK: query: create table tx2 (a integer,b integer,c integer) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tx2
+POSTHOOK: query: create table tx2 (a integer,b integer,c integer) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tx2
 PREHOOK: query: select sum(c)
 from tx1
 PREHOOK: type: QUERY
@@ -38,6 +46,25 @@ where	a<0
 group by a,b grouping sets ((), b, a)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx1
+#### A masked pattern was here ####
+NULL	1	NULL,1
+PREHOOK: query: select  sum(c),
+        grouping(b),
+	'NULL,1' as expected
+from    tx2
+where	a<0
+group by a,b grouping sets ((), b, a)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tx2
+#### A masked pattern was here ####
+POSTHOOK: query: select  sum(c),
+        grouping(b),
+	'NULL,1' as expected
+from    tx2
+where	a<0
+group by a,b grouping sets ((), b, a)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx2
 #### A masked pattern was here ####
 NULL	1	NULL,1
 PREHOOK: query: select  sum(c),
