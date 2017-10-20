@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.tez.TezContext;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.udf.UDFType;
@@ -461,8 +462,9 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   public boolean firstReducer() {
-    TezContext tezContext = (org.apache.hadoop.hive.ql.exec.tez.TezContext) org.apache.hadoop.hive.ql.exec.tez.TezContext.get();
-    if (tezContext != null) {
+    MapredContext ctx = TezContext.get();
+    if (ctx != null && ctx instanceof TezContext) {
+      TezContext tezContext = (TezContext) ctx;
       return tezContext.getTezProcessorContext().getTaskIndex() == 0;
     }
     return true;
