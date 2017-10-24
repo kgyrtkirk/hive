@@ -121,7 +121,7 @@ public class ColStatsProcessor implements IStatsProcessor {
           if (isStatsReliable) {
             throw new HiveException("Statistics collection failed while (hive.stats.reliable)", e);
           } else {
-            LOG.debug("Because " + columnName + " is infinite or NaN, we skip stats.", e);
+            LOG.debug("Because {} is infinite or NaN, we skip stats.", columnName, e);
           }
         }
       }
