@@ -303,7 +303,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
 
   private int updatePartitions(Hive db, List<FooterStatCollector> scs, Table table) throws InvalidOperationException, HiveException {
 
-    String tableFullName = table.getDbName() + "." + table.getTableName();
+    String tableFullName = table.getFullyQualifiedName();
 
     if (scs.isEmpty()) {
       return 0;
@@ -311,7 +311,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     if (work.isStatsReliable()) {
       for (FooterStatCollector statsCollection : scs) {
         if (statsCollection.result == null) {
-          LOG.debug("Stats requested to be reliable. Empty stats found: " + statsCollection.partish.getSimpleName());
+          LOG.debug("Stats requested to be reliable. Empty stats found: {}", statsCollection.partish.getSimpleName());
           return -1;
         }
       }

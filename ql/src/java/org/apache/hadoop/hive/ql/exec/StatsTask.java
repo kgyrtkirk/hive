@@ -154,7 +154,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     int numThreads = HiveConf.getIntVar(conf, ConfVars.HIVE_STATS_GATHER_NUM_THREADS);
 
     ExecutorService executor = Executors.newFixedThreadPool(numThreads, new ThreadFactoryBuilder().setDaemon(true).setNameFormat("StatsNoJobTask-Thread-%d").build());
-    LOG.info("Initialized threadpool for stats computation with " + numThreads + " threads");
+    LOG.info("Initialized threadpool for stats computation with {} threads", numThreads);
     return executor;
   }
 }
