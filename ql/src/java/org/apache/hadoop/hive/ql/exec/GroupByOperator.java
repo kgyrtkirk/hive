@@ -1120,7 +1120,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
 
           Object[] keys=new Object[outputKeyLength];
           int pos = conf.getGroupingSetPosition();
-          if (pos >= 0) {
+          if (pos >= 0 && pos < outputKeyLength) {
             keys[pos] = new IntWritable((1 << pos) - 1);
           }
           forward(keys, aggregations);
