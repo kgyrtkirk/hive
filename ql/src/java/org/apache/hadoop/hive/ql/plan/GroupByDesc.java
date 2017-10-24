@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
@@ -438,10 +437,6 @@ public class GroupByDesc extends AbstractOperatorDesc {
           getBucketGroup() == otherDesc.getBucketGroup();
     }
     return false;
-  }
-
-  public boolean shouldEmitSummaryRow() {
-    return GroupByOperator.shouldEmitSummaryRow(this);
   }
 
 }

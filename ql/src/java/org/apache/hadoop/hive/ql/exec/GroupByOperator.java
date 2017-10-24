@@ -1095,7 +1095,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     if (!abort) {
       try {
         // If there is no grouping key and no row came to this operator
-        if (firstRow && conf.shouldEmitSummaryRow()) {
+        if (firstRow && GroupByOperator.shouldEmitSummaryRow(conf)) {
           firstRow = false;
 
           // There is no grouping key - simulate a null row

@@ -846,7 +846,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
       if (!aborted && !first && !isLastGroupBatch) {
         writeGroupRow(groupAggregators, buffer);
       }
-      if (!hasOutput && conf.shouldEmitSummaryRow()) {
+      if (!hasOutput && GroupByOperator.shouldEmitSummaryRow(conf)) {
         VectorHashKeyWrapper kw = keyWrappersBatch.getVectorHashKeyWrappers()[0];
         int pos = conf.getGroupingSetPosition();
         if (pos >= 0) {
