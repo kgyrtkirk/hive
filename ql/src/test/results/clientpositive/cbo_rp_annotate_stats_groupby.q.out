@@ -319,17 +319,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: state, locid
           Statistics: Num rows: 32 Data size: 2880 Basic stats: COMPLETE Column stats: COMPLETE
-          Select Operator
-            expressions: state (type: string), locid (type: int)
-            outputColumnNames: state, locid
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 32 Data size: 2880 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 32 Data size: 2880 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -372,17 +368,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: state, locid
           Statistics: Num rows: 24 Data size: 2160 Basic stats: COMPLETE Column stats: COMPLETE
-          Select Operator
-            expressions: state (type: string), locid (type: int)
-            outputColumnNames: state, locid
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 24 Data size: 2160 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 24 Data size: 2160 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -425,17 +417,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: state, locid
           Statistics: Num rows: 24 Data size: 2160 Basic stats: COMPLETE Column stats: COMPLETE
-          Select Operator
-            expressions: state (type: string), locid (type: int)
-            outputColumnNames: state, locid
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 24 Data size: 2160 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 24 Data size: 2160 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -478,17 +466,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: state, locid
           Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
-          Select Operator
-            expressions: state (type: string), locid (type: int)
-            outputColumnNames: state, locid
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -531,17 +515,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: state, locid
           Statistics: Num rows: 16 Data size: 1440 Basic stats: COMPLETE Column stats: COMPLETE
-          Select Operator
-            expressions: state (type: string), locid (type: int)
-            outputColumnNames: state, locid
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 16 Data size: 1440 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 16 Data size: 1440 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -584,17 +564,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: state, locid
           Statistics: Num rows: 24 Data size: 2160 Basic stats: COMPLETE Column stats: COMPLETE
-          Select Operator
-            expressions: state (type: string), locid (type: int)
-            outputColumnNames: state, locid
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 24 Data size: 2160 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 24 Data size: 2160 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -637,17 +613,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: state, locid
           Statistics: Num rows: 32 Data size: 2880 Basic stats: COMPLETE Column stats: COMPLETE
-          Select Operator
-            expressions: state (type: string), locid (type: int)
-            outputColumnNames: state, locid
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 32 Data size: 2880 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 32 Data size: 2880 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -739,17 +711,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: state, locid
           Statistics: Num rows: 16 Data size: 1440 Basic stats: COMPLETE Column stats: COMPLETE
-          Select Operator
-            expressions: state (type: string), locid (type: int)
-            outputColumnNames: state, locid
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 16 Data size: 1440 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 16 Data size: 1440 Basic stats: COMPLETE Column stats: COMPLETE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -841,17 +809,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: state, locid
           Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: state (type: string), locid (type: int)
-            outputColumnNames: state, locid
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -894,17 +858,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: state, locid
           Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: state (type: string), locid (type: int)
-            outputColumnNames: state, locid
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -947,17 +907,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: state, locid
           Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: state (type: string), locid (type: int)
-            outputColumnNames: state, locid
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1000,17 +956,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: state, locid
           Statistics: Num rows: 4 Data size: 398 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: state (type: string), locid (type: int)
-            outputColumnNames: state, locid
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 4 Data size: 398 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 4 Data size: 398 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1053,17 +1005,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: state, locid
           Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: state (type: string), locid (type: int)
-            outputColumnNames: state, locid
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1106,17 +1054,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: state, locid
           Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: state (type: string), locid (type: int)
-            outputColumnNames: state, locid
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1159,17 +1103,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: state, locid
           Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: state (type: string), locid (type: int)
-            outputColumnNames: state, locid
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1261,17 +1201,13 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: state, locid
           Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: state (type: string), locid (type: int)
-            outputColumnNames: state, locid
+          File Output Operator
+            compressed: false
             Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
