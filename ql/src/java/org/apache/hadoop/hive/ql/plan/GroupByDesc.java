@@ -24,8 +24,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.MapredContext;
-import org.apache.hadoop.hive.ql.exec.tez.TezContext;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
@@ -442,32 +441,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   public boolean shouldEmitSummaryRow() {
-    // exactly one reducer should emit the summary row
-    if (!firstReducer()) {
-      return false;
-    }
-    // empty keyset is basically ()
-    if (keys.size() == 0) {
-      return true;
-    }
-    // groupingSets are known at map/reducer side; but have to do real processing
-    // hence grouppingSetsPresent is true only at map side
-    if (groupingSetPosition >= 0 && listGroupingSets != null) {
-      Integer emptyGrouping = (1 << groupingSetPosition) - 1;
-      if (listGroupingSets.contains(emptyGrouping)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  public boolean firstReducer() {
-    MapredContext ctx = TezContext.get();
-    if (ctx != null && ctx instanceof TezContext) {
-      TezContext tezContext = (TezContext) ctx;
-      return tezContext.getTezProcessorContext().getTaskIndex() == 0;
-    }
-    return true;
+    return GroupByOperator.shouldEmitSummaryRow(this);
   }
 
 }

@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.exec.tez.TezContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
@@ -1180,6 +1181,37 @@ public class GroupByOperator extends Operator<GroupByDesc> {
   public boolean acceptLimitPushdown() {
     return getConf().getMode() == GroupByDesc.Mode.MERGEPARTIAL ||
         getConf().getMode() == GroupByDesc.Mode.COMPLETE;
+  }
+
+  public static boolean shouldEmitSummaryRow(GroupByDesc desc) {
+    // exactly one reducer should emit the summary row
+    if (!firstReducer()) {
+      return false;
+    }
+    // empty keyset is basically ()
+    if (desc.getKeys().size() == 0) {
+      return true;
+    }
+    int groupingSetPosition = desc.getGroupingSetPosition();
+    List<Integer> listGroupingSets = desc.getListGroupingSets();
+    // groupingSets are known at map/reducer side; but have to do real processing
+    // hence grouppingSetsPresent is true only at map side
+    if (groupingSetPosition >= 0 && listGroupingSets != null) {
+      Integer emptyGrouping = (1 << groupingSetPosition) - 1;
+      if (listGroupingSets.contains(emptyGrouping)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static boolean firstReducer() {
+    MapredContext ctx = TezContext.get();
+    if (ctx != null && ctx instanceof TezContext) {
+      TezContext tezContext = (TezContext) ctx;
+      return tezContext.getTezProcessorContext().getTaskIndex() == 0;
+    }
+    return true;
   }
 
 }
