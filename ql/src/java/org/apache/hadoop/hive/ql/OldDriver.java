@@ -130,7 +130,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
 
-public class OldDriver implements CommandProcessor {
+public class OldDriver implements Driver, CommandProcessor {
 
   public static final String MAPREDUCE_WORKFLOW_NODE_NAME = "mapreduce.workflow.node.name";
 
