@@ -32,12 +32,18 @@ public interface Driver extends CommandProcessor {
     return new OldDriver(queryState, userName, queryInfo);
   }
 
+  // FIXME seems unused (from CommandProcessor)
+  @Override
+  void init();
+
   QueryDisplay getQueryDisplay();
 
+  // FIXME: make this mandatory; move to a builder?
   void setOperationId(String guid64);
 
   void setTryCount(int maxValue);
 
+  // FIXME: this is the worst of all methods
   CommandProcessorResponse compileAndRespond(String statement);
 
   Schema getSchema();
@@ -48,17 +54,13 @@ public interface Driver extends CommandProcessor {
 
   // FIXME: remove ret type; add closeable
   int close();
-
   void destroy();
-
-  FetchTask getFetchTask();
 
   void setMaxRows(int maxRows);
 
+  FetchTask getFetchTask();
   void resetFetch() throws IOException;
-
   boolean getResults(List convey) throws IOException, CommandNeedRetryException;
-
   boolean isFetchingTable();
 
 }
