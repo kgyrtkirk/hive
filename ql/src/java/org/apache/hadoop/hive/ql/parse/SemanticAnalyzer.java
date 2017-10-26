@@ -7145,7 +7145,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // the following code is used to collect column stats when
     // hive.stats.autogather=true
     // and it is an insert overwrite or insert into table
-    if (dest_tab != null && !dest_tab.isNonNative()
+    if (dest_tab != null
         && conf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
         && conf.getBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER)
         && ColumnStatsAutoGatherContext.canRunAutogatherStats(fso)) {
