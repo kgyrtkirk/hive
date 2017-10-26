@@ -6936,7 +6936,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             ColumnStatistics csOld = getMS().getTableColumnStatistics(dbName, tableName, colNames);
             Table t = getTable(dbName, tableName);
             // we first use t.getParameters() to prune the stats
-            MetaStoreUtils.pruneColumnStats(firstColStats, t.getParameters());
+            MetaStoreUtils.getMergableCols(firstColStats, t.getParameters());
             // we merge those that can be merged
             if (csOld != null && csOld.getStatsObjSize() != 0
                 && !firstColStats.getStatsObj().isEmpty()) {
@@ -6994,7 +6994,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ColumnStatistics csOld = oldStatsMap.get(entry.getKey());
           if (request.isSetNeedMerge() && request.isNeedMerge()) {
             // we first use getParameters() to prune the stats
-            MetaStoreUtils.pruneColumnStats(csNew, mapToPart.get(entry.getKey()).getParameters());
+            MetaStoreUtils.getMergableCols(csNew, mapToPart.get(entry.getKey()).getParameters());
             // we merge those that can be merged
             if (csOld != null && csOld.getStatsObjSize() != 0 && !csNew.getStatsObj().isEmpty()) {
               MetaStoreUtils.mergeColStats(csNew, csOld);

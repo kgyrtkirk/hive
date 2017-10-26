@@ -157,7 +157,6 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       // XXX: makes no sense for me... possibly not needed anymore
       if (work.isClearAggregatorStats()) {
         // we choose to keep the invalid stats and only change the setting.
-        // FIXME: invalidating numRows would be preferred here...instead keeping anything
         StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
       }
 
@@ -167,8 +166,6 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
           String prefix = getAggregationPrefix(p.getTable(), p.getPartition());
           updateStats(statsAggregator, parameters, prefix, atomic);
         }
-      } else {
-        // FIXME: if not collected remove fields?
       }
 
       return p.getOutput();
