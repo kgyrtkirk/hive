@@ -229,8 +229,9 @@ public class Driver implements CommandProcessor {
     }
 
     public static void removeLockedDriverState() {
-      if (lds != null)
+      if (lds != null) {
         lds.remove();
+      }
     }
   }
 
@@ -241,11 +242,6 @@ public class Driver implements CommandProcessor {
       return false;
     }
     return true;
-  }
-
-  @Override
-  public void init() {
-    // Nothing for now.
   }
 
   /**

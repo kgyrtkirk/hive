@@ -95,7 +95,6 @@ public class TestDbTxnManager2 {
     SessionState.start(conf);
     ctx = new Context(conf);
     driver = new Driver(conf);
-    driver.init();
     TxnDbUtil.cleanDb(conf);
     TxnDbUtil.prepDb(conf);
     SessionState ss = SessionState.get();
@@ -108,7 +107,9 @@ public class TestDbTxnManager2 {
   @After
   public void tearDown() throws Exception {
     driver.close();
-    if (txnMgr != null) txnMgr.closeTxnManager();
+    if (txnMgr != null) {
+      txnMgr.closeTxnManager();
+    }
   }
 
   /**
