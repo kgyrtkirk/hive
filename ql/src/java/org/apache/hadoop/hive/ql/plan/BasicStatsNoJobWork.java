@@ -32,13 +32,10 @@ public class BasicStatsNoJobWork implements Serializable {
 
   private TableSpec tableSpecs;
   private boolean statsReliable;
-  //  private PrunedPartitionList prunedPartitionList;
 
   private Set<Partition> pp;
 
-  public
-  //public
-  BasicStatsNoJobWork(TableSpec tableSpecs) {
+  public BasicStatsNoJobWork(TableSpec tableSpecs) {
     this.tableSpecs = tableSpecs;
   }
 
@@ -59,7 +56,7 @@ public class BasicStatsNoJobWork implements Serializable {
   }
 
   public void setPartitions(Set<Partition> partitions) {
-   pp=partitions;
+    pp = partitions;
 
   }
 

@@ -204,25 +204,13 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
           result = new Table(partish.getTable().getTTable());
         }
 
-        // printout console and debug logs
-        String threadName = Thread.currentThread().getName();
-        //          partish.getSimpleName();
         String msg = partish.getSimpleName() + " stats: [" + toString(parameters) + ']';
-        LOG.debug(threadName + ": " + msg);
+        LOG.debug(msg);
         console.printInfo(msg);
 
       } catch (Exception e) {
         console.printInfo("[Warning] could not update stats for " + partish.getSimpleName() + ".", "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
-        if (isStatsReliable()) {
-          // XXX: possibly a bad idea?
-          // notify somehow!
-          //          throw new HiveException("Could not update stats for: " + partish.getSimpleName(), e);
-        }
       }
-    }
-
-    private boolean isStatsReliable() {
-      return false;
     }
 
     private String toString(Map<String, String> parameters) {
