@@ -72,7 +72,6 @@ import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.io.orc.OrcFileStripeMergeInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -1508,7 +1507,7 @@ public final class GenMapRedUtils {
       try {
         table = mvWork.getLoadFileWork().getCtasCreateTableDesc().toTable(hconf);
       } catch (HiveException e) {
-        LOG.debug("can pre-create table", e);
+        LOG.debug("can't pre-create table", e);
         table = null;
       }
     }
@@ -1607,7 +1606,7 @@ public final class GenMapRedUtils {
    */
   public static MapWork createMergeTask(FileSinkDesc fsInputDesc, Path finalName,
       boolean hasDynamicPartitions, CompilationOpContext ctx) throws SemanticException {
-    
+
     Path inputDir = fsInputDesc.getMergeInputDirName();
 
     TableDesc tblDesc = fsInputDesc.getTableInfo();
@@ -1888,7 +1887,9 @@ public final class GenMapRedUtils {
   public static boolean isMergeRequired(List<Task<MoveWork>> mvTasks, HiveConf hconf,
       FileSinkOperator fsOp, Task<? extends Serializable> currTask, boolean isInsertTable) {
     // Has the user enabled merging of files for map-only jobs or for all jobs
-    if (mvTasks == null  || mvTasks.isEmpty()) return false;
+    if (mvTasks == null  || mvTasks.isEmpty()) {
+      return false;
+    }
 
     // no need of merging if the move is to a local file system
     // We are looking based on the original FSOP, so use the original path as is.
@@ -1906,7 +1907,9 @@ public final class GenMapRedUtils {
       }
     }
 
-    if (mvTask == null || mvTask.isLocal() || !fsOp.getConf().canBeMerged()) return false;
+    if (mvTask == null || mvTask.isLocal() || !fsOp.getConf().canBeMerged()) {
+      return false;
+    }
 
     if (currTask.getWork() instanceof TezWork) {
       // tez blurs the boundary between map and reduce, thus it has it's own config

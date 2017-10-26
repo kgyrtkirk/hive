@@ -389,7 +389,7 @@ public abstract class TaskCompiler {
     if (table.isPartitioned()) {
       partitions.addAll(parseContext.getPrunedPartitions(tableScan).getPartitions());
       for (Partition partn : partitions) {
-        LOG.debug("XXX: adding part: " + partn);
+        LOG.trace("adding part: " + partn);
         outputs.add(new WriteEntity(partn, WriteEntity.WriteType.DDL_NO_LOCK));
       }
     }
@@ -403,7 +403,6 @@ public abstract class TaskCompiler {
       // If partition is specified, get pruned partition list
       if (partitions.size() > 0) {
         columnStatsWork.addInputPartitions(parseContext.getPrunedPartitions(tableScan).getPartitions());
-        //        snjWork.setPrunedPartitionList(parseContext.getPrunedPartitions(tableScan));
       }
       return TaskFactory.get(columnStatsWork, parseContext.getConf());
     } else {

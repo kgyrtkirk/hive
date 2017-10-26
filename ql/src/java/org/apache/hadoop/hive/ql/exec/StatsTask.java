@@ -71,8 +71,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       BasicStatsTask task = new BasicStatsTask(conf, work.getBasicStatsWork());
       task.followedColStats = work.hasColStats();
       processors.add(0, task);
-    }
-    if (work.isFooterScan()) {
+    } else if (work.isFooterScan()) {
       BasicStatsNoJobTask t = new BasicStatsNoJobTask(conf, work.getBasicStatsNoJobWork());
       processors.add(0, t);
     }
@@ -92,8 +91,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       return 0;
     }
     if (work.isAggregating() && work.isFooterScan()) {
-      LOG.error("Can not have both basic stats work and stats no job work!");
-      return 1;
+      throw new RuntimeException("Can not have both basic stats work and stats no job work!");
     }
     int ret = 0;
     try {

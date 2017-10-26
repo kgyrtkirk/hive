@@ -56,17 +56,6 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
       if (createTableDesc != null && createTableDesc.isCTAS()) {
         ctasCreateTableDesc = createTableDesc;
     }
-    //    if (createTableDesc != null && createTableDesc.getDatabaseName() != null
-    //        && createTableDesc.getTableName() != null) {
-    //
-    //      destinationCreateTable = (createTableDesc.getTableName().contains(".") ? "" : createTableDesc
-    //          .getDatabaseName() + ".")
-    //          + createTableDesc.getTableName();
-    //    } else if (createViewDesc != null) {
-    //      // The work is already done in analyzeCreateView to assure that the view name is fully
-    //      // qualified.
-    //      destinationCreateTable = createViewDesc.getViewName();
-    //    }
   }
 
   public LoadFileDesc(final Path sourcePath, final Path targetDir,
