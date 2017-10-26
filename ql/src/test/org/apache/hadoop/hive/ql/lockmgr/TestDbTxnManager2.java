@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.OldDriver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -77,10 +77,10 @@ import java.util.Map;
  */
 public class TestDbTxnManager2 {
   private static final Logger LOG = LoggerFactory.getLogger(TestDbTxnManager2.class);
-  private static HiveConf conf = new HiveConf(Driver.class);
+  private static HiveConf conf = new HiveConf(OldDriver.class);
   private HiveTxnManager txnMgr;
   private Context ctx;
-  private Driver driver;
+  private OldDriver driver;
   private TxnStore txnHandler;
 
   public TestDbTxnManager2() throws Exception {
@@ -94,7 +94,7 @@ public class TestDbTxnManager2 {
   public void setUp() throws Exception {
     SessionState.start(conf);
     ctx = new Context(conf);
-    driver = new Driver(conf);
+    driver = new OldDriver(conf);
     driver.init();
     TxnDbUtil.cleanDb(conf);
     TxnDbUtil.prepDb(conf);

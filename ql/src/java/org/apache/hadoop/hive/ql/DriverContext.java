@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DriverContext {
 
-  private static final Logger LOG = LoggerFactory.getLogger(Driver.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(OldDriver.class.getName());
   private static final SessionState.LogHelper console = new SessionState.LogHelper(LOG);
 
   private static final int SLEEP_TIME = 2000;

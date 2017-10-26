@@ -130,11 +130,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
 
-public class Driver implements CommandProcessor {
+public class OldDriver implements CommandProcessor {
 
   public static final String MAPREDUCE_WORKFLOW_NODE_NAME = "mapreduce.workflow.node.name";
 
-  static final private String CLASS_NAME = Driver.class.getName();
+  static final private String CLASS_NAME = OldDriver.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   static final private LogHelper console = new LogHelper(LOG);
   static final int SHUTDOWN_HOOK_PRIORITY = 0;
@@ -229,8 +229,9 @@ public class Driver implements CommandProcessor {
     }
 
     public static void removeLockedDriverState() {
-      if (lds != null)
+      if (lds != null) {
         lds.remove();
+      }
     }
   }
 
@@ -359,45 +360,45 @@ public class Driver implements CommandProcessor {
     this.maxRows = maxRows;
   }
 
-  public Driver() {
+  public OldDriver() {
     this(getNewQueryState((SessionState.get() != null) ?
         SessionState.get().getConf() : new HiveConf()), null);
   }
 
-  public Driver(HiveConf conf) {
+  public OldDriver(HiveConf conf) {
     this(getNewQueryState(conf), null);
   }
 
-  public Driver(HiveConf conf, HiveTxnManager txnMgr) {
+  public OldDriver(HiveConf conf, HiveTxnManager txnMgr) {
     this(getNewQueryState(conf), null, null, txnMgr);
   }
 
-  public Driver(HiveConf conf, Context ctx) {
+  public OldDriver(HiveConf conf, Context ctx) {
     this(getNewQueryState(conf), null, null);
     this.ctx = ctx;
   }
 
-  public Driver(HiveConf conf, String userName) {
+  public OldDriver(HiveConf conf, String userName) {
     this(getNewQueryState(conf), userName, null);
   }
 
-  public Driver(QueryState queryState, String userName) {
+  public OldDriver(QueryState queryState, String userName) {
     this(queryState, userName, new HooksLoader(queryState.getConf()), null, null);
   }
 
-  public Driver(HiveConf conf, HooksLoader hooksLoader) {
+  public OldDriver(HiveConf conf, HooksLoader hooksLoader) {
     this(getNewQueryState(conf), null, hooksLoader, null, null);
   }
 
-  public Driver(QueryState queryState, String userName, QueryInfo queryInfo) {
+  public OldDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
      this(queryState, userName, new HooksLoader(queryState.getConf()), queryInfo, null);
   }
 
-  public Driver(QueryState queryState, String userName, QueryInfo queryInfo, HiveTxnManager txnMgr) {
+  public OldDriver(QueryState queryState, String userName, QueryInfo queryInfo, HiveTxnManager txnMgr) {
     this(queryState, userName, new HooksLoader(queryState.getConf()), queryInfo, txnMgr);
   }
 
-  public Driver(QueryState queryState, String userName, HooksLoader hooksLoader, QueryInfo queryInfo, HiveTxnManager txnMgr) {
+  public OldDriver(QueryState queryState, String userName, HooksLoader hooksLoader, QueryInfo queryInfo, HiveTxnManager txnMgr) {
     this.queryState = queryState;
     this.conf = queryState.getConf();
     isParallelEnabled = (conf != null)

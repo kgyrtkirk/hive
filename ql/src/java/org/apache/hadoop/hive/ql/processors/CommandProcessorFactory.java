@@ -30,7 +30,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.OldDriver;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -44,7 +44,7 @@ public final class CommandProcessorFactory {
     // prevent instantiation
   }
 
-  private static final Map<HiveConf, Driver> mapDrivers = Collections.synchronizedMap(new HashMap<HiveConf, Driver>());
+  private static final Map<HiveConf, OldDriver> mapDrivers = Collections.synchronizedMap(new HashMap<HiveConf, OldDriver>());
 
   public static CommandProcessor get(String cmd)
       throws SQLException {
@@ -119,11 +119,11 @@ public final class CommandProcessorFactory {
       return null;
     } else {
       if (conf == null) {
-        return new Driver();
+        return new OldDriver();
       }
-      Driver drv = mapDrivers.get(conf);
+      OldDriver drv = mapDrivers.get(conf);
       if (drv == null) {
-        drv = new Driver();
+        drv = new OldDriver();
         mapDrivers.put(conf, drv);
       } else {
         drv.resetQueryState();
@@ -134,7 +134,7 @@ public final class CommandProcessorFactory {
   }
 
   public static void clean(HiveConf conf) {
-    Driver drv = mapDrivers.get(conf);
+    OldDriver drv = mapDrivers.get(conf);
     if (drv != null) {
       drv.destroy();
     }
