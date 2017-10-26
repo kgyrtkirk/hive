@@ -1614,7 +1614,7 @@ public class Driver implements CommandProcessor {
         return resp;
       }
 
-      ret = executeTrue();
+      ret = execute();
       if (ret != 0) {
         //if needRequireLock is false, the release here will do nothing because there is no lock
         return rollback(createProcessorResponse(ret));
@@ -1761,7 +1761,7 @@ public class Driver implements CommandProcessor {
     return new CommandProcessorResponse(ret, errorMessage, SQLState, downstreamError);
   }
 
-  private int executeTrue() throws CommandNeedRetryException {
+  private int execute() throws CommandNeedRetryException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
 
@@ -2107,7 +2107,6 @@ public class Driver implements CommandProcessor {
       lDrvState.stateLock.lock();
       try {
         if (isInterrupted) {
-          // FIXME: this is odd...after inlining this became empty
         } else {
           lDrvState.driverState = executionError ? DriverState.ERROR : DriverState.EXECUTED;
         }
