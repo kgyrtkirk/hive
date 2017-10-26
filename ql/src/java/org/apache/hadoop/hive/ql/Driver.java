@@ -1605,17 +1605,15 @@ public class Driver implements CommandProcessor {
       // same instance of Driver, which can run multiple queries.
       ctx.setHiveTxnManager(queryTxnMgr);
 
-      if (requiresLock()) {
-        // a checkpoint to see if the thread is interrupted or not before an expensive operation
-        if (isInterrupted()) {
-          ret = handleInterruption("at acquiring the lock.");
-        } else {
-          ret = acquireLocks();
-        }
-        if (ret != 0) {
-          return rollback(createProcessorResponse(ret));
-        }
+      if (isInterrupted()) {
+        return createProcessorResponse(handleInterruption("at acquiring the lock."));
       }
+
+      CommandProcessorResponse resp = lockAndRespond();
+      if (resp.failed()) {
+        return resp;
+      }
+
       ret = execute(true);
       if (ret != 0) {
         //if needRequireLock is false, the release here will do nothing because there is no lock
@@ -1678,6 +1676,7 @@ public class Driver implements CommandProcessor {
   }
 
   private CommandProcessorResponse rollback(CommandProcessorResponse cpr) {
+
     //console.printError(cpr.toString());
     try {
       releaseLocksAndCommitOrRollback(false);
