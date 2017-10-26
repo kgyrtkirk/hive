@@ -837,6 +837,8 @@ public class QTestUtil {
     // Find second dot, instead of last dot, to be safe
     int pos = version.indexOf('.');
     pos = version.indexOf('.', pos + 1);
+    if(pos == -1)
+      return version;
     return version.substring(0, pos);
   }
 
