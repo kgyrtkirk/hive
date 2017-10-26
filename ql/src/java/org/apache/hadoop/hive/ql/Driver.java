@@ -1761,11 +1761,11 @@ public class Driver implements CommandProcessor {
     return new CommandProcessorResponse(ret, errorMessage, SQLState, downstreamError);
   }
 
-  public int execute() throws CommandNeedRetryException {
+  private int execute() throws CommandNeedRetryException {
     return execute(false);
   }
 
-  public int execute(boolean deferClose) throws CommandNeedRetryException {
+  private int execute(boolean deferClose) throws CommandNeedRetryException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
 
