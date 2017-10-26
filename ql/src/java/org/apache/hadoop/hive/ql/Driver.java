@@ -1614,7 +1614,7 @@ public class Driver implements CommandProcessor {
         return resp;
       }
 
-      ret = execute(true);
+      ret = executeTrue();
       if (ret != 0) {
         //if needRequireLock is false, the release here will do nothing because there is no lock
         return rollback(createProcessorResponse(ret));
@@ -1759,6 +1759,10 @@ public class Driver implements CommandProcessor {
       }
     }
     return new CommandProcessorResponse(ret, errorMessage, SQLState, downstreamError);
+  }
+
+  private int executeTrue() throws CommandNeedRetryException {
+    return execute(true);
   }
 
   private int execute(boolean deferClose) throws CommandNeedRetryException {
