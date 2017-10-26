@@ -18,6 +18,47 @@
 
 package org.apache.hadoop.hive.ql;
 
-public interface Driver {
+import java.io.IOException;
+import java.util.List;
+
+import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.processors.CommandProcessor;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+
+public interface Driver extends CommandProcessor {
+
+  static Driver build0(QueryState queryState, String userName, QueryInfo queryInfo) {
+    return new OldDriver(queryState, userName, queryInfo);
+  }
+
+  QueryDisplay getQueryDisplay();
+
+  void setOperationId(String guid64);
+
+  void setTryCount(int maxValue);
+
+  CommandProcessorResponse compileAndRespond(String statement);
+
+  Schema getSchema();
+
+  QueryPlan getPlan();
+
+  CommandProcessorResponse run() throws CommandNeedRetryException;
+
+  // FIXME: remove ret type; add closeable
+  int close();
+
+  void destroy();
+
+  FetchTask getFetchTask();
+
+  void setMaxRows(int maxRows);
+
+  void resetFetch() throws IOException;
+
+  boolean getResults(List convey) throws IOException, CommandNeedRetryException;
+
+  boolean isFetchingTable();
 
 }

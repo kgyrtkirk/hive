@@ -267,6 +267,7 @@ public class OldDriver implements Driver, CommandProcessor {
   }
 
 
+  @Override
   public Schema getSchema() {
     return schema;
   }
@@ -356,6 +357,7 @@ public class OldDriver implements Driver, CommandProcessor {
   /**
    * Set the maximum number of rows returned by getResults
    */
+  @Override
   public void setMaxRows(int maxRows) {
     this.maxRows = maxRows;
   }
@@ -1172,6 +1174,7 @@ public class OldDriver implements Driver, CommandProcessor {
   /**
    * @return The current query plan associated with this Driver, if any.
    */
+  @Override
   public QueryPlan getPlan() {
     return plan;
   }
@@ -1179,6 +1182,7 @@ public class OldDriver implements Driver, CommandProcessor {
   /**
    * @return The current FetchTask associated with the Driver's plan, if any.
    */
+  @Override
   public FetchTask getFetchTask() {
     return fetchTask;
   }
@@ -1353,6 +1357,7 @@ public class OldDriver implements Driver, CommandProcessor {
     return run(command, false);
   }
 
+  @Override
   public CommandProcessorResponse run()
       throws CommandNeedRetryException {
     return run(null, true);
@@ -1417,6 +1422,7 @@ public class OldDriver implements Driver, CommandProcessor {
     return cpr;
   }
 
+  @Override
   public CommandProcessorResponse compileAndRespond(String command) {
     return createProcessorResponse(compileInternal(command, false));
   }
@@ -2279,10 +2285,12 @@ public class OldDriver implements Driver, CommandProcessor {
     return tskRun;
   }
 
+  @Override
   public boolean isFetchingTable() {
     return fetchTask != null;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public boolean getResults(List res) throws IOException, CommandNeedRetryException {
     if (lDrvState.driverState == DriverState.DESTROYED || lDrvState.driverState == DriverState.CLOSED) {
@@ -2348,6 +2356,7 @@ public class OldDriver implements Driver, CommandProcessor {
     return true;
   }
 
+  @Override
   public void resetFetch() throws IOException {
     if (lDrvState.driverState == DriverState.DESTROYED || lDrvState.driverState == DriverState.CLOSED) {
       throw new IOException("FAILED: driver has been cancelled, closed or destroyed.");
@@ -2370,6 +2379,7 @@ public class OldDriver implements Driver, CommandProcessor {
     return tryCount;
   }
 
+  @Override
   public void setTryCount(int tryCount) {
     this.tryCount = tryCount;
   }
@@ -2468,6 +2478,7 @@ public class OldDriver implements Driver, CommandProcessor {
   }
 
   // is called to stop the query if it is running, clean query results, and release resources.
+  @Override
   public int close() {
     lDrvState.stateLock.lock();
     try {
@@ -2495,6 +2506,7 @@ public class OldDriver implements Driver, CommandProcessor {
 
   // is usually called after close() to commit or rollback a query and end the driver life cycle.
   // do not understand why it is needed and wonder if it could be combined with close.
+  @Override
   public void destroy() {
     lDrvState.stateLock.lock();
     try {
@@ -2530,6 +2542,7 @@ public class OldDriver implements Driver, CommandProcessor {
   }
 
 
+  @Override
   public QueryDisplay getQueryDisplay() {
     return queryDisplay;
   }
@@ -2538,6 +2551,7 @@ public class OldDriver implements Driver, CommandProcessor {
    * Set the HS2 operation handle's guid string
    * @param opId base64 encoded guid string
    */
+  @Override
   public void setOperationId(String opId) {
     this.operationId = opId;
   }
