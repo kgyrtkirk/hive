@@ -1762,10 +1762,6 @@ public class Driver implements CommandProcessor {
   }
 
   private int executeTrue() throws CommandNeedRetryException {
-    return execute(true);
-  }
-
-  private int execute(boolean deferClose) throws CommandNeedRetryException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
 
@@ -2108,15 +2104,10 @@ public class Driver implements CommandProcessor {
         console.printInfo("Total MapReduce CPU Time Spent: " + Utilities.formatMsecToStr(totalCpu));
       }
       boolean isInterrupted = isInterrupted();
-      if (isInterrupted && !deferClose) {
-        closeInProcess(true);
-      }
       lDrvState.stateLock.lock();
       try {
         if (isInterrupted) {
-          if (!deferClose) {
-            lDrvState.driverState = DriverState.ERROR;
-          }
+          // FIXME: this is odd...after inlining this became empty
         } else {
           lDrvState.driverState = executionError ? DriverState.ERROR : DriverState.EXECUTED;
         }
