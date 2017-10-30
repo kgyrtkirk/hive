@@ -329,7 +329,6 @@ public class StatsUtils {
       Table table, List<ColumnInfo> schema, List<String> neededColumns, ColumnStatsList colStatsCache,
       List<String> referencedColumns, boolean fetchColStats, boolean failIfCacheMiss)
       throws HiveException {
-    final boolean fetchPartStats = true;
 
     Statistics stats = new Statistics();
 
@@ -372,19 +371,14 @@ public class StatsUtils {
       List<Long> rowCounts = Lists.newArrayList();
       List<Long> dataSizes = Lists.newArrayList();
 
-      if (fetchPartStats) {
-        rowCounts = getBasicStatForPartitions(
-            table, partList.getNotDeniedPartns(), StatsSetupConst.ROW_COUNT);
-        dataSizes =  getBasicStatForPartitions(
-            table, partList.getNotDeniedPartns(), StatsSetupConst.RAW_DATA_SIZE);
+      rowCounts = getBasicStatForPartitions(table, partList.getNotDeniedPartns(), StatsSetupConst.ROW_COUNT);
+      dataSizes = getBasicStatForPartitions(table, partList.getNotDeniedPartns(), StatsSetupConst.RAW_DATA_SIZE);
 
-        nr = getSumIgnoreNegatives(rowCounts);
+      nr = getSumIgnoreNegatives(rowCounts);
+      ds = getSumIgnoreNegatives(dataSizes);
+      if (ds <= 0) {
+        dataSizes = getBasicStatForPartitions(table, partList.getNotDeniedPartns(), StatsSetupConst.TOTAL_SIZE);
         ds = getSumIgnoreNegatives(dataSizes);
-        if (ds <= 0) {
-          dataSizes = getBasicStatForPartitions(
-              table, partList.getNotDeniedPartns(), StatsSetupConst.TOTAL_SIZE);
-          ds = getSumIgnoreNegatives(dataSizes);
-        }
       }
 
       // if data size still could not be determined, then fall back to filesytem to get file
