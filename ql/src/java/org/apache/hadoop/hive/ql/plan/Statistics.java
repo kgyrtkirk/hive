@@ -19,9 +19,11 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import com.google.common.collect.Lists;
@@ -36,6 +38,61 @@ public class Statistics implements Serializable {
 
   public enum State {
     COMPLETE, PARTIAL, NONE
+  }
+
+  public static class BasicStats {
+    public final long numFiles;
+    public final long rowCount;
+    public final long totalSize;
+    public final long rawDataSize;
+    public final State state;
+
+    private BasicStats(long numFiles, long rowCount, long totalSize, long rawDataSize, State state) {
+      this.numFiles = numFiles;
+      this.rowCount = rowCount;
+      this.totalSize = totalSize;
+      this.rawDataSize = rawDataSize;
+      this.state = state;
+    }
+
+    public static BasicStats parse(Map<String, String> tableProperties) {
+
+      long nF = parseLongProp(tableProperties, StatsSetupConst.NUM_FILES, -1);
+      long rC = parseLongProp(tableProperties, StatsSetupConst.ROW_COUNT, -1);
+      long tS = parseLongProp(tableProperties, StatsSetupConst.TOTAL_SIZE, -1);
+      long rDS = parseLongProp(tableProperties, StatsSetupConst.RAW_DATA_SIZE, -1);
+
+      State state;
+      if (numRows <= 0 && dataSize <= 0) {
+        this.basicStatsState = State.NONE;
+      } else if (numRows <= 0 || dataSize <= 0) {
+        this.basicStatsState = State.PARTIAL;
+      } else {
+        this.basicStatsState = State.COMPLETE;
+      }
+
+      return new BasicStats(nF, rC, tS, rDS, state);
+    }
+
+    private static long parseLongProp(Map<String, String> properties, String propKey, long defaultValue) {
+      if (properties != null) {
+        String propValue = properties.get(propKey);
+        if (propValue == null) {
+          return defaultValue;
+        }
+        try {
+            return Long.parseLong(propValue);
+        } catch (NumberFormatException e) {
+        }
+      }
+      return defaultValue;
+    }
+
+    public static List<Statistics> merge(Collection<BasicStats> partitionStats) {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
   }
 
   private long numRows;

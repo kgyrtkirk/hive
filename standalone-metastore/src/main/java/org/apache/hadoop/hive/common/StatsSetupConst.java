@@ -78,7 +78,7 @@ public class StatsSetupConst {
 
   // statistics stored in metastore
   /**
-   * The name of the statistic Num Files to be published or gathered.
+   * Number of files the table consists from.
    */
   public static final String NUM_FILES = "numFiles";
 
@@ -88,19 +88,19 @@ public class StatsSetupConst {
   public static final String NUM_PARTITIONS = "numPartitions";
 
   /**
-   * The name of the statistic Total Size to be published or gathered.
+   * The size of the table data as seen at the filesystem level.
    */
   public static final String TOTAL_SIZE = "totalSize";
 
   /**
-   * The name of the statistic Row Count to be published or gathered.
+   * Number of rows the table contains.
    */
   public static final String ROW_COUNT = "numRows";
 
   public static final String RUN_TIME_ROW_COUNT = "runTimeNumRows";
 
   /**
-   * The name of the statistic Raw Data Size to be published or gathered.
+   * Uncompressed table data size.
    */
   public static final String RAW_DATA_SIZE = "rawDataSize";
 
@@ -178,6 +178,7 @@ public class StatsSetupConst {
 
     static class BooleanDeserializer extends JsonDeserializer<Boolean> {
 
+      @Override
       public Boolean deserialize(JsonParser jsonParser,
           DeserializationContext deserializationContext)
               throws IOException {
@@ -297,7 +298,7 @@ public class StatsSetupConst {
     setBasicStatsState(params, setting);
     setColumnStatsState(params, cols);
   }
-  
+
   private static ColumnStatsAccurate parseStatsAcc(String statsAcc) {
     if (statsAcc == null) {
       return new ColumnStatsAccurate();

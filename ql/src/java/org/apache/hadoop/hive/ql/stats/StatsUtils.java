@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -68,6 +70,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
+import org.apache.hadoop.hive.ql.plan.Statistics.BasicStats;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
@@ -371,6 +374,7 @@ public class StatsUtils {
       List<Long> rowCounts = Lists.newArrayList();
       List<Long> dataSizes = Lists.newArrayList();
 
+      List<Statistics> partStats = gx1(table, partList.getNotDeniedPartns());
       rowCounts = getBasicStatForPartitions(table, partList.getNotDeniedPartns(), StatsSetupConst.ROW_COUNT);
       dataSizes = getBasicStatForPartitions(table, partList.getNotDeniedPartns(), StatsSetupConst.RAW_DATA_SIZE);
 
@@ -540,6 +544,15 @@ public class StatsUtils {
     return stats;
   }
 
+
+  private static List<Statistics> gx1(Table table, List<Partition> partitions) {
+
+    Collection<BasicStats> partitionStats = new LinkedList<>();
+    for (Partition partition : partitions) {
+      partitionStats.add(BasicStats.parse(partition.getParameters()));
+    }
+    return BasicStats.merge(partitionStats);
+  }
 
   /**
    * Based on the provided column statistics and number of rows, this method infers if the column
