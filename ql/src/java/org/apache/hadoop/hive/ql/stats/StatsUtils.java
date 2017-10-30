@@ -321,10 +321,10 @@ public class StatsUtils {
 
   public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
       Table table, List<ColumnInfo> schema, List<String> neededColumns, ColumnStatsList colStatsCache,
-      List<String> referencedColumns, boolean fetchColStats, boolean fetchPartStats)
+      List<String> referencedColumns, boolean fetchColStats)
       throws HiveException {
     return collectStatistics(conf, partList, table, schema, neededColumns, colStatsCache,
-        referencedColumns, fetchColStats, fetchPartStats, false);
+        referencedColumns, fetchColStats, true, false);
   }
 
   private static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
