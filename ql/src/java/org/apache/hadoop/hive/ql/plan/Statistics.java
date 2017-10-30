@@ -57,20 +57,21 @@ public class Statistics implements Serializable {
 
     public static BasicStats parse(Map<String, String> tableProperties) {
 
+      // filesystem level
       long nF = parseLongProp(tableProperties, StatsSetupConst.NUM_FILES, -1);
-      long rC = parseLongProp(tableProperties, StatsSetupConst.ROW_COUNT, -1);
       long tS = parseLongProp(tableProperties, StatsSetupConst.TOTAL_SIZE, -1);
+
+      // basic stats level
+      long rC = parseLongProp(tableProperties, StatsSetupConst.ROW_COUNT, -1);
       long rDS = parseLongProp(tableProperties, StatsSetupConst.RAW_DATA_SIZE, -1);
 
-      State state;
-      if (numRows <= 0 && dataSize <= 0) {
-        this.basicStatsState = State.NONE;
-      } else if (numRows <= 0 || dataSize <= 0) {
-        this.basicStatsState = State.PARTIAL;
-      } else {
-        this.basicStatsState = State.COMPLETE;
+      State state = State.NONE;
+      if (rC > 0 && rDS > 0) {
+        state = State.COMPLETE;
       }
-
+      if (rDS > 0 || tS > 0) {
+        state = State.PARTIAL;
+      }
       return new BasicStats(nF, rC, tS, rDS, state);
     }
 
