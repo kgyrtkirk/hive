@@ -153,13 +153,11 @@ public class StatsUtils {
 
     boolean fetchColStats =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS);
-    boolean fetchPartStats =
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_PARTITION_STATS);
     boolean testMode =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST);
 
     return collectStatistics(conf, partList, table, schema, neededColumns, colStatsCache, referencedColumns,
-        fetchColStats, fetchPartStats, testMode);
+        fetchColStats, testMode);
   }
 
   private static long getDataSize(HiveConf conf, Table table) {
@@ -324,13 +322,14 @@ public class StatsUtils {
       List<String> referencedColumns, boolean fetchColStats)
       throws HiveException {
     return collectStatistics(conf, partList, table, schema, neededColumns, colStatsCache,
-        referencedColumns, fetchColStats, true, false);
+        referencedColumns, fetchColStats, false);
   }
 
   private static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
       Table table, List<ColumnInfo> schema, List<String> neededColumns, ColumnStatsList colStatsCache,
-      List<String> referencedColumns, boolean fetchColStats, boolean fetchPartStats, boolean failIfCacheMiss)
+      List<String> referencedColumns, boolean fetchColStats, boolean failIfCacheMiss)
       throws HiveException {
+    final boolean fetchPartStats = true;
 
     Statistics stats = new Statistics();
 
