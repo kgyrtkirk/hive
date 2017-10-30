@@ -910,7 +910,9 @@ public class StatsUtils {
         boolean isNull = (cs == null) ? true: (cs.isEstimated());
         hasStats |= !isNull;
         hasNull |= isNull;
-        if (hasNull && hasStats) break;
+        if (hasNull && hasStats) {
+          break;
+        }
       }
     }
     State result = (hasStats
