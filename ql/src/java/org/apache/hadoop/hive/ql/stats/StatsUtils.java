@@ -374,7 +374,7 @@ public class StatsUtils {
       List<Long> rowCounts = Lists.newArrayList();
       List<Long> dataSizes = Lists.newArrayList();
 
-      //      BasicStats partStats = gx1(table, partList.getNotDeniedPartns());
+      BasicStats partStats = gx1(table, partList.getNotDeniedPartns());
       rowCounts = getBasicStatForPartitions(table, partList.getNotDeniedPartns(), StatsSetupConst.ROW_COUNT);
       dataSizes = getBasicStatForPartitions(table, partList.getNotDeniedPartns(), StatsSetupConst.RAW_DATA_SIZE);
 
