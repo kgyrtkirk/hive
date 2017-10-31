@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -89,9 +90,31 @@ public class Statistics implements Serializable {
       return defaultValue;
     }
 
-    public static List<Statistics> merge(Collection<BasicStats> partitionStats) {
-      // TODO Auto-generated method stub
-      return null;
+    public static BasicStats merge(Collection<BasicStats> partitionStats) {
+      if (partitionStats.size() == 0) {
+        return new BasicStats(-1, -1, -1, -1, State.NONE);
+      }
+
+      long nF = 0;
+      long tS = 0;
+      long rC = 0;
+      long rDS = 0;
+      State state = null;
+      for (BasicStats s : partitionStats) {
+        nF = StatsUtils.safeAdd(nF, (s.numFiles >= 0) ? s.numFiles : 0);
+        tS = StatsUtils.safeAdd(tS, (s.totalSize >= 0) ? s.totalSize : 0);
+        rC = StatsUtils.safeAdd(rC, (s.rowCount >= 0) ? s.rowCount : 0);
+        rDS = StatsUtils.safeAdd(rDS, (s.rawDataSize >= 0) ? s.rawDataSize : 0);
+
+        if (state == null) {
+          state = s.state;
+        } else {
+          if (state != s.state) {
+            state = State.PARTIAL;
+          }
+        }
+      }
+      return new BasicStats(nF, rC, tS, rDS, state);
     }
 
   }
