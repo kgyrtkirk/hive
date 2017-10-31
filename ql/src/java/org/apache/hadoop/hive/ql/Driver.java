@@ -32,9 +32,16 @@ public interface Driver extends CommandProcessor {
   static Driver build0(QueryState queryState, String userName, QueryInfo queryInfo) {
     return new OldDriver(queryState, userName, queryInfo);
   }
-
   static Driver build0(HiveConf hcatConf) {
     return new OldDriver(hcatConf);
+  }
+
+  static Driver newDriver(HiveConf hcatConf) {
+    return build0(hcatConf);
+  }
+
+  static Driver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
+    return build0(queryState, userName, queryInfo);
   }
 
   // FIXME seems unused (from CommandProcessor)

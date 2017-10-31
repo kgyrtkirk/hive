@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.apache.hadoop.hive.ql.Driver.newDriver;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -132,7 +133,7 @@ class WarehouseInstance implements Closeable {
     FileSystem testPathFileSystem = FileSystem.get(testPath.toUri(), hiveConf);
     testPathFileSystem.mkdirs(testPath);
 
-    driver = new Driver(hiveConf);
+    driver = newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
     client = new HiveMetaStoreClient(hiveConf);
     // change the value for the next instance.

@@ -16,6 +16,8 @@
 
 package org.apache.hadoop.hive.ql;
 
+import static org.apache.hadoop.hive.ql.Driver.newDriver;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -101,7 +103,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
       fs2Uri = fs2.getUri().toString();
       jobConf.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, fs2Uri);
 
-      driver = new Driver(jobConf);
+      driver = newDriver(jobConf);
 
       fs = FileSystem.get(conf);
       if (fs.exists(tmppath) && !fs.getFileStatus(tmppath).isDir()) {

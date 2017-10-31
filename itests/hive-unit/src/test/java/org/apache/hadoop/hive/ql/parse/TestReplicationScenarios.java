@@ -76,10 +76,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
+import static org.apache.hadoop.hive.ql.Driver.newDriver;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -157,7 +156,7 @@ public class TestReplicationScenarios {
     FileSystem fs = FileSystem.get(testPath.toUri(),hconf);
     fs.mkdirs(testPath);
 
-    driver = new Driver(hconf);
+    driver = newDriver(hconf);
     SessionState.start(new CliSessionState(hconf));
     metaStoreClient = new HiveMetaStoreClient(hconf);
 
@@ -168,7 +167,7 @@ public class TestReplicationScenarios {
     hconfMirror = new HiveConf(hconf);
     hconfMirror.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
         + msPortMirror);
-    driverMirror = new Driver(hconfMirror);
+    driverMirror = newDriver(hconfMirror);
     metaStoreClientMirror = new HiveMetaStoreClient(hconfMirror);
 
     ObjectStore.setTwoMetastoreTesting(true);
@@ -581,10 +580,11 @@ public class TestReplicationScenarios {
           // getTable is invoked after fetching the table names
           injectionPathCalled = true;
           Thread t = new Thread(new Runnable() {
+            @Override
             public void run() {
               try {
                 LOG.info("Entered new thread");
-                Driver driver2 = new Driver(hconf);
+                Driver driver2 = newDriver(hconf);
                 SessionState.start(new CliSessionState(hconf));
                 CommandProcessorResponse ret = driver2.run("ALTER TABLE " + dbName + ".ptned PARTITION (b=1) RENAME TO PARTITION (b=10)");
                 success = (ret.getException() == null);
@@ -656,10 +656,11 @@ public class TestReplicationScenarios {
           // getTable is invoked after fetching the table names
           injectionPathCalled = true;
           Thread t = new Thread(new Runnable() {
+            @Override
             public void run() {
               try {
                 LOG.info("Entered new thread");
-                Driver driver2 = new Driver(hconf);
+                Driver driver2 = newDriver(hconf);
                 SessionState.start(new CliSessionState(hconf));
                 CommandProcessorResponse ret = driver2.run("DROP TABLE " + dbName + ".ptned");
                 success = (ret.getException() == null);
@@ -3011,7 +3012,7 @@ public class TestReplicationScenarios {
       List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(dbName+ "_dupe" , "tbl6"));
       assertEquals(nns.size(), 1);
       nnName = nns.get(0).getNn_name();
-      
+
     } catch (TException te) {
       assertNull(te);
     }

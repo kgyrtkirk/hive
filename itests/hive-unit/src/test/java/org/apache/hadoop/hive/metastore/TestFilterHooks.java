@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import static org.apache.hadoop.hive.ql.Driver.newDriver;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -180,7 +181,7 @@ public class TestFilterHooks {
 
     SessionState.start(new CliSessionState(hiveConf));
     msc = new HiveMetaStoreClient(hiveConf);
-    driver = new Driver(hiveConf);
+    driver = newDriver(hiveConf);
 
     driver.run("drop database if exists " + DBNAME1  + " cascade");
     driver.run("drop database if exists " + DBNAME2  + " cascade");

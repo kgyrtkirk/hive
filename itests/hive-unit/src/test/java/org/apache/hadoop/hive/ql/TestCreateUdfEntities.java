@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.After;
 import org.junit.Before;
@@ -36,7 +37,7 @@ public class TestCreateUdfEntities {
 
     HiveConf conf = new HiveConf(Driver.class);
     SessionState.start(conf);
-    driver = new Driver(conf);
+    driver = Driver.build0(conf);
     driver.init();
   }
 
@@ -49,9 +50,9 @@ public class TestCreateUdfEntities {
 
   @Test
   public void testUdfWithLocalResource() throws Exception {
-    int rc = driver.compile("CREATE FUNCTION " + funcName + " AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFPrintf' "
+    CommandProcessorResponse rc = driver.compileAndRespond("CREATE FUNCTION " + funcName + " AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFPrintf' "
             + " using file '" + "file:///tmp/udf1.jar'");
-    assertEquals(0, rc);
+    assertEquals(0, rc.getErrorCode());
     WriteEntity outputEntities[] = driver.getPlan().getOutputs().toArray(new WriteEntity[] {});
     assertEquals(outputEntities.length, 3);
 

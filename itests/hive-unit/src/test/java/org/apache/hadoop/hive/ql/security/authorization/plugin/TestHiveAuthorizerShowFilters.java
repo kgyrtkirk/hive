@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
+import static org.apache.hadoop.hive.ql.Driver.newDriver;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 
@@ -89,7 +90,7 @@ public class TestHiveAuthorizerShowFilters {
         return filteredResults;
       }
     }
-    
+
     @Override
     public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
         HiveConf conf, HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) {
@@ -123,7 +124,7 @@ public class TestHiveAuthorizerShowFilters {
     UtilsForTest.setNewDerbyDbLocation(conf, TestHiveAuthorizerShowFilters.class.getSimpleName());
 
     SessionState.start(conf);
-    driver = new Driver(conf);
+    driver = newDriver(conf);
     runCmd("create table " + tableName1
         + " (i int, j int, k string) partitioned by (city string, `date` string) ");
     runCmd("create table " + tableName2 + "(i int)");

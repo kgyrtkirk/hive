@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore;
 
 import com.google.common.collect.Lists;
 
+import static org.apache.hadoop.hive.ql.Driver.newDriver;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -107,7 +109,7 @@ public class TestMetaStoreEventListener extends TestCase {
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     SessionState.start(new CliSessionState(hiveConf));
     msc = new HiveMetaStoreClient(hiveConf);
-    driver = new Driver(hiveConf);
+    driver = newDriver(hiveConf);
 
     driver.run("drop database if exists " + dbName + " cascade");
 

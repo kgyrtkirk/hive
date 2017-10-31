@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.security;
 
+import static org.apache.hadoop.hive.ql.Driver.newDriver;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,7 +89,7 @@ public class TestClientSideAuthorizationProvider extends TestCase {
 
     SessionState.start(new CliSessionState(clientHiveConf));
     msc = new HiveMetaStoreClient(clientHiveConf);
-    driver = new Driver(clientHiveConf);
+    driver = newDriver(clientHiveConf);
   }
 
   @Override

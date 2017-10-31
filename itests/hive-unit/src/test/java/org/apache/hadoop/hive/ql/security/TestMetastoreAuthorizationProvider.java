@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.security;
 
+import static org.apache.hadoop.hive.ql.Driver.newDriver;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -117,7 +119,7 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
 
     SessionState.start(new CliSessionState(clientHiveConf));
     msc = new HiveMetaStoreClient(clientHiveConf);
-    driver = new Driver(clientHiveConf);
+    driver = newDriver(clientHiveConf);
   }
 
   protected void setupMetaStoreReadAuthorization() {

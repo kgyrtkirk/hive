@@ -101,6 +101,7 @@ public class HiveEndPoint {
   /**
    * @deprecated As of release 1.3/2.1.  Replaced by {@link #newConnection(boolean, String)}
    */
+  @Deprecated
   public StreamingConnection newConnection(final boolean createPartIfNotExists)
     throws ConnectionError, InvalidPartition, InvalidTable, PartitionCreationFailed
     , ImpersonationFailed , InterruptedException {
@@ -109,6 +110,7 @@ public class HiveEndPoint {
   /**
    * @deprecated As of release 1.3/2.1.  Replaced by {@link #newConnection(boolean, HiveConf, String)}
    */
+  @Deprecated
   public StreamingConnection newConnection(final boolean createPartIfNotExists, HiveConf conf)
     throws ConnectionError, InvalidPartition, InvalidTable, PartitionCreationFailed
     , ImpersonationFailed , InterruptedException {
@@ -117,6 +119,7 @@ public class HiveEndPoint {
   /**
    * @deprecated As of release 1.3/2.1.  Replaced by {@link #newConnection(boolean, HiveConf, UserGroupInformation, String)}
    */
+  @Deprecated
   public StreamingConnection newConnection(final boolean createPartIfNotExists, final HiveConf conf,
                                            final UserGroupInformation authenticatedUser)
     throws ConnectionError, InvalidPartition,
@@ -231,7 +234,9 @@ public class HiveEndPoint {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
+    if (this == o) {
+      return true;
+    }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
@@ -416,6 +421,7 @@ public class HiveEndPoint {
      * @throws ImpersonationFailed failed to run command as proxyUser
      * @throws InterruptedException
      */
+    @Override
     public TransactionBatch fetchTransactionBatch(final int numTransactions,
                                                       final RecordWriter recordWriter)
             throws StreamingException, TransactionBatchUnAvailable, ImpersonationFailed
@@ -456,7 +462,7 @@ public class HiveEndPoint {
       if(SessionState.get() == null) {
         localSession = SessionState.start(new CliSessionState(conf));
       }
-      Driver driver = new Driver(conf);
+      Driver driver = Driver.build0(conf);
 
       try {
         if (LOG.isDebugEnabled()) {
@@ -691,9 +697,10 @@ public class HiveEndPoint {
 
     private void beginNextTransactionImpl() throws TransactionError {
       state = TxnState.INACTIVE;//clear state from previous txn
-      if ( currentTxnIndex + 1 >= txnIds.size() )
+      if ( currentTxnIndex + 1 >= txnIds.size() ) {
         throw new InvalidTrasactionState("No more transactions available in" +
                 " current batch for end point : " + endPt);
+      }
       ++currentTxnIndex;
       state = TxnState.OPEN;
       lastTxnUsed = getCurrentTxnId();

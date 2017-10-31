@@ -221,7 +221,7 @@ public class TestStreaming {
   @Before
   public void setup() throws Exception {
     SessionState.start(new CliSessionState(conf));
-    driver = new Driver(conf);
+    driver = Driver.build0(conf);
     driver.setMaxRows(200002);//make sure Driver returns all results
     // drop and recreate the necessary databases and tables
     dropDB(msClient, dbName);
@@ -537,6 +537,7 @@ public class TestStreaming {
    * @deprecated use {@link #checkDataWritten2(Path, long, long, int, String, boolean, String...)} -
    * there is little value in using InputFormat directly
    */
+  @Deprecated
   private void checkDataWritten(Path partitionPath, long minTxn, long maxTxn, int buckets, int numExpectedFiles,
                                 String... records) throws Exception {
     ValidTxnList txns = msClient.getValidTxns();
@@ -545,15 +546,21 @@ public class TestStreaming {
     Assert.assertEquals(0, dir.getOriginalFiles().size());
     List<AcidUtils.ParsedDelta> current = dir.getCurrentDirectories();
     System.out.println("Files found: ");
-    for (AcidUtils.ParsedDelta pd : current) System.out.println(pd.getPath().toString());
+    for (AcidUtils.ParsedDelta pd : current) {
+      System.out.println(pd.getPath().toString());
+    }
     Assert.assertEquals(numExpectedFiles, current.size());
 
     // find the absolute minimum transaction
     long min = Long.MAX_VALUE;
     long max = Long.MIN_VALUE;
     for (AcidUtils.ParsedDelta pd : current) {
-      if (pd.getMaxTransaction() > max) max = pd.getMaxTransaction();
-      if (pd.getMinTransaction() < min) min = pd.getMinTransaction();
+      if (pd.getMaxTransaction() > max) {
+        max = pd.getMaxTransaction();
+      }
+      if (pd.getMinTransaction() < min) {
+        min = pd.getMinTransaction();
+      }
     }
     Assert.assertEquals(minTxn, min);
     Assert.assertEquals(maxTxn, max);
@@ -592,15 +599,21 @@ public class TestStreaming {
     Assert.assertEquals(0, dir.getOriginalFiles().size());
     List<AcidUtils.ParsedDelta> current = dir.getCurrentDirectories();
     System.out.println("Files found: ");
-    for (AcidUtils.ParsedDelta pd : current) System.out.println(pd.getPath().toString());
+    for (AcidUtils.ParsedDelta pd : current) {
+      System.out.println(pd.getPath().toString());
+    }
     Assert.assertEquals(numExpectedFiles, current.size());
 
     // find the absolute minimum transaction
     long min = Long.MAX_VALUE;
     long max = Long.MIN_VALUE;
     for (AcidUtils.ParsedDelta pd : current) {
-      if (pd.getMaxTransaction() > max) max = pd.getMaxTransaction();
-      if (pd.getMinTransaction() < min) min = pd.getMinTransaction();
+      if (pd.getMaxTransaction() > max) {
+        max = pd.getMaxTransaction();
+      }
+      if (pd.getMinTransaction() < min) {
+        min = pd.getMinTransaction();
+      }
     }
     Assert.assertEquals(minTxn, min);
     Assert.assertEquals(maxTxn, max);
@@ -818,7 +831,7 @@ public class TestStreaming {
         txnBatch.heartbeat();
       }
     }
-    
+
   }
   @Test
   public void testTransactionBatchEmptyAbort() throws Exception {
@@ -985,7 +998,7 @@ public class TestStreaming {
       , txnBatch.getCurrentTransactionState());
     connection.close();
   }
-  
+
   @Test
   public void testTransactionBatchCommit_Json() throws Exception {
     HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName, tblName,
@@ -2031,7 +2044,7 @@ public class TestStreaming {
     }
     Assert.assertTrue("Wrong exception: " + (expectedEx != null ? expectedEx.getMessage() : "?"),
       expectedEx != null && expectedEx.getMessage().contains("Simulated fault occurred"));
-    
+
     r = msClient.showTxns();
     Assert.assertEquals("HWM didn't match", 21, r.getTxn_high_water_mark());
     ti = r.getOpen_txns();
@@ -2048,12 +2061,14 @@ public class TestStreaming {
     HashMap<Integer, ArrayList<SampleRec>> result = new HashMap<Integer, ArrayList<SampleRec>>();
 
     for (File deltaDir : new File(dbLocation + "/" + tableName).listFiles()) {
-      if(!deltaDir.getName().startsWith("delta"))
+      if(!deltaDir.getName().startsWith("delta")) {
         continue;
+      }
       File[] bucketFiles = deltaDir.listFiles();
       for (File bucketFile : bucketFiles) {
-        if(bucketFile.toString().endsWith("length"))
+        if(bucketFile.toString().endsWith("length")) {
           continue;
+        }
         Integer bucketNum = getBucketNumber(bucketFile);
         ArrayList<SampleRec>  recs = dumpBucket(new Path(bucketFile.toString()));
         result.put(bucketNum, recs);
@@ -2167,8 +2182,9 @@ public class TestStreaming {
   }
 
   private static String join(String[] values, String delimiter) {
-    if(values==null)
+    if(values==null) {
       return null;
+    }
     StringBuilder strbuf = new StringBuilder();
 
     boolean first = true;
@@ -2234,13 +2250,21 @@ public class TestStreaming {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
 
       SampleRec that = (SampleRec) o;
 
-      if (field2 != that.field2) return false;
-      if (field1 != null ? !field1.equals(that.field1) : that.field1 != null) return false;
+      if (field2 != that.field2) {
+        return false;
+      }
+      if (field1 != null ? !field1.equals(that.field1) : that.field1 != null) {
+        return false;
+      }
       return !(field3 != null ? !field3.equals(that.field3) : that.field3 != null);
 
     }

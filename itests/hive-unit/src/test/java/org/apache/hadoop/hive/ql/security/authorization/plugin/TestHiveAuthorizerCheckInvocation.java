@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
+import static org.apache.hadoop.hive.ql.Driver.newDriver;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -102,7 +103,7 @@ public class TestHiveAuthorizerCheckInvocation {
     conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
 
     SessionState.start(conf);
-    driver = new Driver(conf);
+    driver = newDriver(conf);
     runCmd("create table " + tableName
         + " (i int, j int, k string) partitioned by (city string, `date` string) ");
     runCmd("create view " + viewName + " as select * from " + tableName);
@@ -166,13 +167,13 @@ public class TestHiveAuthorizerCheckInvocation {
   @Test
   public void testInputSomeColumnsUsedJoin() throws HiveAuthzPluginException, HiveAccessControlException,
   CommandNeedRetryException {
-    
+
     reset(mockedAuthorizer);
     int status = driver.compile("select " + viewName + ".i, " + tableName + ".city from "
         + viewName + " join " + tableName + " on " + viewName + ".city = " + tableName
         + ".city where " + tableName + ".k = 'X'");
     assertEquals(0, status);
-    
+
     List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
     Collections.sort(inputs);
     assertEquals(inputs.size(), 2);

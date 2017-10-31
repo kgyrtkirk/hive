@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import static org.apache.hadoop.hive.ql.Driver.newDriver;
+
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -61,7 +63,7 @@ public class TestMetaStoreEventListenerOnlyOnCommit extends TestCase {
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     SessionState.start(new CliSessionState(hiveConf));
     msc = new HiveMetaStoreClient(hiveConf);
-    driver = new Driver(hiveConf);
+    driver = newDriver(hiveConf);
 
     DummyListener.notifyList.clear();
   }

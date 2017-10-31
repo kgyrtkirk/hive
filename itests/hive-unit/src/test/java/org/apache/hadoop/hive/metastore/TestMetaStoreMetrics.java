@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import static org.apache.hadoop.hive.ql.Driver.newDriver;
+
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -56,7 +58,7 @@ public class TestMetaStoreMetrics {
 
     //Increments one HMS connection (Hive.get())
     SessionState.start(new CliSessionState(hiveConf));
-    driver = new Driver(hiveConf);
+    driver = newDriver(hiveConf);
   }
 
 

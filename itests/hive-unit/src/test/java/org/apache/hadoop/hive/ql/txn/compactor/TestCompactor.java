@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import static org.apache.hadoop.hive.ql.Driver.newDriver;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -123,7 +125,7 @@ public class TestCompactor {
 
     conf = hiveConf;
     msClient = new HiveMetaStoreClient(conf);
-    driver = new Driver(hiveConf);
+    driver = newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
 
 

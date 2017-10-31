@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import static org.apache.hadoop.hive.ql.Driver.newDriver;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +27,6 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -61,7 +62,7 @@ public class TestMarkPartition extends TestCase{
   TException, NoSuchObjectException, UnknownDBException, UnknownTableException,
   InvalidPartitionException, UnknownPartitionException, InterruptedException {
     HiveMetaStoreClient msc = new HiveMetaStoreClient(hiveConf);
-    driver = new Driver(hiveConf);
+    driver = newDriver(hiveConf);
     driver.run("drop database if exists hive2215 cascade");
     driver.run("create database hive2215");
     driver.run("use hive2215");

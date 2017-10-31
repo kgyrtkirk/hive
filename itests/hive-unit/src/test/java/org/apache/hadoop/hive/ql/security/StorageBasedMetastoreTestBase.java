@@ -90,7 +90,7 @@ public class StorageBasedMetastoreTestBase {
 
     SessionState.start(new CliSessionState(clientHiveConf));
     msc = new HiveMetaStoreClient(clientHiveConf);
-    driver = new Driver(clientHiveConf);
+    driver = Driver.build0(clientHiveConf);
 
     setupFakeUser();
     InjectableDummyAuthenticator.injectMode(false);

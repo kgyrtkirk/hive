@@ -15,9 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.apache.hadoop.hive.ql.history;
 
+
+import static org.apache.hadoop.hive.ql.Driver.newDriver;
 
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
@@ -143,7 +145,7 @@ public class TestHiveHistory extends TestCase {
       SessionState.start(ss);
 
       String cmd = "select a.key+1 from src a";
-      Driver d = new Driver(conf);
+      Driver d = newDriver(conf);
       int ret = d.run(cmd).getResponseCode();
       if (ret != 0) {
         fail("Failed");
