@@ -18,6 +18,9 @@
  */
 package org.apache.hive.hcatalog.cli;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -25,6 +28,7 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.OldDriver;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -32,14 +36,15 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatConstants;
 
-public class HCatDriver extends Driver {
+public class HCatDriver {
 
-  @Override
+  Driver driver = new OldDriver();
+
   public CommandProcessorResponse run(String command) {
 
     CommandProcessorResponse cpr = null;
     try {
-      cpr = super.run(command);
+      cpr = driver.run(command);
     } catch (CommandNeedRetryException e) {
       return new CommandProcessorResponse(-1, e.toString(), "");
     }
@@ -138,5 +143,13 @@ public class HCatDriver extends Driver {
         }
       }
     }
+  }
+
+  public int close() {
+    return driver.close();
+  }
+
+  public boolean getResults(ArrayList<String> res) throws IOException, CommandNeedRetryException {
+    return driver.getResults(res);
   }
 }

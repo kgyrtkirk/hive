@@ -67,7 +67,7 @@ public class TestPassProperties {
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    driver = new Driver(hiveConf);
+    driver = Driver.build0(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
 
     new File(TEST_WAREHOUSE_DIR).mkdirs();
@@ -123,6 +123,7 @@ public class TestPassProperties {
 
   public static class Map extends Mapper<LongWritable, Text, NullWritable, DefaultHCatRecord> {
 
+    @Override
     public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
       String[] cols = value.toString().split(",");
       DefaultHCatRecord record = new DefaultHCatRecord(3);

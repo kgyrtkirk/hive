@@ -50,7 +50,7 @@ public class HCatDataCheckUtil {
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
 
     LOG.debug("Hive conf : {}", hiveConf.getAllProperties());
-    Driver driver = new Driver(hiveConf);
+    Driver driver = Driver.build0(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
     return driver;
   }
@@ -90,7 +90,7 @@ public class HCatDataCheckUtil {
   public static boolean recordsEqual(HCatRecord first, HCatRecord second) {
     return recordsEqual(first, second, null);
   }
-  public static boolean recordsEqual(HCatRecord first, HCatRecord second, 
+  public static boolean recordsEqual(HCatRecord first, HCatRecord second,
                                      StringBuilder debugDetail) {
     return (compareRecords(first, second, debugDetail) == 0);
   }
@@ -98,12 +98,12 @@ public class HCatDataCheckUtil {
   public static int compareRecords(HCatRecord first, HCatRecord second) {
     return compareRecords(first, second, null);
   }
-  public static int compareRecords(HCatRecord first, HCatRecord second, 
+  public static int compareRecords(HCatRecord first, HCatRecord second,
                                    StringBuilder debugDetail) {
     return compareRecordContents(first.getAll(), second.getAll(), debugDetail);
   }
 
-  public static int compareRecordContents(List<Object> first, List<Object> second, 
+  public static int compareRecordContents(List<Object> first, List<Object> second,
                                           StringBuilder debugDetail) {
     int mySz = first.size();
     int urSz = second.size();
@@ -117,7 +117,7 @@ public class HCatDataCheckUtil {
             String msg = "first.get(" + i + "}='" + first.get(i) + "' second.get(" +
                     i + ")='" + second.get(i) + "' compared as " + c + "\n" +
             "Types 1st/2nd=" + DataType.findType(first.get(i)) + "/" +DataType.findType(
-                    second.get(i)) + '\n' + 
+                    second.get(i)) + '\n' +
                     "first='" + first.get(i) + "' second='" + second.get(i) + "'";
             if(first.get(i) instanceof Date) {
               msg += "\n((Date)first.get(i)).getTime()=" + ((Date)first.get(i)).getTime();

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
@@ -30,6 +31,10 @@ public interface Driver extends CommandProcessor {
 
   static Driver build0(QueryState queryState, String userName, QueryInfo queryInfo) {
     return new OldDriver(queryState, userName, queryInfo);
+  }
+
+  static Driver build0(HiveConf hcatConf) {
+    return new OldDriver(hcatConf);
   }
 
   // FIXME seems unused (from CommandProcessor)
@@ -62,5 +67,6 @@ public interface Driver extends CommandProcessor {
   void resetFetch() throws IOException;
   boolean getResults(List convey) throws IOException, CommandNeedRetryException;
   boolean isFetchingTable();
+
 
 }
