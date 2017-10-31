@@ -193,7 +193,7 @@ public class StatsRulesProcFactory {
           // in case of select(*) the data size does not change
           if (!sop.getConf().isSelectStar() && !sop.getConf().isSelStarNoCompute()) {
             long dataSize = StatsUtils.getDataSizeFromColumnStats(stats.getNumRows(), colStats);
-            stats.setDataSize2(dataSize);
+            stats.setDataSize(dataSize);
           }
           sop.setStatistics(stats);
 
@@ -2036,7 +2036,7 @@ public class StatsRulesProcFactory {
         newNumRows = 1;
       }
       newNumRows = StatsUtils.getMaxIfOverflow(newNumRows);
-      stats.setNumRows2(newNumRows);
+      stats.setNumRows(newNumRows);
 
       // scale down/up the column statistics based on the changes in number of
       // rows from each parent. For ex: If there are 2 parents for JOIN operator
@@ -2079,7 +2079,7 @@ public class StatsRulesProcFactory {
         int restColumnsDefaultSize = StatsUtils.estimateRowSizeFromSchema(conf, jop.getSchema().getSignature(), neededColumns);
         newDataSize = StatsUtils.safeAdd(newDataSize, StatsUtils.safeMult(restColumnsDefaultSize, newNumRows));
       }
-      stats.setDataSize2(StatsUtils.getMaxIfOverflow(newDataSize));
+      stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
     }
 
     private long computeFinalRowCount(List<Long> rowCountParents, long interimRowCount,
@@ -2263,8 +2263,8 @@ public class StatsRulesProcFactory {
               long numRows = limit;
               long avgRowSize = parentStats.getAvgRowSize();
               long dataSize = StatsUtils.safeMult(avgRowSize, limit);
-              wcStats.setNumRows2(numRows);
-              wcStats.setDataSize2(dataSize);
+              wcStats.setNumRows(numRows);
+              wcStats.setDataSize(dataSize);
             }
             lop.setStatistics(wcStats);
 
@@ -2469,7 +2469,7 @@ public class StatsRulesProcFactory {
 
     long oldRowCount = stats.getNumRows();
     double ratio = (double) newNumRows / (double) oldRowCount;
-    stats.setNumRows2(newNumRows);
+    stats.setNumRows(newNumRows);
 
     if (useColStats) {
       List<ColStatistics> colStats = stats.getColumnStats();
@@ -2493,10 +2493,10 @@ public class StatsRulesProcFactory {
       }
       stats.setColumnStats(colStats);
       long newDataSize = StatsUtils.getDataSizeFromColumnStats(newNumRows, colStats);
-      stats.setDataSize2(StatsUtils.getMaxIfOverflow(newDataSize));
+      stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
     } else {
       long newDataSize = (long) (ratio * stats.getDataSize());
-      stats.setDataSize2(StatsUtils.getMaxIfOverflow(newDataSize));
+      stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
     }
   }
 

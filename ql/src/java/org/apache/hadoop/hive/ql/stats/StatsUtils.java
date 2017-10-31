@@ -509,7 +509,7 @@ public class StatsUtils {
 
           addPartitionColumnStats(conf, partitionColsToRetrieve, schema, table, partList, columnStats);
           long betterDS = getDataSizeFromColumnStats(nr, columnStats);
-          stats.setDataSize2((betterDS < 1 || columnStats.isEmpty()) ? ds : betterDS);
+          stats.setDataSize((betterDS < 1 || columnStats.isEmpty()) ? ds : betterDS);
           // infer if any column can be primary key based on column statistics
           inferAndSetPrimaryKey(stats.getNumRows(), columnStats);
 
