@@ -52,6 +52,7 @@ public class Statistics implements Serializable {
   public Statistics(long nr, long ds, long rnr) {
     this.setNumRows(nr);
     this.setDataSize(ds);
+    updateBasicStatsState();
     this.setRunTimeNumRows(rnr);
     this.basicStatsState = State.NONE;
     this.columnStats = null;
@@ -62,7 +63,11 @@ public class Statistics implements Serializable {
     return numRows;
   }
 
-  public void setNumRows(long numRows) {
+  public void setNumRows2(long numRows) {
+    this.numRows = numRows;
+  }
+
+  private void setNumRows(long numRows) {
     this.numRows = numRows;
     updateBasicStatsState();
   }
@@ -71,7 +76,11 @@ public class Statistics implements Serializable {
     return dataSize;
   }
 
-  public void setDataSize(long dataSize) {
+  public void setDataSize2(long dataSize) {
+    this.dataSize = dataSize;
+  }
+
+  private void setDataSize(long dataSize) {
     this.dataSize = dataSize;
     updateBasicStatsState();
   }
@@ -284,4 +293,5 @@ public class Statistics implements Serializable {
   public void setRunTimeNumRows(long runTimeNumRows) {
     this.runTimeNumRows = runTimeNumRows;
   }
+
 }

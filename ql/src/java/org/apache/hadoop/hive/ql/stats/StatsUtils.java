@@ -332,7 +332,7 @@ public class StatsUtils {
       List<String> referencedColumns, boolean fetchColStats, boolean fetchPartStats, boolean failIfCacheMiss)
       throws HiveException {
 
-    Statistics stats = new Statistics();
+    Statistics stats = null;
 
     float deserFactor =
         HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
@@ -344,7 +344,6 @@ public class StatsUtils {
       // we would like to avoid file system calls  if it too expensive
       long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
       long nr = getNumRows(conf, schema, neededColumns, table, ds);
-      stats.setNumRows(nr);
       List<ColStatistics> colStats = Lists.newArrayList();
       if (fetchColStats) {
         colStats = getTableColumnStats(table, schema, neededColumns, colStatsCache);
@@ -358,7 +357,7 @@ public class StatsUtils {
         long betterDS = getDataSizeFromColumnStats(nr, colStats);
         ds = (betterDS < 1 || colStats.isEmpty()) ? ds : betterDS;
       }
-      stats.setDataSize(ds);
+      stats = new Statistics(nr, ds, -1);
       // infer if any column can be primary key based on column statistics
       inferAndSetPrimaryKey(stats.getNumRows(), colStats);
 
@@ -412,8 +411,7 @@ public class StatsUtils {
       if (nr == 0) {
         nr = 1;
       }
-      stats.addToNumRows(nr);
-      stats.addToDataSize(ds);
+      stats = new Statistics(nr, ds, -1);
 
       // if at least a partition does not contain row count then mark basic stats state as PARTIAL
       if (containsNonPositives(rowCounts) &&
@@ -511,7 +509,7 @@ public class StatsUtils {
 
           addPartitionColumnStats(conf, partitionColsToRetrieve, schema, table, partList, columnStats);
           long betterDS = getDataSizeFromColumnStats(nr, columnStats);
-          stats.setDataSize((betterDS < 1 || columnStats.isEmpty()) ? ds : betterDS);
+          stats.setDataSize2((betterDS < 1 || columnStats.isEmpty()) ? ds : betterDS);
           // infer if any column can be primary key based on column statistics
           inferAndSetPrimaryKey(stats.getNumRows(), columnStats);
 
@@ -910,7 +908,9 @@ public class StatsUtils {
         boolean isNull = (cs == null) ? true: (cs.isEstimated());
         hasStats |= !isNull;
         hasNull |= isNull;
-        if (hasNull && hasStats) break;
+        if (hasNull && hasStats) {
+          break;
+        }
       }
     }
     State result = (hasStats
