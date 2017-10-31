@@ -37,10 +37,6 @@ import com.google.common.annotations.VisibleForTesting;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.BlobStorageUtils;
-import org.apache.hadoop.hive.common.StringInternUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -110,7 +106,6 @@ import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
-import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
@@ -1535,8 +1530,6 @@ public final class GenMapRedUtils {
     columnStatsWork.collectStatsFromAggregator(nd.getConf());
 
     columnStatsWork.truncateExisting(truncate);
-    //    columnStatsWork.collectStatsFromAggregator(nd.getConf());
-
 
     columnStatsWork.setSourceTask(currTask);
     Task<? extends Serializable> statsTask = TaskFactory.get(columnStatsWork, hconf);
