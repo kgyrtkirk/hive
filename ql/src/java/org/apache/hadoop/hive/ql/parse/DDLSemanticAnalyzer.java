@@ -29,10 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -141,7 +138,6 @@ import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTblPropertiesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTxnsDesc;
-import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
@@ -1970,23 +1966,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         basicStatsWork.setNoStatsAggregator(true);
         basicStatsWork.setClearAggregatorStats(true);
         StatsWork columnStatsWork = new StatsWork(tblObj, basicStatsWork, conf);
-
-        ////////        BasicStatsWork basicStatsWork;
-        //        if (oldTblPartLoc.equals(newTblPartLoc)) {
-        //          // If we're merging to the same location, we can avoid some metastore calls
-        //          TableSpec tableSpec = new TableSpec(db, tableName, partSpec);
-        //          basicStatsWork = new BasicStatsWork(tableSpec);
-        //        } else {
-        //          basicStatsWork = new BasicStatsWork(ltd);
-        //        }
-        //
-        //        basicStatsWork.setNoStatsAggregator(true);
-        //        basicStatsWork.setClearAggregatorStats(true);
-        //        //        StatsWork columnStatsWork2 = new StatsWork(tblObj, basicStatsWork, conf);
-        //        //        columnStatsWork2.addPartition(partSpec);
-        //        //    
-        //        //        columnStatsWork2.tru
-
 
         Task<? extends Serializable> statTask = TaskFactory.get(columnStatsWork, conf);
         moveTsk.addDependentTask(statTask);
