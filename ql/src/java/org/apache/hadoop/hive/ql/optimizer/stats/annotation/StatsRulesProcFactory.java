@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
+import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -1652,6 +1653,7 @@ public class StatsRulesProcFactory {
         }
 
         Statistics wcStats = new Statistics(newNumRows, newDataSize);
+        wcStats.setBasicStatsState(State.PARTIAL);
 
         // evaluate filter expression and update statistics
         if (jop.getConf().getNoOuterJoin() &&
