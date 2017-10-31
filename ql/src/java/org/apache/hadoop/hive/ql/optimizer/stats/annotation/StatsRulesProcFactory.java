@@ -2365,30 +2365,34 @@ public class StatsRulesProcFactory {
 
       if (conf != null) {
         Statistics stats = conf.getStatistics();
-        if (stats == null) {
-          if (op.getParentOperators() != null) {
+        if (stats == null && op.getParentOperators() != null) {
 
-            // if parent statistics is null then that branch of the tree is not
-            // walked yet. don't update the stats until all branches are walked
-            if (isAllParentsContainStatistics(op)) {
-              stats = new Statistics();
-              for (Operator<? extends OperatorDesc> parent : op.getParentOperators()) {
-                if (parent.getStatistics() != null) {
-                  Statistics parentStats = parent.getStatistics();
-                  stats.addToNumRows(parentStats.getNumRows());
-                  stats.addToDataSize(parentStats.getDataSize());
-                  stats.updateColumnStatsState(parentStats.getColumnStatsState());
-                  List<ColStatistics> colStats = StatsUtils.getColStatisticsFromExprMap(hconf,
-                      parentStats, op.getColumnExprMap(), op.getSchema());
-                  stats.addToColumnStats(colStats);
-                  op.getConf().setStatistics(stats);
+          // if parent statistics is null then that branch of the tree is not
+          // walked yet. don't update the stats until all branches are walked
+          if (isAllParentsContainStatistics(op)) {
 
-                  if (LOG.isDebugEnabled()) {
-                    LOG.debug("[0] STATS-" + op.toString() + ": " + stats.extendedToString());
-                  }
+            for (Operator<? extends OperatorDesc> parent : op.getParentOperators()) {
+              Statistics parentStats = parent.getStatistics();
+
+              if (stats == null) {
+                try {
+                  stats = parentStats.clone();
+                } catch (CloneNotSupportedException e) {
+                  throw new SemanticException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
                 }
+              } else {
+                stats.addBasicStats(parentStats);
+              }
+
+              stats.updateColumnStatsState(parentStats.getColumnStatsState());
+              List<ColStatistics> colStats = StatsUtils.getColStatisticsFromExprMap(hconf, parentStats, op.getColumnExprMap(), op.getSchema());
+              stats.addToColumnStats(colStats);
+
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("[0] STATS-" + op.toString() + ": " + stats.extendedToString());
               }
             }
+            op.getConf().setStatistics(stats);
           }
         }
       }

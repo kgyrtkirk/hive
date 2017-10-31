@@ -168,9 +168,10 @@ public class Statistics implements Serializable {
     return clone;
   }
 
-  public void addToNumRows(long nr) {
-    numRows += nr;
-    updateBasicStatsState();
+  public void addBasicStats(Statistics stats) {
+    dataSize += stats.dataSize;
+    numRows += stats.numRows;
+    basicStatsState = inferColumnStatsState(basicStatsState, stats.basicStatsState);
   }
 
   public void addToDataSize(long rds) {
