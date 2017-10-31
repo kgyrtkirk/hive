@@ -493,6 +493,7 @@ public class StatsUtils {
           // add partition column stats
           addPartitionColumnStats(conf, partitionColsToRetrieve, schema, table, partList, columnStats);
 
+          // FIXME: this add seems suspicious...10 lines below the value returned by this method used as betterDS
           stats.addToDataSize(getDataSizeFromColumnStats(nr, columnStats));
           stats.updateColumnStatsState(deriveStatType(columnStats, referencedColumns));
 
