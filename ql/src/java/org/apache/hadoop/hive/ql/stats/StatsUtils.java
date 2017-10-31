@@ -357,7 +357,7 @@ public class StatsUtils {
         long betterDS = getDataSizeFromColumnStats(nr, colStats);
         ds = (betterDS < 1 || colStats.isEmpty()) ? ds : betterDS;
       }
-      stats = new Statistics(nr, ds, -1);
+      stats = new Statistics(nr, ds);
       // infer if any column can be primary key based on column statistics
       inferAndSetPrimaryKey(stats.getNumRows(), colStats);
 
@@ -411,7 +411,7 @@ public class StatsUtils {
       if (nr == 0) {
         nr = 1;
       }
-      stats = new Statistics(nr, ds, -1);
+      stats = new Statistics(nr, ds);
 
       // if at least a partition does not contain row count then mark basic stats state as PARTIAL
       if (containsNonPositives(rowCounts) &&

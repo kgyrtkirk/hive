@@ -1651,7 +1651,7 @@ public class StatsRulesProcFactory {
           newDataSize = StatsUtils.safeMult(StatsUtils.safeMult(maxDataSize, (numParents - 1)), joinFactor);
         }
 
-        Statistics wcStats = new Statistics(newNumRows, newDataSize, -1);
+        Statistics wcStats = new Statistics(newNumRows, newDataSize);
 
         // evaluate filter expression and update statistics
         if (jop.getConf().getNoOuterJoin() &&
