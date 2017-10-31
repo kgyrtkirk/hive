@@ -168,6 +168,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	295483              
 	transactional       	true                
 #### A masked pattern was here ####
@@ -359,6 +361,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	1554                
 	transactional       	true                
 #### A masked pattern was here ####
@@ -479,6 +483,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	2                   
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	3109                
 	transactional       	true                
 #### A masked pattern was here ####
@@ -597,6 +603,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	3                   
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	298592              
 	transactional       	true                
 #### A masked pattern was here ####
@@ -819,6 +827,8 @@ Table:              	sp
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	5812                
 #### A masked pattern was here ####
 	 	 
@@ -922,6 +932,8 @@ Table:              	sp
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	2                   
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	5820                
 #### A masked pattern was here ####
 	 	 
