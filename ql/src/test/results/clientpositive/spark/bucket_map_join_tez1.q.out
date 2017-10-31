@@ -5816,11 +5816,15 @@ PREHOOK: query: analyze table tab2 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab2
 PREHOOK: Input: default@tab2@ds=2008-04-08
+PREHOOK: Output: default@tab2
+PREHOOK: Output: default@tab2@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table tab2 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab2
 POSTHOOK: Input: default@tab2@ds=2008-04-08
+POSTHOOK: Output: default@tab2
+POSTHOOK: Output: default@tab2@ds=2008-04-08
 #### A masked pattern was here ####
 PREHOOK: query: explain select a.key, a.value, b.value
         from tab2 a join tab_part b on a.key = b.key and a.value = b.value
