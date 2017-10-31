@@ -46,17 +46,25 @@ public class Statistics implements Serializable {
   private State columnStatsState;
 
   public Statistics() {
-    this(0, 0, -1);
+    this(0, 0, -1, 0);
+  }
+
+  public Statistics(long nr, long ds) {
+    this(nr, ds, -1, 0);
   }
 
   public Statistics(long nr, long ds, long rnr) {
+    this(nr, ds);
+  }
+
+  public Statistics(long nr, long ds, long rnr, int x) {
     this.setNumRows(nr);
     this.setDataSize(ds);
-    updateBasicStatsState();
     this.setRunTimeNumRows(rnr);
-    this.basicStatsState = State.NONE;
     this.columnStats = null;
     this.columnStatsState = State.NONE;
+
+    updateBasicStatsState();
   }
 
   public long getNumRows() {
@@ -154,7 +162,7 @@ public class Statistics implements Serializable {
 
   @Override
   public Statistics clone() throws CloneNotSupportedException {
-    Statistics clone = new Statistics(numRows, dataSize, runTimeNumRows);
+    Statistics clone = new Statistics(numRows, dataSize, runTimeNumRows, 0);
     clone.setBasicStatsState(basicStatsState);
     clone.setColumnStatsState(columnStatsState);
     if (columnStats != null) {
