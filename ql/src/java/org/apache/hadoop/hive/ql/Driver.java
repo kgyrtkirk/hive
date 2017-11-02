@@ -1545,19 +1545,18 @@ public class Driver implements CommandProcessor {
         return resp;
       }
     }
-    return runInternal1(command, true);
+    return runInternal1(command);
   }
 
-  private CommandProcessorResponse runInternal1(String command, boolean alreadyCompiled)
+  private CommandProcessorResponse runInternal1(String command)
       throws CommandNeedRetryException {
     errorMessage = null;
     SQLState = null;
     downstreamError = null;
     LockedDriverState.setLockedDriverState(lDrvState);
-
     lDrvState.stateLock.lock();
     try {
-      if (alreadyCompiled) {
+      if (true) {
         if (lDrvState.driverState == DriverState.COMPILED) {
           lDrvState.driverState = DriverState.EXECUTING;
         } else {
@@ -1577,7 +1576,7 @@ public class Driver implements CommandProcessor {
     boolean isFinishedWithError = true;
     try {
       HiveDriverRunHookContext hookContext = new HiveDriverRunHookContextImpl(conf,
-          alreadyCompiled ? ctx.getCmd() : command);
+          true ? ctx.getCmd() : command);
       // Get all the driver run hooks and pre-execute them.
       List<HiveDriverRunHook> driverRunHooks;
       try {
@@ -1597,7 +1596,7 @@ public class Driver implements CommandProcessor {
       PerfLogger perfLogger = null;
 
       int ret;
-      if (!alreadyCompiled) {
+      if (!true) {
         // compile internal will automatically reset the perf logger
         ret = compileInternal(command, true);
         // then we continue to use this perf logger
