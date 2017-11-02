@@ -191,7 +191,7 @@ public class Driver implements CommandProcessor {
   // either initTxnMgr or from the SessionState, in that order.
   private HiveTxnManager queryTxnMgr;
 
-  public enum DriverState {
+  private enum DriverState {
     INITIALIZED,
     COMPILING,
     COMPILED,
@@ -232,6 +232,14 @@ public class Driver implements CommandProcessor {
       if (lds != null) {
         lds.remove();
       }
+    }
+
+    public boolean isAborted() {
+      return driverState == DriverState.INTERRUPT;
+    }
+
+    public void abort() {
+      driverState = DriverState.INTERRUPT;
     }
   }
 
