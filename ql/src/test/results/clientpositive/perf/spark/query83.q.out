@@ -407,29 +407,29 @@ STAGE PLANS:
                   0 _col1 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 80353 Data size: 89916016 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 80353 Data size: 89916016 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 80353 Data size: 89916016 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 80353 Data size: 89916016 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 80353 Data size: 89916016 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 80353 Data size: 89916016 Basic stats: PARTIAL Column stats: NONE
         Reducer 12 
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 40176 Data size: 44957448 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 40176 Data size: 44957448 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 40176 Data size: 44957448 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 40176 Data size: 44957448 Basic stats: PARTIAL Column stats: NONE
         Reducer 15 
             Reduce Operator Tree:
               Join Operator
@@ -439,12 +439,12 @@ STAGE PLANS:
                   0 _col1 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col2, _col4
-                Statistics: Num rows: 63350266 Data size: 4908414421 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 63350266 Data size: 4908414421 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 63350266 Data size: 4908414421 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 63350266 Data size: 4908414421 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col2 (type: int), _col4 (type: string)
         Reducer 16 
             Reduce Operator Tree:
@@ -455,18 +455,18 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col2, _col4
-                Statistics: Num rows: 69685294 Data size: 5399255980 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 69685294 Data size: 5399255980 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: sum(_col2)
                   keys: _col4 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 69685294 Data size: 5399255980 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 69685294 Data size: 5399255980 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 69685294 Data size: 5399255980 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 69685294 Data size: 5399255980 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col1 (type: bigint)
         Reducer 17 
             Reduce Operator Tree:
@@ -475,12 +475,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 34842647 Data size: 2699627990 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 34842647 Data size: 2699627990 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 34842647 Data size: 2699627990 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 34842647 Data size: 2699627990 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col1 (type: bigint)
         Reducer 2 
             Reduce Operator Tree:
@@ -491,12 +491,12 @@ STAGE PLANS:
                   0 _col1 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col2, _col4
-                Statistics: Num rows: 31678769 Data size: 3362958220 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 31678769 Data size: 3362958220 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 31678769 Data size: 3362958220 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 31678769 Data size: 3362958220 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col2 (type: int), _col4 (type: string)
         Reducer 20 
             Reduce Operator Tree:
@@ -507,12 +507,12 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 80353 Data size: 89916016 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 80353 Data size: 89916016 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 80353 Data size: 89916016 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 80353 Data size: 89916016 Basic stats: PARTIAL Column stats: NONE
         Reducer 22 
             Reduce Operator Tree:
               Join Operator
@@ -522,29 +522,29 @@ STAGE PLANS:
                   0 _col1 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 80353 Data size: 89916016 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 80353 Data size: 89916016 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 80353 Data size: 89916016 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 80353 Data size: 89916016 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 80353 Data size: 89916016 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 80353 Data size: 89916016 Basic stats: PARTIAL Column stats: NONE
         Reducer 23 
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 40176 Data size: 44957448 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 40176 Data size: 44957448 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 40176 Data size: 44957448 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 40176 Data size: 44957448 Basic stats: PARTIAL Column stats: NONE
         Reducer 26 
             Reduce Operator Tree:
               Join Operator
@@ -554,12 +554,12 @@ STAGE PLANS:
                   0 _col1 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col2, _col4
-                Statistics: Num rows: 15838314 Data size: 1457713633 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 15838314 Data size: 1457713633 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 15838314 Data size: 1457713633 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15838314 Data size: 1457713633 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col2 (type: int), _col4 (type: string)
         Reducer 27 
             Reduce Operator Tree:
@@ -570,18 +570,18 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col2, _col4
-                Statistics: Num rows: 17422145 Data size: 1603485031 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 17422145 Data size: 1603485031 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: sum(_col2)
                   keys: _col4 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 17422145 Data size: 1603485031 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 17422145 Data size: 1603485031 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 17422145 Data size: 1603485031 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 17422145 Data size: 1603485031 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col1 (type: bigint)
         Reducer 28 
             Reduce Operator Tree:
@@ -590,12 +590,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 8711072 Data size: 801742469 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 8711072 Data size: 801742469 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 8711072 Data size: 801742469 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8711072 Data size: 801742469 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col1 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
@@ -606,18 +606,18 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col2, _col4
-                Statistics: Num rows: 34846646 Data size: 3699254122 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 34846646 Data size: 3699254122 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: sum(_col2)
                   keys: _col4 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 34846646 Data size: 3699254122 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 34846646 Data size: 3699254122 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 34846646 Data size: 3699254122 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 34846646 Data size: 3699254122 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col1 (type: bigint)
         Reducer 31 
             Reduce Operator Tree:
@@ -628,12 +628,12 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 80353 Data size: 89916016 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 80353 Data size: 89916016 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 80353 Data size: 89916016 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 80353 Data size: 89916016 Basic stats: PARTIAL Column stats: NONE
         Reducer 33 
             Reduce Operator Tree:
               Join Operator
@@ -643,29 +643,29 @@ STAGE PLANS:
                   0 _col1 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 80353 Data size: 89916016 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 80353 Data size: 89916016 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 80353 Data size: 89916016 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 80353 Data size: 89916016 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 80353 Data size: 89916016 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 80353 Data size: 89916016 Basic stats: PARTIAL Column stats: NONE
         Reducer 34 
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 40176 Data size: 44957448 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 40176 Data size: 44957448 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 40176 Data size: 44957448 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 40176 Data size: 44957448 Basic stats: PARTIAL Column stats: NONE
         Reducer 4 
             Reduce Operator Tree:
               Group By Operator
@@ -673,12 +673,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 17423323 Data size: 1849627061 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 17423323 Data size: 1849627061 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 17423323 Data size: 1849627061 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 17423323 Data size: 1849627061 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col1 (type: bigint)
         Reducer 5 
             Reduce Operator Tree:
@@ -691,15 +691,15 @@ STAGE PLANS:
                   1 _col0 (type: string)
                   2 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col3, _col5
-                Statistics: Num rows: 76653825 Data size: 5939181706 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 76653825 Data size: 5939181706 Basic stats: PARTIAL Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col3 (type: bigint), (((UDFToDouble(_col3) / UDFToDouble(((_col3 + _col1) + _col5))) / 3.0) * 100.0) (type: double), _col1 (type: bigint), (((UDFToDouble(_col1) / UDFToDouble(((_col3 + _col1) + _col5))) / 3.0) * 100.0) (type: double), _col5 (type: bigint), (((UDFToDouble(_col5) / UDFToDouble(((_col3 + _col1) + _col5))) / 3.0) * 100.0) (type: double), (CAST( ((_col3 + _col1) + _col5) AS decimal(19,0)) / 3) (type: decimal(25,6))
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                  Statistics: Num rows: 76653825 Data size: 5939181706 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 76653825 Data size: 5939181706 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: bigint)
                     sort order: ++
-                    Statistics: Num rows: 76653825 Data size: 5939181706 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 76653825 Data size: 5939181706 Basic stats: PARTIAL Column stats: NONE
                     TopN Hash Memory Usage: 0.1
                     value expressions: _col2 (type: double), _col3 (type: bigint), _col4 (type: double), _col5 (type: bigint), _col6 (type: double), _col7 (type: decimal(25,6))
         Reducer 6 
@@ -707,13 +707,13 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: bigint), VALUE._col0 (type: double), VALUE._col1 (type: bigint), VALUE._col2 (type: double), VALUE._col3 (type: bigint), VALUE._col4 (type: double), VALUE._col5 (type: decimal(25,6))
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                Statistics: Num rows: 76653825 Data size: 5939181706 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 76653825 Data size: 5939181706 Basic stats: PARTIAL Column stats: NONE
                 Limit
                   Number of rows: 100
-                  Statistics: Num rows: 100 Data size: 7700 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 100 Data size: 7700 Basic stats: PARTIAL Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 100 Data size: 7700 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 100 Data size: 7700 Basic stats: PARTIAL Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -727,12 +727,12 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 80353 Data size: 89916016 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 80353 Data size: 89916016 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 80353 Data size: 89916016 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 80353 Data size: 89916016 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator

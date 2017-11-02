@@ -140,17 +140,17 @@ STAGE PLANS:
                               outputColumnNames: _col0, _col1, _col2, _col3
                               input vertices:
                                 1 Map 2
-                              Statistics: Num rows: 6 Data size: 12698 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 6 Data size: 12698 Basic stats: PARTIAL Column stats: NONE
                               Filter Operator
                                 predicate: (_col0 = _col2) (type: boolean)
-                                Statistics: Num rows: 3 Data size: 6349 Basic stats: COMPLETE Column stats: NONE
+                                Statistics: Num rows: 3 Data size: 6349 Basic stats: PARTIAL Column stats: NONE
                                 Select Operator
                                   expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                                   outputColumnNames: _col0, _col1, _col2
-                                  Statistics: Num rows: 3 Data size: 6349 Basic stats: COMPLETE Column stats: NONE
+                                  Statistics: Num rows: 3 Data size: 6349 Basic stats: PARTIAL Column stats: NONE
                                   File Output Operator
                                     compressed: false
-                                    Statistics: Num rows: 3 Data size: 6349 Basic stats: COMPLETE Column stats: NONE
+                                    Statistics: Num rows: 3 Data size: 6349 Basic stats: PARTIAL Column stats: NONE
                                     table:
                                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -178,17 +178,17 @@ STAGE PLANS:
                                 outputColumnNames: _col0, _col1, _col2, _col3
                                 input vertices:
                                   1 Map 2
-                                Statistics: Num rows: 6 Data size: 12698 Basic stats: COMPLETE Column stats: NONE
+                                Statistics: Num rows: 6 Data size: 12698 Basic stats: PARTIAL Column stats: NONE
                                 Filter Operator
                                   predicate: (_col0 = _col2) (type: boolean)
-                                  Statistics: Num rows: 3 Data size: 6349 Basic stats: COMPLETE Column stats: NONE
+                                  Statistics: Num rows: 3 Data size: 6349 Basic stats: PARTIAL Column stats: NONE
                                   Select Operator
                                     expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                                     outputColumnNames: _col0, _col1, _col2
-                                    Statistics: Num rows: 3 Data size: 6349 Basic stats: COMPLETE Column stats: NONE
+                                    Statistics: Num rows: 3 Data size: 6349 Basic stats: PARTIAL Column stats: NONE
                                     File Output Operator
                                       compressed: false
-                                      Statistics: Num rows: 3 Data size: 6349 Basic stats: COMPLETE Column stats: NONE
+                                      Statistics: Num rows: 3 Data size: 6349 Basic stats: PARTIAL Column stats: NONE
                                       table:
                                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

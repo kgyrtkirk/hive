@@ -266,14 +266,14 @@ STAGE PLANS:
             0 UDFToDouble(_col1) (type: double)
             1 UDFToDouble(_col0) (type: double)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 275 Data size: 2921 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), UDFToString(_col1) (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 275 Data size: 2921 Basic stats: PARTIAL Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 275 Data size: 2921 Basic stats: PARTIAL Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
