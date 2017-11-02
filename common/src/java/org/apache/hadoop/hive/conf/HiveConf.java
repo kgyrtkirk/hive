@@ -2329,6 +2329,7 @@ public class HiveConf extends Configuration {
         "Implementations of QueryLifeTimeHookWithParseHooks can also be specified in this list. If they are" +
         "specified then they will be invoked in the same places as QueryLifeTimeHooks and will be invoked during pre " +
          "and post query parsing"),
+    HIVE_EXEC_COUNT("hive.exec.count", 1, new RangeValidator(1, 20), "fos!"),
     HIVE_DRIVER_RUN_HOOKS("hive.exec.driver.run.hooks", "",
         "A comma separated list of hooks which implement HiveDriverRunHook. Will be run at the beginning " +
         "and end of Driver.run, these will be run in the order specified."),

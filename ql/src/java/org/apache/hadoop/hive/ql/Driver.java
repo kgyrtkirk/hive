@@ -1591,7 +1591,7 @@ public class Driver implements CommandProcessor {
 
       PerfLogger perfLogger = null;
 
-      int ret;
+      int ret = 0;
       if (!alreadyCompiled) {
         // compile internal will automatically reset the perf logger
         ret = compileInternal(command, true);
@@ -1622,10 +1622,14 @@ public class Driver implements CommandProcessor {
           return rollback(createProcessorResponse(ret));
         }
       }
-      ret = execute(true);
-      if (ret != 0) {
-        //if needRequireLock is false, the release here will do nothing because there is no lock
-        return rollback(createProcessorResponse(ret));
+
+      for (int cnt = 0; cnt < conf.getIntVar(ConfVars.HIVE_EXEC_COUNT); cnt++) {
+        lDrvState.driverState = DriverState.COMPILED;
+        ret = execute(true);
+        if (ret != 0) {
+          //if needRequireLock is false, the release here will do nothing because there is no lock
+          return rollback(createProcessorResponse(ret));
+        }
       }
 
       //if needRequireLock is false, the release here will do nothing because there is no lock
