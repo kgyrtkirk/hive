@@ -2082,6 +2082,7 @@ public class StatsRulesProcFactory {
         newDataSize = StatsUtils.safeAdd(newDataSize, StatsUtils.safeMult(restColumnsDefaultSize, newNumRows));
       }
       stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
+      stats.setBasicStatsState(State.COMPLETE);
     }
 
     private long computeFinalRowCount(List<Long> rowCountParents, long interimRowCount,
