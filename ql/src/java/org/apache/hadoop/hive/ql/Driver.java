@@ -1538,7 +1538,17 @@ public class Driver implements CommandProcessor {
     return compileLock;
   }
 
-  private CommandProcessorResponse runInternal(String command, boolean alreadyCompiled)
+  private CommandProcessorResponse runInternal(String command, boolean alreadyCompiled) throws CommandNeedRetryException {
+    if(!alreadyCompiled) {
+      CommandProcessorResponse resp = compileAndRespond(command);
+      if(resp.getErrorCode() != 0) {
+        return resp;
+      }
+    }
+    return runInternal1(command, true);
+  }
+
+  private CommandProcessorResponse runInternal1(String command, boolean alreadyCompiled)
       throws CommandNeedRetryException {
     errorMessage = null;
     SQLState = null;
