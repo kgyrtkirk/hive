@@ -1539,13 +1539,49 @@ public class Driver implements CommandProcessor {
   }
 
   private CommandProcessorResponse runInternal(String command, boolean alreadyCompiled) throws CommandNeedRetryException {
+
+    HiveDriverRunHookContext hookContext = new HiveDriverRunHookContextImpl(conf, true ? ctx.getCmd() : command);
+    // Get all the driver run hooks and pre-execute them.
+    List<HiveDriverRunHook> driverRunHooks;
+    {
+      try {
+        driverRunHooks = hooksLoader.getHooks(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, console);
+        for (HiveDriverRunHook driverRunHook : driverRunHooks) {
+          driverRunHook.preDriverRun(hookContext);
+        }
+      } catch (Exception e) {
+        errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
+        SQLState = ErrorMsg.findSQLState(e.getMessage());
+        downstreamError = e;
+        console.printError(errorMessage + "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+        return createProcessorResponse(12);
+      }
+    }
+
     if(!alreadyCompiled) {
       CommandProcessorResponse resp = compileAndRespond(command);
       if(resp.getErrorCode() != 0) {
         return resp;
       }
     }
-    return runInternal1(command);
+    CommandProcessorResponse resp = runInternal1(command);
+    if (resp.getErrorCode() != 0) {
+      return resp;
+    }
+    // Take all the driver run hooks and post-execute them.
+    try {
+      for (HiveDriverRunHook driverRunHook : driverRunHooks) {
+        driverRunHook.postDriverRun(hookContext);
+      }
+    } catch (Exception e) {
+      errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
+      SQLState = ErrorMsg.findSQLState(e.getMessage());
+      downstreamError = e;
+      console.printError(errorMessage + "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      return createProcessorResponse(12);
+    }
+    return resp;
+
   }
 
   private CommandProcessorResponse runInternal1(String command)
@@ -1556,16 +1592,12 @@ public class Driver implements CommandProcessor {
     LockedDriverState.setLockedDriverState(lDrvState);
     lDrvState.stateLock.lock();
     try {
-      if (true) {
-        if (lDrvState.driverState == DriverState.COMPILED) {
-          lDrvState.driverState = DriverState.EXECUTING;
-        } else {
-          errorMessage = "FAILED: Precompiled query has been cancelled or closed.";
-          console.printError(errorMessage);
-          return createProcessorResponse(12);
-        }
+      if (lDrvState.driverState == DriverState.COMPILED) {
+        lDrvState.driverState = DriverState.EXECUTING;
       } else {
-        lDrvState.driverState = DriverState.COMPILING;
+        errorMessage = "FAILED: Precompiled query has been cancelled or closed.";
+        console.printError(errorMessage);
+        return createProcessorResponse(12);
       }
     } finally {
       lDrvState.stateLock.unlock();
@@ -1575,23 +1607,6 @@ public class Driver implements CommandProcessor {
     // the method has been returned by an error or not.
     boolean isFinishedWithError = true;
     try {
-      HiveDriverRunHookContext hookContext = new HiveDriverRunHookContextImpl(conf,
-          true ? ctx.getCmd() : command);
-      // Get all the driver run hooks and pre-execute them.
-      List<HiveDriverRunHook> driverRunHooks;
-      try {
-        driverRunHooks = hooksLoader.getHooks(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, console);
-        for (HiveDriverRunHook driverRunHook : driverRunHooks) {
-            driverRunHook.preDriverRun(hookContext);
-        }
-      } catch (Exception e) {
-        errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
-        SQLState = ErrorMsg.findSQLState(e.getMessage());
-        downstreamError = e;
-        console.printError(errorMessage + "\n"
-            + org.apache.hadoop.util.StringUtils.stringifyException(e));
-        return createProcessorResponse(12);
-      }
 
       PerfLogger perfLogger = null;
 
@@ -1650,19 +1665,6 @@ public class Driver implements CommandProcessor {
       queryDisplay.setPerfLogStarts(QueryDisplay.Phase.EXECUTION, perfLogger.getStartTimes());
       queryDisplay.setPerfLogEnds(QueryDisplay.Phase.EXECUTION, perfLogger.getEndTimes());
 
-      // Take all the driver run hooks and post-execute them.
-      try {
-        for (HiveDriverRunHook driverRunHook : driverRunHooks) {
-            driverRunHook.postDriverRun(hookContext);
-        }
-      } catch (Exception e) {
-        errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
-        SQLState = ErrorMsg.findSQLState(e.getMessage());
-        downstreamError = e;
-        console.printError(errorMessage + "\n"
-            + org.apache.hadoop.util.StringUtils.stringifyException(e));
-        return createProcessorResponse(12);
-      }
       isFinishedWithError = false;
       return createProcessorResponse(ret);
     } finally {
