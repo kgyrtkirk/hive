@@ -479,7 +479,7 @@ public class Driver implements CommandProcessor {
       LOG.warn("WARNING! Query command could not be redacted." + e);
     }
 
-    XXX2handleInterruptionWithHook("at beginning of compilation.", null, null);
+    checkInterrupted("at beginning of compilation.", null, null);
 
     if (ctx != null && ctx.getExplainAnalyze() != AnalyzeState.RUNNING) {
       // close the existing ctx etc before compiling a new query, but does not destroy driver
@@ -536,7 +536,7 @@ public class Driver implements CommandProcessor {
       };
       ShutdownHookManager.addShutdownHook(shutdownRunner, SHUTDOWN_HOOK_PRIORITY);
 
-      XXX2handleInterruptionWithHook("before parsing and analysing the query", null, null);
+      checkInterrupted("before parsing and analysing the query", null, null);
 
       if (ctx == null) {
         ctx = new Context(conf);
@@ -610,7 +610,7 @@ public class Driver implements CommandProcessor {
       sem.validate();
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
 
-      XXX2handleInterruptionWithHook("after analyzing query.", null, null);
+      checkInterrupted("after analyzing query.", null, null);
 
       // get the output schema
       schema = getSchema(sem, conf);
@@ -656,7 +656,7 @@ public class Driver implements CommandProcessor {
         }
       }
     } catch (Exception e) {
-      XXX2handleInterruptionWithHook("during query compilation: " + e.getMessage(), null, null);
+      checkInterrupted("during query compilation: " + e.getMessage(), null, null);
 
       compileError = true;
       ErrorMsg error = ErrorMsg.getErrorMsg(e.getMessage());
@@ -782,7 +782,7 @@ public class Driver implements CommandProcessor {
     return 1000;
   }
 
-  private void XXX2handleInterruptionWithHook(String msg, HookContext hookContext, PerfLogger perfLogger) throws CommandProcessorResponse {
+  private void checkInterrupted(String msg, HookContext hookContext, PerfLogger perfLogger) throws CommandProcessorResponse {
     if (isInterrupted()) {
       throw createProcessorResponse(handleInterruptionWithHook(msg, hookContext, perfLogger));
     }
@@ -1614,7 +1614,7 @@ public class Driver implements CommandProcessor {
       // same instance of Driver, which can run multiple queries.
       ctx.setHiveTxnManager(queryTxnMgr);
 
-      XXX2handleInterruptionWithHook("at acquiring the lock.", null, null);
+      checkInterrupted("at acquiring the lock.", null, null);
 
       lockAndRespond();
 
@@ -1869,7 +1869,7 @@ public class Driver implements CommandProcessor {
       // At any time, at most maxthreads tasks can be running
       // The main thread polls the TaskRunners to check if they have finished.
 
-      XXX2handleInterruptionWithHook("before running tasks.", hookContext, perfLogger);
+      checkInterrupted("before running tasks.", hookContext, perfLogger);
 
       DriverContext driverCxt = new DriverContext(ctx);
       driverCxt.prepare(plan);
@@ -1930,7 +1930,7 @@ public class Driver implements CommandProcessor {
         TaskResult result = tskRun.getTaskResult();
 
         int exitVal = result.getExitVal();
-        XXX2handleInterruptionWithHook("when checking the execution result.", hookContext, perfLogger);
+        checkInterrupted("when checking the execution result.", hookContext, perfLogger);
 
         if (exitVal != 0) {
           if (tsk.ifRetryCmdWhenFail()) {
@@ -2057,7 +2057,7 @@ public class Driver implements CommandProcessor {
     } catch (Throwable e) {
       executionError = true;
 
-      XXX2handleInterruptionWithHook("during query execution: \n" + e.getMessage(), hookContext, perfLogger);
+      checkInterrupted("during query execution: \n" + e.getMessage(), hookContext, perfLogger);
 
       ctx.restoreOriginalTracker();
       if (SessionState.get() != null) {
