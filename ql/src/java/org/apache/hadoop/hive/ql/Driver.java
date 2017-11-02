@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -197,9 +198,6 @@ public class Driver implements CommandProcessor {
     COMPILED,
     EXECUTING,
     EXECUTED,
-    // a state that the driver enters after close() has been called to interrupt its running
-    // query in the query cancellation
-    INTERRUPT,
     // a state that the driver enters after close() has been called to clean the query results
     // and release the resources after the query has been executed
     CLOSED,
@@ -213,6 +211,7 @@ public class Driver implements CommandProcessor {
     // resource releases
     public final ReentrantLock stateLock = new ReentrantLock();
     public DriverState driverState = DriverState.INITIALIZED;
+    public AtomicBoolean aborted;
     private static ThreadLocal<LockedDriverState> lds = new ThreadLocal<LockedDriverState>() {
       @Override
       protected LockedDriverState initialValue() {
@@ -235,11 +234,16 @@ public class Driver implements CommandProcessor {
     }
 
     public boolean isAborted() {
-      return driverState == DriverState.INTERRUPT;
+      return aborted.get();
     }
 
     public void abort() {
-      driverState = DriverState.INTERRUPT;
+      aborted.set(true);
+    }
+
+    @Override
+    public String toString() {
+      return String.format("%s(aborted:%s)", driverState, aborted.get());
     }
   }
 
@@ -788,17 +792,9 @@ public class Driver implements CommandProcessor {
     }
   }
 
+  @Deprecated
   private boolean isInterrupted() {
-    lDrvState.stateLock.lock();
-    try {
-      if (lDrvState.driverState == DriverState.INTERRUPT) {
-        return true;
-      } else {
-        return false;
-      }
-    } finally {
-      lDrvState.stateLock.unlock();
-    }
+    return lDrvState.isAborted();
   }
 
   private ImmutableMap<String, Long> dumpMetaCallTimingWithoutEx(String phase) {
@@ -1667,13 +1663,10 @@ public class Driver implements CommandProcessor {
         // only release the related resources ctx, driverContext as normal
         releaseResources();
       }
+
       lDrvState.stateLock.lock();
       try {
-        if (lDrvState.driverState == DriverState.INTERRUPT) {
-          lDrvState.driverState = DriverState.ERROR;
-        } else {
-          lDrvState.driverState = isFinishedWithError ? DriverState.ERROR : DriverState.EXECUTED;
-        }
+        lDrvState.driverState = isFinishedWithError ? DriverState.ERROR : DriverState.EXECUTED;
       } finally {
         lDrvState.stateLock.unlock();
       }
@@ -1756,6 +1749,9 @@ public class Driver implements CommandProcessor {
   }
 
   private CommandProcessorResponse createProcessorResponse(int ret) {
+    if (ret != 0) {
+      lDrvState.driverState = DriverState.ERROR;
+    }
     SessionState.getPerfLogger().cleanupPerfLogMetrics();
     queryDisplay.setErrorMessage(errorMessage);
     if(downstreamError != null && downstreamError instanceof HiveException) {
@@ -1788,8 +1784,7 @@ public class Driver implements CommandProcessor {
       if (lDrvState.driverState != DriverState.COMPILED &&
           lDrvState.driverState != DriverState.EXECUTING) {
         SQLState = "HY008";
-        errorMessage = "FAILED: query " + queryStr + " has " +
-            (lDrvState.driverState == DriverState.INTERRUPT ? "been cancelled" : "not been compiled.");
+        errorMessage = "FAILED: unexpected driverstate: " + lDrvState + ", for query " + queryStr;
         console.printError(errorMessage);
         throw createProcessorResponse(1000);
       } else {
@@ -2459,9 +2454,8 @@ public class Driver implements CommandProcessor {
     try {
       releaseDriverContext();
       if (lDrvState.driverState == DriverState.COMPILING ||
-          lDrvState.driverState == DriverState.EXECUTING ||
-          lDrvState.driverState == DriverState.INTERRUPT) {
-        lDrvState.driverState = DriverState.INTERRUPT;
+          lDrvState.driverState == DriverState.EXECUTING) {
+        lDrvState.abort();
         return 0;
       }
       releasePlan();
@@ -2486,8 +2480,7 @@ public class Driver implements CommandProcessor {
     try {
       // in the cancel case where the driver state is INTERRUPTED, destroy will be deferred to
       // the query process
-      if (lDrvState.driverState == DriverState.DESTROYED ||
-          lDrvState.driverState == DriverState.INTERRUPT) {
+      if (lDrvState.driverState == DriverState.DESTROYED) {
         return;
       } else {
         lDrvState.driverState = DriverState.DESTROYED;
