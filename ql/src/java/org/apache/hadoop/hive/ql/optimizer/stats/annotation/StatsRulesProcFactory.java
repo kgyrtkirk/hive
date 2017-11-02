@@ -1610,9 +1610,11 @@ public class StatsRulesProcFactory {
         long crossDataSize = 1;
         long maxRowCount = 0;
         long maxDataSize = 0;
+        State statsState = State.NONE;
 
         for (Operator<? extends OperatorDesc> op : parents) {
           Statistics ps = op.getStatistics();
+          statsState = Statistics.inferColumnStatsState(statsState, ps.getBasicStatsState());
           long rowCount = ps.getNumRows();
           long dataSize = ps.getDataSize();
           // Update cross size
@@ -1653,7 +1655,7 @@ public class StatsRulesProcFactory {
         }
 
         Statistics wcStats = new Statistics(newNumRows, newDataSize);
-        wcStats.setBasicStatsState(State.PARTIAL);
+        wcStats.setBasicStatsState(statsState);
 
         // evaluate filter expression and update statistics
         if (jop.getConf().getNoOuterJoin() &&
