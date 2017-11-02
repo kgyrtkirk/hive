@@ -7003,7 +7003,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             Utilities.FILE_OP_LOGGER.trace("Setting query directory " + queryTmpdir
                   + " from " + dest_path + " (" + isMmTable + ")");
           }
-        } catch (Exception e) { 
+        } catch (Exception e) {
           throw new SemanticException("Error creating temporary folder on: "
               + dest_path, e);
         }
@@ -7412,7 +7412,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private DynamicPartitionCtx checkDynPart(QB qb, QBMetaData qbm, Table dest_tab,
       Map<String, String> partSpec, String dest) throws SemanticException {
     List<FieldSchema> parts = dest_tab.getPartitionKeys();
-    if (parts == null || parts.isEmpty()) return null; // table is not partitioned
+    if (parts == null || parts.isEmpty()) {
+      return null; // table is not partitioned
+    }
     if (partSpec == null || partSpec.size() == 0) { // user did NOT specify partition
       throw new SemanticException(generateErrorMessage(qb.getParseInfo().getDestForClause(dest),
           ErrorMsg.NEED_PARTITION_ERROR.getMsg()));
@@ -11547,7 +11549,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  void analyzeInternal(ASTNode ast, PlannerContextFactory pcf) throws SemanticException {
+  protected final void analyzeInternal(ASTNode ast, PlannerContextFactory pcf) throws SemanticException {
     // 1. Generate Resolved Parse tree from syntax tree
     LOG.info("Starting Semantic Analysis");
     //change the location of position alias process here
@@ -13744,9 +13746,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Don't know the characteristics of non-native tables,
     // and don't have a rational way to guess, so assume the most
     // conservative case.
-    if (isNonNativeTable) return WriteEntity.WriteType.INSERT_OVERWRITE;
-    else return ((ltd.getLoadFileType() == LoadFileType.REPLACE_ALL)
-                         ? WriteEntity.WriteType.INSERT_OVERWRITE : getWriteType(dest));
+    if (isNonNativeTable) {
+      return WriteEntity.WriteType.INSERT_OVERWRITE;
+    } else {
+      return ((ltd.getLoadFileType() == LoadFileType.REPLACE_ALL)
+                           ? WriteEntity.WriteType.INSERT_OVERWRITE : getWriteType(dest));
+    }
   }
 
   private WriteEntity.WriteType getWriteType(String dest) {

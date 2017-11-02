@@ -1733,7 +1733,9 @@ public abstract class BaseSemanticAnalyzer {
   @VisibleForTesting
   static void normalizeColSpec(Map<String, String> partSpec, String colName,
       String colType, String originalColSpec, Object colValue) throws SemanticException {
-    if (colValue == null) return; // nothing to do with nulls
+    if (colValue == null) {
+      return; // nothing to do with nulls
+    }
     String normalizedColSpec = originalColSpec;
     if (colType.equals(serdeConstants.DATE_TYPE_NAME)) {
       normalizedColSpec = normalizeDateCol(colValue, originalColSpec);
