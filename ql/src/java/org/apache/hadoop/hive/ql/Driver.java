@@ -1611,20 +1611,12 @@ public class Driver implements CommandProcessor {
       PerfLogger perfLogger = null;
 
       int ret;
-      if (!true) {
-        // compile internal will automatically reset the perf logger
-        ret = compileInternal(command, true);
-        // then we continue to use this perf logger
-        perfLogger = SessionState.getPerfLogger();
-        if (ret != 0) {
-          return createProcessorResponse(ret);
-        }
-      } else {
-        // reuse existing perf logger.
-        perfLogger = SessionState.getPerfLogger();
-        // Since we're reusing the compiled plan, we need to update its start time for current run
-        plan.setQueryStartTime(perfLogger.getStartTime(PerfLogger.DRIVER_RUN));
-      }
+
+      // reuse existing perf logger.
+      perfLogger = SessionState.getPerfLogger();
+      // Since we're reusing the compiled plan, we need to update its start time for current run
+      plan.setQueryStartTime(perfLogger.getStartTime(PerfLogger.DRIVER_RUN));
+
       // the reason that we set the txn manager for the cxt here is because each
       // query has its own ctx object. The txn mgr is shared across the
       // same instance of Driver, which can run multiple queries.
