@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -198,6 +197,9 @@ public class Driver implements CommandProcessor {
     COMPILED,
     EXECUTING,
     EXECUTED,
+    // a state that the driver enters after close() has been called to interrupt its running
+    // query in the query cancellation
+    INTERRUPT,
     // a state that the driver enters after close() has been called to clean the query results
     // and release the resources after the query has been executed
     CLOSED,
@@ -211,7 +213,6 @@ public class Driver implements CommandProcessor {
     // resource releases
     public final ReentrantLock stateLock = new ReentrantLock();
     public DriverState driverState = DriverState.INITIALIZED;
-    public AtomicBoolean aborted;
     private static ThreadLocal<LockedDriverState> lds = new ThreadLocal<LockedDriverState>() {
       @Override
       protected LockedDriverState initialValue() {
@@ -234,26 +235,11 @@ public class Driver implements CommandProcessor {
     }
 
     public boolean isAborted() {
-      return aborted.get();
+      return driverState == DriverState.INTERRUPT;
     }
 
     public void abort() {
-      aborted.set(true);
-    }
-
-    public void transition(DriverState newState) {
-      driverState = newState;
-    }
-
-    public void transition(DriverState expectedState, DriverState newState) {
-      if (driverState == DriverState.ERROR) {
-        return;
-      }
-      if (driverState == expectedState) {
-        driverState = newState;
-      } else {
-        throw new RuntimeException("illegal transition");
-      }
+      driverState = DriverState.INTERRUPT;
     }
   }
 
@@ -804,9 +790,17 @@ public class Driver implements CommandProcessor {
     return 1000;
   }
 
-  @Deprecated
   private boolean isInterrupted() {
-    return lDrvState.isAborted();
+    lDrvState.stateLock.lock();
+    try {
+      if (lDrvState.driverState == DriverState.INTERRUPT) {
+        return true;
+      } else {
+        return false;
+      }
+    } finally {
+      lDrvState.stateLock.unlock();
+    }
   }
 
   private ImmutableMap<String, Long> dumpMetaCallTimingWithoutEx(String phase) {
@@ -1677,11 +1671,15 @@ public class Driver implements CommandProcessor {
         // only release the related resources ctx, driverContext as normal
         releaseResources();
       }
-
-      if (isFinishedWithError) {
-        lDrvState.transition(DriverState.ERROR);
-      } else {
-        lDrvState.transition(DriverState.EXECUTING, DriverState.EXECUTED);
+      lDrvState.stateLock.lock();
+      try {
+        if (lDrvState.driverState == DriverState.INTERRUPT) {
+          lDrvState.driverState = DriverState.ERROR;
+        } else {
+          lDrvState.driverState = isFinishedWithError ? DriverState.ERROR : DriverState.EXECUTED;
+        }
+      } finally {
+        lDrvState.stateLock.unlock();
       }
     }
   }
