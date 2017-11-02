@@ -11729,7 +11729,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       putAccessedColumnsToReadEntity(inputs, columnAccessInfo);
     }
 
-    return;
   }
 
   private void putAccessedColumnsToReadEntity(HashSet<ReadEntity> inputs, ColumnAccessInfo columnAccessInfo) {
