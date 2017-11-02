@@ -87,7 +87,6 @@ import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
-import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
@@ -284,6 +283,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private ASTNode ast;
   private int destTableId;
   private UnionProcContext uCtx;
+  private ParseContext pCtx;
   List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer;
   private HashMap<TableScanOperator, SampleDesc> opToSamplePruner;
   private final Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner;
@@ -11550,6 +11550,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   protected final void analyzeInternal(ASTNode ast, PlannerContextFactory pcf) throws SemanticException {
+    analyzeInternal0(ast, pcf);
+    analyzeInternalPhysical(ast, pcf);
+  }
+
+  protected final void analyzeInternal0(ASTNode ast, PlannerContextFactory pcf) throws SemanticException {
+
     // 1. Generate Resolved Parse tree from syntax tree
     LOG.info("Starting Semantic Analysis");
     //change the location of position alias process here
@@ -11605,7 +11611,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // 4. Generate Parse Context for Optimizer & Physical compiler
     copyInfoToQueryProperties(queryProperties);
-    ParseContext pCtx = new ParseContext(queryState, opToPartPruner, opToPartList, topOps,
+    pCtx = new ParseContext(queryState, opToPartPruner, opToPartList, topOps,
         new HashSet<JoinOperator>(joinContext.keySet()),
         new HashSet<SMBMapJoinOperator>(smbMapJoinContext.keySet()),
         loadTableWork, loadFileWork, columnStatsAutoGatherContexts, ctx, idToTableNameMap, destTableId, uCtx,
@@ -11687,7 +11693,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // set ColumnAccessInfo for view column authorization
       setColumnAccessInfo(pCtx.getColumnAccessInfo());
     }
-    FetchTask origFetchTask = pCtx.getFetchTask();
     if (LOG.isDebugEnabled()) {
       LOG.debug("After logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));
     }
@@ -11702,6 +11707,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // view column access info is carried by this.getColumnAccessInfo().
       setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this.getColumnAccessInfo()));
     }
+
+  }
+
+  protected final void analyzeInternalPhysical(ASTNode ast, PlannerContextFactory pcf) throws SemanticException {
 
     // 9. Optimize Physical op tree & Translate to target execution engine (MR,
     // TEZ..)
@@ -11718,11 +11727,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // 10. put accessed columns to readEntity
     if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS)) {
       putAccessedColumnsToReadEntity(inputs, columnAccessInfo);
-    }
-
-    // 11. if desired check we're not going over partition scan limits
-    if (!ctx.isExplainSkipExecution()) {
-      enforceScanLimits(pCtx, origFetchTask);
     }
 
     return;
@@ -11748,45 +11752,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             break;
           default:
             // no-op
-        }
-      }
-    }
-  }
-
-  private void enforceScanLimits(ParseContext pCtx, FetchTask fTask)
-      throws SemanticException {
-    int scanLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVELIMITTABLESCANPARTITION);
-
-    if (scanLimit > -1) {
-      // a scan limit on the number of partitions has been set by the user
-      if (fTask != null) {
-        // having a fetch task at this point means that we're not going to
-        // launch a job on the cluster
-        if (!fTask.getWork().isNotPartitioned() && fTask.getWork().getLimit() == -1
-            && scanLimit < fTask.getWork().getPartDir().size()) {
-          throw new SemanticException(ErrorMsg.PARTITION_SCAN_LIMIT_EXCEEDED, ""
-              + fTask.getWork().getPartDir().size(), ""
-              + fTask.getWork().getTblDesc().getTableName(), "" + scanLimit);
-        }
-      } else {
-        // At this point we've run the partition pruner for all top ops. Let's
-        // check whether any of them break the limit
-        for (Operator<?> topOp : topOps.values()) {
-          if (topOp instanceof TableScanOperator) {
-            TableScanOperator tsOp = (TableScanOperator) topOp;
-            if (tsOp.getConf().getIsMetadataOnly()) {
-              continue;
-            }
-            PrunedPartitionList parts = pCtx.getPrunedPartitions(tsOp);
-            if (!parts.getSourceTable().isPartitioned()) {
-              continue;
-            }
-            if (parts.getPartitions().size() > scanLimit) {
-              throw new SemanticException(ErrorMsg.PARTITION_SCAN_LIMIT_EXCEEDED, ""
-                  + parts.getPartitions().size(), "" + parts.getSourceTable().getTableName(), ""
-                  + scanLimit);
-            }
-          }
         }
       }
     }
