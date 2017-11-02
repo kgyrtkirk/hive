@@ -229,8 +229,9 @@ public class Driver implements CommandProcessor {
     }
 
     public static void removeLockedDriverState() {
-      if (lds != null)
+      if (lds != null) {
         lds.remove();
+      }
     }
   }
 
