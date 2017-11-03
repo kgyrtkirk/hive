@@ -224,13 +224,13 @@ STAGE PLANS:
             0 _col0 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 122 Data size: 1296 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 122 Data size: 1296 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 122 Data size: 1296 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 122 Data size: 1296 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -518,13 +518,13 @@ STAGE PLANS:
             0 _col0 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 122 Data size: 1296 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 122 Data size: 1296 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 122 Data size: 1296 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 122 Data size: 1296 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat

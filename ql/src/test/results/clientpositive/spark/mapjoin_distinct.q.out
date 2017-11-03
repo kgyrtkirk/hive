@@ -67,17 +67,17 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 1100 Data size: 11686 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col1 (type: string)
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1100 Data size: 11686 Basic stats: PARTIAL Column stats: NONE
+                          Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
                             key expressions: _col0 (type: string)
                             sort order: +
                             Map-reduce partition columns: rand() (type: double)
-                            Statistics: Num rows: 1100 Data size: 11686 Basic stats: PARTIAL Column stats: NONE
+                            Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -86,22 +86,22 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: partials
                 outputColumnNames: _col0
-                Statistics: Num rows: 1100 Data size: 11686 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
                 mode: final
                 outputColumnNames: _col0
-                Statistics: Num rows: 550 Data size: 5843 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 550 Data size: 5843 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -209,17 +209,17 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 1100 Data size: 11686 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col1 (type: string)
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1100 Data size: 11686 Basic stats: PARTIAL Column stats: NONE
+                          Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
                             key expressions: _col0 (type: string)
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 1100 Data size: 11686 Basic stats: PARTIAL Column stats: NONE
+                            Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -228,10 +228,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 550 Data size: 5843 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 550 Data size: 5843 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -340,12 +340,12 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 1100 Data size: 11686 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col1 (type: string)
                           sort order: +
                           Map-reduce partition columns: rand() (type: double)
-                          Statistics: Num rows: 1100 Data size: 11686 Basic stats: PARTIAL Column stats: NONE
+                          Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -354,22 +354,22 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: partial1
                 outputColumnNames: _col0
-                Statistics: Num rows: 1100 Data size: 11686 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
                 mode: final
                 outputColumnNames: _col0
-                Statistics: Num rows: 550 Data size: 5843 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 550 Data size: 5843 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -477,12 +477,12 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 1100 Data size: 11686 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col1 (type: string)
                           sort order: +
                           Map-reduce partition columns: _col1 (type: string)
-                          Statistics: Num rows: 1100 Data size: 11686 Basic stats: PARTIAL Column stats: NONE
+                          Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -491,10 +491,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: complete
                 outputColumnNames: _col0
-                Statistics: Num rows: 550 Data size: 5843 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 550 Data size: 5843 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

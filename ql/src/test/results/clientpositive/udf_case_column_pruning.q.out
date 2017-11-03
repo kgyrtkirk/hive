@@ -65,11 +65,11 @@ STAGE PLANS:
             0 _col0 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0
-          Statistics: Num rows: 550 Data size: 5843 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: CASE WHEN ((_col0 = '1')) THEN (2) WHEN ((_col0 = '3')) THEN (4) ELSE (5) END (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 550 Data size: 5843 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -84,19 +84,19 @@ STAGE PLANS:
             Reduce Output Operator
               key expressions: _col0 (type: int)
               sort order: +
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 550 Data size: 5843 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 10
-            Statistics: Num rows: 10 Data size: 100 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 10 Data size: 100 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

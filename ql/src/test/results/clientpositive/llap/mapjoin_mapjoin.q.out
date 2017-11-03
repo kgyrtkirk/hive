@@ -39,7 +39,7 @@ STAGE PLANS:
                         input vertices:
                           1 Map 2
                         Position of Big Table: 0
-                        Statistics: Num rows: 2200 Data size: 23372 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -51,13 +51,13 @@ STAGE PLANS:
                           input vertices:
                             1 Map 3
                           Position of Big Table: 0
-                          Statistics: Num rows: 2420 Data size: 25709 Basic stats: PARTIAL Column stats: NONE
+                          Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
                           File Output Operator
                             compressed: false
                             GlobalTableId: 0
 #### A masked pattern was here ####
                             NumFilesPerFileSink: 1
-                            Statistics: Num rows: 2420 Data size: 25709 Basic stats: PARTIAL Column stats: NONE
+                            Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -472,7 +472,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 732 Data size: 7782 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 732 Data size: 7782 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -482,10 +482,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           input vertices:
                             1 Map 3
-                          Statistics: Num rows: 805 Data size: 8560 Basic stats: PARTIAL Column stats: NONE
+                          Statistics: Num rows: 805 Data size: 8560 Basic stats: COMPLETE Column stats: NONE
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 805 Data size: 8560 Basic stats: PARTIAL Column stats: NONE
+                            Statistics: Num rows: 805 Data size: 8560 Basic stats: COMPLETE Column stats: NONE
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -577,7 +577,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col2
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 2200 Data size: 23372 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -587,18 +587,18 @@ STAGE PLANS:
                           outputColumnNames: _col2
                           input vertices:
                             1 Map 4
-                          Statistics: Num rows: 2420 Data size: 25709 Basic stats: PARTIAL Column stats: NONE
+                          Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
                           Group By Operator
                             aggregations: count()
                             keys: _col2 (type: string)
                             mode: hash
                             outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 2420 Data size: 25709 Basic stats: PARTIAL Column stats: NONE
+                            Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
                             Reduce Output Operator
                               key expressions: _col0 (type: string)
                               sort order: +
                               Map-reduce partition columns: _col0 (type: string)
-                              Statistics: Num rows: 2420 Data size: 25709 Basic stats: PARTIAL Column stats: NONE
+                              Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
                               value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -648,14 +648,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1210 Data size: 12854 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col1 (type: bigint)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1210 Data size: 12854 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1210 Data size: 12854 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
