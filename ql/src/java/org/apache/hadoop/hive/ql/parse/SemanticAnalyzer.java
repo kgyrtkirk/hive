@@ -11550,11 +11550,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   protected final void analyzeInternal(ASTNode ast, PlannerContextFactory pcf) throws SemanticException {
-    analyzeInternal0(ast, pcf);
-    analyzeInternalPhysical(ast, pcf);
-  }
-
-  protected final void analyzeInternal0(ASTNode ast, PlannerContextFactory pcf) throws SemanticException {
 
     // 1. Generate Resolved Parse tree from syntax tree
     LOG.info("Starting Semantic Analysis");
@@ -11697,6 +11692,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.debug("After logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));
     }
 
+
     // 8. Generate column access stats if required - wait until column pruning
     // takes place during optimization
     boolean isColumnInfoNeedForAuth = SessionState.get().isAuthorizationModeV2()
@@ -11707,10 +11703,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // view column access info is carried by this.getColumnAccessInfo().
       setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this.getColumnAccessInfo()));
     }
-
-  }
-
-  protected final void analyzeInternalPhysical(ASTNode ast, PlannerContextFactory pcf) throws SemanticException {
 
     // 9. Optimize Physical op tree & Translate to target execution engine (MR,
     // TEZ..)
