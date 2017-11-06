@@ -53,6 +53,8 @@ import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.Driver.DriverState;
+import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -129,12 +131,11 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
-
-public class Driver implements CommandProcessor {
+public class RealDriver implements CommandProcessor {
 
   public static final String MAPREDUCE_WORKFLOW_NODE_NAME = "mapreduce.workflow.node.name";
 
-  static final private String CLASS_NAME = Driver.class.getName();
+  static final private String CLASS_NAME = RealDriver.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   static final private LogHelper console = new LogHelper(LOG);
   static final int SHUTDOWN_HOOK_PRIORITY = 0;
@@ -190,45 +191,6 @@ public class Driver implements CommandProcessor {
   // Transaction manager used for the query. This will be set at compile time based on
   // either initTxnMgr or from the SessionState, in that order.
   private HiveTxnManager queryTxnMgr;
-
-  public enum DriverState {
-    INITIALIZED, COMPILING, COMPILED, EXECUTING, EXECUTED,
-    // a state that the driver enters after close() has been called to interrupt its running
-    // query in the query cancellation
-    INTERRUPT,
-    // a state that the driver enters after close() has been called to clean the query results
-    // and release the resources after the query has been executed
-    CLOSED,
-    // a state that the driver enters after destroy() is called and it is the end of driver life cycle
-    DESTROYED, ERROR
-  }
-
-  public static class LockedDriverState {
-    // a lock is used for synchronizing the state transition and its associated
-    // resource releases
-    public final ReentrantLock stateLock = new ReentrantLock();
-    public DriverState driverState = DriverState.INITIALIZED;
-    private static ThreadLocal<LockedDriverState> lds = new ThreadLocal<LockedDriverState>() {
-      @Override
-      protected LockedDriverState initialValue() {
-        return new LockedDriverState();
-      }
-    };
-
-    public static void setLockedDriverState(LockedDriverState lDrv) {
-      lds.set(lDrv);
-    }
-
-    public static LockedDriverState getLockedDriverState() {
-      return lds.get();
-    }
-
-    public static void removeLockedDriverState() {
-      if (lds != null) {
-        lds.remove();
-      }
-    }
-  }
 
   private boolean checkConcurrency() {
     boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
@@ -348,44 +310,44 @@ public class Driver implements CommandProcessor {
     this.maxRows = maxRows;
   }
 
-  public Driver() {
+  public RealDriver() {
     this(getNewQueryState((SessionState.get() != null) ? SessionState.get().getConf() : new HiveConf()), null);
   }
 
-  public Driver(HiveConf conf) {
+  public RealDriver(HiveConf conf) {
     this(getNewQueryState(conf), null);
   }
 
-  public Driver(HiveConf conf, HiveTxnManager txnMgr) {
+  public RealDriver(HiveConf conf, HiveTxnManager txnMgr) {
     this(getNewQueryState(conf), null, null, txnMgr);
   }
 
-  public Driver(HiveConf conf, Context ctx) {
+  public RealDriver(HiveConf conf, Context ctx) {
     this(getNewQueryState(conf), null, null);
     this.ctx = ctx;
   }
 
-  public Driver(HiveConf conf, String userName) {
+  public RealDriver(HiveConf conf, String userName) {
     this(getNewQueryState(conf), userName, null);
   }
 
-  public Driver(QueryState queryState, String userName) {
+  public RealDriver(QueryState queryState, String userName) {
     this(queryState, userName, new HooksLoader(queryState.getConf()), null, null);
   }
 
-  public Driver(HiveConf conf, HooksLoader hooksLoader) {
+  public RealDriver(HiveConf conf, HooksLoader hooksLoader) {
     this(getNewQueryState(conf), null, hooksLoader, null, null);
   }
 
-  public Driver(QueryState queryState, String userName, QueryInfo queryInfo) {
+  public RealDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
     this(queryState, userName, new HooksLoader(queryState.getConf()), queryInfo, null);
   }
 
-  public Driver(QueryState queryState, String userName, QueryInfo queryInfo, HiveTxnManager txnMgr) {
+  public RealDriver(QueryState queryState, String userName, QueryInfo queryInfo, HiveTxnManager txnMgr) {
     this(queryState, userName, new HooksLoader(queryState.getConf()), queryInfo, txnMgr);
   }
 
-  public Driver(QueryState queryState, String userName, HooksLoader hooksLoader, QueryInfo queryInfo, HiveTxnManager txnMgr) {
+  public RealDriver(QueryState queryState, String userName, HooksLoader hooksLoader, QueryInfo queryInfo, HiveTxnManager txnMgr) {
     this.queryState = queryState;
     this.conf = queryState.getConf();
     isParallelEnabled = (conf != null) && HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_PARALLEL_COMPILATION);

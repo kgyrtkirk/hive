@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import java.util.List;
+
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
@@ -27,8 +29,6 @@ import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
-
-import java.util.List;
 
 /**
  * An interface that allows Hive to manage transactions.  All classes
@@ -214,7 +214,7 @@ public interface HiveTxnManager {
   boolean recordSnapshot(QueryPlan queryPlan);
 
   boolean isImplicitTransactionOpen();
-  
+
   boolean isTxnOpen();
   /**
    * if {@code isTxnOpen()}, returns the currently active transaction ID
