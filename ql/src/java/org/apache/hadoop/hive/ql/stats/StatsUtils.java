@@ -153,13 +153,11 @@ public class StatsUtils {
 
     boolean fetchColStats =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS);
-    boolean fetchPartStats =
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_PARTITION_STATS);
     boolean testMode =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST);
 
     return collectStatistics(conf, partList, table, schema, neededColumns, colStatsCache, referencedColumns,
-        fetchColStats, fetchPartStats, testMode);
+        fetchColStats, testMode);
   }
 
   private static long getDataSize(HiveConf conf, Table table) {
@@ -321,15 +319,15 @@ public class StatsUtils {
 
   public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
       Table table, List<ColumnInfo> schema, List<String> neededColumns, ColumnStatsList colStatsCache,
-      List<String> referencedColumns, boolean fetchColStats, boolean fetchPartStats)
+      List<String> referencedColumns, boolean fetchColStats)
       throws HiveException {
     return collectStatistics(conf, partList, table, schema, neededColumns, colStatsCache,
-        referencedColumns, fetchColStats, fetchPartStats, false);
+        referencedColumns, fetchColStats, false);
   }
 
   private static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
       Table table, List<ColumnInfo> schema, List<String> neededColumns, ColumnStatsList colStatsCache,
-      List<String> referencedColumns, boolean fetchColStats, boolean fetchPartStats, boolean failIfCacheMiss)
+      List<String> referencedColumns, boolean fetchColStats, boolean failIfCacheMiss)
       throws HiveException {
 
     Statistics stats = null;
@@ -372,19 +370,14 @@ public class StatsUtils {
       List<Long> rowCounts = Lists.newArrayList();
       List<Long> dataSizes = Lists.newArrayList();
 
-      if (fetchPartStats) {
-        rowCounts = getBasicStatForPartitions(
-            table, partList.getNotDeniedPartns(), StatsSetupConst.ROW_COUNT);
-        dataSizes =  getBasicStatForPartitions(
-            table, partList.getNotDeniedPartns(), StatsSetupConst.RAW_DATA_SIZE);
+      rowCounts = getBasicStatForPartitions(table, partList.getNotDeniedPartns(), StatsSetupConst.ROW_COUNT);
+      dataSizes = getBasicStatForPartitions(table, partList.getNotDeniedPartns(), StatsSetupConst.RAW_DATA_SIZE);
 
-        nr = getSumIgnoreNegatives(rowCounts);
+      nr = getSumIgnoreNegatives(rowCounts);
+      ds = getSumIgnoreNegatives(dataSizes);
+      if (ds <= 0) {
+        dataSizes = getBasicStatForPartitions(table, partList.getNotDeniedPartns(), StatsSetupConst.TOTAL_SIZE);
         ds = getSumIgnoreNegatives(dataSizes);
-        if (ds <= 0) {
-          dataSizes = getBasicStatForPartitions(
-              table, partList.getNotDeniedPartns(), StatsSetupConst.TOTAL_SIZE);
-          ds = getSumIgnoreNegatives(dataSizes);
-        }
       }
 
       // if data size still could not be determined, then fall back to filesytem to get file
