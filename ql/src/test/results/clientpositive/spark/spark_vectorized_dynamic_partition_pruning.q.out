@@ -323,10 +323,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target column: [1:ds (string)]
+                            partition key expr: [ds]
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -810,10 +810,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: day(ds)
+                            Target column: [1:ds (string)]
+                            partition key expr: [day(ds)]
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -1292,10 +1292,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: abs(((- UDFToLong(concat(UDFToString(day(ds)), '0'))) + 10))
+                            Target column: [1:ds (string)]
+                            partition key expr: [abs(((- UDFToLong(concat(UDFToString(day(ds)), '0'))) + 10))]
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -1576,10 +1576,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: CAST( UDFToShort(day(ds)) AS decimal(10,0))
+                            Target column: [1:ds (string)]
+                            partition key expr: [CAST( UDFToShort(day(ds)) AS decimal(10,0))]
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -1854,10 +1854,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target column: [1:ds (string)]
+                            partition key expr: [ds]
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -1919,10 +1919,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: hr (string)
-                            partition key expr: hr
+                            Target column: [1:hr (string)]
+                            partition key expr: [hr]
                             Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -2560,10 +2560,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target column: [1:ds (string)]
+                            partition key expr: [ds]
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
                       Select Operator
                         expressions: _col2 (type: string)
                         outputColumnNames: _col0
@@ -2585,10 +2585,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: hr (string)
-                            partition key expr: hr
+                            Target column: [1:hr (string)]
+                            partition key expr: [hr]
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -3070,10 +3070,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target column: [1:ds (string)]
+                            partition key expr: [ds]
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -3557,10 +3557,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: hr (string)
-                            partition key expr: UDFToDouble(hr)
+                            Target column: [1:hr (string)]
+                            partition key expr: [UDFToDouble(hr)]
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -3833,10 +3833,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: hr (string)
-                            partition key expr: (UDFToDouble(hr) * 2.0)
+                            Target column: [1:hr (string)]
+                            partition key expr: [(UDFToDouble(hr) * 2.0)]
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -4527,10 +4527,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: hr (string)
-                            partition key expr: UDFToString((UDFToDouble(hr) * 2.0))
+                            Target column: [1:hr (string)]
+                            partition key expr: [UDFToString((UDFToDouble(hr) * 2.0))]
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -5272,10 +5272,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target column: [1:ds (string)]
+                            partition key expr: [ds]
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
                       Select Operator
                         expressions: _col2 (type: string)
                         outputColumnNames: _col0
@@ -5297,10 +5297,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: hr (string)
-                            partition key expr: hr
+                            Target column: [1:hr (string)]
+                            partition key expr: [hr]
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -5570,10 +5570,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target column: [1:ds (string)]
+                            partition key expr: [ds]
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -5825,10 +5825,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target column: [4:ds (string)]
+                            partition key expr: [ds]
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 4
+                            target works: [Map 4]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -6079,10 +6079,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target column: [1:ds (string)]
+                            partition key expr: [ds]
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -6335,10 +6335,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target column: [1:ds (string)]
+                            partition key expr: [ds]
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -6400,10 +6400,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: hr (string)
-                            partition key expr: hr
+                            Target column: [1:hr (string)]
+                            partition key expr: [hr]
                             Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -7160,10 +7160,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: ds (string)
-                          partition key expr: ds
+                          Target column: [1:ds (string)]
+                          partition key expr: [ds]
                           Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                          target work: Map 1
+                          target works: [Map 1]
         Reducer 9 
             Execution mode: vectorized
             Reduce Vectorization:
@@ -7232,10 +7232,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: ds (string)
-                          partition key expr: ds
+                          Target column: [1:ds (string)]
+                          partition key expr: [ds]
                           Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                          target work: Map 1
+                          target works: [Map 1]
 
   Stage: Stage-1
     Spark
@@ -7801,10 +7801,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: ds (string)
-                          partition key expr: ds
+                          Target column: [1:ds (string)]
+                          partition key expr: [ds]
                           Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                          target work: Map 1
+                          target works: [Map 1]
         Reducer 9 
             Execution mode: vectorized
             Reduce Vectorization:
@@ -7873,10 +7873,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: ds (string)
-                          partition key expr: ds
+                          Target column: [1:ds (string)]
+                          partition key expr: [ds]
                           Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                          target work: Map 1
+                          target works: [Map 1]
 
   Stage: Stage-1
     Spark
@@ -8445,10 +8445,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: ds (string)
-                          partition key expr: ds
+                          Target column: [1:ds (string)]
+                          partition key expr: [ds]
                           Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                          target work: Map 1
+                          target works: [Map 1]
         Reducer 13 
             Execution mode: vectorized
             Reduce Vectorization:
@@ -8517,10 +8517,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: ds (string)
-                          partition key expr: ds
+                          Target column: [1:ds (string)]
+                          partition key expr: [ds]
                           Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                          target work: Map 1
+                          target works: [Map 1]
 
   Stage: Stage-1
     Spark
@@ -8964,10 +8964,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target column: [1:ds (string)]
+                            partition key expr: [ds]
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -9209,10 +9209,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: day(ds)
+                            Target column: [1:ds (string)]
+                            partition key expr: [day(ds)]
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -9447,10 +9447,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target column: [1:ds (string)]
+                            partition key expr: [ds]
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -9521,10 +9521,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: hr (string)
-                            partition key expr: hr
+                            Target column: [1:hr (string)]
+                            partition key expr: [hr]
                             Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -9786,10 +9786,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target column: [1:ds (string)]
+                            partition key expr: [ds]
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
                       Select Operator
                         expressions: _col2 (type: string)
                         outputColumnNames: _col0
@@ -9811,10 +9811,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: hr (string)
-                            partition key expr: hr
+                            Target column: [1:hr (string)]
+                            partition key expr: [hr]
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -10054,10 +10054,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target column: [1:ds (string)]
+                            partition key expr: [ds]
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -10290,10 +10290,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: hr (string)
-                            partition key expr: UDFToDouble(hr)
+                            Target column: [1:hr (string)]
+                            partition key expr: [UDFToDouble(hr)]
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -10526,10 +10526,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: hr (string)
-                            partition key expr: (UDFToDouble(hr) * 2.0)
+                            Target column: [1:hr (string)]
+                            partition key expr: [(UDFToDouble(hr) * 2.0)]
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -11034,10 +11034,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target column: [1:ds (string)]
+                            partition key expr: [ds]
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -11632,10 +11632,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target column: [1:ds (string)]
+                            partition key expr: [ds]
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -11706,10 +11706,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: hr (string)
-                            partition key expr: hr
+                            Target column: [1:hr (string)]
+                            partition key expr: [hr]
                             Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -12365,10 +12365,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: ds (string)
-                          partition key expr: ds
+                          Target column: [1:ds (string)]
+                          partition key expr: [ds]
                           Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                          target work: Map 1
+                          target works: [Map 1]
         Reducer 9 
             Execution mode: vectorized
             Reduce Vectorization:
@@ -12437,10 +12437,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: ds (string)
-                          partition key expr: ds
+                          Target column: [1:ds (string)]
+                          partition key expr: [ds]
                           Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                          target work: Map 1
+                          target works: [Map 1]
 
   Stage: Stage-1
     Spark

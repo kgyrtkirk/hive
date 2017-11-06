@@ -41,9 +41,9 @@ import java.util.regex.Pattern;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -61,7 +61,6 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
@@ -172,7 +171,7 @@ public class MetaStoreUtils {
    * @param partParams
    * @return True if the passed Parameters Map contains values for all "Fast Stats".
    */
-  public static boolean containsAllFastStats(Map<String, String> partParams) {
+  private static boolean containsAllFastStats(Map<String, String> partParams) {
     for (String stat : StatsSetupConst.fastStats) {
       if (!partParams.containsKey(stat)) {
         return false;
@@ -181,12 +180,12 @@ public class MetaStoreUtils {
     return true;
   }
 
-  public static boolean updateTableStatsFast(Database db, Table tbl, Warehouse wh,
+  static boolean updateTableStatsFast(Database db, Table tbl, Warehouse wh,
       boolean madeDir, EnvironmentContext environmentContext) throws MetaException {
     return updateTableStatsFast(db, tbl, wh, madeDir, false, environmentContext);
   }
 
-  public static boolean updateTableStatsFast(Database db, Table tbl, Warehouse wh,
+  private static boolean updateTableStatsFast(Database db, Table tbl, Warehouse wh,
       boolean madeDir, boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
     if (tbl.getPartitionKeysSize() == 0) {
       // Update stats only when unpartitioned
@@ -266,70 +265,12 @@ public class MetaStoreUtils {
     params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
   }
 
-  // check if stats need to be (re)calculated
-  public static boolean requireCalStats(Configuration hiveConf, Partition oldPart,
-    Partition newPart, Table tbl, EnvironmentContext environmentContext) {
-
-    if (environmentContext != null
-        && environmentContext.isSetProperties()
-        && StatsSetupConst.TRUE.equals(environmentContext.getProperties().get(
-            StatsSetupConst.DO_NOT_UPDATE_STATS))) {
-      return false;
-    }
-
-    if (MetaStoreUtils.isView(tbl)) {
-      return false;
-    }
-
-    if  (oldPart == null && newPart == null) {
-      return true;
-    }
-
-    // requires to calculate stats if new partition doesn't have it
-    if ((newPart == null) || (newPart.getParameters() == null)
-        || !containsAllFastStats(newPart.getParameters())) {
-      return true;
-    }
-
-    if (environmentContext != null && environmentContext.isSetProperties()) {
-      String statsType = environmentContext.getProperties().get(StatsSetupConst.STATS_GENERATED);
-      // no matter STATS_GENERATED is USER or TASK, all need to re-calculate the stats:
-      // USER: alter table .. update statistics
-      // TASK: from some sql operation which could collect and compute stats
-      if (StatsSetupConst.TASK.equals(statsType) || StatsSetupConst.USER.equals(statsType)) {
-        return true;
-      }
-    }
-
-    // requires to calculate stats if new and old have different fast stats
-    return !isFastStatsSame(oldPart, newPart);
-  }
-
-  static boolean isFastStatsSame(Partition oldPart, Partition newPart) {
-    // requires to calculate stats if new and old have different fast stats
-    if ((oldPart != null) && (oldPart.getParameters() != null)) {
-      for (String stat : StatsSetupConst.fastStats) {
-        if (oldPart.getParameters().containsKey(stat)) {
-          Long oldStat = Long.parseLong(oldPart.getParameters().get(stat));
-          Long newStat = Long.parseLong(newPart.getParameters().get(stat));
-          if (!oldStat.equals(newStat)) {
-            return false;
-          }
-        } else {
-          return false;
-        }
-      }
-      return true;
-    }
-    return false;
-  }
-
-  public static boolean updatePartitionStatsFast(Partition part, Warehouse wh, EnvironmentContext environmentContext)
+  static boolean updatePartitionStatsFast(Partition part, Warehouse wh, EnvironmentContext environmentContext)
       throws MetaException {
     return updatePartitionStatsFast(part, wh, false, false, environmentContext);
   }
 
-  public static boolean updatePartitionStatsFast(Partition part, Warehouse wh, boolean madeDir, EnvironmentContext environmentContext)
+  static boolean updatePartitionStatsFast(Partition part, Warehouse wh, boolean madeDir, EnvironmentContext environmentContext)
       throws MetaException {
     return updatePartitionStatsFast(part, wh, madeDir, false, environmentContext);
   }
@@ -344,7 +285,7 @@ public class MetaStoreUtils {
    * these parameters set
    * @return true if the stats were updated, false otherwise
    */
-  public static boolean updatePartitionStatsFast(Partition part, Warehouse wh,
+  private static boolean updatePartitionStatsFast(Partition part, Warehouse wh,
       boolean madeDir, boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
     return updatePartitionStatsFast(new PartitionSpecProxy.SimplePartitionWrapperIterator(part),
                                     wh, madeDir, forceRecompute, environmentContext);
@@ -360,7 +301,7 @@ public class MetaStoreUtils {
    * these parameters set
    * @return true if the stats were updated, false otherwise
    */
-  public static boolean updatePartitionStatsFast(PartitionSpecProxy.PartitionIterator part, Warehouse wh,
+  static boolean updatePartitionStatsFast(PartitionSpecProxy.PartitionIterator part, Warehouse wh,
       boolean madeDir, boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
     Map<String,String> params = part.getParameters();
     boolean updated = false;
@@ -385,7 +326,8 @@ public class MetaStoreUtils {
     return updated;
   }
 
-  static void updateBasicState(EnvironmentContext environmentContext, Map<String,String> params) {
+  private static void updateBasicState(EnvironmentContext environmentContext, Map<String,String>
+      params) {
     if (params == null) {
       return;
     }
@@ -590,7 +532,7 @@ public class MetaStoreUtils {
   /*
    * At the Metadata level there are no restrictions on Column Names.
    */
-  public static final boolean validateColumnName(String name) {
+  public static boolean validateColumnName(String name) {
     return true;
   }
 
@@ -605,53 +547,6 @@ public class MetaStoreUtils {
       }
     }
     return null;
-  }
-
-  static void throwExceptionIfIncompatibleColTypeChange(
-      List<FieldSchema> oldCols, List<FieldSchema> newCols)
-      throws InvalidOperationException {
-
-    List<String> incompatibleCols = new ArrayList<String>();
-    int maxCols = Math.min(oldCols.size(), newCols.size());
-    for (int i = 0; i < maxCols; i++) {
-      if (!areColTypesCompatible(oldCols.get(i).getType(), newCols.get(i).getType())) {
-        incompatibleCols.add(newCols.get(i).getName());
-      }
-    }
-    if (!incompatibleCols.isEmpty()) {
-      throw new InvalidOperationException(
-          "The following columns have types incompatible with the existing " +
-          "columns in their respective positions :\n" +
-          StringUtils.join(incompatibleCols, ',')
-        );
-    }
-  }
-
-  static boolean areSameColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
-    return ListUtils.isEqualList(oldCols, newCols);
-  }
-
-  /*
-   * This method is to check if the new column list includes all the old columns with same name and
-   * type. The column comment does not count.
-   */
-  static boolean columnsIncludedByNameType(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
-    if (oldCols.size() > newCols.size()) {
-      return false;
-    }
-
-    Map<String, String> columnNameTypePairMap = new HashMap<String, String>(newCols.size());
-    for (FieldSchema newCol : newCols) {
-      columnNameTypePairMap.put(newCol.getName().toLowerCase(), newCol.getType());
-    }
-    for (final FieldSchema oldCol : oldCols) {
-      if (!columnNameTypePairMap.containsKey(oldCol.getName())
-          || !columnNameTypePairMap.get(oldCol.getName()).equalsIgnoreCase(oldCol.getType())) {
-        return false;
-      }
-    }
-
-    return true;
   }
 
   /**
@@ -799,7 +694,7 @@ public class MetaStoreUtils {
         org.apache.hadoop.hive.serde.serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
   }
 
-  static Set<String> hiveThriftTypeMap; //for validation
+  private static Set<String> hiveThriftTypeMap; //for validation
   static {
     hiveThriftTypeMap = new HashSet<String>();
     hiveThriftTypeMap.addAll(serdeConstants.PrimitiveTypes);
@@ -1654,31 +1549,6 @@ public class MetaStoreUtils {
   };
 
   /**
-   * We have aneed to sanity-check the map before conversion from persisted objects to
-   * metadata thrift objects because null values in maps will cause a NPE if we send
-   * across thrift. Pruning is appropriate for most cases except for databases such as
-   * Oracle where Empty strings are stored as nulls, in which case we need to handle that.
-   * See HIVE-8485 for motivations for this.
-   */
-  public static Map<String,String> trimMapNulls(
-      Map<String,String> dnMap, boolean retrieveMapNullsAsEmptyStrings){
-    if (dnMap == null){
-      return null;
-    }
-    // Must be deterministic order map - see HIVE-8707
-    //   => we use Maps.newLinkedHashMap instead of Maps.newHashMap
-    if (retrieveMapNullsAsEmptyStrings) {
-      // convert any nulls present in map values to empty strings - this is done in the case
-      // of backing dbs like oracle which persist empty strings as nulls.
-      return Maps.newLinkedHashMap(Maps.transformValues(dnMap, transFormNullsToEmptyString));
-    } else {
-      // prune any nulls present in map values - this is the typical case.
-      return Maps.newLinkedHashMap(Maps.filterValues(dnMap, Predicates.notNull()));
-    }
-  }
-
-
-  /**
    * Create a URL from a string representing a path to a local file.
    * The path string can be just a path, or can start with file:/, file:///
    * @param onestr  path string
@@ -1776,20 +1646,6 @@ public class MetaStoreUtils {
     }
     // in all the other cases, we can not merge
     csNew.setStatsObj(list);
-  }
-
-  /**
-   * convert Exception to MetaException, which sets the cause to such exception
-   * @param errorMessage  the error message for this MetaException
-   * @param e             cause of the exception
-   * @return  the MetaException with the specified exception as the cause
-   */
-  public static MetaException newMetaException(String errorMessage, Exception e) {
-    MetaException metaException = new MetaException(errorMessage);
-    if (e != null) {
-      metaException.initCause(e);
-    }
-    return metaException;
   }
 
   public static List<String> getColumnNames(List<FieldSchema> schema) {
