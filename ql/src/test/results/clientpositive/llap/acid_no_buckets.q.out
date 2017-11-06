@@ -1184,11 +1184,6 @@ STAGE PLANS:
   Stage: Stage-0
 
   Stage: Stage-3
-<<<<<<< HEAD
-    Stats Work
-      Basic Stats Work:
-=======
->>>>>>> asf/master
 
 PREHOOK: query: update srcpart_acidv set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
@@ -1384,11 +1379,6 @@ STAGE PLANS:
   Stage: Stage-0
 
   Stage: Stage-3
-<<<<<<< HEAD
-    Stats Work
-      Basic Stats Work:
-=======
->>>>>>> asf/master
 
 PREHOOK: query: delete from srcpart_acidv where key in( '1001', '213', '43')
 PREHOOK: type: QUERY
@@ -1968,11 +1958,6 @@ STAGE PLANS:
   Stage: Stage-0
 
   Stage: Stage-3
-<<<<<<< HEAD
-    Stats Work
-      Basic Stats Work:
-=======
->>>>>>> asf/master
 
 PREHOOK: query: update srcpart_acidvb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11'
 PREHOOK: type: QUERY
@@ -2169,11 +2154,6 @@ STAGE PLANS:
   Stage: Stage-0
 
   Stage: Stage-3
-<<<<<<< HEAD
-    Stats Work
-      Basic Stats Work:
-=======
->>>>>>> asf/master
 
 PREHOOK: query: delete from srcpart_acidvb where key in( '1001', '213', '43')
 PREHOOK: type: QUERY
