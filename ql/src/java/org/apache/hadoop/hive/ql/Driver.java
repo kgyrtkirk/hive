@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql;
 
-public interface Driver {
+import org.apache.hadoop.hive.ql.processors.CommandProcessor;
+
+public interface Driver extends CommandProcessor {
 
 }
