@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -75,6 +76,8 @@ import java.util.zip.InflaterInputStream;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -117,6 +120,7 @@ import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
+import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -243,6 +247,8 @@ public final class Utilities {
   @Deprecated
   protected static final String DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX = "mapred.dfsclient.parallelism.max";
 
+  public static Random randGen = new Random();
+
   /**
    * ReduceField:
    * KEY: record key
@@ -354,15 +360,15 @@ public final class Utilities {
   }
 
   public static BaseWork getMergeWork(Configuration jconf) {
-    if ((jconf.get(DagUtils.TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX) == null)
-        || (jconf.get(DagUtils.TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX).isEmpty())) {
+    String currentMergePrefix = jconf.get(DagUtils.TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX); 
+    if (StringUtils.isEmpty(currentMergePrefix)) {
       return null;
     }
     return getMergeWork(jconf, jconf.get(DagUtils.TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX));
   }
 
   public static BaseWork getMergeWork(Configuration jconf, String prefix) {
-    if (prefix == null || prefix.isEmpty()) {
+    if (StringUtils.isEmpty(prefix)) {
       return null;
     }
 
@@ -407,7 +413,7 @@ public final class Utilities {
         // TODO Add jar into current thread context classloader as it may be invoked by Spark driver inside
         // threads, should be unnecessary while SPARK-5377 is resolved.
         String addedJars = conf.get(HIVE_ADDED_JARS);
-        if (addedJars != null && !addedJars.isEmpty()) {
+        if (StringUtils.isNotEmpty(addedJars)) {
           ClassLoader loader = Thread.currentThread().getContextClassLoader();
           ClassLoader newLoader = addToClassPath(loader, addedJars.split(";"));
           Thread.currentThread().setContextClassLoader(newLoader);
@@ -416,7 +422,7 @@ public final class Utilities {
       }
 
       path = getPlanPath(conf, name);
-      LOG.info("PLAN PATH = " + path);
+      LOG.info("PLAN PATH = {}", path);
       if (path == null) { // Map/reduce plan may not be generated
         return null;
       }
@@ -424,12 +430,13 @@ public final class Utilities {
       BaseWork gWork = gWorkMap.get(conf).get(path);
       if (gWork == null) {
         Path localPath = path;
-        LOG.debug("local path = " + localPath);
+        LOG.debug("local path = {}", localPath);
         final long serializedSize;
         final String planMode;
         if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
-          LOG.debug("Loading plan from string: "+path.toUri().getPath());
-          String planString = conf.getRaw(path.toUri().getPath());
+          String planStringPath = path.toUri().getPath();
+          LOG.debug("Loading plan from string: {}", planStringPath);
+          String planString = conf.getRaw(planStringPath);
           if (planString == null) {
             LOG.info("Could not find plan string in conf");
             return null;
@@ -440,7 +447,7 @@ public final class Utilities {
           in = new ByteArrayInputStream(planBytes);
           in = new InflaterInputStream(in);
         } else {
-          LOG.debug("Open file to read in plan: " + localPath);
+          LOG.debug("Open file to read in plan: {}", localPath);
           FileSystem fs = localPath.getFileSystem(conf);
           in = fs.open(localPath);
           serializedSize = fs.getFileStatus(localPath).getLen();
@@ -477,25 +484,21 @@ public final class Utilities {
         LOG.info("Deserialized plan (via {}) - name: {} size: {}", planMode,
             gWork.getName(), humanReadableByteCount(serializedSize));
         gWorkMap.get(conf).put(path, gWork);
-      } else if (LOG.isDebugEnabled()) {
-        LOG.debug("Found plan in cache for name: " + name);
+      } else {
+        LOG.debug("Found plan in cache for name: {}", name);
       }
       return gWork;
     } catch (FileNotFoundException fnf) {
       // happens. e.g.: no reduce work.
-      LOG.debug("No plan file found: " + path + "; " + fnf.getMessage());
+      LOG.debug("No plan file found: {}", path, fnf);
       return null;
     } catch (Exception e) {
       String msg = "Failed to load plan: " + path;
-      LOG.error("Failed to load plan: " + path, e);
+      LOG.error(msg, e);
       throw new RuntimeException(msg, e);
     } finally {
       SerializationUtilities.releaseKryo(kryo);
-      if (in != null) {
-        try {
-          in.close();
-        } catch (IOException cantBlameMeForTrying) { }
-      }
+      IOUtils.closeStream(in);
     }
   }
 
@@ -519,11 +522,11 @@ public final class Utilities {
       }
       for (Adjacency adj : adjList) {
         List<String> children = adj.getChildren();
-        if (children == null || children.isEmpty()) {
+        if (CollectionUtils.isEmpty(children)) {
           return;
         }
-        conf.setStrings("mapreduce.workflow.adjacency."+adj.getNode(),
-            children.toArray(new String[children.size()]));
+        conf.setStrings("mapreduce.workflow.adjacency." + adj.getNode(),
+            children.toArray(new String[0]));
       }
     } catch (IOException e) {
     }
@@ -629,7 +632,7 @@ public final class Utilities {
       gWorkMap.get(conf).put(planPath, w);
       return planPath;
     } catch (Exception e) {
-      String msg = "Error caching " + name + ": " + e;
+      String msg = "Error caching " + name;
       LOG.error(msg, e);
       throw new RuntimeException(msg, e);
     } finally {
@@ -712,15 +715,13 @@ public final class Utilities {
   public static final String nullStringStorage = "\\N";
   public static final String nullStringOutput = "NULL";
 
-  public static Random randGen = new Random();
-
   /**
    * Gets the task id if we are running as a Hadoop job. Gets a random number otherwise.
    */
   public static String getTaskId(Configuration hconf) {
     String taskid = (hconf == null) ? null : hconf.get("mapred.task.id");
-    if ((taskid == null) || taskid.equals("")) {
-      return ("" + Math.abs(randGen.nextInt()));
+    if (StringUtils.isEmpty(taskid)) {
+      return (Integer.toString(randGen.nextInt(Integer.MAX_VALUE)));
     } else {
       /*
        * extract the task and attempt id from the hadoop taskid. in version 17 the leading component
@@ -784,7 +785,7 @@ public final class Utilities {
 
   private static String getOpTreeSkel_helper(Operator<?> op, String indent) {
     if (op == null) {
-      return "";
+      return StringUtils.EMPTY;
     }
 
     StringBuilder sb = new StringBuilder();
@@ -801,7 +802,7 @@ public final class Utilities {
   }
 
   public static String getOpTreeSkel(Operator<?> op) {
-    return getOpTreeSkel_helper(op, "");
+    return getOpTreeSkel_helper(op, StringUtils.EMPTY);
   }
 
   private static boolean isWhitespace(int c) {
@@ -861,7 +862,7 @@ public final class Utilities {
     String rev = StringUtils.reverse(str);
 
     // get the last few words
-    String suffix = WordUtils.abbreviate(rev, 0, suffixlength, "");
+    String suffix = WordUtils.abbreviate(rev, 0, suffixlength, StringUtils.EMPTY);
     suffix = StringUtils.reverse(suffix);
 
     // first few ..
@@ -882,7 +883,6 @@ public final class Utilities {
 
   public static StreamStatus readColumn(DataInput in, OutputStream out) throws IOException {
 
-    boolean foundCrChar = false;
     while (true) {
       int b;
       try {
@@ -985,7 +985,7 @@ public final class Utilities {
       CompressionCodec codec = ReflectionUtil.newInstance(codecClass, jc);
       return codec.getDefaultExtension();
     }
-    return "";
+    return StringUtils.EMPTY;
   }
 
   /**
@@ -1309,12 +1309,12 @@ public final class Utilities {
 
     Matcher m = pattern.matcher(taskId);
     if (!m.matches()) {
-      LOG.warn("Unable to get task id from file name: " + filename + ". Using last component"
-          + taskId + " as task id.");
+      LOG.warn("Unable to get task id from file name: {}. Using last component {}"
+          + " as task id.", filename, taskId);
     } else {
       taskId = m.group(1);
     }
-    LOG.debug("TaskId for " + filename + " = " + taskId);
+    LOG.debug("TaskId for {} = {}", filename, taskId);
     return taskId;
   }
 
@@ -1357,12 +1357,12 @@ public final class Utilities {
     String bucketNumStr = String.valueOf(bucketNum);
     Matcher m = PREFIXED_TASK_ID_REGEX.matcher(taskId);
     if (!m.matches()) {
-        LOG.warn("Unable to determine bucket number from task id: " + taskId + ". Using " +
-            "task ID as bucket number.");
+        LOG.warn("Unable to determine bucket number from task id: {}. Using " +
+            "task ID as bucket number.", taskId);
         return adjustBucketNumLen(bucketNumStr, taskId);
     } else {
       String adjustedBucketNum = adjustBucketNumLen(bucketNumStr, m.group(2));
-      return (m.group(1) == null ? "" : m.group(1)) + adjustedBucketNum;
+      return (m.group(1) == null ? StringUtils.EMPTY : m.group(1)) + adjustedBucketNum;
     }
   }
 
@@ -1377,12 +1377,12 @@ public final class Utilities {
   private static String replaceTaskId(String taskId, String strBucketNum) {
     Matcher m = PREFIXED_TASK_ID_REGEX.matcher(strBucketNum);
     if (!m.matches()) {
-      LOG.warn("Unable to determine bucket number from file ID: " + strBucketNum + ". Using " +
-          "file ID as bucket number.");
+      LOG.warn("Unable to determine bucket number from file ID: {}. Using " +
+          "file ID as bucket number.", strBucketNum);
       return adjustBucketNumLen(strBucketNum, taskId);
     } else {
       String adjustedBucketNum = adjustBucketNumLen(m.group(2), taskId);
-      return (m.group(1) == null ? "" : m.group(1)) + adjustedBucketNum;
+      return (m.group(1) == null ? StringUtils.EMPTY : m.group(1)) + adjustedBucketNum;
     }
   }
 
@@ -1398,7 +1398,7 @@ public final class Utilities {
     int taskIdLen = taskId.length();
     StringBuilder s = new StringBuilder();
     for (int i = 0; i < taskIdLen - bucketNumLen; i++) {
-      s.append("0");
+      s.append('0');
     }
     s.append(bucketNum);
     return s.toString();
@@ -1466,7 +1466,7 @@ public final class Utilities {
             fs, statuses, dpCtx, conf, hconf, filesKept);
         perfLogger.PerfLogEnd("FileSinkOperator", "RemoveTempOrDuplicateFiles");
         // create empty buckets if necessary
-        if (emptyBuckets.size() > 0) {
+        if (!emptyBuckets.isEmpty()) {
           perfLogger.PerfLogBegin("FileSinkOperator", "CreateEmptyBuckets");
           createEmptyBuckets(
               hconf, emptyBuckets, conf.getCompressed(), conf.getTableInfo(), reporter);
@@ -1474,9 +1474,8 @@ public final class Utilities {
           perfLogger.PerfLogEnd("FileSinkOperator", "CreateEmptyBuckets");
         }
         // move to the file destination
-        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-          Utilities.FILE_OP_LOGGER.trace("Moving tmp dir: " + tmpPath + " to: " + specPath);
-        }
+        Utilities.FILE_OP_LOGGER.trace("Moving tmp dir: {} to: {}", tmpPath, specPath);
+
         perfLogger.PerfLogBegin("FileSinkOperator", "RenameOrMoveFiles");
         if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_EXEC_MOVE_FILES_FROM_SOURCE_DIR)) {
           // HIVE-17113 - avoid copying files that may have been written to the temp dir by runaway tasks,
@@ -1488,14 +1487,10 @@ public final class Utilities {
         perfLogger.PerfLogEnd("FileSinkOperator", "RenameOrMoveFiles");
       }
     } else {
-      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-        Utilities.FILE_OP_LOGGER.trace("deleting tmpPath " + tmpPath);
-      }
+      Utilities.FILE_OP_LOGGER.trace("deleting tmpPath {}", tmpPath);
       fs.delete(tmpPath, true);
     }
-    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-      Utilities.FILE_OP_LOGGER.trace("deleting taskTmpPath " + taskTmpPath);
-    }
+    Utilities.FILE_OP_LOGGER.trace("deleting taskTmpPath {}", taskTmpPath);
     fs.delete(taskTmpPath, true);
   }
 
@@ -1538,14 +1533,12 @@ public final class Utilities {
     }
 
     for (Path path : paths) {
-      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-        Utilities.FILE_OP_LOGGER.trace("creating empty bucket for " + path);
-      }
+      Utilities.FILE_OP_LOGGER.trace("creating empty bucket for {}", path);
       RecordWriter writer = HiveFileFormatUtils.getRecordWriter(
           jc, hiveOutputFormat, outputClass, isCompressed,
           tableInfo.getProperties(), path, reporter);
       writer.close(false);
-      LOG.info("created empty bucket for enforcing bucketing at " + path);
+      LOG.info("created empty bucket for enforcing bucketing at {}", path);
     }
   }
 
@@ -1599,7 +1592,7 @@ public final class Utilities {
       return false;
     }
     if (!fs.delete(path, true)) {
-      LOG.error("Cannot delete empty directory " + path);
+      LOG.error("Cannot delete empty directory {}", path);
       throw new IOException("Cannot delete empty directory " + path);
     }
     return true;
@@ -1629,10 +1622,9 @@ public final class Utilities {
           if (!mmDir.getName().equals(AcidUtils.deltaSubdir(txnId, txnId, stmtId))) {
             throw new IOException("Unexpected non-MM directory name " + mmDir);
           }
-          if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-            Utilities.FILE_OP_LOGGER.trace(
-                "removeTempOrDuplicateFiles processing files in MM directory " + mmDir);
-          }
+
+          Utilities.FILE_OP_LOGGER.trace("removeTempOrDuplicateFiles processing files in MM directory {}", mmDir);
+
           if (!StringUtils.isEmpty(unionSuffix)) {
             path = new Path(path, unionSuffix);
           }
@@ -1689,10 +1681,7 @@ public final class Utilities {
     if (!mmDir.getName().equals(AcidUtils.deltaSubdir(txnId, txnId, stmtId))) {
       throw new IOException("Unexpected non-MM directory " + mmDir);
     }
-    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-      Utilities.FILE_OP_LOGGER.trace(
-        "removeTempOrDuplicateFiles processing files in MM directory "  + mmDir);
-    }
+      Utilities.FILE_OP_LOGGER.trace("removeTempOrDuplicateFiles processing files in MM directory {}", mmDir);
     return mmDir;
   }
 
@@ -1700,7 +1689,7 @@ public final class Utilities {
   // TODO: not clear why two if conditions are different. Preserve the existing logic for now.
   private static void addBucketFileToResults2(HashMap<String, FileStatus> taskIDToFile,
       int numBuckets, Configuration hconf, List<Path> result) {
-    if(taskIDToFile != null && taskIDToFile.size() > 0 && (numBuckets > taskIDToFile.size())
+    if (MapUtils.isNotEmpty(taskIDToFile) && (numBuckets > taskIDToFile.size())
         && !"tez".equalsIgnoreCase(hconf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname))) {
         addBucketsToResultsCommon(taskIDToFile, numBuckets, result);
     }
@@ -1732,9 +1721,7 @@ public final class Utilities {
       // create empty bucket, file name should be derived from taskID2
       URI bucketUri = bucketPath.toUri();
       String path2 = replaceTaskIdFromFilename(bucketUri.getPath().toString(), j);
-      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-        Utilities.FILE_OP_LOGGER.trace("Creating an empty bucket file " + path2);
-      }
+      Utilities.FILE_OP_LOGGER.trace("Creating an empty bucket file {}", path2);
       result.add(new Path(bucketUri.getScheme(), bucketUri.getAuthority(), path2));
     }
   }
@@ -1748,11 +1735,10 @@ public final class Utilities {
 
     for (FileStatus one : files) {
       if (isTempPath(one)) {
-        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-          Utilities.FILE_OP_LOGGER.trace("removeTempOrDuplicateFiles deleting " + one.getPath());
-        }
-        if (!fs.delete(one.getPath(), true)) {
-          throw new IOException("Unable to delete tmp file: " + one.getPath());
+        Path onePath = one.getPath();
+        Utilities.FILE_OP_LOGGER.trace("removeTempOrDuplicateFiles deleting {}", onePath);
+        if (!fs.delete(onePath, true)) {
+          throw new IOException("Unable to delete tmp file: " + onePath);
         }
       } else {
         // This would be a single file. See if we need to remove it.
@@ -1764,12 +1750,10 @@ public final class Utilities {
 
   private static void ponderRemovingTempOrDuplicateFile(FileSystem fs,
       FileStatus file, HashMap<String, FileStatus> taskIdToFile) throws IOException {
-    String taskId = getPrefixedTaskIdFromFilename(file.getPath().getName());
-    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-      Utilities.FILE_OP_LOGGER.trace("removeTempOrDuplicateFiles looking at "
-          + file.getPath() + ", taskId " + taskId);
-    }
-
+    Path filePath = file.getPath();
+    String taskId = getPrefixedTaskIdFromFilename(filePath.getName());
+    Utilities.FILE_OP_LOGGER.trace("removeTempOrDuplicateFiles looking at {}"
+          + ", taskId {}", filePath, taskId);
     FileStatus otherFile = taskIdToFile.get(taskId);
     taskIdToFile.put(taskId, (otherFile == null) ? file :
       compareTempOrDuplicateFiles(fs, file, otherFile));
@@ -1794,9 +1778,10 @@ public final class Utilities {
     // of x is wrongly identified as attempt id) and will be deleted.
     // To avoid that we will ignore files with "_copy_x" suffix from duplicate
     // elimination.
-    if (isCopyFile(file.getPath().getName())) {
-      LOG.info(file.getPath() + " file identified as duplicate. This file is" +
-          " not deleted as it has copySuffix.");
+    Path filePath = file.getPath();
+    if (isCopyFile(filePath.getName())) {
+      LOG.info("{} file identified as duplicate. This file is" +
+          " not deleted as it has copySuffix.", filePath);
       return existingFile;
     }
 
@@ -1828,13 +1813,13 @@ public final class Utilities {
     }
     Matcher m = COPY_FILE_NAME_TO_TASK_ID_REGEX.matcher(taskId);
     if (!m.matches()) {
-      LOG.warn("Unable to verify if file name " + filename + " has _copy_ suffix.");
+      LOG.warn("Unable to verify if file name {} has _copy_ suffix.", filename);
     } else {
       taskId = m.group(1);
       copyFileSuffix = m.group(4);
     }
 
-    LOG.debug("Filename: " + filename + " TaskId: " + taskId + " CopySuffix: " + copyFileSuffix);
+    LOG.debug("Filename: {} TaskId: {} CopySuffix: {}", filename, taskId, copyFileSuffix);
     if (taskId != null && copyFileSuffix != null) {
       return true;
     }
@@ -1916,7 +1901,7 @@ public final class Utilities {
           if (onefile != null) {
             realFiles.add(realFile(one, conf));
           } else {
-            LOG.warn("The file " + one + " does not exist.");
+            LOG.warn("The file {} does not exist.", one);
           }
         } catch (IOException e) {
           throw new RuntimeException("Cannot validate file " + one + "due to exception: "
@@ -1925,7 +1910,7 @@ public final class Utilities {
       }
       return StringUtils.join(realFiles, ",");
     } else {
-      return "";
+      return StringUtils.EMPTY;
     }
   }
 
@@ -1937,21 +1922,15 @@ public final class Utilities {
   public static ClassLoader getSessionSpecifiedClassLoader() {
     SessionState state = SessionState.get();
     if (state == null || state.getConf() == null) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Hive Conf not found or Session not initiated, use thread based class loader instead");
-      }
+      LOG.debug("Hive Conf not found or Session not initiated, use thread based class loader instead");
       return JavaUtils.getClassLoader();
     }
     ClassLoader sessionCL = state.getConf().getClassLoader();
     if (sessionCL != null) {
-      if (LOG.isTraceEnabled()) {
-        LOG.trace("Use session specified class loader");  //it's normal case
-      }
+      LOG.trace("Use session specified class loader");  //it's normal case
       return sessionCL;
     }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Session specified class loader not found, use thread based class loader");
-    }
+    LOG.debug("Session specified class loader not found, use thread based class loader");
     return JavaUtils.getClassLoader();
   }
 
@@ -1981,7 +1960,7 @@ public final class Utilities {
         oneurl = new File(onestr).toURL();
       }
     } catch (Exception err) {
-      LOG.error("Bad URL " + onestr + ", ignoring path");
+      LOG.error("Bad URL {}, ignoring path", onestr);
     }
     return oneurl;
   }
@@ -2062,7 +2041,7 @@ public final class Utilities {
   public static String formatBinaryString(byte[] array, int start, int length) {
     StringBuilder sb = new StringBuilder();
     for (int i = start; i < start + length; i++) {
-      sb.append("x");
+      sb.append('x');
       sb.append(array[i] < 0 ? array[i] + 256 : array[i] + 0);
     }
     return sb.toString();
@@ -2096,11 +2075,9 @@ public final class Utilities {
     List<String> names = new ArrayList<String>();
     String colNames = props.getProperty(serdeConstants.LIST_COLUMNS);
     String[] cols = colNames.trim().split(",");
-    if (cols != null) {
-      for (String col : cols) {
-        if (col != null && !col.trim().equals("")) {
-          names.add(col);
-        }
+    for (String col : cols) {
+      if (StringUtils.isNotBlank(col)) {
+        names.add(col);
       }
     }
     return names;
@@ -2317,8 +2294,9 @@ public final class Utilities {
       if (listingMaxThreads <= 0) {
         listingMaxThreads = conf.getInt(DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX, 0);
         if (listingMaxThreads > 0) {
-          LOG.warn("Deprecated configuration is used: " + DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX +
-              ". Please use " + ConfVars.HIVE_EXEC_INPUT_LISTING_MAX_THREADS.varname);
+          LOG.warn("Deprecated configuration is used: {}. Please use {}",
+              DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX,
+              ConfVars.HIVE_EXEC_INPUT_LISTING_MAX_THREADS.varname);
         }
       }
 
@@ -2381,7 +2359,7 @@ public final class Utilities {
 
       int numExecutors = getMaxExecutorsForInputListing(ctx.getConf(), pathNeedProcess.size());
       if (numExecutors > 1) {
-        LOG.info("Using " + numExecutors + " threads for getContentSummary");
+        LOG.info("Using {} threads for getContentSummary", numExecutors);
         executor = Executors.newFixedThreadPool(numExecutors,
                 new ThreadFactoryBuilder().setDaemon(true)
                         .setNameFormat("Get-Input-Summary-%d").build());
@@ -2484,7 +2462,7 @@ public final class Utilities {
               // usages. The worst case is that IOException will always be
               // retried for another getInputSummary(), which is fine as
               // IOException is not considered as a common case.
-              LOG.info("Cannot get size of " + pathStr + ". Safely ignored.");
+              LOG.info("Cannot get size of {}. Safely ignored.", pathStr);
             }
           }
         };
@@ -2524,9 +2502,11 @@ public final class Utilities {
         summary[2] += cs.getDirectoryCount();
 
         ctx.addCS(entry.getKey(), cs);
-        LOG.info("Cache Content Summary for " + entry.getKey() + " length: " + cs.getLength()
-                + " file count: "
-                + cs.getFileCount() + " directory count: " + cs.getDirectoryCount());
+        if (LOG.isInfoEnabled()) {
+          LOG.info("Cache Content Summary for {} length: {} file count: {} " +
+            " directory count: {}", entry.getKey(), cs.getLength(),
+            cs.getFileCount(), cs.getDirectoryCount());
+        }
       }
 
       return new ContentSummary(summary[0], summary[1], summary[2]);
@@ -2564,11 +2544,14 @@ public final class Utilities {
     if (ctx != null) {
       ContentSummary cs = ctx.getCS(dirPath);
       if (cs != null) {
-        LOG.info("Content Summary " + dirPath + "length: " + cs.getLength() + " num files: "
-            + cs.getFileCount() + " num directories: " + cs.getDirectoryCount());
+        if (LOG.isInfoEnabled()) {
+          LOG.info("Content Summary {} length: {} num files: {}" +
+            " num directories: {}", dirPath, cs.getLength(), cs.getFileCount(),
+            cs.getDirectoryCount());
+        }
         return (cs.getLength() == 0 && cs.getFileCount() == 0 && cs.getDirectoryCount() <= 1);
       } else {
-        LOG.info("Content Summary not cached for " + dirPath);
+        LOG.info("Content Summary not cached for {}", dirPath);
       }
     }
     return isEmptyPath(job, dirPath);
@@ -2588,41 +2571,49 @@ public final class Utilities {
   }
 
   public static List<TezTask> getTezTasks(List<Task<? extends Serializable>> tasks) {
-    return getTasks(tasks, TezTask.class);
+    return getTasks(tasks, new TaskFilterFunction<>(TezTask.class));
   }
 
   public static List<SparkTask> getSparkTasks(List<Task<? extends Serializable>> tasks) {
-    return getTasks(tasks, SparkTask.class);
+    return getTasks(tasks, new TaskFilterFunction<>(SparkTask.class));
   }
 
   public static List<ExecDriver> getMRTasks(List<Task<? extends Serializable>> tasks) {
-    return getTasks(tasks, ExecDriver.class);
+    return getTasks(tasks, new TaskFilterFunction<>(ExecDriver.class));
+  }
+
+  static class TaskFilterFunction<T> implements DAGTraversal.Function {
+    private Set<Task<? extends Serializable>> visited = new HashSet<>();
+    private Class<T> requiredType;
+    private List<T> typeSpecificTasks = new ArrayList<>();
+
+    TaskFilterFunction(Class<T> requiredType) {
+      this.requiredType = requiredType;
+    }
+
+    @Override
+    public void process(Task<? extends Serializable> task) {
+      if (requiredType.isInstance(task) && !typeSpecificTasks.contains(task)) {
+        typeSpecificTasks.add((T) task);
+      }
+      visited.add(task);
+    }
+
+    List<T> getTasks() {
+      return typeSpecificTasks;
+    }
+
+    @Override
+    public boolean skipProcessing(Task<? extends Serializable> task) {
+      return visited.contains(task);
+    }
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> List<T> getTasks(List<Task<? extends Serializable>> tasks, Class<T> requiredType) {
-    List<T> typeSpecificTasks = new ArrayList<>();
-    if (tasks != null) {
-      Set<Task<? extends Serializable>> visited = new HashSet<>();
-      while (!tasks.isEmpty()) {
-        List<Task<? extends Serializable>> childTasks = new ArrayList<>();
-        for (Task<? extends Serializable> task : tasks) {
-          if (visited.contains(task)) {
-            continue;
-          }
-          if (requiredType.isInstance(task) && !typeSpecificTasks.contains(task)) {
-            typeSpecificTasks.add((T) task);
-          }
-          if (task.getDependentTasks() != null) {
-            childTasks.addAll(task.getDependentTasks());
-          }
-          visited.add(task);
-        }
-        // start recursion
-        tasks = childTasks;
-      }
-    }
-    return typeSpecificTasks;
+  private static <T> List<T> getTasks(List<Task<? extends Serializable>> tasks,
+      TaskFilterFunction<T> function) {
+    DAGTraversal.traverse(tasks, function);
+    return function.getTasks();
   }
 
   /**
@@ -2660,13 +2651,10 @@ public final class Utilities {
         // generate a full partition specification
         LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<String, String>(partSpec);
         if (!Warehouse.makeSpecFromName(fullPartSpec, partPath, new HashSet<String>(partSpec.keySet()))) {
-          Utilities.FILE_OP_LOGGER.warn("Ignoring invalid DP directory " + partPath);
+          Utilities.FILE_OP_LOGGER.warn("Ignoring invalid DP directory {}", partPath);
           continue;
         }
-        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-          Utilities.FILE_OP_LOGGER.trace("Adding partition spec from "
-              + partPath + ": " + fullPartSpec);
-        }
+        Utilities.FILE_OP_LOGGER.trace("Adding partition spec from {}: {}", partPath, fullPartSpec);
         fullPartSpecs.add(fullPartSpec);
       }
       return fullPartSpecs;
@@ -2708,7 +2696,7 @@ public final class Utilities {
         continue;
       }
       if (columnNames.length() > 0) {
-        columnNames.append(",");
+        columnNames.append(',');
       }
       columnNames.append(colInfo.getInternalName());
     }
@@ -2739,7 +2727,7 @@ public final class Utilities {
         continue;
       }
       if (columnTypes.length() > 0) {
-        columnTypes.append(",");
+        columnTypes.append(',');
       }
       columnTypes.append(colInfo.getTypeName());
     }
@@ -2864,7 +2852,6 @@ public final class Utilities {
   public static <T> T executeWithRetry(SQLCommand<T> cmd, PreparedStatement stmt,
       long baseWindow, int maxRetries)  throws SQLException {
 
-    Random r = new Random();
     T result = null;
 
     // retry with # of maxRetries before throwing exception
@@ -2873,11 +2860,11 @@ public final class Utilities {
         result = cmd.run(stmt);
         return result;
       } catch (SQLTransientException e) {
-        LOG.warn("Failure and retry #" + failures +  " with exception " + e.getMessage());
+        LOG.warn("Failure and retry # {}", failures, e);
         if (failures >= maxRetries) {
           throw e;
         }
-        long waitTime = getRandomWaitTime(baseWindow, failures, r);
+        long waitTime = getRandomWaitTime(baseWindow, failures, randGen);
         try {
           Thread.sleep(waitTime);
         } catch (InterruptedException iex) {
@@ -2906,8 +2893,6 @@ public final class Utilities {
   public static Connection connectWithRetry(String connectionString,
       long waitWindow, int maxRetries) throws SQLException {
 
-    Random r = new Random();
-
     // retry with # of maxRetries before throwing exception
     for (int failures = 0; ; failures++) {
       try {
@@ -2915,10 +2900,10 @@ public final class Utilities {
         return conn;
       } catch (SQLTransientException e) {
         if (failures >= maxRetries) {
-          LOG.error("Error during JDBC connection. " + e);
+          LOG.error("Error during JDBC connection.", e);
           throw e;
         }
-        long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, r);
+        long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, randGen);
         try {
           Thread.sleep(waitTime);
         } catch (InterruptedException e1) {
@@ -2948,18 +2933,16 @@ public final class Utilities {
   public static PreparedStatement prepareWithRetry(Connection conn, String stmt,
       long waitWindow, int maxRetries) throws SQLException {
 
-    Random r = new Random();
-
     // retry with # of maxRetries before throwing exception
     for (int failures = 0; ; failures++) {
       try {
         return conn.prepareStatement(stmt);
       } catch (SQLTransientException e) {
         if (failures >= maxRetries) {
-          LOG.error("Error preparing JDBC Statement " + stmt + " :" + e);
+          LOG.error("Error preparing JDBC Statement {}", stmt, e);
           throw e;
         }
-        long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, r);
+        long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, randGen);
         try {
           Thread.sleep(waitTime);
         } catch (InterruptedException e1) {
@@ -2973,7 +2956,7 @@ public final class Utilities {
 
   public static void setQueryTimeout(java.sql.Statement stmt, int timeout) throws SQLException {
     if (timeout < 0) {
-      LOG.info("Invalid query timeout " + timeout);
+      LOG.info("Invalid query timeout {}", timeout);
       return;
     }
     try {
@@ -3094,11 +3077,11 @@ public final class Utilities {
 
     // if all inputs are sampled, we should shrink the size of reducers accordingly.
     if (totalInputFileSize != inputSummary.getLength()) {
-      LOG.info("BytesPerReducer=" + bytesPerReducer + " maxReducers="
-          + maxReducers + " estimated totalInputFileSize=" + totalInputFileSize);
+      LOG.info("BytesPerReducer={} maxReducers={} estimated totalInputFileSize={}", bytesPerReducer,
+        maxReducers, totalInputFileSize);
     } else {
-      LOG.info("BytesPerReducer=" + bytesPerReducer + " maxReducers="
-        + maxReducers + " totalInputFileSize=" + totalInputFileSize);
+      LOG.info("BytesPerReducer={} maxReducers={} totalInputFileSize={}", bytesPerReducer,
+        maxReducers, totalInputFileSize);
     }
 
     // If this map reduce job writes final data to a table and bucketing is being inferred,
@@ -3149,7 +3132,7 @@ public final class Utilities {
   public static long getTotalInputFileSize (ContentSummary inputSummary, MapWork work,
       double highestSamplePercentage) {
     long totalInputFileSize = inputSummary.getLength();
-    if (work.getNameToSplitSample() == null || work.getNameToSplitSample().isEmpty()) {
+    if (MapUtils.isEmpty(work.getNameToSplitSample())) {
       // If percentage block sampling wasn't used, we don't need to do any estimation
       return totalInputFileSize;
     }
@@ -3173,7 +3156,7 @@ public final class Utilities {
   public static long getTotalInputNumFiles (ContentSummary inputSummary, MapWork work,
       double highestSamplePercentage) {
     long totalInputNumFiles = inputSummary.getFileCount();
-    if (work.getNameToSplitSample() == null || work.getNameToSplitSample().isEmpty()) {
+    if (MapUtils.isEmpty(work.getNameToSplitSample())) {
       // If percentage block sampling wasn't used, we don't need to do any estimation
       return totalInputNumFiles;
     }
@@ -3245,7 +3228,7 @@ public final class Utilities {
       aliasToWork = new ArrayList<>(aliasToWork);
     }
     for (String alias : aliasToWork) {
-      LOG.info("Processing alias " + alias);
+      LOG.info("Processing alias {}", alias);
 
       // The alias may not have any path
       Collection<Map.Entry<Path, ArrayList<String>>> pathToAliases =
@@ -3256,7 +3239,7 @@ public final class Utilities {
       }
       boolean isEmptyTable = true;
       boolean hasLogged = false;
-      Path path = null;
+
       for (Map.Entry<Path, ArrayList<String>> e : pathToAliases) {
         if (lDrvStat != null && lDrvStat.isAborted()) {
           throw new IOException("Operation is Canceled.");
@@ -3268,7 +3251,7 @@ public final class Utilities {
           if (file != null) {
             isEmptyTable = false;
           } else {
-            LOG.warn("Found a null path for alias " + alias);
+            LOG.warn("Found a null path for alias {}", alias);
             continue;
           }
 
@@ -3280,12 +3263,11 @@ public final class Utilities {
 
           StringInternUtils.internUriStringsInPath(file);
           pathsProcessed.add(file);
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Adding input file " + file);
-          } else if (!hasLogged) {
+          LOG.debug("Adding input file {}", file);
+          if (!hasLogged) {
             hasLogged = true;
-            LOG.info("Adding " + work.getPathToAliases().size()
-                + " inputs; the first input is " + file);
+            LOG.info("Adding {} inputs; the first input is {}",
+              work.getPathToAliases().size(), file);
           }
 
           pathsToAdd.add(file);
@@ -3439,9 +3421,7 @@ public final class Utilities {
 
     Path newPath = createEmptyFile(hiveScratchDir, outFileFormat, job, props, oneRow);
 
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Changed input file " + strPath + " to empty file " + newPath + " (" + oneRow + ")");
-    }
+    LOG.info("Changed input file {} to empty file {} ({})", strPath, newPath, oneRow);
     return newPath;
   }
 
@@ -3473,14 +3453,12 @@ public final class Utilities {
 
     Path newPath = createEmptyFile(hiveScratchDir, outFileFormat, job, props, false);
 
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Changed input file for alias " + alias + " to " + newPath);
-    }
+    LOG.info("Changed input file for alias {} to newPath", alias, newPath);
 
     // update the work
 
     LinkedHashMap<Path, ArrayList<String>> pathToAliases = work.getPathToAliases();
-    ArrayList<String> newList = new ArrayList<String>();
+    ArrayList<String> newList = new ArrayList<String>(1);
     newList.add(alias);
     pathToAliases.put(newPath, newList);
 
@@ -3491,6 +3469,8 @@ public final class Utilities {
 
     return newPath;
   }
+
+  private static final Path[] EMPTY_PATH = new Path[0];
 
   /**
    * setInputPaths add all the paths in the provided list to the Job conf object
@@ -3503,14 +3483,14 @@ public final class Utilities {
 
     Path[] addedPaths = FileInputFormat.getInputPaths(job);
     if (addedPaths == null) {
-      addedPaths = new Path[0];
+      addedPaths = EMPTY_PATH;
     }
 
     Path[] combined = new Path[addedPaths.length + pathsToAdd.size()];
     System.arraycopy(addedPaths, 0, combined, 0, addedPaths.length);
 
     int i = 0;
-    for(Path p: pathsToAdd) {
+    for (Path p: pathsToAdd) {
       combined[addedPaths.length + (i++)] = p;
     }
     FileInputFormat.setInputPaths(job, combined);
@@ -3546,7 +3526,7 @@ public final class Utilities {
       throws IOException {
 
     Map<Path, ArrayList<String>> pa = mWork.getPathToAliases();
-    if (pa != null) {
+    if (MapUtils.isNotEmpty(pa)) {
       // common case: 1 table scan per map-work
       // rare case: smb joins
       HashSet<String> aliases = new HashSet<String>(1);
@@ -3613,8 +3593,8 @@ public final class Utilities {
   public static boolean createDirsWithPermission(Configuration conf, Path mkdirPath,
       FsPermission fsPermission, boolean recursive) throws IOException {
     String origUmask = null;
-    LOG.debug("Create dirs " + mkdirPath + " with permission " + fsPermission + " recursive "
-        + recursive);
+    LOG.debug("Create dirs {} with permission {} recursive {}",
+        mkdirPath, fsPermission, recursive);
     if (recursive) {
       origUmask = conf.get(FsPermission.UMASK_LABEL);
       // this umask is required because by default the hdfs mask is 022 resulting in
@@ -3945,13 +3925,13 @@ public final class Utilities {
     }
     Collection<Class<?>> classList = new ArrayList<Class<?>>(classNames.length);
     for (String className : classNames) {
-      if (className == null || className.isEmpty()) {
+      if (StringUtils.isEmpty(className)) {
         continue;
       }
       try {
         classList.add(Class.forName(className));
       } catch (Exception ex) {
-        LOG.warn("Cannot create class " + className + " for " + confVar.varname + " checks");
+        LOG.warn("Cannot create class {} for {} checks", className, confVar.varname);
       }
     }
     return classList;
@@ -4004,43 +3984,17 @@ public final class Utilities {
     ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
     List<? extends StructField> fields = keyInspector.getAllStructFieldRefs();
     for (StructField field: fields) {
-      colNames.add(Utilities.ReduceField.KEY.toString() + "." + field.getFieldName());
+      colNames.add(Utilities.ReduceField.KEY.toString() + '.' + field.getFieldName());
       ois.add(field.getFieldObjectInspector());
     }
     fields = valueInspector.getAllStructFieldRefs();
     for (StructField field: fields) {
-      colNames.add(Utilities.ReduceField.VALUE.toString() + "." + field.getFieldName());
+      colNames.add(Utilities.ReduceField.VALUE.toString() + '.' + field.getFieldName());
       ois.add(field.getFieldObjectInspector());
     }
     StandardStructObjectInspector rowObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(colNames, ois);
 
     return rowObjectInspector;
-  }
-
-  private static String[] getReadColumnTypes(final List<String> readColumnNames,
-      final List<String> allColumnNames, final List<String> allColumnTypes) {
-    if (readColumnNames == null || allColumnNames == null || allColumnTypes == null ||
-        readColumnNames.isEmpty() || allColumnNames.isEmpty() || allColumnTypes.isEmpty()) {
-      return null;
-    }
-    Map<String, String> columnNameToType = new HashMap<>();
-    List<TypeInfo> types = TypeInfoUtils.typeInfosFromTypeNames(allColumnTypes);
-    if (allColumnNames.size() != types.size()) {
-      LOG.warn("Column names count does not match column types count." +
-              " ColumnNames: {} [{}] ColumnTypes: {} [{}]", allColumnNames, allColumnNames.size(),
-          allColumnTypes, types.size());
-      return null;
-    }
-
-    for (int i = 0; i < allColumnNames.size(); i++) {
-      columnNameToType.put(allColumnNames.get(i), types.get(i).toString());
-    }
-
-    String[] result = new String[readColumnNames.size()];
-    for (int i = 0; i < readColumnNames.size(); i++) {
-      result[i] = columnNameToType.get(readColumnNames.get(i));
-    }
-    return result;
   }
 
   public static String humanReadableByteCount(long bytes) {
@@ -4059,7 +4013,7 @@ public final class Utilities {
     try {
       fs.delete(path, true);
     } catch (IOException ex) {
-      LOG.error("Failed to delete " + path, ex);
+      LOG.error("Failed to delete {}", path, ex);
     }
   }
 
@@ -4084,7 +4038,7 @@ public final class Utilities {
 
   private static boolean isS3(FileSystem fs) {
     try {
-      return fs.getScheme().equalsIgnoreCase("s3a");
+      return "s3a".equalsIgnoreCase(fs.getScheme());
     } catch (UnsupportedOperationException ex) {
       // Some FS-es do not implement getScheme, e.g. ProxyLocalFileSystem.
       return false;
@@ -4113,16 +4067,16 @@ public final class Utilities {
     RemoteIterator<LocatedFileStatus> allFiles = fs.listFiles(path, true);
     while (allFiles.hasNext()) {
       LocatedFileStatus lfs = allFiles.next();
-      Path dirPath = Path.getPathWithoutSchemeAndAuthority(lfs.getPath());
+      Path lfsPath = lfs.getPath();
+      Path dirPath = Path.getPathWithoutSchemeAndAuthority(lfsPath);
       String dir = dirPath.toString();
       if (!dir.startsWith(relRoot)) {
-        throw new IOException("Path " + lfs.getPath() + " is not under " + relRoot
+        throw new IOException("Path " + lfsPath + " is not under " + relRoot
             + " (when shortened to " + dir + ")");
       }
       String subDir = dir.substring(relRoot.length());
-      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-        Utilities.FILE_OP_LOGGER.trace("Looking at " + subDir + " from " + lfs.getPath());
-      }
+      Utilities.FILE_OP_LOGGER.trace("Looking at {} from {}", subDir, lfsPath);
+
       // If sorted, we'll skip a bunch of files.
       if (lastRelDir != null && subDir.startsWith(lastRelDir)) {
         continue;
@@ -4131,8 +4085,8 @@ public final class Utilities {
       for (int i = 0; i < skipLevels; ++i) {
         startIx = subDir.indexOf(Path.SEPARATOR_CHAR, startIx + 1);
         if (startIx == -1) {
-          Utilities.FILE_OP_LOGGER.info("Expected level of nesting (" + skipLevels + ") is not "
-              + " present in " + subDir + " (from " + lfs.getPath() + ")");
+          Utilities.FILE_OP_LOGGER.info("Expected level of nesting ({}) is not "
+              + " present in {} (from {})", skipLevels, subDir, lfsPath);
           break;
         }
       }
@@ -4141,8 +4095,8 @@ public final class Utilities {
       }
       int endIx = subDir.indexOf(Path.SEPARATOR_CHAR, startIx + 1);
       if (endIx == -1) {
-        Utilities.FILE_OP_LOGGER.info("Expected level of nesting (" + (skipLevels + 1) + ") is not "
-            + " present in " + subDir + " (from " + lfs.getPath() + ")");
+        Utilities.FILE_OP_LOGGER.info("Expected level of nesting ({}) is not present in"
+            + " {} (from {})", (skipLevels + 1), subDir, lfsPath);
         continue;
       }
       lastRelDir = subDir = subDir.substring(0, endIx);
@@ -4159,7 +4113,7 @@ public final class Utilities {
       Path path, int skipLevels, PathFilter filter, long txnId, int stmtId) throws IOException {
     StringBuilder sb = new StringBuilder(path.toUri().getPath());
     for (int i = 0; i < skipLevels; i++) {
-      sb.append(Path.SEPARATOR).append("*");
+      sb.append(Path.SEPARATOR).append('*');
     }
     if (stmtId < 0) {
       // Note: this does not work.
@@ -4179,24 +4133,24 @@ public final class Utilities {
         fs, specPath, dpLevels, lbLevels, filter, txnId, stmtId, conf);
     if (files != null) {
       for (Path path : files) {
-        Utilities.FILE_OP_LOGGER.info("Deleting " + path + " on failure");
+        Utilities.FILE_OP_LOGGER.info("Deleting {} on failure", path);
         tryDelete(fs, path);
       }
     }
-    Utilities.FILE_OP_LOGGER.info("Deleting " + manifestDir + " on failure");
+    Utilities.FILE_OP_LOGGER.info("Deleting {} on failure", manifestDir);
     fs.delete(manifestDir, true);
   }
 
 
   public static void writeMmCommitManifest(List<Path> commitPaths, Path specPath, FileSystem fs,
       String taskId, Long txnId, int stmtId, String unionSuffix) throws HiveException {
-    if (commitPaths.isEmpty()) {
+    if (CollectionUtils.isEmpty(commitPaths)) {
       return;
     }
     // We assume one FSOP per task (per specPath), so we create it in specPath.
     Path manifestPath = getManifestDir(specPath, txnId, stmtId, unionSuffix);
     manifestPath = new Path(manifestPath, taskId + MANIFEST_EXTENSION);
-    Utilities.FILE_OP_LOGGER.info("Writing manifest to " + manifestPath + " with " + commitPaths);
+    Utilities.FILE_OP_LOGGER.info("Writing manifest to {} with {}", manifestPath, commitPaths);
     try {
       // Don't overwrite the manifest... should fail if we have collisions.
       try (FSDataOutputStream out = fs.create(manifestPath, false)) {
@@ -4241,7 +4195,7 @@ public final class Utilities {
       return;
     }
 
-    Utilities.FILE_OP_LOGGER.debug("Looking for manifests in: " + manifestDir + " (" + txnId + ")");
+    Utilities.FILE_OP_LOGGER.debug("Looking for manifests in: {} ({})", manifestDir, txnId);
     List<Path> manifests = new ArrayList<>();
     if (fs.exists(manifestDir)) {
       FileStatus[] manifestFiles = fs.listStatus(manifestDir);
@@ -4249,7 +4203,7 @@ public final class Utilities {
         for (FileStatus status : manifestFiles) {
           Path path = status.getPath();
           if (path.getName().endsWith(MANIFEST_EXTENSION)) {
-            Utilities.FILE_OP_LOGGER.info("Reading manifest " + path);
+            Utilities.FILE_OP_LOGGER.info("Reading manifest {}", path);
             manifests.add(path);
           }
         }
@@ -4259,10 +4213,10 @@ public final class Utilities {
       manifestDir = null;
     }
 
-    Utilities.FILE_OP_LOGGER.debug("Looking for files in: " + specPath);
+    Utilities.FILE_OP_LOGGER.debug("Looking for files in: {}", specPath);
     JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(txnId, stmtId, true);
     if (isMmCtas && !fs.exists(specPath)) {
-      Utilities.FILE_OP_LOGGER.info("Creating table directory for CTAS with no output at " + specPath);
+      Utilities.FILE_OP_LOGGER.info("Creating table directory for CTAS with no output at {}", specPath);
       FileUtils.mkdir(fs, specPath, hconf);
     }
     Path[] files = getMmDirectoryCandidates(
@@ -4270,9 +4224,7 @@ public final class Utilities {
     ArrayList<Path> mmDirectories = new ArrayList<>();
     if (files != null) {
       for (Path path : files) {
-        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-          Utilities.FILE_OP_LOGGER.trace("Looking at path: " + path);
-        }
+        Utilities.FILE_OP_LOGGER.trace("Looking at path: {}", path);
         mmDirectories.add(path);
       }
     }
@@ -4291,14 +4243,14 @@ public final class Utilities {
     }
 
     if (manifestDir != null) {
-      Utilities.FILE_OP_LOGGER.info("Deleting manifest directory " + manifestDir);
+      Utilities.FILE_OP_LOGGER.info("Deleting manifest directory {}", manifestDir);
       tryDelete(fs, manifestDir);
       if (unionSuffix != null) {
         // Also delete the parent directory if we are the last union FSOP to execute.
         manifestDir = manifestDir.getParent();
         FileStatus[] remainingFiles = fs.listStatus(manifestDir);
         if (remainingFiles == null || remainingFiles.length == 0) {
-          Utilities.FILE_OP_LOGGER.info("Deleting manifest directory " + manifestDir);
+          Utilities.FILE_OP_LOGGER.info("Deleting manifest directory {}", manifestDir);
           tryDelete(fs, manifestDir);
         }
       }
@@ -4331,7 +4283,7 @@ public final class Utilities {
         unionSuffix, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf, txnId, stmtId,
             isMmTable, null);
     // create empty buckets if necessary
-    if (emptyBuckets.size() > 0) {
+    if (!emptyBuckets.isEmpty()) {
       assert mbc != null;
       Utilities.createEmptyBuckets(hconf, emptyBuckets, mbc.isCompressed, mbc.tableInfo, reporter);
     }
@@ -4363,17 +4315,15 @@ public final class Utilities {
         // Found the right union directory; treat it as "our" MM directory.
         cleanMmDirectory(childPath, fs, null, committed);
       } else {
-        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-          Utilities.FILE_OP_LOGGER.trace("FSOP for " + unionSuffix
-            + " is ignoring the other side of the union " + childPath.getName());
-        }
+        Utilities.FILE_OP_LOGGER.trace("FSOP for {} is ignoring the other side of the union {}",
+          unionSuffix, childPath);
       }
     }
   }
 
   private static void deleteUncommitedFile(Path childPath, FileSystem fs)
       throws IOException, HiveException {
-    Utilities.FILE_OP_LOGGER.info("Deleting " + childPath + " that was not committed");
+    Utilities.FILE_OP_LOGGER.info("Deleting {} that was not committed", childPath);
     // We should actually succeed here - if we fail, don't commit the query.
     if (!fs.delete(childPath, true)) {
       throw new HiveException("Failed to delete an uncommitted path " + childPath);
@@ -4386,9 +4336,7 @@ public final class Utilities {
    */
   public static List<Path> getValidMmDirectoriesFromTableOrPart(Path path, Configuration conf,
       ValidTxnList validTxnList, int lbLevels) throws IOException {
-    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-      Utilities.FILE_OP_LOGGER.trace("Looking for valid MM paths under " + path);
-    }
+    Utilities.FILE_OP_LOGGER.trace("Looking for valid MM paths under {}", path);
     // NULL means this directory is entirely valid.
     List<Path> result = null;
     FileSystem fs = path.getFileSystem(conf);
@@ -4399,7 +4347,7 @@ public final class Utilities {
       Path childPath = file.getPath();
       Long txnId = JavaUtils.extractTxnId(childPath);
       if (!file.isDirectory() || txnId == null || !validTxnList.isTxnValid(txnId)) {
-        Utilities.FILE_OP_LOGGER.debug("Skipping path " + childPath);
+        Utilities.FILE_OP_LOGGER.debug("Skipping path {}", childPath);
         if (result == null) {
           result = new ArrayList<>(children.length - 1);
           for (int j = 0; j < i; ++j) {
