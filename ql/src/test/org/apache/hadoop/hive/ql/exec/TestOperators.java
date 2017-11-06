@@ -32,7 +32,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.ExecutionDriver;
 import org.apache.hadoop.hive.ql.io.IOContextMap;
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
@@ -412,7 +412,7 @@ public class TestOperators extends TestCase {
         "inputformat 'org.apache.hadoop.hive.ql.exec.TestOperators$CustomInFmt' " +
         "outputformat 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat' " +
         "tblproperties ('myprop1'='val1', 'myprop2' = 'val2')";
-    Driver driver = new Driver();
+    ExecutionDriver driver = new ExecutionDriver();
     CommandProcessorResponse response = driver.run(cmd);
     assertEquals(0, response.getResponseCode());
     List<Object> result = new ArrayList<Object>();

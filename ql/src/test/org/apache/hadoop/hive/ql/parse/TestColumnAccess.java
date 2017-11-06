@@ -27,7 +27,7 @@ import junit.framework.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.ExecutionDriver;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -39,7 +39,7 @@ public class TestColumnAccess {
 
   @BeforeClass
   public static void Setup() throws CommandNeedRetryException {
-    Driver driver = createDriver();
+    ExecutionDriver driver = createDriver();
     int ret = driver.run("create table t1(id1 int, name1 string)").getResponseCode();
     Assert.assertEquals("Checking command success", 0, ret);
     ret = driver.run("create table t2(id2 int, id1 int, name2 string)").getResponseCode();
@@ -50,7 +50,7 @@ public class TestColumnAccess {
 
   @AfterClass
   public static void Teardown() throws Exception {
-    Driver driver = createDriver();
+    ExecutionDriver driver = createDriver();
     driver.run("drop table t1");
     driver.run("drop table t2");
     driver.run("drop view v1");
@@ -59,7 +59,7 @@ public class TestColumnAccess {
   @Test
   public void testQueryTable1() throws ParseException {
     String query = "select * from t1";
-    Driver driver = createDriver();
+    ExecutionDriver driver = createDriver();
     int rc = driver.compile(query);
     Assert.assertEquals("Checking command success", 0, rc);
     QueryPlan plan = driver.getPlan();
@@ -83,7 +83,7 @@ public class TestColumnAccess {
   @Test
   public void testJoinTable1AndTable2() throws ParseException {
     String query = "select * from t1 join t2 on (t1.id1 = t2.id1)";
-    Driver driver = createDriver();
+    ExecutionDriver driver = createDriver();
     int rc = driver.compile(query);
     Assert.assertEquals("Checking command success", 0, rc);
     QueryPlan plan = driver.getPlan();
@@ -120,7 +120,7 @@ public class TestColumnAccess {
   @Test
   public void testJoinView1AndTable2() throws ParseException {
     String query = "select * from v1 join t2 on (v1.id1 = t2.id1)";
-    Driver driver = createDriver();
+    ExecutionDriver driver = createDriver();
     int rc = driver.compile(query);
     Assert.assertEquals("Checking command success", 0, rc);
     QueryPlan plan = driver.getPlan();
@@ -182,15 +182,15 @@ public class TestColumnAccess {
     return tableColsMap;
   }
 
-  private static Driver createDriver() {
-    HiveConf conf = new HiveConf(Driver.class);
+  private static ExecutionDriver createDriver() {
+    HiveConf conf = new HiveConf(ExecutionDriver.class);
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS, true);
     SessionState.start(conf);
-    Driver driver = new Driver(conf);
+    ExecutionDriver driver = new ExecutionDriver(conf);
     return driver;
   }
 

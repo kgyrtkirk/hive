@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import java.util.List;
-import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
+import org.apache.hadoop.hive.ql.ExecutionDriver.LockedDriverState;
 
 /**
  * Manager for locks in Hive.  Users should not instantiate a lock manager

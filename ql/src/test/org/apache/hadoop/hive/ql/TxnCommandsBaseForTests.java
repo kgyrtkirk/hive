@@ -46,7 +46,7 @@ public abstract class TxnCommandsBaseForTests {
   @Rule
   public TestName testName = new TestName();
   HiveConf hiveConf;
-  Driver d;
+  ExecutionDriver d;
   enum Table {
     ACIDTBL("acidTbl"),
     ACIDTBLPART("acidTblPart"),
@@ -90,7 +90,7 @@ public abstract class TxnCommandsBaseForTests {
       throw new RuntimeException("Could not create " + getWarehouseDir());
     }
     SessionState.start(new SessionState(hiveConf));
-    d = new Driver(hiveConf);
+    d = new ExecutionDriver(hiveConf);
     d.setMaxRows(10000);
     dropTables();
     runStatementOnDriver("create table " + Table.ACIDTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");

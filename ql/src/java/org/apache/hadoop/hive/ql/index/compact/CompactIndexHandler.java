@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.ExecutionDriver;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -189,7 +189,7 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     LOG.info("Generating tasks for re-entrant QL query: " + qlCommand.toString());
     HiveConf queryConf = new HiveConf(pctx.getConf(), CompactIndexHandler.class);
     HiveConf.setBoolVar(queryConf, HiveConf.ConfVars.COMPRESSRESULT, false);
-    Driver driver = new Driver(queryConf);
+    ExecutionDriver driver = new ExecutionDriver(queryConf);
     driver.compile(qlCommand.toString(), false);
 
     if (pctx.getConf().getBoolVar(ConfVars.HIVE_INDEX_COMPACT_BINARY_SEARCH) && useSorted) {

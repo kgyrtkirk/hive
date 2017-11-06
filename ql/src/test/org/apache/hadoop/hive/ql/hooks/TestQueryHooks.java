@@ -22,7 +22,7 @@ import com.google.common.collect.Lists;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.ExecutionDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.junit.BeforeClass;
@@ -130,13 +130,13 @@ public class TestQueryHooks {
     verify(mockHook, never()).afterExecution(any(), anyBoolean());
   }
 
-  private Driver createDriver(QueryLifeTimeHook mockHook) throws IllegalAccessException, ClassNotFoundException, InstantiationException {
+  private ExecutionDriver createDriver(QueryLifeTimeHook mockHook) throws IllegalAccessException, ClassNotFoundException, InstantiationException {
     HooksLoader mockLoader = mock(HooksLoader.class);
     when(mockLoader.getHooks(eq(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS), any())).thenReturn(
             Lists.newArrayList(mockHook));
 
     SessionState.start(conf);
-    Driver driver = new Driver(conf, mockLoader);
+    ExecutionDriver driver = new ExecutionDriver(conf, mockLoader);
     return driver;
   }
 

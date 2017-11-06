@@ -28,7 +28,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.ExecutionDriver;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
@@ -50,7 +50,7 @@ public class TestReadEntityDirect {
 
   @BeforeClass
   public static void onetimeSetup() throws CommandNeedRetryException {
-    Driver driver = createDriver();
+    ExecutionDriver driver = createDriver();
     int ret = driver.run("create table t1(i int)").getResponseCode();
     assertEquals("Checking command success", 0, ret);
     ret = driver.run("create view v1 as select * from t1").getResponseCode();
@@ -59,7 +59,7 @@ public class TestReadEntityDirect {
 
   @AfterClass
   public static void onetimeTeardown() throws Exception {
-    Driver driver = createDriver();
+    ExecutionDriver driver = createDriver();
     driver.run("drop table t1");
     driver.run("drop view v1");
   }
@@ -76,7 +76,7 @@ public class TestReadEntityDirect {
    */
   @Test
   public void testSelectEntityDirect() throws ParseException {
-    Driver driver = createDriver();
+    ExecutionDriver driver = createDriver();
     int ret = driver.compile("select * from t1");
     assertEquals("Checking command success", 0, ret);
     assertEquals(1, CheckInputReadEntityDirect.readEntities.size());
@@ -90,7 +90,7 @@ public class TestReadEntityDirect {
    */
   @Test
   public void testSelectEntityInDirect() throws ParseException {
-    Driver driver = createDriver();
+    ExecutionDriver driver = createDriver();
     int ret = driver.compile("select * from v1");
     assertEquals("Checking command success", 0, ret);
     assertEquals(2, CheckInputReadEntityDirect.readEntities.size());
@@ -113,7 +113,7 @@ public class TestReadEntityDirect {
    */
   @Test
   public void testSelectEntityViewDirectJoin() throws ParseException {
-    Driver driver = createDriver();
+    ExecutionDriver driver = createDriver();
     int ret = driver.compile("select * from v1 join t1 on (v1.i = t1.i)");
     assertEquals("Checking command success", 0, ret);
     assertEquals(2, CheckInputReadEntityDirect.readEntities.size());
@@ -136,7 +136,7 @@ public class TestReadEntityDirect {
    */
   @Test
   public void testSelectEntityViewDirectUnion() throws ParseException {
-    Driver driver = createDriver();
+    ExecutionDriver driver = createDriver();
     int ret = driver.compile("select * from ( select * from v1 union all select * from t1) uv1t1");
     assertEquals("Checking command success", 0, ret);
     assertEquals(2, CheckInputReadEntityDirect.readEntities.size());
@@ -158,7 +158,7 @@ public class TestReadEntityDirect {
    */
   @Test
   public void testSelectEntityInDirectJoinAlias() throws ParseException {
-    Driver driver = createDriver();
+    ExecutionDriver driver = createDriver();
     int ret = driver.compile("select * from v1 as a join v1 as b on (a.i = b.i)");
     assertEquals("Checking command success", 0, ret);
     assertEquals(2, CheckInputReadEntityDirect.readEntities.size());
@@ -176,8 +176,8 @@ public class TestReadEntityDirect {
   /**
    * Create driver with the test hook set in config
    */
-  private static Driver createDriver() {
-    HiveConf conf = new HiveConf(Driver.class);
+  private static ExecutionDriver createDriver() {
+    HiveConf conf = new HiveConf(ExecutionDriver.class);
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
@@ -185,7 +185,7 @@ public class TestReadEntityDirect {
         CheckInputReadEntityDirect.class.getName());
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     SessionState.start(conf);
-    Driver driver = new Driver(conf);
+    ExecutionDriver driver = new ExecutionDriver(conf);
     return driver;
   }
 

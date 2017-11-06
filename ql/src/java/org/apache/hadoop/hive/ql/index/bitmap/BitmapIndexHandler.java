@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.ExecutionDriver;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -115,7 +115,7 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
     LOG.info("Generating tasks for re-entrant QL query: " + qlCommand.toString());
     HiveConf queryConf = new HiveConf(pctx.getConf(), BitmapIndexHandler.class);
     HiveConf.setBoolVar(queryConf, HiveConf.ConfVars.COMPRESSRESULT, false);
-    Driver driver = new Driver(queryConf);
+    ExecutionDriver driver = new ExecutionDriver(queryConf);
     driver.compile(qlCommand.toString(), false);
 
     queryContext.setIndexIntermediateFile(tmpFile);

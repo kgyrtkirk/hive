@@ -67,7 +67,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Effectively, that means any statement that has side effects.  Exceptions are statements like
  * Show Compactions, Show Tables, Use Database foo, etc.  The transaction is started either
  * explicitly ( via Start Transaction SQL statement from end user - not fully supported) or
- * implicitly by the {@link org.apache.hadoop.hive.ql.Driver} (which looks exactly as autoCommit=true
+ * implicitly by the {@link org.apache.hadoop.hive.ql.ExecutionDriver} (which looks exactly as autoCommit=true
  * from end user poit of view). See more at {@link #isExplicitTransaction}.
  */
 public final class DbTxnManager extends HiveTxnManagerImpl {

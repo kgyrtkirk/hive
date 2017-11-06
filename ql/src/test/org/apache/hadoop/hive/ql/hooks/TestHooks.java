@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.hooks;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.ExecutionDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -35,7 +35,7 @@ public class TestHooks {
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    Driver driver = createDriver(conf);
+    ExecutionDriver driver = createDriver(conf);
     int ret = driver.run("create table t1(i int)").getResponseCode();
     assertEquals("Checking command success", 0, ret);
   }
@@ -43,7 +43,7 @@ public class TestHooks {
   @AfterClass
   public static void onetimeTeardown() throws Exception {
     HiveConf conf = new HiveConf(TestHooks.class);
-    Driver driver = createDriver(conf);
+    ExecutionDriver driver = createDriver(conf);
     driver.run("drop table t1");
   }
 
@@ -76,7 +76,7 @@ public class TestHooks {
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    Driver driver = createDriver(conf);
+    ExecutionDriver driver = createDriver(conf);
     int ret = driver.compile("select 'XXX' from t1");
     assertEquals("Checking command success", 0, ret);
     assertEquals("select 'AAA' from t1", conf.getQueryString());
@@ -89,10 +89,10 @@ public class TestHooks {
     }
   }
 
-  private static Driver createDriver(HiveConf conf) {
+  private static ExecutionDriver createDriver(HiveConf conf) {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     SessionState.start(conf);
-    Driver driver = new Driver(conf);
+    ExecutionDriver driver = new ExecutionDriver(conf);
     return driver;
   }
 
