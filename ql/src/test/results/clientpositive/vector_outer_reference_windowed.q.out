@@ -210,28 +210,34 @@ _c0	_c1
 PREHOOK: query: ANALYZE TABLE e011_01_small COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e011_01_small
+PREHOOK: Output: default@e011_01_small
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE e011_01_small COMPUTE STATISTICS FOR COLUMNS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e011_01_small
+POSTHOOK: Output: default@e011_01_small
 #### A masked pattern was here ####
 _c0	_c1
 PREHOOK: query: ANALYZE TABLE e011_02_small COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e011_02_small
+PREHOOK: Output: default@e011_02_small
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE e011_02_small COMPUTE STATISTICS FOR COLUMNS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e011_02_small
+POSTHOOK: Output: default@e011_02_small
 #### A masked pattern was here ####
 _c0	_c1
 PREHOOK: query: ANALYZE TABLE e011_03_small COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e011_03_small
+PREHOOK: Output: default@e011_03_small
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE e011_03_small COMPUTE STATISTICS FOR COLUMNS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e011_03_small
+POSTHOOK: Output: default@e011_03_small
 #### A masked pattern was here ####
 _c0	_c1
 PREHOOK: query: explain vectorization detail
@@ -266,13 +272,8 @@ STAGE PLANS:
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-<<<<<<< HEAD
-                  projectedOutputColumns: [0]
-              Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-=======
                   projectedOutputColumnNums: [0]
-              Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+              Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(c1)
                 Group By Vectorization:
@@ -456,13 +457,8 @@ STAGE PLANS:
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-<<<<<<< HEAD
-                  projectedOutputColumns: [0, 1]
-              Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-=======
                   projectedOutputColumnNums: [0, 1]
-              Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+              Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(c1)
                 Group By Vectorization:
@@ -1333,7 +1329,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: e011_01_small
-            Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1344,7 +1340,7 @@ STAGE PLANS:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [0]
-              Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(c1)
                 Group By Vectorization:
@@ -1518,7 +1514,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: e011_01_small
-            Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1529,7 +1525,7 @@ STAGE PLANS:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [0, 1]
-              Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(c1)
                 Group By Vectorization:
@@ -1543,7 +1539,7 @@ STAGE PLANS:
                 keys: c1 (type: decimal(7,2)), c2 (type: decimal(7,2))
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(7,2)), _col1 (type: decimal(7,2))
                   sort order: ++
@@ -1553,7 +1549,7 @@ STAGE PLANS:
                       native: false
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: decimal(17,2))
       Execution mode: vectorized
       Map Vectorization:
@@ -1581,7 +1577,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: decimal(7,2)), KEY._col1 (type: decimal(7,2))
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -1605,7 +1601,7 @@ STAGE PLANS:
                   native: false
                   nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-              Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col2 (type: decimal(17,2))
       Execution mode: vectorized
       Map Vectorization:
@@ -1631,7 +1627,7 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey1 (type: decimal(7,2)), KEY.reducesinkkey0 (type: decimal(7,2)), VALUE._col0 (type: decimal(17,2))
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1651,14 +1647,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumHiveDecimal
                         window frame: RANGE PRECEDING(MAX)~CURRENT
-            Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: sum_window_0 (type: decimal(27,2))
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1720,19 +1716,19 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: e011_01_small
-            Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c1 is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: decimal(7,2)), c2 (type: decimal(7,2))
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(7,2))
                   sort order: +
                   Map-reduce partition columns: _col0 (type: decimal(7,2))
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: decimal(7,2))
           TableScan
             alias: e011_03_small
@@ -1764,13 +1760,13 @@ STAGE PLANS:
             0 _col0 (type: decimal(7,2))
             1 _col0 (type: decimal(7,2))
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 4 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 13 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
             aggregations: sum(_col0)
             keys: _col0 (type: decimal(7,2)), _col1 (type: decimal(7,2))
             mode: hash
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 4 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 13 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -1794,7 +1790,7 @@ STAGE PLANS:
                   native: false
                   nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-              Statistics: Num rows: 4 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 13 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col2 (type: decimal(17,2))
       Execution mode: vectorized
       Map Vectorization:
@@ -1822,7 +1818,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: decimal(7,2)), KEY._col1 (type: decimal(7,2))
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 2 Data size: 19 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -1846,7 +1842,7 @@ STAGE PLANS:
                   native: false
                   nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-              Statistics: Num rows: 2 Data size: 19 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col2 (type: decimal(17,2))
       Execution mode: vectorized
       Map Vectorization:
@@ -1872,7 +1868,7 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey1 (type: decimal(7,2)), KEY.reducesinkkey0 (type: decimal(7,2)), VALUE._col0 (type: decimal(17,2))
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 2 Data size: 19 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
@@ -1892,14 +1888,14 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumHiveDecimal
                         window frame: RANGE PRECEDING(MAX)~CURRENT
-            Statistics: Num rows: 2 Data size: 19 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: sum_window_0 (type: decimal(27,2))
               outputColumnNames: _col0
-              Statistics: Num rows: 2 Data size: 19 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 2 Data size: 19 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1981,19 +1977,19 @@ STAGE PLANS:
                   value expressions: _col1 (type: decimal(7,2))
           TableScan
             alias: e011_01_small
-            Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c1 is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: decimal(7,2))
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(7,2))
                   sort order: +
                   Map-reduce partition columns: _col0 (type: decimal(7,2))
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
       Map Vectorization:
           enabled: false
           enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
@@ -2209,19 +2205,19 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: e011_01_small
-            Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c1 is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: decimal(7,2)), c2 (type: decimal(7,2))
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(7,2))
                   sort order: +
                   Map-reduce partition columns: _col0 (type: decimal(7,2))
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: decimal(7,2))
           TableScan
             alias: e011_03_small
@@ -2254,13 +2250,13 @@ STAGE PLANS:
             0 _col0 (type: decimal(7,2))
             1 _col0 (type: decimal(7,2))
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 4 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 13 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
             aggregations: corr(_col0, _col2)
             keys: _col1 (type: decimal(7,2)), _col3 (type: decimal(7,2))
             mode: hash
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 4 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 13 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -2284,7 +2280,7 @@ STAGE PLANS:
                   native: false
                   nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-              Statistics: Num rows: 4 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 13 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col2 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>)
       Execution mode: vectorized
       Map Vectorization:
@@ -2312,11 +2308,11 @@ STAGE PLANS:
           keys: KEY._col0 (type: decimal(7,2)), KEY._col1 (type: decimal(7,2))
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 2 Data size: 19 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col1 (type: decimal(7,2)), _col0 (type: decimal(7,2)), _col2 (type: double)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 2 Data size: 19 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
             PTF Operator
               Function definitions:
                   Input definition
@@ -2336,14 +2332,14 @@ STAGE PLANS:
                           name: sum
                           window function: GenericUDAFSumDouble
                           window frame: RANGE PRECEDING(MAX)~CURRENT
-              Statistics: Num rows: 2 Data size: 19 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: sum_window_0 (type: double)
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 19 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 19 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
