@@ -159,9 +159,7 @@ STAGE PLANS:
                     name default.bucket_small
                     numFiles 2
                     numRows 0
-                    numRows 0
                     partition_columns ds
-                    rawDataSize 0
                     partition_columns.types string
                     rawDataSize 0
                     serialization.ddl struct bucket_small { string key, string value}
@@ -250,10 +248,8 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
-                    numRows 0
                     name default.bucket_big
                     numFiles 4
-                    rawDataSize 0
                     numRows 0
                     partition_columns ds
                     partition_columns.types string
@@ -298,10 +294,8 @@ STAGE PLANS:
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
-                    numRows 0
                     columns.types string:string
 #### A masked pattern was here ####
-                    rawDataSize 0
                     name default.bucket_big
                     numFiles 4
                     numRows 0
@@ -448,10 +442,8 @@ STAGE PLANS:
                     bucket_count 2
                     bucket_field_name key
                     column.name.delimiter ,
-                    numRows 0
                     columns key,value
                     columns.comments 
-                    rawDataSize 0
                     columns.types string:string
 #### A masked pattern was here ####
                     name default.bucket_small
@@ -540,10 +532,8 @@ STAGE PLANS:
                     ds 2008-04-08
                   properties:
                     bucket_count 4
-                    numRows 0
                     bucket_field_name key
                     column.name.delimiter ,
-                    rawDataSize 0
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -588,10 +578,8 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
                     ds 2008-04-09
-                    numRows 0
                   properties:
                     bucket_count 4
-                    rawDataSize 0
                     bucket_field_name key
                     column.name.delimiter ,
                     columns key,value
@@ -734,10 +722,8 @@ STAGE PLANS:
                   base file name: ds=2008-04-08
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    numRows 0
                   partition values:
                     ds 2008-04-08
-                    rawDataSize 0
                   properties:
                     bucket_count 2
                     bucket_field_name key
@@ -822,10 +808,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 Partition
                   base file name: ds=2008-04-08
-                    numRows 0
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    rawDataSize 0
                   partition values:
                     ds 2008-04-08
                   properties:
@@ -870,10 +854,8 @@ STAGE PLANS:
                     name: default.bucket_big
                   name: default.bucket_big
 #### A masked pattern was here ####
-                    numRows 0
                 Partition
                   base file name: ds=2008-04-09
-                    rawDataSize 0
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -1016,10 +998,8 @@ STAGE PLANS:
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
-                    numRows 0
             Path -> Partition:
 #### A masked pattern was here ####
-                    rawDataSize 0
                 Partition
                   base file name: ds=2008-04-08
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1107,10 +1087,8 @@ STAGE PLANS:
                           auto parallelism: false
             Execution mode: llap
             LLAP IO: no inputs
-                    numRows 0
             Path -> Alias:
 #### A masked pattern was here ####
-                    rawDataSize 0
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
@@ -1155,10 +1133,8 @@ STAGE PLANS:
                       partition_columns.types string
                       serialization.ddl struct bucket_big { string key, string value}
                       serialization.format 1
-                    numRows 0
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
-                    rawDataSize 0
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.bucket_big
                   name: default.bucket_big
@@ -1229,10 +1205,8 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 111 Data size: 30842 Basic stats: COMPLETE Column stats: NONE
-                    numRows 0
                       tag: 2
                       auto parallelism: true
-                    rawDataSize 0
             Execution mode: llap
             LLAP IO: no inputs
             Path -> Alias:
@@ -1277,10 +1251,8 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_big
-                    numRows 0
                       partition_columns ds
                       partition_columns.types string
-                    rawDataSize 0
                       serialization.ddl struct bucket_big { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
