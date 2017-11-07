@@ -73,6 +73,7 @@ public class Statistics implements Serializable {
 
   public void setDataSize(long dataSize) {
     this.dataSize = dataSize;
+    updateBasicStatsState();
   }
 
   private void updateBasicStatsState() {
