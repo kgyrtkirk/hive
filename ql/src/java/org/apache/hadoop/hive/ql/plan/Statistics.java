@@ -175,9 +175,6 @@ public class Statistics implements Serializable {
     basicStatsState = inferColumnStatsState(basicStatsState, stats.basicStatsState);
   }
 
-  /**
-   * use addBasicStats instead
-   */
   @Deprecated
   public void addToDataSize(long rds) {
     dataSize += rds;
