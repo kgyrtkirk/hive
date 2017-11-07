@@ -18,8 +18,19 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.io.IOException;
+import java.util.List;
+
+import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 
 public interface Driver extends CommandProcessor {
 
+  int close();
+
+  Schema getSchema();
+
+  void setTryCount(int tryCount);
+
+  boolean getResults(List res) throws IOException, CommandNeedRetryException;
 }

@@ -261,6 +261,7 @@ public class ExecutionDriver implements Driver {
   }
 
 
+  @Override
   public Schema getSchema() {
     return schema;
   }
@@ -2268,6 +2269,7 @@ public class ExecutionDriver implements Driver {
   }
 
   @SuppressWarnings("unchecked")
+  @Override
   public boolean getResults(List res) throws IOException, CommandNeedRetryException {
     if (lDrvState.driverState == DriverState.DESTROYED || lDrvState.driverState == DriverState.CLOSED) {
       throw new IOException("FAILED: query has been cancelled, closed, or destroyed.");
@@ -2354,6 +2356,7 @@ public class ExecutionDriver implements Driver {
     return tryCount;
   }
 
+  @Override
   public void setTryCount(int tryCount) {
     this.tryCount = tryCount;
   }
@@ -2452,6 +2455,7 @@ public class ExecutionDriver implements Driver {
   }
 
   // is called to stop the query if it is running, clean query results, and release resources.
+  @Override
   public int close() {
     lDrvState.stateLock.lock();
     try {
