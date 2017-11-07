@@ -53,7 +53,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -1503,7 +1503,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
