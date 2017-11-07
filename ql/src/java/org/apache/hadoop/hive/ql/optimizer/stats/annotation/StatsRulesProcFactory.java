@@ -1650,8 +1650,14 @@ public class StatsRulesProcFactory {
           newNumRows = crossRowCount;
           newDataSize = crossDataSize;
         } else {
-          newNumRows = StatsUtils.safeMult(StatsUtils.safeMult(maxRowCount, (numParents - 1)), joinFactor);
-          newDataSize = StatsUtils.safeMult(StatsUtils.safeMult(maxDataSize, (numParents - 1)), joinFactor);
+          if (numParents > 1) {
+            newNumRows = StatsUtils.safeMult(StatsUtils.safeMult(maxRowCount, (numParents - 1)), joinFactor);
+            newDataSize = StatsUtils.safeMult(StatsUtils.safeMult(maxDataSize, (numParents - 1)), joinFactor);
+          } else {
+            // MUX operator with 1 parent
+            newNumRows = StatsUtils.safeMult(maxRowCount, joinFactor);
+            newDataSize = StatsUtils.safeMult(maxDataSize, joinFactor);
+          }
         }
 
         Statistics wcStats = new Statistics(newNumRows, newDataSize);
