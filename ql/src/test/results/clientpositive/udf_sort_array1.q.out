@@ -1,0 +1,110 @@
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: DESCRIBE FUNCTION sort_array
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION sort_array
+POSTHOOK: type: DESCFUNCTION
+sort_array(array(obj1, obj2,...)) - Sorts the input array in ascending order according to the natural ordering of the array elements.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED sort_array
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED sort_array
+POSTHOOK: type: DESCFUNCTION
+sort_array(array(obj1, obj2,...)) - Sorts the input array in ascending order according to the natural ordering of the array elements.
+Example:
+  > SELECT sort_array(array('b', 'd', 'c', 'a')) FROM src LIMIT 1;
+  'a', 'b', 'c', 'd'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFSortArray
+Function type:BUILTIN
+PREHOOK: query: create table t (a integer,x array<string>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (a integer,x array<string>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: insert into t 
+select 1,array('1','2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t 
+select 1,array('1','2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SIMPLE []
+POSTHOOK: Lineage: t.x EXPRESSION []
+PREHOOK: query: EXPLAIN
+SELECT sort_array(array("b", "d", "c", "a")),array("1","2") FROM t
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT sort_array(array("b", "d", "c", "a")),array("1","2") FROM t
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t
+          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: sort_array(array('b','d','c','a')) (type: array<string>), array('1','2') (type: array<string>)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+            ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT sort_array(array(a,3,0)),array("1","2") FROM t
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT sort_array(array(a,3,0)),array("1","2") FROM t
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t
+          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: sort_array(array(a,3,0)) (type: array<int>), array('1','2') (type: array<string>)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+            ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT x FROM t
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT x FROM t
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t
+          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: x (type: array<string>)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+            ListSink
+
