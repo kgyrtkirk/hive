@@ -523,6 +523,11 @@ public class StatsUtils {
                     partNames.size(), aggrStats.getPartsFound());
           }
         }
+        
+        if(rowCounts.size() == 0 ) {
+          // all partitions are filtered by partition pruning
+          stats.setBasicStatsState(State.COMPLETE);
+        }
 
         // This block exists for debugging purposes: we want to check whether
         // the col stats cache is working properly and we are retrieving the
