@@ -49,7 +49,8 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-1
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
@@ -58,10 +59,12 @@ STAGE PLANS:
 PREHOOK: query: analyze table t1 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table t1 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted t1 value
 PREHOOK: type: DESCTABLE
@@ -69,7 +72,16 @@ PREHOOK: Input: default@t1
 POSTHOOK: query: desc formatted t1 value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t1
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	0                   	0.0                 	0                   	                    	                    	                    	from deserializer   
+col_name            	value               	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	0                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	0.0                 	 	 	 	 	 	 	 	 	 	 
+max_col_len         	0                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	                    	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"data\":\"true\",\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 

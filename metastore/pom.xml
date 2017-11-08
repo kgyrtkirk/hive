@@ -159,7 +159,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-hdfs</artifactId>
+      <artifactId>hadoop-hdfs-client</artifactId>
       <version>${hadoop.version}</version>
       <optional>true</optional>
       <exclusions>
@@ -278,20 +278,6 @@
     <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <plugins>
       <!-- plugins are always listed in sorted order by groupId, artifectId -->
-      <plugin>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr3-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>antlr</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <sourceDirectory>${basedir}/src/java</sourceDirectory>
-        </configuration>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>

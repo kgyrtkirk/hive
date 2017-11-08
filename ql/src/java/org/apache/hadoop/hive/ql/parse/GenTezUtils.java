@@ -205,10 +205,6 @@ public class GenTezUtils {
     // All the setup is done in GenMapRedUtils
     GenMapRedUtils.setMapWork(mapWork, context.parseContext,
         context.inputs, partitions, root, alias, context.conf, false);
-    // we also collect table stats while collecting column stats.
-    if (context.parseContext.getAnalyzeRewrite() != null) {
-      mapWork.setGatheringStats(true);
-    }
   }
 
   // removes any union operator and clones the plan
@@ -316,8 +312,9 @@ public class GenTezUtils {
         linked.add(desc);
 
         desc.setDirName(new Path(path, AbstractFileMergeOperator.UNION_SUDBIR_PREFIX + linked.size()));
+        Utilities.FILE_OP_LOGGER.debug("removing union - new desc with "
+            + desc.getDirName() + "; parent " + path);
         desc.setLinkedFileSink(true);
-        desc.setParentDir(path);
         desc.setLinkedFileSinkDesc(linked);
       }
 
@@ -384,6 +381,8 @@ public class GenTezUtils {
       // If underlying data is RCFile or OrcFile, RCFileBlockMerge task or
       // OrcFileStripeMerge task would be created.
       LOG.info("using CombineHiveInputformat for the merge job");
+      Utilities.FILE_OP_LOGGER.debug("will generate MR work for merging files from "
+          + fileSink.getConf().getDirName() + " to " + finalName);
       GenMapRedUtils.createMRWorkForMergingFiles(fileSink, finalName,
           context.dependencyTask, context.moveTask,
           hconf, context.currentTask);

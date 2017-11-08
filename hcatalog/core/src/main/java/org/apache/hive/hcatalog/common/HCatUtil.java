@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
@@ -58,7 +59,6 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.thrift.DelegationTokenIdentifier;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
@@ -739,7 +739,7 @@ public class HCatUtil {
 
   public static boolean isHadoop23() {
     String version = org.apache.hadoop.util.VersionInfo.getVersion();
-    if (version.matches("\\b0\\.23\\..+\\b")||version.matches("\\b2\\..*"))
+    if (version.matches("\\b0\\.23\\..+\\b")||version.matches("\\b2\\..*")||version.matches("\\b3\\..*"))
       return true;
     return false;
   }

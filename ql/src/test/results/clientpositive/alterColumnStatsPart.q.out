@@ -17,13 +17,11 @@ POSTHOOK: query: desc formatted p
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -66,7 +64,6 @@ POSTHOOK: query: desc formatted p partition (c=1) a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-	 	 	 	 	 	 	 	 	 	 	 
 a                   	int                 	from deserializer   	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted p partition (c=1)
 PREHOOK: type: DESCTABLE
@@ -75,13 +72,11 @@ POSTHOOK: query: desc formatted p partition (c=1)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -159,11 +154,15 @@ PREHOOK: query: analyze table p partition(c=1) compute statistics for columns a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@p
 PREHOOK: Input: default@p@c=1
+PREHOOK: Output: default@p
+PREHOOK: Output: default@p@c=1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table p partition(c=1) compute statistics for columns a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@p
 POSTHOOK: Input: default@p@c=1
+POSTHOOK: Output: default@p
+POSTHOOK: Output: default@p@c=1
 #### A masked pattern was here ####
 PREHOOK: query: explain select max(a) from p where c=1
 PREHOOK: type: QUERY
@@ -202,13 +201,11 @@ POSTHOOK: query: desc formatted p partition(c=4)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -296,13 +293,11 @@ POSTHOOK: query: desc formatted p partition (c=100)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -380,11 +375,15 @@ PREHOOK: query: analyze table p partition(c=100) compute statistics for columns 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@p
 PREHOOK: Input: default@p@c=100
+PREHOOK: Output: default@p
+PREHOOK: Output: default@p@c=100
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table p partition(c=100) compute statistics for columns a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@p
 POSTHOOK: Input: default@p@c=100
+POSTHOOK: Output: default@p
+POSTHOOK: Output: default@p@c=100
 #### A masked pattern was here ####
 PREHOOK: query: explain select max(a) from p where c=100
 PREHOOK: type: QUERY
@@ -441,13 +440,11 @@ POSTHOOK: query: desc formatted p partition(c=100)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -485,11 +482,15 @@ PREHOOK: query: analyze table p partition(c=100) compute statistics for columns 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@p
 PREHOOK: Input: default@p@c=100
+PREHOOK: Output: default@p
+PREHOOK: Output: default@p@c=100
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table p partition(c=100) compute statistics for columns a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@p
 POSTHOOK: Input: default@p@c=100
+POSTHOOK: Output: default@p
+POSTHOOK: Output: default@p@c=100
 #### A masked pattern was here ####
 PREHOOK: query: explain select max(a) from p where c=100
 PREHOOK: type: QUERY

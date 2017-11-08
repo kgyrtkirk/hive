@@ -18,12 +18,14 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -39,6 +41,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -53,6 +56,8 @@ import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -110,7 +115,6 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public boolean commitTransaction() {
-
     return false;
   }
 
@@ -121,8 +125,6 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public void rollbackTransaction() {
-
-
   }
 
   @Override
@@ -948,5 +950,61 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public String getMetastoreDbUuid() throws MetaException {
     throw new MetaException("Get metastore uuid is not implemented");
+  }
+
+  @Override
+  public void createResourcePlan(WMResourcePlan resourcePlan) throws MetaException {
+  }
+
+  @Override
+  public WMResourcePlan getResourcePlan(String name) throws NoSuchObjectException {
+    return null;
+  }
+
+  @Override
+  public List<WMResourcePlan> getAllResourcePlans() throws MetaException {
+    return null;
+  }
+
+  @Override
+  public WMFullResourcePlan alterResourcePlan(
+      String name, WMResourcePlan resourcePlan, boolean canActivateDisabled)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    return null;
+  }
+
+  @Override
+  public WMFullResourcePlan getActiveResourcePlan() throws MetaException {
+    return null;
+  }
+
+  @Override
+  public boolean validateResourcePlan(String name)
+      throws NoSuchObjectException, InvalidObjectException, MetaException {
+    return false;
+  }
+
+  @Override
+  public void dropResourcePlan(String name) throws NoSuchObjectException, MetaException {
+  }
+
+  @Override
+  public void createWMTrigger(WMTrigger trigger) throws MetaException {
+  }
+
+  @Override
+  public void alterWMTrigger(WMTrigger trigger)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+  }
+
+  @Override
+  public void dropWMTrigger(String resourcePlanName, String triggerName)
+      throws NoSuchObjectException, MetaException {
+  }
+
+  @Override
+  public List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName)
+      throws NoSuchObjectException, MetaException {
+    return null;
   }
 }

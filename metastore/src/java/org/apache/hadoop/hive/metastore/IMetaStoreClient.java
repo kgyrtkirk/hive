@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.metastore;
 
 
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -86,6 +88,8 @@ import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -1766,4 +1770,36 @@ public interface IMetaStoreClient {
    */
   String getMetastoreDbUuid() throws MetaException, TException;
 
+  void createResourcePlan(WMResourcePlan resourcePlan)
+      throws InvalidObjectException, MetaException, TException;
+
+  WMResourcePlan getResourcePlan(String resourcePlanName)
+    throws NoSuchObjectException, MetaException, TException;
+
+  List<WMResourcePlan> getAllResourcePlans()
+      throws NoSuchObjectException, MetaException, TException;
+
+  void dropResourcePlan(String resourcePlanName)
+      throws NoSuchObjectException, MetaException, TException;
+
+  WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMResourcePlan resourcePlan,
+      boolean canActivateDisabled)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
+
+  WMFullResourcePlan getActiveResourcePlan() throws MetaException, TException;
+
+  boolean validateResourcePlan(String resourcePlanName)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
+
+  void createWMTrigger(WMTrigger trigger)
+      throws InvalidObjectException, MetaException, TException;
+
+  void alterWMTrigger(WMTrigger trigger)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
+
+  void dropWMTrigger(String resourcePlanName, String triggerName)
+      throws NoSuchObjectException, MetaException, TException;
+
+  List<WMTrigger> getTriggersForResourcePlan(String resourcePlan)
+      throws NoSuchObjectException, MetaException, TException;
 }

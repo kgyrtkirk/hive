@@ -25,7 +25,6 @@ POSTHOOK: query: desc formatted s
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@s
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -60,7 +59,6 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-2 depends on stages: Stage-0
-  Stage-3 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-0
@@ -179,10 +177,8 @@ STAGE PLANS:
                   MultiFileSpray: false
 
   Stage: Stage-2
-    Stats-Aggr Operator
-
-  Stage: Stage-3
-    Column Stats Work
+    Stats Work
+      Basic Stats NoJob Work:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
@@ -206,7 +202,6 @@ POSTHOOK: query: desc formatted s
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@s
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -273,13 +268,11 @@ POSTHOOK: query: desc formatted spart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -315,7 +308,6 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-2 depends on stages: Stage-0
-  Stage-3 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-0
@@ -485,10 +477,8 @@ STAGE PLANS:
                     MultiFileSpray: false
 
   Stage: Stage-2
-    Stats-Aggr Operator
-
-  Stage: Stage-3
-    Column Stats Work
+    Stats Work
+      Basic Stats NoJob Work:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
@@ -520,13 +510,11 @@ POSTHOOK: query: desc formatted spart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -562,13 +550,11 @@ POSTHOOK: query: desc formatted spart PARTITION(ds='2008-04-08', hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -602,13 +588,11 @@ POSTHOOK: query: desc formatted spart PARTITION(ds='2008-04-08', hr=12)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -678,13 +662,11 @@ POSTHOOK: query: desc formatted spart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -720,7 +702,6 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-2 depends on stages: Stage-0
-  Stage-3 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-0
@@ -845,10 +826,8 @@ STAGE PLANS:
                     MultiFileSpray: false
 
   Stage: Stage-2
-    Stats-Aggr Operator
-
-  Stage: Stage-3
-    Column Stats Work
+    Stats Work
+      Basic Stats NoJob Work:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
@@ -876,13 +855,11 @@ POSTHOOK: query: desc formatted spart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -918,13 +895,11 @@ POSTHOOK: query: desc formatted spart PARTITION(ds='2008-04-08', hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -958,13 +933,11 @@ POSTHOOK: query: desc formatted spart PARTITION(ds='2008-04-08', hr=12)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@spart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

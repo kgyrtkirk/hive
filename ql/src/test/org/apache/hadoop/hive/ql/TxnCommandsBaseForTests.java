@@ -1,3 +1,20 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.ql;
 
 import org.apache.commons.io.FileUtils;
@@ -53,7 +70,6 @@ public abstract class TxnCommandsBaseForTests {
     setUpInternal();
   }
   void setUpInternal() throws Exception {
-    tearDown();
     hiveConf = new HiveConf(this.getClass());
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
@@ -64,8 +80,9 @@ public abstract class TxnCommandsBaseForTests {
       .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
     TxnDbUtil.setConfValues(hiveConf);
-    TxnDbUtil.prepDb();
+    TxnDbUtil.prepDb(hiveConf);
     File f = new File(getWarehouseDir());
     if (f.exists()) {
       FileUtil.fullyDelete(f);
@@ -99,7 +116,7 @@ public abstract class TxnCommandsBaseForTests {
         d = null;
       }
     } finally {
-      TxnDbUtil.cleanDb();
+      TxnDbUtil.cleanDb(hiveConf);
       FileUtils.deleteDirectory(new File(getTestDataDir()));
     }
   }

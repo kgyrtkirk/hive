@@ -160,7 +160,9 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     this.queryPlan = queryPlan;
     setInitialized();
     this.queryState = queryState;
-    this.conf = queryState.getConf();
+    if (null == this.conf) {
+      this.conf = queryState.getConf();
+    }
     this.driverContext = driverContext;
     console = new LogHelper(LOG);
   }
@@ -347,6 +349,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     final List<Task<? extends Serializable>> leafTasks = new ArrayList<Task<?>>();
 
     NodeUtils.iterateTask(rootTasks, Task.class, new NodeUtils.Function<Task>() {
+      @Override
       public void apply(Task task) {
         List dependents = task.getDependentTasks();
         if (dependents == null || dependents.isEmpty()) {
@@ -422,7 +425,9 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return isrunnable;
   }
 
-
+  public void setConf(HiveConf conf) {
+    this.conf = conf;
+  }
 
   public void setWork(T work) {
     this.work = work;
@@ -644,4 +649,5 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public boolean canExecuteInParallel(){
     return true;
   }
+
 }

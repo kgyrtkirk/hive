@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -96,7 +97,6 @@ public class TestAcidOnTez {
 
   @Before
   public void setUp() throws Exception {
-    tearDown();
     hiveConf = new HiveConf(this.getClass());
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
@@ -107,7 +107,9 @@ public class TestAcidOnTez {
         .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     TxnDbUtil.setConfValues(hiveConf);
-    TxnDbUtil.prepDb();
+    hiveConf.setInt(MRJobConfig.MAP_MEMORY_MB, 1024);
+    hiveConf.setInt(MRJobConfig.REDUCE_MEMORY_MB, 1024);
+    TxnDbUtil.prepDb(hiveConf);
     File f = new File(TEST_WAREHOUSE_DIR);
     if (f.exists()) {
       FileUtil.fullyDelete(f);
@@ -152,7 +154,7 @@ public class TestAcidOnTez {
         d.close();
         d = null;
       }
-      TxnDbUtil.cleanDb();
+      TxnDbUtil.cleanDb(hiveConf);
     } finally {
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
     }

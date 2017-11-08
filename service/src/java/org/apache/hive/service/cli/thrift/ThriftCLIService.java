@@ -320,8 +320,6 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     LOG.info("Client protocol version: " + req.getClient_protocol());
     TOpenSessionResp resp = new TOpenSessionResp();
     try {
-      Map<String, String> openConf = req.getConfiguration();
-
       SessionHandle sessionHandle = getSessionHandle(req, resp);
       resp.setSessionHandle(sessionHandle.toTSessionHandle());
       Map<String, String> configurationMap = new HashMap<String, String>();
@@ -661,6 +659,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       OperationStatus operationStatus =
           cliService.getOperationStatus(operationHandle, req.isGetProgressUpdate());
       resp.setOperationState(operationStatus.getState().toTOperationState());
+      resp.setErrorMessage(operationStatus.getState().getErrorMessage());
       HiveSQLException opException = operationStatus.getOperationException();
       resp.setTaskStatus(operationStatus.getTaskStatus());
       resp.setOperationStarted(operationStatus.getOperationStarted());
