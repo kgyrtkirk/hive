@@ -35,7 +35,11 @@ import com.google.common.collect.Maps;
 public class Statistics implements Serializable {
 
   public enum State {
-    COMPLETE, PARTIAL, NONE
+    NONE, PARTIAL, COMPLETE;
+
+    boolean morePreciseThan(State other) {
+      return ordinal() >= other.ordinal();
+    }
   }
 
   private long numRows;
@@ -65,6 +69,9 @@ public class Statistics implements Serializable {
 
   public void setNumRows(long numRows) {
     this.numRows = numRows;
+    if (dataSize == 0) {
+      updateBasicStatsState();
+    }
   }
 
   public long getDataSize() {
@@ -73,6 +80,9 @@ public class Statistics implements Serializable {
 
   public void setDataSize(long dataSize) {
     this.dataSize = dataSize;
+    if (dataSize == 0) {
+      updateBasicStatsState();
+    }
   }
 
   private void updateBasicStatsState() {
@@ -90,7 +100,10 @@ public class Statistics implements Serializable {
   }
 
   public void setBasicStatsState(State basicStatsState) {
-    this.basicStatsState = basicStatsState;
+    updateBasicStatsState();
+    if (this.basicStatsState.morePreciseThan(basicStatsState)) {
+      this.basicStatsState = basicStatsState;
+    }
   }
 
   public State getColumnStatsState() {

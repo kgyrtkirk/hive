@@ -2268,14 +2268,16 @@ public class StatsRulesProcFactory {
 
             // in the absence of column statistics, compute data size based on
             // based on average row size
-            Statistics wcStats = parentStats.clone();
+            Statistics wcStats;
             limit = StatsUtils.getMaxIfOverflow(limit);
             if (limit <= parentStats.getNumRows()) {
               long numRows = limit;
               long avgRowSize = parentStats.getAvgRowSize();
               long dataSize = StatsUtils.safeMult(avgRowSize, limit);
-              wcStats.setNumRows(numRows);
-              wcStats.setDataSize(dataSize);
+              wcStats = new Statistics(numRows, dataSize);
+              wcStats.setColumnStatsState(parentStats.getColumnStatsState());
+            } else {
+              wcStats = parentStats.clone();
             }
             lop.setStatistics(wcStats);
 
