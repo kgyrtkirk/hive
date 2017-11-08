@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -299,4 +300,20 @@ public class Statistics implements Serializable {
     this.runTimeNumRows = runTimeNumRows;
   }
 
+  public Statistics scaleToRowCount(long newRowCount) {
+    Statistics ret;
+    try {
+      ret = clone();
+    } catch (CloneNotSupportedException e) {
+      // FIXME: remove the Colneable usage 
+      return new Statistics(0,0);
+    }
+    if(numRows == 0 || newRowCount >= numRows) {
+      return ret;
+    }
+    // FIXME: using real scaling by new/old ration might yield better results?
+    ret.numRows = newRowCount;
+    ret.dataSize = StatsUtils.safeMult(getAvgRowSize(), newRowCount);
+    return ret;
+  }
 }
