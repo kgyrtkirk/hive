@@ -19,7 +19,8 @@ package org.apache.hadoop.hive.druid.serde;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +32,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.DruidStorageHandler;
@@ -47,11 +49,12 @@ import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
@@ -63,11 +66,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -132,21 +138,11 @@ public class DruidSerDe extends AbstractSerDe {
                   properties.getProperty(serdeConstants.LIST_COLUMNS));
         }
         columnTypes.addAll(Lists.transform(Utilities.getColumnTypes(properties),
-                new Function<String, PrimitiveTypeInfo>() {
-                  @Override
-                  public PrimitiveTypeInfo apply(String type) {
-                    return TypeInfoFactory.getPrimitiveTypeInfo(type);
-                  }
-                }
+                type -> TypeInfoFactory.getPrimitiveTypeInfo(type)
         ));
         inspectors.addAll(Lists.transform(columnTypes,
-                new Function<PrimitiveTypeInfo, ObjectInspector>() {
-                  @Override
-                  public ObjectInspector apply(PrimitiveTypeInfo type) {
-                    return PrimitiveObjectInspectorFactory
-                            .getPrimitiveWritableObjectInspector(type);
-                  }
-                }
+                (Function<PrimitiveTypeInfo, ObjectInspector>) type -> PrimitiveObjectInspectorFactory
+                        .getPrimitiveWritableObjectInspector(type)
         ));
         columns = columnNames.toArray(new String[columnNames.size()]);
         types = columnTypes.toArray(new PrimitiveTypeInfo[columnTypes.size()]);
@@ -183,7 +179,7 @@ public class DruidSerDe extends AbstractSerDe {
           if (columnInfo.getKey().equals(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
             // Special handling for timestamp column
             columnNames.add(columnInfo.getKey()); // field name
-            PrimitiveTypeInfo type = TypeInfoFactory.timestampTypeInfo; // field type
+            PrimitiveTypeInfo type = TypeInfoFactory.timestampLocalTZTypeInfo; // field type
             columnTypes.add(type);
             inspectors
                     .add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(type));
@@ -273,7 +269,7 @@ public class DruidSerDe extends AbstractSerDe {
     InputStream response;
     try {
       response = DruidStorageHandlerUtils.submitRequest(DruidStorageHandler.getHttpClient(),
-              DruidStorageHandlerUtils.createRequest(address, query)
+              DruidStorageHandlerUtils.createSmileRequest(address, query)
       );
     } catch (Exception e) {
       throw new SerDeException(StringUtils.stringifyException(e));
@@ -308,7 +304,7 @@ public class DruidSerDe extends AbstractSerDe {
           Map<String, PrimitiveTypeInfo> mapColumnNamesTypes) {
     // Timestamp column
     columnNames.add(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN);
-    columnTypes.add(TypeInfoFactory.timestampTypeInfo);
+    columnTypes.add(TypeInfoFactory.timestampLocalTZTypeInfo);
     // Aggregator columns
     for (AggregatorFactory af : query.getAggregatorSpecs()) {
       columnNames.add(af.getName());
@@ -336,7 +332,7 @@ public class DruidSerDe extends AbstractSerDe {
           Map<String, PrimitiveTypeInfo> mapColumnNamesTypes) {
     // Timestamp column
     columnNames.add(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN);
-    columnTypes.add(TypeInfoFactory.timestampTypeInfo);
+    columnTypes.add(TypeInfoFactory.timestampLocalTZTypeInfo);
     // Dimension column
     columnNames.add(query.getDimensionSpec().getOutputName());
     columnTypes.add(TypeInfoFactory.stringTypeInfo);
@@ -368,7 +364,7 @@ public class DruidSerDe extends AbstractSerDe {
                   throws SerDeException {
     // Timestamp column
     columnNames.add(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN);
-    columnTypes.add(TypeInfoFactory.timestampTypeInfo);
+    columnTypes.add(TypeInfoFactory.timestampLocalTZTypeInfo);
     // Dimension columns
     for (DimensionSpec ds : query.getDimensions()) {
       columnNames.add(ds.getOutputName());
@@ -410,7 +406,7 @@ public class DruidSerDe extends AbstractSerDe {
           Map<String, PrimitiveTypeInfo> mapColumnNamesTypes) {
     // Timestamp column
     columnNames.add(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN);
-    columnTypes.add(TypeInfoFactory.timestampTypeInfo);
+    columnTypes.add(TypeInfoFactory.timestampLocalTZTypeInfo);
     // Dimension columns
     for (DimensionSpec ds : query.getDimensions()) {
       columnNames.add(ds.getOutputName());
@@ -464,10 +460,9 @@ public class DruidSerDe extends AbstractSerDe {
       }
       final Object res;
       switch (types[i].getPrimitiveCategory()) {
-        case TIMESTAMP:
-          res = ((TimestampObjectInspector) fields.get(i).getFieldObjectInspector())
-                  .getPrimitiveJavaObject(
-                          values.get(i)).getTime();
+        case TIMESTAMPLOCALTZ:
+          res = ((TimestampLocalTZObjectInspector) fields.get(i).getFieldObjectInspector())
+                  .getPrimitiveJavaObject(values.get(i)).getZonedDateTime().toInstant().toEpochMilli();
           break;
         case BYTE:
           res = ((ByteObjectInspector) fields.get(i).getFieldObjectInspector()).get(values.get(i));
@@ -504,6 +499,10 @@ public class DruidSerDe extends AbstractSerDe {
           res = ((StringObjectInspector) fields.get(i).getFieldObjectInspector())
                   .getPrimitiveJavaObject(values.get(i));
           break;
+        case BOOLEAN:
+          res = ((BooleanObjectInspector) fields.get(i).getFieldObjectInspector())
+                  .get(values.get(i));
+          break;
         default:
           throw new SerDeException("Unknown type: " + types[i].getPrimitiveCategory());
       }
@@ -533,8 +532,13 @@ public class DruidSerDe extends AbstractSerDe {
         continue;
       }
       switch (types[i].getPrimitiveCategory()) {
-        case TIMESTAMP:
-          output.add(new TimestampWritable(new Timestamp((Long) value)));
+        case TIMESTAMPLOCALTZ:
+          output.add(
+              new TimestampLocalTZWritable(
+                  new TimestampTZ(
+                      ZonedDateTime.ofInstant(
+                          Instant.ofEpochMilli((Long) value),
+                          ((TimestampLocalTZTypeInfo) types[i]).timeZone()))));
           break;
         case BYTE:
           output.add(new ByteWritable(((Number) value).byteValue()));
@@ -573,6 +577,9 @@ public class DruidSerDe extends AbstractSerDe {
           break;
         case STRING:
           output.add(new Text(value.toString()));
+          break;
+        case BOOLEAN:
+          output.add(new BooleanWritable(Boolean.valueOf(value.toString())));
           break;
         default:
           throw new SerDeException("Unknown type: " + types[i].getPrimitiveCategory());

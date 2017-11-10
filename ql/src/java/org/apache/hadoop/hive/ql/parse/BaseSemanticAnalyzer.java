@@ -42,7 +42,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -50,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
@@ -78,6 +79,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -117,11 +119,15 @@ public abstract class BaseSemanticAnalyzer {
    * A set of FileSinkOperators being written to in an ACID compliant way.  We need to remember
    * them here because when we build them we don't yet know the transaction id.  We need to go
    * back and set it once we actually start running the query.
+   * This also contains insert-only sinks.
    */
   protected Set<FileSinkDesc> acidFileSinks = new HashSet<FileSinkDesc>();
 
-  // whether any ACID table is involved in a query
+  // whether any ACID table or Insert-only (mm) table is involved in a query
+  // They both require DbTxnManager and both need to recordValidTxns when acquiring locks in Driver
   protected boolean acidInQuery;
+
+  protected HiveTxnManager txnManager;
 
   public static final int HIVE_COLUMN_ORDER_ASC = 1;
   public static final int HIVE_COLUMN_ORDER_DESC = 0;
@@ -159,7 +165,6 @@ public abstract class BaseSemanticAnalyzer {
   void setAutoCommitValue(Boolean autoCommit) {
     autoCommitValue = autoCommit;
   }
-
 
   public boolean skipAuthorization() {
     return false;
@@ -230,6 +235,7 @@ public abstract class BaseSemanticAnalyzer {
       idToTableNameMap = new HashMap<String, String>();
       inputs = new LinkedHashSet<ReadEntity>();
       outputs = new LinkedHashSet<WriteEntity>();
+      txnManager = queryState.getTxnManager();
     } catch (Exception e) {
       throw new SemanticException(e);
     }
@@ -788,8 +794,8 @@ public abstract class BaseSemanticAnalyzer {
     }
     if (enable) {
       throw new SemanticException(
-          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("ENABLE feature not supported yet. "
-              + "Please use DISABLE instead."));
+          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("ENABLE/ENFORCED feature not supported yet. "
+              + "Please use DISABLE/NOT ENFORCED instead."));
     }
     if (validate) {
       throw new SemanticException(
@@ -1120,12 +1126,15 @@ public abstract class BaseSemanticAnalyzer {
     public TableSpec(Hive db, String tableName, Map<String, String> partSpec)
         throws HiveException {
       Table table = db.getTable(tableName);
-      final Partition partition = partSpec == null ? null : db.getPartition(table, partSpec, false);
       tableHandle = table;
       this.tableName = table.getDbName() + "." + table.getTableName();
-      if (partition == null) {
+      if (partSpec == null) {
         specType = SpecType.TABLE_ONLY;
       } else {
+        Partition partition = db.getPartition(table, partSpec, false);
+        if (partition == null) {
+          throw new SemanticException("partition is unknown: " + table + "/" + partSpec);
+        }
         partHandle = partition;
         partitions = Collections.singletonList(partHandle);
         specType = SpecType.STATIC_PARTITION;
@@ -1726,7 +1735,9 @@ public abstract class BaseSemanticAnalyzer {
   @VisibleForTesting
   static void normalizeColSpec(Map<String, String> partSpec, String colName,
       String colType, String originalColSpec, Object colValue) throws SemanticException {
-    if (colValue == null) return; // nothing to do with nulls
+    if (colValue == null) {
+      return; // nothing to do with nulls
+    }
     String normalizedColSpec = originalColSpec;
     if (colType.equals(serdeConstants.DATE_TYPE_NAME)) {
       normalizedColSpec = normalizeDateCol(colValue, originalColSpec);
@@ -1748,7 +1759,7 @@ public abstract class BaseSemanticAnalyzer {
     } else {
       throw new SemanticException("Unexpected date type " + colValue.getClass());
     }
-    return HiveMetaStore.PARTITION_DATE_FORMAT.get().format(value);
+    return MetaStoreUtils.PARTITION_DATE_FORMAT.get().format(value);
   }
 
   protected WriteEntity toWriteEntity(String location) throws SemanticException {
@@ -1917,5 +1928,12 @@ public abstract class BaseSemanticAnalyzer {
             IgnoreKeyTextOutputFormat.class, prop), -1);
     fetch.setSerializationNullFormat(" ");
     return (FetchTask) TaskFactory.get(fetch, conf);
+  }
+
+  protected HiveTxnManager getTxnMgr() {
+    if (txnManager != null) {
+      return txnManager;
+    }
+    return SessionState.get().getTxnMgr();
   }
 }

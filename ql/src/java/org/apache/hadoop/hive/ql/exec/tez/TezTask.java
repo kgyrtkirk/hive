@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,9 +44,12 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.QueryInfo;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -59,6 +63,7 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.wm.TriggerContext;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
@@ -84,7 +89,6 @@ import org.apache.tez.dag.api.client.DAGStatus;
 import org.apache.tez.dag.api.client.StatusGetOpts;
 import org.apache.tez.dag.api.client.VertexStatus;
 import org.json.JSONObject;
-import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -139,16 +143,29 @@ public class TezTask extends Task<TezWork> {
       if (ctx == null) {
         ctx = new Context(conf);
         cleanContext = true;
+        // some DDL task that directly executes a TezTask does not setup Context and hence TriggerContext.
+        // Setting queryId is messed up. Some DDL tasks have executionId instead of proper queryId.
+        String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+        TriggerContext triggerContext = new TriggerContext(System.currentTimeMillis(), queryId);
+        ctx.setTriggerContext(triggerContext);
       }
 
       // Need to remove this static hack. But this is the way currently to get a session.
       SessionState ss = SessionState.get();
+      // Note: given that we return pool sessions to the pool in the finally block below, and that
+      //       we need to set the global to null to do that, this "reuse" may be pointless.
       session = ss.getTezSession();
       if (session != null && !session.isOpen()) {
         LOG.warn("The session: " + session + " has not been opened");
       }
-      session = TezSessionPoolManager.getInstance().getSession(
-          session, conf, false, getWork().getLlapMode());
+      Set<String> desiredCounters = new HashSet<>();
+      session = WorkloadManagerFederation.getSession(session, conf,
+          new MappingInput(ss.getUserName()), getWork().getLlapMode(), desiredCounters);
+
+      TriggerContext triggerContext = ctx.getTriggerContext();
+      triggerContext.setDesiredCounters(desiredCounters);
+      session.setTriggerContext(triggerContext);
+      LOG.info("Subscribed to counters: {} for queryId: {}", desiredCounters, triggerContext.getQueryId());
       ss.setTezSession(session);
       try {
         // jobConf will hold all the configuration for hadoop, tez, and hive
@@ -211,7 +228,7 @@ public class TezTask extends Task<TezWork> {
         }
 
         // finally monitor will print progress until the job is done
-        TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(),dagClient, conf, dag, ctx);
+        TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx);
         rc = monitor.monitorExecution();
 
         if (rc != 0) {
@@ -228,10 +245,12 @@ public class TezTask extends Task<TezWork> {
           counters = null;
         }
       } finally {
+        // Note: due to TEZ-3846, the session may actually be invalid in case of some errors.
+        //       Currently, reopen on an attempted reuse will take care of that; we cannot tell
+        //       if the session is usable until we try.
         // We return this to the pool even if it's unusable; reopen is supposed to handle this.
         try {
-          TezSessionPoolManager.getInstance()
-              .returnSession(session, getWork().getLlapMode());
+          session.returnToSessionManager();
         } catch (Exception e) {
           LOG.error("Failed to return session: {} to pool", session, e);
           throw e;
@@ -451,7 +470,7 @@ public class TezTask extends Task<TezWork> {
         for (BaseWork v: children) {
           // finally we can create the grouped edge
           GroupInputEdge e = utils.createEdge(group, parentConf,
-               workToVertex.get(v), work.getEdgeProperty(w, v), work.getVertexType(v));
+               workToVertex.get(v), work.getEdgeProperty(w, v), v, work);
 
           dag.addEdge(e);
         }
@@ -480,8 +499,7 @@ public class TezTask extends Task<TezWork> {
           Edge e = null;
 
           TezEdgeProperty edgeProp = work.getEdgeProperty(w, v);
-
-          e = utils.createEdge(wxConf, wx, workToVertex.get(v), edgeProp, work.getVertexType(v));
+          e = utils.createEdge(wxConf, wx, workToVertex.get(v), edgeProp, v, work);
           dag.addEdge(e);
         }
       }
@@ -547,7 +565,9 @@ public class TezTask extends Task<TezWork> {
       } catch (SessionNotRunning nr) {
         console.printInfo("Tez session was closed. Reopening...");
 
-        TezSessionPoolManager.getInstance().reopenSession(sessionState, conf);
+        // close the old one, but keep the tmp files around
+        // conf is passed in only for the case when session conf is null (tests and legacy paths?)
+        sessionState = sessionState.reopen(conf, inputOutputJars);
         console.printInfo("Session re-established.");
 
         dagClient = sessionState.getSession().submitDAG(dag);
@@ -557,11 +577,11 @@ public class TezTask extends Task<TezWork> {
       try {
         console.printInfo("Dag submit failed due to " + e.getMessage() + " stack trace: "
             + Arrays.toString(e.getStackTrace()) + " retrying...");
-        TezSessionPoolManager.getInstance().reopenSession(sessionState, conf);
+        sessionState = sessionState.reopen(conf, inputOutputJars);
         dagClient = sessionState.getSession().submitDAG(dag);
       } catch (Exception retryException) {
         // we failed to submit after retrying. Destroy session and bail.
-        TezSessionPoolManager.getInstance().destroySession(sessionState);
+        sessionState.destroy();
         throw retryException;
       }
     }

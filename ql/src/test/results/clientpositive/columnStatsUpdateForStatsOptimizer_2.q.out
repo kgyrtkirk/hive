@@ -25,7 +25,6 @@ POSTHOOK: query: desc formatted calendar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendar
 # col_name            	data_type           	comment             
-	 	 
 year                	int                 	                    
 month               	int                 	                    
 	 	 
@@ -56,10 +55,12 @@ Storage Desc Params:
 PREHOOK: query: analyze table calendar compute statistics for columns year
 PREHOOK: type: QUERY
 PREHOOK: Input: default@calendar
+PREHOOK: Output: default@calendar
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table calendar compute statistics for columns year
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@calendar
+POSTHOOK: Output: default@calendar
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted calendar
 PREHOOK: type: DESCTABLE
@@ -68,7 +69,6 @@ POSTHOOK: query: desc formatted calendar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendar
 # col_name            	data_type           	comment             
-	 	 
 year                	int                 	                    
 month               	int                 	                    
 	 	 
@@ -157,7 +157,6 @@ POSTHOOK: query: desc formatted calendar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendar
 # col_name            	data_type           	comment             
-	 	 
 year1               	int                 	                    
 month               	int                 	                    
 	 	 
@@ -279,7 +278,6 @@ POSTHOOK: query: desc formatted calendar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendar
 # col_name            	data_type           	comment             
-	 	 
 year1               	int                 	                    
 month               	int                 	                    
 	 	 
