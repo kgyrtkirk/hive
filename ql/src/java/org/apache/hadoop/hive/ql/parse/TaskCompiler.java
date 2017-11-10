@@ -21,14 +21,11 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
@@ -38,17 +35,15 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.exec.StatsTask;
+import org.apache.hadoop.hive.ql.exec.ColumnStatsTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.BasicStatsTask;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -56,19 +51,13 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
-import org.apache.hadoop.hive.ql.plan.BasicStatsNoJobWork;
-import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
-import org.apache.hadoop.hive.ql.plan.StatsWork;
+import org.apache.hadoop.hive.ql.plan.ColumnStatsWork;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
@@ -87,7 +76,6 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.thrift.ThriftFormatter;
 import org.apache.hadoop.hive.serde2.thrift.ThriftJDBCBinarySerDe;
-import org.apache.hadoop.mapred.InputFormat;
 
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
@@ -306,53 +294,18 @@ public abstract class TaskCompiler {
     /*
      * If the query was the result of analyze table column compute statistics rewrite, create
      * a column stats task instead of a fetch task to persist stats to the metastore.
-     * As per HIVE-15903, we will also collect table stats when user computes column stats.
-     * That means, if isCStats || !pCtx.getColumnStatsAutoGatherContexts().isEmpty()
-     * We need to collect table stats
-     * if isCStats, we need to include a basic stats task
-     * else it is ColumnStatsAutoGather, which should have a move task with a stats task already.
      */
     if (isCStats || !pCtx.getColumnStatsAutoGatherContexts().isEmpty()) {
-      // map from tablename to task (ColumnStatsTask which includes a BasicStatsTask)
-      Map<String, StatsTask> map = new LinkedHashMap<>();
+      Set<Task<? extends Serializable>> leafTasks = new LinkedHashSet<Task<? extends Serializable>>();
+      getLeafTasks(rootTasks, leafTasks);
       if (isCStats) {
-        if (rootTasks == null || rootTasks.size() != 1 || pCtx.getTopOps() == null
-            || pCtx.getTopOps().size() != 1) {
-          throw new SemanticException("Can not find correct root task!");
-        }
-        try {
-          Task<? extends Serializable> root = rootTasks.iterator().next();
-          StatsTask tsk = (StatsTask) genTableStats(pCtx, pCtx.getTopOps().values()
-              .iterator().next(), root, outputs);
-          root.addDependentTask(tsk);
-          map.put(extractTableFullName((StatsTask) tsk), (StatsTask) tsk);
-        } catch (HiveException e) {
-          throw new SemanticException(e);
-        }
-        genColumnStatsTask(pCtx.getAnalyzeRewrite(), loadFileWork, map, outerQueryLimit, 0);
+        genColumnStatsTask(pCtx.getAnalyzeRewrite(), loadFileWork, leafTasks, outerQueryLimit, 0);
       } else {
-        Set<Task<? extends Serializable>> leafTasks = new LinkedHashSet<Task<? extends Serializable>>();
-        getLeafTasks(rootTasks, leafTasks);
-        List<Task<? extends Serializable>> nonStatsLeafTasks = new ArrayList<>();
-        for (Task<? extends Serializable> tsk : leafTasks) {
-          // map table name to the correct ColumnStatsTask
-          if (tsk instanceof StatsTask) {
-            map.put(extractTableFullName((StatsTask) tsk), (StatsTask) tsk);
-          } else {
-            nonStatsLeafTasks.add(tsk);
-          }
-        }
-        // add cStatsTask as a dependent of all the nonStatsLeafTasks
-        for (Task<? extends Serializable> tsk : nonStatsLeafTasks) {
-          for (Task<? extends Serializable> cStatsTask : map.values()) {
-            tsk.addDependentTask(cStatsTask);
-          }
-        }
         for (ColumnStatsAutoGatherContext columnStatsAutoGatherContext : pCtx
             .getColumnStatsAutoGatherContexts()) {
           if (!columnStatsAutoGatherContext.isInsertInto()) {
             genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
-                columnStatsAutoGatherContext.getLoadFileWork(), map, outerQueryLimit, 0);
+                columnStatsAutoGatherContext.getLoadFileWork(), leafTasks, outerQueryLimit, 0);
           } else {
             int numBitVector;
             try {
@@ -361,7 +314,7 @@ public abstract class TaskCompiler {
               throw new SemanticException(e.getMessage());
             }
             genColumnStatsTask(columnStatsAutoGatherContext.getAnalyzeRewrite(),
-                columnStatsAutoGatherContext.getLoadFileWork(), map, outerQueryLimit, numBitVector);
+                columnStatsAutoGatherContext.getLoadFileWork(), leafTasks, outerQueryLimit, numBitVector);
           }
         }
       }
@@ -411,67 +364,6 @@ public abstract class TaskCompiler {
     }
   }
 
-  private String extractTableFullName(StatsTask tsk) throws SemanticException {
-    if (((StatsTask) tsk).getWork().getBasicStatsWork() != null) {
-      if (((StatsTask) tsk).getWork().getBasicStatsWork().getTableSpecs() != null) {
-        // this is the case for insert
-        Table tab = ((StatsTask) tsk).getWork().getBasicStatsWork().getTableSpecs().tableHandle;
-        return tab.getDbName() + "." + tab.getTableName();
-      } else if (((StatsTask) tsk).getWork().getBasicStatsWork().getLoadTableDesc() != null) {
-        // this is the case for CTAS
-        return ((StatsTask) tsk).getWork().getBasicStatsWork().getLoadTableDesc().getTable()
-            .getTableName();
-      } else {
-        throw new SemanticException("can not find table name in ColumnStatsTask");
-      }
-    } else if (((StatsTask) tsk).getWork().getBasicStatsNoJobWork() != null) {
-      Table tab = ((StatsTask) tsk).getWork().getBasicStatsNoJobWork().getTableSpecs().tableHandle;
-      return tab.getDbName() + "." + tab.getTableName();
-    } else {
-      throw new SemanticException("can not find table name in ColumnStatsTask");
-    }
-  }
-
-  private Task<?> genTableStats(ParseContext parseContext, TableScanOperator tableScan, Task currentTask, final HashSet<WriteEntity> outputs)
-      throws HiveException {
-    Class<? extends InputFormat> inputFormat = tableScan.getConf().getTableMetadata()
-        .getInputFormatClass();
-    Table table = tableScan.getConf().getTableMetadata();
-    List<Partition> partitions = new ArrayList<>();
-    if (table.isPartitioned()) {
-      partitions.addAll(parseContext.getPrunedPartitions(tableScan).getPartitions());
-      for (Partition partn : partitions) {
-        LOG.debug("XXX: adding part: " + partn);
-        outputs.add(new WriteEntity(partn, WriteEntity.WriteType.DDL_NO_LOCK));
-      }
-    }
-    TableSpec tableSpec = new TableSpec(table, partitions);
-    tableScan.getConf().getTableMetadata().setTableSpec(tableSpec);
-
-    if (inputFormat.equals(OrcInputFormat.class)) {
-      // For ORC, there is no Tez Job for table stats.
-      BasicStatsNoJobWork snjWork = new BasicStatsNoJobWork(tableScan.getConf().getTableMetadata()
-          .getTableSpec());
-      snjWork.setStatsReliable(parseContext.getConf().getBoolVar(
-          HiveConf.ConfVars.HIVE_STATS_RELIABLE));
-      // If partition is specified, get pruned partition list
-      if (partitions.size() > 0) {
-        snjWork.setPrunedPartitionList(parseContext.getPrunedPartitions(tableScan));
-      }
-      StatsWork columnStatsWork = new StatsWork(snjWork);
-      return TaskFactory.get(columnStatsWork, parseContext.getConf());
-    } else {
-      BasicStatsWork statsWork = new BasicStatsWork(tableScan.getConf().getTableMetadata().getTableSpec());
-      statsWork.setAggKey(tableScan.getConf().getStatsAggPrefix());
-      statsWork.setStatsTmpDir(tableScan.getConf().getTmpStatsDir());
-      statsWork.setSourceTask(currentTask);
-      statsWork.setStatsReliable(parseContext.getConf().getBoolVar(
-          HiveConf.ConfVars.HIVE_STATS_RELIABLE));
-      StatsWork columnStatsWork = new StatsWork(statsWork);
-      return TaskFactory.get(columnStatsWork, parseContext.getConf());
-    }
-  }
-
   private void patchUpAfterCTASorMaterializedView(final List<Task<? extends Serializable>>  rootTasks,
                                                   final HashSet<WriteEntity> outputs,
                                                   Task<? extends Serializable> createTask) {
@@ -496,8 +388,7 @@ public abstract class TaskCompiler {
     getLeafTasks(rootTasks, leaves);
     assert (leaves.size() > 0);
     for (Task<? extends Serializable> task : leaves) {
-      if (task instanceof StatsTask
-          && ((StatsTask) task).getWork().getBasicStatsWork() != null) {
+      if (task instanceof StatsTask) {
         // StatsTask require table to already exist
         for (Task<? extends Serializable> parentOfStatsTask : task.getParentTasks()) {
           parentOfStatsTask.addDependentTask(createTask);
@@ -525,12 +416,13 @@ public abstract class TaskCompiler {
    * @param loadFileWork
    * @param rootTasks
    * @param outerQueryLimit
-   * @throws SemanticException 
    */
   @SuppressWarnings("unchecked")
   protected void genColumnStatsTask(AnalyzeRewriteContext analyzeRewrite,
-      List<LoadFileDesc> loadFileWork, Map<String, StatsTask> map,
-      int outerQueryLimit, int numBitVector) throws SemanticException {
+      List<LoadFileDesc> loadFileWork, Set<Task<? extends Serializable>> leafTasks,
+      int outerQueryLimit, int numBitVector) {
+    ColumnStatsTask cStatsTask = null;
+    ColumnStatsWork cStatsWork = null;
     FetchWork fetch = null;
     String tableName = analyzeRewrite.getTableName();
     List<String> colName = analyzeRewrite.getColName();
@@ -558,12 +450,10 @@ public abstract class TaskCompiler {
 
     ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tableName,
         colName, colType, isTblLevel, numBitVector);
-    StatsTask columnStatsTask = map.get(tableName);
-    if (columnStatsTask == null) {
-      throw new SemanticException("Can not find " + tableName + " in genColumnStatsTask");
-    } else {
-      columnStatsTask.getWork().setfWork(fetch);
-      columnStatsTask.getWork().setColStats(cStatsDesc);
+    cStatsWork = new ColumnStatsWork(fetch, cStatsDesc);
+    cStatsTask = (ColumnStatsTask) TaskFactory.get(cStatsWork, conf);
+    for (Task<? extends Serializable> tsk : leafTasks) {
+      tsk.addDependentTask(cStatsTask);
     }
   }
 

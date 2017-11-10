@@ -35,11 +35,10 @@ import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.BasicStatsTask;
+import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
@@ -93,9 +92,8 @@ public class MemoryDecider implements PhysicalPlanResolver {
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
       throws SemanticException {
       Task<? extends Serializable> currTask = (Task<? extends Serializable>) nd;
-      if (currTask instanceof StatsTask
-          && ((StatsTask) currTask).getWork().getBasicStatsWork() != null) {
-        currTask = ((StatsTask) currTask).getWork().getBasicStatsWork().getSourceTask();
+      if (currTask instanceof StatsTask) {
+        currTask = ((StatsTask) currTask).getWork().getSourceTask();
       }
       if (currTask instanceof TezTask) {
         TezWork work = ((TezTask) currTask).getWork();

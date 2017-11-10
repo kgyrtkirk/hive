@@ -20,99 +20,151 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
+
 /**
- * Stats Work, may include basic stats work and column stats desc
+ * ConditionalStats.
  *
  */
-@Explain(displayName = "Stats Work", explainLevels = { Level.USER, Level.DEFAULT,
-    Level.EXTENDED })
+@Explain(displayName = "Stats-Aggr Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class StatsWork implements Serializable {
   private static final long serialVersionUID = 1L;
-  // this is for basic stats
-  private BasicStatsWork basicStatsWork;
-  private BasicStatsNoJobWork basicStatsNoJobWork;
-  private FetchWork fWork;
-  private ColumnStatsDesc colStats;
-  private static final int LIMIT = -1;
+
+  private TableSpec tableSpecs;         // source table spec -- for TableScanOperator
+  private LoadTableDesc loadTableDesc;  // same as MoveWork.loadTableDesc -- for FileSinkOperator
+  private LoadFileDesc loadFileDesc;    // same as MoveWork.loadFileDesc -- for FileSinkOperator
+  private String aggKey;                // aggregation key prefix
+  private boolean statsReliable;        // are stats completely reliable
+
+  // If stats aggregator is not present, clear the current aggregator stats.
+  // For eg. if a merge is being performed, stats already collected by aggregator (numrows etc.)
+  // are still valid. However, if a load file is being performed, the old stats collected by
+  // aggregator are not valid. It might be a good idea to clear them instead of leaving wrong
+  // and old stats.
+  // Since HIVE-12661, we maintain the old stats (although may be wrong) for CBO
+  // purpose. We use a flag COLUMN_STATS_ACCURATE to
+  // show the accuracy of the stats.
+
+  private boolean clearAggregatorStats = false;
+
+  private boolean noStatsAggregator = false;
+
+  private boolean isNoScanAnalyzeCommand = false;
+
+  private boolean isPartialScanAnalyzeCommand = false;
+
+  // sourceTask for TS is not changed (currently) but that of FS might be changed
+  // by various optimizers (auto.convert.join, for example)
+  // so this is set by DriverContext in runtime
+  private transient Task sourceTask;
+
+  // used by FS based stats collector
+  private String statsTmpDir;
 
   public StatsWork() {
   }
 
-  public StatsWork(BasicStatsWork basicStatsWork) {
-    super();
-    this.basicStatsWork = basicStatsWork;
+  public StatsWork(TableSpec tableSpecs) {
+    this.tableSpecs = tableSpecs;
   }
 
-  public StatsWork(BasicStatsNoJobWork basicStatsNoJobWork) {
-    super();
-    this.basicStatsNoJobWork = basicStatsNoJobWork;
+  public StatsWork(LoadTableDesc loadTableDesc) {
+    this.loadTableDesc = loadTableDesc;
   }
 
-  public StatsWork(FetchWork work, ColumnStatsDesc colStats) {
-    this.fWork = work;
-    this.setColStats(colStats);
+  public StatsWork(LoadFileDesc loadFileDesc) {
+    this.loadFileDesc = loadFileDesc;
   }
 
-  @Override
-  public String toString() {
-    String ret;
-    ret = fWork.toString();
-    return ret;
+  public TableSpec getTableSpecs() {
+    return tableSpecs;
   }
 
-  public FetchWork getfWork() {
-    return fWork;
+  public LoadTableDesc getLoadTableDesc() {
+    return loadTableDesc;
   }
 
-  public void setfWork(FetchWork fWork) {
-    this.fWork = fWork;
+  public LoadFileDesc getLoadFileDesc() {
+    return loadFileDesc;
   }
 
-  @Explain(displayName = "Column Stats Desc")
-  public ColumnStatsDesc getColStats() {
-    return colStats;
+  public void setAggKey(String aggK) {
+    aggKey = aggK;
   }
 
-  public void setColStats(ColumnStatsDesc colStats) {
-    this.colStats = colStats;
+  @Explain(displayName = "Stats Aggregation Key Prefix", explainLevels = { Level.EXTENDED })
+  public String getAggKey() {
+    return aggKey;
   }
 
-  public ListSinkOperator getSink() {
-    return fWork.getSink();
+  public String getStatsTmpDir() {
+    return statsTmpDir;
   }
 
-  public void initializeForFetch(CompilationOpContext ctx) {
-    fWork.initializeForFetch(ctx);
+  public void setStatsTmpDir(String statsTmpDir) {
+    this.statsTmpDir = statsTmpDir;
   }
 
-  public int getLeastNumRows() {
-    return fWork.getLeastNumRows();
+  public boolean getNoStatsAggregator() {
+    return noStatsAggregator;
   }
 
-  public static int getLimit() {
-    return LIMIT;
+  public void setNoStatsAggregator(boolean noStatsAggregator) {
+    this.noStatsAggregator = noStatsAggregator;
   }
 
-  @Explain(displayName = "Basic Stats Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public BasicStatsWork getBasicStatsWork() {
-    return basicStatsWork;
+  public boolean isStatsReliable() {
+    return statsReliable;
   }
 
-  public void setBasicStatsWork(BasicStatsWork basicStatsWork) {
-    this.basicStatsWork = basicStatsWork;
+  public void setStatsReliable(boolean statsReliable) {
+    this.statsReliable = statsReliable;
   }
 
-  @Explain(displayName = "Basic Stats NoJob Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public BasicStatsNoJobWork getBasicStatsNoJobWork() {
-    return basicStatsNoJobWork;
+  public boolean isClearAggregatorStats() {
+    return clearAggregatorStats;
   }
 
-  public void setBasicStatsNoJobWork(BasicStatsNoJobWork basicStatsNoJobWork) {
-    this.basicStatsNoJobWork = basicStatsNoJobWork;
+  public void setClearAggregatorStats(boolean clearAggregatorStats) {
+    this.clearAggregatorStats = clearAggregatorStats;
   }
 
+  /**
+   * @return the isNoScanAnalyzeCommand
+   */
+  public boolean isNoScanAnalyzeCommand() {
+    return isNoScanAnalyzeCommand;
+  }
+
+  /**
+   * @param isNoScanAnalyzeCommand the isNoScanAnalyzeCommand to set
+   */
+  public void setNoScanAnalyzeCommand(boolean isNoScanAnalyzeCommand) {
+    this.isNoScanAnalyzeCommand = isNoScanAnalyzeCommand;
+  }
+
+  /**
+   * @return the isPartialScanAnalyzeCommand
+   */
+  public boolean isPartialScanAnalyzeCommand() {
+    return isPartialScanAnalyzeCommand;
+  }
+
+  /**
+   * @param isPartialScanAnalyzeCommand the isPartialScanAnalyzeCommand to set
+   */
+  public void setPartialScanAnalyzeCommand(boolean isPartialScanAnalyzeCommand) {
+    this.isPartialScanAnalyzeCommand = isPartialScanAnalyzeCommand;
+  }
+
+  public Task getSourceTask() {
+    return sourceTask;
+  }
+
+  public void setSourceTask(Task sourceTask) {
+    this.sourceTask = sourceTask;
+  }
 }

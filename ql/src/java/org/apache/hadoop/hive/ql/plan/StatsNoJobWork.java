@@ -22,27 +22,29 @@ import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
 
 /**
  * Client-side stats aggregator task.
  */
-public class BasicStatsNoJobWork implements Serializable {
+@Explain(displayName = "Stats-Aggr Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class StatsNoJobWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private TableSpec tableSpecs;
   private boolean statsReliable;
   private PrunedPartitionList prunedPartitionList;
 
-  public BasicStatsNoJobWork() {
+  public StatsNoJobWork() {
   }
 
-  public BasicStatsNoJobWork(TableSpec tableSpecs) {
+  public StatsNoJobWork(TableSpec tableSpecs) {
     this.tableSpecs = tableSpecs;
   }
 
-  public BasicStatsNoJobWork(boolean statsReliable) {
+  public StatsNoJobWork(boolean statsReliable) {
     this.statsReliable = statsReliable;
   }
 
@@ -65,5 +67,4 @@ public class BasicStatsNoJobWork implements Serializable {
   public PrunedPartitionList getPrunedPartitionList() {
     return prunedPartitionList;
   }
-
 }

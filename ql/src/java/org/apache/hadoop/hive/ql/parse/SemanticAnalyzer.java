@@ -7330,8 +7330,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // the following code is used to collect column stats when
     // hive.stats.autogather=true
     // and it is an insert overwrite or insert into table
-    if (dest_tab != null && !dest_tab.isNonNative()
-        && conf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
+    if (dest_tab != null && conf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
         && conf.getBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER)
         && ColumnStatsAutoGatherContext.canRunAutogatherStats(fso)) {
       if (dest_type.intValue() == QBMetaData.DEST_TABLE) {
@@ -10475,7 +10474,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
 
     // if it is not analyze command and not column stats, then do not gatherstats
-    if (!qbp.isAnalyzeCommand() && qbp.getAnalyzeRewrite() == null) {
+    // if it is column stats, but it is not tez, do not gatherstats
+    if ((!qbp.isAnalyzeCommand() && qbp.getAnalyzeRewrite() == null)
+        || (qbp.getAnalyzeRewrite() != null && !HiveConf.getVar(conf,
+            HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez"))) {
       tsDesc.setGatherStats(false);
     } else {
       if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {

@@ -18,12 +18,11 @@
 
 package org.apache.hadoop.hive.ql;
 
-import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.NodeUtils;
 import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.BasicStatsTask;
+import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
@@ -65,7 +64,7 @@ public class DriverContext {
   private Context ctx;
   private boolean shutdown;
 
-  final Map<String, StatsTask> statsTasks = new HashMap<>(1);
+  final Map<String, StatsTask> statsTasks = new HashMap<String, StatsTask>(1);
 
   public DriverContext() {
   }
@@ -192,9 +191,7 @@ public class DriverContext {
     NodeUtils.iterateTask(rootTasks, StatsTask.class, new Function<StatsTask>() {
       @Override
       public void apply(StatsTask statsTask) {
-        if(statsTask.getWork().getBasicStatsWork()!=null) {
-          statsTasks.put(statsTask.getWork().getBasicStatsWork().getAggKey(), statsTask);
-        }
+        statsTasks.put(statsTask.getWork().getAggKey(), statsTask);
       }
     });
   }
@@ -224,7 +221,7 @@ public class DriverContext {
       }
     });
     for (String statKey : statKeys) {
-      statsTasks.get(statKey).getWork().getBasicStatsWork().setSourceTask(mapredTask);
+      statsTasks.get(statKey).getWork().setSourceTask(mapredTask);
     }
   }
 }

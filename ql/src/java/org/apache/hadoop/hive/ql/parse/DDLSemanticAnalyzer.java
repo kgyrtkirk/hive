@@ -91,7 +91,6 @@ import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
-import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
@@ -131,7 +130,7 @@ import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTblPropertiesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTxnsDesc;
-import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
+import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
@@ -1092,19 +1091,18 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
         // Recalculate the HDFS stats if auto gather stats is set
         if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-          BasicStatsWork basicStatsWork;
+          StatsWork statDesc;
           if (oldTblPartLoc.equals(newTblPartLoc)) {
             // If we're merging to the same location, we can avoid some metastore calls
             TableSpec tablepart = new TableSpec(this.db, conf, root);
-            basicStatsWork = new BasicStatsWork(tablepart);
+            statDesc = new StatsWork(tablepart);
           } else {
-            basicStatsWork = new BasicStatsWork(ltd);
+            statDesc = new StatsWork(ltd);
           }
-          basicStatsWork.setNoStatsAggregator(true);
-          basicStatsWork.setClearAggregatorStats(true);
-          basicStatsWork.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
-          StatsWork columnStatsWork = new StatsWork(basicStatsWork);
-          Task<? extends Serializable> statTask = TaskFactory.get(columnStatsWork, conf);
+          statDesc.setNoStatsAggregator(true);
+          statDesc.setClearAggregatorStats(true);
+          statDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+          Task<? extends Serializable> statTask = TaskFactory.get(statDesc, conf);
           moveTsk.addDependentTask(statTask);
         }
       } catch (HiveException e) {
@@ -1726,19 +1724,18 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       mergeTask.addDependentTask(moveTsk);
 
       if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-        BasicStatsWork basicStatsWork;
+        StatsWork statDesc;
         if (oldTblPartLoc.equals(newTblPartLoc)) {
           // If we're merging to the same location, we can avoid some metastore calls
           TableSpec tableSpec = new TableSpec(db, tableName, partSpec);
-          basicStatsWork = new BasicStatsWork(tableSpec);
+          statDesc = new StatsWork(tableSpec);
         } else {
-          basicStatsWork = new BasicStatsWork(ltd);
+          statDesc = new StatsWork(ltd);
         }
-        basicStatsWork.setNoStatsAggregator(true);
-        basicStatsWork.setClearAggregatorStats(true);
-        basicStatsWork.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
-        StatsWork columnStatsWork = new StatsWork(basicStatsWork);
-        Task<? extends Serializable> statTask = TaskFactory.get(columnStatsWork, conf);
+        statDesc.setNoStatsAggregator(true);
+        statDesc.setClearAggregatorStats(true);
+        statDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+        Task<? extends Serializable> statTask = TaskFactory.get(statDesc, conf);
         moveTsk.addDependentTask(statTask);
       }
 

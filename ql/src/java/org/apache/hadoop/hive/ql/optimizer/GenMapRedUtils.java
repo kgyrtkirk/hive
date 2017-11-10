@@ -35,7 +35,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import com.google.common.annotations.VisibleForTesting;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
@@ -89,7 +88,6 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
-import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles.ConditionalResolverMergeFilesCtx;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
@@ -113,7 +111,7 @@ import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
-import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
+import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
@@ -500,10 +498,6 @@ public final class GenMapRedUtils {
 
     Path tblDir = null;
     plan.setNameToSplitSample(parseCtx.getNameToSplitSample());
-    // we also collect table stats while collecting column stats.
-    if (parseCtx.getAnalyzeRewrite() != null) {
-      plan.setGatheringStats(true);
-    }
 
     if (partsList == null) {
       try {
@@ -1480,11 +1474,11 @@ public final class GenMapRedUtils {
       Task<? extends Serializable> currTask, HiveConf hconf) {
 
     MoveWork mvWork = mvTask.getWork();
-    BasicStatsWork statsWork = null;
+    StatsWork statsWork = null;
     if (mvWork.getLoadTableWork() != null) {
-      statsWork = new BasicStatsWork(mvWork.getLoadTableWork());
+      statsWork = new StatsWork(mvWork.getLoadTableWork());
     } else if (mvWork.getLoadFileWork() != null) {
-      statsWork = new BasicStatsWork(mvWork.getLoadFileWork());
+      statsWork = new StatsWork(mvWork.getLoadFileWork());
     }
     assert statsWork != null : "Error when generating StatsTask";
 
@@ -1512,8 +1506,7 @@ public final class GenMapRedUtils {
     // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
     // in FileSinkDesc is used for stats publishing. They should be consistent.
     statsWork.setAggKey(nd.getConf().getStatsAggPrefix());
-    StatsWork columnStatsWork = new StatsWork(statsWork);
-    Task<? extends Serializable> statsTask = TaskFactory.get(columnStatsWork, hconf);
+    Task<? extends Serializable> statsTask = TaskFactory.get(statsWork, hconf);
 
     // subscribe feeds from the MoveTask so that MoveTask can forward the list
     // of dynamic partition list to the StatsTask

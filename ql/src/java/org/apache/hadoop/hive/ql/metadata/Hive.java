@@ -1742,9 +1742,7 @@ public class Hive {
       }
 
       // column stats will be inaccurate
-      if (!hasFollowingStatsTask) {
-        StatsSetupConst.clearColumnStatsState(newTPart.getParameters());
-      }
+      StatsSetupConst.clearColumnStatsState(newTPart.getParameters());
 
       // recreate the partition if it existed before
       if (isSkewedStoreAsSubdir) {
@@ -1763,8 +1761,8 @@ public class Hive {
       if (oldPart == null) {
         newTPart.getTPartition().setParameters(new HashMap<String,String>());
         if (this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-          StatsSetupConst.setStatsStateForCreateTable(newTPart.getParameters(),
-              MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
+          StatsSetupConst.setStatsStateForCreateTable(newTPart.getParameters(), null,
+              StatsSetupConst.TRUE);
         }
         MetaStoreUtils.populateQuickStats(HiveStatsUtils.getFileStatusRecurse(newPartPath, -1, newPartPath.getFileSystem(conf)), newTPart.getParameters());
         try {
@@ -2126,9 +2124,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     //column stats will be inaccurate
-    if (!hasFollowingStatsTask) {
-      StatsSetupConst.clearColumnStatsState(tbl.getParameters());
-    }
+    StatsSetupConst.clearColumnStatsState(tbl.getParameters());
 
     try {
       if (isSkewedStoreAsSubdir) {
