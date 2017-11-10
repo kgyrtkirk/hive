@@ -17,6 +17,7 @@ STAGE DEPENDENCIES:
   Stage-4
   Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
   Stage-2 depends on stages: Stage-0
+  Stage-8 depends on stages: Stage-2
   Stage-3
   Stage-5
   Stage-6 depends on stages: Stage-5
@@ -97,8 +98,10 @@ STAGE PLANS:
               name: default.partitioned1
 
   Stage: Stage-2
-    Stats Work
-      Basic Stats Work:
+    Stats-Aggr Operator
+
+  Stage: Stage-8
+    Column Stats Work
       Column Stats Desc:
           Columns: a, b
           Column Types: int, string
@@ -252,6 +255,7 @@ STAGE DEPENDENCIES:
   Stage-4
   Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
   Stage-2 depends on stages: Stage-0
+  Stage-8 depends on stages: Stage-2
   Stage-3
   Stage-5
   Stage-6 depends on stages: Stage-5
@@ -332,8 +336,10 @@ STAGE PLANS:
               name: default.partitioned1
 
   Stage: Stage-2
-    Stats Work
-      Basic Stats Work:
+    Stats-Aggr Operator
+
+  Stage: Stage-8
+    Column Stats Work
       Column Stats Desc:
           Columns: a, b, c, d
           Column Types: int, string, int, string
@@ -443,6 +449,7 @@ STAGE DEPENDENCIES:
   Stage-4
   Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
   Stage-2 depends on stages: Stage-0
+  Stage-8 depends on stages: Stage-2
   Stage-3
   Stage-5
   Stage-6 depends on stages: Stage-5
@@ -523,8 +530,10 @@ STAGE PLANS:
               name: default.partitioned1
 
   Stage: Stage-2
-    Stats Work
-      Basic Stats Work:
+    Stats-Aggr Operator
+
+  Stage: Stage-8
+    Column Stats Work
       Column Stats Desc:
           Columns: a, b, c, d
           Column Types: int, string, int, string
@@ -594,7 +603,7 @@ Database:           	default
 Table:              	partitioned1        	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\"}}
 	numFiles            	2                   
 	numRows             	6                   
 	rawDataSize         	78                  
@@ -628,6 +637,6 @@ POSTHOOK: query: desc formatted partitioned1 partition(part=1) c
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partitioned1
 col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment	bitvector
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-c                   	int                 	from deserializer   	 	 	 	 	 	 	 	 	 
+c                   	int                 	100                 	200                 	0                   	2                   	                    	                    	                    	                    	HL                  	from deserializer   

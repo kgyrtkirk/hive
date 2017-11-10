@@ -89,7 +89,7 @@ STAGE PLANS:
             partition values:
               ds 2008-04-08
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               column.name.delimiter ,
               columns key,value
@@ -129,7 +129,7 @@ STAGE PLANS:
               name: default.filter_join_breaktask
             name: default.filter_join_breaktask
       Truncated Path -> Alias:
-        /filter_join_breaktask/ds=2008-04-08 [$hdt$_1:f, $hdt$_2:m]
+        /filter_join_breaktask/ds=2008-04-08 [$hdt$_0:f, $hdt$_1:m]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -226,7 +226,7 @@ STAGE PLANS:
             partition values:
               ds 2008-04-08
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               column.name.delimiter ,
               columns key,value
@@ -266,7 +266,7 @@ STAGE PLANS:
               name: default.filter_join_breaktask
             name: default.filter_join_breaktask
       Truncated Path -> Alias:
-        /filter_join_breaktask/ds=2008-04-08 [$hdt$_0:g]
+        /filter_join_breaktask/ds=2008-04-08 [$hdt$_2:g]
 #### A masked pattern was here ####
       Needs Tagging: true
       Reduce Operator Tree:

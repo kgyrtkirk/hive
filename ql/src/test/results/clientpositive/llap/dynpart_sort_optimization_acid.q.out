@@ -140,8 +140,7 @@ STAGE PLANS:
               name: default.acid_part
 
   Stage: Stage-3
-    Stats Work
-      Basic Stats Work:
+    Stats-Aggr Operator
 
 PREHOOK: query: update acid_part set value = 'bar' where key = 'foo' and ds='2008-04-08'
 PREHOOK: type: QUERY
@@ -235,8 +234,7 @@ STAGE PLANS:
               name: default.acid_part
 
   Stage: Stage-3
-    Stats Work
-      Basic Stats Work:
+    Stats-Aggr Operator
 
 PREHOOK: query: update acid_part set value = 'bar' where key = 'foo' and ds in ('2008-04-08')
 PREHOOK: type: QUERY
@@ -422,8 +420,7 @@ STAGE PLANS:
               name: default.acid_part_sdpo
 
   Stage: Stage-3
-    Stats Work
-      Basic Stats Work:
+    Stats-Aggr Operator
 
 PREHOOK: query: update acid_part_sdpo set value = 'bar' where key = 'foo' and ds='2008-04-08'
 PREHOOK: type: QUERY
@@ -517,8 +514,7 @@ STAGE PLANS:
               name: default.acid_part_sdpo
 
   Stage: Stage-3
-    Stats Work
-      Basic Stats Work:
+    Stats-Aggr Operator
 
 PREHOOK: query: update acid_part_sdpo set value = 'bar' where key = 'foo' and ds in ('2008-04-08')
 PREHOOK: type: QUERY
@@ -714,8 +710,7 @@ STAGE PLANS:
               name: default.acid_2l_part
 
   Stage: Stage-3
-    Stats Work
-      Basic Stats Work:
+    Stats-Aggr Operator
 
 PREHOOK: query: update acid_2L_part set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr=11
 PREHOOK: type: QUERY
@@ -810,8 +805,7 @@ STAGE PLANS:
               name: default.acid_2l_part
 
   Stage: Stage-3
-    Stats Work
-      Basic Stats Work:
+    Stats-Aggr Operator
 
 PREHOOK: query: update acid_2L_part set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr>=11
 PREHOOK: type: QUERY
@@ -935,8 +929,7 @@ STAGE PLANS:
               name: default.acid_2l_part
 
   Stage: Stage-3
-    Stats Work
-      Basic Stats Work:
+    Stats-Aggr Operator
 
 PREHOOK: query: delete from acid_2L_part where value = 'bar'
 PREHOOK: type: QUERY
@@ -1129,8 +1122,7 @@ STAGE PLANS:
               name: default.acid_2l_part_sdpo
 
   Stage: Stage-3
-    Stats Work
-      Basic Stats Work:
+    Stats-Aggr Operator
 
 PREHOOK: query: update acid_2L_part_sdpo set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr=11
 PREHOOK: type: QUERY
@@ -1225,8 +1217,7 @@ STAGE PLANS:
               name: default.acid_2l_part_sdpo
 
   Stage: Stage-3
-    Stats Work
-      Basic Stats Work:
+    Stats-Aggr Operator
 
 PREHOOK: query: update acid_2L_part_sdpo set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr>=11
 PREHOOK: type: QUERY
@@ -1350,8 +1341,7 @@ STAGE PLANS:
               name: default.acid_2l_part_sdpo
 
   Stage: Stage-3
-    Stats Work
-      Basic Stats Work:
+    Stats-Aggr Operator
 
 PREHOOK: query: delete from acid_2L_part_sdpo where value = 'bar'
 PREHOOK: type: QUERY
@@ -1546,8 +1536,7 @@ STAGE PLANS:
               name: default.acid_2l_part_sdpo_no_cp
 
   Stage: Stage-3
-    Stats Work
-      Basic Stats Work:
+    Stats-Aggr Operator
 
 PREHOOK: query: update acid_2L_part_sdpo_no_cp set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr=11
 PREHOOK: type: QUERY
@@ -1643,8 +1632,7 @@ STAGE PLANS:
               name: default.acid_2l_part_sdpo_no_cp
 
   Stage: Stage-3
-    Stats Work
-      Basic Stats Work:
+    Stats-Aggr Operator
 
 PREHOOK: query: update acid_2L_part_sdpo_no_cp set value = 'bar' where key = 'foo' and ds='2008-04-08' and hr>=11
 PREHOOK: type: QUERY

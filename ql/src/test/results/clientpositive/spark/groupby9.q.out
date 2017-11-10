@@ -35,13 +35,11 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 6 (GROUP PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (GROUP, 1)
-        Reducer 4 <- Map 7 (GROUP PARTITION-LEVEL SORT, 2)
-        Reducer 5 <- Reducer 4 (GROUP, 1)
+        Reducer 2 <- Map 4 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Map 5 (GROUP PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
-        Map 6 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -61,7 +59,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-        Map 7 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -101,34 +99,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest1
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string)
-                    outputColumnNames: key, value
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: compute_stats(key, 16), compute_stats(value, 16)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 976 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 976 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
         Reducer 3 
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 980 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 980 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(DISTINCT KEY._col2:0._col0)
@@ -148,33 +119,6 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest2
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                    outputColumnNames: key, val1, val2
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: compute_stats(key, 16), compute_stats(val1, 16), compute_stats(val2, 16)
-                      mode: hash
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
-        Reducer 5 
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Move Operator
@@ -187,12 +131,7 @@ STAGE PLANS:
               name: default.dest1
 
   Stage: Stage-3
-    Stats Work
-      Basic Stats Work:
-      Column Stats Desc:
-          Columns: key, value
-          Column Types: int, string
-          Table: default.dest1
+    Stats-Aggr Operator
 
   Stage: Stage-1
     Move Operator
@@ -205,12 +144,7 @@ STAGE PLANS:
               name: default.dest2
 
   Stage: Stage-4
-    Stats Work
-      Basic Stats Work:
-      Column Stats Desc:
-          Columns: key, val1, val2
-          Column Types: int, string, string
-          Table: default.dest2
+    Stats-Aggr Operator
 
 PREHOOK: query: FROM SRC
 INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
@@ -886,13 +820,11 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 6 (GROUP PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (GROUP, 1)
-        Reducer 4 <- Map 7 (GROUP PARTITION-LEVEL SORT, 2)
-        Reducer 5 <- Reducer 4 (GROUP, 1)
+        Reducer 2 <- Map 4 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Map 5 (GROUP PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
-        Map 6 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -912,7 +844,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-        Map 7 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -952,34 +884,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest1
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string)
-                    outputColumnNames: key, value
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: compute_stats(key, 16), compute_stats(value, 16)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 976 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 976 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
         Reducer 3 
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 980 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 980 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(DISTINCT KEY._col2:0._col0)
@@ -999,33 +904,6 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest2
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                    outputColumnNames: key, val1, val2
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: compute_stats(key, 16), compute_stats(val1, 16), compute_stats(val2, 16)
-                      mode: hash
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
-        Reducer 5 
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Move Operator
@@ -1038,12 +916,7 @@ STAGE PLANS:
               name: default.dest1
 
   Stage: Stage-3
-    Stats Work
-      Basic Stats Work:
-      Column Stats Desc:
-          Columns: key, value
-          Column Types: int, string
-          Table: default.dest1
+    Stats-Aggr Operator
 
   Stage: Stage-1
     Move Operator
@@ -1056,12 +929,7 @@ STAGE PLANS:
               name: default.dest2
 
   Stage: Stage-4
-    Stats Work
-      Basic Stats Work:
-      Column Stats Desc:
-          Columns: key, val1, val2
-          Column Types: int, string, string
-          Table: default.dest2
+    Stats-Aggr Operator
 
 PREHOOK: query: FROM SRC
 INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
@@ -1737,13 +1605,11 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 6 (GROUP PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (GROUP, 1)
-        Reducer 4 <- Map 7 (GROUP PARTITION-LEVEL SORT, 2)
-        Reducer 5 <- Reducer 4 (GROUP, 1)
+        Reducer 2 <- Map 4 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Map 5 (GROUP PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
-        Map 6 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -1763,7 +1629,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-        Map 7 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -1803,34 +1669,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest1
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string)
-                    outputColumnNames: key, value
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: compute_stats(key, 16), compute_stats(value, 16)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 976 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 976 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
         Reducer 3 
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 980 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 980 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(DISTINCT KEY._col2:0._col0)
@@ -1850,33 +1689,6 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest2
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                    outputColumnNames: key, val1, val2
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: compute_stats(key, 16), compute_stats(val1, 16), compute_stats(val2, 16)
-                      mode: hash
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
-        Reducer 5 
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Move Operator
@@ -1889,12 +1701,7 @@ STAGE PLANS:
               name: default.dest1
 
   Stage: Stage-3
-    Stats Work
-      Basic Stats Work:
-      Column Stats Desc:
-          Columns: key, value
-          Column Types: int, string
-          Table: default.dest1
+    Stats-Aggr Operator
 
   Stage: Stage-1
     Move Operator
@@ -1907,12 +1714,7 @@ STAGE PLANS:
               name: default.dest2
 
   Stage: Stage-4
-    Stats Work
-      Basic Stats Work:
-      Column Stats Desc:
-          Columns: key, val1, val2
-          Column Types: int, string, string
-          Table: default.dest2
+    Stats-Aggr Operator
 
 PREHOOK: query: FROM SRC
 INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
@@ -2588,13 +2390,11 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 6 (GROUP, 2)
-        Reducer 3 <- Reducer 2 (GROUP, 1)
-        Reducer 4 <- Map 7 (GROUP, 2)
-        Reducer 5 <- Reducer 4 (GROUP, 1)
+        Reducer 2 <- Map 4 (GROUP, 2)
+        Reducer 3 <- Map 5 (GROUP, 2)
 #### A masked pattern was here ####
       Vertices:
-        Map 6 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -2615,7 +2415,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
-        Map 7 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -2656,34 +2456,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest1
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string)
-                    outputColumnNames: key, value
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: compute_stats(key, 16), compute_stats(value, 16)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 968 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 968 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
         Reducer 3 
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 972 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 972 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2703,33 +2476,6 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest2
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                    outputColumnNames: key, val1, val2
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: compute_stats(key, 16), compute_stats(val1, 16), compute_stats(val2, 16)
-                      mode: hash
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
-        Reducer 5 
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 1464 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 1464 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Move Operator
@@ -2742,12 +2488,7 @@ STAGE PLANS:
               name: default.dest1
 
   Stage: Stage-3
-    Stats Work
-      Basic Stats Work:
-      Column Stats Desc:
-          Columns: key, value
-          Column Types: int, string
-          Table: default.dest1
+    Stats-Aggr Operator
 
   Stage: Stage-1
     Move Operator
@@ -2760,12 +2501,7 @@ STAGE PLANS:
               name: default.dest2
 
   Stage: Stage-4
-    Stats Work
-      Basic Stats Work:
-      Column Stats Desc:
-          Columns: key, val1, val2
-          Column Types: int, string, string
-          Table: default.dest2
+    Stats-Aggr Operator
 
 PREHOOK: query: FROM SRC
 INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(SUBSTR(SRC.value,5)) GROUP BY SRC.key
@@ -3441,13 +3177,11 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 6 (GROUP PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (GROUP, 1)
-        Reducer 4 <- Map 7 (GROUP PARTITION-LEVEL SORT, 2)
-        Reducer 5 <- Reducer 4 (GROUP, 1)
+        Reducer 2 <- Map 4 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Map 5 (GROUP PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
-        Map 6 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -3467,7 +3201,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-        Map 7 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -3507,34 +3241,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest1
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string)
-                    outputColumnNames: key, value
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: compute_stats(key, 16), compute_stats(value, 16)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 976 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 976 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
         Reducer 3 
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 980 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 980 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(DISTINCT KEY._col2:0._col0)
@@ -3554,33 +3261,6 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dest2
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                    outputColumnNames: key, val1, val2
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: compute_stats(key, 16), compute_stats(val1, 16), compute_stats(val2, 16)
-                      mode: hash
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
-        Reducer 5 
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Move Operator
@@ -3593,12 +3273,7 @@ STAGE PLANS:
               name: default.dest1
 
   Stage: Stage-3
-    Stats Work
-      Basic Stats Work:
-      Column Stats Desc:
-          Columns: key, value
-          Column Types: int, string
-          Table: default.dest1
+    Stats-Aggr Operator
 
   Stage: Stage-1
     Move Operator
@@ -3611,12 +3286,7 @@ STAGE PLANS:
               name: default.dest2
 
   Stage: Stage-4
-    Stats Work
-      Basic Stats Work:
-      Column Stats Desc:
-          Columns: key, val1, val2
-          Column Types: int, string, string
-          Table: default.dest2
+    Stats-Aggr Operator
 
 PREHOOK: query: FROM SRC
 INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key

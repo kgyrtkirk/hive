@@ -17,8 +17,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
-  Stage-2 depends on stages: Stage-0, Stage-3
-  Stage-3 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -37,6 +36,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
         Select Operator
@@ -58,21 +58,6 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.insert
-              Select Operator
-                expressions: _col0 (type: int), _col1 (type: string)
-                outputColumnNames: key, as
-                Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: compute_stats(key, 'hll'), compute_stats(as, 'hll')
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Move Operator
@@ -85,34 +70,7 @@ STAGE PLANS:
               name: default.insert
 
   Stage: Stage-2
-    Stats Work
-      Basic Stats Work:
-      Column Stats Desc:
-          Columns: key, as
-          Column Types: int, string
-          Table: default.insert
-
-  Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              sort order: 
-              Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
-      Reduce Operator Tree:
-        Group By Operator
-          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
-          mode: mergepartial
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+    Stats-Aggr Operator
 
 PREHOOK: query: INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
 PREHOOK: type: QUERY
@@ -144,8 +102,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
-  Stage-2 depends on stages: Stage-0, Stage-3
-  Stage-3 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -164,6 +121,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
         Select Operator
@@ -185,21 +143,6 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.insert
-              Select Operator
-                expressions: _col0 (type: int), _col1 (type: string)
-                outputColumnNames: key, as
-                Statistics: Num rows: 100 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: compute_stats(key, 'hll'), compute_stats(as, 'hll')
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Move Operator
@@ -212,34 +155,7 @@ STAGE PLANS:
               name: default.insert
 
   Stage: Stage-2
-    Stats Work
-      Basic Stats Work:
-      Column Stats Desc:
-          Columns: key, as
-          Column Types: int, string
-          Table: default.insert
-
-  Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              sort order: 
-              Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
-      Reduce Operator Tree:
-        Group By Operator
-          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
-          mode: mergepartial
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+    Stats-Aggr Operator
 
 PREHOOK: query: INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
 PREHOOK: type: QUERY
@@ -280,8 +196,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
-  Stage-2 depends on stages: Stage-0, Stage-3
-  Stage-3 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -300,6 +215,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
         Select Operator
@@ -321,21 +237,6 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.insert
-              Select Operator
-                expressions: _col0 (type: int), _col1 (type: string)
-                outputColumnNames: key, as
-                Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: compute_stats(key, 'hll'), compute_stats(as, 'hll')
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Move Operator
@@ -348,34 +249,7 @@ STAGE PLANS:
               name: default.insert
 
   Stage: Stage-2
-    Stats Work
-      Basic Stats Work:
-      Column Stats Desc:
-          Columns: key, as
-          Column Types: int, string
-          Table: default.insert
-
-  Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              sort order: 
-              Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
-      Reduce Operator Tree:
-        Group By Operator
-          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
-          mode: mergepartial
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+    Stats-Aggr Operator
 
 PREHOOK: query: INSERT OVERWRITE TABLE `insert` SELECT * FROM src LIMIT 10
 PREHOOK: type: QUERY

@@ -24,7 +24,6 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 2 <- Map 1 (GROUP, 31)
-        Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -56,28 +55,6 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.dest1
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: c1
-                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: c1 (type: string)
-        Reducer 3 
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: compute_stats(VALUE._col0, 'hll')
-                mode: complete
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Move Operator
@@ -90,12 +67,7 @@ STAGE PLANS:
               name: default.dest1
 
   Stage: Stage-2
-    Stats Work
-      Basic Stats Work:
-      Column Stats Desc:
-          Columns: c1
-          Column Types: string
-          Table: default.dest1
+    Stats-Aggr Operator
 
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1 SELECT substr(src.key,1,1) GROUP BY substr(src.key,1,1)

@@ -239,7 +239,6 @@ STAGE PLANS:
     Tez
       Edges:
         Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -266,21 +265,28 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
-                vectorized: false
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
-        Reducer 3 
-            Execution mode: llap
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
-                vectorized: false
-            Reduce Operator Tree:
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        selectExpressions: CastLongToChar(col 0, maxLength 12) -> 1:Char
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
 
   Stage: Stage-2
 
