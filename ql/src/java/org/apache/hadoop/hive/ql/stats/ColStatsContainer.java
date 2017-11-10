@@ -21,7 +21,9 @@ package org.apache.hadoop.hive.ql.stats;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -33,22 +35,21 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 
 public class ColStatsContainer {
 
-  private List<ColStatistics> stats;
+  private Map<String, ColStatistics> statMap;
 
   public ColStatsContainer(List<ColumnStatisticsObj> colStats, String tabName) {
-    stats = new ArrayList<>();
-    List<ColStatistics> stats = new ArrayList<ColStatistics>(colStats.size());
+    statMap = new LinkedHashMap<>();
     for (ColumnStatisticsObj statObj : colStats) {
       ColStatistics cs = getColStatistics(statObj, tabName, statObj.getColName());
       if (cs != null) {
-        stats.add(cs);
+        statMap.put(cs.getColumnName(), cs);
       }
     }
   }
 
   // backward compat
   public List<ColStatistics> getValueList() {
-    return stats;
+    return new ArrayList<>(statMap.values());
   }
 
   /**
