@@ -490,7 +490,8 @@ public class StatsUtils {
           stats.addToColumnStats(columnStats);
         } else {
           if (statsRetrieved) {
-            columnStats.addAll(convertColStats(aggrStats.getColStats(), table.getTableName()));
+            ColStatsContainer csc = new ColStatsContainer(aggrStats.getColStats(), table.getTableName());
+            columnStats.addAll(csc.getValueList());
           }
           int colStatsAvailable = neededColumns.size() + partitionCols.size() - partitionColsToRetrieve.size();
           if (columnStats.size() != colStatsAvailable) {
@@ -1019,7 +1020,8 @@ public class StatsUtils {
     try {
       List<ColumnStatisticsObj> colStat = Hive.get().getTableColumnStatistics(
           dbName, tabName, colStatsToRetrieve);
-      stats = convertColStats(colStat, tabName);
+
+      stats = new ColStatsContainer(colStat, tabName).getValueList();
     } catch (HiveException e) {
       LOG.error("Failed to retrieve table statistics: ", e);
       stats = new ArrayList<ColStatistics>();
@@ -1038,11 +1040,6 @@ public class StatsUtils {
       }
     }
     return stats;
-  }
-
-  private static List<ColStatistics> convertColStats(List<ColumnStatisticsObj> colStats, String tabName) {
-    ColStatsContainer csc = new ColStatsContainer(colStats, tabName);
-    return csc.getValueList();
   }
 
   /**
