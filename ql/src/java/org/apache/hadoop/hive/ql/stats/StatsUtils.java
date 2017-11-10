@@ -1002,16 +1002,17 @@ public class StatsUtils {
       return null;
     }
     // We will retrieve stats from the metastore only for columns that are not cached
-    List<String> colStatsToRetrieve;
-    if (colStatsCache != null) {
-      colStatsToRetrieve = new ArrayList<>(neededColumns.size());
-      for (String colName : neededColumns) {
-        if (!colStatsCache.getColStats().containsKey(colName)) {
-          colStatsToRetrieve.add(colName);
-        }
+    ColStatsContainer cache = new ColStatsContainer(colStatsCache);
+    ColStatsContainer ret = new ColStatsContainer();
+
+    List<String> colStatsToRetrieve = new ArrayList();
+    for (String column : neededColumns) {
+      if (cache.containsKey(column)) {
+        ret.add(cache.get(column));
+        LOG.debug("Stats for column {} in table {} retrieved from cache", column, table.getCompleteName());
+      } else {
+        colStatsToRetrieve.add(column);
       }
-    } else {
-      colStatsToRetrieve = neededColumns;
     }
     // Retrieve stats from metastore
     String dbName = table.getDbName();
@@ -1021,25 +1022,11 @@ public class StatsUtils {
       List<ColumnStatisticsObj> colStat = Hive.get().getTableColumnStatistics(
           dbName, tabName, colStatsToRetrieve);
 
-      stats = new ColStatsContainer(colStat, tabName).getValueList();
+      ret.addAll(colStat, tabName);
     } catch (HiveException e) {
       LOG.error("Failed to retrieve table statistics: ", e);
-      stats = new ArrayList<ColStatistics>();
     }
-    // Merge stats from cache with metastore cache
-    if (colStatsCache != null) {
-      for(String col:neededColumns) {
-        ColStatistics cs = colStatsCache.getColStats().get(col);
-        if (cs != null) {
-          stats.add(cs);
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Stats for column " + cs.getColumnName() +
-                " in table " + table.getCompleteName() + " retrieved from cache");
-          }
-        }
-      }
-    }
-    return stats;
+    return ret.getValueList();
   }
 
   /**

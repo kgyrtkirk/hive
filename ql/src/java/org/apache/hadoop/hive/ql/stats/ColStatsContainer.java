@@ -24,11 +24,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -39,18 +41,30 @@ public class ColStatsContainer {
 
   public ColStatsContainer(List<ColumnStatisticsObj> colStats, String tabName) {
     statMap = new LinkedHashMap<>();
-    for (ColumnStatisticsObj statObj : colStats) {
-      ColStatistics cs = getColStatistics(statObj, tabName, statObj.getColName());
-      if (cs != null) {
-        statMap.put(cs.getColumnName(), cs);
-      }
-    }
+    addAll(colStats, tabName);
+  }
+
+  public ColStatsContainer(ColumnStatsList colStatsCache) {
+    statMap = colStatsCache.getColStats();
+  }
+
+  public ColStatsContainer() {
+    statMap = new LinkedHashMap<>();
   }
 
   // backward compat
   public List<ColStatistics> getValueList() {
     return new ArrayList<>(statMap.values());
   }
+
+  public Set<String> keySet() {
+    return statMap.keySet();
+  }
+
+  public boolean containsKey(String column) {
+    return statMap.containsKey(column);
+  }
+
 
   /**
    * Convert ColumnStatisticsObj to ColStatistics
@@ -134,6 +148,24 @@ public class ColStatsContainer {
     }
 
     return cs;
+  }
+
+  public ColStatistics get(String column) {
+    return statMap.get(column);
+
+  }
+
+  public void add(ColStatistics colStatistics) {
+    statMap.put(colStatistics.getColumnName(), colStatistics);
+  }
+
+  public void addAll(List<ColumnStatisticsObj> colStats, String tabName) {
+    for (ColumnStatisticsObj statObj : colStats) {
+      ColStatistics cs = getColStatistics(statObj, tabName, statObj.getColName());
+      if (cs != null) {
+        statMap.put(cs.getColumnName(), cs);
+      }
+    }
   }
 
 }
