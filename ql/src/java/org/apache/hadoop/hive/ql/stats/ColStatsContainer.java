@@ -52,6 +52,13 @@ public class ColStatsContainer {
     statMap = new LinkedHashMap<>();
   }
 
+  @Deprecated
+  public ColStatsContainer(List<ColStatistics> columnStats) {
+    for (ColStatistics colStatistics : columnStats) {
+      statMap.put(colStatistics.getColumnName(), colStatistics);
+    }
+  }
+
   // backward compat
   public List<ColStatistics> getValueList() {
     return new ArrayList<>(statMap.values());
@@ -64,7 +71,6 @@ public class ColStatsContainer {
   public boolean containsKey(String column) {
     return statMap.containsKey(column);
   }
-
 
   /**
    * Convert ColumnStatisticsObj to ColStatistics
@@ -156,14 +162,19 @@ public class ColStatsContainer {
   }
 
   public void add(ColStatistics colStatistics) {
-    statMap.put(colStatistics.getColumnName(), colStatistics);
+    String colName = colStatistics.getColumnName();
+    if (statMap.containsKey(colName)) {
+      throw new RuntimeException();
+    } else {
+      statMap.put(colStatistics.getColumnName(), colStatistics);
+    }
   }
 
   public void addAll(List<ColumnStatisticsObj> colStats, String tabName) {
     for (ColumnStatisticsObj statObj : colStats) {
       ColStatistics cs = getColStatistics(statObj, tabName, statObj.getColName());
       if (cs != null) {
-        statMap.put(cs.getColumnName(), cs);
+        add(cs);
       }
     }
   }

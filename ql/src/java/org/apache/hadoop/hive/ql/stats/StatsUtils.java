@@ -34,7 +34,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.common.collect.Sets;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -272,22 +271,11 @@ public class StatsUtils {
     }
   }
 
-  private static void estimateStatsForMissingCols(List<String> neededColumns, List<ColStatistics> columnStats,
-                                           Table table, HiveConf conf, long nr, List<ColumnInfo> schema) {
-
-    Set<String> neededCols = new HashSet<>(neededColumns);
-    Set<String> colsWithStats = new HashSet<>();
-
-    for (ColStatistics cstats : columnStats) {
-      colsWithStats.add(cstats.getColumnName());
-    }
-
-    List<String> missingColStats = new ArrayList<String>(Sets.difference(neededCols, colsWithStats));
-
-    if(missingColStats.size() > 0) {
-      List<ColStatistics> estimatedColStats = estimateStats(table, schema, missingColStats, conf, nr);
-      for (ColStatistics estColStats : estimatedColStats) {
-        columnStats.add(estColStats);
+  private static void estimateStatsForMissingCols(List<String> neededColumns, ColStatsContainer colStats,
+      Table table, HiveConf conf, long numRows, List<ColumnInfo> schema) {
+    for (String colName : neededColumns) {
+      if (colStats.containsKey(colName)) {
+        colStats.add(estimateColStats(numRows, colName, conf, schema));
       }
     }
   }
@@ -341,12 +329,9 @@ public class StatsUtils {
       stats.setNumRows(nr);
       List<ColStatistics> colStats = Lists.newArrayList();
       if (fetchColStats) {
-        colStats = getTableColumnStats(table, schema, neededColumns, colStatsCache);
-        if(colStats == null) {
-          colStats = Lists.newArrayList();
-        }
-        estimateStatsForMissingCols(neededColumns, colStats, table, conf, nr, schema);
-
+        ColStatsContainer colStats1 = getTableColumnStats(table, schema, neededColumns, colStatsCache);
+        estimateStatsForMissingCols(neededColumns, colStats1, table, conf, nr, schema);
+        colStats = colStats1.getValueList();
         // we should have stats for all columns (estimated or actual)
         assert(neededColumns.size() == colStats.size());
         long betterDS = getDataSizeFromColumnStats(nr, colStats);
@@ -476,7 +461,10 @@ public class StatsUtils {
             aggrStats.getColStats() != null && aggrStats.getColStatsSize() != 0;
         if (neededColumns.size() == 0 ||
             (neededColsToRetrieve.size() > 0 && !statsRetrieved)) {
-          estimateStatsForMissingCols(neededColsToRetrieve, columnStats, table, conf, nr, schema);
+
+          ColStatsContainer cc = new ColStatsContainer(columnStats);
+          estimateStatsForMissingCols(neededColsToRetrieve, cc, table, conf, nr, schema);
+          columnStats = cc.getValueList();
           // There are some partitions with no state (or we didn't fetch any state).
           // Update the stats with empty list to reflect that in the
           // state/initialize structures.
@@ -994,7 +982,7 @@ public class StatsUtils {
    *          - list of needed columns
    * @return column statistics
    */
-  public static List<ColStatistics> getTableColumnStats(
+  public static ColStatsContainer getTableColumnStats(
       Table table, List<ColumnInfo> schema, List<String> neededColumns,
       ColumnStatsList colStatsCache) {
     if (table.isMaterializedTable()) {
@@ -1026,7 +1014,7 @@ public class StatsUtils {
     } catch (HiveException e) {
       LOG.error("Failed to retrieve table statistics: ", e);
     }
-    return ret.getValueList();
+    return ret;
   }
 
   /**

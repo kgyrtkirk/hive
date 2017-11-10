@@ -195,12 +195,12 @@ public class Statistics implements Serializable {
 
     if (colStats != null) {
       for (ColStatistics cs : colStats) {
-        ColStatistics updatedCS = null;
         if (cs != null) {
 
           String key = cs.getColumnName();
           // if column statistics for a column is already found then merge the statistics
           if (columnStats.containsKey(key) && columnStats.get(key) != null) {
+            ColStatistics updatedCS = null;
             updatedCS = columnStats.get(key);
             updatedCS.setAvgColLen(Math.max(updatedCS.getAvgColLen(), cs.getAvgColLen()));
             updatedCS.setNumNulls(updatedCS.getNumNulls() + cs.getNumNulls());
