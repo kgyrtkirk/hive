@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.stats;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,13 +39,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
@@ -504,7 +500,9 @@ public class StatsUtils {
 
           addPartitionColumnStats(conf, partitionColsToRetrieve, schema, table, partList, columnStats);
           long betterDS = getDataSizeFromColumnStats(nr, columnStats);
-          stats.setDataSize((betterDS < 1 || columnStats.isEmpty()) ? ds : betterDS);
+          if (columnStats.isEmpty() && betterDS > 0) {
+            stats.setDataSize(betterDS);
+          }
           // infer if any column can be primary key based on column statistics
           inferAndSetPrimaryKey(stats.getNumRows(), columnStats);
 
@@ -914,98 +912,6 @@ public class StatsUtils {
     return result;
   }
 
-  /**
-   * Convert ColumnStatisticsObj to ColStatistics
-   * @param cso
-   *          - ColumnStatisticsObj
-   * @param tabName
-   *          - table name
-   * @param colName
-   *          - column name
-   * @return ColStatistics
-   */
-  public static ColStatistics getColStatistics(ColumnStatisticsObj cso, String tabName,
-      String colName) {
-    String colTypeLowerCase = cso.getColType().toLowerCase();
-    ColStatistics cs = new ColStatistics(colName, colTypeLowerCase);
-    ColumnStatisticsData csd = cso.getStatsData();
-    if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)
-        || colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)
-        || colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)) {
-      cs.setCountDistint(csd.getLongStats().getNumDVs());
-      cs.setNumNulls(csd.getLongStats().getNumNulls());
-      cs.setAvgColLen(JavaDataModel.get().primitive1());
-      cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
-    } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
-      cs.setCountDistint(csd.getLongStats().getNumDVs());
-      cs.setNumNulls(csd.getLongStats().getNumNulls());
-      cs.setAvgColLen(JavaDataModel.get().primitive2());
-      cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
-    } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
-      cs.setCountDistint(csd.getDoubleStats().getNumDVs());
-      cs.setNumNulls(csd.getDoubleStats().getNumNulls());
-      cs.setAvgColLen(JavaDataModel.get().primitive1());
-      cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
-    } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
-      cs.setCountDistint(csd.getDoubleStats().getNumDVs());
-      cs.setNumNulls(csd.getDoubleStats().getNumNulls());
-      cs.setAvgColLen(JavaDataModel.get().primitive2());
-      cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
-    } else if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
-        || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)
-        || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
-      cs.setCountDistint(csd.getStringStats().getNumDVs());
-      cs.setNumNulls(csd.getStringStats().getNumNulls());
-      cs.setAvgColLen(csd.getStringStats().getAvgColLen());
-    } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
-      if (csd.getBooleanStats().getNumFalses() > 0 && csd.getBooleanStats().getNumTrues() > 0) {
-        cs.setCountDistint(2);
-      } else {
-        cs.setCountDistint(1);
-      }
-      cs.setNumTrues(csd.getBooleanStats().getNumTrues());
-      cs.setNumFalses(csd.getBooleanStats().getNumFalses());
-      cs.setNumNulls(csd.getBooleanStats().getNumNulls());
-      cs.setAvgColLen(JavaDataModel.get().primitive1());
-    } else if (colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)) {
-      cs.setAvgColLen(csd.getBinaryStats().getAvgColLen());
-      cs.setNumNulls(csd.getBinaryStats().getNumNulls());
-    } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||
-        colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
-      cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
-    } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
-      cs.setAvgColLen(JavaDataModel.get().lengthOfDecimal());
-      cs.setCountDistint(csd.getDecimalStats().getNumDVs());
-      cs.setNumNulls(csd.getDecimalStats().getNumNulls());
-      Decimal highValue = csd.getDecimalStats().getHighValue();
-      Decimal lowValue = csd.getDecimalStats().getLowValue();
-      if (highValue != null && highValue.getUnscaled() != null
-          && lowValue != null && lowValue.getUnscaled() != null) {
-        HiveDecimal maxHiveDec = HiveDecimal.create(new BigInteger(highValue.getUnscaled()), highValue.getScale());
-        BigDecimal maxVal = maxHiveDec == null ? null : maxHiveDec.bigDecimalValue();
-        HiveDecimal minHiveDec = HiveDecimal.create(new BigInteger(lowValue.getUnscaled()), lowValue.getScale());
-        BigDecimal minVal = minHiveDec == null ? null : minHiveDec.bigDecimalValue();
-
-        if (minVal != null && maxVal != null) {
-          cs.setRange(minVal, maxVal);
-        }
-      }
-    } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
-      cs.setAvgColLen(JavaDataModel.get().lengthOfDate());
-      cs.setNumNulls(csd.getDateStats().getNumNulls());
-      Long lowVal = (csd.getDateStats().getLowValue() != null) ? csd.getDateStats().getLowValue()
-          .getDaysSinceEpoch() : null;
-      Long highVal = (csd.getDateStats().getHighValue() != null) ? csd.getDateStats().getHighValue()
-          .getDaysSinceEpoch() : null;
-      cs.setRange(lowVal, highVal);
-    } else {
-      // Columns statistics for complex datatypes are not supported yet
-      return null;
-    }
-
-    return cs;
-  }
-
   private static ColStatistics estimateColStats(long numRows, String colName, HiveConf conf,
       List<ColumnInfo> schema) {
     ColumnInfo cinfo = getColumnInfoForColumn(colName, schema);
@@ -1046,8 +952,8 @@ public class StatsUtils {
       cs.setAvgColLen(getAvgColLenOf(conf,cinfo.getObjectInspector(), cinfo.getTypeName()));
     } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
         cs.setCountDistint(2);
-        cs.setNumTrues(Math.max(1, (long)numRows/2));
-        cs.setNumFalses(Math.max(1, (long)numRows/2));
+        cs.setNumTrues(Math.max(1, numRows/2));
+        cs.setNumFalses(Math.max(1, numRows/2));
         cs.setAvgColLen(JavaDataModel.get().primitive1());
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||
         colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
@@ -1135,17 +1041,8 @@ public class StatsUtils {
   }
 
   private static List<ColStatistics> convertColStats(List<ColumnStatisticsObj> colStats, String tabName) {
-    if (colStats==null) {
-      return new ArrayList<ColStatistics>();
-    }
-    List<ColStatistics> stats = new ArrayList<ColStatistics>(colStats.size());
-    for (ColumnStatisticsObj statObj : colStats) {
-      ColStatistics cs = getColStatistics(statObj, tabName, statObj.getColName());
-      if (cs != null) {
-        stats.add(cs);
-      }
-    }
-    return stats;
+    ColStatsContainer csc = new ColStatsContainer(colStats, tabName);
+    return csc.getValueList();
   }
 
   /**
