@@ -274,7 +274,7 @@ public class StatsUtils {
   private static void estimateStatsForMissingCols(List<String> neededColumns, ColStatsContainer colStats,
       Table table, HiveConf conf, long numRows, List<ColumnInfo> schema) {
     for (String colName : neededColumns) {
-      if (colStats.containsKey(colName)) {
+      if (!colStats.containsKey(colName)) {
         colStats.add(estimateColStats(numRows, colName, conf, schema));
       }
     }

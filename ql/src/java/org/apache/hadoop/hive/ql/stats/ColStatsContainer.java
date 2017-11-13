@@ -40,12 +40,15 @@ public class ColStatsContainer {
   private Map<String, ColStatistics> statMap;
 
   public ColStatsContainer(List<ColumnStatisticsObj> colStats, String tabName) {
-    statMap = new LinkedHashMap<>();
+    this();
     addAll(colStats, tabName);
   }
 
   public ColStatsContainer(ColumnStatsList colStatsCache) {
-    statMap = colStatsCache.getColStats();
+    this();
+    if (colStatsCache != null && colStatsCache.getColStats() != null) {
+      statMap.putAll(colStatsCache.getColStats());
+    }
   }
 
   public ColStatsContainer() {
@@ -54,6 +57,7 @@ public class ColStatsContainer {
 
   @Deprecated
   public ColStatsContainer(List<ColStatistics> columnStats) {
+    this();
     for (ColStatistics colStatistics : columnStats) {
       statMap.put(colStatistics.getColumnName(), colStatistics);
     }
