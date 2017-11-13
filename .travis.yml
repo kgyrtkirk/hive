@@ -42,4 +42,4 @@ before_install:
 
 install: true
 
-script: mvn clean install -DskipTests -T 4 -q -Pitests
+script: mvn clean install -Dtest=TestNegativeMinimrCliDriver -Dqfile=ct_noperm_loc.q -T 4 -q -Pitests -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO
