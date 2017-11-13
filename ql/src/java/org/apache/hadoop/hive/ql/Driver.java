@@ -771,6 +771,7 @@ public class Driver implements CommandProcessor {
     }
     return shouldOpenImplicitTxn;
   }
+
   private int handleInterruptionWithHook(String msg, HookContext hookContext,
       PerfLogger perfLogger) {
     SQLState = "HY008";  //SQLState for cancel operation
