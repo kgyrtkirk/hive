@@ -1749,9 +1749,6 @@ public class Driver implements CommandProcessor {
   }
 
   private CommandProcessorResponse createProcessorResponse(int ret) {
-    if (ret != 0) {
-      lDrvState.driverState = DriverState.ERROR;
-    }
     SessionState.getPerfLogger().cleanupPerfLogMetrics();
     queryDisplay.setErrorMessage(errorMessage);
     if(downstreamError != null && downstreamError instanceof HiveException) {
