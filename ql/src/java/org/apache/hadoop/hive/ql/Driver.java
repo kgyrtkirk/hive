@@ -700,7 +700,7 @@ public class Driver implements CommandProcessor {
       ImmutableMap<String, Long> compileHMSTimings = dumpMetaCallTimingWithoutEx("compilation");
       queryDisplay.setHmsTimings(QueryDisplay.Phase.COMPILATION, compileHMSTimings);
 
-      boolean isInterrupted = isInterrupted();
+      boolean isInterrupted = lDrvState.isAborted();
       if (isInterrupted && !deferClose) {
         closeInProcess(true);
       }
@@ -787,14 +787,9 @@ public class Driver implements CommandProcessor {
   }
 
   private void checkInterrupted(String msg, HookContext hookContext, PerfLogger perfLogger) throws CommandProcessorResponse {
-    if (isInterrupted()) {
+    if (lDrvState.isAborted()) {
       throw createProcessorResponse(handleInterruptionWithHook(msg, hookContext, perfLogger));
     }
-  }
-
-  @Deprecated
-  private boolean isInterrupted() {
-    return lDrvState.isAborted();
   }
 
   private ImmutableMap<String, Long> dumpMetaCallTimingWithoutEx(String phase) {
@@ -1657,7 +1652,7 @@ public class Driver implements CommandProcessor {
       }
       isFinishedWithError = false;
     } finally {
-      if (isInterrupted()) {
+      if (lDrvState.isAborted()) {
         closeInProcess(true);
       } else {
         // only release the related resources ctx, driverContext as normal
@@ -2099,17 +2094,13 @@ public class Driver implements CommandProcessor {
         }
         console.printInfo("Total MapReduce CPU Time Spent: " + Utilities.formatMsecToStr(totalCpu));
       }
-      boolean isInterrupted = isInterrupted();
       lDrvState.stateLock.lock();
       try {
-        if (isInterrupted) {
-        } else {
-          lDrvState.driverState = executionError ? DriverState.ERROR : DriverState.EXECUTED;
-        }
+        lDrvState.driverState = executionError ? DriverState.ERROR : DriverState.EXECUTED;
       } finally {
         lDrvState.stateLock.unlock();
       }
-      if (isInterrupted) {
+      if (lDrvState.isAborted()) {
         LOG.info("Executing command(queryId=" + queryId + ") has been interrupted after " + duration + " seconds");
       } else {
         LOG.info("Completed executing command(queryId=" + queryId + "); Time taken: " + duration + " seconds");
