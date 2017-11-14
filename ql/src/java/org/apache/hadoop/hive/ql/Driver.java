@@ -2042,6 +2042,9 @@ public class Driver implements CommandProcessor {
     } catch (CommandNeedRetryException e) {
       executionError = true;
       throw e;
+    } catch (CommandProcessorResponse cpr) {
+      executionError = true;
+      throw cpr;
     } catch (Throwable e) {
       executionError = true;
 
