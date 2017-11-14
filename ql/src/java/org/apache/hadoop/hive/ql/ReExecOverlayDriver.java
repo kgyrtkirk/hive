@@ -19,11 +19,8 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-
 import org.apache.hadoop.hbase.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -140,20 +137,12 @@ public class ReExecOverlayDriver implements IDriver {
 
   // should be moved to hiveconf
   private void HiveConf_addOverlay(HiveConf conf, Map<String, String> overlay) {
-    for (Entry<String, String> entry : overlay.entrySet()) {
-      conf.set(entry.getKey(), entry.getValue());
-    }
+    conf.putAll(overlay);
   }
 
   // should be moved to hiveconf
   private Map<String,String> HiveConf_subtree(HiveConf conf, String string) {
-    Map<String, String> ret = new HashMap<>();
-    for (Entry<String, String> entry : conf) {
-      if (entry.getKey().startsWith(string)) {
-        ret.put(entry.getKey().substring(string.length() + 1), entry.getValue());
-      }
-    }
-    return ret;
+    return conf.subtree(string);
   }
 
   @Override

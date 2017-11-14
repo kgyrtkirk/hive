@@ -4934,4 +4934,21 @@ public class HiveConf extends Configuration {
       return reverseMap;
     }
   }
+
+  public void putAll(Map<String, String> overlay) {
+    for (Entry<String, String> entry : overlay.entrySet()) {
+      set(entry.getKey(), entry.getValue());
+    }
+  }
+
+  public Map<String, String> subtree(String string) {
+    Map<String, String> ret = new HashMap<>();
+    for (Entry<String, String> entry : this) {
+      if (entry.getKey().startsWith(string)) {
+        ret.put(entry.getKey().substring(string.length() + 1), entry.getValue());
+      }
+    }
+    return ret;
+  }
+
 }
