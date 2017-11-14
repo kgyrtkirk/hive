@@ -18,28 +18,36 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.io.File;
-
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class DriverFactory {
 
-  static File settingFile = new File("/tmp/reexec");
-
-  static boolean enabled = settingFile.exists();
-
   public static IDriver newDriver(HiveConf conf) {
-
     return newDriver(getNewQueryState(conf), null, null);
   }
 
+  enum ExecutionStrategy {
+    none {
+      @Override
+      IDriver build(QueryState queryState, String userName, QueryInfo queryInfo) {
+        return new Driver(queryState, userName, queryInfo);
+      }
+    },
+    overlay() {
+      @Override
+      IDriver build(QueryState queryState, String userName, QueryInfo queryInfo) {
+        return new RedDriver(queryState, userName, queryInfo);
+      }
+    };
+
+    abstract IDriver build(QueryState queryState, String userName, QueryInfo queryInfo);
+  }
+
   public static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
-    if (enabled) {
-      return new RedDriver(queryState, userName, queryInfo);
-    } else {
-      return new Driver(queryState, userName, queryInfo);
-    }
+    ExecutionStrategy strategy = ExecutionStrategy.valueOf(queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGY));
+    return strategy.build(queryState, userName, queryInfo);
   }
 
   private static QueryState getNewQueryState(HiveConf conf) {
