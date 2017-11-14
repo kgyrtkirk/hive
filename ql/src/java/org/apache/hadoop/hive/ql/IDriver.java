@@ -29,14 +29,17 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 
 public interface IDriver extends CommandProcessor {
 
-  int close();
-
-  int compile(String string);
-
-
   static IDriver newDriver(HiveConf conf) {
     return new Driver(conf);
   }
+
+  static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
+    return new Driver(queryState, userName, queryInfo);
+  }
+
+  int compile(String string);
+
+  CommandProcessorResponse compileAndRespond(String statement);
 
   QueryPlan getPlan();
 
@@ -46,13 +49,12 @@ public interface IDriver extends CommandProcessor {
 
   void setTryCount(int maxValue);
 
-  CommandProcessorResponse compileAndRespond(String statement);
-
+  CommandProcessorResponse run() throws CommandNeedRetryException;
   @Override
   CommandProcessorResponse run(String command) throws CommandNeedRetryException;
 
-  void destroy();
 
+  // create some "cover" to the result?
   boolean getResults(List res) throws IOException, CommandNeedRetryException;
 
   void setMaxRows(int maxRows);
@@ -63,12 +65,9 @@ public interface IDriver extends CommandProcessor {
 
   boolean isFetchingTable();
 
-  static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
-    return new Driver(queryState, userName, queryInfo);
-  }
-
   void resetFetch() throws IOException;
 
-  CommandProcessorResponse run() throws CommandNeedRetryException;
-
+  // close&destroy is used in seq coupling most of the time - the difference is either not clear; or not relevant - remove?
+  int close();
+  void destroy();
 }
