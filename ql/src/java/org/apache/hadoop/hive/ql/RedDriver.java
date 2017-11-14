@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.hooks.HooksLoader;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 
 public class RedDriver implements IDriver {
@@ -30,7 +31,8 @@ public class RedDriver implements IDriver {
   private Driver coreDriver;
 
   public RedDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
-    coreDriver = new Driver(queryState, userName, queryInfo);
+    //    coreDriver = new Driver(queryState, userName, queryInfo);
+    coreDriver = new Driver(queryState, userName, new HooksLoader(queryState.getConf()), queryInfo, null);
   }
 
   @Override
@@ -70,8 +72,8 @@ public class RedDriver implements IDriver {
 
   @Override
   public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
-    
-//    CommandProcessorResponse run0 = coreDriver.run(command);
+    //    CommandProcessorResponse run0 = coreDriver.run(command);
+
     return coreDriver.run(command);
   }
 
