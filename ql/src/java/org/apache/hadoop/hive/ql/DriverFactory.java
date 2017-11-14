@@ -43,12 +43,15 @@ public class DriverFactory {
   }
 
   private static QueryState getNewQueryState(HiveConf conf) {
-    return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
+    // async=true techincally forces to enable configuration isolation between forces ; but instead for now explicitly:
+    HiveConf newConf = new HiveConf(conf);
+    return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(newConf).build();
   }
 
   // it would be better to use conf at the callsite...but instead for now I clone the original magic from Driver
   @Deprecated
   public static IDriver newDriver() {
+    // CLIDriver enter at this point
     HiveConf conf = (SessionState.get() != null) ? SessionState.get().getConf() : new HiveConf();
     return newDriver(conf);
   }

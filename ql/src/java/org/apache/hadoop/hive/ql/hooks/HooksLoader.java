@@ -58,8 +58,8 @@ public class HooksLoader {
    * @throws IllegalAccessException if the specified class names could not be accessed
    * @throws InstantiationException if the specified class names could not be instantiated
    */
-  public <T extends Hook> List<T> getHooks(HiveConf.ConfVars hookConfVar, SessionState.LogHelper console, Class<?>... classes)
-          throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+  public final <T extends Hook> List<T> getHooks(HiveConf.ConfVars hookConfVar, SessionState.LogHelper console, Class<?>... classes)
+      throws IllegalAccessException, InstantiationException, ClassNotFoundException {
     try {
       return getHooks(hookConfVar, classes);
     } catch (ClassNotFoundException e) {

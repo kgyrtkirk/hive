@@ -1,14 +1,10 @@
-
 create table tx(a int,f string);
 insert into tx values (1,'non_existent_file');
 
-
 set zzz=1;
+set reexec.overlay.zzz=2;
 
-set hive.reexecution.overlay.zzz=2;
+set hive.query.reexecution.strategy=overlay;
 
-select assert_true(${hiveconf:zzz} > 1);
+select assert_true(${hiveconf:zzz} > a) from tx group by a;
 
--- select 
--- select a,assert_true(a<0) from tx group by a,f;
--- select a,in_file('somestring',f) from tx group by a,f;
