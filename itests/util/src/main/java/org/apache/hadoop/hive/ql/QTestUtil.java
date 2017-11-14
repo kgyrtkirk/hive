@@ -1566,7 +1566,6 @@ public class QTestUtil {
           if (matcher.find()) {
             line = line.replaceAll(prp.pattern.pattern(), prp.replacement);
             partialMaskWasMatched = true;
-            break;
           }
         }
       }
@@ -1677,6 +1676,10 @@ public class QTestUtil {
     ArrayList<PatternReplacementPair> ppm = new ArrayList<>();
     ppm.add(new PatternReplacementPair(Pattern.compile("\\{\"transactionid\":[1-9][0-9]*,\"bucketid\":"),
       "{\"transactionid\":### Masked txnid ###,\"bucketid\":"));
+
+    ppm.add(new PatternReplacementPair(Pattern.compile("attempt_[0-9]+"), "attempt_#ID#"));
+    ppm.add(new PatternReplacementPair(Pattern.compile("vertex_[0-9_]+"), "vertex_#ID#"));
+    ppm.add(new PatternReplacementPair(Pattern.compile("task_[0-9_]+"), "task_#ID#"));
     partialPlanMask = ppm.toArray(new PatternReplacementPair[ppm.size()]);
   }
   /* This list may be modified by specific cli drivers to mask strings that change on every test */
