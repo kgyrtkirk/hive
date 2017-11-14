@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
@@ -35,7 +35,7 @@ import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 /* Unit test for GitHub Howl issue #3 */
 public class TestUseDatabase extends TestCase {
 
-  private Driver hcatDriver;
+  private IDriver hcatDriver;
 
   @Override
   protected void setUp() throws Exception {
@@ -46,7 +46,7 @@ public class TestUseDatabase extends TestCase {
     hcatConf.set(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
 
     hcatConf.set(ConfVars.SEMANTIC_ANALYZER_HOOK.varname, HCatSemanticAnalyzer.class.getName());
-    hcatDriver = new Driver(hcatConf);
+    hcatDriver = new IDriver(hcatConf);
     SessionState.start(new CliSessionState(hcatConf));
   }
 

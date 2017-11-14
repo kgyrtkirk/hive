@@ -131,11 +131,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
 
-public class Driver implements CommandProcessor {
+public class IDriver implements CommandProcessor {
 
   public static final String MAPREDUCE_WORKFLOW_NODE_NAME = "mapreduce.workflow.node.name";
 
-  static final private String CLASS_NAME = Driver.class.getName();
+  static final private String CLASS_NAME = IDriver.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   static final private LogHelper console = new LogHelper(LOG);
   static final int SHUTDOWN_HOOK_PRIORITY = 0;
@@ -367,45 +367,45 @@ public class Driver implements CommandProcessor {
     this.maxRows = maxRows;
   }
 
-  public Driver() {
+  public IDriver() {
     this(getNewQueryState((SessionState.get() != null) ?
         SessionState.get().getConf() : new HiveConf()), null);
   }
 
-  public Driver(HiveConf conf) {
+  public IDriver(HiveConf conf) {
     this(getNewQueryState(conf), null);
   }
 
-  public Driver(HiveConf conf, HiveTxnManager txnMgr) {
+  public IDriver(HiveConf conf, HiveTxnManager txnMgr) {
     this(getNewQueryState(conf), null, null, txnMgr);
   }
 
-  public Driver(HiveConf conf, Context ctx) {
+  public IDriver(HiveConf conf, Context ctx) {
     this(getNewQueryState(conf), null, null);
     this.ctx = ctx;
   }
 
-  public Driver(HiveConf conf, String userName) {
+  public IDriver(HiveConf conf, String userName) {
     this(getNewQueryState(conf), userName, null);
   }
 
-  public Driver(QueryState queryState, String userName) {
+  public IDriver(QueryState queryState, String userName) {
     this(queryState, userName, new HooksLoader(queryState.getConf()), null, null);
   }
 
-  public Driver(HiveConf conf, HooksLoader hooksLoader) {
+  public IDriver(HiveConf conf, HooksLoader hooksLoader) {
     this(getNewQueryState(conf), null, hooksLoader, null, null);
   }
 
-  public Driver(QueryState queryState, String userName, QueryInfo queryInfo) {
+  public IDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
      this(queryState, userName, new HooksLoader(queryState.getConf()), queryInfo, null);
   }
 
-  public Driver(QueryState queryState, String userName, QueryInfo queryInfo, HiveTxnManager txnMgr) {
+  public IDriver(QueryState queryState, String userName, QueryInfo queryInfo, HiveTxnManager txnMgr) {
     this(queryState, userName, new HooksLoader(queryState.getConf()), queryInfo, txnMgr);
   }
 
-  public Driver(QueryState queryState, String userName, HooksLoader hooksLoader, QueryInfo queryInfo, HiveTxnManager txnMgr) {
+  public IDriver(QueryState queryState, String userName, HooksLoader hooksLoader, QueryInfo queryInfo, HiveTxnManager txnMgr) {
     this.queryState = queryState;
     this.conf = queryState.getConf();
     isParallelEnabled = (conf != null)

@@ -34,7 +34,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
@@ -137,7 +137,7 @@ public class TestSymlinkTextInputFormat extends TestCase {
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_REWORK_MAPREDWORK, true);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    Driver drv = new Driver(hiveConf);
+    IDriver drv = new IDriver(hiveConf);
     String tblName = "text_symlink_text";
 
     String createSymlinkTableCmd = "create table " + tblName + " (key int) stored as " +

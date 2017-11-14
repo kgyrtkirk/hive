@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
@@ -51,12 +51,12 @@ public class TestViewEntity {
 
   }
 
-  private static Driver driver;
+  private static IDriver driver;
   private final String NAME_PREFIX = "TestViewEntity5".toLowerCase();
 
   @BeforeClass
   public static void onetimeSetup() throws Exception {
-    HiveConf conf = new HiveConf(Driver.class);
+    HiveConf conf = new HiveConf(IDriver.class);
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
@@ -65,7 +65,7 @@ public class TestViewEntity {
     HiveConf
         .setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     SessionState.start(conf);
-    driver = new Driver(conf);
+    driver = new IDriver(conf);
   }
 
   @AfterClass

@@ -22,7 +22,7 @@ import com.google.common.base.Strings;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 
 
@@ -33,7 +33,7 @@ public class DagUtils {
     if (Strings.isNullOrEmpty(name)) {
       return conf.get(MRJobConfig.JOB_NAME);
     } else {
-      return name + " (" + conf.get(Driver.MAPREDUCE_WORKFLOW_NODE_NAME) + ")";
+      return name + " (" + conf.get(IDriver.MAPREDUCE_WORKFLOW_NODE_NAME) + ")";
     }
   }
 }

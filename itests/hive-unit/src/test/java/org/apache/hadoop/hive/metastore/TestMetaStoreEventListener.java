@@ -64,7 +64,7 @@ import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.events.PreLoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -76,7 +76,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 public class TestMetaStoreEventListener extends TestCase {
   private HiveConf hiveConf;
   private HiveMetaStoreClient msc;
-  private Driver driver;
+  private IDriver driver;
 
   private static final String dbName = "hive2038";
   private static final String tblName = "tmptbl";
@@ -107,7 +107,7 @@ public class TestMetaStoreEventListener extends TestCase {
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     SessionState.start(new CliSessionState(hiveConf));
     msc = new HiveMetaStoreClient(hiveConf);
-    driver = new Driver(hiveConf);
+    driver = new IDriver(hiveConf);
 
     driver.run("drop database if exists " + dbName + " cascade");
 

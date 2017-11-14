@@ -582,7 +582,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     HiveConf hc = new HiveConf(hiveConf);
     hc.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
     hc.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
-    d = new Driver(hc);
+    d = new IDriver(hc);
     d.setMaxRows(10000);
 
     List<String> explain = runStatementOnDriver("explain " + query);
@@ -624,7 +624,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     d.destroy();
     HiveConf hc = new HiveConf(hiveConf);
     hc.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, false);
-    d = new Driver(hc);
+    d = new IDriver(hc);
     d.setMaxRows(10000);
 
     int[][] baseValsOdd = {{2,2},{4,44},{5,5},{11,11}};
@@ -800,7 +800,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //this is used in multiple places, SemanticAnalyzer.getBucketingSortingDest() among others
     hc.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 1);
     hc.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
-    d = new Driver(hc);
+    d = new IDriver(hc);
     d.setMaxRows(10000);
     runStatementOnDriver("insert into " + Table.ACIDTBL + " values(1,1)");//txn X write to bucket1
     runStatementOnDriver("insert into " + Table.ACIDTBL + " values(0,0),(3,3)");// txn X + 1 write to bucket0 + bucket1
@@ -819,7 +819,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     hc.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 2);
     //this is used in multiple places, SemanticAnalyzer.getBucketingSortingDest() among others
     hc.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 2);
-    d = new Driver(hc);
+    d = new IDriver(hc);
     d.setMaxRows(10000);
     runStatementOnDriver("create table fourbuckets (a int, b int) clustered by (a) into 4 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     //below value for a is bucket id, for b - txn id (logically)

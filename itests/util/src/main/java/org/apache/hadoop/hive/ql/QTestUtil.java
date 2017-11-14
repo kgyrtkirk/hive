@@ -181,7 +181,7 @@ public class QTestUtil {
   protected Hive db;
   protected QueryState queryState;
   protected HiveConf conf;
-  private Driver drv;
+  private IDriver drv;
   private BaseSemanticAnalyzer sem;
   protected final boolean overWrite;
   private CliDriver cliDriver;
@@ -538,7 +538,7 @@ public class QTestUtil {
       System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());
     }
 
-    queryState = new QueryState.Builder().withHiveConf(new HiveConf(Driver.class)).build();
+    queryState = new QueryState.Builder().withHiveConf(new HiveConf(IDriver.class)).build();
     conf = queryState.getConf();
     this.hadoopVer = getHadoopMainVersion(hadoopVer);
     qMap = new TreeMap<String, String>();
@@ -953,7 +953,7 @@ public class QTestUtil {
 
     // allocate and initialize a new conf since a test can
     // modify conf by using 'set' commands
-    conf = new HiveConf(Driver.class);
+    conf = new HiveConf(IDriver.class);
     initConf();
     initConfFromSetup();
 
@@ -1091,7 +1091,7 @@ public class QTestUtil {
     SessionState.start(conf);
     conf.set("hive.execution.engine", execEngine);
     db = Hive.get(conf);
-    drv = new Driver(conf);
+    drv = new IDriver(conf);
     pd = new ParseDriver();
     sem = new SemanticAnalyzer(queryState);
   }
