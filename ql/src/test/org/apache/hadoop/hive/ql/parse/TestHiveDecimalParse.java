@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
@@ -56,7 +56,7 @@ public class TestHiveDecimalParse {
   public void testDecimalType3() throws ParseException {
     String query = "create table `dec` (d decimal(66,7))";
 
-    IDriver driver = createDriver();
+    Driver driver = createDriver();
     int rc = driver.compile(query);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
@@ -67,7 +67,7 @@ public class TestHiveDecimalParse {
   public void testDecimalType4() throws ParseException {
     String query = "create table `dec` (d decimal(0,7))";
 
-    IDriver driver = createDriver();
+    Driver driver = createDriver();
     int rc = driver.compile(query);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
@@ -78,7 +78,7 @@ public class TestHiveDecimalParse {
   public void testDecimalType5() throws ParseException {
     String query = "create table `dec` (d decimal(7,33))";
 
-    IDriver driver = createDriver();
+    Driver driver = createDriver();
     int rc = driver.compile(query);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
@@ -89,7 +89,7 @@ public class TestHiveDecimalParse {
   public void testDecimalType6() throws ParseException {
     String query = "create table `dec` (d decimal(7,-1))";
 
-    IDriver driver = createDriver();
+    Driver driver = createDriver();
     int rc = driver.compile(query);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
@@ -100,7 +100,7 @@ public class TestHiveDecimalParse {
   public void testDecimalType7() throws ParseException {
     String query = "create table `dec` (d decimal(7,33,4))";
 
-    IDriver driver = createDriver();
+    Driver driver = createDriver();
     int rc = driver.compile(query);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
@@ -111,7 +111,7 @@ public class TestHiveDecimalParse {
   public void testDecimalType8() throws ParseException {
     String query = "create table `dec` (d decimal(7a))";
 
-    IDriver driver = createDriver();
+    Driver driver = createDriver();
     int rc = driver.compile(query);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
@@ -122,26 +122,26 @@ public class TestHiveDecimalParse {
   public void testDecimalType9() throws ParseException {
     String query = "create table `dec` (d decimal(20,23))";
 
-    IDriver driver = createDriver();
+    Driver driver = createDriver();
     int rc = driver.compile(query);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
         driver.getErrorMsg().contains("Decimal scale must be less than or equal to precision"));
   }
 
-  private IDriver createDriver() {
-    HiveConf conf = new HiveConf(IDriver.class);
+  private Driver createDriver() {
+    HiveConf conf = new HiveConf(Driver.class);
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
 
     SessionState.start(conf);
-    IDriver driver = new IDriver(conf);
+    Driver driver = new Driver(conf);
     return driver;
   }
 
   private String getColumnType(String query) {
-    IDriver driver = createDriver();
+    Driver driver = createDriver();
     int rc = driver.compile(query);
 
     if (rc != 0) {

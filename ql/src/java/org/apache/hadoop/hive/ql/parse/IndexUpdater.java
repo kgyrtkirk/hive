@@ -22,7 +22,7 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -133,7 +133,7 @@ public class IndexUpdater {
   }
 
   private void compileRebuild(String query) {
-    IDriver driver = new IDriver(this.conf);
+    Driver driver = new Driver(this.conf);
     driver.compile(query, false);
     tasks.addAll(driver.getPlan().getRootTasks());
     inputs.addAll(driver.getPlan().getInputs());

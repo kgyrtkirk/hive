@@ -60,7 +60,7 @@ import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -243,7 +243,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     // So initialize the new Driver with a new TxnManager so that it does not use the
     // Session TxnManager that is already in use.
     HiveTxnManager txnManager = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    IDriver driver = new IDriver(conf, txnManager);
+    Driver driver = new Driver(conf, txnManager);
     DriverCleanup driverCleanup = new DriverCleanup(driver, txnManager, splitsAppId.toString());
     boolean needsCleanup = true;
     try {
@@ -456,11 +456,11 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   }
 
   private static class DriverCleanup implements Closeable {
-    private final IDriver driver;
+    private final Driver driver;
     private final HiveTxnManager txnManager;
     private final String applicationId;
 
-    public DriverCleanup(IDriver driver, HiveTxnManager txnManager, String applicationId) {
+    public DriverCleanup(Driver driver, HiveTxnManager txnManager, String applicationId) {
       this.driver = driver;
       this.txnManager = txnManager;
       this.applicationId = applicationId;

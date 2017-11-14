@@ -225,7 +225,7 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_UNION_REMOVE, true);
     hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
     d.close();
-    d = new IDriver(hiveConf);
+    d = new Driver(hiveConf);
     int[][] values = {{1,2},{3,4},{5,6},{7,8},{9,10}};
     runStatementOnDriver("insert into " + TxnCommandsBaseForTests.Table.ACIDTBL + makeValuesClause(values));//HIVE-17138: this creates 1 delta_0000013_0000013_0000/bucket_00001
     runStatementOnDriver("drop table if exists T");
@@ -284,7 +284,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES, false);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEMERGETEZFILES, false);
     d.close();
-    d = new IDriver(hiveConf);
+    d = new Driver(hiveConf);
 
     int[][] values = {{1,2},{2,4},{5,6},{6,8},{9,10}};
     runStatementOnDriver("insert into " + Table.ACIDTBL + makeValuesClause(values));
@@ -312,7 +312,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_UNION_REMOVE, true);
     hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
     d.close();
-    d = new IDriver(hiveConf);
+    d = new Driver(hiveConf);
     runStatementOnDriver("insert into T(a,b) select a * 10, b * 10 from " + Table.ACIDTBL +
         " where a between 1 and 3 group by a, b union all select a * 10, b * 10 from " + Table.ACIDTBL +
         " where a between 5 and 7");

@@ -86,7 +86,7 @@ public class TestTxnCommands2 {
   public TestName testName = new TestName();
 
   protected HiveConf hiveConf;
-  protected IDriver d;
+  protected Driver d;
   protected enum Table {
     ACIDTBL("acidTbl"),
     ACIDTBLPART("acidTblPart", "p"),
@@ -144,7 +144,7 @@ public class TestTxnCommands2 {
       throw new RuntimeException("Could not create " + TEST_WAREHOUSE_DIR);
     }
     SessionState.start(new SessionState(hiveConf));
-    d = new IDriver(hiveConf);
+    d = new Driver(hiveConf);
     d.setMaxRows(10000);
     dropTables();
     runStatementOnDriver("create table " + Table.ACIDTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES (" + tableProperties + ")");
@@ -1611,7 +1611,7 @@ public class TestTxnCommands2 {
     runStatementOnDriver("insert into data1 values (1),(2),(1)");
     d.destroy();
     hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
-    d = new IDriver(hiveConf);
+    d = new Driver(hiveConf);
 
     runStatementOnDriver(" from data1 " +
       "insert into " + Table.ACIDTBLPART + " partition(p) select 0, 0, 'p' || x  "
@@ -1765,14 +1765,14 @@ public class TestTxnCommands2 {
     d.destroy();
     //insert data in "legacy" format
     hiveConf.setIntVar(HiveConf.ConfVars.TESTMODE_BUCKET_CODEC_VERSION, 0);
-    d = new IDriver(hiveConf);
+    d = new Driver(hiveConf);
 
     int[][] targetVals = {{2,1},{4,3},{5,6},{7,8}};
     runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(targetVals));
 
     d.destroy();
     hiveConf.setIntVar(HiveConf.ConfVars.TESTMODE_BUCKET_CODEC_VERSION, 1);
-    d = new IDriver(hiveConf);
+    d = new Driver(hiveConf);
     //do some operations with new format
     runStatementOnDriver("update " + Table.ACIDTBL + " set b=11 where a in (5,7)");
     runStatementOnDriver("insert into " + Table.ACIDTBL + " values(11,11)");

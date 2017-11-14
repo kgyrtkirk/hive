@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
@@ -287,7 +287,7 @@ public class Worker extends CompactorThread {
       }
       sb.setLength(sb.length() - 1);//remove trailing ,
       LOG.info("running '" + sb.toString() + "'");
-      IDriver d = new IDriver(conf, userName);
+      Driver d = new Driver(conf, userName);
       SessionState localSession = null;
       if(SessionState.get() == null) {
          localSession = SessionState.start(new SessionState(conf));
