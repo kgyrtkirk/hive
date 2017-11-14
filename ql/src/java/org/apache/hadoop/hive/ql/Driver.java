@@ -105,7 +105,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -423,6 +422,8 @@ public class Driver implements IDriver {
    * @param conf The HiveConf which should be used
    * @return The new QueryState object
    */
+  // move to driverFactory ; with those constructors...
+  @Deprecated
   private static QueryState getNewQueryState(HiveConf conf) {
     return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
   }
@@ -1352,6 +1353,7 @@ public class Driver implements IDriver {
     return run(command, false);
   }
 
+  @Override
   public CommandProcessorResponse run()
       throws CommandNeedRetryException {
     return run(null, true);

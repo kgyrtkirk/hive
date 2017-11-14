@@ -18,16 +18,31 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.io.File;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 
 public class DriverFactory {
 
+  static File settingFile = new File("/tmp/reexec");
+
+  static boolean enabled = settingFile.exists();
+
   public static IDriver newDriver(HiveConf conf) {
-    return new Driver(conf);
+
+    return newDriver(getNewQueryState(conf), null, null);
   }
 
   public static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
-    return new Driver(queryState, userName, queryInfo);
+    if (enabled) {
+      return new Driver(queryState, userName, queryInfo);
+    } else {
+      return new Driver(queryState, userName, queryInfo);
+    }
+  }
+
+  private static QueryState getNewQueryState(HiveConf conf) {
+    return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
   }
 
 }
