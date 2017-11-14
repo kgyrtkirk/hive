@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.hooks.HooksLoader;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import com.google.common.collect.Sets;
 
-public class RedDriver implements IDriver {
+public class ReExecOverlayDriver implements IDriver {
 
   private class MyHook implements ExecuteWithHookContext {
 
@@ -75,7 +75,7 @@ public class RedDriver implements IDriver {
   private boolean possiblyRetry;
   private QueryState queryState;
 
-  public RedDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
+  public ReExecOverlayDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
 
     this.queryState = queryState;
     coreDriver = new Driver(queryState, userName, new MyHooksLoader(queryState.getConf()), queryInfo, null);

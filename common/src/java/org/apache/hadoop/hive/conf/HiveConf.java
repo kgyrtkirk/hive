@@ -3594,7 +3594,7 @@ public class HiveConf extends Configuration {
         "If the query timeout is also set by thrift API call, the smaller one will be taken."),
     HIVE_EXEC_INPUT_LISTING_MAX_THREADS("hive.exec.input.listing.max.threads", 0, new  SizeValidator(0L, true, 1024L, true),
         "Maximum number of threads that Hive uses to list file information from file systems (recommended > 1 for blobstore)."),
-    HIVE_QUERY_REEXECUTION_STRATEGY("hive.query.reexecution.strategy", "none", new StringSet("none", "overlay"),
+    HIVE_QUERY_REEXECUTION_STRATEGY("hive.query.reexecution.strategy", "none", new StringSet("none", "overlay", "reoptimize"),
         "none: no recovery\noverlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of execution errors"),
 
     /* BLOBSTORE section */

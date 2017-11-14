@@ -38,7 +38,7 @@ public class DriverFactory {
     overlay() {
       @Override
       IDriver build(QueryState queryState, String userName, QueryInfo queryInfo) {
-        return new RedDriver(queryState, userName, queryInfo);
+        return new ReExecOverlayDriver(queryState, userName, queryInfo);
       }
     };
 
