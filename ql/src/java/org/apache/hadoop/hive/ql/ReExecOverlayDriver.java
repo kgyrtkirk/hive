@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import org.apache.hadoop.hbase.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -128,21 +127,8 @@ public class ReExecOverlayDriver implements IDriver {
     if (run0.getResponseCode() == 0 || !possiblyRetry) {
       return run0;
     }
-
-    HiveConf_addOverlay(queryState.getConf(), HiveConf_subtree(queryState.getConf(), "reexec.overlay"));
-
-
+    queryState.getConf().putAll(queryState.getConf().subtree("reexec.overlay"));
     return coreDriver.run(command);
-  }
-
-  // should be moved to hiveconf
-  private void HiveConf_addOverlay(HiveConf conf, Map<String, String> overlay) {
-    conf.putAll(overlay);
-  }
-
-  // should be moved to hiveconf
-  private Map<String,String> HiveConf_subtree(HiveConf conf, String string) {
-    return conf.subtree(string);
   }
 
   @Override
@@ -153,7 +139,6 @@ public class ReExecOverlayDriver implements IDriver {
   @Override
   public void setMaxRows(int maxRows) {
     coreDriver.setMaxRows(maxRows);
-    ;
   }
 
   @Override
