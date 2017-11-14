@@ -48,6 +48,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -93,7 +94,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
       }
     }
 
-    driver = IDriver.newDriver(hcatConf);
+    driver = DriverFactory.newDriver(hcatConf);
     SessionState.start(new CliSessionState(hcatConf));
 
   }

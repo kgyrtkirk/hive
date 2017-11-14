@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener;
 import org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider;
@@ -90,7 +91,7 @@ public class StorageBasedMetastoreTestBase {
 
     SessionState.start(new CliSessionState(clientHiveConf));
     msc = new HiveMetaStoreClient(clientHiveConf);
-    driver = IDriver.newDriver(clientHiveConf);
+    driver = DriverFactory.newDriver(clientHiveConf);
 
     setupFakeUser();
     InjectableDummyAuthenticator.injectMode(false);

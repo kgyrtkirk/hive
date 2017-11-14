@@ -21,21 +21,12 @@ package org.apache.hadoop.hive.ql;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 
 public interface IDriver extends CommandProcessor {
-
-  static IDriver newDriver(HiveConf conf) {
-    return new Driver(conf);
-  }
-
-  static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
-    return new Driver(queryState, userName, queryInfo);
-  }
 
   int compile(String string);
 

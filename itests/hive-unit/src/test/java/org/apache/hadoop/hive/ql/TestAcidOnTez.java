@@ -118,7 +118,7 @@ public class TestAcidOnTez {
       throw new RuntimeException("Could not create " + TEST_WAREHOUSE_DIR);
     }
     SessionState.start(new SessionState(hiveConf));
-    d = IDriver.newDriver(hiveConf);
+    d = DriverFactory.newDriver(hiveConf);
     dropTables();
     runStatementOnDriver("create table " + Table.ACIDTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc " + getTblProperties());
     runStatementOnDriver("create table " + Table.ACIDTBLPART + "(a int, b int) partitioned by (p string) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc " + getTblProperties());
@@ -790,7 +790,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     }
 
     SessionState.start(conf);
-    d = IDriver.newDriver(conf);
+    d = DriverFactory.newDriver(conf);
   }
 
   // Ideally test like this should be a qfile test. However, the explain output from qfile is always
@@ -885,7 +885,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
    */
   private List<String> runStatementOnDriver(String stmt, HiveConf conf)
       throws Exception {
-    IDriver driver = IDriver.newDriver(conf);
+    IDriver driver = DriverFactory.newDriver(conf);
     driver.setMaxRows(10000);
     CommandProcessorResponse cpr = driver.run(stmt);
     if(cpr.getResponseCode() != 0) {
