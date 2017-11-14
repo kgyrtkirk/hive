@@ -37,7 +37,7 @@ import com.google.common.collect.Sets;
 public abstract class AbstractReExecDriver implements IDriver {
 
 
-  private class MyHook implements ExecuteWithHookContext {
+  private class ReExecutionInfoHook implements ExecuteWithHookContext {
 
     @Override
     public void run(HookContext hookContext) throws Exception {
@@ -49,9 +49,9 @@ public abstract class AbstractReExecDriver implements IDriver {
     }
   }
 
-  private class MyHooksLoader extends HooksLoader {
+  private class ReExecHooksLoader extends HooksLoader {
 
-    public MyHooksLoader(HiveConf conf) {
+    public ReExecHooksLoader(HiveConf conf) {
       super(conf);
     }
 
@@ -61,7 +61,7 @@ public abstract class AbstractReExecDriver implements IDriver {
       ret.addAll(super.getHooks(hookConfVar, classes));
       // HIVE-18057 will make this less awkward
       if (Sets.<Class<?>> newHashSet(classes).contains(ExecuteWithHookContext.class)) {
-        ret.add((T) new MyHook());
+        ret.add((T) new ReExecutionInfoHook());
       }
       return ret;
     }
@@ -73,7 +73,7 @@ public abstract class AbstractReExecDriver implements IDriver {
 
   public AbstractReExecDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
     this.queryState = queryState;
-    coreDriver = new Driver(queryState, userName, new MyHooksLoader(queryState.getConf()), queryInfo, null);
+    coreDriver = new Driver(queryState, userName, new ReExecHooksLoader(queryState.getConf()), queryInfo, null);
   }
 
   public void handleExecutionException(Throwable exception) {
