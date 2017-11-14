@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.hooks.HookContext;
 
 public class ReOptimizeDriver extends AbstractReExecDriver {
 
@@ -46,6 +47,15 @@ public class ReOptimizeDriver extends AbstractReExecDriver {
   @Override
   protected boolean shouldReExecute() {
     return retryPossible;
+  }
+
+  @Override
+  protected void onExecutionSuccess(HookContext hookContext) {
+  }
+
+  @Override
+  protected void onExecutionFailure(HookContext hookContext) {
+    handleExecutionException(hookContext.getException());
   }
 
 }

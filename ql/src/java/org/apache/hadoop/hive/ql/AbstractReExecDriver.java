@@ -42,8 +42,11 @@ public abstract class AbstractReExecDriver implements IDriver {
     @Override
     public void run(HookContext hookContext) throws Exception {
       switch (hookContext.getHookType()) {
+        case POST_EXEC_HOOK:
+          onExecutionSuccess(hookContext);
+          break;
         case ON_FAILURE_HOOK:
-          handleExecutionException(hookContext.getException());
+          onExecutionFailure(hookContext);
           break;
       }
     }
@@ -75,6 +78,10 @@ public abstract class AbstractReExecDriver implements IDriver {
   protected HiveConf getConf() {
     return queryState.getConf();
   }
+
+  protected abstract void onExecutionSuccess(HookContext hookContext);
+
+  protected abstract void onExecutionFailure(HookContext hookContext);
 
   public AbstractReExecDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
     this.queryState = queryState;
