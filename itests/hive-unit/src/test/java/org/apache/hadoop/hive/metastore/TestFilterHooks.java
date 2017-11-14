@@ -180,7 +180,7 @@ public class TestFilterHooks {
 
     SessionState.start(new CliSessionState(hiveConf));
     msc = new HiveMetaStoreClient(hiveConf);
-    driver = new IDriver(hiveConf);
+    driver = IDriver.newDriver(hiveConf);
 
     driver.run("drop database if exists " + DBNAME1  + " cascade");
     driver.run("drop database if exists " + DBNAME2  + " cascade");

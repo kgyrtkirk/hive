@@ -456,7 +456,7 @@ public class HiveEndPoint {
       if(SessionState.get() == null) {
         localSession = SessionState.start(new CliSessionState(conf));
       }
-      IDriver driver = new IDriver(conf);
+      IDriver driver = IDriver.newDriver(conf);
 
       try {
         if (LOG.isDebugEnabled()) {

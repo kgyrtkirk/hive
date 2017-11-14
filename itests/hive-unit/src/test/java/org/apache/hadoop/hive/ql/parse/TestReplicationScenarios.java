@@ -157,7 +157,7 @@ public class TestReplicationScenarios {
     FileSystem fs = FileSystem.get(testPath.toUri(),hconf);
     fs.mkdirs(testPath);
 
-    driver = new IDriver(hconf);
+    driver = IDriver.newDriver(hconf);
     SessionState.start(new CliSessionState(hconf));
     metaStoreClient = new HiveMetaStoreClient(hconf);
 
@@ -168,7 +168,7 @@ public class TestReplicationScenarios {
     hconfMirror = new HiveConf(hconf);
     hconfMirror.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
         + msPortMirror);
-    driverMirror = new IDriver(hconfMirror);
+    driverMirror = IDriver.newDriver(hconfMirror);
     metaStoreClientMirror = new HiveMetaStoreClient(hconfMirror);
 
     ObjectStore.setTwoMetastoreTesting(true);
@@ -584,7 +584,7 @@ public class TestReplicationScenarios {
             public void run() {
               try {
                 LOG.info("Entered new thread");
-                IDriver driver2 = new IDriver(hconf);
+                IDriver driver2 = IDriver.newDriver(hconf);
                 SessionState.start(new CliSessionState(hconf));
                 CommandProcessorResponse ret = driver2.run("ALTER TABLE " + dbName + ".ptned PARTITION (b=1) RENAME TO PARTITION (b=10)");
                 success = (ret.getException() == null);
@@ -659,7 +659,7 @@ public class TestReplicationScenarios {
             public void run() {
               try {
                 LOG.info("Entered new thread");
-                IDriver driver2 = new IDriver(hconf);
+                IDriver driver2 = IDriver.newDriver(hconf);
                 SessionState.start(new CliSessionState(hconf));
                 CommandProcessorResponse ret = driver2.run("DROP TABLE " + dbName + ".ptned");
                 success = (ret.getException() == null);

@@ -18,6 +18,57 @@
 
 package org.apache.hadoop.hive.ql;
 
-public interface IDriver {
+import java.io.IOException;
+import java.util.List;
+
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.processors.CommandProcessor;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+
+public interface IDriver extends CommandProcessor {
+
+  int close();
+
+  int compile(String string);
+
+
+  static IDriver newDriver(HiveConf conf) {
+    return new Driver(conf);
+  }
+
+  QueryPlan getPlan();
+
+  QueryDisplay getQueryDisplay();
+
+  void setOperationId(String guid64);
+
+  void setTryCount(int maxValue);
+
+  CommandProcessorResponse compileAndRespond(String statement);
+
+  @Override
+  CommandProcessorResponse run(String command) throws CommandNeedRetryException;
+
+  void destroy();
+
+  boolean getResults(List res) throws IOException, CommandNeedRetryException;
+
+  void setMaxRows(int maxRows);
+
+  FetchTask getFetchTask();
+
+  Schema getSchema();
+
+  boolean isFetchingTable();
+
+  static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
+    return new Driver(queryState, userName, queryInfo);
+  }
+
+  void resetFetch() throws IOException;
+
+  CommandProcessorResponse run() throws CommandNeedRetryException;
 
 }

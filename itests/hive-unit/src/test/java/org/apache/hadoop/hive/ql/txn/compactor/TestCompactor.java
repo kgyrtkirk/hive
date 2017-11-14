@@ -123,7 +123,7 @@ public class TestCompactor {
 
     conf = hiveConf;
     msClient = new HiveMetaStoreClient(conf);
-    driver = new IDriver(hiveConf);
+    driver = IDriver.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
 
 

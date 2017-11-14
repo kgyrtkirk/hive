@@ -255,7 +255,7 @@ public class TestDbNotificationListener {
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     SessionState.start(new CliSessionState(conf));
     msClient = new HiveMetaStoreClient(conf);
-    driver = new IDriver(conf);
+    driver = IDriver.newDriver(conf);
     md = MessageFactory.getInstance().getDeserializer();
 
     bcompat = new ReplicationV1CompatRule(msClient, conf, testsToSkipForReplV1BackwardCompatTesting );

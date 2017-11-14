@@ -125,7 +125,7 @@ public class TestHCatLoaderComplexSchema {
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
 
-    driver = new IDriver(hiveConf);
+    driver = IDriver.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
     //props = new Properties();
     //props.setProperty("fs.default.name", cluster.getProperties().getProperty("fs.default.name"));

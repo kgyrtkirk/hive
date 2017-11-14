@@ -1091,7 +1091,7 @@ public class QTestUtil {
     SessionState.start(conf);
     conf.set("hive.execution.engine", execEngine);
     db = Hive.get(conf);
-    drv = new IDriver(conf);
+    drv = IDriver.newDriver(conf);
     pd = new ParseDriver();
     sem = new SemanticAnalyzer(queryState);
   }

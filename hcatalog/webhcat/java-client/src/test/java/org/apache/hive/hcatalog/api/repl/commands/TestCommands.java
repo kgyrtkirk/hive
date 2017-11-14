@@ -86,7 +86,7 @@ public class TestCommands {
     FileSystem fs = FileSystem.get(testPath.toUri(),hconf);
     fs.mkdirs(testPath);
 
-    driver = new IDriver(hconf);
+    driver = IDriver.newDriver(hconf);
     SessionState.start(new CliSessionState(hconf));
     client = HCatClient.create(hconf);
   }

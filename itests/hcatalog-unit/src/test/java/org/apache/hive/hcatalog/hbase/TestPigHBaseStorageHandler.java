@@ -93,7 +93,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
       }
     }
 
-    driver = new IDriver(hcatConf);
+    driver = IDriver.newDriver(hcatConf);
     SessionState.start(new CliSessionState(hcatConf));
 
   }

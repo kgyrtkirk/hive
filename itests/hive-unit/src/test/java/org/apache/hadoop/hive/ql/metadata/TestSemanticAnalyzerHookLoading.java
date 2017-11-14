@@ -37,7 +37,7 @@ public class TestSemanticAnalyzerHookLoading extends TestCase {
     conf.set(ConfVars.SEMANTIC_ANALYZER_HOOK.varname, DummySemanticAnalyzerHook.class.getName());
     conf.set(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     SessionState.start(conf);
-    IDriver driver = new IDriver(conf);
+    IDriver driver = IDriver.newDriver(conf);
 
     driver.run("drop table testDL");
     CommandProcessorResponse resp = driver.run("create table testDL (a int) as select * from tbl2");

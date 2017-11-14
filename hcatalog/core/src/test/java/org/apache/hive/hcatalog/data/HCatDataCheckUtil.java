@@ -50,7 +50,7 @@ public class HCatDataCheckUtil {
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
 
     LOG.debug("Hive conf : {}", hiveConf.getAllProperties());
-    IDriver driver = new IDriver(hiveConf);
+    IDriver driver = IDriver.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
     return driver;
   }

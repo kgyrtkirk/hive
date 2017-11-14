@@ -123,7 +123,7 @@ public class TestHiveAuthorizerShowFilters {
     UtilsForTest.setNewDerbyDbLocation(conf, TestHiveAuthorizerShowFilters.class.getSimpleName());
 
     SessionState.start(conf);
-    driver = new IDriver(conf);
+    driver = IDriver.newDriver(conf);
     runCmd("create table " + tableName1
         + " (i int, j int, k string) partitioned by (city string, `date` string) ");
     runCmd("create table " + tableName2 + "(i int)");

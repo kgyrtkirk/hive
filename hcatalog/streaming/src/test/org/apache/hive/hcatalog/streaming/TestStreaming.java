@@ -221,7 +221,7 @@ public class TestStreaming {
   @Before
   public void setup() throws Exception {
     SessionState.start(new CliSessionState(conf));
-    driver = new IDriver(conf);
+    driver = IDriver.newDriver(conf);
     driver.setMaxRows(200002);//make sure Driver returns all results
     // drop and recreate the necessary databases and tables
     dropDB(msClient, dbName);

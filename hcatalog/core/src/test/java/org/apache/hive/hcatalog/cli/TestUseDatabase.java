@@ -46,7 +46,7 @@ public class TestUseDatabase extends TestCase {
     hcatConf.set(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
 
     hcatConf.set(ConfVars.SEMANTIC_ANALYZER_HOOK.varname, HCatSemanticAnalyzer.class.getName());
-    hcatDriver = new IDriver(hcatConf);
+    hcatDriver = IDriver.newDriver(hcatConf);
     SessionState.start(new CliSessionState(hcatConf));
   }
 

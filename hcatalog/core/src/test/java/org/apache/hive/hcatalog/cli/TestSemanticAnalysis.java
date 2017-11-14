@@ -72,7 +72,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
       hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
           HCatSemanticAnalyzer.class.getName());
       hcatConf.setBoolVar(HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES, false);
-      hcatDriver = new IDriver(hcatConf);
+      hcatDriver = IDriver.newDriver(hcatConf);
       SessionState.start(new CliSessionState(hcatConf));
     }
   }

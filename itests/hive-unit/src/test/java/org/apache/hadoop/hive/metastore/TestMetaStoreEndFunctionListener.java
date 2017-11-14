@@ -58,7 +58,7 @@ public class TestMetaStoreEndFunctionListener extends TestCase {
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     SessionState.start(new CliSessionState(hiveConf));
     msc = new HiveMetaStoreClient(hiveConf);
-    driver = new IDriver(hiveConf);
+    driver = IDriver.newDriver(hiveConf);
   }
 
   @Override

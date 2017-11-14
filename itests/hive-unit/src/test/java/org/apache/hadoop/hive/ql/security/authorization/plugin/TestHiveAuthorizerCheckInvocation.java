@@ -102,7 +102,7 @@ public class TestHiveAuthorizerCheckInvocation {
     conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
 
     SessionState.start(conf);
-    driver = new IDriver(conf);
+    driver = IDriver.newDriver(conf);
     runCmd("create table " + tableName
         + " (i int, j int, k string) partitioned by (city string, `date` string) ");
     runCmd("create view " + viewName + " as select * from " + tableName);

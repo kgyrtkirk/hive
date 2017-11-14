@@ -74,7 +74,7 @@ public class TestMsgBusConnection extends TestCase {
     "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.set(HCatConstants.HCAT_MSGBUS_TOPIC_PREFIX, "planetlab.hcat");
     SessionState.start(new CliSessionState(hiveConf));
-    driver = new IDriver(hiveConf);
+    driver = IDriver.newDriver(hiveConf);
   }
 
   private void connectClient() throws JMSException {

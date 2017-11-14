@@ -113,7 +113,7 @@ public class TestHCatStorerMulti {
       hiveConf
       .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
           "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-      driver = new IDriver(hiveConf);
+      driver = IDriver.newDriver(hiveConf);
       SessionState.start(new CliSessionState(hiveConf));
     }
 

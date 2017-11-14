@@ -66,7 +66,7 @@ public abstract class HCatBaseTest {
   public void setUp() throws Exception {
     if (driver == null) {
       setUpHiveConf();
-      driver = new IDriver(hiveConf);
+      driver = IDriver.newDriver(hiveConf);
       client = new HiveMetaStoreClient(hiveConf);
       SessionState.start(new CliSessionState(hiveConf));
     }

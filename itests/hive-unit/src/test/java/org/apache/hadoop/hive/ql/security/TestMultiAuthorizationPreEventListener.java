@@ -71,7 +71,7 @@ public class TestMultiAuthorizationPreEventListener {
 
     SessionState.start(new CliSessionState(clientHiveConf));
     msc = new HiveMetaStoreClient(clientHiveConf);
-    driver = new IDriver(clientHiveConf);
+    driver = IDriver.newDriver(clientHiveConf);
   }
 
   @Test

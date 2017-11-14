@@ -101,7 +101,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
       fs2Uri = fs2.getUri().toString();
       jobConf.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, fs2Uri);
 
-      driver = new IDriver(jobConf);
+      driver = IDriver.newDriver(jobConf);
 
       fs = FileSystem.get(conf);
       if (fs.exists(tmppath) && !fs.getFileStatus(tmppath).isDir()) {

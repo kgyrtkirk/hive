@@ -143,7 +143,7 @@ public class TestHiveHistory extends TestCase {
       SessionState.start(ss);
 
       String cmd = "select a.key+1 from src a";
-      IDriver d = new IDriver(conf);
+      IDriver d = IDriver.newDriver(conf);
       int ret = d.run(cmd).getResponseCode();
       if (ret != 0) {
         fail("Failed");

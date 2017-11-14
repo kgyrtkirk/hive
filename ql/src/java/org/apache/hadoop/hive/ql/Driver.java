@@ -132,7 +132,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
 
-public class Driver implements CommandProcessor, IDriver {
+public class Driver implements IDriver {
 
   static final private String CLASS_NAME = Driver.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
@@ -273,6 +273,7 @@ public class Driver implements CommandProcessor, IDriver {
   }
 
 
+  @Override
   public Schema getSchema() {
     return schema;
   }
@@ -362,6 +363,7 @@ public class Driver implements CommandProcessor, IDriver {
   /**
    * Set the maximum number of rows returned by getResults
    */
+  @Override
   public void setMaxRows(int maxRows) {
     this.maxRows = maxRows;
   }
@@ -432,6 +434,7 @@ public class Driver implements CommandProcessor, IDriver {
    * @param command
    *          The SQL query to compile.
    */
+  @Override
   public int compile(String command) {
     return compile(command, true);
   }
@@ -1164,6 +1167,7 @@ public class Driver implements CommandProcessor, IDriver {
   /**
    * @return The current query plan associated with this Driver, if any.
    */
+  @Override
   public QueryPlan getPlan() {
     return plan;
   }
@@ -1171,6 +1175,7 @@ public class Driver implements CommandProcessor, IDriver {
   /**
    * @return The current FetchTask associated with the Driver's plan, if any.
    */
+  @Override
   public FetchTask getFetchTask() {
     return fetchTask;
   }
@@ -1341,6 +1346,7 @@ public class Driver implements CommandProcessor, IDriver {
   }
 
   @Override
+
   public CommandProcessorResponse run(String command)
       throws CommandNeedRetryException {
     return run(command, false);
@@ -1412,6 +1418,7 @@ public class Driver implements CommandProcessor, IDriver {
     }
   }
 
+  @Override
   public CommandProcessorResponse compileAndRespond(String command) {
     try {
       compileInternal(command, false);
@@ -2247,11 +2254,13 @@ public class Driver implements CommandProcessor, IDriver {
     return tskRun;
   }
 
+  @Override
   public boolean isFetchingTable() {
     return fetchTask != null;
   }
 
   @SuppressWarnings("unchecked")
+  @Override
   public boolean getResults(List res) throws IOException, CommandNeedRetryException {
     if (lDrvState.driverState == DriverState.DESTROYED || lDrvState.driverState == DriverState.CLOSED) {
       throw new IOException("FAILED: query has been cancelled, closed, or destroyed.");
@@ -2316,6 +2325,7 @@ public class Driver implements CommandProcessor, IDriver {
     return true;
   }
 
+  @Override
   public void resetFetch() throws IOException {
     if (lDrvState.driverState == DriverState.DESTROYED || lDrvState.driverState == DriverState.CLOSED) {
       throw new IOException("FAILED: driver has been cancelled, closed or destroyed.");
@@ -2338,6 +2348,7 @@ public class Driver implements CommandProcessor, IDriver {
     return tryCount;
   }
 
+  @Override
   public void setTryCount(int tryCount) {
     this.tryCount = tryCount;
   }
@@ -2436,6 +2447,7 @@ public class Driver implements CommandProcessor, IDriver {
   }
 
   // is called to stop the query if it is running, clean query results, and release resources.
+  @Override
   public int close() {
     lDrvState.stateLock.lock();
     try {
@@ -2462,6 +2474,7 @@ public class Driver implements CommandProcessor, IDriver {
 
   // is usually called after close() to commit or rollback a query and end the driver life cycle.
   // do not understand why it is needed and wonder if it could be combined with close.
+  @Override
   public void destroy() {
     lDrvState.stateLock.lock();
     try {
@@ -2496,6 +2509,7 @@ public class Driver implements CommandProcessor, IDriver {
   }
 
 
+  @Override
   public QueryDisplay getQueryDisplay() {
     return queryDisplay;
   }
@@ -2504,6 +2518,7 @@ public class Driver implements CommandProcessor, IDriver {
    * Set the HS2 operation handle's guid string
    * @param opId base64 encoded guid string
    */
+  @Override
   public void setOperationId(String opId) {
     this.operationId = opId;
   }

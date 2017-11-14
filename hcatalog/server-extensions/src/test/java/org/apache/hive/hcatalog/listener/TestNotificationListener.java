@@ -114,7 +114,7 @@ public class TestNotificationListener extends HCatBaseTest implements MessageLis
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     SessionState.start(new CliSessionState(hiveConf));
-    driver = new IDriver(hiveConf);
+    driver = IDriver.newDriver(hiveConf);
     client = new HiveMetaStoreClient(hiveConf);
   }
 

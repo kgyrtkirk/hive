@@ -56,7 +56,7 @@ public class TestMetaStoreMetrics {
 
     //Increments one HMS connection (Hive.get())
     SessionState.start(new CliSessionState(hiveConf));
-    driver = new IDriver(hiveConf);
+    driver = IDriver.newDriver(hiveConf);
   }
 
 

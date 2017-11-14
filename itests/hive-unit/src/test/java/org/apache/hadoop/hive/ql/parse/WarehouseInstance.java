@@ -132,7 +132,7 @@ class WarehouseInstance implements Closeable {
     FileSystem testPathFileSystem = FileSystem.get(testPath.toUri(), hiveConf);
     testPathFileSystem.mkdirs(testPath);
 
-    driver = new IDriver(hiveConf);
+    driver = IDriver.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
     client = new HiveMetaStoreClient(hiveConf);
     // change the value for the next instance.

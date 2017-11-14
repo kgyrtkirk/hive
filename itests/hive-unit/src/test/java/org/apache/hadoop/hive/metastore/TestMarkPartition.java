@@ -61,7 +61,7 @@ public class TestMarkPartition extends TestCase{
   TException, NoSuchObjectException, UnknownDBException, UnknownTableException,
   InvalidPartitionException, UnknownPartitionException, InterruptedException {
     HiveMetaStoreClient msc = new HiveMetaStoreClient(hiveConf);
-    driver = new IDriver(hiveConf);
+    driver = IDriver.newDriver(hiveConf);
     driver.run("drop database if exists hive2215 cascade");
     driver.run("create database hive2215");
     driver.run("use hive2215");

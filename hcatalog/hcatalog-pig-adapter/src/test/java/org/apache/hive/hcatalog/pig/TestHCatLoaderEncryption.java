@@ -177,7 +177,7 @@ public class TestHCatLoaderEncryption {
           "_" + salt.getAndIncrement() + "/dfs/");
     }
 
-    driver = new IDriver(hiveConf);
+    driver = IDriver.newDriver(hiveConf);
 
     initEncryptionShim(hiveConf);
     String encryptedTablePath =  TEST_WAREHOUSE_DIR + "/encryptedTable";
