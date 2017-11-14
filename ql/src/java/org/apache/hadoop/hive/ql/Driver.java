@@ -2528,6 +2528,8 @@ public class Driver implements IDriver {
   /**
    * Resets QueryState to get new queryId on Driver reuse.
    */
+
+  @Override
   public void resetQueryState() {
     // Note: Driver cleanup for reuse at this point is not very clear. The assumption here is that
     // repeated compile/execute calls create new contexts, plan, etc., so we don't need to worry

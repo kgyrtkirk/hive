@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql;
 import java.io.File;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class DriverFactory {
 
@@ -35,7 +36,7 @@ public class DriverFactory {
 
   public static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
     if (enabled) {
-      return new Driver(queryState, userName, queryInfo);
+      return new RedDriver(queryState, userName, queryInfo);
     } else {
       return new Driver(queryState, userName, queryInfo);
     }
@@ -43,6 +44,13 @@ public class DriverFactory {
 
   private static QueryState getNewQueryState(HiveConf conf) {
     return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
+  }
+
+  // it would be better to use conf at the callsite...but instead for now I clone the original magic from Driver
+  @Deprecated
+  public static IDriver newDriver() {
+    HiveConf conf = (SessionState.get() != null) ? SessionState.get().getConf() : new HiveConf();
+    return newDriver(conf);
   }
 
 }

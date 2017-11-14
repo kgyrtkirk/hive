@@ -61,4 +61,6 @@ public interface IDriver extends CommandProcessor {
   // close&destroy is used in seq coupling most of the time - the difference is either not clear; or not relevant - remove?
   int close();
   void destroy();
+
+  void resetQueryState();
 }
