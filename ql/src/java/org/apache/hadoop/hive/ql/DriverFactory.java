@@ -40,6 +40,12 @@ public class DriverFactory {
       IDriver build(QueryState queryState, String userName, QueryInfo queryInfo) {
         return new ReExecOverlayDriver(queryState, userName, queryInfo);
       }
+    },
+    reoptimize() {
+      @Override
+      IDriver build(QueryState queryState, String userName, QueryInfo queryInfo) {
+        return new ReOptimizeDriver(queryState, userName, queryInfo);
+      }
     };
 
     abstract IDriver build(QueryState queryState, String userName, QueryInfo queryInfo);

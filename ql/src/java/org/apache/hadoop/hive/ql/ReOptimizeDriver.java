@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql;
 
-public class ReExecOverlayDriver extends AbstractReExecDriver {
+public class ReOptimizeDriver extends AbstractReExecDriver {
 
-  public ReExecOverlayDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
+  public ReOptimizeDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
     super(queryState, userName, queryInfo);
   }
 
