@@ -18,7 +18,11 @@
 
 package org.apache.hadoop.hive.ql;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+
 public class ReOptimizeDriver extends AbstractReExecDriver {
+
+  private boolean retryPossible;
 
   public ReOptimizeDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
     super(queryState, userName, queryInfo);
@@ -28,15 +32,20 @@ public class ReOptimizeDriver extends AbstractReExecDriver {
   public void handleExecutionException(Throwable exception) {
     // FIXME: more resiliant failure cause detection :D
     if (exception.getMessage().contains("Vertex failed,")) {
-      //    if (exception instanceof TezException) {
-      possiblyRetry = true;
+      retryPossible = true;
     }
     System.out.println(exception);
   }
 
   @Override
   protected void prepareToReExecute() {
-    queryState.getConf().putAll(queryState.getConf().subtree("reexec.overlay"));
+    HiveConf conf = getConf();
+    conf.putAll(conf.subtree("reexec.overlay"));
+  }
+
+  @Override
+  protected boolean shouldReExecute() {
+    return retryPossible;
   }
 
 }

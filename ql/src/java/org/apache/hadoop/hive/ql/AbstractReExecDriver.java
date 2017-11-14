@@ -69,9 +69,12 @@ public abstract class AbstractReExecDriver implements IDriver {
 
   private Driver coreDriver;
   @Deprecated
-  protected boolean possiblyRetry;
-  @Deprecated
-  protected QueryState queryState;
+  private boolean possiblyRetry;
+  private QueryState queryState;
+
+  protected HiveConf getConf() {
+    return queryState.getConf();
+  }
 
   public AbstractReExecDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
     this.queryState = queryState;
@@ -118,9 +121,10 @@ public abstract class AbstractReExecDriver implements IDriver {
   @Override
   public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
     CommandProcessorResponse run0 = coreDriver.run(command);
-    if (run0.getResponseCode() == 0 || !possiblyRetry) {
+    if (run0.getResponseCode() == 0 || !shouldReExecute()) {
       return run0;
     }
+
     prepareToReExecute();
     return coreDriver.run(command);
   }
@@ -172,5 +176,6 @@ public abstract class AbstractReExecDriver implements IDriver {
     coreDriver.resetQueryState();
   }
 
+  abstract protected boolean shouldReExecute();
 
 }
