@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.hooks.HooksLoader;
@@ -28,11 +29,28 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 
 public class RedDriver implements IDriver {
 
+  private static class MyHooksLoader extends HooksLoader {
+
+    public MyHooksLoader(HiveConf conf) {
+      super(conf);
+    }
+
+
+    //    @Override
+    //    public <T extends Hook> List<T> getHooks(ConfVars hookConfVar) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    //      List<T> hooks = super.getHooks(hookConfVar);
+    //
+    //      return hooks;
+    //    }
+
+
+  }
+
   private Driver coreDriver;
 
   public RedDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
     //    coreDriver = new Driver(queryState, userName, queryInfo);
-    coreDriver = new Driver(queryState, userName, new HooksLoader(queryState.getConf()), queryInfo, null);
+    coreDriver = new Driver(queryState, userName, new MyHooksLoader(queryState.getConf()), queryInfo, null);
   }
 
   @Override
