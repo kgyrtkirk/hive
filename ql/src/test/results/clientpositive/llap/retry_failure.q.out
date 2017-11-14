@@ -1,0 +1,25 @@
+PREHOOK: query: create table tx(a int,f string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tx
+POSTHOOK: query: create table tx(a int,f string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tx
+PREHOOK: query: insert into tx values (1,'non_existent_file')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@tx
+POSTHOOK: query: insert into tx values (1,'non_existent_file')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@tx
+POSTHOOK: Lineage: tx.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: tx.f SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: select 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
