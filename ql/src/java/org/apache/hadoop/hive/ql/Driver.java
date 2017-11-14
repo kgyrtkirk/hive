@@ -2050,6 +2050,9 @@ public class Driver implements IDriver {
     } catch (CommandNeedRetryException e) {
       executionError = true;
       throw e;
+    } catch (CommandProcessorResponse cpr) {
+      executionError = true;
+      throw cpr;
     } catch (Throwable e) {
       executionError = true;
 
