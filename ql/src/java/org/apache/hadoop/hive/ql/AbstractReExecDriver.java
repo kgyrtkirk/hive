@@ -68,22 +68,17 @@ public abstract class AbstractReExecDriver implements IDriver {
   }
 
   private Driver coreDriver;
-  private boolean possiblyRetry;
-  private QueryState queryState;
+  @Deprecated
+  protected boolean possiblyRetry;
+  @Deprecated
+  protected QueryState queryState;
 
   public AbstractReExecDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
     this.queryState = queryState;
     coreDriver = new Driver(queryState, userName, new ReExecHooksLoader(queryState.getConf()), queryInfo, null);
   }
 
-  public void handleExecutionException(Throwable exception) {
-    // FIXME: more resiliant failure cause detection :D
-    if (exception.getMessage().contains("Vertex failed,")) {
-      //    if (exception instanceof TezException) {
-      possiblyRetry = true;
-    }
-    System.out.println(exception);
-  }
+  abstract protected void handleExecutionException(Throwable exception);
 
   @Override
   public int compile(String string) {
@@ -126,9 +121,11 @@ public abstract class AbstractReExecDriver implements IDriver {
     if (run0.getResponseCode() == 0 || !possiblyRetry) {
       return run0;
     }
-    queryState.getConf().putAll(queryState.getConf().subtree("reexec.overlay"));
+    prepareToReExecute();
     return coreDriver.run(command);
   }
+
+  protected abstract void prepareToReExecute();
 
   @Override
   public boolean getResults(List res) throws IOException, CommandNeedRetryException {

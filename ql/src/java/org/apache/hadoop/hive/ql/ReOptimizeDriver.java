@@ -24,4 +24,19 @@ public class ReOptimizeDriver extends AbstractReExecDriver {
     super(queryState, userName, queryInfo);
   }
 
+  @Override
+  public void handleExecutionException(Throwable exception) {
+    // FIXME: more resiliant failure cause detection :D
+    if (exception.getMessage().contains("Vertex failed,")) {
+      //    if (exception instanceof TezException) {
+      possiblyRetry = true;
+    }
+    System.out.println(exception);
+  }
+
+  @Override
+  protected void prepareToReExecute() {
+    queryState.getConf().putAll(queryState.getConf().subtree("reexec.overlay"));
+  }
+
 }
