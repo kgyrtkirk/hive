@@ -266,13 +266,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-                    Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -498,10 +498,10 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), row_number_window_0 (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), first_value_window_3 (type: double), last_value_window_4 (type: double), count_window_5 (type: bigint), count_window_6 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
-                    Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -727,10 +727,10 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), row_number_window_0 (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), first_value_window_3 (type: double), last_value_window_4 (type: double), count_window_5 (type: bigint), count_window_6 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
-                    Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -986,13 +986,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-                    Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1219,10 +1219,10 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), row_number_window_0 (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), first_value_window_3 (type: double), last_value_window_4 (type: double), count_window_5 (type: bigint), count_window_6 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
-                    Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1449,10 +1449,10 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), row_number_window_0 (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), first_value_window_3 (type: double), last_value_window_4 (type: double), count_window_5 (type: bigint), count_window_6 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
-                    Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1709,13 +1709,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2, 1, 3, 4, 5, 6, 7, 8, 9, 10]
-                    Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1943,10 +1943,10 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), row_number_window_0 (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), first_value_window_3 (type: double), last_value_window_4 (type: double), count_window_5 (type: bigint), count_window_6 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
-                    Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2174,10 +2174,10 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), row_number_window_0 (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), first_value_window_3 (type: double), last_value_window_4 (type: double), count_window_5 (type: bigint), count_window_6 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
-                    Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 40 Data size: 10856 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10824 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2405,13 +2405,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6]
-                    Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2633,13 +2633,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6]
-                    Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2833,10 +2833,10 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), sum_window_0 (type: double), min_window_1 (type: double), max_window_2 (type: double), avg_window_3 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                    Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3060,13 +3060,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6]
-                    Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3290,13 +3290,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6]
-                    Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3491,10 +3491,10 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), sum_window_0 (type: double), min_window_1 (type: double), max_window_2 (type: double), avg_window_3 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                    Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3719,13 +3719,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2, 1, 3, 4, 5, 6, 7]
-                    Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3950,13 +3950,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2, 1, 3, 4, 5, 6, 7]
-                    Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4152,10 +4152,10 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), sum_window_0 (type: double), min_window_1 (type: double), max_window_2 (type: double), avg_window_3 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                    Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4419,13 +4419,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6]
-                    Statistics: Num rows: 40 Data size: 30864 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 30416 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 30864 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 30416 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4649,13 +4649,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6]
-                    Statistics: Num rows: 40 Data size: 30864 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 30416 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 30864 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 30416 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4897,13 +4897,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6]
-                    Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -5127,13 +5127,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6]
-                    Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 10376 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 10344 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -5332,13 +5332,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 2]
-                    Statistics: Num rows: 40 Data size: 4376 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 4344 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 4376 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 4344 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -5533,13 +5533,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 2, 3]
-                    Statistics: Num rows: 40 Data size: 4376 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 4344 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 4376 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 4344 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -5705,10 +5705,10 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 40 Data size: 9256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 9224 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 40 Data size: 9256 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 9224 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -5904,13 +5904,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 2, 3, 4]
-                    Statistics: Num rows: 40 Data size: 9256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 9224 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 9256 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 9224 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

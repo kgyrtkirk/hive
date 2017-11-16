@@ -401,7 +401,7 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int), _col3 (type: string), _col4 (type: bigint), _col5 (type: string), _col6 (type: string), '2010-03-29' (type: string)
                     outputColumnNames: aid, bid, t, ctime, etime, l, et, ds
-                    Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 462 Basic stats: COMPLETE Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(aid, 'hll'), compute_stats(bid, 'hll'), compute_stats(t, 'hll'), compute_stats(ctime, 'hll'), compute_stats(etime, 'hll'), compute_stats(l, 'hll'), compute_stats(et, 'hll')
                       keys: '2010-03-29' (type: string)

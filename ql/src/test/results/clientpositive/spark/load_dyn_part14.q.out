@@ -90,7 +90,7 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 6 Data size: 941 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 6 Data size: 771 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll')
                       keys: value (type: string)
@@ -142,7 +142,7 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 6 Data size: 941 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 6 Data size: 771 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll')
                       keys: value (type: string)
@@ -175,7 +175,7 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 6 Data size: 941 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 6 Data size: 771 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll')
                       keys: value (type: string)

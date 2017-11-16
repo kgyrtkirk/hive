@@ -74,7 +74,7 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: string)
                   outputColumnNames: key, ten, one, value
-                  Statistics: Num rows: 500 Data size: 6000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 51500 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: compute_stats(key, 'hll'), compute_stats(ten, 'hll'), compute_stats(one, 'hll'), compute_stats(value, 'hll')
                     mode: hash
