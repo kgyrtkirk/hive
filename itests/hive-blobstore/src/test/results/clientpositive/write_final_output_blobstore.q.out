@@ -222,17 +222,17 @@ STAGE PLANS:
               aggregations: compute_stats(key, 'hll')
               mode: complete
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 424 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 424 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 424 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -487,17 +487,17 @@ STAGE PLANS:
               aggregations: compute_stats(key, 'hll')
               mode: complete
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 424 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 424 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 424 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
