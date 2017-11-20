@@ -382,10 +382,25 @@ public class StatsUtils {
       stats.setColumnStatsState(deriveStatType(colStats, neededColumns));
       stats.addToColumnStats(colStats);
     } else if (partList != null) {
+
       // For partitioned tables, get the size of all the partitions after pruning
       // the partitions that are not required
       long nr = 0;
       long ds = 0;
+
+      List<BasicStats> partStats = new ArrayList<>();
+
+      for (Partition p : partList.getNotDeniedPartns()) {
+
+        BasicStats basicStats = new BasicStats(Partish.buildFor(table));
+
+        if (shouldEstimateStats) {
+          // FIXME: misses paralelle
+          basicStats.apply(new BasicStats.DataSizeEstimator(conf));
+        }
+        basicStats.apply(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema, neededColumns)));
+        partStats.add(basicStats);
+      }
 
       List<Long> rowCounts = Lists.newArrayList();
       List<Long> dataSizes = Lists.newArrayList();

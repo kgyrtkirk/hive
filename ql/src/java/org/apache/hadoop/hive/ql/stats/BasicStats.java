@@ -52,12 +52,26 @@ public class BasicStats {
 
     @Override
     public void apply(BasicStats stats) {
-      if (stats.getNumRows() < 0 && avgRowSize > 0) {
-        stats.setNumRows(stats.getDataSize() / avgRowSize);
+      // FIXME: there were different logic for part/table; merge these logics later
+      if (stats.partish.getPartition() == null) {
+        if (stats.getNumRows() < 0 && avgRowSize > 0) {
+          stats.setNumRows(stats.getDataSize() / avgRowSize);
+        }
+      } else {
+
+        long rc = stats.getNumRows();
+        long s = stats.getDataSize();
+        if (rc <= 0 && s > 0) {
+          rc = s / avgRowSize;
+          stats.setNumRows(rc);
+        }
+
+        if (s <= 0 && rc > 0) {
+          s = StatsUtils.safeMult(rc, avgRowSize);
+          stats.setDataSize(s);
+        }
       }
-
     }
-
   }
 
   public static class DataSizeEstimator implements IStatsEnhancer {
