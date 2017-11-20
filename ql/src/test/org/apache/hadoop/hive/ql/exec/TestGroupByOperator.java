@@ -47,14 +47,14 @@ import com.google.common.collect.Lists;
 
 public class TestGroupByOperator {
 
-  public static class VoidAnswer implements Answer<Void>{
+  public static class VoidAnswer implements Answer<Void> {
 
     @Override
     public Void answer(InvocationOnMock invocation) throws Throwable {
       return null;
     }
   }
-  
+
   @Test
   public void checkEmptyAggregationConstantPassing() throws Exception {
 
@@ -66,7 +66,7 @@ public class TestGroupByOperator {
     };
     GroupByDesc conf = new GroupByDesc();
     AggregationDesc aggregator = new AggregationDesc();
-    
+
     GenericUDAFEvaluator evaluator = Mockito.mock(GenericUDAFEvaluator.class);
     doReturn(mock(AbstractAggregationBuffer.class)).when(evaluator).getNewAggregationBuffer();
     aggregator.setGenericUDAFEvaluator(evaluator);
@@ -77,26 +77,25 @@ public class TestGroupByOperator {
     conf.setOutputColumnNames(Lists.newArrayList());
 
     List<String> structFieldNames = Lists.newArrayList("asd");
-    List<ObjectInspector> structFieldObjectInspectors =
-        Lists.newArrayList(desc.getWritableObjectInspector());
+    List<ObjectInspector> structFieldObjectInspectors = Lists.newArrayList(desc.getWritableObjectInspector());
     List<String> structFieldComments = Lists.newArrayList("asd");
     byte separator = 'x';
     LazyObjectInspectorParameters lazyParams = null;
 
-    LazySimpleStructObjectInspector sso = new LazySimpleStructObjectInspector(structFieldNames,
-        structFieldObjectInspectors, structFieldComments, separator, lazyParams);
+    LazySimpleStructObjectInspector sso = new LazySimpleStructObjectInspector(structFieldNames, structFieldObjectInspectors,
+        structFieldComments, separator, lazyParams);
     operator.setInputObjInspectors(new ObjectInspector[] { sso });
     operator.setConf(conf);
     operator.initializeOp(new HiveConf());
     operator.closeOp(false);
-    
-    ArgumentCaptor<Object[]> argument= (ArgumentCaptor<Object[]>) ArgumentCaptor.forClass(new Object[] {} .getClass());
-    verify(evaluator).aggregate(Mockito.any(), argument.capture() );
+
+    ArgumentCaptor<Object[]> argument = (ArgumentCaptor<Object[]>) ArgumentCaptor.forClass(new Object[] {}.getClass());
+    verify(evaluator).aggregate(Mockito.any(), argument.capture());
     Object[] v = argument.getValue();
     assertNotNull("expected an argument value", v[0]);
     IntWritable iw = (IntWritable) v[0];
-    
+
     assertEquals(desc.getValue(), iw.get());
-    
+
   }
 }
