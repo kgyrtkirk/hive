@@ -298,7 +298,10 @@ public class StatsUtils {
 
   private static long getNumRows(HiveConf conf, List<ColumnInfo> schema, List<String> neededColumns,
                                  Table table, long ds) {
-    long nr = getNumRows(table);
+    Partish p = Partish.buildFor(table);
+    BasicStats basicStats = new BasicStats(p);
+
+    long nr = basicStats.getNumRows();
     // number of rows -1 means that statistics from metastore is not reliable
     // and 0 means statistics gathering is disabled
     // estimate only if num rows is -1 since 0 could be actual number of rows
@@ -1741,12 +1744,13 @@ public class StatsUtils {
     }
     long countDistincts = ndvs.isEmpty() ? numRows : addWithExpDecay(ndvs);
     return Collections.min(Lists.newArrayList(countDistincts, udfNDV, numRows));
-    }
+  }
 
   /**
    * Get number of rows of a give table
    * @return number of rows
    */
+  @Deprecated
   public static long getNumRows(Table table) {
     return getBasicStatForTable(table, StatsSetupConst.ROW_COUNT);
   }
@@ -1775,6 +1779,7 @@ public class StatsUtils {
    *          - type of stats
    * @return value of stats
    */
+  @Deprecated
   public static long getBasicStatForTable(Table table, String statType) {
     Map<String, String> params = table.getParameters();
     long result = -1;
