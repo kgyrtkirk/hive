@@ -19,6 +19,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import com.google.common.collect.Lists;
 
@@ -42,53 +44,20 @@ public class TestGroupByOperator {
     }
   }
 
-  public static class LocalGenericUDAFEvaluator extends GenericUDAFEvaluator {
-
-    @Override
-    public AggregationBuffer getNewAggregationBuffer() throws HiveException {
-      return null;
-    }
-
-    @Override
-    public void reset(AggregationBuffer agg) throws HiveException {
-    }
-
-    @Override
-    public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
-    }
-
-    @Override
-    public Object terminatePartial(AggregationBuffer agg) throws HiveException {
-      return null;
-    }
-
-    @Override
-    public void merge(AggregationBuffer agg, Object partial) throws HiveException {
-    }
-
-    @Override
-    public Object terminate(AggregationBuffer agg) throws HiveException {
-      return null;
-    }
-
-  }
-
   @Test
-  public void t1() throws Exception {
+  public void checkEmptyAggregationConstantPassing() throws Exception {
 
     ExprNodeConstantDesc desc = new ExprNodeConstantDesc(137);
-    ExprNodeConstantEvaluator eval = new ExprNodeConstantEvaluator(desc);
+//    ExprNodeConstantEvaluator eval = new ExprNodeConstantEvaluator(desc);
 
     LocalGroupByOpertor g0 = new LocalGroupByOpertor();
     GroupByDesc conf = new GroupByDesc();
     AggregationDesc aggregator = new AggregationDesc();
-    aggregator.setGenericUDAFEvaluator(new LocalGenericUDAFEvaluator());
-
+    
+    aggregator.setGenericUDAFEvaluator(Mockito.mock(GenericUDAFEvaluator.class));
     aggregator.setParameters(Lists.newArrayList(desc));
 
     conf.setAggregators(Lists.newArrayList(aggregator));
-    // ExprNodeDesc keyExpr =desc;
-    // conf.setOutputColumnNames(Lists.newArrayList("asd"));
     conf.setKeys(Lists.newArrayList());
     conf.setOutputColumnNames(Lists.newArrayList());
 
