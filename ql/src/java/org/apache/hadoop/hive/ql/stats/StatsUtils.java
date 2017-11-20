@@ -199,7 +199,8 @@ public class StatsUtils {
 
     if(!table.isPartitioned()) {
       //get actual number of rows from metastore
-      long nr = getNumRows(table);
+      BasicStats bStats = new BasicStats(Partish.buildFor(table));
+      long nr = bStats.getNumRows();
 
       // log warning if row count is missing
       if(nr <= 0) {
@@ -216,6 +217,11 @@ public class StatsUtils {
       return getNumRows(conf, schema, neededColumns, table, ds);
     }
     else { // partitioned table
+
+      List<BasicStats> partStats = new ArrayList<>();
+      for (Partition partition : partitionList.getNotDeniedPartns()) {
+        partStats.add(new BasicStats(Partish.buildFor(table, partition)));
+      }
       long nr = 0;
       List<Long> rowCounts = Lists.newArrayList();
       rowCounts = getBasicStatForPartitions(
