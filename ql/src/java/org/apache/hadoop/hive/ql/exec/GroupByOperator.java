@@ -1105,15 +1105,21 @@ public class GroupByOperator extends Operator<GroupByDesc> {
 
             // o is set to NULL in order to distinguish no rows at all
             Object[] o;
-            if (aggregationParameterFields[ai].length > 0) {
-              o = new Object[aggregationParameterFields[ai].length];
+            ExprNodeEvaluator[] aggrParameters = aggregationParameterFields[ai];
+            if (aggrParameters.length > 0) {
+              o = new Object[aggrParameters.length];
             } else {
               o = null;
             }
 
             // Calculate the parameters
-            for (int pi = 0; pi < aggregationParameterFields[ai].length; pi++) {
-              o[pi] = null;
+            for (int pi = 0; pi < aggrParameters.length; pi++) {
+              if(aggrParameters[pi] instanceof ExprNodeConstantEvaluator) {
+                ExprNodeConstantEvaluator constantEvaluator = (ExprNodeConstantEvaluator) aggrParameters[pi];
+                o[pi] = constantEvaluator.evaluate(null,0);
+              }else {
+                o[pi] = null;
+              }
             }
             aggregationEvaluators[ai].aggregate(aggregations[ai], o);
           }
