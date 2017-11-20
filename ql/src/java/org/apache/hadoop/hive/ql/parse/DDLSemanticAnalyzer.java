@@ -86,6 +86,8 @@ import org.apache.hadoop.hive.ql.plan.AddPartitionDesc.OnePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc.AlterIndexTypes;
+import org.apache.hadoop.hive.ql.plan.AlterMaterializedViewDesc;
+import org.apache.hadoop.hive.ql.plan.AlterMaterializedViewDesc.AlterMaterializedViewTypes;
 import org.apache.hadoop.hive.ql.plan.AlterResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
@@ -423,6 +425,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowViews(ast);
       break;
+    case HiveParser.TOK_SHOWMATERIALIZEDVIEWS:
+      ctx.setResFile(ctx.getLocalTmpPath());
+      analyzeShowMaterializedViews(ast);
+      break;
     case HiveParser.TOK_DESCFUNCTION:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeDescFunction(ast);
@@ -454,6 +460,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         analyzeAlterTableDropParts(qualified, ast, true);
       } else if (ast.getType() == HiveParser.TOK_ALTERVIEW_RENAME) {
         analyzeAlterTableRename(qualified, ast, true);
+      }
+      break;
+    }
+    case HiveParser.TOK_ALTER_MATERIALIZED_VIEW: {
+      ast = (ASTNode) input.getChild(1);
+      String[] qualified = getQualifiedTableName((ASTNode) input.getChild(0));
+      String tableName = getDotName(qualified);
+
+      if (ast.getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REWRITE) {
+        analyzeAlterMaterializedViewRewrite(tableName, ast);
       }
       break;
     }
@@ -2755,6 +2771,47 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     setFetchTask(createFetchTask(showViewsDesc.getSchema()));
   }
 
+  private void analyzeShowMaterializedViews(ASTNode ast) throws SemanticException {
+    ShowTablesDesc showMaterializedViewsDesc;
+    String dbName = SessionState.get().getCurrentDatabase();
+    String materializedViewNames = null;
+
+    if (ast.getChildCount() > 3) {
+      throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg());
+    }
+
+    switch (ast.getChildCount()) {
+    case 1: // Uses a pattern
+      materializedViewNames = unescapeSQLString(ast.getChild(0).getText());
+      showMaterializedViewsDesc = new ShowTablesDesc(
+          ctx.getResFile(), dbName, materializedViewNames, TableType.MATERIALIZED_VIEW);
+      break;
+    case 2: // Specifies a DB
+      assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
+      dbName = unescapeIdentifier(ast.getChild(1).getText());
+      validateDatabase(dbName);
+      showMaterializedViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
+      showMaterializedViewsDesc.setType(TableType.MATERIALIZED_VIEW);
+      break;
+    case 3: // Uses a pattern and specifies a DB
+      assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
+      dbName = unescapeIdentifier(ast.getChild(1).getText());
+      materializedViewNames = unescapeSQLString(ast.getChild(2).getText());
+      validateDatabase(dbName);
+      showMaterializedViewsDesc = new ShowTablesDesc(
+          ctx.getResFile(), dbName, materializedViewNames, TableType.MATERIALIZED_VIEW);
+      break;
+    default: // No pattern or DB
+      showMaterializedViewsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
+      showMaterializedViewsDesc.setType(TableType.MATERIALIZED_VIEW);
+      break;
+    }
+
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        showMaterializedViewsDesc), conf));
+    setFetchTask(createFetchTask(showMaterializedViewsDesc.getSchema()));
+  }
+
   /**
    * Add the task according to the parsed command tree. This is used for the CLI
    * command "LOCK TABLE ..;".
@@ -4000,6 +4057,33 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     } catch (InvocationTargetException e) {
       throw new IllegalStateException(msg + e.getMessage(), e);
     }
+  }
+
+  private void analyzeAlterMaterializedViewRewrite(String mvName, ASTNode ast) throws SemanticException {
+    // Value for the flag
+    boolean enableFlag;
+    switch (ast.getChild(0).getType()) {
+      case HiveParser.TOK_REWRITE_ENABLED:
+        enableFlag = true;
+        break;
+      case HiveParser.TOK_REWRITE_DISABLED:
+        enableFlag = false;
+        break;
+      default:
+        throw new SemanticException("Invalid alter materialized view expression");
+    }
+
+    AlterMaterializedViewDesc alterMVDesc =
+        new AlterMaterializedViewDesc(AlterMaterializedViewTypes.UPDATE_REWRITE_FLAG);
+    alterMVDesc.setMaterializedViewName(mvName);
+    alterMVDesc.setRewriteEnableFlag(enableFlag);
+
+    // It can be fully qualified name or use default database
+    Table tab = getTable(mvName, true);
+    inputs.add(new ReadEntity(tab));
+    outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_EXCLUSIVE));
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        alterMVDesc), conf));
   }
 
 }

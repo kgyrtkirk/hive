@@ -91,6 +91,7 @@ public class HiveConf extends Configuration {
   private static final Map<String, ConfVars> metaConfs = new HashMap<String, ConfVars>();
   private final List<String> restrictList = new ArrayList<String>();
   private final Set<String> hiddenSet = new HashSet<String>();
+  private final List<String> rscList = new ArrayList<>();
 
   private Pattern modWhiteListPattern = null;
   private volatile boolean isSparkConfigUpdated = false;
@@ -900,6 +901,17 @@ public class HiveConf extends Configuration {
         "hive.metastore.cached.rawstore.cache.update.frequency", "60", new TimeValidator(
             TimeUnit.SECONDS),
         "The time after which metastore cache is updated from metastore DB."),
+    METASTORE_CACHED_RAW_STORE_CACHED_OBJECTS_WHITELIST(
+        "hive.metastore.cached.rawstore.cached.object.whitelist", ".*", "Comma separated list of regular expressions \n " +
+        "to select the tables (and its partitions, stats etc) that will be cached by CachedStore. \n" +
+        "This can be used in conjunction with hive.metastore.cached.rawstore.cached.object.blacklist. \n" +
+        "Example: .*, db1.*, db2\\.tbl.*. The last item can potentially override patterns specified before."),
+    METASTORE_CACHED_RAW_STORE_CACHED_OBJECTS_BLACKLIST(
+         "hive.metastore.cached.rawstore.cached.object.blacklist", "", "Comma separated list of regular expressions \n " +
+         "to filter out the tables (and its partitions, stats etc) that will be cached by CachedStore. \n" +
+         "This can be used in conjunction with hive.metastore.cached.rawstore.cached.object.whitelist. \n" +
+         "Example: db2.*, db3\\.tbl1, db3\\..*. The last item can potentially override patterns specified before. \n" +
+         "The blacklist also overrides the whitelist."),
     METASTORE_TXN_STORE_IMPL("hive.metastore.txn.store.impl",
         "org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler",
         "Name of class that implements org.apache.hadoop.hive.metastore.txn.TxnStore.  This " +
@@ -1056,7 +1068,7 @@ public class HiveConf extends Configuration {
     HIVESCRIPT_ENV_BLACKLIST("hive.script.operator.env.blacklist",
         "hive.txn.valid.txns,hive.script.operator.env.blacklist",
         "Comma separated list of keys from the configuration file not to convert to environment " +
-        "variables when envoking the script operator"),
+        "variables when invoking the script operator"),
     HIVE_STRICT_CHECKS_LARGE_QUERY("hive.strict.checks.large.query", false,
         "Enabling strict large query checks disallows the following:\n" +
         "  Orderby without limit.\n" +
@@ -1098,7 +1110,7 @@ public class HiveConf extends Configuration {
     HIVE_CBO_EXTENDED_COST_MODEL("hive.cbo.costmodel.extended", false, "Flag to control enabling the extended cost model based on"
                                  + "CPU, IO and cardinality. Otherwise, the cost model is based on cardinality."),
     HIVE_CBO_COST_MODEL_CPU("hive.cbo.costmodel.cpu", "0.000001", "Default cost of a comparison"),
-    HIVE_CBO_COST_MODEL_NET("hive.cbo.costmodel.network", "150.0", "Default cost of a transfering a byte over network;"
+    HIVE_CBO_COST_MODEL_NET("hive.cbo.costmodel.network", "150.0", "Default cost of a transferring a byte over network;"
                                                                   + " expressed as multiple of CPU cost"),
     HIVE_CBO_COST_MODEL_LFS_WRITE("hive.cbo.costmodel.local.fs.write", "4.0", "Default cost of writing a byte to local FS;"
                                                                              + " expressed as multiple of NETWORK cost"),
@@ -1307,9 +1319,9 @@ public class HiveConf extends Configuration {
     HIVEEXIMTESTMODE("hive.exim.test.mode", false,
         "The subset of test mode that only enables custom path handling for ExIm.", false),
     HIVETESTMODEPREFIX("hive.test.mode.prefix", "test_",
-        "In test mode, specfies prefixes for the output table", false),
+        "In test mode, specifies prefixes for the output table", false),
     HIVETESTMODESAMPLEFREQ("hive.test.mode.samplefreq", 32,
-        "In test mode, specfies sampling frequency for table, which is not bucketed,\n" +
+        "In test mode, specifies sampling frequency for table, which is not bucketed,\n" +
         "For example, the following query:\n" +
         "  INSERT OVERWRITE TABLE dest SELECT col1 from src\n" +
         "would be converted to\n" +
@@ -1409,7 +1421,7 @@ public class HiveConf extends Configuration {
 
     HIVE_LAZYSIMPLE_EXTENDED_BOOLEAN_LITERAL("hive.lazysimple.extended_boolean_literal", false,
         "LazySimpleSerde uses this property to determine if it treats 'T', 't', 'F', 'f',\n" +
-        "'1', and '0' as extened, legal boolean literal, in addition to 'TRUE' and 'FALSE'.\n" +
+        "'1', and '0' as extended, legal boolean literal, in addition to 'TRUE' and 'FALSE'.\n" +
         "The default is false, which means only 'TRUE' and 'FALSE' are treated as legal\n" +
         "boolean literal."),
 
@@ -2602,7 +2614,7 @@ public class HiveConf extends Configuration {
         "This needs to be set only if SPNEGO is to be used in authentication."),
     HIVE_SERVER2_PLAIN_LDAP_URL("hive.server2.authentication.ldap.url", null,
         "LDAP connection URL(s),\n" +
-         "this value could contain URLs to mutiple LDAP servers instances for HA,\n" +
+         "this value could contain URLs to multiple LDAP servers instances for HA,\n" +
          "each LDAP URL is separated by a SPACE character. URLs are used in the \n" +
          " order specified until a connection is successful."),
     HIVE_SERVER2_PLAIN_LDAP_BASEDN("hive.server2.authentication.ldap.baseDN", null, "LDAP base DN"),
@@ -2797,7 +2809,7 @@ public class HiveConf extends Configuration {
     HIVE_DECODE_PARTITION_NAME("hive.decode.partition.name", false,
         "Whether to show the unquoted partition names in query results."),
 
-    HIVE_EXECUTION_ENGINE("hive.execution.engine", "mr", new StringSet("mr", "tez", "spark"),
+    HIVE_EXECUTION_ENGINE("hive.execution.engine", "mr", new StringSet(true, "mr", "tez", "spark"),
         "Chooses execution engine. Options are: mr (Map reduce, default), tez, spark. While MR\n" +
         "remains the default engine for historical reasons, it is itself a historical engine\n" +
         "and is deprecated in Hive 2 line. It may be removed without further warning."),
@@ -2871,9 +2883,9 @@ public class HiveConf extends Configuration {
         "org.apache.parquet.hadoop.ParquetInputFormat,org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat",
         "The input formats not supported by row deserialize vectorization."),
     HIVE_VECTOR_ADAPTOR_USAGE_MODE("hive.vectorized.adaptor.usage.mode", "all", new StringSet("none", "chosen", "all"),
-        "Specifies the extent to which the VectorUDFAdaptor will be used for UDFs that do not have a cooresponding vectorized class.\n" +
+        "Specifies the extent to which the VectorUDFAdaptor will be used for UDFs that do not have a corresponding vectorized class.\n" +
         "0. none   : disable any usage of VectorUDFAdaptor\n" +
-        "1. chosen : use VectorUDFAdaptor for a small set of UDFs that were choosen for good performance\n" +
+        "1. chosen : use VectorUDFAdaptor for a small set of UDFs that were chosen for good performance\n" +
         "2. all    : use VectorUDFAdaptor for all UDFs"
     ),
     HIVE_VECTORIZATION_PTF_ENABLED("hive.vectorized.execution.ptf.enabled", true,
@@ -3383,7 +3395,7 @@ public class HiveConf extends Configuration {
     LLAP_DAEMON_WAIT_QUEUE_COMPARATOR_CLASS_NAME(
       "hive.llap.daemon.wait.queue.comparator.class.name",
       "org.apache.hadoop.hive.llap.daemon.impl.comparator.ShortestJobFirstComparator",
-      "The priority comparator to use for LLAP scheduler prioroty queue. The built-in options\n" +
+      "The priority comparator to use for LLAP scheduler priority queue. The built-in options\n" +
       "are org.apache.hadoop.hive.llap.daemon.impl.comparator.ShortestJobFirstComparator and\n" +
       ".....FirstInFirstOutComparator", "llap.daemon.wait.queue.comparator.class.name"),
     LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION(
@@ -3485,7 +3497,7 @@ public class HiveConf extends Configuration {
     SPARK_RPC_SERVER_ADDRESS("hive.spark.client.rpc.server.address", "",
       "The server address of HiverServer2 host to be used for communication between Hive client and remote Spark driver. " +
       "Default is empty, which means the address will be determined in the same way as for hive.server2.thrift.bind.host." +
-      "This is only necessary if the host has mutiple network addresses and if a different network address other than " +
+      "This is only necessary if the host has multiple network addresses and if a different network address other than " +
       "hive.server2.thrift.bind.host is to be used."),
     SPARK_RPC_SERVER_PORT("hive.spark.client.rpc.server.port", "", "A list of port ranges which can be used by RPC server " +
         "with the format of 49152-49222,49228 and a random one is selected from the list. Default is empty, which randomly " +
@@ -3569,6 +3581,7 @@ public class HiveConf extends Configuration {
             "hive.spark.client.secret.bits," +
             "hive.spark.client.rpc.server.address," +
             "hive.spark.client.rpc.server.port," +
+            "hive.spark.client.rpc.sasl.mechanisms," +
             "bonecp.,"+
             "hive.druid.broker.address.default,"+
             "hive.druid.coordinator.address.default,"+
@@ -3588,6 +3601,12 @@ public class HiveConf extends Configuration {
     HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
         "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
         "Comma separated list of variables which are used internally and should not be configurable."),
+
+    HIVE_SPARK_RSC_CONF_LIST("hive.spark.rsc.conf.list",
+        SPARK_OPTIMIZE_SHUFFLE_SERDE.varname + "," +
+            SPARK_CLIENT_FUTURE_TIMEOUT.varname,
+        "Comma separated list of variables which are related to remote spark context.\n" +
+            "Changing these variables will result in re-creating the spark session."),
 
     HIVE_QUERY_TIMEOUT_SECONDS("hive.query.timeout.seconds", "0s",
         new TimeValidator(TimeUnit.SECONDS),
@@ -3916,7 +3935,7 @@ public class HiveConf extends Configuration {
       if (sparkMaster != null && sparkMaster.startsWith("yarn")) {
         result = true;
       }
-    } else if (name.startsWith("hive.spark")) { // Remote Spark Context property.
+    } else if (rscList.stream().anyMatch(rscVar -> rscVar.equals(name))) { // Remote Spark Context property.
       result = true;
     } else if (name.equals("mapreduce.job.queuename")) {
       // a special property starting with mapreduce that we would also like to effect if it changes
@@ -4398,6 +4417,7 @@ public class HiveConf extends Configuration {
     setupRestrictList();
     hiddenSet.clear();
     hiddenSet.addAll(HiveConfUtil.getHiddenSet(this));
+    setupRSCList();
   }
 
   /**
@@ -4788,6 +4808,17 @@ public class HiveConf extends Configuration {
     restrictList.add(ConfVars.HIVE_CONF_RESTRICTED_LIST.varname);
     restrictList.add(ConfVars.HIVE_CONF_HIDDEN_LIST.varname);
     restrictList.add(ConfVars.HIVE_CONF_INTERNAL_VARIABLE_LIST.varname);
+    restrictList.add(ConfVars.HIVE_SPARK_RSC_CONF_LIST.varname);
+  }
+
+  private void setupRSCList() {
+    rscList.clear();
+    String vars = this.getVar(ConfVars.HIVE_SPARK_RSC_CONF_LIST);
+    if (vars != null) {
+      for (String var : vars.split(",")) {
+        rscList.add(var.trim());
+      }
+    }
   }
 
   /**
