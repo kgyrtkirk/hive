@@ -1,5 +1,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +22,6 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
-
 public class TestGroupByOperator {
 
   @Test
@@ -31,16 +32,17 @@ public class TestGroupByOperator {
     Object val = eval.evaluate(new Object[] {});
     System.out.println(val);
   }
-  
-  public static class LocalGroupByOpertor extends GroupByOperator{
+
+  public static class LocalGroupByOpertor extends GroupByOperator {
     @Override
     protected void forward(Object row, ObjectInspector rowInspector) throws HiveException {
-      super.forward(row, rowInspector);
-      System.out.println("x");
+      Object[] oo = (Object[]) row;
+      System.out.println(oo[0]);
+      assertNotNull("should be the constant requested", oo[0]);
     }
   }
-  
-  public static class LocalGenericUDAFEvaluator extends GenericUDAFEvaluator{
+
+  public static class LocalGenericUDAFEvaluator extends GenericUDAFEvaluator {
 
     @Override
     public AggregationBuffer getNewAggregationBuffer() throws HiveException {
@@ -68,39 +70,41 @@ public class TestGroupByOperator {
     public Object terminate(AggregationBuffer agg) throws HiveException {
       return null;
     }
-    
+
   }
 
   @Test
   public void t1() throws Exception {
-    
+
     ExprNodeConstantDesc desc = new ExprNodeConstantDesc(137);
     ExprNodeConstantEvaluator eval = new ExprNodeConstantEvaluator(desc);
-    
+
     LocalGroupByOpertor g0 = new LocalGroupByOpertor();
     GroupByDesc conf = new GroupByDesc();
     AggregationDesc aggregator = new AggregationDesc();
     aggregator.setGenericUDAFEvaluator(new LocalGenericUDAFEvaluator());
- 
+
     aggregator.setParameters(Lists.newArrayList(desc));
-    
+
     conf.setAggregators(Lists.newArrayList(aggregator));
-//    ExprNodeDesc keyExpr =desc;
-//    conf.setOutputColumnNames(Lists.newArrayList("asd"));
+    // ExprNodeDesc keyExpr =desc;
+    // conf.setOutputColumnNames(Lists.newArrayList("asd"));
     conf.setKeys(Lists.newArrayList());
     conf.setOutputColumnNames(Lists.newArrayList());
-  
+
     List<String> structFieldNames = Lists.newArrayList("asd");
-    List<ObjectInspector> structFieldObjectInspectors = Lists.newArrayList(desc.getWritableObjectInspector());
+    List<ObjectInspector> structFieldObjectInspectors =
+        Lists.newArrayList(desc.getWritableObjectInspector());
     List<String> structFieldComments = Lists.newArrayList("asd");
     byte separator = 'x';
     LazyObjectInspectorParameters lazyParams = null;
-   
-    LazySimpleStructObjectInspector sso = new LazySimpleStructObjectInspector(structFieldNames, structFieldObjectInspectors, structFieldComments, separator, lazyParams);
-    g0.setInputObjInspectors(new ObjectInspector[] { sso } );
+
+    LazySimpleStructObjectInspector sso = new LazySimpleStructObjectInspector(structFieldNames,
+        structFieldObjectInspectors, structFieldComments, separator, lazyParams);
+    g0.setInputObjInspectors(new ObjectInspector[] { sso });
     g0.setConf(conf);
     g0.initializeOp(new HiveConf());
     g0.closeOp(false);
   }
-  
+
 }
