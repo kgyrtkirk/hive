@@ -72,17 +72,18 @@ public class BasicStats {
           stats.setNumRows(stats.getDataSize() / avgRowSize);
         }
       } else {
+        if (avgRowSize > 0) {
+          long rc = stats.getNumRows();
+          long s = stats.getDataSize();
+          if (rc <= 0 && s > 0) {
+            rc = s / avgRowSize;
+            stats.setNumRows(rc);
+          }
 
-        long rc = stats.getNumRows();
-        long s = stats.getDataSize();
-        if (rc <= 0 && s > 0) {
-          rc = s / avgRowSize;
-          stats.setNumRows(rc);
-        }
-
-        if (s <= 0 && rc > 0) {
-          s = StatsUtils.safeMult(rc, avgRowSize);
-          stats.setDataSize(s);
+          if (s <= 0 && rc > 0) {
+            s = StatsUtils.safeMult(rc, avgRowSize);
+            stats.setDataSize(s);
+          }
         }
       }
     }
@@ -103,8 +104,8 @@ public class BasicStats {
         ds = stats.getTotalSize();
 
         // if data size is still 0 then get file size
-        Path path = stats.partish.getPath();
         if (ds <= 0) {
+          Path path = stats.partish.getPath();
           try {
             ds = getFileSizeForPath(path);
           } catch (IOException e) {

@@ -394,7 +394,7 @@ public class StatsUtils {
           basicStats.apply(new BasicStats.DataSizeEstimator(conf));
         }
         basicStats.apply(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema, neededColumns)));
-        basicStats.apply(new BasicStats.SetMinRowNumber());
+        //        basicStats.apply(new BasicStats.SetMinRowNumber());
         partStats.add(basicStats);
       }
 
@@ -407,6 +407,10 @@ public class StatsUtils {
 
       long nr = bbs.getNumRows();
       long ds = bbs.getDataSize();
+
+      if (nr == 0) {
+        nr=1;
+      }
       stats = new Statistics(nr, ds);
 
       // if at least a partition does not contain row count then mark basic stats state as PARTIAL
