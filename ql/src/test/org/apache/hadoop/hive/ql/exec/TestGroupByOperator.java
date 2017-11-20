@@ -61,6 +61,8 @@ public class TestGroupByOperator {
     ExprNodeConstantDesc desc = new ExprNodeConstantDesc(137);
 
     GroupByOperator operator = new GroupByOperator() {
+      private static final long serialVersionUID = 1L;
+
       protected void forward(Object row, ObjectInspector rowInspector) throws HiveException {
       }
     };
