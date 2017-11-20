@@ -385,15 +385,10 @@ public class StatsUtils {
 
       // For partitioned tables, get the size of all the partitions after pruning
       // the partitions that are not required
-      long nr = 0;
-      long ds = 0;
 
       List<BasicStats> partStats = new ArrayList<>();
-
       for (Partition p : partList.getNotDeniedPartns()) {
-
         BasicStats basicStats = new BasicStats(Partish.buildFor(table));
-
         if (shouldEstimateStats) {
           // FIXME: misses paralelle
           basicStats.apply(new BasicStats.DataSizeEstimator(conf));
@@ -403,47 +398,16 @@ public class StatsUtils {
         partStats.add(basicStats);
       }
 
-      List<Long> rowCounts = Lists.newArrayList();
-      List<Long> dataSizes = Lists.newArrayList();
-
-      rowCounts = getBasicStatForPartitions(table, partList.getNotDeniedPartns(), StatsSetupConst.ROW_COUNT);
-      dataSizes = getBasicStatForPartitions(table, partList.getNotDeniedPartns(), StatsSetupConst.RAW_DATA_SIZE);
-
-      nr = getSumIgnoreNegatives(rowCounts);
-      ds = getSumIgnoreNegatives(dataSizes);
-      if (ds <= 0) {
-        dataSizes = getBasicStatForPartitions(table, partList.getNotDeniedPartns(), StatsSetupConst.TOTAL_SIZE);
-        ds = getSumIgnoreNegatives(dataSizes);
-      }
-
-      // if data size still could not be determined, then fall back to filesytem to get file
-      // sizes
-      if (ds <= 0 && shouldEstimateStats) {
-        dataSizes = getFileSizeForPartitions(conf, partList.getNotDeniedPartns());
-      }
-      ds = getSumIgnoreNegatives(dataSizes);
-      ds = (long) (ds * deserFactor);
-
-      int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
-      if (avgRowSize > 0) {
-        setUnknownRcDsToAverage(rowCounts, dataSizes, avgRowSize);
-        nr = getSumIgnoreNegatives(rowCounts);
-        ds = getSumIgnoreNegatives(dataSizes);
-
-        // number of rows -1 means that statistics from metastore is not reliable
-        if (nr <= 0) {
-          nr = ds / avgRowSize;
-        }
-      }
-
-      // Minimum values
-      if (nr == 0) {
-        nr = 1;
-      }
-
       BasicStats bbs = BasicStats.buildFrom(partStats);
 
-      stats = new Statistics(bbs.getNumRows(), bbs.getDataSize());
+      List<Long> rowCounts = Lists.newArrayList();
+      for (BasicStats basicStats : partStats) {
+        rowCounts.add(basicStats.getNumRows());
+      }
+
+      long nr = bbs.getNumRows();
+      long ds = bbs.getDataSize();
+      stats = new Statistics(nr, ds);
 
       // if at least a partition does not contain row count then mark basic stats state as PARTIAL
       if (containsNonPositives(rowCounts) &&
