@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -28,6 +29,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+
 public class BasicStats {
 
   private static final Logger LOG = LoggerFactory.getLogger(BasicStats.class.getName());
@@ -36,11 +39,22 @@ public class BasicStats {
     void apply(BasicStats stats);
   }
 
+  public static class SetMinRowNumber implements IStatsEnhancer {
+
+    @Override
+    public void apply(BasicStats stats) {
+      if (stats.getNumRows() == 0) {
+        stats.setNumRows(1);
+      }
+    }
+  }
+
   public static class RowNumEstimator implements IStatsEnhancer {
 
     private long avgRowSize;
 
     // FIXME: this is most probably broken ; the call-site is dependent on neededColumns; which indicates that it might mis calculate the value
+    // HIVE-18108
     public RowNumEstimator(long avgRowSize) {
       this.avgRowSize = avgRowSize;
       if (avgRowSize > 0) {
@@ -133,6 +147,18 @@ public class BasicStats {
   }
 
 
+  public BasicStats(List<BasicStats> partStats) {
+    partish = null;
+    List<Long> nrIn = Lists.newArrayList();
+    List<Long> dsIn = Lists.newArrayList();
+    for (BasicStats ps : partStats) {
+      nrIn.add(ps.getNumRows());
+      dsIn.add(ps.getDataSize());
+    }
+    currentNumRows = StatsUtils.getSumIgnoreNegatives(nrIn);
+    currentDataSize = StatsUtils.getSumIgnoreNegatives(dsIn);
+  }
+
   public long getNumRows() {
     return currentNumRows;
   }
@@ -173,6 +199,10 @@ public class BasicStats {
       }
     }
     return result;
+  }
+
+  public static BasicStats buildFrom(List<BasicStats> partStats) {
+    return new BasicStats(partStats);
   }
 
 }
