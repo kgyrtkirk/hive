@@ -347,8 +347,11 @@ public class StatsUtils {
 
     if (!table.isPartitioned()) {
 
+
       //getDataSize tries to estimate stats if it doesn't exist using file size
       // we would like to avoid file system calls  if it too expensive
+      BasicStats basicStats = new BasicStats(Partish.buildFor(table));
+
       long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
       long nr = getNumRows(conf, schema, neededColumns, table, ds);
       List<ColStatistics> colStats = Lists.newArrayList();
