@@ -357,11 +357,12 @@ public class StatsUtils {
       }
 
       //      long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
-      long ds = basicStats.getDataSize();
       basicStats.apply(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema, neededColumns)));
       //      long nr = getNumRows(conf, schema, neededColumns, table, ds);
+      long ds = basicStats.getDataSize();
       long nr = basicStats.getNumRows();
       List<ColStatistics> colStats = Lists.newArrayList();
+
       if (fetchColStats) {
         colStats = getTableColumnStats(table, schema, neededColumns, colStatsCache);
         if(colStats == null) {
