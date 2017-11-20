@@ -656,6 +656,8 @@ public class Driver implements CommandProcessor {
           }
         }
       }
+    } catch (CommandProcessorResponse cpr) {
+      throw cpr;
     } catch (Exception e) {
       checkInterrupted("during query compilation: " + e.getMessage(), null, null);
 
