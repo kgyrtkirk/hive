@@ -18,25 +18,133 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
+import java.io.IOException;
 import java.util.Map;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BasicStats {
 
-  private long numRows;
+  private static final Logger LOG = LoggerFactory.getLogger(BasicStats.class.getName());
+
+  public static interface IStatsEnhancer {
+    void apply(BasicStats stats);
+  }
+
+  public static class RowNumEstimator implements IStatsEnhancer {
+
+    private long avgRowSize;
+
+    // FIXME: this is most probably broken ; the call-site is dependent on neededColumns; which indicates that it might mis calculate the value
+    public RowNumEstimator(long avgRowSize) {
+      this.avgRowSize = avgRowSize;
+      if (avgRowSize > 0) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Estimated average row size: " + avgRowSize);
+        }
+      }
+    }
+
+    @Override
+    public void apply(BasicStats stats) {
+      if (stats.getNumRows() < 0 && avgRowSize > 0) {
+        stats.setNumRows(stats.getDataSize() / avgRowSize);
+      }
+
+    }
+
+  }
+
+  public static class DataSizeEstimator implements IStatsEnhancer {
+
+    private HiveConf conf;
+
+    public DataSizeEstimator(HiveConf conf) {
+      this.conf = conf;
+    }
+
+    @Override
+    public void apply(BasicStats stats) {
+      long ds = stats.getRawDataSize();
+      if (ds <= 0) {
+        ds = stats.getTotalSize();
+
+        // if data size is still 0 then get file size
+        Path path = stats.partish.getPath();
+        if (ds <= 0) {
+          try {
+            ds = getFileSizeForPath(path);
+          } catch (IOException e) {
+            ds = 0L;
+          }
+        }
+        float deserFactor = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
+        ds = (long) (ds * deserFactor);
+
+        stats.setDataSize(ds);
+      }
+
+    }
+
+    private long getFileSizeForPath(Path path) throws IOException {
+      FileSystem fs = path.getFileSystem(conf);
+      return fs.getContentSummary(path).getLength();
+    }
+
+  }
+
   private Partish partish;
+
+  private long rowCount;
+  private long totalSize;
+  private long rawDataSize;
+
+  private long currentNumRows;
+  private long currentDataSize;
 
   public BasicStats(Partish p) {
     partish = p;
 
-    numRows = parseLong(StatsSetupConst.ROW_COUNT);
+    rowCount = parseLong(StatsSetupConst.ROW_COUNT);
+    rawDataSize = parseLong(StatsSetupConst.RAW_DATA_SIZE);
+    totalSize = parseLong(StatsSetupConst.TOTAL_SIZE);
 
-    throw new RuntimeException();
+    currentNumRows = rowCount;
+    currentDataSize = rawDataSize;
   }
 
+
   public long getNumRows() {
-    return numRows;
+    return currentNumRows;
+  }
+
+  public long getDataSize() {
+    return currentDataSize;
+  }
+
+  public void apply(IStatsEnhancer estimator) {
+    estimator.apply(this);
+  }
+
+  protected void setNumRows(long l) {
+    currentNumRows = l;
+  }
+
+  protected void setDataSize(long ds) {
+    currentDataSize = ds;
+  }
+
+  protected long getTotalSize() {
+    return totalSize;
+  }
+
+  protected long getRawDataSize() {
+    return rawDataSize;
   }
 
   private long parseLong(String fieldName) {
@@ -52,4 +160,5 @@ public class BasicStats {
     }
     return result;
   }
+
 }

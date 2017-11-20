@@ -352,8 +352,15 @@ public class StatsUtils {
       // we would like to avoid file system calls  if it too expensive
       BasicStats basicStats = new BasicStats(Partish.buildFor(table));
 
-      long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
-      long nr = getNumRows(conf, schema, neededColumns, table, ds);
+      if (shouldEstimateStats) {
+        basicStats.apply(new BasicStats.DataSizeEstimator(conf));
+      }
+
+      //      long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
+      long ds = basicStats.getDataSize();
+      basicStats.apply(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema, neededColumns)));
+      //      long nr = getNumRows(conf, schema, neededColumns, table, ds);
+      long nr = basicStats.getNumRows();
       List<ColStatistics> colStats = Lists.newArrayList();
       if (fetchColStats) {
         colStats = getTableColumnStats(table, schema, neededColumns, colStatsCache);
