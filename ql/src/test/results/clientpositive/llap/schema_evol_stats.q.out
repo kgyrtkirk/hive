@@ -101,6 +101,8 @@ POSTHOOK: Input: default@partitioned1
 # col_name            	data_type           	comment             
 a                   	int                 	                    
 b                   	string              	                    
+c                   	int                 	                    
+d                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -302,6 +304,8 @@ POSTHOOK: Input: default@partitioned1
 # col_name            	data_type           	comment             
 a                   	int                 	                    
 b                   	string              	                    
+c                   	int                 	                    
+d                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             

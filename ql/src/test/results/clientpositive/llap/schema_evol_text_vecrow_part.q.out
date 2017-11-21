@@ -77,7 +77,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_add_int_permute_select
-                  Statistics: Num rows: 2 Data size: 417 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:insert_num:int, 1:a:int, 2:b:string, 3:c:int, 4:part:int, 5:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -88,13 +88,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 4, 1, 2]
-                    Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -148,7 +148,7 @@ POSTHOOK: Input: default@part_add_int_permute_select@part=1
 #### A masked pattern was here ####
 insert_num	part	a	b	c
 1	1	1111	new	NULL
-2	1	2222	new	NULL
+2	1	2222	new	3333
 PREHOOK: query: select insert_num,part,c from part_add_int_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_add_int_permute_select
@@ -161,7 +161,7 @@ POSTHOOK: Input: default@part_add_int_permute_select@part=1
 #### A masked pattern was here ####
 insert_num	part	c
 1	1	NULL
-2	1	NULL
+2	1	3333
 PREHOOK: query: drop table part_add_int_permute_select
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_add_int_permute_select
@@ -232,7 +232,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_add_int_string_permute_select
-                  Statistics: Num rows: 2 Data size: 422 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:insert_num:int, 1:a:int, 2:b:string, 3:c:int, 4:d:string, 5:part:int, 6:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -243,13 +243,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 5, 1, 2]
-                    Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -303,7 +303,7 @@ POSTHOOK: Input: default@part_add_int_string_permute_select@part=1
 #### A masked pattern was here ####
 insert_num	part	a	b	c
 1	1	1111	new	NULL
-2	1	2222	new	NULL
+2	1	2222	new	3333
 PREHOOK: query: select insert_num,part,a,b,c,d from part_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_add_int_string_permute_select
@@ -316,7 +316,7 @@ POSTHOOK: Input: default@part_add_int_string_permute_select@part=1
 #### A masked pattern was here ####
 insert_num	part	a	b	c	d
 1	1	1111	new	NULL	NULL
-2	1	2222	new	NULL	NULL
+2	1	2222	new	3333	4444
 PREHOOK: query: select insert_num,part,a,c,d from part_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_add_int_string_permute_select
@@ -329,7 +329,7 @@ POSTHOOK: Input: default@part_add_int_string_permute_select@part=1
 #### A masked pattern was here ####
 insert_num	part	a	c	d
 1	1	1111	NULL	NULL
-2	1	2222	NULL	NULL
+2	1	2222	3333	4444
 PREHOOK: query: select insert_num,part,a,d from part_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_add_int_string_permute_select
@@ -342,7 +342,7 @@ POSTHOOK: Input: default@part_add_int_string_permute_select@part=1
 #### A masked pattern was here ####
 insert_num	part	a	d
 1	1	1111	NULL
-2	1	2222	NULL
+2	1	2222	4444
 PREHOOK: query: select insert_num,part,c from part_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_add_int_string_permute_select
@@ -355,7 +355,7 @@ POSTHOOK: Input: default@part_add_int_string_permute_select@part=1
 #### A masked pattern was here ####
 insert_num	part	c
 1	1	NULL
-2	1	NULL
+2	1	3333
 PREHOOK: query: select insert_num,part,d from part_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_add_int_string_permute_select
@@ -368,7 +368,7 @@ POSTHOOK: Input: default@part_add_int_string_permute_select@part=1
 #### A masked pattern was here ####
 insert_num	part	d
 1	1	NULL
-2	1	NULL
+2	1	4444
 PREHOOK: query: drop table part_add_int_string_permute_select
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_add_int_string_permute_select
@@ -445,7 +445,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_change_string_group_double
-                  Statistics: Num rows: 5 Data size: 1531 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 5 Data size: 500 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:insert_num:int, 1:c1:double, 2:c2:double, 3:c3:double, 4:b:string, 5:part:int, 6:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -456,13 +456,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 5, 1, 2, 3, 4]
-                    Statistics: Num rows: 5 Data size: 1080 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 5 Data size: 500 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 5 Data size: 1080 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 5 Data size: 500 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -657,7 +657,7 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	b
 103	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	original
 104	1	2021-09-24	2021-09-24                                        	2021-09-24     	2021-09-24	2021-09-24	1978-08-02 06:34:14	1978-08-02 06:34:14                               	1978-08-02 06:3	1978-08-02 06:34:14	1978-08-02 06:3	original
 105	1	2024-11-11	2024-11-11                                        	2024-11-11     	2024-11-11	2024-11-11	1991-01-06 16:20:39.72036854	1991-01-06 16:20:39.72036854                      	1991-01-06 16:2	1991-01-06 16:20:39.72036854	1991-01-06 16:2	original
-111	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	new
+111	1	filler	filler                                            	filler         	filler	filler	filler	filler                                            	filler         	filler	filler	new
 PREHOOK: query: drop table part_change_date_group_string_group_date_timestamp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_date_group_string_group_date_timestamp
@@ -814,7 +814,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_change_numeric_group_string_group_multi_ints_string_group
-                  Statistics: Num rows: 6 Data size: 17342 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 6 Data size: 1140 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:string, 3:c3:string, 4:c4:string, 5:c5:char(50), 6:c6:char(50), 7:c7:char(50), 8:c8:char(50), 9:c9:char(5), 10:c10:char(5), 11:c11:char(5), 12:c12:char(5), 13:c13:varchar(50), 14:c14:varchar(50), 15:c15:varchar(50), 16:c16:varchar(50), 17:c17:varchar(5), 18:c18:varchar(5), 19:c19:varchar(5), 20:c20:varchar(5), 21:b:string, 22:part:int, 23:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -825,13 +825,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 22, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
-                    Statistics: Num rows: 6 Data size: 16272 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 6 Data size: 1140 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 6 Data size: 16272 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 6 Data size: 1140 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -876,7 +876,7 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c
 103	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	original
 104	1	23	834	203332	888888857923222	23                                                	834                                               	203332                                            	888888857923222                                   	23   	834  	20333	88888	23	834	203332	888888857923222	23	834	20333	88888	original
 105	1	-99	-28300	-999992	-222282153733	-99                                               	-28300                                            	-999992                                           	-222282153733                                     	-99  	-2830	-9999	-2222	-99	-28300	-999992	-222282153733	-99	-2830	-9999	-2222	original
-111	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	new
+111	1	filler	filler	filler	filler	filler                                            	filler                                            	filler                                            	filler                                            	fille	fille	fille	fille	filler	filler	filler	filler	fille	fille	fille	fille	new
 PREHOOK: query: drop table part_change_numeric_group_string_group_multi_ints_string_group
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group
@@ -1023,7 +1023,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_change_numeric_group_string_group_floating_string_group
-                  Statistics: Num rows: 6 Data size: 14061 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 6 Data size: 3300 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:string, 3:c3:string, 4:c4:char(50), 5:c5:char(50), 6:c6:char(50), 7:c7:char(7), 8:c8:char(7), 9:c9:char(7), 10:c10:varchar(50), 11:c11:varchar(50), 12:c12:varchar(50), 13:c13:varchar(7), 14:c14:varchar(7), 15:c15:varchar(7), 16:b:string, 17:part:int, 18:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1034,13 +1034,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 17, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-                    Statistics: Num rows: 6 Data size: 12564 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 6 Data size: 3300 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 6 Data size: 12564 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 6 Data size: 3300 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1083,9 +1083,9 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	b
 101	1	99999999999999999999.999999999999999999	Infinity	1.7976931348623157E308	99999999999999999999.999999999999999999           	Infinity                                          	1.7976931348623157E308                            	9999999	Infinit	1.79769	99999999999999999999.999999999999999999	Infinity	1.7976931348623157E308	9999999	Infinit	1.79769	original
 102	1	-99999999999999999999.999999999999999999	-Infinity	-1.7976931348623157E308	-99999999999999999999.999999999999999999          	-Infinity                                         	-1.7976931348623157E308                           	-999999	-Infini	-1.7976	-99999999999999999999.999999999999999999	-Infinity	-1.7976931348623157E308	-999999	-Infini	-1.7976	original
 103	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	original
-104	1	66475.561431	-100.35978	30.774	66475.561431                                      	-100.35978                                        	30.774                                            	66475.5	-100.35	30.774 	66475.561431	-100.35978	30.774	66475.5	-100.35	30.774	original
-105	1	9250340.75	NULL	46114.28	9250340.75                                        	NULL	46114.28                                          	9250340	NULL	46114.2	9250340.75	NULL	46114.28	9250340	NULL	46114.2	original
-111	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	new
+104	1	66475.561431000000000000	-100.35978	30.774	66475.561431000000000000                          	-100.35978                                        	30.774                                            	66475.5	-100.35	30.774 	66475.561431000000000000	-100.35978	30.774	66475.5	-100.35	30.774	original
+105	1	9250340.750000000000000000	NULL	46114.28	9250340.750000000000000000                        	NULL	46114.28                                          	9250340	NULL	46114.2	9250340.750000000000000000	NULL	46114.28	9250340	NULL	46114.2	original
+111	1	filler	filler	filler	filler                                            	filler                                            	filler                                            	filler 	filler 	filler 	filler	filler	filler	filler	filler	filler	new
 PREHOOK: query: drop table part_change_numeric_group_string_group_floating_string_group
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group
@@ -1218,7 +1218,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_change_string_group_string_group_string
-                  Statistics: Num rows: 6 Data size: 9989 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 6 Data size: 2712 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:insert_num:int, 1:c1:char(50), 2:c2:char(9), 3:c3:varchar(50), 4:c4:char(9), 5:c5:varchar(50), 6:c6:varchar(9), 7:c7:string, 8:c8:char(50), 9:c9:char(9), 10:c10:string, 11:b:string, 12:part:int, 13:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1229,13 +1229,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-                    Statistics: Num rows: 6 Data size: 8808 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 6 Data size: 2712 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 6 Data size: 8808 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 6 Data size: 2712 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1275,11 +1275,11 @@ POSTHOOK: Input: default@part_change_string_group_string_group_string
 POSTHOOK: Input: default@part_change_string_group_string_group_string@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	b
-101	1	freckled                                          	freckled 	freckled	freckled 	freckled	freckled	freckled	freckled                                          	freckled 	freckled	original
-102	1	ox                                                	ox       	ox	ox       	ox	ox	ox	ox                                                	ox       	ox	original
-103	1	                                                  	         		         				                                                  	         		original
-104	1	I cooked                                          	I cooked 	I cooked	I cooked 	I cooked	I cooked	I cooked	I cooked                                          	I cooked 	I cooked	original
-105	1	200                                               	200      	200	200      	200	200	200	200                                               	200      	200	original
+101	1	freckled                                          	freckled 	freckled	freckled 	freckled                                          	freckled 	freckled                                          	freckled                                          	freckled 	freckled	original
+102	1	ox                                                	ox       	ox	ox       	ox                                                	ox       	ox                                                	ox                                                	ox       	ox	original
+103	1	                                                  	         		         	                                                  	         	                                                  	                                                  	         		original
+104	1	I cooked                                          	I cooked 	I cooked	I cooked 	I cooked                                          	I cooked 	I cooked                                          	I cooked                                          	I cooked 	I cooked	original
+105	1	200                                               	200      	200	200      	200                                               	200      	200                                               	200                                               	200      	200	original
 111	1	filler                                            	filler   	filler	filler   	filler	filler	filler	filler                                            	filler   	filler	new
 PREHOOK: query: drop table part_change_string_group_string_group_string
 PREHOOK: type: DROPTABLE
@@ -1441,7 +1441,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_change_lower_to_higher_numeric_group_tinyint_to_bigint
-                  Statistics: Num rows: 6 Data size: 5180 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 6 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:insert_num:int, 1:c1:smallint, 2:c2:int, 3:c3:bigint, 4:c4:decimal(38,18), 5:c5:float, 6:c6:double, 7:c7:int, 8:c8:bigint, 9:c9:decimal(38,18), 10:c10:float, 11:c11:double, 12:c12:bigint, 13:c13:decimal(38,18), 14:c14:float, 15:c15:double, 16:c16:decimal(38,18), 17:c17:float, 18:c18:double, 19:b:string, 20:part:int, 21:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1452,13 +1452,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 20, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-                    Statistics: Num rows: 6 Data size: 4344 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 6 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 6 Data size: 4344 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 6 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1503,7 +1503,7 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	b
 103	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	original
 104	1	23	23	23	23.000000000000000000	23.0	23.0	834	834	834.000000000000000000	834.0	834.0	203332	203332.000000000000000000	203332.0	203332.0	888888857923222.000000000000000000	8.8888885E14	8.88888857923222E14	original
 105	1	-99	-99	-99	-99.000000000000000000	-99.0	-99.0	-28300	-28300	-28300.000000000000000000	-28300.0	-28300.0	-999992	-999992.000000000000000000	-999992.0	-999992.0	-222282153733.000000000000000000	-2.22282154E11	-2.22282153733E11	original
-111	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1234.000000000000000000	9876.0	789.0	90000000	1234.000000000000000000	9876.0	789.0	1234.000000000000000000	9876.0	789.0	new
+111	1	7000	80000	90000000	1234.567800000000000000	9876.543	789.321	80000	90000000	1234.567800000000000000	9876.543	789.321	90000000	1234.567800000000000000	9876.543	789.321	1234.567800000000000000	9876.543	789.321	new
 PREHOOK: query: drop table part_change_lower_to_higher_numeric_group_tinyint_to_bigint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint
@@ -1606,7 +1606,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_change_lower_to_higher_numeric_group_decimal_to_float
-                  Statistics: Num rows: 6 Data size: 1676 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 6 Data size: 648 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:insert_num:int, 1:c1:float, 2:c2:double, 3:c3:double, 4:b:string, 5:part:int, 6:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1617,13 +1617,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 5, 1, 2, 3, 4]
-                    Statistics: Num rows: 6 Data size: 1272 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 6 Data size: 648 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 6 Data size: 1272 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 6 Data size: 648 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1666,9 +1666,9 @@ insert_num	part	c1	c2	c3	b
 101	1	1.0E20	1.0E20	Infinity	original
 102	1	-1.0E20	-1.0E20	-Infinity	original
 103	1	NULL	NULL	NULL	original
-104	1	66475.56	66475.561431	-100.35977935791016	original
+104	1	66475.56	66475.561431	-100.35978	original
 105	1	9250341.0	9250340.75	NULL	original
-111	1	1234.5677	9876.543	1234.5677490234375	new
+111	1	1234.5677	9876.543	1234.5678	new
 PREHOOK: query: drop table part_change_lower_to_higher_numeric_group_decimal_to_float
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float
