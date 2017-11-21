@@ -1798,8 +1798,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       alterTableOutput = new WriteEntity(tab, writeType);
       outputs.add(alterTableOutput);
       //do not need the lock for partitions since they are covered by the table lock
-      for (Partition part : getPartitions(tab, partSpec, false)) {
-        outputs.add(new WriteEntity(part, WriteEntity.WriteType.DDL_NO_LOCK));
+      if (partSpec != null) {
+        for (Partition part : getPartitions(tab, partSpec, false)) {
+          outputs.add(new WriteEntity(part, WriteEntity.WriteType.DDL_NO_LOCK));
+        }
       }
     } else {
       ReadEntity re = new ReadEntity(tab);
@@ -3099,7 +3101,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       alterTblDesc = new AlterTableDesc(tblName, partSpec,
           unescapeIdentifier(oldColName), unescapeIdentifier(newColName),
-          newType, newComment, first, flagCol, 
+          newType, newComment, first, flagCol,
           primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints);
     }
     addInputsOutputsAlterTable(tblName, partSpec, alterTblDesc);
