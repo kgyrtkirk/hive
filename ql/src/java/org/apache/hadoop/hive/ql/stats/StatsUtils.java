@@ -358,6 +358,7 @@ public class StatsUtils {
 
       //      long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
       basicStats.apply(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema, neededColumns)));
+      basicStats.apply(new BasicStats.SetMinRowNumber01());
       //      long nr = getNumRows(conf, schema, neededColumns, table, ds);
       long ds = basicStats.getDataSize();
       long nr = basicStats.getNumRows();

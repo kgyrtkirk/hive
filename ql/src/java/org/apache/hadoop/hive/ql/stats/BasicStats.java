@@ -49,6 +49,16 @@ public class BasicStats {
     }
   }
 
+  public static class SetMinRowNumber01 implements IStatsEnhancer {
+
+    @Override
+    public void apply(BasicStats stats) {
+      if (stats.getNumRows() == 0 || stats.getNumRows() == -1) {
+        stats.setNumRows(1);
+      }
+    }
+  }
+
   public static class RowNumEstimator implements IStatsEnhancer {
 
     private long avgRowSize;
