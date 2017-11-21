@@ -463,12 +463,14 @@ public class StatsUtils {
         nr=1;
       }
       stats = new Statistics(nr, ds);
+      stats.setBasicStatsState(bbs.getState());
 
       // if at least a partition does not contain row count then mark basic stats state as PARTIAL
-      if (containsNonPositives(rowCounts) &&
-          stats.getBasicStatsState().equals(State.COMPLETE)) {
-        stats.setBasicStatsState(State.PARTIAL);
-      }
+//      if (containsNonPositives(rowCounts) &&
+//          stats.getBasicStatsState().equals(State.COMPLETE)) {
+//        stats.setBasicStatsState(State.PARTIAL);
+//      }
+      
       if (fetchColStats) {
         List<String> partitionCols = getPartitionColumns(
             schema, neededColumns, referencedColumns);
@@ -930,7 +932,7 @@ public class StatsUtils {
     return sizes;
   }
 
-  private static boolean containsNonPositives(List<Long> vals) {
+  public static boolean containsNonPositives(List<Long> vals) {
     for (Long val : vals) {
       if (val <= 0L) {
         return true;

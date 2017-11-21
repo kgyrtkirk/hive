@@ -38,8 +38,15 @@ public class Statistics implements Serializable {
   public enum State {
     NONE, PARTIAL, COMPLETE;
 
-    boolean morePreciseThan(State other) {
+    public boolean morePreciseThan(State other) {
       return ordinal() >= other.ordinal();
+    }
+
+    public State merge(State otherState) {
+      if (this == otherState) {
+        return this;
+      }
+      return PARTIAL;
     }
   }
 
@@ -305,7 +312,7 @@ public class Statistics implements Serializable {
     try {
       ret = clone();
     } catch (CloneNotSupportedException e) {
-      // FIXME: remove the Colneable usage 
+      // FIXME: remove the Colneable usage
       return new Statistics(0,0);
     }
     if(numRows == 0 || newRowCount >= numRows) {

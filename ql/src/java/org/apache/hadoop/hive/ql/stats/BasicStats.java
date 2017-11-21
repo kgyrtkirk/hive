@@ -26,6 +26,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.plan.Statistics;
+import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -146,6 +148,7 @@ public class BasicStats {
 
   private long currentNumRows;
   private long currentDataSize;
+  private Statistics.State state;
 
   public BasicStats(Partish p) {
     partish = p;
@@ -163,12 +166,19 @@ public class BasicStats {
     partish = null;
     List<Long> nrIn = Lists.newArrayList();
     List<Long> dsIn = Lists.newArrayList();
+    state = State.COMPLETE;
     for (BasicStats ps : partStats) {
       nrIn.add(ps.getNumRows());
       dsIn.add(ps.getDataSize());
+      // new logic should be this
+      // state = state.merge(ps.getState());
     }
     currentNumRows = StatsUtils.getSumIgnoreNegatives(nrIn);
     currentDataSize = StatsUtils.getSumIgnoreNegatives(dsIn);
+
+    if (state.morePreciseThan(State.COMPLETE) && StatsUtils.containsNonPositives(nrIn)) {
+      state = State.PARTIAL;
+    }
   }
 
   public long getNumRows() {
@@ -177,6 +187,10 @@ public class BasicStats {
 
   public long getDataSize() {
     return currentDataSize;
+  }
+
+  public Statistics.State getState() {
+    return state;
   }
 
   public void apply(IStatsEnhancer estimator) {
