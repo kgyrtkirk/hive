@@ -177,17 +177,64 @@ public class StatsUtils {
     return ds;
   }
 
+  public static long getNumRows(HiveConf conf, List<ColumnInfo> schema, Table table, PrunedPartitionList partitionList, AtomicInteger noColsMissingStats) {
+    long nr0 = getNumRows0(conf, schema, table, partitionList, noColsMissingStats);
+    long nr1 = getNumRows1(conf, schema, table, partitionList, noColsMissingStats);
+
+    if (nr0 != nr1) {
+      throw new RuntimeException("E!");
+    }
+    return nr0;
+  }
+
+  public static long getNumRows1(HiveConf conf, List<ColumnInfo> schema, Table table, PrunedPartitionList partitionList, AtomicInteger noColsMissingStats) {
+
+    List<Partish> inputs = new ArrayList<>();
+    if (table.isPartitioned()) {
+      for (Partition part : partitionList.getNotDeniedPartns()) {
+        inputs.add(Partish.buildFor(table, part));
+      }
+    } else {
+      inputs.add(Partish.buildFor(table));
+    }
+
+    boolean shouldEstimateStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS);
+    List<String> neededColumns = new ArrayList<>();
+    for (ColumnInfo ci : schema) {
+      neededColumns.add(ci.getInternalName());
+    }
+
+    List<BasicStats> results = new ArrayList<>();
+    for (Partish pi : inputs) {
+      BasicStats bStats = new BasicStats(pi);
+
+      long nr = bStats.getNumRows();
+      if (nr <= 0) {
+        // log warning if row count is missing
+        noColsMissingStats.getAndIncrement();
+      }
+
+      if (shouldEstimateStats) {
+        bStats.apply(new BasicStats.DataSizeEstimator(conf));
+        bStats.apply(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema, neededColumns)));
+      }
+
+      results.add(bStats);
+    }
+
+    BasicStats aggregateStat = BasicStats.buildFrom(results);
+
+    aggregateStat.apply(new BasicStats.SetMinRowNumber01());
+
+    return aggregateStat.getNumRows();
+  }
+
   /**
    * Returns number of rows if it exists. Otherwise it estimates number of rows
    * based on estimated data size for both partition and non-partitioned table
    * RelOptHiveTable's getRowCount uses this.
-   *
-   * @param conf
-   * @param schema
-   * @param table
-   * @return
    */
-  public static long getNumRows(HiveConf conf, List<ColumnInfo> schema, Table table,
+  public static long getNumRows0(HiveConf conf, List<ColumnInfo> schema, Table table,
                                 PrunedPartitionList partitionList, AtomicInteger noColsMissingStats) {
     //for non-partitioned table
     List<String> neededColumns = new ArrayList<>();
@@ -203,13 +250,13 @@ public class StatsUtils {
       long nr = bStats.getNumRows();
 
       // log warning if row count is missing
-      if(nr <= 0) {
+      if (nr <= 0) {
         noColsMissingStats.getAndIncrement();
       }
 
       // if row count exists or stats aren't to be estimated return
       // whatever we have
-      if(nr > 0 || !shouldEstimateStats) {
+      if (nr > 0 || !shouldEstimateStats) {
         return nr;
       }
       // go ahead with the estimation

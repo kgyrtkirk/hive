@@ -102,9 +102,11 @@ public class BasicStats {
   public static class DataSizeEstimator implements IStatsEnhancer {
 
     private HiveConf conf;
+    private float deserFactor;
 
     public DataSizeEstimator(HiveConf conf) {
       this.conf = conf;
+      deserFactor = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
     }
 
     @Override
@@ -122,7 +124,6 @@ public class BasicStats {
             ds = 0L;
           }
         }
-        float deserFactor = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
         ds = (long) (ds * deserFactor);
 
         stats.setDataSize(ds);
