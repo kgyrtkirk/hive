@@ -160,6 +160,7 @@ public class StatsUtils {
         fetchColStats, testMode);
   }
 
+  @Deprecated
   private static long getDataSize(HiveConf conf, Table table) {
     long ds = getRawDataSize(table);
     if (ds <= 0) {
@@ -234,7 +235,8 @@ public class StatsUtils {
    * based on estimated data size for both partition and non-partitioned table
    * RelOptHiveTable's getRowCount uses this.
    */
-  public static long getNumRows0(HiveConf conf, List<ColumnInfo> schema, Table table,
+  @Deprecated
+  private static long getNumRows0(HiveConf conf, List<ColumnInfo> schema, Table table,
                                 PrunedPartitionList partitionList, AtomicInteger noColsMissingStats) {
     //for non-partitioned table
     List<String> neededColumns = new ArrayList<>();
@@ -349,6 +351,7 @@ public class StatsUtils {
     }
   }
 
+  @Deprecated
   private static long getNumRows(HiveConf conf, List<ColumnInfo> schema, List<String> neededColumns,
                                  Table table, long ds) {
     Partish p = Partish.buildFor(table);
