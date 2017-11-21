@@ -388,7 +388,7 @@ public class StatsUtils {
 
       List<BasicStats> partStats = new ArrayList<>();
       for (Partition p : partList.getNotDeniedPartns()) {
-        BasicStats basicStats = new BasicStats(Partish.buildFor(table));
+        BasicStats basicStats = new BasicStats(Partish.buildFor(table, p));
         if (shouldEstimateStats) {
           // FIXME: misses paralelle
           basicStats.apply(new BasicStats.DataSizeEstimator(conf));
