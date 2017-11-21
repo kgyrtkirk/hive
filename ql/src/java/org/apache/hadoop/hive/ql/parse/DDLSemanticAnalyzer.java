@@ -1785,17 +1785,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       AlterTableDesc desc, AlterTableTypes op, boolean doForceExclusive) throws SemanticException {
     boolean alterPartitions = partSpec != null && !partSpec.isEmpty();
     //cascade only occurs at table level then cascade to partition level
-    if (alterPartitions) {
-      throw new SemanticException(
-          ErrorMsg.ALTER_TABLE_PARTITION_CASCADE_NOT_SUPPORTED, op.getName());
-    }
 
     Table tab = getTable(tableName, true);
     // cascade only occurs with partitioned table
-    if (!tab.isPartitioned()) {
-      throw new SemanticException(
-          ErrorMsg.ALTER_TABLE_NON_PARTITIONED_TABLE_CASCADE_NOT_SUPPORTED);
-    }
 
     // Determine the lock type to acquire
     WriteEntity.WriteType writeType = doForceExclusive
