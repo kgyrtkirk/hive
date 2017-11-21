@@ -906,7 +906,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       Tree child = ast.getChild(i);
       switch (child.getType()) {
       case HiveParser.TOK_VALIDATE:
-        if (desc != null) throw new SemanticException("Invalid ALTER VALIDATE command");
+        if (desc != null) {
+          throw new SemanticException("Invalid ALTER VALIDATE command");
+        }
         desc = AlterResourcePlanDesc.createValidatePlan(rpName);
         break;
       case HiveParser.TOK_ACTIVATE:
@@ -929,7 +931,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         break;
       case HiveParser.TOK_DISABLE:
-        if (desc != null) throw new SemanticException("Invalid ALTER DISABLE command");
+        if (desc != null) {
+          throw new SemanticException("Invalid ALTER DISABLE command");
+        }
         desc = AlterResourcePlanDesc.createChangeStatus(rpName, WMResourcePlanStatus.DISABLED);
         break;
       case HiveParser.TOK_QUERY_PARALLELISM:
@@ -951,7 +955,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         desc.setDefaultPoolPath(child.getChild(0).getText());
         break;
       case HiveParser.TOK_RENAME:
-        if (desc != null) throw new SemanticException("Invalid ALTER RENAME command");
+        if (desc != null) {
+          throw new SemanticException("Invalid ALTER RENAME command");
+        }
         if (ast.getChildCount() == (i + 1)) {
           throw new SemanticException("Expected an argument");
         }
@@ -1777,17 +1783,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void addInputsOutputsAlterTable(String tableName, Map<String, String> partSpec,
       AlterTableDesc desc, AlterTableTypes op, boolean doForceExclusive) throws SemanticException {
-    boolean isCascade = desc != null && desc.getIsCascade();
     boolean alterPartitions = partSpec != null && !partSpec.isEmpty();
     //cascade only occurs at table level then cascade to partition level
-    if (isCascade && alterPartitions) {
+    if (alterPartitions) {
       throw new SemanticException(
           ErrorMsg.ALTER_TABLE_PARTITION_CASCADE_NOT_SUPPORTED, op.getName());
     }
 
     Table tab = getTable(tableName, true);
     // cascade only occurs with partitioned table
-    if (isCascade && !tab.isPartitioned()) {
+    if (!tab.isPartitioned()) {
       throw new SemanticException(
           ErrorMsg.ALTER_TABLE_NON_PARTITIONED_TABLE_CASCADE_NOT_SUPPORTED);
     }
@@ -1801,10 +1806,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       alterTableOutput = new WriteEntity(tab, writeType);
       outputs.add(alterTableOutput);
       //do not need the lock for partitions since they are covered by the table lock
-      if (isCascade) {
-        for (Partition part : getPartitions(tab, partSpec, false)) {
-          outputs.add(new WriteEntity(part, WriteEntity.WriteType.DDL_NO_LOCK));
-        }
+      for (Partition part : getPartitions(tab, partSpec, false)) {
+        outputs.add(new WriteEntity(part, WriteEntity.WriteType.DDL_NO_LOCK));
       }
     } else {
       ReadEntity re = new ReadEntity(tab);
@@ -3024,7 +3027,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String newComment = null;
     boolean first = false;
     String flagCol = null;
-    boolean isCascade = false;
     //col_old_name col_new_name column_type [COMMENT col_comment] [FIRST|AFTER column_name] [CASCADE|RESTRICT]
     String oldColName = ast.getChild(0).getText();
     String newColName = ast.getChild(1).getText();
@@ -3044,7 +3046,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           first = true;
           break;
         case HiveParser.TOK_CASCADE:
-          isCascade = true;
           break;
         case HiveParser.TOK_RESTRICT:
           break;
@@ -3102,11 +3103,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
             && uniqueConstraints == null && notNullConstraints == null) {
       alterTblDesc = new AlterTableDesc(tblName, partSpec,
           unescapeIdentifier(oldColName), unescapeIdentifier(newColName),
-          newType, newComment, first, flagCol, isCascade);
+          newType, newComment, first, flagCol);
     } else {
       alterTblDesc = new AlterTableDesc(tblName, partSpec,
           unescapeIdentifier(oldColName), unescapeIdentifier(newColName),
-          newType, newComment, first, flagCol, isCascade,
+          newType, newComment, first, flagCol, 
           primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints);
     }
     addInputsOutputsAlterTable(tblName, partSpec, alterTblDesc);
@@ -3158,13 +3159,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     String tblName = getDotName(qualified);
     List<FieldSchema> newCols = getColumns((ASTNode) ast.getChild(0));
-    boolean isCascade = false;
-    if (null != ast.getFirstChildWithType(HiveParser.TOK_CASCADE)) {
-      isCascade = true;
-    }
 
-    AlterTableDesc alterTblDesc = new AlterTableDesc(tblName, partSpec, newCols,
-        alterType, isCascade);
+    AlterTableDesc alterTblDesc = new AlterTableDesc(tblName, partSpec, newCols, alterType);
 
     addInputsOutputsAlterTable(tblName, partSpec, alterTblDesc);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),

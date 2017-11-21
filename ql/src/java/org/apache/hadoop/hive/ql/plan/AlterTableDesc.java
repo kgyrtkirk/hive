@@ -36,7 +36,6 @@ import com.google.common.collect.ImmutableList;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -71,8 +70,8 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     private AlterTableTypes(String name) { this.name = name; }
     public String getName() { return name; }
 
-    public static final List<AlterTableTypes> nonNativeTableAllowedTypes = 
-        ImmutableList.of(ADDPROPS, DROPPROPS); 
+    public static final List<AlterTableTypes> nonNativeTableAllowedTypes =
+        ImmutableList.of(ADDPROPS, DROPPROPS);
   }
 
   public static enum ProtectModeType {
@@ -125,7 +124,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   Table table;
   boolean isDropIfExists = false;
   boolean isTurnOffSorting = false;
-  boolean isCascade = false;
   EnvironmentContext environmentContext;
   String dropConstraintName;
   List<SQLPrimaryKey> primaryKeyCols;
@@ -149,7 +147,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    */
   public AlterTableDesc(String tblName, HashMap<String, String> partSpec,
       String oldColName, String newColName, String newType, String newComment,
-      boolean first, String afterCol, boolean isCascade) {
+      boolean first, String afterCol) {
     super();
     oldName = tblName;
     this.partSpec = partSpec;
@@ -160,12 +158,11 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     this.first = first;
     this.afterCol = afterCol;
     op = AlterTableTypes.RENAMECOLUMN;
-    this.isCascade = isCascade;
   }
 
   public AlterTableDesc(String tblName, HashMap<String, String> partSpec,
       String oldColName, String newColName, String newType, String newComment,
-      boolean first, String afterCol, boolean isCascade, List<SQLPrimaryKey> primaryKeyCols,
+      boolean first, String afterCol, List<SQLPrimaryKey> primaryKeyCols,
       List<SQLForeignKey> foreignKeyCols, List<SQLUniqueConstraint> uniqueConstraintCols,
       List<SQLNotNullConstraint> notNullConstraintCols) {
     super();
@@ -178,7 +175,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     this.first = first;
     this.afterCol = afterCol;
     op = AlterTableTypes.RENAMECOLUMN;
-    this.isCascade = isCascade;
     this.primaryKeyCols = primaryKeyCols;
     this.foreignKeyCols = foreignKeyCols;
     this.uniqueConstraintCols = uniqueConstraintCols;
@@ -210,12 +206,11 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    *          new columns to be added
    */
   public AlterTableDesc(String name, HashMap<String, String> partSpec, List<FieldSchema> newCols,
-      AlterTableTypes alterType, boolean isCascade) {
+      AlterTableTypes alterType) {
     op = alterType;
     oldName = name;
     this.newCols = new ArrayList<FieldSchema>(newCols);
     this.partSpec = partSpec;
-    this.isCascade = isCascade;
   }
 
   /**
@@ -874,13 +869,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    */
   public boolean getIsDropIfExists() {
     return isDropIfExists;
-  }
-
-  /**
-   * @return isCascade
-   */
-  public boolean getIsCascade() {
-    return isCascade;
   }
 
   public static boolean doesAlterTableTypeSupportPartialPartitionSpec(AlterTableTypes type) {

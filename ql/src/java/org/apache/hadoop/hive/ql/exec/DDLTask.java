@@ -3913,7 +3913,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     try {
       if (allPartitions == null) {
-        db.alterTable(alterTbl.getOldName(), tbl, alterTbl.getIsCascade(), alterTbl.getEnvironmentContext());
+        db.alterTable(alterTbl.getOldName(), tbl, alterTbl.getEnvironmentContext());
       } else {
         db.alterPartitions(Warehouse.getQualifiedName(tbl.getTTable()), allPartitions, alterTbl.getEnvironmentContext());
       }
@@ -3975,7 +3975,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private void addChildTasks(List<Task<?>> extraTasks) {
-    if (extraTasks == null) return;
+    if (extraTasks == null) {
+      return;
+    }
     for (Task<?> newTask : extraTasks) {
       addDependentTask(newTask);
     }
@@ -4145,16 +4147,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       }
 
-      boolean partitioned = tbl.isPartitioned();
-      boolean droppingColumns = alterTbl.getNewCols().size() < sd.getCols().size();
-      if (ParquetHiveSerDe.isParquetTable(tbl) &&
-          isSchemaEvolutionEnabled(tbl) &&
-          !alterTbl.getIsCascade() &&
-          droppingColumns && partitioned) {
-        LOG.warn("Cannot drop columns from a partitioned parquet table without the CASCADE option");
-        throw new HiveException(ErrorMsg.REPLACE_CANNOT_DROP_COLUMNS,
-            alterTbl.getOldName());
-      }
       sd.setCols(alterTbl.getNewCols());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDPROPS) {
       return alterTableAddProps(alterTbl, tbl, part, environmentContext);
@@ -4343,7 +4335,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private void checkMmLb(Table tbl) throws HiveException {
-    if (!tbl.isStoredAsSubDirectories()) return;
+    if (!tbl.isStoredAsSubDirectories()) {
+      return;
+    }
     // TODO [MM gap?]: by design; no-one seems to use LB tables. They will work, but not convert.
     //                 It's possible to work around this by re-creating and re-inserting the table.
     throw new HiveException("Converting list bucketed tables stored as subdirectories "
@@ -4351,7 +4345,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private void checkMmLb(Partition part) throws HiveException {
-    if (!part.isStoredAsSubDirectories()) return;
+    if (!part.isStoredAsSubDirectories()) {
+      return;
+    }
     throw new HiveException("Converting list bucketed tables stored as subdirectories "
         + " to MM is not supported. Please re-create a table in the desired format.");
   }
@@ -4387,7 +4383,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Utilities.FILE_OP_LOGGER.trace("Deleting " + what + " " + path);
     }
     try {
-      if (!fs.delete(path, true)) throw new IOException("delete returned false");
+      if (!fs.delete(path, true)) {
+        throw new IOException("delete returned false");
+      }
     } catch (Exception ex) {
       String error = "Couldn't delete " + path + "; cannot remove MM setting from the table";
       LOG.error(error, ex);
