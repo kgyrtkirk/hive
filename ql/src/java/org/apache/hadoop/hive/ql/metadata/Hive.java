@@ -625,8 +625,13 @@ public class Hive {
    */
   public void alterTable(String fullyQlfdTblName, Table newTbl, EnvironmentContext environmentContext)
       throws InvalidOperationException, HiveException {
+    alterTable(fullyQlfdTblName, newTbl, false, environmentContext);
+  }
+
+  public void alterTable(String fullyQlfdTblName, Table newTbl, boolean cascade, EnvironmentContext environmentContext)
+      throws InvalidOperationException, HiveException {
     String[] names = Utilities.getDbTableName(fullyQlfdTblName);
-    alterTable(names[0], names[1], newTbl, true, environmentContext);
+    alterTable(names[0], names[1], newTbl, cascade, environmentContext);
   }
 
   public void alterTable(String dbName, String tblName, Table newTbl, boolean cascade,
@@ -1492,9 +1497,8 @@ public class Hive {
    */
   public List<String> getTablesByType(String dbName, String pattern, TableType type)
       throws HiveException {
-    if (dbName == null) {
+    if (dbName == null)
       dbName = SessionState.get().getCurrentDatabase();
-    }
 
     try {
       if (type != null) {
@@ -3596,15 +3600,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     ErrorMsg errorMsg = ErrorMsg.getErrorMsg(e);
 
-    if (logMsg != null) {
+    if (logMsg != null)
       LOG.info(String.format(logMsg, e.getMessage()));
-    }
 
-    if (errorMsg != ErrorMsg.UNRESOLVED_RT_EXCEPTION) {
+    if (errorMsg != ErrorMsg.UNRESOLVED_RT_EXCEPTION)
       return new HiveException(e, e.getMessage(), errorMsg, hiveErrMsg);
-    } else {
+    else
       return new HiveException(msg, e);
-    }
   }
 
   /**
@@ -3797,9 +3799,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               bucketDest.toUri().toString());
           try {
             fs.rename(bucketSrc, bucketDest);
-            if (newFiles != null) {
-              newFiles.add(bucketDest);
-            }
+            if (newFiles != null) newFiles.add(bucketDest);
           } catch (Exception e) {
             throw getHiveException(e, msg);
           }
@@ -3957,9 +3957,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       recycleDirToCmPath(path, purge);
     }
     FileStatus[] statuses = fs.listStatus(path, pathFilter);
-    if (statuses == null || statuses.length == 0) {
-      return;
-    }
+    if (statuses == null || statuses.length == 0) return;
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       String s = "Deleting files under " + path + " for replace: ";
       for (FileStatus file : statuses) {
@@ -4281,7 +4279,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
   /**
    * @deprecated use {@link #compact2(String, String, String, String, Map)}
    */
-  @Deprecated
   public void compact(String dbname, String tableName, String partName, String compactType,
                       Map<String, String> tblproperties) throws HiveException {
     compact2(dbname, tableName, partName, compactType, tblproperties);
@@ -4303,13 +4300,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throws HiveException {
     try {
       CompactionType cr = null;
-      if ("major".equals(compactType)) {
-        cr = CompactionType.MAJOR;
-      } else if ("minor".equals(compactType)) {
-        cr = CompactionType.MINOR;
-      } else {
-        throw new RuntimeException("Unknown compaction type " + compactType);
-      }
+      if ("major".equals(compactType)) cr = CompactionType.MAJOR;
+      else if ("minor".equals(compactType)) cr = CompactionType.MINOR;
+      else throw new RuntimeException("Unknown compaction type " + compactType);
       return getMSC().compact2(dbname, tableName, partName, cr, tblproperties);
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
