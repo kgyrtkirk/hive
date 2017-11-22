@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -3665,6 +3666,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (oldp == null || newp == null) {
       throw new InvalidObjectException("partition does not exist.");
     }
+    deleteInvalidColStats(dbname, name, part_vals, oldp, newp);
     oldp.setValues(newp.getValues());
     oldp.setPartitionName(newp.getPartitionName());
     oldp.setParameters(newPart.getParameters());
@@ -5620,7 +5622,7 @@ public class ObjectStore implements RawStore, Configurable {
               }
               if (!found) {
                 throw new InvalidObjectException("No grant (" + privilege
-                    + ") found " + " on table " + hiveObject.getObjectName()
+                    + ") found on table " + hiveObject.getObjectName()
                     + ", database is " + hiveObject.getDbName());
               }
             }
@@ -5654,7 +5656,7 @@ public class ObjectStore implements RawStore, Configurable {
               }
               if (!found) {
                 throw new InvalidObjectException("No grant (" + privilege
-                    + ") found " + " on table " + tabObj.getTableName()
+                    + ") found on table " + tabObj.getTableName()
                     + ", partition is " + partName + ", database is " + tabObj.getDbName());
               }
             }
@@ -5693,7 +5695,7 @@ public class ObjectStore implements RawStore, Configurable {
                   }
                   if (!found) {
                     throw new InvalidObjectException("No grant (" + privilege
-                        + ") found " + " on table " + tabObj.getTableName()
+                        + ") found on table " + tabObj.getTableName()
                         + ", partition is " + partName + ", column name = "
                         + hiveObject.getColumnName() + ", database is "
                         + tabObj.getDbName());
@@ -5725,7 +5727,7 @@ public class ObjectStore implements RawStore, Configurable {
                   }
                   if (!found) {
                     throw new InvalidObjectException("No grant (" + privilege
-                        + ") found " + " on table " + tabObj.getTableName()
+                        + ") found on table " + tabObj.getTableName()
                         + ", column name = "
                         + hiveObject.getColumnName() + ", database is "
                         + tabObj.getDbName());
@@ -7955,14 +7957,46 @@ public class ObjectStore implements RawStore, Configurable {
     queryWithParams.getFirst().deletePersistentAll(queryWithParams.getSecond());
   }
 
+  private void deleteInvalidColStats(String dbname, String name, List<String> part_vals, MPartition oldp, MPartition newp) throws MetaException, InvalidObjectException {
+    MTable mTable = getMTable(dbname, name);
+
+    TreeSet<MFieldSchema> colStatsToRemove = new TreeSet<>(MFieldSchema.NAME_TYPE_COMPARATOR);
+    for (MFieldSchema mFieldSchema : oldp.getSd().getCD().getCols()) {
+      colStatsToRemove.add(mFieldSchema);
+    }
+    for (MFieldSchema mFieldSchema : newp.getSd().getCD().getCols()) {
+      colStatsToRemove.remove(mFieldSchema);
+    }
+
+    if (colStatsToRemove.isEmpty()) {
+      return;
+    }
+
+    ArrayList<String> colStatsRemoved = new ArrayList<>();
+    String partName = Warehouse.makePartName(this.convertToFieldSchemas(mTable.getPartitionKeys()), part_vals);
+    try {
+      for (MFieldSchema mFieldSchema : colStatsToRemove) {
+
+        String colName = mFieldSchema.getName();
+        colStatsRemoved.add(colName);
+
+        deletePartitionColumnStatistics(dbname, name, partName, part_vals, colName);
+      }
+    } catch (NoSuchObjectException | InvalidInputException e) {
+      throw new MetaException("Error removing columnStats." + ExceptionUtils.getStackTrace(e));
+    }
+    StatsSetupConst.removeColumnStatsState(mTable.getParameters(), colStatsRemoved);
+
+  }
+
   @Override
   public boolean deletePartitionColumnStatistics(String dbName, String tableName, String partName,
       List<String> partVals, String colName) throws NoSuchObjectException, MetaException,
       InvalidObjectException, InvalidInputException {
+
     boolean ret = false;
     Query query = null;
-    dbName = org.apache.commons.lang.StringUtils.defaultString(dbName,
-      Warehouse.DEFAULT_DATABASE_NAME);
+    dbName = org.apache.commons.lang.StringUtils.defaultString(dbName, Warehouse.DEFAULT_DATABASE_NAME);
     if (tableName == null) {
       throw new InvalidInputException("Table name is null.");
     }
@@ -7972,24 +8006,18 @@ public class ObjectStore implements RawStore, Configurable {
       MPartitionColumnStatistics mStatsObj;
       List<MPartitionColumnStatistics> mStatsObjColl;
       if (mTable == null) {
-        throw new NoSuchObjectException("Table " + tableName
-            + "  for which stats deletion is requested doesn't exist");
+        throw new NoSuchObjectException("Table " + tableName + "  for which stats deletion is requested doesn't exist");
       }
       MPartition mPartition = getMPartition(dbName, tableName, partVals);
       if (mPartition == null) {
-        throw new NoSuchObjectException("Partition " + partName
-            + " for which stats deletion is requested doesn't exist");
+        throw new NoSuchObjectException("Partition " + partName + " for which stats deletion is requested doesn't exist");
       }
       query = pm.newQuery(MPartitionColumnStatistics.class);
       String filter;
       String parameters;
       if (colName != null) {
-        filter =
-            "partition.partitionName == t1 && dbName == t2 && tableName == t3 && "
-                + "colName == t4";
-        parameters =
-            "java.lang.String t1, java.lang.String t2, "
-                + "java.lang.String t3, java.lang.String t4";
+        filter = "partition.partitionName == t1 && dbName == t2 && tableName == t3 && colName == t4";
+        parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3, java.lang.String t4";
       } else {
         filter = "partition.partitionName == t1 && dbName == t2 && tableName == t3";
         parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3";
@@ -7998,29 +8026,20 @@ public class ObjectStore implements RawStore, Configurable {
       query.declareParameters(parameters);
       if (colName != null) {
         query.setUnique(true);
-        mStatsObj =
-            (MPartitionColumnStatistics) query.executeWithArray(partName.trim(),
-                normalizeIdentifier(dbName),
-                normalizeIdentifier(tableName),
-                normalizeIdentifier(colName));
+        mStatsObj = (MPartitionColumnStatistics) query.executeWithArray(partName.trim(), normalizeIdentifier(dbName), normalizeIdentifier(tableName), normalizeIdentifier(colName));
         pm.retrieve(mStatsObj);
         if (mStatsObj != null) {
           pm.deletePersistent(mStatsObj);
         } else {
-          throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName + " table="
-              + tableName + " partition=" + partName + " col=" + colName);
+          throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName + " table=" + tableName + " partition=" + partName + " col=" + colName);
         }
       } else {
-        mStatsObjColl =
-            (List<MPartitionColumnStatistics>) query.execute(partName.trim(),
-                normalizeIdentifier(dbName),
-                normalizeIdentifier(tableName));
+        mStatsObjColl = (List<MPartitionColumnStatistics>) query.execute(partName.trim(), normalizeIdentifier(dbName), normalizeIdentifier(tableName));
         pm.retrieveAll(mStatsObjColl);
         if (mStatsObjColl != null) {
           pm.deletePersistentAll(mStatsObjColl);
         } else {
-          throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName + " table="
-              + tableName + " partition" + partName);
+          throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName + " table=" + tableName + " partition" + partName);
         }
       }
       ret = commitTransaction();
@@ -8031,6 +8050,7 @@ public class ObjectStore implements RawStore, Configurable {
       rollbackAndCleanup(ret, query);
     }
     return ret;
+
   }
 
   @Override
@@ -8408,7 +8428,7 @@ public class ObjectStore implements RawStore, Configurable {
         pm.retrieveAll(mVerTables);
       } catch (JDODataStoreException e) {
         if (e.getCause() instanceof MissingTableException) {
-          throw new MetaException("Version table not found. " + "The metastore is not upgraded to "
+          throw new MetaException("Version table not found. The metastore is not upgraded to "
               + MetaStoreSchemaInfoFactory.get(getConf()).getHiveSchemaVersion());
         } else {
           throw e;

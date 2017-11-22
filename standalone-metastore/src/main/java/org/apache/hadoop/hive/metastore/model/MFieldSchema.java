@@ -17,14 +17,29 @@
  */
 
 /**
- * 
+ *
  */
 package org.apache.hadoop.hive.metastore.model;
+
+import java.util.Comparator;
 
 /**
  * Represent a column or a type of a table or object
  */
 public class MFieldSchema {
+
+  public static Comparator<MFieldSchema> NAME_TYPE_COMPARATOR = new Comparator<MFieldSchema>() {
+
+    @Override
+    public int compare(MFieldSchema o1, MFieldSchema o2) {
+      int res = o1.name.compareTo(o2.name);
+      if (res != 0) {
+        return res;
+      }
+      return o1.type.compareTo(o2.type);
+    }
+  };
+
   private String name;
   private String type;
   private String comment;
@@ -76,5 +91,5 @@ public class MFieldSchema {
   public void setType(String field) {
     this.type = field;
   }
-  
+
 }
