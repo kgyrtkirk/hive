@@ -300,7 +300,7 @@ public class HiveAlterHandler implements AlterHandler {
           MetaStoreUtils.updateTableStatsFast(db, newt, wh, false, true, environmentContext);
         }
 
-        if (cascade && isPartitionedTable) {
+        if (isPartitionedTable) {
           //Currently only column related changes can be cascaded in alter table
           if(!MetaStoreUtils.areSameColumns(oldt.getSd().getCols(), newt.getSd().getCols())) {
             parts = msdb.getPartitions(dbname, name, -1);
