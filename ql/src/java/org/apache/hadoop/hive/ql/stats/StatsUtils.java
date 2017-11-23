@@ -238,11 +238,6 @@ public class StatsUtils {
   @Deprecated
   private static long getNumRows0(HiveConf conf, List<ColumnInfo> schema, Table table,
                                 PrunedPartitionList partitionList, AtomicInteger noColsMissingStats) {
-    //for non-partitioned table
-    List<String> neededColumns = new ArrayList<>();
-    for(ColumnInfo ci:schema) {
-      neededColumns.add(ci.getInternalName());
-    }
 
     boolean shouldEstimateStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS);
 
@@ -263,7 +258,7 @@ public class StatsUtils {
       }
       // go ahead with the estimation
       long ds = getDataSize(conf, table);
-      return getNumRows(conf, schema, neededColumns, table, ds);
+      return getNumRows(conf, schema, table, ds);
     }
     else { // partitioned table
 
@@ -313,7 +308,7 @@ public class StatsUtils {
           HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
       ds = (long) (ds * deserFactor);
 
-      int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
+      int avgRowSize = estimateRowSizeFromSchema(conf, schema);
       if (avgRowSize > 0) {
         setUnknownRcDsToAverage(rowCounts, dataSizes, avgRowSize);
         nr = getSumIgnoreNegatives(rowCounts);
@@ -352,8 +347,7 @@ public class StatsUtils {
   }
 
   @Deprecated
-  private static long getNumRows(HiveConf conf, List<ColumnInfo> schema, List<String> neededColumns,
-                                 Table table, long ds) {
+  private static long getNumRows(HiveConf conf, List<ColumnInfo> schema, Table table, long ds) {
     Partish p = Partish.buildFor(table);
     BasicStats basicStats = new BasicStats(p);
 
@@ -362,7 +356,7 @@ public class StatsUtils {
     // and 0 means statistics gathering is disabled
     // estimate only if num rows is -1 since 0 could be actual number of rows
     if (nr < 0) {
-      int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
+      int avgRowSize = estimateRowSizeFromSchema(conf, schema);
       if (avgRowSize > 0) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Estimated average row size: " + avgRowSize);
@@ -407,7 +401,7 @@ public class StatsUtils {
       }
 
       //      long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
-      basicStats.apply(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema, neededColumns)));
+      basicStats.apply(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
       basicStats.apply(new BasicStats.SetMinRowNumber01());
       //      long nr = getNumRows(conf, schema, neededColumns, table, ds);
       long ds = basicStats.getDataSize();
@@ -444,7 +438,7 @@ public class StatsUtils {
           // FIXME: misses paralelle
           basicStats.apply(new BasicStats.DataSizeEstimator(conf));
         }
-        basicStats.apply(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema, neededColumns)));
+        basicStats.apply(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
         //        basicStats.apply(new BasicStats.SetMinRowNumber());
         partStats.add(basicStats);
       }
@@ -470,7 +464,7 @@ public class StatsUtils {
 //          stats.getBasicStatsState().equals(State.COMPLETE)) {
 //        stats.setBasicStatsState(State.PARTIAL);
 //      }
-      
+
       if (fetchColStats) {
         List<String> partitionCols = getPartitionColumns(
             schema, neededColumns, referencedColumns);
@@ -826,6 +820,14 @@ public class StatsUtils {
         dataSizes.set(i, s);
       }
     }
+  }
+
+  public static int estimateRowSizeFromSchema(HiveConf conf, List<ColumnInfo> schema) {
+    List<String> neededColumns = new ArrayList<>();
+    for (ColumnInfo ci : schema) {
+      neededColumns.add(ci.getInternalName());
+    }
+    return estimateRowSizeFromSchema(conf, schema, neededColumns);
   }
 
   public static int estimateRowSizeFromSchema(HiveConf conf, List<ColumnInfo> schema,
