@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
+import org.apache.hadoop.hive.ql.stats.BasicStats.Factory;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.NDV;
@@ -117,6 +118,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.math.LongMath;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.sun.swing.internal.plaf.basic.resources.basic;
 
 public class StatsUtils {
 
@@ -200,27 +202,26 @@ public class StatsUtils {
     }
 
     boolean shouldEstimateStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS);
-    List<String> neededColumns = new ArrayList<>();
-    for (ColumnInfo ci : schema) {
-      neededColumns.add(ci.getInternalName());
+
+    Factory basicStatsFactory = new BasicStats.Factory();
+
+    if (shouldEstimateStats) {
+      basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
+      basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
     }
 
     List<BasicStats> results = new ArrayList<>();
     for (Partish pi : inputs) {
-      BasicStats bStats = new BasicStats(pi);
 
+      BasicStats bStats = new BasicStats(pi);
       long nr = bStats.getNumRows();
+      // FIXME: this point will be lost after the factory; check that it's really a warning....cleanup/etc
       if (nr <= 0) {
         // log warning if row count is missing
         noColsMissingStats.getAndIncrement();
       }
 
-      if (shouldEstimateStats) {
-        bStats.apply(new BasicStats.DataSizeEstimator(conf));
-        bStats.apply(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema, neededColumns)));
-      }
-
-      results.add(bStats);
+      results.add(basicStatsFactory.build(pi));
     }
 
     BasicStats aggregateStat = BasicStats.buildFrom(results);
@@ -391,18 +392,18 @@ public class StatsUtils {
 
     if (!table.isPartitioned()) {
 
-
-      //getDataSize tries to estimate stats if it doesn't exist using file size
-      // we would like to avoid file system calls  if it too expensive
-      BasicStats basicStats = new BasicStats(Partish.buildFor(table));
+      Factory basicStatsFactory = new BasicStats.Factory();
 
       if (shouldEstimateStats) {
-        basicStats.apply(new BasicStats.DataSizeEstimator(conf));
+        basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
       }
 
       //      long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
-      basicStats.apply(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
-      basicStats.apply(new BasicStats.SetMinRowNumber01());
+      basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
+      basicStatsFactory.addEnhancer(new BasicStats.SetMinRowNumber01());
+
+      BasicStats basicStats = basicStatsFactory.build(Partish.buildFor(table));
+
       //      long nr = getNumRows(conf, schema, neededColumns, table, ds);
       long ds = basicStats.getDataSize();
       long nr = basicStats.getNumRows();
@@ -433,13 +434,17 @@ public class StatsUtils {
 
       List<BasicStats> partStats = new ArrayList<>();
       for (Partition p : partList.getNotDeniedPartns()) {
-        BasicStats basicStats = new BasicStats(Partish.buildFor(table, p));
+
+        Factory basicStatsFactory = new Factory();
         if (shouldEstimateStats) {
           // FIXME: misses paralelle
-          basicStats.apply(new BasicStats.DataSizeEstimator(conf));
+          basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
         }
-        basicStats.apply(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
-        //        basicStats.apply(new BasicStats.SetMinRowNumber());
+
+        //      long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
+        basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
+        BasicStats basicStats = basicStatsFactory.build(Partish.buildFor(table, p));
+
         partStats.add(basicStats);
       }
 
@@ -894,6 +899,7 @@ public class StatsUtils {
    *          - partition list
    * @return sizes of partitions
    */
+  @Deprecated
   public static List<Long> getFileSizeForPartitions(final HiveConf conf, List<Partition> parts) {
     LOG.info("Number of partitions : " + parts.size());
     ArrayList<Future<Long>> futures = new ArrayList<>();

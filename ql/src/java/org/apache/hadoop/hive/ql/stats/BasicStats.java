@@ -275,7 +275,7 @@ public class BasicStats {
     return state;
   }
 
-  public void apply(IStatsEnhancer estimator) {
+  void apply(IStatsEnhancer estimator) {
     estimator.apply(this);
   }
 
