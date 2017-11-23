@@ -189,11 +189,6 @@ public class StatsUtils {
    */
   public static long getNumRows(HiveConf conf, List<ColumnInfo> schema, Table table,
                                 PrunedPartitionList partitionList, AtomicInteger noColsMissingStats) {
-    //for non-partitioned table
-    List<String> neededColumns = new ArrayList<>();
-    for(ColumnInfo ci:schema) {
-      neededColumns.add(ci.getInternalName());
-    }
 
     boolean shouldEstimateStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS);
 
@@ -213,7 +208,7 @@ public class StatsUtils {
       }
       // go ahead with the estimation
       long ds = getDataSize(conf, table);
-      return getNumRows(conf, schema, neededColumns, table, ds);
+      return getNumRows(conf, schema, table, ds);
     }
     else { // partitioned table
       long nr = 0;
@@ -296,7 +291,7 @@ public class StatsUtils {
     }
   }
 
-  private static long getNumRows(HiveConf conf, List<ColumnInfo> schema, List<String> neededColumns, Table table, long ds) {
+  private static long getNumRows(HiveConf conf, List<ColumnInfo> schema, Table table, long ds) {
     long nr = getNumRows(table);
     // number of rows -1 means that statistics from metastore is not reliable
     // and 0 means statistics gathering is disabled
@@ -340,7 +335,7 @@ public class StatsUtils {
       //getDataSize tries to estimate stats if it doesn't exist using file size
       // we would like to avoid file system calls  if it too expensive
       long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
-      long nr = getNumRows(conf, schema, neededColumns, table, ds);
+      long nr = getNumRows(conf, schema, table, ds);
       List<ColStatistics> colStats = Lists.newArrayList();
       if (fetchColStats) {
         colStats = getTableColumnStats(table, schema, neededColumns, colStatsCache);
