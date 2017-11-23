@@ -310,7 +310,9 @@ public class HiveAlterHandler implements AlterHandler {
               ColumnStatistics colStats = updateOrGetPartitionColumnStats(msdb, dbname, name,
                   part.getValues(), oldCols, oldt, part, null);
               assert(colStats == null);
-              msdb.alterPartition(dbname, name, part.getValues(), part);
+              if (cascade) {
+                msdb.alterPartition(dbname, name, part.getValues(), part);
+              }
             }
             msdb.alterTable(dbname, name, newt);
           } else {
