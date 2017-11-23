@@ -258,7 +258,7 @@ public class StatsUtils {
           HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
       ds = (long) (ds * deserFactor);
 
-      int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
+      int avgRowSize = estimateRowSizeFromSchema(conf, schema);
       if (avgRowSize > 0) {
         setUnknownRcDsToAverage(rowCounts, dataSizes, avgRowSize);
         nr = getSumIgnoreNegatives(rowCounts);
@@ -296,14 +296,13 @@ public class StatsUtils {
     }
   }
 
-  private static long getNumRows(HiveConf conf, List<ColumnInfo> schema, List<String> neededColumns,
-                                 Table table, long ds) {
+  private static long getNumRows(HiveConf conf, List<ColumnInfo> schema, List<String> neededColumns, Table table, long ds) {
     long nr = getNumRows(table);
     // number of rows -1 means that statistics from metastore is not reliable
     // and 0 means statistics gathering is disabled
     // estimate only if num rows is -1 since 0 could be actual number of rows
     if (nr < 0) {
-      int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
+      int avgRowSize = estimateRowSizeFromSchema(conf, schema);
       if (avgRowSize > 0) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Estimated average row size: " + avgRowSize);
@@ -388,7 +387,7 @@ public class StatsUtils {
       ds = getSumIgnoreNegatives(dataSizes);
       ds = (long) (ds * deserFactor);
 
-      int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
+      int avgRowSize = estimateRowSizeFromSchema(conf, schema);
       if (avgRowSize > 0) {
         setUnknownRcDsToAverage(rowCounts, dataSizes, avgRowSize);
         nr = getSumIgnoreNegatives(rowCounts);
@@ -766,6 +765,14 @@ public class StatsUtils {
         dataSizes.set(i, s);
       }
     }
+  }
+
+  public static int estimateRowSizeFromSchema(HiveConf conf, List<ColumnInfo> schema) {
+    List<String> neededColumns = new ArrayList<>();
+    for (ColumnInfo ci : schema) {
+      neededColumns.add(ci.getInternalName());
+    }
+    return estimateRowSizeFromSchema(conf, schema, neededColumns);
   }
 
   public static int estimateRowSizeFromSchema(HiveConf conf, List<ColumnInfo> schema,
