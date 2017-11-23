@@ -35,6 +35,23 @@ import com.google.common.collect.Lists;
 
 public class BasicStats {
 
+  public static class Factory {
+
+    private IStatsEnhancer[] enhancers;
+
+    public Factory(IStatsEnhancer... enhancers) {
+      this.enhancers = enhancers;
+    }
+
+    public BasicStats build(Partish p) {
+      BasicStats ret = new BasicStats(p);
+      for (IStatsEnhancer enhancer : enhancers) {
+        ret.apply(enhancer);
+      }
+      return ret;
+    }
+  }
+
   private static final Logger LOG = LoggerFactory.getLogger(BasicStats.class.getName());
 
   public static interface IStatsEnhancer {
@@ -159,6 +176,12 @@ public class BasicStats {
 
     currentNumRows = rowCount;
     currentDataSize = rawDataSize;
+
+    if (currentNumRows > 0) {
+      state = State.COMPLETE;
+    } else {
+      state = State.NONE;
+    }
   }
 
 
@@ -231,4 +254,8 @@ public class BasicStats {
     return new BasicStats(partStats);
   }
 
+  @Override
+  public String toString() {
+    return String.format("BasicStats: %d, %d %s", getNumRows(), getDataSize(), getState());
+  }
 }
