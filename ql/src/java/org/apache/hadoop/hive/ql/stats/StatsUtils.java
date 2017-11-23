@@ -195,11 +195,9 @@ public class StatsUtils {
       inputs.add(Partish.buildFor(table));
     }
 
-    boolean shouldEstimateStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS);
-
     Factory basicStatsFactory = new BasicStats.Factory();
 
-    if (shouldEstimateStats) {
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS)) {
       basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
       basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
     }
