@@ -207,12 +207,12 @@ public class StatsUtils {
 
       BasicStats bStats = new BasicStats(pi);
       long nr = bStats.getNumRows();
+      // FIXME parallel! \<>!
       // FIXME: this point will be lost after the factory; check that it's really a warning....cleanup/etc
       if (nr <= 0) {
         // log warning if row count is missing
         noColsMissingStats.getAndIncrement();
       }
-
       results.add(basicStatsFactory.build(pi));
     }
 
