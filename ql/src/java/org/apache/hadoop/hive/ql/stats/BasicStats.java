@@ -51,7 +51,7 @@ public class BasicStats {
 
   public static class Factory {
 
-    private List<IStatsEnhancer> enhancers = new LinkedList<>();
+    private final List<IStatsEnhancer> enhancers = new LinkedList<>();
 
     public Factory(IStatsEnhancer... enhancers) {
       this.enhancers.addAll(Arrays.asList(enhancers));
@@ -70,8 +70,16 @@ public class BasicStats {
     }
 
     public List<BasicStats> buildAll(HiveConf conf, Collection<Partish> parts) {
-
       LOG.info("Number of partishes : " + parts.size());
+
+      final List<BasicStats> ret = new ArrayList<>(parts.size());
+      if (parts.size() <= 1) {
+        for (Partish partish : parts) {
+          ret.add(build(partish));
+        }
+        return ret;
+      }
+
       List<Future<BasicStats>> futures = new ArrayList<>();
 
       int threads = conf.getIntVar(ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT);
@@ -92,7 +100,6 @@ public class BasicStats {
         }));
       }
 
-      final List<BasicStats> ret = new ArrayList<>(parts.size());
       try {
         for (int i = 0; i < futures.size(); i++) {
           ret.add(i, futures.get(i).get());
