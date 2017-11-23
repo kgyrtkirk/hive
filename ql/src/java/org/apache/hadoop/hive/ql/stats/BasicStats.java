@@ -19,28 +19,46 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class BasicStats {
 
+  private static final Logger LOG = LoggerFactory.getLogger(BasicStats.class.getName());
+
   public static class Factory {
 
-    private IStatsEnhancer[] enhancers;
+    private List<IStatsEnhancer> enhancers = new LinkedList<>();
 
     public Factory(IStatsEnhancer... enhancers) {
-      this.enhancers = enhancers;
+      this.enhancers.addAll(Arrays.asList(enhancers));
+    }
+
+    public void addEnhancer(IStatsEnhancer enhancer) {
+      enhancers.add(enhancer);
     }
 
     public BasicStats build(Partish p) {
@@ -50,9 +68,43 @@ public class BasicStats {
       }
       return ret;
     }
-  }
 
-  private static final Logger LOG = LoggerFactory.getLogger(BasicStats.class.getName());
+    public List<BasicStats> buildAll(HiveConf conf, Collection<Partish> parts) {
+
+      LOG.info("Number of partishes : " + parts.size());
+      List<Future<BasicStats>> futures = new ArrayList<>();
+
+      int threads = conf.getIntVar(ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT);
+
+      final ExecutorService pool;
+      if (threads <= 1) {
+        pool = MoreExecutors.sameThreadExecutor();
+      } else {
+        pool = Executors.newFixedThreadPool(threads, new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Get-Partitions-Size-%d").build());
+      }
+
+      for (final Partish part : parts) {
+        futures.add(pool.submit(new Callable<BasicStats>() {
+          @Override
+          public BasicStats call() throws Exception {
+            return build(part);
+          }
+        }));
+      }
+
+      final List<BasicStats> ret = new ArrayList<>(parts.size());
+      try {
+        for (int i = 0; i < futures.size(); i++) {
+          ret.add(i, futures.get(i).get());
+        }
+      } catch (InterruptedException | ExecutionException e) {
+        LOG.warn("Exception in processing files ", e);
+      } finally {
+        pool.shutdownNow();
+      }
+      return ret;
+    }
+  }
 
   public static interface IStatsEnhancer {
     void apply(BasicStats stats);
