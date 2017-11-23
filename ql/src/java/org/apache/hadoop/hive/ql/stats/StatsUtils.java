@@ -118,7 +118,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.math.LongMath;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.sun.swing.internal.plaf.basic.resources.basic;
 
 public class StatsUtils {
 
@@ -180,17 +179,12 @@ public class StatsUtils {
     return ds;
   }
 
+  /**
+   * Returns number of rows if it exists. Otherwise it estimates number of rows
+   * based on estimated data size for both partition and non-partitioned table
+   * RelOptHiveTable's getRowCount uses this.
+   */
   public static long getNumRows(HiveConf conf, List<ColumnInfo> schema, Table table, PrunedPartitionList partitionList, AtomicInteger noColsMissingStats) {
-    long nr0 = getNumRows0(conf, schema, table, partitionList, noColsMissingStats);
-    long nr1 = getNumRows1(conf, schema, table, partitionList, noColsMissingStats);
-
-    if (nr0 != nr1) {
-      throw new RuntimeException("E!");
-    }
-    return nr0;
-  }
-
-  public static long getNumRows1(HiveConf conf, List<ColumnInfo> schema, Table table, PrunedPartitionList partitionList, AtomicInteger noColsMissingStats) {
 
     List<Partish> inputs = new ArrayList<>();
     if (table.isPartitioned()) {
@@ -229,102 +223,6 @@ public class StatsUtils {
     aggregateStat.apply(new BasicStats.SetMinRowNumber01());
 
     return aggregateStat.getNumRows();
-  }
-
-  /**
-   * Returns number of rows if it exists. Otherwise it estimates number of rows
-   * based on estimated data size for both partition and non-partitioned table
-   * RelOptHiveTable's getRowCount uses this.
-   */
-  @Deprecated
-  private static long getNumRows0(HiveConf conf, List<ColumnInfo> schema, Table table,
-                                PrunedPartitionList partitionList, AtomicInteger noColsMissingStats) {
-
-    boolean shouldEstimateStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS);
-
-    if(!table.isPartitioned()) {
-      //get actual number of rows from metastore
-      BasicStats bStats = new BasicStats(Partish.buildFor(table));
-      long nr = bStats.getNumRows();
-
-      // log warning if row count is missing
-      if (nr <= 0) {
-        noColsMissingStats.getAndIncrement();
-      }
-
-      // if row count exists or stats aren't to be estimated return
-      // whatever we have
-      if (nr > 0 || !shouldEstimateStats) {
-        return nr;
-      }
-      // go ahead with the estimation
-      long ds = getDataSize(conf, table);
-      return getNumRows(conf, schema, table, ds);
-    }
-    else { // partitioned table
-
-      List<BasicStats> partStats = new ArrayList<>();
-      for (Partition partition : partitionList.getNotDeniedPartns()) {
-        partStats.add(new BasicStats(Partish.buildFor(table, partition)));
-      }
-      long nr = 0;
-      List<Long> rowCounts = Lists.newArrayList();
-      rowCounts = getBasicStatForPartitions(
-          table, partitionList.getNotDeniedPartns(), StatsSetupConst.ROW_COUNT);
-      nr = getSumIgnoreNegatives(rowCounts);
-
-      // log warning if row count is missing
-      if(nr <= 0) {
-        noColsMissingStats.getAndIncrement();
-      }
-
-      // if row count exists or stats aren't to be estimated return
-      // whatever we have
-      if(nr > 0 || !shouldEstimateStats) {
-        return nr;
-      }
-
-      // estimate row count
-      long ds = 0;
-      List<Long> dataSizes = Lists.newArrayList();
-
-      dataSizes =  getBasicStatForPartitions(
-          table, partitionList.getNotDeniedPartns(), StatsSetupConst.RAW_DATA_SIZE);
-
-      ds = getSumIgnoreNegatives(dataSizes);
-
-      if (ds <= 0) {
-        dataSizes = getBasicStatForPartitions(
-            table, partitionList.getNotDeniedPartns(), StatsSetupConst.TOTAL_SIZE);
-        ds = getSumIgnoreNegatives(dataSizes);
-      }
-
-      // if data size still could not be determined, then fall back to filesytem to get file
-      // sizes
-      if (ds <= 0 && shouldEstimateStats) {
-        dataSizes = getFileSizeForPartitions(conf, partitionList.getNotDeniedPartns());
-      }
-      ds = getSumIgnoreNegatives(dataSizes);
-      float deserFactor =
-          HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
-      ds = (long) (ds * deserFactor);
-
-      int avgRowSize = estimateRowSizeFromSchema(conf, schema);
-      if (avgRowSize > 0) {
-        setUnknownRcDsToAverage(rowCounts, dataSizes, avgRowSize);
-        nr = getSumIgnoreNegatives(rowCounts);
-        ds = getSumIgnoreNegatives(dataSizes);
-
-        // number of rows -1 means that statistics from metastore is not reliable
-        if (nr <= 0) {
-          nr = ds / avgRowSize;
-        }
-      }
-      if (nr == 0) {
-        nr = 1;
-      }
-      return nr;
-    }
   }
 
   private static void estimateStatsForMissingCols(List<String> neededColumns, List<ColStatistics> columnStats,
