@@ -19,13 +19,15 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
 import org.junit.Test;
 
 public class TestStatsUtils {
 
   @Test
-  public void testCombinedRange() {
+  public void testCombinedRange1() {
     Range r1 = new Range(0, 1);
     Range r2 = new Range(1, 11);
     Range r3 = StatsUtils.combineRange(r1, r2);
@@ -33,6 +35,29 @@ public class TestStatsUtils {
     rangeContains(r3, 0);
     rangeContains(r3, 1);
     rangeContains(r3, 11);
+  }
+
+  @Test
+  public void testCombinedRange2() {
+    checkCombinedRange(false, new Range(-2, -1), new Range(0, 10));
+    checkCombinedRange(true, new Range(-2, 1), new Range(0, 10));
+    checkCombinedRange(true, new Range(-2, 11), new Range(0, 10));
+    checkCombinedRange(true, new Range(1, 2), new Range(0, 10));
+    checkCombinedRange(true, new Range(1, 11), new Range(0, 10));
+    checkCombinedRange(false, new Range(11, 12), new Range(0, 10));
+  }
+
+
+  private void checkCombinedRange(boolean valid, Range r1, Range r2) {
+    Range r3a = StatsUtils.combineRange(r1, r2);
+    Range r3b = StatsUtils.combineRange(r2, r1);
+    if (valid) {
+      assertNotNull(r3a);
+      assertNotNull(r3b);
+    } else {
+      assertNull(r3a);
+      assertNull(r3b);
+    }
   }
 
   private boolean rangeContains(Range range, Number f) {
