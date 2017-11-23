@@ -19,23 +19,20 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestStatsUtils {
 
   @Test
-  @Ignore
-  public void test1() {
-    Range r1 = new Range(0.1f, 0.4f);
-    Range r2 = new Range(0.3f, 0.9f);
-    assertTrue(rangeContains(r1, 0.2f));
+  public void testCombinedRange() {
+    Range r1 = new Range(0, 1);
+    Range r2 = new Range(1, 11);
     Range r3 = StatsUtils.combineRange(r1, r2);
-    System.out.println(r3);
-    assertTrue(rangeContains(r3, 0.2f));
+    assertNotNull(r3);
+    rangeContains(r3, 0);
+    rangeContains(r3, 1);
+    rangeContains(r3, 11);
   }
 
   private boolean rangeContains(Range range, Number f) {
@@ -45,12 +42,5 @@ public class TestStatsUtils {
     return m <= v && v <= M;
   }
 
-  @Test
-  public void test11() {
-    Range r1 = new Range(0, 1);
-    Range r2 = new Range(1, 11);
-    Range r3 = StatsUtils.combineRange(r1, r2);
-    assertNotNull(r3);
-  }
 
 }
