@@ -1,4 +1,3 @@
-set hive.stats.column.autogather=false;
 set hive.explain.user=false;
 
 set hive.exec.reducers.max = 1;
