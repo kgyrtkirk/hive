@@ -334,14 +334,12 @@ public class StatsUtils {
         basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
       }
 
-      //      long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
       basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
 
       List<BasicStats> partStats = new ArrayList<>();
+
       for (Partition p : partList.getNotDeniedPartns()) {
-
         BasicStats basicStats = basicStatsFactory.build(Partish.buildFor(table, p));
-
         partStats.add(basicStats);
       }
 
