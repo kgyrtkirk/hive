@@ -328,17 +328,18 @@ public class StatsUtils {
       // For partitioned tables, get the size of all the partitions after pruning
       // the partitions that are not required
 
+      Factory basicStatsFactory = new Factory();
+      if (shouldEstimateStats) {
+        // FIXME: misses paralelle
+        basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
+      }
+
+      //      long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
+      basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
+
       List<BasicStats> partStats = new ArrayList<>();
       for (Partition p : partList.getNotDeniedPartns()) {
 
-        Factory basicStatsFactory = new Factory();
-        if (shouldEstimateStats) {
-          // FIXME: misses paralelle
-          basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
-        }
-
-        //      long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
-        basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
         BasicStats basicStats = basicStatsFactory.build(Partish.buildFor(table, p));
 
         partStats.add(basicStats);
@@ -361,8 +362,7 @@ public class StatsUtils {
       stats.setBasicStatsState(bbs.getState());
 
       if (fetchColStats) {
-        List<String> partitionCols = getPartitionColumns(
-            schema, neededColumns, referencedColumns);
+        List<String> partitionCols = getPartitionColumns(schema, neededColumns, referencedColumns);
 
         // We will retrieve stats from the metastore only for columns that are not cached
         List<String> neededColsToRetrieve;
