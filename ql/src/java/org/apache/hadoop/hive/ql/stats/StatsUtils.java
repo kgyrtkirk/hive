@@ -161,24 +161,6 @@ public class StatsUtils {
         fetchColStats, testMode);
   }
 
-  @Deprecated
-  private static long getDataSize(HiveConf conf, Table table) {
-    long ds = getRawDataSize(table);
-    if (ds <= 0) {
-      ds = getTotalSize(table);
-
-      // if data size is still 0 then get file size
-      if (ds <= 0) {
-        ds = getFileSizeForTable(conf, table);
-      }
-      float deserFactor =
-          HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
-      ds = (long) (ds * deserFactor);
-    }
-
-    return ds;
-  }
-
   /**
    * Returns number of rows if it exists. Otherwise it estimates number of rows
    * based on estimated data size for both partition and non-partitioned table
@@ -241,30 +223,6 @@ public class StatsUtils {
         columnStats.add(estColStats);
       }
     }
-  }
-
-  @Deprecated
-  private static long getNumRows(HiveConf conf, List<ColumnInfo> schema, Table table, long ds) {
-    Partish p = Partish.buildFor(table);
-    BasicStats basicStats = new BasicStats(p);
-
-    long nr = basicStats.getNumRows();
-    // number of rows -1 means that statistics from metastore is not reliable
-    // and 0 means statistics gathering is disabled
-    // estimate only if num rows is -1 since 0 could be actual number of rows
-    if (nr < 0) {
-      int avgRowSize = estimateRowSizeFromSchema(conf, schema);
-      if (avgRowSize > 0) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Estimated average row size: " + avgRowSize);
-        }
-        nr = ds / avgRowSize;
-      }
-    }
-    if(nr == 0 || nr == -1) {
-      return 1;
-    }
-    return nr;
   }
 
   public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
@@ -691,26 +649,6 @@ public class StatsUtils {
       return null;
     }
     return range;
-  }
-
-  private static void setUnknownRcDsToAverage(
-      List<Long> rowCounts, List<Long> dataSizes, int avgRowSize) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Estimated average row size: " + avgRowSize);
-    }
-    for (int i = 0; i < rowCounts.size(); i++) {
-      long rc = rowCounts.get(i);
-      long s = dataSizes.get(i);
-      if (rc <= 0 && s > 0) {
-        rc = s / avgRowSize;
-        rowCounts.set(i, rc);
-      }
-
-      if (s <= 0 && rc > 0) {
-        s = safeMult(rc, avgRowSize);
-        dataSizes.set(i, s);
-      }
-    }
   }
 
   public static int estimateRowSizeFromSchema(HiveConf conf, List<ColumnInfo> schema) {
