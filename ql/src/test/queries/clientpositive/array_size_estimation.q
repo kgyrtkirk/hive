@@ -1,3 +1,5 @@
+set hive.stats.fetch.column.stats=true;
+
 create table t (col string);
 insert into t values ('x');
 
