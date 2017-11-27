@@ -57,7 +57,7 @@ public class DriverFactory {
   }
 
   private static QueryState getNewQueryState(HiveConf conf) {
-    // async=true techincally forces to enable configuration isolation between forces ; but instead for now explicitly:
+    // async=true techincally forces to enable HiveConf isolations; but instead for now explicitly:
     HiveConf newConf = new HiveConf(conf);
     return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(newConf).build();
   }
