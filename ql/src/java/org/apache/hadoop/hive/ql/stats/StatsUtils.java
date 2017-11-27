@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
+import org.apache.hadoop.hive.ql.stats.BasicStats.Factory;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.NDV;
@@ -178,17 +179,12 @@ public class StatsUtils {
     return ds;
   }
 
+  /**
+   * Returns number of rows if it exists. Otherwise it estimates number of rows
+   * based on estimated data size for both partition and non-partitioned table
+   * RelOptHiveTable's getRowCount uses this.
+   */
   public static long getNumRows(HiveConf conf, List<ColumnInfo> schema, Table table, PrunedPartitionList partitionList, AtomicInteger noColsMissingStats) {
-    long nr0 = getNumRows0(conf, schema, table, partitionList, noColsMissingStats);
-    long nr1 = getNumRows1(conf, schema, table, partitionList, noColsMissingStats);
-
-    if (nr0 != nr1) {
-      throw new RuntimeException("E!");
-    }
-    return nr0;
-  }
-
-  public static long getNumRows1(HiveConf conf, List<ColumnInfo> schema, Table table, PrunedPartitionList partitionList, AtomicInteger noColsMissingStats) {
 
     List<Partish> inputs = new ArrayList<>();
     if (table.isPartitioned()) {
@@ -199,28 +195,25 @@ public class StatsUtils {
       inputs.add(Partish.buildFor(table));
     }
 
-    boolean shouldEstimateStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS);
-    List<String> neededColumns = new ArrayList<>();
-    for (ColumnInfo ci : schema) {
-      neededColumns.add(ci.getInternalName());
+    Factory basicStatsFactory = new BasicStats.Factory();
+
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS)) {
+      basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
+      basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
     }
 
     List<BasicStats> results = new ArrayList<>();
     for (Partish pi : inputs) {
-      BasicStats bStats = new BasicStats(pi);
 
+      BasicStats bStats = new BasicStats(pi);
       long nr = bStats.getNumRows();
+      // FIXME parallel! \<>!
+      // FIXME: this point will be lost after the factory; check that it's really a warning....cleanup/etc
       if (nr <= 0) {
         // log warning if row count is missing
         noColsMissingStats.getAndIncrement();
       }
-
-      if (shouldEstimateStats) {
-        bStats.apply(new BasicStats.DataSizeEstimator(conf));
-        bStats.apply(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema, neededColumns)));
-      }
-
-      results.add(bStats);
+      results.add(basicStatsFactory.build(pi));
     }
 
     BasicStats aggregateStat = BasicStats.buildFrom(results);
@@ -228,107 +221,6 @@ public class StatsUtils {
     aggregateStat.apply(new BasicStats.SetMinRowNumber01());
 
     return aggregateStat.getNumRows();
-  }
-
-  /**
-   * Returns number of rows if it exists. Otherwise it estimates number of rows
-   * based on estimated data size for both partition and non-partitioned table
-   * RelOptHiveTable's getRowCount uses this.
-   */
-  @Deprecated
-  private static long getNumRows0(HiveConf conf, List<ColumnInfo> schema, Table table,
-                                PrunedPartitionList partitionList, AtomicInteger noColsMissingStats) {
-    //for non-partitioned table
-    List<String> neededColumns = new ArrayList<>();
-    for(ColumnInfo ci:schema) {
-      neededColumns.add(ci.getInternalName());
-    }
-
-    boolean shouldEstimateStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS);
-
-    if(!table.isPartitioned()) {
-      //get actual number of rows from metastore
-      BasicStats bStats = new BasicStats(Partish.buildFor(table));
-      long nr = bStats.getNumRows();
-
-      // log warning if row count is missing
-      if (nr <= 0) {
-        noColsMissingStats.getAndIncrement();
-      }
-
-      // if row count exists or stats aren't to be estimated return
-      // whatever we have
-      if (nr > 0 || !shouldEstimateStats) {
-        return nr;
-      }
-      // go ahead with the estimation
-      long ds = getDataSize(conf, table);
-      return getNumRows(conf, schema, neededColumns, table, ds);
-    }
-    else { // partitioned table
-
-      List<BasicStats> partStats = new ArrayList<>();
-      for (Partition partition : partitionList.getNotDeniedPartns()) {
-        partStats.add(new BasicStats(Partish.buildFor(table, partition)));
-      }
-      long nr = 0;
-      List<Long> rowCounts = Lists.newArrayList();
-      rowCounts = getBasicStatForPartitions(
-          table, partitionList.getNotDeniedPartns(), StatsSetupConst.ROW_COUNT);
-      nr = getSumIgnoreNegatives(rowCounts);
-
-      // log warning if row count is missing
-      if(nr <= 0) {
-        noColsMissingStats.getAndIncrement();
-      }
-
-      // if row count exists or stats aren't to be estimated return
-      // whatever we have
-      if(nr > 0 || !shouldEstimateStats) {
-        return nr;
-      }
-
-      // estimate row count
-      long ds = 0;
-      List<Long> dataSizes = Lists.newArrayList();
-
-      dataSizes =  getBasicStatForPartitions(
-          table, partitionList.getNotDeniedPartns(), StatsSetupConst.RAW_DATA_SIZE);
-
-      ds = getSumIgnoreNegatives(dataSizes);
-
-      if (ds <= 0) {
-        dataSizes = getBasicStatForPartitions(
-            table, partitionList.getNotDeniedPartns(), StatsSetupConst.TOTAL_SIZE);
-        ds = getSumIgnoreNegatives(dataSizes);
-      }
-
-      // if data size still could not be determined, then fall back to filesytem to get file
-      // sizes
-      if (ds <= 0 && shouldEstimateStats) {
-        dataSizes = getFileSizeForPartitions(conf, partitionList.getNotDeniedPartns());
-      }
-      ds = getSumIgnoreNegatives(dataSizes);
-      float deserFactor =
-          HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
-      ds = (long) (ds * deserFactor);
-
-      int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
-      if (avgRowSize > 0) {
-        setUnknownRcDsToAverage(rowCounts, dataSizes, avgRowSize);
-        nr = getSumIgnoreNegatives(rowCounts);
-        ds = getSumIgnoreNegatives(dataSizes);
-
-        // number of rows -1 means that statistics from metastore is not reliable
-        if (nr <= 0) {
-          nr = ds / avgRowSize;
-        }
-      }
-      if (nr == 0) {
-        nr = 1;
-      }
-      return nr;
-    }
   }
 
   private static void estimateStatsForMissingCols(List<String> neededColumns, List<ColStatistics> columnStats,
@@ -352,8 +244,7 @@ public class StatsUtils {
   }
 
   @Deprecated
-  private static long getNumRows(HiveConf conf, List<ColumnInfo> schema, List<String> neededColumns,
-                                 Table table, long ds) {
+  private static long getNumRows(HiveConf conf, List<ColumnInfo> schema, Table table, long ds) {
     Partish p = Partish.buildFor(table);
     BasicStats basicStats = new BasicStats(p);
 
@@ -362,7 +253,7 @@ public class StatsUtils {
     // and 0 means statistics gathering is disabled
     // estimate only if num rows is -1 since 0 could be actual number of rows
     if (nr < 0) {
-      int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
+      int avgRowSize = estimateRowSizeFromSchema(conf, schema);
       if (avgRowSize > 0) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Estimated average row size: " + avgRowSize);
@@ -397,18 +288,18 @@ public class StatsUtils {
 
     if (!table.isPartitioned()) {
 
-
-      //getDataSize tries to estimate stats if it doesn't exist using file size
-      // we would like to avoid file system calls  if it too expensive
-      BasicStats basicStats = new BasicStats(Partish.buildFor(table));
+      Factory basicStatsFactory = new BasicStats.Factory();
 
       if (shouldEstimateStats) {
-        basicStats.apply(new BasicStats.DataSizeEstimator(conf));
+        basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
       }
 
       //      long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
-      basicStats.apply(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema, neededColumns)));
-      basicStats.apply(new BasicStats.SetMinRowNumber01());
+      basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
+      basicStatsFactory.addEnhancer(new BasicStats.SetMinRowNumber01());
+
+      BasicStats basicStats = basicStatsFactory.build(Partish.buildFor(table));
+
       //      long nr = getNumRows(conf, schema, neededColumns, table, ds);
       long ds = basicStats.getDataSize();
       long nr = basicStats.getNumRows();
@@ -437,15 +328,18 @@ public class StatsUtils {
       // For partitioned tables, get the size of all the partitions after pruning
       // the partitions that are not required
 
+      Factory basicStatsFactory = new Factory();
+      if (shouldEstimateStats) {
+        // FIXME: misses paralelle
+        basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
+      }
+
+      basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
+
       List<BasicStats> partStats = new ArrayList<>();
+
       for (Partition p : partList.getNotDeniedPartns()) {
-        BasicStats basicStats = new BasicStats(Partish.buildFor(table, p));
-        if (shouldEstimateStats) {
-          // FIXME: misses paralelle
-          basicStats.apply(new BasicStats.DataSizeEstimator(conf));
-        }
-        basicStats.apply(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema, neededColumns)));
-        //        basicStats.apply(new BasicStats.SetMinRowNumber());
+        BasicStats basicStats = basicStatsFactory.build(Partish.buildFor(table, p));
         partStats.add(basicStats);
       }
 
@@ -465,15 +359,8 @@ public class StatsUtils {
       stats = new Statistics(nr, ds);
       stats.setBasicStatsState(bbs.getState());
 
-      // if at least a partition does not contain row count then mark basic stats state as PARTIAL
-//      if (containsNonPositives(rowCounts) &&
-//          stats.getBasicStatsState().equals(State.COMPLETE)) {
-//        stats.setBasicStatsState(State.PARTIAL);
-//      }
-      
       if (fetchColStats) {
-        List<String> partitionCols = getPartitionColumns(
-            schema, neededColumns, referencedColumns);
+        List<String> partitionCols = getPartitionColumns(schema, neededColumns, referencedColumns);
 
         // We will retrieve stats from the metastore only for columns that are not cached
         List<String> neededColsToRetrieve;
@@ -828,6 +715,14 @@ public class StatsUtils {
     }
   }
 
+  public static int estimateRowSizeFromSchema(HiveConf conf, List<ColumnInfo> schema) {
+    List<String> neededColumns = new ArrayList<>();
+    for (ColumnInfo ci : schema) {
+      neededColumns.add(ci.getInternalName());
+    }
+    return estimateRowSizeFromSchema(conf, schema, neededColumns);
+  }
+
   public static int estimateRowSizeFromSchema(HiveConf conf, List<ColumnInfo> schema,
       List<String> neededColumns) {
     int avgRowSize = 0;
@@ -892,6 +787,7 @@ public class StatsUtils {
    *          - partition list
    * @return sizes of partitions
    */
+  @Deprecated
   public static List<Long> getFileSizeForPartitions(final HiveConf conf, List<Partition> parts) {
     LOG.info("Number of partitions : " + parts.size());
     ArrayList<Future<Long>> futures = new ArrayList<>();
