@@ -57,10 +57,11 @@ public abstract class AbstractReExecDriver implements IDriver {
     }
 
     @Override
-    public <T extends Hook> List<T> getHooks(ConfVars hookConfVar, Class<?> classes) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public <T extends Hook> List<T> getHooks(ConfVars hookConfVar, Class<?> clazz) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
       List<T> ret = Lists.newArrayList();
-      ret.addAll(super.getHooks(hookConfVar, classes));
-      if (ExecuteWithHookContext.class.equals(classes)) {
+      ret.addAll(super.getHooks(hookConfVar, clazz));
+      if (ExecuteWithHookContext.class.equals(clazz)) {
+        // FIXME: address this warning
         ret.add((T) new ReExecutionInfoHook());
       }
       return ret;
@@ -68,8 +69,6 @@ public abstract class AbstractReExecDriver implements IDriver {
   }
 
   private Driver coreDriver;
-  @Deprecated
-  private boolean possiblyRetry;
   private QueryState queryState;
 
   protected HiveConf getConf() {
