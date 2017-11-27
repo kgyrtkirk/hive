@@ -1267,7 +1267,7 @@ public class StatsUtils {
         // check if list elements are primitive or Objects
         ObjectInspector leoi = scloi.getListElementObjectInspector();
         if (leoi.getCategory().equals(ObjectInspector.Category.PRIMITIVE)) {
-            result += getSizeOfPrimitiveTypeArraysFromType(leoi.getTypeName(), length, conf);
+          result += getSizeOfPrimitiveTypeArraysFromType(leoi.getTypeName(), length, conf);
         } else {
           result += JavaDataModel.get().lengthForObjectArrayOfSize(length);
         }
