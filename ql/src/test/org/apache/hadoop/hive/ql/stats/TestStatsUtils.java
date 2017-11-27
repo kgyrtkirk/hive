@@ -27,6 +27,7 @@ import java.lang.reflect.Modifier;
 import java.util.Set;
 
 import org.apache.commons.lang.reflect.FieldUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.junit.Test;
@@ -76,6 +77,7 @@ public class TestStatsUtils {
 
   @Test
   public void testPrimitiveSizeEstimations() throws Exception {
+    HiveConf conf = new HiveConf();
     Set<String> exclusions = Sets.newHashSet();
     exclusions.add(serdeConstants.VOID_TYPE_NAME);
     exclusions.add(serdeConstants.LIST_TYPE_NAME);
@@ -94,7 +96,7 @@ public class TestStatsUtils {
       if (exclusions.contains(typeName)) {
         continue;
       }
-      long siz = StatsUtils.getSizeOfPrimitiveTypeArraysFromType(typeName, 3);
+      long siz = StatsUtils.getSizeOfPrimitiveTypeArraysFromType(typeName, 3, conf);
       assertNotEquals(field.toString(), 0, siz);
     }
   }
