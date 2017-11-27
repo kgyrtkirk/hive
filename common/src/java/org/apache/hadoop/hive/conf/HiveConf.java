@@ -1826,6 +1826,9 @@ public class HiveConf extends Configuration {
         "in the number of rows filtered by a certain operator, which in turn might lead to overprovision or\n" +
         "underprovision of resources. This factor is applied to the cardinality estimation of IN clauses in\n" +
         "filter operators."),
+    HIVE_STATS_CACHE_RUNTIME_STATS("hive.stats.cache.runtime.stats", true,
+      "Collect and cache runtime statistics. The subsequent run of the same query will use the statistics collected\n" +
+        "from the previous run."),
 
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false,
