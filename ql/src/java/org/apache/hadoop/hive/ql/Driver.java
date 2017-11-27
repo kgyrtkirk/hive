@@ -659,6 +659,8 @@ public class Driver implements IDriver {
           }
         }
       }
+    } catch (CommandProcessorResponse cpr) {
+      throw cpr;
     } catch (Exception e) {
       checkInterrupted("during query compilation: " + e.getMessage(), null, null);
 

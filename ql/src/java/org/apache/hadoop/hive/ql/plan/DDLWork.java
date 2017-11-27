@@ -38,6 +38,7 @@ public class DDLWork implements Serializable {
   private InsertTableDesc insertTableDesc;
   private CreateIndexDesc createIndexDesc;
   private AlterIndexDesc alterIndexDesc;
+  private AlterMaterializedViewDesc alterMVDesc;
   private DropIndexDesc dropIdxDesc;
   private CreateDatabaseDesc createDatabaseDesc;
   private SwitchDatabaseDesc switchDatabaseDesc;
@@ -207,6 +208,16 @@ public class DDLWork implements Serializable {
       AlterIndexDesc alterIndexDesc) {
     this(inputs, outputs);
     this.alterIndexDesc = alterIndexDesc;
+  }
+
+  /**
+   * @param alterMVDesc
+   *          alter materialized view descriptor
+   */
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      AlterMaterializedViewDesc alterMVDesc) {
+    this(inputs, outputs);
+    this.alterMVDesc = alterMVDesc;
   }
 
   /**
@@ -770,6 +781,22 @@ public class DDLWork implements Serializable {
   }
 
   /**
+   * @return the alterMVDesc
+   */
+  @Explain(displayName = "Alter Materialized View Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public AlterMaterializedViewDesc getAlterMaterializedViewDesc() {
+    return alterMVDesc;
+  }
+
+  /**
+   * @param alterMVDesc
+   *          the alterMVDesc to set
+   */
+  public void setAlterMVDesc(AlterMaterializedViewDesc alterMVDesc) {
+    this.alterMVDesc = alterMVDesc;
+  }
+
+  /**
    * @return the showDatabasesDesc
    */
   @Explain(displayName = "Show Databases Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -1085,14 +1112,6 @@ public class DDLWork implements Serializable {
 
   public void setShowTblPropertiesDesc(ShowTblPropertiesDesc showTblPropertiesDesc) {
     this.showTblPropertiesDesc = showTblPropertiesDesc;
-  }
-
-  public CreateViewDesc getCreateVwDesc() {
-    return createVwDesc;
-  }
-
-  public void setCreateVwDesc(CreateViewDesc createVwDesc) {
-    this.createVwDesc = createVwDesc;
   }
 
   public void setDescFunctionDesc(DescFunctionDesc descFunctionDesc) {
