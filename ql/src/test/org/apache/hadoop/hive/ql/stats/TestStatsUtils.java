@@ -18,11 +18,19 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Set;
+
+import org.apache.commons.lang.reflect.FieldUtils;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.junit.Test;
+import org.spark_project.guava.collect.Sets;
 
 public class TestStatsUtils {
 
@@ -47,7 +55,6 @@ public class TestStatsUtils {
     checkCombinedRange(false, new Range(11, 12), new Range(0, 10));
   }
 
-
   private void checkCombinedRange(boolean valid, Range r1, Range r2) {
     Range r3a = StatsUtils.combineRange(r1, r2);
     Range r3b = StatsUtils.combineRange(r2, r1);
@@ -67,5 +74,24 @@ public class TestStatsUtils {
     return m <= v && v <= M;
   }
 
+  @Test
+  public void t1() throws Exception {
+    Set<String> exclusions = Sets.newHashSet(serdeConstants.VOID_TYPE_NAME);
+    Field[] serdeFields = serdeConstants.class.getFields();
+    for (Field field : serdeFields) {
+      if (!Modifier.isStatic(field.getModifiers())) {
+        continue;
+      }
+      if (!field.getName().endsWith("_TYPE_NAME")) {
+        continue;
+      }
+      String typeName = (String) FieldUtils.readStaticField(field);
+      if (exclusions.contains(typeName)) {
+        continue;
+      }
+      long siz = StatsUtils.getSizeOfPrimitiveTypeArraysFromType(typeName, 3);
+      assertNotEquals(field.toString(), 0, siz);
+    }
+  }
 
 }
