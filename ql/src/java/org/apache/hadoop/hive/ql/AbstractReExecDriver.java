@@ -32,8 +32,6 @@ import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HooksLoader;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 
-import com.google.common.collect.Sets;
-
 public abstract class AbstractReExecDriver implements IDriver {
 
 
@@ -59,11 +57,10 @@ public abstract class AbstractReExecDriver implements IDriver {
     }
 
     @Override
-    public <T extends Hook> List<T> getHooks(ConfVars hookConfVar, Class<?>... classes) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public <T extends Hook> List<T> getHooks(ConfVars hookConfVar, Class<?> classes) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
       List<T> ret = Lists.newArrayList();
       ret.addAll(super.getHooks(hookConfVar, classes));
-      // HIVE-18057 will make this less awkward
-      if (Sets.<Class<?>> newHashSet(classes).contains(ExecuteWithHookContext.class)) {
+      if (ExecuteWithHookContext.class.equals(classes)) {
         ret.add((T) new ReExecutionInfoHook());
       }
       return ret;
