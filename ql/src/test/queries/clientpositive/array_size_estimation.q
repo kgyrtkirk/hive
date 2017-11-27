@@ -2,13 +2,13 @@ create table t (col string);
 insert into t values ('x');
 
 explain
-select array("b", "d", "c", "a") FROM t
+select array("b", "d", "c", "a") FROM t;
 
 explain
-select array("b", "d", "c", col) FROM t
+select array("b", "d", "c", col) FROM t;
 
 explain
-select sort_array(array("b", "d", "c", "a")),array("1","2") FROM t
+select sort_array(array("b", "d", "c", "a")),array("1","2") FROM t;
 
 explain
-select sort_array(array("b", "d", "c", col)),array("1","2") FROM t
+select sort_array(array("b", "d", "c", col)),array("1","2") FROM t;
