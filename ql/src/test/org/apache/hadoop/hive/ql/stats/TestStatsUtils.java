@@ -75,8 +75,13 @@ public class TestStatsUtils {
   }
 
   @Test
-  public void t1() throws Exception {
-    Set<String> exclusions = Sets.newHashSet(serdeConstants.VOID_TYPE_NAME);
+  public void testPrimitiveSizeEstimations() throws Exception {
+    Set<String> exclusions = Sets.newHashSet();
+    exclusions.add(serdeConstants.VOID_TYPE_NAME);
+    exclusions.add(serdeConstants.LIST_TYPE_NAME);
+    exclusions.add(serdeConstants.MAP_TYPE_NAME);
+    exclusions.add(serdeConstants.STRUCT_TYPE_NAME);
+    exclusions.add(serdeConstants.UNION_TYPE_NAME);
     Field[] serdeFields = serdeConstants.class.getFields();
     for (Field field : serdeFields) {
       if (!Modifier.isStatic(field.getModifiers())) {

@@ -1396,11 +1396,18 @@ public class StatsUtils {
     } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
       return JavaDataModel.get().lengthForBooleanArrayOfSize(length);
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||
+        colTypeLowerCase.equals(serdeConstants.DATETIME_TYPE_NAME) ||
+        colTypeLowerCase.equals(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME) ||
+        colTypeLowerCase.equals(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME) ||
         colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
       return JavaDataModel.get().lengthForTimestampArrayOfSize(length);
     } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
       return JavaDataModel.get().lengthForDateArrayOfSize(length);
     } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+      return JavaDataModel.get().lengthForDecimalArrayOfSize(length);
+    } else if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
+        || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
+        || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
       return JavaDataModel.get().lengthForDecimalArrayOfSize(length);
     } else {
       return 0;
