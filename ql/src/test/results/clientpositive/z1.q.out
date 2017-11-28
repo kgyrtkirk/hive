@@ -38,10 +38,10 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_partition_change_col1
 c1                  	string              	                    
 c2                  	string              	                    
-p1                  	string              	Column p1           
+p1                  	string              	Changed comment for p1
 p2                  	string              	Column p2           
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-p1                  	string              	Column p1           
+p1                  	string              	Changed comment for p1
 p2                  	string              	Column p2           
