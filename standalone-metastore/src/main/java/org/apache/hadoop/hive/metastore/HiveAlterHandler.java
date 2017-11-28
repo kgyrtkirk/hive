@@ -314,7 +314,11 @@ public class HiveAlterHandler implements AlterHandler {
                 msdb.alterPartition(dbname, name, part.getValues(), part);
               }
             }
-            msdb.alterTable(dbname, name, newt);
+            if(cascade) {
+              msdb.alterTable(dbname, name, newt);
+            } else {
+              alterTableUpdateTableColumnStats(msdb, oldt, newt);
+            }
           } else {
             LOG.warn("Alter table does not cascade changes to its partitions.");
           }
