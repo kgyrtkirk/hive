@@ -63,9 +63,6 @@ public class StorageBasedMetastoreTestBase {
 
   @Before
   public void setUp() throws Exception {
-
-    int port = MetaStoreTestUtils.findFreePort();
-
     // Turn on metastore-side authorization
     System.setProperty(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS.varname,
         AuthorizationPreEventListener.class.getName());
@@ -75,7 +72,7 @@ public class StorageBasedMetastoreTestBase {
         InjectableDummyAuthenticator.class.getName());
 
     clientHiveConf = createHiveConf();
-    MetaStoreTestUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge(), clientHiveConf);
+    int port = MetaStoreTestUtils.startMetaStoreWithRetry(clientHiveConf);
 
     // Turn off client-side authorization
     clientHiveConf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED,false);

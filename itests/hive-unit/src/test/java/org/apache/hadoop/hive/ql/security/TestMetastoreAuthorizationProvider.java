@@ -85,8 +85,6 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
 
     super.setUp();
 
-    int port = MetaStoreTestUtils.findFreePort();
-
     // Turn on metastore-side authorization
     System.setProperty(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS.varname,
         AuthorizationPreEventListener.class.getName());
@@ -99,8 +97,7 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
         InjectableDummyAuthenticator.class.getName());
     System.setProperty(HiveConf.ConfVars.HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS.varname, "");
 
-
-    MetaStoreTestUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
+    int port = MetaStoreTestUtils.startMetaStoreWithRetry();
 
     clientHiveConf = createHiveConf();
 
