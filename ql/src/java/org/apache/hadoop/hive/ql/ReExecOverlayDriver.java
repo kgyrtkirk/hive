@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 
 public class ReExecOverlayDriver extends AbstractReExecDriver {
@@ -52,6 +53,7 @@ public class ReExecOverlayDriver extends AbstractReExecDriver {
 
   @Override
   protected void onExecutionSuccess(HookContext hookContext) {
+    Utilities.getTezTasks(hookContext.getQueryPlan().getRootTasks());
   }
 
   @Override
