@@ -1,0 +1,47 @@
+PREHOOK: query: create table alter_partition_change_col1 (c1 string, c2 string) partitioned by 
+	(p1 string comment 'Column p1', p2 string comment 'Column p2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_partition_change_col1
+POSTHOOK: query: create table alter_partition_change_col1 (c1 string, c2 string) partitioned by 
+	(p1 string comment 'Column p1', p2 string comment 'Column p2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_partition_change_col1
+PREHOOK: query: desc alter_partition_change_col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: desc alter_partition_change_col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_change_col1
+c1                  	string              	                    
+c2                  	string              	                    
+p1                  	string              	Column p1           
+p2                  	string              	Column p2           
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	Column p1           
+p2                  	string              	Column p2           
+PREHOOK: query: alter table alter_partition_change_col1 partition column (p1 string comment 'Changed comment for p1')
+PREHOOK: type: ALTERTABLE_PARTCOLTYPE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: alter table alter_partition_change_col1 partition column (p1 string comment 'Changed comment for p1')
+POSTHOOK: type: ALTERTABLE_PARTCOLTYPE
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Output: default@alter_partition_change_col1
+PREHOOK: query: desc alter_partition_change_col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: query: desc alter_partition_change_col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_partition_change_col1
+c1                  	string              	                    
+c2                  	string              	                    
+p1                  	string              	Column p1           
+p2                  	string              	Column p2           
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	Column p1           
+p2                  	string              	Column p2           
