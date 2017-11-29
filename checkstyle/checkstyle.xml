@@ -76,6 +76,9 @@
   <!-- No TAB characters -->
   <module name="FileTabCharacter"/>
 
+  <!-- Enable @SuppressWarnings processing -->
+  <module name="SuppressWarningsFilter" />
+
   <!-- List of files to ignore -->
   <module name="SuppressionFilter">
     <property name="file" value="${config_loc}/suppressions.xml"/>
@@ -115,6 +118,9 @@
   </module>
   
   <module name="TreeWalker">
+
+    <!-- required for @SuppressWarnings -->
+    <module name="SuppressWarningsHolder" />
 
     <!-- Required for SuppressWithNearbyCommentFilter -->
     <module name="FileContentsHolder"/>
