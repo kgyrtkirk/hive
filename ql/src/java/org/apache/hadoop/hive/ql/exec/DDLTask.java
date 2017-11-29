@@ -5126,10 +5126,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // We create new view
       Table tbl = crtView.toTable(conf);
       db.createTable(tbl, crtView.getIfNotExists());
-      // Add to cache if it is a materialized view
-      if (tbl.isMaterializedView()) {
-        HiveMaterializedViewsRegistry.get().addMaterializedView(tbl);
-      }
       addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
 
       //set lineage info

@@ -36,6 +36,9 @@ import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Updates the materialized view registry after changes.
+ */
 public class MaterializedViewRegistryUpdateHook implements QueryLifeTimeHook {
 
   private static final Logger LOG = LoggerFactory.getLogger(MaterializedViewRegistryUpdateHook.class);
