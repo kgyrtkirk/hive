@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql;
+package org.apache.hadoop.hive.ql.hooks;
 
 import java.io.Serializable;
 import java.util.List;
@@ -36,9 +36,9 @@ import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MaterializedViewCacheUpdateHook implements QueryLifeTimeHook {
+public class MaterializedViewRegistryUpdateHook implements QueryLifeTimeHook {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MaterializedViewCacheUpdateHook.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MaterializedViewRegistryUpdateHook.class);
 
   @Override
   public void beforeCompile(QueryLifeTimeHookContext ctx) {
