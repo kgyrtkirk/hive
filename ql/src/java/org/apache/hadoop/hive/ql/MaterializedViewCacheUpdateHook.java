@@ -33,8 +33,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class MaterializedViewX implements QueryLifeTimeHook {
+public class MaterializedViewCacheUpdateHook implements QueryLifeTimeHook {
+
+  private static final Logger LOG = LoggerFactory.getLogger(MaterializedViewCacheUpdateHook.class);
 
   @Override
   public void beforeCompile(QueryLifeTimeHookContext ctx) {
@@ -82,7 +86,11 @@ public class MaterializedViewX implements QueryLifeTimeHook {
       }
     } catch (HiveException e) {
       if (HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING)) {
-        throw new RuntimeException("Error updating materialized view cache");
+        String message = "Error updating materialized view cache; consider disabling: " + ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING.varname;
+        LOG.error(message, e);
+        throw new RuntimeException(message, e);
+      }else {
+        LOG.debug("Exception during materialized view cache update", e);
       }
     }
   }
