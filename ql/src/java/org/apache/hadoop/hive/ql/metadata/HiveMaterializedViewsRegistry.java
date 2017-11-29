@@ -202,7 +202,10 @@ public final class HiveMaterializedViewsRegistry {
    */
   public void dropMaterializedView(Table materializedViewTable) {
     final ViewKey vk = ViewKey.forTable(materializedViewTable);
-    materializedViews.get(materializedViewTable.getDbName()).remove(vk);
+    ConcurrentMap<ViewKey, RelOptMaterialization> dbMap = materializedViews.get(materializedViewTable.getDbName());
+    if (dbMap != null) {
+      dbMap.remove(vk);
+    }
   }
 
   /**
