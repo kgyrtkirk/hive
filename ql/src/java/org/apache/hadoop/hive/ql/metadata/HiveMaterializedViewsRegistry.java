@@ -168,8 +168,7 @@ public final class HiveMaterializedViewsRegistry {
       cq = prevCq;
     }
     // Bail out if it already exists
-    final ViewKey vk = new ViewKey(
-        materializedViewTable.getTableName(), materializedViewTable.getCreateTime());
+    final ViewKey vk = ViewKey.forTable(materializedViewTable);
     if (cq.containsKey(vk)) {
       return;
     }
@@ -202,12 +201,7 @@ public final class HiveMaterializedViewsRegistry {
    * @param materializedViewTable the materialized view to remove
    */
   public void dropMaterializedView(Table materializedViewTable) {
-    // Bail out if it is not enabled for rewriting
-    if (!materializedViewTable.isRewriteEnabled()) {
-      return;
-    }
-    final ViewKey vk = new ViewKey(
-        materializedViewTable.getTableName(), materializedViewTable.getCreateTime());
+    final ViewKey vk = ViewKey.forTable(materializedViewTable);
     materializedViews.get(materializedViewTable.getDbName()).remove(vk);
   }
 
@@ -356,6 +350,10 @@ public final class HiveMaterializedViewsRegistry {
     private ViewKey(String viewName, int creationTime) {
       this.viewName = viewName;
       this.creationDate = creationTime;
+    }
+
+    public static ViewKey forTable(Table table) {
+      return new ViewKey(table.getTableName(), table.getCreateTime());
     }
 
     @Override
