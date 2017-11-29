@@ -59,6 +59,8 @@ class QueryLifeTimeHookRunner {
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
       queryHooks.add(new MetricsQueryLifeTimeHook());
     }
+    queryHooks.add(new MaterializedViewX());
+
     List<QueryLifeTimeHook> propertyDefinedHoooks;
     try {
       propertyDefinedHoooks = hooksLoader.getHooks(

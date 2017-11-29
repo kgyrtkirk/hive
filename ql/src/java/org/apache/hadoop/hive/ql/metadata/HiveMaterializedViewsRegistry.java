@@ -23,16 +23,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
@@ -101,8 +98,6 @@ public final class HiveMaterializedViewsRegistry {
   private final ConcurrentMap<String, ConcurrentMap<ViewKey, RelOptMaterialization>> materializedViews =
       new ConcurrentHashMap<String, ConcurrentMap<ViewKey, RelOptMaterialization>>();
 
-  private BlockingQueue<String> pendingMaterializedViews = new LinkedBlockingQueue<>();
-
   private HiveMaterializedViewsRegistry() {
   }
 
@@ -145,7 +140,7 @@ public final class HiveMaterializedViewsRegistry {
           materializedViews.addAll(db.getAllMaterializedViewObjects(dbName));
         }
         for (Table mv : materializedViews) {
-          addMaterializedViewToCache(mv);
+          addMaterializedView(mv);
         }
       } catch (HiveException e) {
         LOG.error("Problem connecting to the metastore when initializing the view registry");
@@ -153,19 +148,12 @@ public final class HiveMaterializedViewsRegistry {
     }
   }
 
-  public void addMaterializedView(Table materializedViewTable) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Pending materialized view update for: " + materializedViewTable.getFullyQualifiedName());
-    }
-    pendingMaterializedViews.add(materializedViewTable.getFullyQualifiedName());
-  }
-
   /**
    * Adds the materialized view to the cache.
    *
    * @param materializedViewTable the materialized view
    */
-  private void addMaterializedViewToCache(Table materializedViewTable) {
+  public void addMaterializedView(Table materializedViewTable) {
     // Bail out if it is not enabled for rewriting
     if (!materializedViewTable.isRewriteEnabled()) {
       return;
@@ -215,7 +203,6 @@ public final class HiveMaterializedViewsRegistry {
    */
   public void dropMaterializedView(Table materializedViewTable) {
     // Bail out if it is not enabled for rewriting
-    pendingMaterializedViews.remove(materializedViewTable.getFullyQualifiedName());
     if (!materializedViewTable.isRewriteEnabled()) {
       return;
     }
@@ -231,28 +218,10 @@ public final class HiveMaterializedViewsRegistry {
    * @return the collection of materialized views, or the empty collection if none
    */
   Collection<RelOptMaterialization> getRewritingMaterializedViews(String dbName) {
-    loadPending();
     if (materializedViews.get(dbName) != null) {
       return Collections.unmodifiableCollection(materializedViews.get(dbName).values());
     }
     return ImmutableList.of();
-  }
-
-  private void loadPending() {
-    Collection<String> current = new LinkedList<>();
-    pendingMaterializedViews.drainTo(current);
-    if (current.isEmpty()) {
-      return;
-    }
-    try {
-      Hive db = Hive.get();
-      for (String tableName : current) {
-        Table table = db.getTable(tableName);
-        addMaterializedViewToCache(table);
-      }
-    } catch (HiveException e) {
-      LOG.error("Problem connecting to the metastore when adding pending views the view registry");
-    }
   }
 
   private static RelNode createTableScan(Table viewTable) {

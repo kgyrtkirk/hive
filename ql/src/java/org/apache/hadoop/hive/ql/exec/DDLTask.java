@@ -1369,12 +1369,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     try {
       db.alterTable(mv, environmentContext);
-      // Remove or add to materialized view rewriting cache
-      if (alterMVDesc.isRewriteEnable()) {
-        HiveMaterializedViewsRegistry.get().addMaterializedView(mv);
-      } else {
-        HiveMaterializedViewsRegistry.get().dropMaterializedView(oldMV);
-      }
     } catch (InvalidOperationException e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "Unable to alter " + mv.getFullyQualifiedName());
     }
