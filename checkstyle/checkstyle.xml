@@ -100,7 +100,6 @@
     <property name="influenceFormat" value="100000"/>
   </module>
 
-
   <!-- Ignore Thrift files -->
   <module name="SuppressWithNearbyCommentFilter">
     <property name="commentFormat"
