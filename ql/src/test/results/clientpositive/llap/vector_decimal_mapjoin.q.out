@@ -364,7 +364,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
-                  Statistics: Num rows: 1049 Data size: 223552 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:dec:decimal(22,2), 1:value_dec:decimal(22,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -374,7 +374,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:decimal(22,2))
                     predicate: dec is not null (type: boolean)
-                    Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: dec (type: decimal(22,2)), value_dec (type: decimal(22,2))
                       outputColumnNames: _col0, _col1
@@ -382,7 +382,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -400,13 +400,13 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2, _col3
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 1096 Data size: 233717 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1101 Data size: 493248 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
                           File Sink Vectorization:
                               className: VectorFileSinkOperator
                               native: false
-                          Statistics: Num rows: 1096 Data size: 233717 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1101 Data size: 493248 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -432,7 +432,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-                  Statistics: Num rows: 1049 Data size: 223552 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:dec:decimal(24,0), 1:value_dec:decimal(24,0), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -442,7 +442,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:decimal(24,0))
                     predicate: dec is not null (type: boolean)
-                    Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: dec (type: decimal(24,0)), value_dec (type: decimal(24,0))
                       outputColumnNames: _col0, _col1
@@ -450,7 +450,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(26,2))
                         sort order: +
@@ -461,7 +461,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: [1]
-                        Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(24,0))
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -705,7 +705,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_small
-                  Statistics: Num rows: 1049 Data size: 111776 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:dec:decimal(14,2), 1:value_dec:decimal(14,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -715,7 +715,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:decimal(14,2))
                     predicate: dec is not null (type: boolean)
-                    Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: dec (type: decimal(14,2))
                       outputColumnNames: _col0
@@ -723,7 +723,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -741,13 +741,13 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 1096 Data size: 116858 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1101 Data size: 246624 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
                           File Sink Vectorization:
                               className: VectorFileSinkOperator
                               native: false
-                          Statistics: Num rows: 1096 Data size: 116858 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1101 Data size: 246624 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -774,7 +774,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_small
-                  Statistics: Num rows: 1049 Data size: 111776 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:dec:decimal(14,0), 1:value_dec:decimal(14,0), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -784,7 +784,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:decimal(14,0))
                     predicate: dec is not null (type: boolean)
-                    Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: dec (type: decimal(14,0))
                       outputColumnNames: _col0
@@ -792,7 +792,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(16,2))
                         sort order: +
@@ -803,7 +803,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: []
-                        Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -971,7 +971,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_small
-                  Statistics: Num rows: 1049 Data size: 223552 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:dec:decimal(14,2), 1:value_dec:decimal(14,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -981,7 +981,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:decimal(14,2))
                     predicate: dec is not null (type: boolean)
-                    Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: dec (type: decimal(14,2)), value_dec (type: decimal(14,2))
                       outputColumnNames: _col0, _col1
@@ -989,7 +989,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1007,13 +1007,13 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2, _col3
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 1096 Data size: 233717 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1101 Data size: 493248 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
                           File Sink Vectorization:
                               className: VectorFileSinkOperator
                               native: false
-                          Statistics: Num rows: 1096 Data size: 233717 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1101 Data size: 493248 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1040,7 +1040,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_small
-                  Statistics: Num rows: 1049 Data size: 223552 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:dec:decimal(14,0), 1:value_dec:decimal(14,0), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1050,7 +1050,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:decimal(14,0))
                     predicate: dec is not null (type: boolean)
-                    Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: dec (type: decimal(14,0)), value_dec (type: decimal(14,0))
                       outputColumnNames: _col0, _col1
@@ -1058,7 +1058,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(16,2))
                         sort order: +
@@ -1069,7 +1069,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: [1]
-                        Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(14,0))
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -1238,7 +1238,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_small
-                  Statistics: Num rows: 1049 Data size: 111776 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:dec:decimal(14,2), 1:value_dec:decimal(14,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1248,7 +1248,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:decimal(14,2))
                     predicate: dec is not null (type: boolean)
-                    Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: dec (type: decimal(14,2))
                       outputColumnNames: _col0
@@ -1256,7 +1256,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1274,13 +1274,13 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 1096 Data size: 116858 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1101 Data size: 246624 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
                           File Sink Vectorization:
                               className: VectorFileSinkOperator
                               native: false
-                          Statistics: Num rows: 1096 Data size: 116858 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1101 Data size: 246624 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1307,7 +1307,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_small
-                  Statistics: Num rows: 1049 Data size: 111776 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:dec:decimal(14,0), 1:value_dec:decimal(14,0), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1317,7 +1317,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:decimal(14,0))
                     predicate: dec is not null (type: boolean)
-                    Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: dec (type: decimal(14,0))
                       outputColumnNames: _col0
@@ -1325,7 +1325,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(16,2))
                         sort order: +
@@ -1336,7 +1336,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: []
-                        Statistics: Num rows: 997 Data size: 106235 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -1504,7 +1504,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_small
-                  Statistics: Num rows: 1049 Data size: 223552 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:dec:decimal(14,2), 1:value_dec:decimal(14,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1514,7 +1514,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:decimal(14,2))
                     predicate: dec is not null (type: boolean)
-                    Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: dec (type: decimal(14,2)), value_dec (type: decimal(14,2))
                       outputColumnNames: _col0, _col1
@@ -1522,7 +1522,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1540,13 +1540,13 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2, _col3
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 1096 Data size: 233717 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1101 Data size: 493248 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
                           File Sink Vectorization:
                               className: VectorFileSinkOperator
                               native: false
-                          Statistics: Num rows: 1096 Data size: 233717 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1101 Data size: 493248 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1573,7 +1573,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_small
-                  Statistics: Num rows: 1049 Data size: 223552 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:dec:decimal(14,0), 1:value_dec:decimal(14,0), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1583,7 +1583,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:decimal(14,0))
                     predicate: dec is not null (type: boolean)
-                    Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: dec (type: decimal(14,0)), value_dec (type: decimal(14,0))
                       outputColumnNames: _col0, _col1
@@ -1591,7 +1591,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(16,2))
                         sort order: +
@@ -1602,7 +1602,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: [1]
-                        Statistics: Num rows: 997 Data size: 212470 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(14,0))
             Execution mode: vectorized, llap
             LLAP IO: no inputs
