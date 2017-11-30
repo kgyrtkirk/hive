@@ -10,220 +10,16 @@ POSTHOOK: query: create table partcoltypenum (key int, value string) partitioned
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partcoltypenum
-PREHOOK: query: alter table partcoltypenum add partition(tint=100Y, sint=20000S, bint=300000000000L)
-PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@partcoltypenum
-POSTHOOK: query: alter table partcoltypenum add partition(tint=100Y, sint=20000S, bint=300000000000L)
-POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@partcoltypenum
-POSTHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
-PREHOOK: query: describe formatted partcoltypenum partition (tint=100, sint=20000S, bint='300000000000')
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partcoltypenum
-POSTHOOK: query: describe formatted partcoltypenum partition (tint=100, sint=20000S, bint='300000000000')
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partcoltypenum
-# col_name            	data_type           	comment             
-key                 	int                 	                    
-value               	string              	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-tint                	tinyint             	                    
-sint                	smallint            	                    
-bint                	bigint              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[100, 20000, 300000000000]	 
-Database:           	default             	 
-Table:              	partcoltypenum      	 
-#### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
-	numFiles            	0                   
-	numRows             	0                   
-	rawDataSize         	0                   
-	totalSize           	0                   
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-PREHOOK: query: alter table partcoltypenum partition(tint=100, sint=20000S, bint='300000000000') set fileformat rcfile
-PREHOOK: type: ALTERPARTITION_FILEFORMAT
-PREHOOK: Input: default@partcoltypenum
-PREHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
-POSTHOOK: query: alter table partcoltypenum partition(tint=100, sint=20000S, bint='300000000000') set fileformat rcfile
-POSTHOOK: type: ALTERPARTITION_FILEFORMAT
-POSTHOOK: Input: default@partcoltypenum
-POSTHOOK: Input: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
-POSTHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
-PREHOOK: query: describe formatted partcoltypenum partition (tint=100Y, sint=20000S, bint=300000000000L)
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partcoltypenum
-POSTHOOK: query: describe formatted partcoltypenum partition (tint=100Y, sint=20000S, bint=300000000000L)
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partcoltypenum
-# col_name            	data_type           	comment             
-key                 	int                 	                    
-value               	string              	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-tint                	tinyint             	                    
-sint                	smallint            	                    
-bint                	bigint              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[100, 20000, 300000000000]	 
-Database:           	default             	 
-Table:              	partcoltypenum      	 
-#### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
-#### A masked pattern was here ####
-	numFiles            	0                   
-	numRows             	0                   
-	rawDataSize         	0                   
-	totalSize           	0                   
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-PREHOOK: query: alter table partcoltypenum partition(tint='100', sint=20000, bint=300000000000L) clustered by (key) sorted by (key desc) into 4 buckets
-PREHOOK: type: ALTERTABLE_CLUSTER_SORT
-PREHOOK: Input: default@partcoltypenum
-PREHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
-POSTHOOK: query: alter table partcoltypenum partition(tint='100', sint=20000, bint=300000000000L) clustered by (key) sorted by (key desc) into 4 buckets
-POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
-POSTHOOK: Input: default@partcoltypenum
-POSTHOOK: Input: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
-POSTHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
-PREHOOK: query: describe formatted partcoltypenum partition (tint=100Y, sint=20000S, bint=300000000000L)
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partcoltypenum
-POSTHOOK: query: describe formatted partcoltypenum partition (tint=100Y, sint=20000S, bint=300000000000L)
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partcoltypenum
-# col_name            	data_type           	comment             
-key                 	int                 	                    
-value               	string              	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-tint                	tinyint             	                    
-sint                	smallint            	                    
-bint                	bigint              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[100, 20000, 300000000000]	 
-Database:           	default             	 
-Table:              	partcoltypenum      	 
-#### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
-#### A masked pattern was here ####
-	numFiles            	0                   
-	numRows             	0                   
-	rawDataSize         	0                   
-	totalSize           	0                   
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	4                   	 
-Bucket Columns:     	[key]               	 
-Sort Columns:       	[Order(col:key, order:0)]	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-PREHOOK: query: alter table partcoltypenum partition(tint=100, sint=20000, bint=300000000000) rename to partition (tint=110Y, sint=22000S, bint=330000000000L)
-PREHOOK: type: ALTERTABLE_RENAMEPART
-PREHOOK: Input: default@partcoltypenum
-PREHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
-POSTHOOK: query: alter table partcoltypenum partition(tint=100, sint=20000, bint=300000000000) rename to partition (tint=110Y, sint=22000S, bint=330000000000L)
-POSTHOOK: type: ALTERTABLE_RENAMEPART
-POSTHOOK: Input: default@partcoltypenum
-POSTHOOK: Input: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
-POSTHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
-POSTHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
-PREHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000, bint='330000000000')
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partcoltypenum
-POSTHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000, bint='330000000000')
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partcoltypenum
-# col_name            	data_type           	comment             
-key                 	int                 	                    
-value               	string              	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-tint                	tinyint             	                    
-sint                	smallint            	                    
-bint                	bigint              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[110, 22000, 330000000000]	 
-Database:           	default             	 
-Table:              	partcoltypenum      	 
-#### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
-#### A masked pattern was here ####
-	numFiles            	0                   
-	numRows             	0                   
-	rawDataSize         	0                   
-	totalSize           	0                   
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	4                   	 
-Bucket Columns:     	[key]               	 
-Sort Columns:       	[Order(col:key, order:0)]	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-PREHOOK: query: insert into partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) select key, value from src limit 10
+PREHOOK: query: insert into partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) 
+	(key,value) values (1,'a')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
 PREHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
-POSTHOOK: query: insert into partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) select key, value from src limit 10
+POSTHOOK: query: insert into partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) 
+	(key,value) values (1,'a')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
 POSTHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
-POSTHOOK: Lineage: partcoltypenum PARTITION(tint=110,sint=22000,bint=330000000000).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partcoltypenum PARTITION(tint=110,sint=22000,bint=330000000000).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert into partcoltypenum partition (tint=110, sint=22000, bint=330000000000) select key, value from src limit 20
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-PREHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
-POSTHOOK: query: insert into partcoltypenum partition (tint=110, sint=22000, bint=330000000000) select key, value from src limit 20
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-POSTHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
-POSTHOOK: Lineage: partcoltypenum PARTITION(tint=110,sint=22000,bint=330000000000).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partcoltypenum PARTITION(tint=110,sint=22000,bint=330000000000).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partcoltypenum PARTITION(tint=110,sint=22000,bint=330000000000).key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partcoltypenum PARTITION(tint=110,sint=22000,bint=330000000000).value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 PREHOOK: query: analyze table partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partcoltypenum
@@ -292,11 +88,10 @@ Table:              	partcoltypenum
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
-#### A masked pattern was here ####
-	numFiles            	2                   
-	numRows             	30                  
-	rawDataSize         	316                 
-	totalSize           	346                 
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	3                   
+	totalSize           	4                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -317,10 +112,10 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcoltypenum
 col_name            	key                 	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
-min                 	27                  	 	 	 	 	 	 	 	 	 	 
-max                 	484                 	 	 	 	 	 	 	 	 	 	 
+min                 	1                   	 	 	 	 	 	 	 	 	 	 
+max                 	1                   	 	 	 	 	 	 	 	 	 	 
 num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
+distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
 max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
@@ -338,9 +133,9 @@ data_type           	string
 min                 	                    	 	 	 	 	 	 	 	 	 	 
 max                 	                    	 	 	 	 	 	 	 	 	 	 
 num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
-avg_col_len         	6.766666666666667   	 	 	 	 	 	 	 	 	 	 
-max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	1.0                 	 	 	 	 	 	 	 	 	 	 
+max_col_len         	1                   	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
@@ -376,11 +171,10 @@ Table:              	partcoltypenum
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
-#### A masked pattern was here ####
-	numFiles            	2                   
-	numRows             	30                  
-	rawDataSize         	316                 
-	totalSize           	346                 
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	3                   
+	totalSize           	4                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -426,10 +220,10 @@ Table:              	partcoltypenum
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"value\":\"true\"}}
 #### A masked pattern was here ####
-	numFiles            	2                   
-	numRows             	30                  
-	rawDataSize         	316                 
-	totalSize           	346                 
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	3                   
+	totalSize           	4                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
