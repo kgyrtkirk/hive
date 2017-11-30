@@ -269,6 +269,46 @@ POSTHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
 POSTHOOK: Output: default@partcoltypenum
 POSTHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
 #### A masked pattern was here ####
+PREHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcoltypenum
+POSTHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcoltypenum
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+tint                	tinyint             	                    
+sint                	smallint            	                    
+bint                	bigint              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[110, 22000, 330000000000]	 
+Database:           	default             	 
+Table:              	partcoltypenum      	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numRows             	30                  
+	rawDataSize         	316                 
+	totalSize           	346                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcoltypenum
@@ -313,6 +353,46 @@ POSTHOOK: query: alter table partcoltypenum change key key decimal(10,0)
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@partcoltypenum
 POSTHOOK: Output: default@partcoltypenum
+PREHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@partcoltypenum
+POSTHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@partcoltypenum
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+tint                	tinyint             	                    
+sint                	smallint            	                    
+bint                	bigint              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[110, 22000, 330000000000]	 
+Database:           	default             	 
+Table:              	partcoltypenum      	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numRows             	30                  
+	rawDataSize         	316                 
+	totalSize           	346                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: alter table partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) change key key decimal(10,0)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@partcoltypenum
