@@ -305,6 +305,7 @@ public class HiveAlterHandler implements AlterHandler {
           if(!MetaStoreUtils.areSameColumns(oldt.getSd().getCols(), newt.getSd().getCols())) {
             parts = msdb.getPartitions(dbname, name, -1);
             for (Partition part : parts) {
+              Partition oldPart = new Partition(part);
               List<FieldSchema> oldCols = part.getSd().getCols();
               part.getSd().setCols(newt.getSd().getCols());
               ColumnStatistics colStats = updateOrGetPartitionColumnStats(msdb, dbname, name,
@@ -312,6 +313,10 @@ public class HiveAlterHandler implements AlterHandler {
               assert(colStats == null);
               if (cascade) {
                 msdb.alterPartition(dbname, name, part.getValues(), part);
+              } else {
+                // update changed properties (stats)
+                oldPart.setParameters(part.getParameters());
+                msdb.alterPartition(dbname, name, part.getValues(), oldPart);
               }
             }
             msdb.alterTable(dbname, name, newt);
