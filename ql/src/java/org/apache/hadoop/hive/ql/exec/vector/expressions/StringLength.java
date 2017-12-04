@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * Calculate the length of the strings in the input column vector, and store
  * it in the output column vector.
  */
+<<<<<<< ours
 public class StringLength extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
@@ -35,6 +36,11 @@ public class StringLength extends VectorExpression {
   public StringLength(int colNum, int outputColumnNum) {
     super(outputColumnNum);
     this.colNum = colNum;
+=======
+public class StringLength extends FuncStringToLong {
+  public StringLength(int colNum, int outputColNum) {
+    super(colNum, outputColNum);
+>>>>>>> theirs
   }
 
   public StringLength() {
@@ -44,8 +50,8 @@ public class StringLength extends VectorExpression {
     colNum = -1;
   }
 
-  // Calculate the length of the UTF-8 strings in input vector and place results in output vector.
   @Override
+<<<<<<< ours
   public void evaluate(VectorizedRowBatch batch) {
 
     if (childExpressions != null) {
@@ -122,17 +128,24 @@ public class StringLength extends VectorExpression {
    * beginning at start that is len bytes long.
    */
   static long utf8StringLength(byte[] s, int start, int len) {
+=======
+  protected void func(LongColumnVector outV, BytesColumnVector inV, int i) {
+>>>>>>> theirs
     long resultLength = 0;
-    for (int i = start; i < start + len; i++) {
+    int start = inV.start[i];
+    int len = inV.length[i];
+    byte[] s = inV.vector[i];
+    for (int j = start; j < start + len; j++) {
 
       /* Byte bit patterns of the form 10xxxxxx are continuation
        * bytes. All other bit patterns are the first byte of
        * a character.
        */
-      if ((s[i] & 0xc0) != 0x80) {
+      if ((s[j] & 0xc0) != 0x80) {
         resultLength++;
       }
     }
+<<<<<<< ours
     return resultLength;
   }
 
@@ -150,5 +163,8 @@ public class StringLength extends VectorExpression {
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN);
     return b.build();
+=======
+    outV.vector[i] = resultLength;
+>>>>>>> theirs
   }
 }

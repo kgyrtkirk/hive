@@ -172,10 +172,17 @@ public class UDFToBoolean extends UDF {
   public BooleanWritable evaluate(Text i) {
     if (i == null) {
       return null;
-    } else {
-      booleanWritable.set(i.getLength() != 0);
+    }
+    if (i.toString().equalsIgnoreCase("true")) {
+      booleanWritable.set(true);
       return booleanWritable;
     }
+    if (i.toString().equalsIgnoreCase("false")) {
+      booleanWritable.set(false);
+      return booleanWritable;
+    }
+    booleanWritable.set(i.getLength() != 0);
+    return booleanWritable;
   }
 
   public BooleanWritable evaluate(DateWritable d) {
