@@ -33,8 +33,8 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -173,15 +173,8 @@ public class UDFToBoolean extends UDF {
     if (i == null) {
       return null;
     }
-    if (i.toString().equalsIgnoreCase("true")) {
-      booleanWritable.set(true);
-      return booleanWritable;
-    }
-    if (i.toString().equalsIgnoreCase("false")) {
-      booleanWritable.set(false);
-      return booleanWritable;
-    }
-    booleanWritable.set(i.getLength() != 0);
+    boolean b = PrimitiveObjectInspectorUtils.parseBoolean(i.getBytes(), 0, i.getLength());
+    booleanWritable.set(b);
     return booleanWritable;
   }
 
