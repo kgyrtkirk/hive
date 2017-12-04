@@ -184,10 +184,10 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 1
-#### A masked pattern was here ####
+            directory: ### BLOBSTORE_STAGING_PATH ###
             NumFilesPerFileSink: 1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-#### A masked pattern was here ####
+            Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -254,7 +254,7 @@ STAGE PLANS:
     Move Operator
       tables:
           replace: true
-#### A masked pattern was here ####
+          source: ### BLOBSTORE_STAGING_PATH ###
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -282,12 +282,16 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+<<<<<<< HEAD
 #### A masked pattern was here ####
       Column Stats Desc:
           Columns: key
           Column Types: int
           Table: default.blobstore_table
           Is Table Level Stats: true
+=======
+          Stats Aggregation Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+>>>>>>> asf/master
 
 PREHOOK: query: EXPLAIN EXTENDED FROM hdfs_table INSERT OVERWRITE TABLE blobstore_table SELECT hdfs_table.key GROUP BY hdfs_table.key ORDER BY hdfs_table.key
 PREHOOK: type: QUERY
