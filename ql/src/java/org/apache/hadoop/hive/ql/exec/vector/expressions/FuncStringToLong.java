@@ -17,6 +17,7 @@ public abstract class FuncStringToLong extends VectorExpression {
   private int outputCol;
 
   public FuncStringToLong(int inputCol, int outputCol) {
+    super(outputCol);
     this.inputCol = inputCol;
     this.outputCol = outputCol;
   }
