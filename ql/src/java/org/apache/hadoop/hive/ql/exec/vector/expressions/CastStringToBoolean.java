@@ -27,7 +27,9 @@ import java.nio.charset.StandardCharsets;
  * Type cast string to boolean
  */
 public class CastStringToBoolean extends FuncStringToLong {
-//  private final static byte[] TRUE = StandardCharsets.UTF_8.encode("TRUE").array();
+  private static final long serialVersionUID = 1L;
+
+  //  private final static byte[] TRUE = StandardCharsets.UTF_8.encode("TRUE").array();
   private final static byte[] FALSE = StandardCharsets.UTF_8.encode("FALSE").array();
 
   public CastStringToBoolean() {
@@ -40,6 +42,7 @@ public class CastStringToBoolean extends FuncStringToLong {
 
   @Override
   protected void func(LongColumnVector outV, BytesColumnVector inV, int offset) {
+
     int start = inV.start[offset];
     int length = inV.length[offset];
     byte[] s = inV.vector[offset];

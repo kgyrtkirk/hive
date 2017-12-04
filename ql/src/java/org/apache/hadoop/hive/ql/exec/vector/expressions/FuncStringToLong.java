@@ -94,11 +94,6 @@ public abstract class FuncStringToLong extends VectorExpression {
    */
   abstract protected void func(LongColumnVector outV, BytesColumnVector inV, int i);
 
-  @Override
-  public int getOutputColumn() {
-    return outputCol;
-  }
-
   public int getOutputCol() {
     return outputCol;
   }
@@ -113,11 +108,6 @@ public abstract class FuncStringToLong extends VectorExpression {
 
   public void setInputCol(int inputCol) {
     this.inputCol = inputCol;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "Long";
   }
 
   @Override
