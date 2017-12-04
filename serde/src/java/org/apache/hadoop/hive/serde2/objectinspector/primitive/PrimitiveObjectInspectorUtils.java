@@ -558,7 +558,7 @@ public final class PrimitiveObjectInspectorUtils {
   private static final String falseBooleans[] = { "false", "off", "no", "0", "" };
 
   static enum FalseValues {
-    FALSE("false"), OFF("off"), NO("no"), ZERO("0"), EMPTY("");
+    FALSE("false"), OFF("off"), NO("no"), ZERO("0");
 
     final private byte[] bytes;
 
@@ -571,7 +571,13 @@ public final class PrimitiveObjectInspectorUtils {
     }
 
     public boolean accept(byte[] arr, int st) {
-      throw new RuntimeException();
+      for (int i = 0; i < bytes.length; i++) {
+        byte b = arr[i + st];
+        if (!(b == bytes[i] || b + 'a' - 'A' == bytes[i])) {
+          return true;
+        }
+      }
+      return false;
     }
   }
   /**
@@ -588,14 +594,21 @@ public final class PrimitiveObjectInspectorUtils {
       return FalseValues.OFF.accept(arr, st);
     case 2:
       return FalseValues.NO.accept(arr, st);
-    case 0:
+    case 1:
       return FalseValues.ZERO.accept(arr, st);
+    case 0:
+      return false;
     default:
         return true;
     }
   }
 
   private static boolean parseBoolean(String s) {
+    byte[] bytes = s.getBytes();
+    return parseBoolean(bytes, 0, bytes.length);
+  }
+
+  private static boolean parseBoolean0(String s) {
     for(int i=0;i<falseBooleans.length;i++){
       if(falseBooleans[i].equalsIgnoreCase(s)) {
         return false;
