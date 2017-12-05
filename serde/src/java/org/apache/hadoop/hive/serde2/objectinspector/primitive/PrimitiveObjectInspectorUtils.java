@@ -555,25 +555,21 @@ public final class PrimitiveObjectInspectorUtils {
   }
 
 
-  static enum FalseValues {
+  enum FalseValues {
     FALSE("false"), OFF("off"), NO("no"), ZERO("0"), EMPTY("");
 
-    final private byte[] bytes;
+    private final byte[] bytes;
     private String str;
 
-    private FalseValues(String s) {
+    FalseValues(String s) {
       str = s;
       bytes = s.getBytes();
-    }
-
-    public final int getLength() {
-      return bytes.length;
     }
 
     public boolean accept(byte[] arr, int st) {
       for (int i = 0; i < bytes.length; i++) {
         byte b = arr[i + st];
-        if (!(b == bytes[i] || b + 'a' - 'A' == bytes[i] )) {
+        if (!(b == bytes[i] || b + 'a' - 'A' == bytes[i])) {
           return false;
         }
       }
@@ -607,11 +603,11 @@ public final class PrimitiveObjectInspectorUtils {
     }
   }
 
-  private static final FalseValues[] falseBooleans = FalseValues.values();
+  private static final FalseValues[] FALSE_BOOLEANS = FalseValues.values();
 
   private static boolean parseBoolean(String s) {
-    for(int i=0;i<falseBooleans.length;i++){
-      if (falseBooleans[i].accept(s)) {
+    for (int i = 0; i < FALSE_BOOLEANS.length; i++) {
+      if (FALSE_BOOLEANS[i].accept(s)) {
         return false;
       }
     }
