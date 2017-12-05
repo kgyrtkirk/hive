@@ -349,8 +349,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       // if TopNHashes are active, proceed if not already excluded (i.e order by limit)
       final int firstIndex =
           (reducerHash != null) ? reducerHash.tryStoreKey(firstKey, partKeyNull) : TopNHash.FORWARD;
-      if (firstIndex == TopNHash.EXCLUDE)
-       {
+      if (firstIndex == TopNHash.EXCLUDE) {
         return; // Nothing to do.
       }
       // Compute value and hashcode - we'd either store or forward them.
