@@ -22,6 +22,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.DateTimeException;
@@ -563,7 +564,7 @@ public final class PrimitiveObjectInspectorUtils {
 
     FalseValues(String s) {
       str = s;
-      bytes = s.getBytes();
+      bytes = s.getBytes(StandardCharsets.UTF_8);
     }
 
     public boolean accept(byte[] arr, int st) {
