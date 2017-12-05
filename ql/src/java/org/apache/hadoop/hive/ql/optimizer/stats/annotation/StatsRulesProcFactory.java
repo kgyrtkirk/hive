@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -2302,8 +2301,7 @@ public class StatsRulesProcFactory {
   public static class ReduceSinkStatsRule extends DefaultStatsRule implements NodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
       ReduceSinkOperator rop = (ReduceSinkOperator) nd;
       Operator<? extends OperatorDesc> parent = rop.getParentOperators().get(0);
       Statistics parentStats = parent.getStatistics();
@@ -2320,8 +2318,7 @@ public class StatsRulesProcFactory {
             String prefixedKey = Utilities.ReduceField.KEY.toString() + "." + key;
             ExprNodeDesc end = colExprMap.get(prefixedKey);
             if (end != null) {
-              ColStatistics cs = StatsUtils
-                  .getColStatisticsFromExpression(conf, parentStats, end);
+              ColStatistics cs = StatsUtils.getColStatisticsFromExpression(conf, parentStats, end);
               if (cs != null) {
                 cs.setColumnName(prefixedKey);
                 colStats.add(cs);
@@ -2333,8 +2330,7 @@ public class StatsRulesProcFactory {
             String prefixedVal = Utilities.ReduceField.VALUE.toString() + "." + val;
             ExprNodeDesc end = colExprMap.get(prefixedVal);
             if (end != null) {
-              ColStatistics cs = StatsUtils
-                  .getColStatisticsFromExpression(conf, parentStats, end);
+              ColStatistics cs = StatsUtils.getColStatisticsFromExpression(conf, parentStats, end);
               if (cs != null) {
                 cs.setColumnName(prefixedVal);
                 colStats.add(cs);
@@ -2343,42 +2339,42 @@ public class StatsRulesProcFactory {
           }
 
           outStats.setColumnStats(colStats);
-          }
+        }
 
-          // check if runtime stats is available
-          if(aspCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_CACHE_RUNTIME_STATS)) {
-            ParseContext parseContext = aspCtx.getParseContext();
-            String queryString = parseContext.getContext().getCmd();
-            // if this is explain plan, we need to get the underlying query so that we can show the runtime statistics
-            // in explain. TODO: this is required because of byte-to-byte query string match
-            if (parseContext.getContext().isExplainPlan()) {
-              queryString = parseContext.getContext().getExplainConfig().getQuery();
-            }
-            String queryMD5 = null;
-            try {
-              queryMD5 = QueryPlan.getQueryMD5(queryString);
-              LOG.info("Compilation. MD5: {} query: {}", queryMD5, QueryPlan.normalizeQuery(queryString));
-            } catch (NoSuchAlgorithmException e) {
-              LOG.warn("Not checking for runtime stats as query MD5 threw exception.", e);
-            }
-            if (queryMD5 != null) {
-              Map<String, OperatorStats> opStats = RuntimeStatisticsCache.RUNTIME_STATS_CACHE.getIfPresent(queryMD5);
-              if (opStats != null) {
-                OperatorStats operatorStats = opStats.get(rop.getOperatorId());
-                if (operatorStats != null) {
-                  long oldRowCount = outStats.getNumRows();
-                  long oldDataSize = outStats.getDataSize();
-                  long newRowCount = operatorStats.getOutputRecords();
-                  outStats.setNumRows(newRowCount);
-                  long newDataSize = StatsUtils.getMaxIfOverflow(StatsUtils.getDataSizeFromColumnStats(outStats
-                    .getNumRows(), outStats.getColumnStats()));
-                  outStats.setDataSize(newDataSize);
-                  outStats.setRuntimeStats(true);
-                  LOG.info("Runtime statistics available for op: {} updated rowCount: {} -> {} dataSize: {} -> {}",
-                    rop.getOperatorId(), oldRowCount, newRowCount, oldDataSize, newDataSize);
-                }
+        // check if runtime stats is available
+        if (aspCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_CACHE_RUNTIME_STATS)) {
+          ParseContext parseContext = aspCtx.getParseContext();
+          String queryString = parseContext.getContext().getCmd();
+          // if this is explain plan, we need to get the underlying query so that we can show the runtime statistics
+          // in explain. TODO: this is required because of byte-to-byte query string match
+          if (parseContext.getContext().isExplainPlan()) {
+            queryString = parseContext.getContext().getExplainConfig().getQuery();
+          }
+          String queryMD5 = null;
+          try {
+            queryMD5 = QueryPlan.getQueryMD5(queryString);
+            LOG.info("Compilation. MD5: {} query: {}", queryMD5, QueryPlan.normalizeQuery(queryString));
+          } catch (NoSuchAlgorithmException e) {
+            LOG.warn("Not checking for runtime stats as query MD5 threw exception.", e);
+          }
+          if (queryMD5 != null) {
+            Map<String, OperatorStats> opStats = RuntimeStatisticsCache.RUNTIME_STATS_CACHE.getIfPresent(queryMD5);
+            if (opStats != null) {
+              OperatorStats operatorStats = opStats.get(rop.getOperatorId());
+              if (operatorStats != null) {
+                long oldRowCount = outStats.getNumRows();
+                long oldDataSize = outStats.getDataSize();
+                long newRowCount = operatorStats.getOutputRecords();
+                outStats.setNumRows(newRowCount);
+                long newDataSize =
+                    StatsUtils.getMaxIfOverflow(StatsUtils.getDataSizeFromColumnStats(outStats.getNumRows(), outStats.getColumnStats()));
+                outStats.setDataSize(newDataSize);
+                outStats.setRuntimeStats(true);
+                LOG.info("Runtime statistics available for op: {} updated rowCount: {} -> {} dataSize: {} -> {}", rop.getOperatorId(),
+                    oldRowCount, newRowCount, oldDataSize, newDataSize);
               }
             }
+          }
         }
         rop.setStatistics(outStats);
         if (LOG.isDebugEnabled()) {
