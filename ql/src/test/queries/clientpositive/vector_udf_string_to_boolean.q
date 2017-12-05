@@ -13,7 +13,9 @@ insert into t values ('TRUE');
 insert into t values ('TrUe');
 insert into t values ('');
 insert into t values ('Other');
+insert into t values ('Off');
+insert into t values ('No');
 
-explain SELECT CAST(s AS BOOLEAN) FROM t;
+explain s,SELECT CAST(s AS BOOLEAN) FROM t order by s;
 
-SELECT CAST(s AS BOOLEAN) FROM t;
+SELECT s,CAST(s AS BOOLEAN) FROM t order by s;

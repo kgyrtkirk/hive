@@ -104,11 +104,11 @@ POSTHOOK: query: SELECT CAST(s AS BOOLEAN) FROM t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
-true
 false
 true
-false
+true
 false
 false
 true
+false
 true
