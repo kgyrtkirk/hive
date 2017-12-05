@@ -1695,6 +1695,16 @@ public class HiveConf extends Configuration {
         "Whether to remove an extra join with sq_count_check for scalar subqueries "
             + "with constant group by keys."),
 
+    HIVE_OPTIMIZE_TABLE_PROPERTIES_FROM_SERDE("hive.optimize.update.table.properties.from.serde", false,
+        "Whether to update table-properties by initializing tables' SerDe instances during logical-optimization. \n" +
+            "By doing so, certain SerDe classes (like AvroSerDe) can pre-calculate table-specific information, and \n" +
+            "store it in table-properties, to be used later in the SerDe, while running the job."),
+
+    HIVE_OPTIMIZE_TABLE_PROPERTIES_FROM_SERDE_LIST("hive.optimize.update.table.properties.from.serde.list",
+        "org.apache.hadoop.hive.serde2.avro.AvroSerDe",
+        "The comma-separated list of SerDe classes that are considered when enhancing table-properties \n" +
+            "during logical optimization."),
+
     // CTE
     HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", -1,
         "If the number of references to a CTE clause exceeds this threshold, Hive will materialize it\n" +
@@ -1902,7 +1912,7 @@ public class HiveConf extends Configuration {
       "1: Enable split-update feature found in the newer version of Hive ACID subsystem\n" +
       "4: Make the table 'quarter-acid' as it only supports insert. But it doesn't require ORC or bucketing.\n" +
       "This is intended to be used as an internal property for future versions of ACID. (See\n" +
-        "HIVE-14035 for details.)"),
+        "HIVE-14035 for details.  User sets it tblproperites via transactional_properties.)", true),
 
     HIVE_MAX_OPEN_TXNS("hive.max.open.txns", 100000, "Maximum number of open transactions. If \n" +
         "current open transactions reach this limit, future open transaction requests will be \n" +

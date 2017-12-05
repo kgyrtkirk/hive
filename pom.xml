@@ -180,7 +180,7 @@
     <kryo.version>3.0.3</kryo.version>
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.9.3</libthrift.version>
-    <log4j2.version>2.6.2</log4j2.version>
+    <log4j2.version>2.8.2</log4j2.version>
     <opencsv.version>2.3</opencsv.version>
     <orc.version>1.4.1</orc.version>
     <mockito-all.version>1.10.19</mockito-all.version>
@@ -1259,7 +1259,7 @@
             <test.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</test.warehouse.dir>
             <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
-            <test.src.tables>src,src1,srcbucket,srcbucket2,src_json,src_thrift,src_sequencefile,srcpart,alltypesorc,src_hbase,cbo_t1,cbo_t2,cbo_t3,src_cbo,part,lineitem</test.src.tables>
+            <test.src.tables>src,src1,srcbucket,srcbucket2,src_json,src_thrift,src_sequencefile,srcpart,alltypesorc,alltypesparquet,src_hbase,cbo_t1,cbo_t2,cbo_t3,src_cbo,part,lineitem</test.src.tables>
             <java.security.krb5.conf>${test.conf.dir}/krb5.conf</java.security.krb5.conf>
             <!-- Required by spark to work around SPARK-14958 -->
             <antlr.version>${antlr.version}</antlr.version>

@@ -376,7 +376,6 @@ public enum ErrorMsg {
   DBTXNMGR_REQUIRES_CONCURRENCY(10264,
       "To use DbTxnManager you must set hive.support.concurrency=true"),
   TXNMGR_NOT_ACID(10265, "This command is not allowed on an ACID table {0}.{1} with a non-ACID transaction manager", true),
-  LOAD_DATA_ON_ACID_TABLE(10266, "LOAD DATA... statement is not supported on transactional table {0}.", true),
   LOCK_NO_SUCH_LOCK(10270, "No record of lock {0} could be found, " +
       "may have timed out", true),
   LOCK_REQUEST_UNSUPPORTED(10271, "Current transaction manager does not " +
@@ -528,8 +527,6 @@ public enum ErrorMsg {
   COLUMNSTATSCOLLECTOR_INVALID_COLUMN(30012, "Column statistics are not supported "
       + "for partition columns"),
 
-  STATISTICS_CLONING_FAILED(30013, "Cloning of statistics failed"),
-
   STATSAGGREGATOR_SOURCETASK_NULL(30014, "SourceTask of StatsTask should not be null"),
   STATSAGGREGATOR_CONNECTION_ERROR(30015,
       "Stats aggregator of type {0} cannot be connected to", true),
@@ -550,6 +547,8 @@ public enum ErrorMsg {
   ACID_TABLES_MUST_BE_READ_WITH_ACID_READER(30021, "An ORC ACID reader required to read ACID tables"),
   ACID_TABLES_MUST_BE_READ_WITH_HIVEINPUTFORMAT(30022, "Must use HiveInputFormat to read ACID tables " +
           "(set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat)"),
+  ACID_LOAD_DATA_INVALID_FILE_NAME(30023, "{0} file name is not valid in Load Data into Acid " +
+    "table {1}.  Examples of valid names are: 00000_0, 00000_0_copy_1", true),
 
   CONCATENATE_UNSUPPORTED_FILE_FORMAT(30030, "Concatenate/Merge only supported for RCFile and ORCFile formats"),
   CONCATENATE_UNSUPPORTED_TABLE_BUCKETED(30031, "Concatenate/Merge can not be performed on bucketed tables"),
