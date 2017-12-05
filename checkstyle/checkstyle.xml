@@ -115,6 +115,12 @@
     <property name="checkFormat" value=".*"/>
     <property name="influenceFormat" value="100000"/>
   </module>
+
+  <!-- honor on/off tags -->
+  <module name="SuppressionCommentFilter">
+    <property name="offCommentFormat" value="@formatter:off"/>
+    <property name="onCommentFormat" value="@formatter:on"/>
+  </module>
   
   <module name="TreeWalker">
 
