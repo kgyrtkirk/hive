@@ -4632,11 +4632,6 @@ public class Vectorizer implements PhysicalPlanResolver {
       setOperatorIssue(e.getMessage());
       throw new VectorizerCannotVectorizeException();
     }
-
-    // FIXME: Hack to retain same opId as non-vector op for runtime stats
-    vectorOp.setOperatorId(op.getOperatorId());
-    vectorOp.setId(op.getIdentifier());
-
     Preconditions.checkState(vectorOp != null);
     if (vectorTaskColumnInfo != null && !isNative) {
       vectorTaskColumnInfo.setAllNative(false);
