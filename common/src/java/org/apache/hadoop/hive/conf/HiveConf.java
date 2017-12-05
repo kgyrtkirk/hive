@@ -3611,19 +3611,21 @@ public class HiveConf extends Configuration {
     HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
         "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
         "Comma separated list of variables which are used internally and should not be configurable."),
+
     HIVE_SPARK_RSC_CONF_LIST("hive.spark.rsc.conf.list",
         SPARK_OPTIMIZE_SHUFFLE_SERDE.varname + "," +
             SPARK_CLIENT_FUTURE_TIMEOUT.varname,
         "Comma separated list of variables which are related to remote spark context.\n" +
             "Changing these variables will result in re-creating the spark session."),
+
     HIVE_QUERY_TIMEOUT_SECONDS("hive.query.timeout.seconds", "0s",
         new TimeValidator(TimeUnit.SECONDS),
         "Timeout for Running Query in seconds. A nonpositive value means infinite. " +
         "If the query timeout is also set by thrift API call, the smaller one will be taken."),
+
+
     HIVE_EXEC_INPUT_LISTING_MAX_THREADS("hive.exec.input.listing.max.threads", 0, new  SizeValidator(0L, true, 1024L, true),
         "Maximum number of threads that Hive uses to list file information from file systems (recommended > 1 for blobstore)."),
-    HIVE_QUERY_REEXECUTION_STRATEGY("hive.query.reexecution.strategy", "none", new StringSet("none", "overlay", "reoptimize"),
-        "none: no recovery\noverlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of execution errors"),
 
     /* BLOBSTORE section */
 
@@ -4974,21 +4976,4 @@ public class HiveConf extends Configuration {
       return reverseMap;
     }
   }
-
-  public void putAll(Map<String, String> overlay) {
-    for (Entry<String, String> entry : overlay.entrySet()) {
-      set(entry.getKey(), entry.getValue());
-    }
-  }
-
-  public Map<String, String> subtree(String string) {
-    Map<String, String> ret = new HashMap<>();
-    for (Entry<String, String> entry : this) {
-      if (entry.getKey().startsWith(string)) {
-        ret.put(entry.getKey().substring(string.length() + 1), entry.getValue());
-      }
-    }
-    return ret;
-  }
-
 }
