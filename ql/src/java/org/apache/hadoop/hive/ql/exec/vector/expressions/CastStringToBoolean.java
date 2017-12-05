@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
 /**
- * Type cast string to boolean
+ * Type cast string to boolean.
  */
 public class CastStringToBoolean extends FuncStringToLong {
   private static final long serialVersionUID = 1L;

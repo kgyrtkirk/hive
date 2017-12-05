@@ -13,7 +13,11 @@ insert into t values ('TRUE');
 insert into t values ('TrUe');
 insert into t values ('');
 insert into t values ('Other');
+insert into t values ('Off');
+insert into t values ('No');
+insert into t values ('0');
+insert into t values ('1');
 
-explain SELECT CAST(s AS BOOLEAN) FROM t;
+explain select s,cast(s as boolean) from t order by s;
 
-SELECT CAST(s AS BOOLEAN) FROM t;
+select s,cast(s as boolean) from t order by s;
