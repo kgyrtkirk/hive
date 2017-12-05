@@ -54,7 +54,6 @@ import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.hooks.TezRuntimeStatisticsHook;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.CompositeProcessor;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -112,11 +111,6 @@ import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
 
 /**
  * TezCompiler translates the operator plan into TezTasks.
@@ -416,23 +410,6 @@ public class TezCompiler extends TaskCompiler {
   }
 
   private void runStatsAnnotation(OptimizeTezProcContext procCtx) throws SemanticException {
-    if(procCtx.conf.getBoolVar(ConfVars.HIVE_STATS_CACHE_RUNTIME_STATS)) {
-      Set<String> postHooks = Sets.newHashSet(Splitter.on(",").trimResults().omitEmptyStrings().split(
-        Strings.nullToEmpty(HiveConf.getVar(procCtx.conf, ConfVars.POSTEXECHOOKS))));
-      if (!postHooks.contains(TezRuntimeStatisticsHook.class.getName())) {
-        postHooks.add(TezRuntimeStatisticsHook.class.getName());
-        String updatedHooks = Joiner.on(",").join(postHooks);
-        procCtx.conf.setVar(ConfVars.POSTEXECHOOKS, updatedHooks);
-      }
-
-      Set<String> failureHooks = Sets.newHashSet(Splitter.on(",").trimResults().omitEmptyStrings().split(
-        Strings.nullToEmpty(HiveConf.getVar(procCtx.conf, ConfVars.ONFAILUREHOOKS))));
-      if (!failureHooks.contains(TezRuntimeStatisticsHook.class.getName())) {
-        failureHooks.add(TezRuntimeStatisticsHook.class.getName());
-        String updatedHooks = Joiner.on(",").join(failureHooks);
-        procCtx.conf.setVar(ConfVars.ONFAILUREHOOKS, updatedHooks);
-      }
-    }
     new AnnotateWithStatistics().transform(procCtx.parseContext);
     new AnnotateWithOpTraits().transform(procCtx.parseContext);
   }
