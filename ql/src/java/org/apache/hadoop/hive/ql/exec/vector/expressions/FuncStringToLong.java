@@ -111,7 +111,7 @@ public abstract class FuncStringToLong extends VectorExpression {
   /* Evaluate result for position i (using bytes[] to avoid storage allocation costs)
    * and set position i of the output vector to the result.
    */
-  abstract protected void func(LongColumnVector outV, BytesColumnVector inV, int i);
+  protected abstract void func(LongColumnVector outV, BytesColumnVector inV, int i);
 
   public int getOutputCol() {
     return outputCol;
