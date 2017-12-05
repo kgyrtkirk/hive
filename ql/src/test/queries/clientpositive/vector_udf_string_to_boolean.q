@@ -15,7 +15,9 @@ insert into t values ('');
 insert into t values ('Other');
 insert into t values ('Off');
 insert into t values ('No');
+insert into t values ('0');
+insert into t values ('1');
 
-explain s,SELECT CAST(s AS BOOLEAN) FROM t order by s;
+explain select s,cast(s as boolean) from t order by s;
 
-SELECT s,CAST(s AS BOOLEAN) FROM t order by s;
+select s,cast(s as boolean) from t order by s;
