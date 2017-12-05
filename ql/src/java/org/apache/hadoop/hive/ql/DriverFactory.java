@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class DriverFactory {
@@ -33,13 +34,25 @@ public class DriverFactory {
       IDriver build(QueryState queryState, String userName, QueryInfo queryInfo) {
         return new Driver(queryState, userName, queryInfo);
       }
+    },
+    overlay() {
+      @Override
+      IDriver build(QueryState queryState, String userName, QueryInfo queryInfo) {
+        return new ReExecOverlayDriver(queryState, userName, queryInfo);
+      }
+    },
+    reoptimize() {
+      @Override
+      IDriver build(QueryState queryState, String userName, QueryInfo queryInfo) {
+        return new ReOptimizeDriver(queryState, userName, queryInfo);
+      }
     };
 
     abstract IDriver build(QueryState queryState, String userName, QueryInfo queryInfo);
   }
 
   public static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
-    ExecutionStrategy strategy = ExecutionStrategy.none;
+    ExecutionStrategy strategy = ExecutionStrategy.valueOf(queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGY));
     return strategy.build(queryState, userName, queryInfo);
   }
 
