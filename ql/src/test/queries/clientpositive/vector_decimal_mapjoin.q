@@ -1,3 +1,5 @@
+-- until HIVE-18225 is fixed
+set hive.stats.column.autogather=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.auto.convert.join=true;
@@ -89,5 +91,9 @@ select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`
 explain vectorization detail
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`);
 
+select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`);
+
+
+SET hive.vectorized.execution.enabled=false;
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`);
 
