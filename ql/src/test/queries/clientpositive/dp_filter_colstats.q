@@ -1,4 +1,4 @@
-set hive.stats.column.autogather=false;
+set hive.stats.column.autogather=true;
 
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.max.dynamic.partitions.pernode=200;
