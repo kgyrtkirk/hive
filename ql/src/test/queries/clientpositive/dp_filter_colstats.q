@@ -16,9 +16,11 @@ create table p0 (v int) partitioned by (p int) stored as orc
   tblproperties ("transactional"="true", "transactional_properties"="insert_only");
 
 explain insert overwrite table p0 partition (p) select * from i0 where v < 3;
-insert overwrite table p0 partition (p) select * from i0 where v < 3;
+insert  overwrite table p0 partition (p) select * from i0 where v < 3;
 select count(*) from p0 where v!=1;
--- select assert_true(count(*) = 2) from p0 where v!=1;
+select * from p0 order by v;
+show partitions p0;
+select count(*) from p0 where v!=1;
 select * from p0 order by v;
 
 -- try#1
