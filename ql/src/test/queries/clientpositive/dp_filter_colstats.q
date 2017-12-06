@@ -9,18 +9,25 @@ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 create table i0 (p int,v int);
 insert into i0 values
 	(0,0),
-	(1,1),
 	(2,2),
 	(3,3);
 
 create table p0 (v int) partitioned by (p int) stored as orc
- tblproperties ("transactional"="true", "transactional_properties"="insert_only");
+  tblproperties ("transactional"="true", "transactional_properties"="insert_only");
 
-explain insert overwrite table p0 partition (p) select * from i0 where v < 2;
-insert overwrite table p0 partition (p) select * from i0 where v < 2;
+explain insert overwrite table p0 partition (p) select * from i0 where v < 3;
+insert overwrite table p0 partition (p) select * from i0 where v < 3;
+select count(*) from p0 where v!=1;
+-- select assert_true(count(*) = 2) from p0 where v!=1;
 select * from p0 order by v;
 
-explain insert into table p0 partition (p) select * from i0 where v < 3;
-insert into table p0 partition (p) select * from i0 where v < 3;
+-- try#1
+select v,count(*) from p0 group by v;
+
+select count(*) from p0 where v!=1.1;
+select * from p0 order by v;
+
+explain insert into table p0 partition (p) select * from i0 where v < 4;
+insert into table p0 partition (p) select * from i0 where v < 4;
 select * from p0 order by v;
 
