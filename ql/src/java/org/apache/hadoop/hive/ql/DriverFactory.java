@@ -44,9 +44,10 @@ public class DriverFactory {
   }
 
   private static QueryState getNewQueryState(HiveConf conf) {
-    // async=true techincally forces to enable HiveConf isolations; but instead for now explicitly:
-    HiveConf newConf = new HiveConf(conf);
-    return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(newConf).build();
+    // FIXME: isolate hiveConf used for a single query
+    // basically async=true forces to enable HiveConf isolations; but do it explicitly:
+    // HiveConf newConf = new HiveConf(conf);
+    return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
   }
 
   // it would be better to use conf at the callsite...but instead for now I clone the original magic from Driver
