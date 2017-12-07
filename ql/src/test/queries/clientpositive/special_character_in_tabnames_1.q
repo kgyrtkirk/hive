@@ -170,7 +170,11 @@ set hive.auto.convert.join=false;
 
 select `c/b/o_t1`.c_int, `//cbo_t2`.c_int from `c/b/o_t1` join             `//cbo_t2` on `c/b/o_t1`.key=`//cbo_t2`.key;
 
+set hive.strict.checks.cartesian.product=false;
+
 select `c/b/o_t1`.key from `c/b/o_t1` join `cbo_/t3////`;
+
+set hive.strict.checks.cartesian.product=true;
 
 select `c/b/o_t1`.key from `c/b/o_t1` join `cbo_/t3////` where `c/b/o_t1`.key=`cbo_/t3////`.key and `c/b/o_t1`.key >= 1;
 
