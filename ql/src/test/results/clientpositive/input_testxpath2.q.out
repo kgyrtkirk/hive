@@ -49,7 +49,7 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
                   outputColumnNames: lint_size, lintstring_size, mstringstring_size
-                  Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: compute_stats(lint_size, 'hll'), compute_stats(lintstring_size, 'hll'), compute_stats(mstringstring_size, 'hll')
                     mode: hash

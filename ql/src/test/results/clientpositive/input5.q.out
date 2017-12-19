@@ -70,7 +70,7 @@ STAGE PLANS:
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string)
             outputColumnNames: key, value
-            Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
               mode: hash

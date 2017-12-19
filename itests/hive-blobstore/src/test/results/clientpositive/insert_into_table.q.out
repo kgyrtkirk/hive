@@ -98,7 +98,7 @@ STAGE PLANS:
               Select Operator
                 expressions: _col0 (type: int)
                 outputColumnNames: id
-                Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: compute_stats(id, 'hll')
                   mode: hash

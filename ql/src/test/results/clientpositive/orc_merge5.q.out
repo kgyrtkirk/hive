@@ -57,7 +57,7 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: double), _col3 (type: decimal(10,0)), _col4 (type: timestamp)
                   outputColumnNames: userid, string1, subtype, decimal1, ts
-                  Statistics: Num rows: 1 Data size: 246402 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: compute_stats(userid, 'hll'), compute_stats(string1, 'hll'), compute_stats(subtype, 'hll'), compute_stats(decimal1, 'hll'), compute_stats(ts, 'hll')
                     mode: hash
@@ -173,7 +173,7 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: double), _col3 (type: decimal(10,0)), _col4 (type: timestamp)
                   outputColumnNames: userid, string1, subtype, decimal1, ts
-                  Statistics: Num rows: 1 Data size: 246402 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: compute_stats(userid, 'hll'), compute_stats(string1, 'hll'), compute_stats(subtype, 'hll'), compute_stats(decimal1, 'hll'), compute_stats(ts, 'hll')
                     mode: hash
