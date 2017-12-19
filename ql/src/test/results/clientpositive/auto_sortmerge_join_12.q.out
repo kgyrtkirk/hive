@@ -356,23 +356,7 @@ STAGE PLANS:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
                     2 _col0 (type: string)
-<<<<<<< HEAD
-                  Position of Big Table: 2
-        $hdt$_3:d 
-          TableScan
-            alias: d
-            Statistics: Num rows: 1 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
-            GatherStats: false
-            Select Operator
-              Statistics: Num rows: 1 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
-              HashTable Sink Operator
-                keys:
-                  0 
-                  1 
-                Position of Big Table: 0
-=======
                   Position of Big Table: 0
->>>>>>> asf/master
 
   Stage: Stage-10
     Map Reduce
@@ -399,28 +383,6 @@ STAGE PLANS:
                     2 _col0 (type: string)
                   Position of Big Table: 0
                   Statistics: Num rows: 255 Data size: 25572 Basic stats: COMPLETE Column stats: NONE
-<<<<<<< HEAD
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 
-                      1 
-                    Position of Big Table: 0
-                    Statistics: Num rows: 255 Data size: 459327 Basic stats: PARTIAL Column stats: NONE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
-                      Reduce Output Operator
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
-                        tag: -1
-                        value expressions: _col0 (type: bigint)
-                        auto parallelism: false
-=======
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
@@ -439,7 +401,6 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: false
                     MultiFileSpray: false
->>>>>>> asf/master
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -706,10 +667,10 @@ STAGE PLANS:
         $hdt$_3:d 
           TableScan
             alias: d
-            Statistics: Num rows: 1 Data size: 170 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Select Operator
-              Statistics: Num rows: 1 Data size: 170 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 
@@ -728,7 +689,7 @@ STAGE PLANS:
                 0 
                 1 
               Position of Big Table: 0
-              Statistics: Num rows: 255 Data size: 69177 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 255 Data size: 459327 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: count()
                 mode: hash
@@ -921,10 +882,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: d
-            Statistics: Num rows: 1 Data size: 170 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Select Operator
-              Statistics: Num rows: 1 Data size: 170 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -932,7 +893,7 @@ STAGE PLANS:
                   0 
                   1 
                 Position of Big Table: 1
-                Statistics: Num rows: 255 Data size: 69177 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 255 Data size: 459327 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -1048,14 +1009,14 @@ STAGE PLANS:
               auto parallelism: false
           TableScan
             alias: d
-            Statistics: Num rows: 1 Data size: 170 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Select Operator
-              Statistics: Num rows: 1 Data size: 170 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
               Reduce Output Operator
                 null sort order: 
                 sort order: 
-                Statistics: Num rows: 1 Data size: 170 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
                 tag: 1
                 auto parallelism: false
       Path -> Alias:
@@ -1143,7 +1104,7 @@ STAGE PLANS:
           keys:
             0 
             1 
-          Statistics: Num rows: 255 Data size: 69177 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 255 Data size: 459327 Basic stats: PARTIAL Column stats: NONE
           Group By Operator
             aggregations: count()
             mode: hash
