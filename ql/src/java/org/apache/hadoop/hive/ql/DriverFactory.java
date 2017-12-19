@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.ql;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
+/**
+ * Constructs a driver for ql clients
+ */
 public class DriverFactory {
 
   public static IDriver newDriver(HiveConf conf) {
@@ -45,15 +48,13 @@ public class DriverFactory {
 
   private static QueryState getNewQueryState(HiveConf conf) {
     // FIXME: isolate hiveConf used for a single query
-    // basically async=true forces to enable HiveConf isolations; but do it explicitly:
-    // HiveConf newConf = new HiveConf(conf);
     return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
   }
 
-  // it would be better to use conf at the callsite...but instead for now I clone the original magic from Driver
+  // FIXME: remove this method ; and use the conf at the callsite...
   @Deprecated
   public static IDriver newDriver() {
-    // CLIDriver enter at this point
+    // only CLIDriver enter at this point
     HiveConf conf = (SessionState.get() != null) ? SessionState.get().getConf() : new HiveConf();
     return newDriver(conf);
   }
