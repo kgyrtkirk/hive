@@ -78,12 +78,7 @@ STAGE PLANS:
             Reduce Output Operator
               key expressions: _col0 (type: string), _col1 (type: string)
               sort order: ++
-<<<<<<< HEAD
               Statistics: Num rows: 1 Data size: 116030 Basic stats: COMPLETE Column stats: NONE
-              TopN Hash Memory Usage: 0.1
-=======
-              Statistics: Num rows: 1 Data size: 11603 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -103,7 +98,7 @@ STAGE PLANS:
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string)
               outputColumnNames: key, value
-              Statistics: Num rows: 1 Data size: 11603 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 116030 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                 mode: hash
