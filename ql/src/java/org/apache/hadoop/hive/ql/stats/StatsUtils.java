@@ -371,6 +371,7 @@ public class StatsUtils {
       ds = getSumIgnoreNegatives(dataSizes);
       if (ds <= 0) {
         dataSizes = getBasicStatForPartitions(table, partList.getNotDeniedPartns(), StatsSetupConst.TOTAL_SIZE);
+        dataSizes = safeMult(dataSizes, deserFactor);
         ds = getSumIgnoreNegatives(dataSizes);
       }
 
@@ -378,9 +379,9 @@ public class StatsUtils {
       // sizes
       if (ds <= 0 && shouldEstimateStats) {
         dataSizes = getFileSizeForPartitions(conf, partList.getNotDeniedPartns());
+        dataSizes = safeMult(dataSizes, deserFactor);
+        ds = getSumIgnoreNegatives(dataSizes);
       }
-      ds = getSumIgnoreNegatives(dataSizes);
-      ds = (long) (ds * deserFactor);
 
       int avgRowSize = estimateRowSizeFromSchema(conf, schema);
       if (avgRowSize > 0) {
@@ -1937,6 +1938,14 @@ public class StatsUtils {
     } catch (ArithmeticException ex) {
       return Long.MAX_VALUE;
     }
+  }
+
+  public static List<Long> safeMult(List<Long> l, float b) {
+    List<Long> ret = new ArrayList<>();
+    for (Long a : l) {
+      ret.add(safeMult(a, b));
+    }
+    return ret;
   }
 
   public static boolean hasDiscreteRange(ColStatistics colStat) {
