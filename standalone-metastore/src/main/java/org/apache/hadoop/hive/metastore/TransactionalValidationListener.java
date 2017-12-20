@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,7 +129,12 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       parameters.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, transactionalValue);
     }
     if ("true".equalsIgnoreCase(transactionalValue) && !"true".equalsIgnoreCase(oldTransactionalValue)) {
-      //only need to check conformance if alter table enabled aicd
+      if(!isTransactionalPropertiesPresent) {
+        normazlieTransactionalPropertyDefault(newTable);
+        isTransactionalPropertiesPresent = true;
+        transactionalPropertiesValue = DEFAULT_TRANSACTIONAL_PROPERTY;
+      }
+      //only need to check conformance if alter table enabled acid
       if (!conformToAcid(newTable)) {
         // INSERT_ONLY tables don't have to conform to ACID requirement like ORC or bucketing
         if (transactionalPropertiesValue == null || !"insert_only".equalsIgnoreCase(transactionalPropertiesValue)) {
@@ -137,7 +143,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       }
 
       if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
-        throw new MetaException(getTableName(newTable) +
+        throw new MetaException(Warehouse.getQualifiedName(newTable) +
             " cannot be declared transactional because it's an external table");
       }
       validateTableStructure(context.getHandler(), newTable);
@@ -176,6 +182,17 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
               + "altered after the table is created");
         }
       }
+    }
+    checkSorted(newTable);
+  }
+  private void checkSorted(Table newTable) throws MetaException {
+    if(!TxnUtils.isAcidTable(newTable)) {
+      return;
+    }
+    StorageDescriptor sd = newTable.getSd();
+    if (sd.getSortCols() != null && sd.getSortCols().size() > 0) {
+      throw new MetaException("Table " + Warehouse.getQualifiedName(newTable)
+        + " cannot support full ACID functionality since it is sorted.");
     }
   }
 
@@ -226,20 +243,33 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       }
 
       if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
-        throw new MetaException(newTable.getDbName() + "." + newTable.getTableName() +
+        throw new MetaException(Warehouse.getQualifiedName(newTable) +
             " cannot be declared transactional because it's an external table");
       }
 
       // normalize prop name
       parameters.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, Boolean.TRUE.toString());
+      if(transactionalProperties == null) {
+        normazlieTransactionalPropertyDefault(newTable);
+      }
       initializeTransactionalProperties(newTable);
+      checkSorted(newTable);
       return;
     }
-
     // transactional is found, but the value is not in expected range
     throw new MetaException("'transactional' property of TBLPROPERTIES may only have value 'true'");
   }
 
+  /**
+   * When a table is marked transactional=true but transactional_properties is not set then
+   * transactional_properties should take on the default value.  Easier to make this explicit in
+   * table definition than keep checking everywhere if it's set or not.
+   */
+  private void normazlieTransactionalPropertyDefault(Table table) {
+    table.getParameters().put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
+        DEFAULT_TRANSACTIONAL_PROPERTY);
+
+  }
   /**
    * Check that InputFormatClass/OutputFormatClass should implement
    * AcidInputFormat/AcidOutputFormat
@@ -348,18 +378,16 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
           );
         if (!validFile) {
           throw new IllegalStateException("Unexpected data file name format.  Cannot convert " +
-            getTableName(table) + " to transactional table.  File: " + fileStatus.getPath());
+            Warehouse.getQualifiedName(table) + " to transactional table.  File: "
+            + fileStatus.getPath());
         }
       }
     } catch (IOException|NoSuchObjectException e) {
-      String msg = "Unable to list files for " + getTableName(table);
+      String msg = "Unable to list files for " + Warehouse.getQualifiedName(table);
       LOG.error(msg, e);
       MetaException e1 = new MetaException(msg);
       e1.initCause(e);
       throw e1;
     }
-  }
-  private static String getTableName(Table table) {
-    return table.getDbName() + "." + table.getTableName();
   }
 }

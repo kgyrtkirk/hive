@@ -135,7 +135,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     this.alias = alias;
     this.virtualCols = vcs;
     this.tableMetadata = tblMetadata;
-    isAcidTable = AcidUtils.isFullAcidTable(this.tableMetadata);
+    isAcidTable = AcidUtils.isAcidTable(this.tableMetadata);
     if (isAcidTable) {
       acidOperationalProperties = AcidUtils.getAcidOperationalProperties(this.tableMetadata);
     }
@@ -495,6 +495,10 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     return new TableScanOperatorExplainVectorization(this, vectorTableScanDesc);
   }
 
+  /*
+   * This TableScanDesc flag is strictly set by the Vectorizer class for vectorized MapWork
+   * vertices.
+   */
   public void setVectorized(boolean vectorized) {
     this.vectorized = vectorized;
   }

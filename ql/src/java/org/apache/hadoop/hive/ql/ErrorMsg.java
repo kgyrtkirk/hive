@@ -29,6 +29,7 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hdfs.protocol.DSQuotaExceededException;
 import org.apache.hadoop.hdfs.protocol.NSQuotaExceededException;
 import org.apache.hadoop.hdfs.protocol.UnresolvedPathException;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
@@ -376,7 +377,6 @@ public enum ErrorMsg {
   DBTXNMGR_REQUIRES_CONCURRENCY(10264,
       "To use DbTxnManager you must set hive.support.concurrency=true"),
   TXNMGR_NOT_ACID(10265, "This command is not allowed on an ACID table {0}.{1} with a non-ACID transaction manager", true),
-  LOAD_DATA_ON_ACID_TABLE(10266, "LOAD DATA... statement is not supported on transactional table {0}.", true),
   LOCK_NO_SUCH_LOCK(10270, "No record of lock {0} could be found, " +
       "may have timed out", true),
   LOCK_REQUEST_UNSUPPORTED(10271, "Current transaction manager does not " +
@@ -465,7 +465,9 @@ public enum ErrorMsg {
   HIVE_GROUPING_FUNCTION_EXPR_NOT_IN_GROUPBY(10409, "Expression in GROUPING function not present in GROUP BY"),
   ALTER_TABLE_NON_PARTITIONED_TABLE_CASCADE_NOT_SUPPORTED(10410,
       "Alter table with non-partitioned table does not support cascade"),
+
   //========================== 20000 range starts here ========================//
+
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
       + "It may have crashed with an error."),
@@ -493,10 +495,15 @@ public enum ErrorMsg {
   FILE_NOT_FOUND(20012, "File not found: {0}", "64000", true),
   WRONG_FILE_FORMAT(20013, "Wrong file format. Please check the file's format.", "64000", true),
 
+  SPARK_CREATE_CLIENT_INVALID_QUEUE(20014, "Spark job is submitted to an invalid queue: {0}."
+      + " Please fix and try again.", true),
+  SPARK_RUNTIME_OOM(20015, "Spark job failed because of out of memory."),
+
   // An exception from runtime that will show the full stack to client
   UNRESOLVED_RT_EXCEPTION(29999, "Runtime Error: {0}", "58004", true),
 
   //========================== 30000 range starts here ========================//
+
   STATSPUBLISHER_NOT_OBTAINED(30000, "StatsPublisher cannot be obtained. " +
     "There was a error to retrieve the StatsPublisher, and retrying " +
     "might help. If you dont want the query to fail because accurate statistics " +
@@ -528,8 +535,6 @@ public enum ErrorMsg {
   COLUMNSTATSCOLLECTOR_INVALID_COLUMN(30012, "Column statistics are not supported "
       + "for partition columns"),
 
-  STATISTICS_CLONING_FAILED(30013, "Cloning of statistics failed"),
-
   STATSAGGREGATOR_SOURCETASK_NULL(30014, "SourceTask of StatsTask should not be null"),
   STATSAGGREGATOR_CONNECTION_ERROR(30015,
       "Stats aggregator of type {0} cannot be connected to", true),
@@ -537,7 +542,6 @@ public enum ErrorMsg {
       "Stats type {0} is missing from stats aggregator. If you don't want the query " +
       "to fail because of this, set hive.stats.atomic=false", true),
   STATS_SKIPPING_BY_ERROR(30017, "Skipping stats aggregation by error {0}", true),
-
 
   INVALID_FILE_FORMAT_IN_LOAD(30019, "The file that you are trying to load does not match the" +
       " file format of the destination table."),
@@ -550,13 +554,45 @@ public enum ErrorMsg {
   ACID_TABLES_MUST_BE_READ_WITH_ACID_READER(30021, "An ORC ACID reader required to read ACID tables"),
   ACID_TABLES_MUST_BE_READ_WITH_HIVEINPUTFORMAT(30022, "Must use HiveInputFormat to read ACID tables " +
           "(set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat)"),
+  ACID_LOAD_DATA_INVALID_FILE_NAME(30023, "{0} file name is not valid in Load Data into Acid " +
+    "table {1}.  Examples of valid names are: 00000_0, 00000_0_copy_1", true),
 
   CONCATENATE_UNSUPPORTED_FILE_FORMAT(30030, "Concatenate/Merge only supported for RCFile and ORCFile formats"),
   CONCATENATE_UNSUPPORTED_TABLE_BUCKETED(30031, "Concatenate/Merge can not be performed on bucketed tables"),
   CONCATENATE_UNSUPPORTED_PARTITION_ARCHIVED(30032, "Concatenate/Merge can not be performed on archived partitions"),
   CONCATENATE_UNSUPPORTED_TABLE_NON_NATIVE(30033, "Concatenate/Merge can not be performed on non-native tables"),
   CONCATENATE_UNSUPPORTED_TABLE_NOT_MANAGED(30034, "Concatenate/Merge can only be performed on managed tables"),
-  CONCATENATE_UNSUPPORTED_TABLE_TRANSACTIONAL(30035, "Concatenate/Merge can not be performed on transactional tables")
+  CONCATENATE_UNSUPPORTED_TABLE_TRANSACTIONAL(30035,
+      "Concatenate/Merge can not be performed on transactional tables"),
+
+  SPARK_GET_JOB_INFO_TIMEOUT(30036,
+      "Spark job timed out after {0} seconds while getting job info", true),
+  SPARK_JOB_MONITOR_TIMEOUT(30037, "Job hasn't been submitted after {0}s." +
+      " Aborting it.\nPossible reasons include network issues, " +
+      "errors in remote driver or the cluster has no available resources, etc.\n" +
+      "Please check YARN or Spark driver's logs for further information.\n" +
+      "The timeout is controlled by " + HiveConf.ConfVars.SPARK_JOB_MONITOR_TIMEOUT + ".", true),
+
+  // Various errors when creating Spark client
+  SPARK_CREATE_CLIENT_TIMEOUT(30038,
+      "Timed out while creating Spark client for session {0}.", true),
+  SPARK_CREATE_CLIENT_QUEUE_FULL(30039,
+      "Failed to create Spark client because job queue is full: {0}.", true),
+  SPARK_CREATE_CLIENT_INTERRUPTED(30040,
+      "Interrupted while creating Spark client for session {0}", true),
+  SPARK_CREATE_CLIENT_ERROR(30041,
+      "Failed to create Spark client for Spark session {0}", true),
+  SPARK_CREATE_CLIENT_INVALID_RESOURCE_REQUEST(30042,
+      "Failed to create Spark client due to invalid resource request: {0}", true),
+  SPARK_CREATE_CLIENT_CLOSED_SESSION(30043,
+      "Cannot create Spark client on a closed session {0}", true),
+
+  SPARK_JOB_INTERRUPTED(30044, "Spark job was interrupted while executing"),
+
+  //========================== 40000 range starts here ========================//
+
+  SPARK_JOB_RUNTIME_ERROR(40001,
+      "Spark job failed during runtime. Please check stacktrace for the root cause.")
   ;
 
   private int errorCode;

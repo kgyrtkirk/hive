@@ -96,6 +96,7 @@ import org.apache.hadoop.hive.common.io.SortAndDigestPrintStream;
 import org.apache.hadoop.hive.common.io.SortPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hive.druid.MiniDruidCluster;
 import org.apache.hadoop.hive.llap.LlapItUtils;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
@@ -200,6 +201,8 @@ public class QTestUtil {
   private final String initScript;
   private final String cleanupScript;
 
+  private MiniDruidCluster druidCluster;
+
   public interface SuiteAddTestFunctor {
     public void addTestToSuite(TestSuite suite, Object setup, String tName);
   }
@@ -209,7 +212,9 @@ public class QTestUtil {
     HashSet<String> srcTables = new HashSet<String>();
     // FIXME: moved default value to here...for now
     // i think this features is never really used from the command line
-    String defaultTestSrcTables = "src,src1,srcbucket,srcbucket2,src_json,src_thrift,src_sequencefile,srcpart,alltypesorc,src_hbase,cbo_t1,cbo_t2,cbo_t3,src_cbo,part,lineitem";
+    String defaultTestSrcTables = "src,src1,srcbucket,srcbucket2,src_json,src_thrift," +
+        "src_sequencefile,srcpart,alltypesorc,src_hbase,cbo_t1,cbo_t2,cbo_t3,src_cbo,part," +
+        "lineitem,alltypesparquet";
     for (String srcTable : System.getProperty("test.src.tables", defaultTestSrcTables).trim().split(",")) {
       srcTable = srcTable.trim();
       if (!srcTable.isEmpty()) {
@@ -361,6 +366,17 @@ public class QTestUtil {
         conf.set(confEntry.getKey(), clusterSpecificConf.get(confEntry.getKey()));
       }
     }
+    if (druidCluster != null) {
+      final Path druidDeepStorage = fs.makeQualified(new Path(druidCluster.getDeepStorageDir()));
+      fs.mkdirs(druidDeepStorage);
+      conf.set("hive.druid.storage.storageDirectory", druidDeepStorage.toUri().getPath());
+      conf.set("hive.druid.metadata.db.type", "derby");
+      conf.set("hive.druid.metadata.uri", druidCluster.getMetadataURI());
+      final Path scratchDir = fs
+              .makeQualified(new Path(System.getProperty("test.tmp.dir"), "druidStagingDir"));
+      fs.mkdirs(scratchDir);
+      conf.set("hive.druid.working.directory", scratchDir.toUri().getPath());
+    }
   }
 
   private void setFsRelatedProperties(HiveConf conf, boolean isLocalFs, FileSystem fs) {
@@ -436,7 +452,8 @@ public class QTestUtil {
   private enum CoreClusterType {
     MR,
     TEZ,
-    SPARK
+    SPARK,
+    DRUID
   }
 
   public enum FsType {
@@ -454,7 +471,8 @@ public class QTestUtil {
     miniSparkOnYarn(CoreClusterType.SPARK, FsType.hdfs),
     llap(CoreClusterType.TEZ, FsType.hdfs),
     llap_local(CoreClusterType.TEZ, FsType.local),
-    none(CoreClusterType.MR, FsType.local);
+    none(CoreClusterType.MR, FsType.local),
+    druid(CoreClusterType.DRUID, FsType.hdfs);
 
 
     private final CoreClusterType coreClusterType;
@@ -489,6 +507,8 @@ public class QTestUtil {
         return llap;
       } else if (type.equals("llap_local")) {
         return llap_local;
+      } else if (type.equals("druid")) {
+      return druid;
       } else {
         return none;
       }
@@ -643,6 +663,18 @@ public class QTestUtil {
       mr = shims.getMiniSparkCluster(conf, 2, uriString, 1);
     } else if (clusterType == MiniClusterType.mr) {
       mr = shims.getMiniMrCluster(conf, 2, uriString, 1);
+    } else if (clusterType == MiniClusterType.druid) {
+      final String tempDir = System.getProperty("test.tmp.dir");
+      druidCluster = new MiniDruidCluster("mini-druid",
+              getLogDirectory(),
+              tempDir,
+              setup.zkPort,
+              Utilities.jarFinderGetJar(MiniDruidCluster.class)
+      );
+      druidCluster.init(conf);
+      final Path druidDeepStorage = fs.makeQualified(new Path(druidCluster.getDeepStorageDir()));
+      fs.mkdirs(druidDeepStorage);
+      druidCluster.start();
     }
   }
 
@@ -654,6 +686,10 @@ public class QTestUtil {
 
     if (clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
       SessionState.get().getTezSession().destroy();
+    }
+    if (druidCluster != null) {
+      druidCluster.stop();
+      druidCluster = null;
     }
     setup.tearDown();
     if (sparkSession != null) {
