@@ -49,7 +49,7 @@ public abstract class Partish {
   // rename
   @Deprecated
   public final boolean isAcid() {
-    return AcidUtils.isFullAcidTable(getTable());
+    return AcidUtils.isAcidTable(getTable());
   }
 
   public abstract Table getTable();

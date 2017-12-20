@@ -107,6 +107,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     int threadCount = Math.min(initialSize,
         HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS));
     Preconditions.checkArgument(threadCount > 0);
+    this.parentSessionState = SessionState.get();
     if (threadCount == 1) {
       for (int i = 0; i < initialSize; ++i) {
         SessionType session = sessionObjFactory.create(null);
@@ -115,7 +116,6 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
       }
     } else {
       final AtomicInteger remaining = new AtomicInteger(initialSize);
-      this.parentSessionState = SessionState.get();
       @SuppressWarnings("unchecked")
       FutureTask<Boolean>[] threadTasks = new FutureTask[threadCount];
       for (int i = threadTasks.length - 1; i >= 0; --i) {
@@ -217,7 +217,10 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
         }
       }
       // If there are async requests, satisfy them first.
-      if (!asyncRequests.isEmpty() && session.tryUse(false)) {
+      if (!asyncRequests.isEmpty()) {
+        if (!session.tryUse(false)) {
+          return true; // Session has expired and will be returned to us later.
+        }
         future = asyncRequests.poll();
       }
       if (future == null) {
@@ -238,24 +241,12 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     return true;
   }
 
-  void replaceSession(SessionType oldSession, boolean keepTmpDir,
-      String[] additionalFilesArray) throws Exception {
-    // Retain the stuff from the old session.
+  void replaceSession(SessionType oldSession) throws Exception {
     // Re-setting the queue config is an old hack that we may remove in future.
     SessionType newSession = sessionObjFactory.create(oldSession);
-    Path scratchDir = oldSession.getTezScratchDir();
     String queueName = oldSession.getQueueName();
-    Set<String> additionalFiles = null;
-    if (additionalFilesArray != null) {
-      additionalFiles = new HashSet<>();
-      for (String file : additionalFilesArray) {
-        additionalFiles.add(file);
-      }
-    } else {
-      additionalFiles = oldSession.getAdditionalFilesNotFromConf();
-    }
     try {
-      oldSession.close(keepTmpDir);
+      oldSession.close(false);
     } finally {
       poolLock.lock();
       try {
@@ -272,7 +263,15 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
       // The caller probably created the new session with the old config, but update the
       // registry again just in case. TODO: maybe we should enforce that.
       configureAmRegistry(newSession);
-      newSession.open(additionalFiles, scratchDir);
+      if (SessionState.get() == null && parentSessionState != null) {
+        // Tez session relies on a threadlocal for open... If we are on some non-session thread,
+        // just use the same SessionState we used for the initial sessions.
+        // Technically, given that all pool sessions are initially based on this state, shoudln't
+        // we also set this at all times and not rely on an external session stuff? We should
+        // probably just get rid of the thread local usage in TezSessionState.
+        SessionState.setCurrentSessionState(parentSessionState);
+      }
+      newSession.open();
       if (!putSessionBack(newSession, false)) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Closing an unneeded session " + newSession

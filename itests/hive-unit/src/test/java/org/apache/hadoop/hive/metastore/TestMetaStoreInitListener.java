@@ -23,6 +23,7 @@ import junit.framework.TestCase;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -41,8 +42,7 @@ public class TestMetaStoreInitListener extends TestCase {
     super.setUp();
     System.setProperty("hive.metastore.init.hooks",
         DummyMetaStoreInitListener.class.getName());
-    int port = MetaStoreTestUtils.findFreePort();
-    MetaStoreTestUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
+    int port = MetaStoreTestUtils.startMetaStoreWithRetry();
     hiveConf = new HiveConf(this.getClass());
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);

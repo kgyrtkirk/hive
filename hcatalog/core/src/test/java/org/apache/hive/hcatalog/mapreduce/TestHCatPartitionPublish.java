@@ -37,7 +37,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
@@ -105,9 +104,8 @@ public class TestHCatPartitionPublish {
       return;
     }
 
-    msPort = MetaStoreTestUtils.findFreePort();
+    msPort = MetaStoreTestUtils.startMetaStoreWithRetry();
 
-    MetaStoreTestUtils.startMetaStore(msPort, HadoopThriftAuthBridge.getBridge());
     Thread.sleep(10000);
     isServerRunning = true;
     securityManager = System.getSecurityManager();

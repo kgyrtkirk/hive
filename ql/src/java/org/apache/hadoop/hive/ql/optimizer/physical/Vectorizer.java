@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.calcite.util.Pair;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
@@ -1513,7 +1514,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       LOG.info("Examining input format to see if vectorization is enabled.");
 
       ImmutablePair<String,TableScanOperator> onlyOneTableScanPair = verifyOnlyOneTableScanOperator(mapWork);
-      if (onlyOneTableScanPair ==  null) {
+      if (onlyOneTableScanPair == null) {
         VectorizerReason notVectorizedReason = currentBaseWork.getNotVectorizedReason();
         Preconditions.checkState(notVectorizedReason != null);
         mapWork.setVectorizationEnabledConditionsNotMet(Arrays.asList(new String[] {notVectorizedReason.toString()}));
@@ -1638,6 +1639,11 @@ public class Vectorizer implements PhysicalPlanResolver {
       // Set "global" member indicating where to store "not vectorized" information if necessary.
       currentBaseWork = mapWork;
 
+      if (!validateTableScanOperator(tableScanOperator, mapWork)) {
+
+        // The "not vectorized" information has been stored in the MapWork vertex.
+        return false;
+      }
       try {
         validateAndVectorizeMapOperators(tableScanOperator, isTezOrSpark, vectorTaskColumnInfo);
       } catch (VectorizerCannotVectorizeException e) {
@@ -3008,7 +3014,10 @@ public class Vectorizer implements PhysicalPlanResolver {
     // information first....
 
     List<ExprNodeDesc> keyDesc = desc.getKeys().get(posBigTable);
-    VectorExpression[] allBigTableKeyExpressions = vContext.getVectorExpressions(keyDesc);
+
+    // For now, we don't support joins on or using DECIMAL_64.
+    VectorExpression[] allBigTableKeyExpressions =
+        vContext.getVectorExpressionsUpConvertDecimal64(keyDesc);
     final int allBigTableKeyExpressionsLength = allBigTableKeyExpressions.length;
     boolean supportsKeyTypes = true;  // Assume.
     HashSet<String> notSupportedKeyTypes = new HashSet<String>();
@@ -3019,7 +3028,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     String[] bigTableKeyColumnNames = new String[allBigTableKeyExpressionsLength];
     TypeInfo[] bigTableKeyTypeInfos = new TypeInfo[allBigTableKeyExpressionsLength];
     ArrayList<VectorExpression> bigTableKeyExpressionsList = new ArrayList<VectorExpression>();
-    VectorExpression[] bigTableKeyExpressions;
+    VectorExpression[] slimmedBigTableKeyExpressions;
     for (int i = 0; i < allBigTableKeyExpressionsLength; i++) {
       VectorExpression ve = allBigTableKeyExpressions[i];
       if (!IdentityExpression.isColumnOnly(ve)) {
@@ -3043,13 +3052,16 @@ public class Vectorizer implements PhysicalPlanResolver {
       bigTableKeyTypeInfos[i] = typeInfo;
     }
     if (bigTableKeyExpressionsList.size() == 0) {
-      bigTableKeyExpressions = null;
+      slimmedBigTableKeyExpressions = null;
     } else {
-      bigTableKeyExpressions = bigTableKeyExpressionsList.toArray(new VectorExpression[0]);
+      slimmedBigTableKeyExpressions = bigTableKeyExpressionsList.toArray(new VectorExpression[0]);
     }
 
     List<ExprNodeDesc> bigTableExprs = desc.getExprs().get(posBigTable);
-    VectorExpression[] allBigTableValueExpressions = vContext.getVectorExpressions(bigTableExprs);
+
+    // For now, we don't support joins on or using DECIMAL_64.
+    VectorExpression[] allBigTableValueExpressions =
+        vContext.getVectorExpressionsUpConvertDecimal64(bigTableExprs);
 
     boolean isFastHashTableEnabled =
         HiveConf.getBoolVar(hiveConf,
@@ -3071,7 +3083,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     String[] bigTableValueColumnNames = new String[allBigTableValueExpressions.length];
     TypeInfo[] bigTableValueTypeInfos = new TypeInfo[allBigTableValueExpressions.length];
     ArrayList<VectorExpression> bigTableValueExpressionsList = new ArrayList<VectorExpression>();
-    VectorExpression[] bigTableValueExpressions;
+    VectorExpression[] slimmedBigTableValueExpressions;
     for (int i = 0; i < bigTableValueColumnMap.length; i++) {
       VectorExpression ve = allBigTableValueExpressions[i];
       if (!IdentityExpression.isColumnOnly(ve)) {
@@ -3084,20 +3096,25 @@ public class Vectorizer implements PhysicalPlanResolver {
       bigTableValueTypeInfos[i] = exprNode.getTypeInfo();
     }
     if (bigTableValueExpressionsList.size() == 0) {
-      bigTableValueExpressions = null;
+      slimmedBigTableValueExpressions = null;
     } else {
-      bigTableValueExpressions = bigTableValueExpressionsList.toArray(new VectorExpression[0]);
+      slimmedBigTableValueExpressions =
+          bigTableValueExpressionsList.toArray(new VectorExpression[0]);
     }
 
     vectorMapJoinInfo.setBigTableKeyColumnMap(bigTableKeyColumnMap);
     vectorMapJoinInfo.setBigTableKeyColumnNames(bigTableKeyColumnNames);
     vectorMapJoinInfo.setBigTableKeyTypeInfos(bigTableKeyTypeInfos);
-    vectorMapJoinInfo.setBigTableKeyExpressions(bigTableKeyExpressions);
+    vectorMapJoinInfo.setSlimmedBigTableKeyExpressions(slimmedBigTableKeyExpressions);
+
+    vectorDesc.setAllBigTableKeyExpressions(allBigTableKeyExpressions);
 
     vectorMapJoinInfo.setBigTableValueColumnMap(bigTableValueColumnMap);
     vectorMapJoinInfo.setBigTableValueColumnNames(bigTableValueColumnNames);
     vectorMapJoinInfo.setBigTableValueTypeInfos(bigTableValueTypeInfos);
-    vectorMapJoinInfo.setBigTableValueExpressions(bigTableValueExpressions);
+    vectorMapJoinInfo.setSlimmedBigTableValueExpressions(slimmedBigTableValueExpressions);
+
+    vectorDesc.setAllBigTableValueExpressions(allBigTableValueExpressions);
 
     /*
      * Small table information.
@@ -3948,7 +3965,10 @@ public class Vectorizer implements PhysicalPlanResolver {
     GroupByDesc groupByDesc = (GroupByDesc) groupByOp.getConf();
 
     List<ExprNodeDesc> keysDesc = groupByDesc.getKeys();
-    VectorExpression[] vecKeyExpressions = vContext.getVectorExpressions(keysDesc);
+
+    // For now, we don't support group by on DECIMAL_64 keys.
+    VectorExpression[] vecKeyExpressions =
+        vContext.getVectorExpressionsUpConvertDecimal64(keysDesc);
     ArrayList<AggregationDesc> aggrDesc = groupByDesc.getAggregators();
     final int size = aggrDesc.size();
 
@@ -4425,10 +4445,10 @@ public class Vectorizer implements PhysicalPlanResolver {
 
                 if (vectorTaskColumnInfo != null) {
                   VectorMapJoinInfo vectorMapJoinInfo = vectorMapJoinDesc.getVectorMapJoinInfo();
-                  if (usesVectorUDFAdaptor(vectorMapJoinInfo.getBigTableKeyExpressions())) {
+                  if (usesVectorUDFAdaptor(vectorMapJoinDesc.getAllBigTableKeyExpressions())) {
                     vectorTaskColumnInfo.setUsesVectorUDFAdaptor(true);
                   }
-                  if (usesVectorUDFAdaptor(vectorMapJoinInfo.getBigTableValueExpressions())) {
+                  if (usesVectorUDFAdaptor(vectorMapJoinDesc.getAllBigTableValueExpressions())) {
                     vectorTaskColumnInfo.setUsesVectorUDFAdaptor(true);
                   }
                 }
@@ -4621,6 +4641,10 @@ public class Vectorizer implements PhysicalPlanResolver {
             vectorOp = OperatorFactory.getVectorOperator(
                 op.getCompilationOpContext(), sparkPartitionPruningSinkDesc,
                 vContext, vectorSparkPartitionPruningSinkDesc);
+            // need to maintain the unique ID so that target map works can
+            // read the output
+            ((SparkPartitionPruningSinkOperator) vectorOp).setUniqueId(
+                ((SparkPartitionPruningSinkOperator) op).getUniqueId());
             isNative = true;
           }
           break;

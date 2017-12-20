@@ -30,7 +30,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: analyze_srcbucket
+<<<<<<< HEAD
             Statistics: Num rows: 39 Data size: 11603 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+            Statistics: Num rows: 1 Data size: 116030 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> asf/master
 
   Stage: Stage-1
     Stats Work

@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.events.PreLoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -94,11 +95,10 @@ public class TestMetaStoreEventListener extends TestCase {
     System.setProperty("hive.metastore.pre.event.listeners",
         DummyPreListener.class.getName());
 
-    int port = MetaStoreTestUtils.findFreePort();
     hiveConf = new HiveConf(this.getClass());
 
     hiveConf.setVar(HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN, metaConfVal);
-    MetaStoreTestUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge(), hiveConf);
+    int port = MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
 
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);

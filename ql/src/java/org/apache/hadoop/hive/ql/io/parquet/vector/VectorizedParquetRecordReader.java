@@ -61,6 +61,7 @@ import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.hadoop.util.HadoopStreams;
 import org.apache.parquet.io.InputFile;
 import org.apache.parquet.io.SeekableInputStream;
+import org.apache.parquet.schema.GroupType;
 import org.apache.parquet.schema.InvalidSchemaException;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
@@ -97,6 +98,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   private VectorizedRowBatchCtx rbCtx;
   private Object[] partitionValues;
   private Path cacheFsPath;
+  private static final int MAP_DEFINITION_LEVEL_MAX = 3;
 
   /**
    * For each request column, the reader to read this column. This is NULL if this column
@@ -503,6 +505,41 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       return new VectorizedListColumnReader(descriptors.get(0),
           pages.getPageReader(descriptors.get(0)), skipTimestampConversion, type);
     case MAP:
+      if (columnDescriptors == null || columnDescriptors.isEmpty()) {
+        throw new RuntimeException(
+            "Failed to find related Parquet column descriptor with type " + type);
+      }
+
+      // to handle the different Map definition in Parquet, eg:
+      // definition has 1 group:
+      //   repeated group map (MAP_KEY_VALUE)
+      //     {required binary key (UTF8); optional binary value (UTF8);}
+      // definition has 2 groups:
+      //   optional group m1 (MAP) {
+      //     repeated group map (MAP_KEY_VALUE)
+      //       {required binary key (UTF8); optional binary value (UTF8);}
+      //   }
+      int nestGroup = 0;
+      GroupType groupType = type.asGroupType();
+      // if FieldCount == 2, get types for key & value,
+      // otherwise, continue to get the group type until MAP_DEFINITION_LEVEL_MAX.
+      while (groupType.getFieldCount() < 2) {
+        if (nestGroup > MAP_DEFINITION_LEVEL_MAX) {
+          throw new RuntimeException(
+              "More than " + MAP_DEFINITION_LEVEL_MAX + " level is found in Map definition, " +
+                  "Failed to get the field types for Map with type " + type);
+        }
+        groupType = groupType.getFields().get(0).asGroupType();
+        nestGroup++;
+      }
+      List<Type> kvTypes = groupType.getFields();
+      VectorizedListColumnReader keyListColumnReader = new VectorizedListColumnReader(
+          descriptors.get(0), pages.getPageReader(descriptors.get(0)), skipTimestampConversion,
+          kvTypes.get(0));
+      VectorizedListColumnReader valueListColumnReader = new VectorizedListColumnReader(
+          descriptors.get(1), pages.getPageReader(descriptors.get(1)), skipTimestampConversion,
+          kvTypes.get(1));
+      return new VectorizedMapColumnReader(keyListColumnReader, valueListColumnReader);
     case UNION:
     default:
       throw new RuntimeException("Unsupported category " + typeInfo.getCategory().name());

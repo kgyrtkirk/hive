@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
@@ -468,6 +467,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     try {
       Utilities.copyTablePropertiesToConf(table, conf);
+      if(tableScan != null) {
+        AcidUtils.setAcidTableScan(conf, tableScan.getConf().isAcidTable());
+      }
     } catch (HiveException e) {
       throw new IOException(e);
     }
@@ -549,7 +551,14 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         } else if (!hadAcidState) {
           AcidUtils.Directory dirInfo = AcidUtils.getAcidState(currDir, conf, validTxnList, Ref.from(false), true, null);
           hadAcidState = true;
-          // TODO [MM gap]: for IOW, we also need to count in base dir, if any
+
+          // Find the base, created for IOW.
+          Path base = dirInfo.getBaseDirectory();
+          if (base != null) {
+            finalPaths.add(base);
+          }
+
+          // Find the parsed delta files.
           for (AcidUtils.ParsedDelta delta : dirInfo.getCurrentDirectories()) {
             Utilities.FILE_OP_LOGGER.debug("Adding input " + delta.getPath());
             finalPaths.add(delta.getPath());
@@ -842,7 +851,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         // push down filters
         pushFilters(jobConf, ts);
 
-        AcidUtils.setTransactionalTableScan(job, ts.getConf().isAcidTable());
+        AcidUtils.setAcidTableScan(job, ts.getConf().isAcidTable());
         AcidUtils.setAcidOperationalProperties(job, ts.getConf().getAcidOperationalProperties());
       }
     }

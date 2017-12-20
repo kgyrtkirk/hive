@@ -229,11 +229,11 @@ public class LoadTable {
     LoadTableDesc loadTableWork = new LoadTableDesc(
         tmpPath, Utilities.getTableDesc(table), new TreeMap<>(),
         replicationSpec.isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING,
+        //todo: what is the point of this?  If this is for replication, who would have opened a txn?
         SessionState.get().getTxnMgr().getCurrentTxnId()
     );
     MoveWork moveWork =
-        new MoveWork(new HashSet<>(), new HashSet<>(), loadTableWork, null, false,
-            context.sessionStateLineageState);
+        new MoveWork(new HashSet<>(), new HashSet<>(), loadTableWork, null, false);
     Task<?> loadTableTask = TaskFactory.get(moveWork, context.hiveConf);
     copyTask.addDependentTask(loadTableTask);
     return copyTask;

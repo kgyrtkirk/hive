@@ -329,6 +329,13 @@ public class HiveConf extends Configuration {
   };
 
   /**
+   * encoded parameter values are ;-) encoded.  Use decoder to get ;-) decoded string
+   */
+  public static final HiveConf.ConfVars[] ENCODED_CONF = {
+      ConfVars.HIVEQUERYSTRING
+  };
+
+  /**
    * Variables used by LLAP daemons.
    * TODO: Eventually auto-populate this based on prefixes. The conf variables
    * will need to be renamed for this.
@@ -1078,7 +1085,7 @@ public class HiveConf extends Configuration {
         "Enabling strict type safety checks disallows the following:\n" +
         "  Comparing bigints and strings.\n" +
         "  Comparing bigints and doubles."),
-    HIVE_STRICT_CHECKS_CARTESIAN("hive.strict.checks.cartesian.product", true,
+    HIVE_STRICT_CHECKS_CARTESIAN("hive.strict.checks.cartesian.product", false,
         "Enabling strict Cartesian join checks disallows the following:\n" +
         "  Cartesian product (cross join)."),
     HIVE_STRICT_CHECKS_BUCKETING("hive.strict.checks.bucketing", true,
@@ -1300,7 +1307,7 @@ public class HiveConf extends Configuration {
     HIVE_SCHEMA_EVOLUTION("hive.exec.schema.evolution", true,
         "Use schema evolution to convert self-describing file format's data to the schema desired by the reader."),
 
-    HIVE_TRANSACTIONAL_TABLE_SCAN("hive.transactional.table.scan", false,
+    HIVE_ACID_TABLE_SCAN("hive.acid.table.scan", false,
         "internal usage only -- do transaction (ACID) table scan.", true),
 
     HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY("hive.transactional.events.mem", 10000000,
@@ -1695,6 +1702,16 @@ public class HiveConf extends Configuration {
         "Whether to remove an extra join with sq_count_check for scalar subqueries "
             + "with constant group by keys."),
 
+    HIVE_OPTIMIZE_TABLE_PROPERTIES_FROM_SERDE("hive.optimize.update.table.properties.from.serde", false,
+        "Whether to update table-properties by initializing tables' SerDe instances during logical-optimization. \n" +
+            "By doing so, certain SerDe classes (like AvroSerDe) can pre-calculate table-specific information, and \n" +
+            "store it in table-properties, to be used later in the SerDe, while running the job."),
+
+    HIVE_OPTIMIZE_TABLE_PROPERTIES_FROM_SERDE_LIST("hive.optimize.update.table.properties.from.serde.list",
+        "org.apache.hadoop.hive.serde2.avro.AvroSerDe",
+        "The comma-separated list of SerDe classes that are considered when enhancing table-properties \n" +
+            "during logical optimization."),
+
     // CTE
     HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", -1,
         "If the number of references to a CTE clause exceeds this threshold, Hive will materialize it\n" +
@@ -1721,7 +1738,7 @@ public class HiveConf extends Configuration {
         "This many percentage of rows will be estimated as number of nulls in absence of statistics."),
     HIVESTATSAUTOGATHER("hive.stats.autogather", true,
         "A flag to gather statistics (only basic) automatically during the INSERT OVERWRITE command."),
-    HIVESTATSCOLAUTOGATHER("hive.stats.column.autogather", false,
+    HIVESTATSCOLAUTOGATHER("hive.stats.column.autogather", true,
         "A flag to gather column statistics automatically."),
     HIVESTATSDBCLASS("hive.stats.dbclass", "fs", new PatternSet("custom", "fs"),
         "The storage that stores temporary Hive statistics. In filesystem based statistics collection ('fs'), \n" +
@@ -1815,7 +1832,7 @@ public class HiveConf extends Configuration {
     // annotation. But the file may be compressed, encoded and serialized which may be lesser in size
     // than the actual uncompressed/raw data size. This factor will be multiplied to file size to estimate
     // the raw data size.
-    HIVE_STATS_DESERIALIZATION_FACTOR("hive.stats.deserialization.factor", (float) 1.0,
+    HIVE_STATS_DESERIALIZATION_FACTOR("hive.stats.deserialization.factor", (float) 10.0,
         "Hive/Tez optimizer estimates the data size flowing through each of the operators. In the absence\n" +
         "of basic statistics like number of rows and data size, file size is used to estimate the number\n" +
         "of rows and data size. Since files in tables/partitions are serialized (and optionally\n" +
@@ -1902,7 +1919,7 @@ public class HiveConf extends Configuration {
       "1: Enable split-update feature found in the newer version of Hive ACID subsystem\n" +
       "4: Make the table 'quarter-acid' as it only supports insert. But it doesn't require ORC or bucketing.\n" +
       "This is intended to be used as an internal property for future versions of ACID. (See\n" +
-        "HIVE-14035 for details.)"),
+        "HIVE-14035 for details.  User sets it tblproperites via transactional_properties.)", true),
 
     HIVE_MAX_OPEN_TXNS("hive.max.open.txns", 100000, "Maximum number of open transactions. If \n" +
         "current open transactions reach this limit, future open transaction requests will be \n" +
@@ -2049,7 +2066,7 @@ public class HiveConf extends Configuration {
             , "druid deep storage location."),
     DRUID_METADATA_BASE("hive.druid.metadata.base", "druid", "Default prefix for metadata tables"),
     DRUID_METADATA_DB_TYPE("hive.druid.metadata.db.type", "mysql",
-            new PatternSet("mysql", "postgresql"), "Type of the metadata database."
+            new PatternSet("mysql", "postgresql", "derby"), "Type of the metadata database."
     ),
     DRUID_METADATA_DB_USERNAME("hive.druid.metadata.username", "",
             "Username to connect to Type of the metadata DB."
@@ -2064,7 +2081,7 @@ public class HiveConf extends Configuration {
             "Default hdfs working directory used to store some intermediate metadata"
     ),
     HIVE_DRUID_MAX_TRIES("hive.druid.maxTries", 5, "Maximum number of retries before giving up"),
-    HIVE_DRUID_PASSIVE_WAIT_TIME("hive.druid.passiveWaitTimeMs", 30000,
+    HIVE_DRUID_PASSIVE_WAIT_TIME("hive.druid.passiveWaitTimeMs", 30000L,
             "Wait time in ms default to 30 seconds."
     ),
     HIVE_DRUID_BITMAP_FACTORY_TYPE("hive.druid.bitmap.type", "roaring", new PatternSet("roaring", "concise"), "Coding algorithm use to encode the bitmaps"),
@@ -2418,9 +2435,13 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE("hive.server2.tez.interactive.queue", "",
         "A single YARN queues to use for Hive Interactive sessions. When this is specified,\n" +
         "workload management is enabled and used for these sessions."),
-    HIVE_SERVER2_TEZ_WM_WORKER_THREADS("hive.server2.tez.wm.worker.threads", 4,
+    HIVE_SERVER2_WM_WORKER_THREADS("hive.server2.wm.worker.threads", 4,
         "Number of worker threads to use to perform the synchronous operations with Tez\n" +
         "sessions for workload management (e.g. opening, closing, etc.)"),
+    HIVE_SERVER2_WM_ALLOW_ANY_POOL_VIA_JDBC("hive.server2.wm.allow.any.pool.via.jdbc", false,
+        "Applies when a user specifies a target WM pool in the JDBC connection string. If\n" +
+        "false, the user can only specify a pool he is mapped to (e.g. make a choice among\n" +
+        "multiple group mappings); if true, the user can specify any existing pool."),
     HIVE_SERVER2_TEZ_WM_AM_REGISTRY_TIMEOUT("hive.server2.tez.wm.am.registry.timeout", "30s",
         new TimeValidator(TimeUnit.SECONDS),
         "The timeout for AM registry registration, after which (on attempting to use the\n" +
@@ -3042,6 +3063,10 @@ public class HiveConf extends Configuration {
         "hive.tez.exec.print.summary",
         false,
         "Display breakdown of execution steps, for every query executed by the shell."),
+    TEZ_SESSION_EVENTS_SUMMARY(
+      "hive.tez.session.events.print.summary",
+      "none", new StringSet("none", "text", "json"),
+      "Display summary of all tez sessions related events in text or json format"),
     TEZ_EXEC_INPLACE_PROGRESS(
         "hive.tez.exec.inplace.progress",
         true,
@@ -3557,6 +3582,7 @@ public class HiveConf extends Configuration {
     HIVE_MM_AVOID_GLOBSTATUS_ON_S3("hive.mm.avoid.s3.globstatus", true,
         "Whether to use listFiles (optimized on S3) instead of globStatus when on S3."),
 
+    // If a parameter is added to the restricted list, add a test in TestRestrictedList.Java
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
         "hive.security.authenticator.manager,hive.security.authorization.manager," +
         "hive.security.metastore.authorization.manager,hive.security.metastore.authenticator.manager," +
@@ -3585,7 +3611,9 @@ public class HiveConf extends Configuration {
             "bonecp.,"+
             "hive.druid.broker.address.default,"+
             "hive.druid.coordinator.address.default,"+
-            "hikari.",
+            "hikari.,"+
+            "hadoop.bin.path,"+
+            "yarn.bin.path",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
@@ -3596,7 +3624,9 @@ public class HiveConf extends Configuration {
         + ",fs.s3n.awsSecretAccessKey"
         + ",fs.s3a.access.key"
         + ",fs.s3a.secret.key"
-        + ",fs.s3a.proxy.password",
+        + ",fs.s3a.proxy.password"
+        + ",dfs.adls.oauth2.credential"
+        + ",fs.adl.oauth2.credential",
         "Comma separated list of configuration options which should not be read by normal user like passwords"),
     HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
         "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
@@ -3917,6 +3947,16 @@ public class HiveConf extends Configuration {
 
   public boolean isHiddenConfig(String name) {
     return Iterables.any(hiddenSet, hiddenVar -> name.startsWith(hiddenVar));
+  }
+
+  public static boolean isEncodedPar(String name) {
+    for (ConfVars confVar : HiveConf.ENCODED_CONF) {
+      ConfVars confVar1 = confVar;
+      if (confVar1.varname.equals(name)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -4713,6 +4753,10 @@ public class HiveConf extends Configuration {
 
   public static void setHiveSiteLocation(URL location) {
     hiveSiteURL = location;
+  }
+
+  public static void setHivemetastoreSiteUrl(URL location) {
+    hivemetastoreSiteUrl = location;
   }
 
   public static URL getHiveSiteLocation() {

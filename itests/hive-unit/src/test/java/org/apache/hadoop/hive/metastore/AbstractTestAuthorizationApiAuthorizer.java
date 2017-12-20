@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.security.authorization.MetaStoreAuthzAPIAuthorizerEmbedOnly;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener;
 import org.junit.Test;
@@ -57,8 +58,7 @@ public abstract class AbstractTestAuthorizationApiAuthorizer {
 
     hiveConf = new HiveConf();
     if (isRemoteMetastoreMode) {
-      int port = MetaStoreTestUtils.findFreePort();
-      MetaStoreTestUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
+      int port = MetaStoreTestUtils.startMetaStoreWithRetry();
       hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     }
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);

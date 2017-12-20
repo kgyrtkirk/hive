@@ -51,6 +51,9 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
   private static final Logger LOG = LoggerFactory.getLogger(OrcSplit.class);
   private OrcTail orcTail;
   private boolean hasFooter;
+  /**
+   * This means {@link AcidUtils.AcidBaseFileType#ORIGINAL_BASE}
+   */
   private boolean isOriginal;
   private boolean hasBase;
   //partition root
@@ -231,7 +234,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
   public boolean canUseLlapIo(Configuration conf) {
     final boolean hasDelta = deltas != null && !deltas.isEmpty();
     final boolean isAcidRead = HiveConf.getBoolVar(conf,
-        HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
+        HiveConf.ConfVars.HIVE_ACID_TABLE_SCAN);
     final boolean isVectorized = HiveConf.getBoolVar(conf,
         HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
     final AcidUtils.AcidOperationalProperties acidOperationalProperties
