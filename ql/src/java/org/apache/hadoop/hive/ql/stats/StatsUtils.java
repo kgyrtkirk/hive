@@ -237,9 +237,12 @@ public class StatsUtils {
 
       ds = getSumIgnoreNegatives(dataSizes);
 
+      float deserFactor = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
+
       if (ds <= 0) {
         dataSizes = getBasicStatForPartitions(
             table, partitionList.getNotDeniedPartns(), StatsSetupConst.TOTAL_SIZE);
+        dataSizes = safeMult(dataSizes, deserFactor);
         ds = getSumIgnoreNegatives(dataSizes);
       }
 
@@ -247,11 +250,9 @@ public class StatsUtils {
       // sizes
       if (ds <= 0 && shouldEstimateStats) {
         dataSizes = getFileSizeForPartitions(conf, partitionList.getNotDeniedPartns());
+        dataSizes = safeMult(dataSizes, deserFactor);
+        ds = getSumIgnoreNegatives(dataSizes);
       }
-      ds = getSumIgnoreNegatives(dataSizes);
-      float deserFactor =
-          HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
-      ds = (long) (ds * deserFactor);
 
       int avgRowSize = estimateRowSizeFromSchema(conf, schema);
       if (avgRowSize > 0) {
