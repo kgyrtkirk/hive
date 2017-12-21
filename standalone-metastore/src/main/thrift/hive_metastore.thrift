@@ -1086,6 +1086,7 @@ struct WMFullResourcePlan {
 
 struct WMCreateResourcePlanRequest {
   1: optional WMResourcePlan resourcePlan;
+  2: optional string copyFrom;
 }
 
 struct WMCreateResourcePlanResponse {
@@ -1117,6 +1118,8 @@ struct WMAlterResourcePlanRequest {
   1: optional string resourcePlanName;
   2: optional WMResourcePlan resourcePlan;
   3: optional bool isEnableAndActivate;
+  4: optional bool isForceDeactivate;
+  5: optional bool isReplace;
 }
 
 struct WMAlterResourcePlanResponse {

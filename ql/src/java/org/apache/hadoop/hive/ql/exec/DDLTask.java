@@ -687,7 +687,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int createResourcePlan(Hive db, CreateResourcePlanDesc createResourcePlanDesc)
       throws HiveException {
-    db.createResourcePlan(createResourcePlanDesc.getResourcePlan());
+    db.createResourcePlan(createResourcePlanDesc.getResourcePlan(),
+        createResourcePlanDesc.getCopyFromName());
     return 0;
   }
 
@@ -728,22 +729,37 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     final TezSessionPoolManager pm = TezSessionPoolManager.getInstance();
     boolean isActivate = false, isInTest = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
     if (resourcePlan.getStatus() != null) {
-      resourcePlan.setStatus(resourcePlan.getStatus());
       isActivate = resourcePlan.getStatus() == WMResourcePlanStatus.ACTIVE;
     }
 
-    WMFullResourcePlan appliedRp = db.alterResourcePlan(
-      desc.getResourcePlanName(), resourcePlan, desc.isEnableActivate());
-    if (!isActivate || (wm == null && isInTest) || (pm == null && isInTest)) {
-      return 0;
+    WMFullResourcePlan appliedRp = db.alterResourcePlan(desc.getResourcePlanName(), resourcePlan,
+        desc.isEnableActivate(), desc.isForceDeactivate(), desc.isReplace());
+    boolean mustHaveAppliedChange = isActivate || desc.isForceDeactivate();
+    if (!mustHaveAppliedChange && !desc.isReplace()) {
+      return 0; // The modification cannot affect an active plan.
     }
+    if (appliedRp == null && !mustHaveAppliedChange) return 0; // Replacing an inactive plan.
+    if (wm == null && isInTest) return 0; // Skip for tests if WM is not present.
 
-    if (appliedRp == null) {
-      throw new HiveException("Cannot get a resource plan to apply");
+    if ((appliedRp == null) != desc.isForceDeactivate()) {
+      throw new HiveException("Cannot get a resource plan to apply; or non-null plan on disable");
       // TODO: shut down HS2?
     }
-    final String name = resourcePlan.getName();
-    LOG.info("Activating a new resource plan " + name + ": " + appliedRp);
+    assert appliedRp == null || appliedRp.getPlan().getStatus() == WMResourcePlanStatus.ACTIVE;
+
+    handleWorkloadManagementServiceChange(wm, pm, isActivate, appliedRp);
+    return 0;
+  }
+
+  private int handleWorkloadManagementServiceChange(WorkloadManager wm, TezSessionPoolManager pm,
+      boolean isActivate, WMFullResourcePlan appliedRp) throws HiveException {
+    String name = null;
+    if (isActivate) {
+      name = appliedRp.getPlan().getName();
+      LOG.info("Activating a new resource plan " + name + ": " + appliedRp);
+    } else {
+      LOG.info("Disabling workload management");
+    }
     if (wm != null) {
       // Note: as per our current constraints, the behavior of two parallel activates is
       //       undefined; although only one will succeed and the other will receive exception.
@@ -754,20 +770,27 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         // Note: we may add an async option in future. For now, let the task fail for the user.
         future.get();
         isOk = true;
-        LOG.info("Successfully activated resource plan " + name);
-        return 0;
+        if (isActivate) {
+          LOG.info("Successfully activated resource plan " + name);
+        } else {
+          LOG.info("Successfully disabled workload management");
+        }
       } catch (InterruptedException | ExecutionException e) {
         throw new HiveException(e);
       } finally {
         if (!isOk) {
-          LOG.error("Failed to activate resource plan " + name);
+          if (isActivate) {
+            LOG.error("Failed to activate resource plan " + name);
+          } else {
+            LOG.error("Failed to disable workload management");
+          }
           // TODO: shut down HS2?
         }
       }
     }
     if (pm != null) {
       pm.updateTriggers(appliedRp);
-      LOG.info("Updated tez session pool manager with active resource plan: {}", appliedRp.getPlan().getName());
+      LOG.info("Updated tez session pool manager with active resource plan: {}", name);
     }
     return 0;
   }
@@ -1160,15 +1183,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
     }
 
+    Map<String, String> params = database.getParameters();
+    if ((null != alterDbDesc.getReplicationSpec())
+        && !alterDbDesc.getReplicationSpec().allowEventReplacementInto(params)) {
+      LOG.debug("DDLTask: Alter Database {} is skipped as database is newer than update", dbName);
+      return 0; // no replacement, the existing database state is newer than our update.
+    }
+
     switch (alterDbDesc.getAlterType()) {
     case ALTER_PROPERTY:
       Map<String, String> newParams = alterDbDesc.getDatabaseProperties();
-      Map<String, String> params = database.getParameters();
-
-      if (!alterDbDesc.getReplicationSpec().allowEventReplacementInto(params)) {
-        LOG.debug("DDLTask: Alter Database {} is skipped as database is newer than update", dbName);
-        return 0; // no replacement, the existing database state is newer than our update.
-      }
 
       // if both old and new params are not null, merge them
       if (params != null && newParams != null) {
