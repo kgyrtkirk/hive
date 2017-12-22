@@ -19,24 +19,24 @@
 
 package org.apache.hive.hcatalog.listener;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
-import javax.jms.TextMessage;
 import javax.jms.Session;
-
-import junit.framework.TestCase;
+import javax.jms.TextMessage;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -45,17 +45,19 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.messaging.HCatEventMessage;
 import org.apache.hive.hcatalog.messaging.jms.MessagingUtils;
+import org.junit.Before;
+import org.junit.Test;
 
-public class TestMsgBusConnection extends TestCase {
+public class TestMsgBusConnection {
 
   private IDriver driver;
   private BrokerService broker;
   private MessageConsumer consumer;
   private static final int TIMEOUT = 2000;
-  @Override
-  protected void setUp() throws Exception {
 
-    super.setUp();
+  @Before
+  public void before() throws Exception {
+
     broker = new BrokerService();
     // configure the broker
     broker.addConnector("tcp://localhost:61616?broker.persistent=false");
@@ -87,37 +89,29 @@ public class TestMsgBusConnection extends TestCase {
     consumer = session.createConsumer(hcatTopic);
   }
 
+  @Test
   public void testConnection() throws Exception {
-
-    try {
-      driver.run("create database testconndb");
-      Message msg = consumer.receive(TIMEOUT);
-      assertTrue("Expected TextMessage", msg instanceof TextMessage);
-      assertEquals(HCatConstants.HCAT_CREATE_DATABASE_EVENT, msg.getStringProperty(HCatConstants.HCAT_EVENT));
-      assertEquals("topic://planetlab.hcat", msg.getJMSDestination().toString());
-      HCatEventMessage messageObject = MessagingUtils.getMessage(msg);
-      assertEquals("testconndb", messageObject.getDB());
-      broker.stop();
-      driverrun("drop database testconndb cascade");
-      broker.start(true);
-      connectClient();
-      driverrun("create database testconndb");
-      msg = consumer.receive(TIMEOUT);
-      assertEquals(HCatConstants.HCAT_CREATE_DATABASE_EVENT, msg.getStringProperty(HCatConstants.HCAT_EVENT));
-      assertEquals("topic://planetlab.hcat", msg.getJMSDestination().toString());
-      assertEquals("testconndb", messageObject.getDB());
-      driver.run("drop database testconndb cascade");
-      msg = consumer.receive(TIMEOUT);
-      assertEquals(HCatConstants.HCAT_DROP_DATABASE_EVENT, msg.getStringProperty(HCatConstants.HCAT_EVENT));
-      assertEquals("topic://planetlab.hcat", msg.getJMSDestination().toString());
-      assertEquals("testconndb", messageObject.getDB());
-    } catch (NoSuchObjectException nsoe) {
-      nsoe.printStackTrace(System.err);
-      assert false;
-    } catch (AlreadyExistsException aee) {
-      aee.printStackTrace(System.err);
-      assert false;
-    }
+    driver.run("create database testconndb");
+    Message msg = consumer.receive(TIMEOUT);
+    assertTrue("Expected TextMessage", msg instanceof TextMessage);
+    assertEquals(HCatConstants.HCAT_CREATE_DATABASE_EVENT, msg.getStringProperty(HCatConstants.HCAT_EVENT));
+    assertEquals("topic://planetlab.hcat", msg.getJMSDestination().toString());
+    HCatEventMessage messageObject = MessagingUtils.getMessage(msg);
+    assertEquals("testconndb", messageObject.getDB());
+    broker.stop();
+    driverrun("drop database testconndb cascade");
+    broker.start(true);
+    connectClient();
+    driverrun("create database testconndb");
+    msg = consumer.receive(TIMEOUT);
+    assertEquals(HCatConstants.HCAT_CREATE_DATABASE_EVENT, msg.getStringProperty(HCatConstants.HCAT_EVENT));
+    assertEquals("topic://planetlab.hcat", msg.getJMSDestination().toString());
+    assertEquals("testconndb", messageObject.getDB());
+    driver.run("drop database testconndb cascade");
+    msg = consumer.receive(TIMEOUT);
+    assertEquals(HCatConstants.HCAT_DROP_DATABASE_EVENT, msg.getStringProperty(HCatConstants.HCAT_EVENT));
+    assertEquals("topic://planetlab.hcat", msg.getJMSDestination().toString());
+    assertEquals("testconndb", messageObject.getDB());
   }
 
   private void driverrun(String query) throws CommandNeedRetryException {
