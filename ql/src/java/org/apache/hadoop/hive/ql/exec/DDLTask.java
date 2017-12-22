@@ -72,7 +72,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -111,6 +111,7 @@ import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -713,7 +714,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int alterResourcePlan(Hive db, AlterResourcePlanDesc desc) throws HiveException {
     if (desc.shouldValidate()) {
-      return db.validateResourcePlan(desc.getResourcePlanName()) ? 0 : 1;
+      List<String> errors = db.validateResourcePlan(desc.getResourcePlanName());
+      try (DataOutputStream out = getOutputStream(desc.getResFile())) {
+        formatter.showErrors(out, errors);
+      } catch (IOException e) {
+        throw new HiveException(e);
+      };
+      return 0;
     }
 
     WMResourcePlan resourcePlan = desc.getResourcePlan();
@@ -2156,7 +2163,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int compact(Hive db, AlterTableSimpleDesc desc) throws HiveException {
 
     Table tbl = db.getTable(desc.getTableName());
-    if (!AcidUtils.isFullAcidTable(tbl) && !AcidUtils.isInsertOnlyTable(tbl.getParameters())) {
+    if (!AcidUtils.isAcidTable(tbl) && !AcidUtils.isInsertOnlyTable(tbl.getParameters())) {
       throw new HiveException(ErrorMsg.NONACID_COMPACTION_NOT_SUPPORTED, tbl.getDbName(),
           tbl.getTableName());
     }
@@ -4213,7 +4220,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           // the fields so that new SerDe could operate. Note that this may fail if some fields
           // from old SerDe are too long to be stored in metastore, but there's nothing we can do.
           try {
-            Deserializer oldSerde = MetaStoreUtils.getDeserializer(
+            Deserializer oldSerde = HiveMetaStoreUtils.getDeserializer(
                 conf, tbl.getTTable(), false, oldSerdeName);
             tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getTableName(), oldSerde));
           } catch (MetaException ex) {
@@ -4471,7 +4478,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
     // Don't set inputs and outputs - the locks have already been taken so it's pointless.
-    MoveWork mw = new MoveWork(null, null, null, null, false, SessionState.get().getLineageState());
+    MoveWork mw = new MoveWork(null, null, null, null, false);
     mw.setMultiFilesDesc(new LoadMultiFilesDesc(srcs, tgts, true, null, null));
     ImportCommitWork icw = new ImportCommitWork(tbl.getDbName(), tbl.getTableName(), mmWriteId, stmtId);
     Task<?> mv = TaskFactory.get(mw, conf), ic = TaskFactory.get(icw, conf);
@@ -4902,7 +4909,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         Table createdTable = db.getTable(tbl.getDbName(), tbl.getTableName());
         if (crtTbl.isCTAS()) {
           DataContainer dc = new DataContainer(createdTable.getTTable());
-          SessionState.get().getLineageState().setLineage(
+          queryState.getLineageState().setLineage(
                   createdTable.getPath(), dc, createdTable.getCols()
           );
         }
@@ -5130,7 +5137,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       //set lineage info
       DataContainer dc = new DataContainer(tbl.getTTable());
-      SessionState.get().getLineageState().setLineage(new Path(crtView.getViewName()), dc, tbl.getCols());
+      queryState.getLineageState().setLineage(new Path(crtView.getViewName()), dc, tbl.getCols());
     }
     return 0;
   }

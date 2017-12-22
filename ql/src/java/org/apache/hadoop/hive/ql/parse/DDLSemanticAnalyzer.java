@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,6 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -158,6 +158,7 @@ import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateOrAlterWMPoolDesc;
 import org.apache.hadoop.hive.ql.plan.CreateOrDropTriggerToPoolMappingDesc;
+import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -982,8 +983,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           "Unexpected token in alter resource plan statement: " + child.getType());
       }
     }
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        new AlterResourcePlanDesc(resourcePlan, rpName, validate, isEnableActive)), conf));
+    AlterResourcePlanDesc desc =
+        new AlterResourcePlanDesc(resourcePlan, rpName, validate, isEnableActive);
+    if (validate) {
+      ctx.setResFile(ctx.getLocalTmpPath());
+      desc.setResFile(ctx.getResFile().toString());
+    }
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
+    if (validate) {
+      setFetchTask(createFetchTask(AlterResourcePlanDesc.getSchema()));
+    }
   }
 
   private void analyzeDropResourcePlan(ASTNode ast) throws SemanticException {
@@ -1477,8 +1486,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
             partSpec == null ? new HashMap<>() : partSpec, null);
         ltd.setLbCtx(lbCtx);
         @SuppressWarnings("unchecked")
-        Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(
-          null, null, ltd, null, false, SessionState.get().getLineageState()), conf);
+        Task<MoveWork> moveTsk =
+            TaskFactory.get(new MoveWork(null, null, ltd, null, false), conf);
         truncateTask.addDependentTask(moveTsk);
 
         // Recalculate the HDFS stats if auto gather stats is set
@@ -1695,8 +1704,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
             indexTbl, db, indexTblPartitions);
       }
 
+      LineageState lineageState = queryState.getLineageState();
       List<Task<?>> ret = handler.generateIndexBuildTaskList(baseTbl,
-          index, indexTblPartitions, baseTblPartitions, indexTbl, getInputs(), getOutputs());
+          index, indexTblPartitions, baseTblPartitions, indexTbl, getInputs(), getOutputs(),
+          lineageState);
       return ret;
     } catch (Exception e) {
       throw new SemanticException(e);
@@ -1895,9 +1906,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     if(desc != null && desc.getProps() != null && Boolean.parseBoolean(desc.getProps().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL))) {
       convertingToAcid = true;
     }
-    if(!AcidUtils.isAcidTable(tab) && convertingToAcid) {
-      //non to acid conversion (property itself) must be mutexed to prevent concurrent writes.
-      // See HIVE-16688 for use case.
+    if(!AcidUtils.isTransactionalTable(tab) && convertingToAcid) {
+      //non-acid to transactional conversion (property itself) must be mutexed to prevent concurrent writes.
+      // See HIVE-16688 for use cases.
       return WriteType.DDL_EXCLUSIVE;
     }
     return WriteEntity.determineAlterTableWriteType(op);
@@ -2117,7 +2128,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       // transactional tables are compacted and no longer needs to be bucketed, so not safe for merge/concatenation
-      boolean isAcid = AcidUtils.isAcidTable(tblObj);
+      boolean isAcid = AcidUtils.isTransactionalTable(tblObj);
       if (isAcid) {
         throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_TRANSACTIONAL.getMsg());
       }
@@ -2138,8 +2149,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
           partSpec == null ? new HashMap<>() : partSpec, null);
       ltd.setLbCtx(lbCtx);
-      Task<MoveWork> moveTsk = TaskFactory.get(
-        new MoveWork(null, null, ltd, null, false, SessionState.get().getLineageState()), conf);
+      Task<MoveWork> moveTsk =
+          TaskFactory.get(new MoveWork(null, null, ltd, null, false), conf);
       mergeTask.addDependentTask(moveTsk);
 
       if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
@@ -3531,7 +3542,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       SessionState ss = SessionState.get();
       String uName = (ss == null? null: ss.getUserName());
-      Driver driver = new Driver(conf, uName);
+      Driver driver = new Driver(conf, uName, queryState.getLineageState());
       int rc = driver.compile(cmd.toString(), false);
       if (rc != 0) {
         throw new SemanticException(ErrorMsg.NO_VALID_PARTN.getMsg());

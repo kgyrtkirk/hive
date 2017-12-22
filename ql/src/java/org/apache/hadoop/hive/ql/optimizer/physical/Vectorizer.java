@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.calcite.util.Pair;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
@@ -1513,7 +1514,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       LOG.info("Examining input format to see if vectorization is enabled.");
 
       ImmutablePair<String,TableScanOperator> onlyOneTableScanPair = verifyOnlyOneTableScanOperator(mapWork);
-      if (onlyOneTableScanPair ==  null) {
+      if (onlyOneTableScanPair == null) {
         VectorizerReason notVectorizedReason = currentBaseWork.getNotVectorizedReason();
         Preconditions.checkState(notVectorizedReason != null);
         mapWork.setVectorizationEnabledConditionsNotMet(Arrays.asList(new String[] {notVectorizedReason.toString()}));
@@ -1638,6 +1639,11 @@ public class Vectorizer implements PhysicalPlanResolver {
       // Set "global" member indicating where to store "not vectorized" information if necessary.
       currentBaseWork = mapWork;
 
+      if (!validateTableScanOperator(tableScanOperator, mapWork)) {
+
+        // The "not vectorized" information has been stored in the MapWork vertex.
+        return false;
+      }
       try {
         validateAndVectorizeMapOperators(tableScanOperator, isTezOrSpark, vectorTaskColumnInfo);
       } catch (VectorizerCannotVectorizeException e) {
@@ -4635,6 +4641,10 @@ public class Vectorizer implements PhysicalPlanResolver {
             vectorOp = OperatorFactory.getVectorOperator(
                 op.getCompilationOpContext(), sparkPartitionPruningSinkDesc,
                 vContext, vectorSparkPartitionPruningSinkDesc);
+            // need to maintain the unique ID so that target map works can
+            // read the output
+            ((SparkPartitionPruningSinkOperator) vectorOp).setUniqueId(
+                ((SparkPartitionPruningSinkOperator) op).getUniqueId());
             isNative = true;
           }
           break;

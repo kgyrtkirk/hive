@@ -51,7 +51,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
@@ -111,9 +112,10 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
+import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.ql.wm.TriggerContext;
+import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobClient;
@@ -308,7 +310,7 @@ public class Driver implements IDriver {
         String tableName = "result";
         List<FieldSchema> lst = null;
         try {
-          lst = MetaStoreUtils.getFieldsFromDeserializer(tableName, td.getDeserializer(conf));
+          lst = HiveMetaStoreUtils.getFieldsFromDeserializer(tableName, td.getDeserializer(conf));
         } catch (Exception e) {
           LOG.warn("Error getting schema: "
               + org.apache.hadoop.util.StringUtils.stringifyException(e));
@@ -337,7 +339,7 @@ public class Driver implements IDriver {
         // Go over the schema and convert type to thrift type
         if (lst != null) {
           for (FieldSchema f : lst) {
-            f.setType(MetaStoreUtils.typeToThriftType(f.getType()));
+            f.setType(ColumnType.typeToThriftType(f.getType()));
           }
         }
       }
@@ -373,17 +375,31 @@ public class Driver implements IDriver {
     this(getNewQueryState(conf), null);
   }
 
+  // Pass lineageState when a driver instantiates another Driver to run
+  // or compile another query
+  public Driver(HiveConf conf, LineageState lineageState) {
+    this(getNewQueryState(conf, lineageState), null);
+  }
+
   public Driver(HiveConf conf, HiveTxnManager txnMgr) {
     this(getNewQueryState(conf), null, null, txnMgr);
   }
 
-  public Driver(HiveConf conf, Context ctx) {
-    this(getNewQueryState(conf), null, null);
+  // Pass lineageState when a driver instantiates another Driver to run
+  // or compile another query
+  public Driver(HiveConf conf, Context ctx, LineageState lineageState) {
+    this(getNewQueryState(conf, lineageState), null, null);
     this.ctx = ctx;
   }
 
   public Driver(HiveConf conf, String userName) {
     this(getNewQueryState(conf), userName, null);
+  }
+
+  // Pass lineageState when a driver instantiates another Driver to run
+  // or compile another query
+  public Driver(HiveConf conf, String userName, LineageState lineageState) {
+    this(getNewQueryState(conf, lineageState), userName, null);
   }
 
   public Driver(QueryState queryState, String userName) {
@@ -423,6 +439,20 @@ public class Driver implements IDriver {
   @Deprecated
   private static QueryState getNewQueryState(HiveConf conf) {
     return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
+  }
+
+  /**
+   * Generating the new QueryState object. Making sure, that the new queryId is generated.
+   * @param conf The HiveConf which should be used
+   * @param lineageState a LineageState to be set in the new QueryState object
+   * @return The new QueryState object
+   */
+  private static QueryState getNewQueryState(HiveConf conf, LineageState lineageState) {
+    return new QueryState.Builder()
+        .withGenerateNewQueryId(true)
+        .withHiveConf(conf)
+        .withLineageState(lineageState)
+        .build();
   }
 
   /**
@@ -735,8 +765,8 @@ public class Driver implements IDriver {
     } else {
       queryStartTime = queryDisplay.getQueryStartTime();
     }
-    TriggerContext triggerContext = new TriggerContext(queryStartTime, queryId);
-    ctx.setTriggerContext(triggerContext);
+    WmContext wmContext = new WmContext(queryStartTime, queryId);
+    ctx.setWmContext(wmContext);
   }
 
   private boolean startImplicitTxn(HiveTxnManager txnManager) throws LockException {
@@ -1340,9 +1370,6 @@ public class Driver implements IDriver {
   private void releaseResources() {
     releasePlan();
     releaseDriverContext();
-    if (SessionState.get() != null) {
-      SessionState.get().getLineageState().clear();
-    }
   }
 
   @Override
@@ -2414,9 +2441,6 @@ public class Driver implements IDriver {
     releaseFetchTask();
     releaseResStream();
     releaseContext();
-    if (SessionState.get() != null) {
-      SessionState.get().getLineageState().clear();
-    }
     if(destroyed) {
       if (!hiveLocks.isEmpty()) {
         try {
@@ -2450,9 +2474,6 @@ public class Driver implements IDriver {
     } finally {
       lDrvState.stateLock.unlock();
       LockedDriverState.removeLockedDriverState();
-    }
-    if (SessionState.get() != null) {
-      SessionState.get().getLineageState().clear();
     }
     return 0;
   }
@@ -2519,5 +2540,9 @@ public class Driver implements IDriver {
     // propagating queryState into those existing fields, or resetting them.
     releaseResources();
     this.queryState = getNewQueryState(queryState.getConf());
+  }
+
+  public QueryState getQueryState() {
+    return queryState;
   }
 }

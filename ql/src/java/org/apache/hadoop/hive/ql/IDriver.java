@@ -26,6 +26,9 @@ import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 
+/**
+ * Hive query executer driver
+ */
 public interface IDriver extends CommandProcessor {
 
   int compile(String string);

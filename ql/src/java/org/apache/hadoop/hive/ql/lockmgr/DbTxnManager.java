@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
-import org.apache.hadoop.hive.ql.plan.api.Query;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
@@ -314,7 +313,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     issue ROLLBACK but these tables won't rollback.
     Can do this by checking ReadEntity/WriteEntity to determine whether it's reading/writing
     any non acid and raise an appropriate error
-    * Driver.acidSinks and Driver.acidInQuery can be used if any acid is in the query*/
+    * Driver.acidSinks and Driver.transactionalInQuery can be used if any acid is in the query*/
   }
 
   /**
@@ -326,7 +325,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     //in a txn assuming we can determine the target is a suitable table type.
     if(queryPlan.getOperation() == HiveOperation.LOAD && queryPlan.getOutputs() != null && queryPlan.getOutputs().size() == 1) {
       WriteEntity writeEntity = queryPlan.getOutputs().iterator().next();
-      if(AcidUtils.isFullAcidTable(writeEntity.getTable()) || AcidUtils.isInsertOnlyTable(writeEntity.getTable())) {
+      if(AcidUtils.isAcidTable(writeEntity.getTable()) || AcidUtils.isInsertOnlyTable(writeEntity.getTable())) {
         switch (writeEntity.getWriteType()) {
           case INSERT:
             //allow operation in a txn
@@ -342,6 +341,28 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
     //todo: handle Insert Overwrite as well: HIVE-18154
     return false;
+  }
+  private boolean needsLock(Entity entity) {
+    switch (entity.getType()) {
+    case TABLE:
+      return isLockableTable(entity.getTable());
+    case PARTITION:
+      return isLockableTable(entity.getPartition().getTable());
+    default:
+      return true;
+    }
+  }
+  private boolean isLockableTable(Table t) {
+    if(t.isTemporary()) {
+      return false;
+    }
+    switch (t.getTableType()) {
+    case MANAGED_TABLE:
+    case MATERIALIZED_VIEW:
+      return true;
+    default:
+      return false;
+    }
   }
   /**
    * Normally client should call {@link #acquireLocks(org.apache.hadoop.hive.ql.QueryPlan, org.apache.hadoop.hive.ql.Context, String)}
@@ -371,8 +392,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
     // For each source to read, get a shared lock
     for (ReadEntity input : plan.getInputs()) {
-      if (!input.needsLock() || input.isUpdateOrDelete() ||
-          (input.getType() == Entity.Type.TABLE && input.getTable().isTemporary())) {
+      if (!input.needsLock() || input.isUpdateOrDelete() || !needsLock(input)) {
         // We don't want to acquire read locks during update or delete as we'll be acquiring write
         // locks instead. Also, there's no need to lock temp tables since they're session wide
         continue;
@@ -406,7 +426,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
           continue;
       }
       if(t != null) {
-        compBuilder.setIsAcid(AcidUtils.isFullAcidTable(t));
+        compBuilder.setIsAcid(AcidUtils.isAcidTable(t));
       }
       LockComponent comp = compBuilder.build();
       LOG.debug("Adding lock component to lock request " + comp.toString());
@@ -421,7 +441,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     for (WriteEntity output : plan.getOutputs()) {
       LOG.debug("output is null " + (output == null));
       if (output.getType() == Entity.Type.DFS_DIR || output.getType() == Entity.Type.LOCAL_DIR ||
-          (output.getType() == Entity.Type.TABLE && output.getTable().isTemporary())) {
+          !needsLock(output)) {
         // We don't lock files or directories. We also skip locking temp tables.
         continue;
       }
@@ -460,7 +480,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
           break;
         case INSERT_OVERWRITE:
           t = getTable(output);
-          if (AcidUtils.isAcidTable(t)) {
+          if (AcidUtils.isTransactionalTable(t)) {
             compBuilder.setSemiShared();
             compBuilder.setOperationType(DataOperationType.UPDATE);
           } else {
@@ -470,7 +490,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
           break;
         case INSERT:
           assert t != null;
-          if(AcidUtils.isFullAcidTable(t)) {
+          if(AcidUtils.isAcidTable(t)) {
             compBuilder.setShared();
           }
           else {
@@ -504,7 +524,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
               output.getWriteType().toString());
       }
       if(t != null) {
-        compBuilder.setIsAcid(AcidUtils.isFullAcidTable(t));
+        compBuilder.setIsAcid(AcidUtils.isAcidTable(t));
       }
 
       compBuilder.setIsDynamicPartitionWrite(output.isDynamicPartitionWrite());

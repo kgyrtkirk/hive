@@ -20,15 +20,14 @@ package org.apache.hadoop.hive.metastore;
 
 
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
+import junit.framework.TestCase;
 
 /**
  * TestMetaStoreEventListener. Test case for
