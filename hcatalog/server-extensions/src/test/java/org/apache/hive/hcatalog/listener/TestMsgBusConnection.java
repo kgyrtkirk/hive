@@ -37,8 +37,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.messaging.HCatEventMessage;
@@ -60,27 +62,24 @@ public class TestMsgBusConnection extends TestCase {
 
     broker.start();
 
-    System.setProperty("java.naming.factory.initial",
-        "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
+    System.setProperty("java.naming.factory.initial", "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
     System.setProperty("java.naming.provider.url", "tcp://localhost:61616");
     connectClient();
     HiveConf hiveConf = new HiveConf(this.getClass());
-    hiveConf.set(ConfVars.METASTORE_EVENT_LISTENERS.varname,
-        NotificationListener.class.getName());
+    hiveConf.set(ConfVars.METASTORE_EVENT_LISTENERS.varname, NotificationListener.class.getName());
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.METASTOREURIS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-    "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.set(HCatConstants.HCAT_MSGBUS_TOPIC_PREFIX, "planetlab.hcat");
     SessionState.start(new CliSessionState(hiveConf));
     driver = DriverFactory.newDriver(hiveConf);
   }
 
   private void connectClient() throws JMSException {
-    ConnectionFactory connFac = new ActiveMQConnectionFactory(
-        "tcp://localhost:61616");
+    ConnectionFactory connFac = new ActiveMQConnectionFactory("tcp://localhost:61616");
     Connection conn = connFac.createConnection();
     conn.start();
     Session session = conn.createSession(true, Session.SESSION_TRANSACTED);
@@ -94,25 +93,22 @@ public class TestMsgBusConnection extends TestCase {
       driver.run("create database testconndb");
       Message msg = consumer.receive(TIMEOUT);
       assertTrue("Expected TextMessage", msg instanceof TextMessage);
-      assertEquals(HCatConstants.HCAT_CREATE_DATABASE_EVENT,
-          msg.getStringProperty(HCatConstants.HCAT_EVENT));
+      assertEquals(HCatConstants.HCAT_CREATE_DATABASE_EVENT, msg.getStringProperty(HCatConstants.HCAT_EVENT));
       assertEquals("topic://planetlab.hcat", msg.getJMSDestination().toString());
       HCatEventMessage messageObject = MessagingUtils.getMessage(msg);
       assertEquals("testconndb", messageObject.getDB());
       broker.stop();
-      driver.run("drop database testconndb cascade");
+      driverrun("drop database testconndb cascade");
       broker.start(true);
       connectClient();
-      driver.run("create database testconndb");
+      driverrun("create database testconndb");
       msg = consumer.receive(TIMEOUT);
-      assertEquals(HCatConstants.HCAT_CREATE_DATABASE_EVENT,
-          msg.getStringProperty(HCatConstants.HCAT_EVENT));
+      assertEquals(HCatConstants.HCAT_CREATE_DATABASE_EVENT, msg.getStringProperty(HCatConstants.HCAT_EVENT));
       assertEquals("topic://planetlab.hcat", msg.getJMSDestination().toString());
       assertEquals("testconndb", messageObject.getDB());
       driver.run("drop database testconndb cascade");
       msg = consumer.receive(TIMEOUT);
-      assertEquals(HCatConstants.HCAT_DROP_DATABASE_EVENT,
-          msg.getStringProperty(HCatConstants.HCAT_EVENT));
+      assertEquals(HCatConstants.HCAT_DROP_DATABASE_EVENT, msg.getStringProperty(HCatConstants.HCAT_EVENT));
       assertEquals("topic://planetlab.hcat", msg.getJMSDestination().toString());
       assertEquals("testconndb", messageObject.getDB());
     } catch (NoSuchObjectException nsoe) {
@@ -122,5 +118,10 @@ public class TestMsgBusConnection extends TestCase {
       aee.printStackTrace(System.err);
       assert false;
     }
+  }
+
+  private void driverrun(String query) throws CommandNeedRetryException {
+    CommandProcessorResponse cpr = driver.run(query);
+    assertFalse(cpr.getMessage(), cpr.failed());
   }
 }
