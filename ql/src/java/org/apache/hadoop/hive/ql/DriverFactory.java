@@ -55,7 +55,6 @@ public class DriverFactory {
     return strategy.build(queryState, userName, queryInfo);
   }
 
-<<<<<<< HEAD
   public static class ProtectedHiveConf extends HiveConf {
 
     private static transient final Logger LOG = LoggerFactory.getLogger(ProtectedHiveConf.class);
