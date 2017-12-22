@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -44,7 +42,6 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -57,6 +54,8 @@ import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import junit.framework.TestCase;
 
 public class TestPermsGrp extends TestCase {
 
@@ -125,7 +124,7 @@ public class TestPermsGrp extends TestCase {
         assertEquals(((ExitException) e).getStatus(), 0);
       }
       dfsPath = clientWH.getDefaultTablePath(db, tblName);
-      assertTrue(dfsPath.getFileSystem(hcatConf).getFileStatus(dfsPath).getPermission().equals(FsPermission.valueOf("drwx-wx---")));
+      assertEquals(FsPermission.valueOf("drwx-wx---"), dfsPath.getFileSystem(hcatConf).getFileStatus(dfsPath).getPermission());
 
       cleanupTbl(dbName, tblName, typeName);
 
