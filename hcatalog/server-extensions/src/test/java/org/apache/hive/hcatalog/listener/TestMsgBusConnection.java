@@ -99,10 +99,10 @@ public class TestMsgBusConnection {
     HCatEventMessage messageObject = MessagingUtils.getMessage(msg);
     assertEquals("testconndb", messageObject.getDB());
     broker.stop();
-    driverrun("drop database testconndb cascade");
+    runQuery("drop database testconndb cascade");
     broker.start(true);
     connectClient();
-    driverrun("create database testconndb");
+    runQuery("create database testconndb");
     msg = consumer.receive(TIMEOUT);
     assertEquals(HCatConstants.HCAT_CREATE_DATABASE_EVENT, msg.getStringProperty(HCatConstants.HCAT_EVENT));
     assertEquals("topic://planetlab.hcat", msg.getJMSDestination().toString());
@@ -114,7 +114,7 @@ public class TestMsgBusConnection {
     assertEquals("testconndb", messageObject.getDB());
   }
 
-  private void driverrun(String query) throws CommandNeedRetryException {
+  private void runQuery(String query) throws CommandNeedRetryException {
     CommandProcessorResponse cpr = driver.run(query);
     assertFalse(cpr.getMessage(), cpr.failed());
   }
