@@ -21,7 +21,6 @@ package org.apache.hive.hcatalog.cli;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -58,7 +57,8 @@ public class HCatDriver {
 
     if (cpr.getResponseCode() == 0) {
       // Only attempt to do this, if cmd was successful.
-      int rc = setFSPermsNGrp(ss);
+      // FIXME: it would be probably better to move this to an after-execution
+      int rc = setFSPermsNGrp(ss, driver.getConf());
       cpr = new CommandProcessorResponse(rc);
     }
     // reset conf vars
@@ -68,9 +68,7 @@ public class HCatDriver {
     return cpr;
   }
 
-  private int setFSPermsNGrp(SessionState ss) {
-
-    Configuration conf = ss.getConf();
+  private int setFSPermsNGrp(SessionState ss, HiveConf conf) {
 
     String tblName = conf.get(HCatConstants.HCAT_CREATE_TBL_NAME, "");
     if (tblName.isEmpty()) {

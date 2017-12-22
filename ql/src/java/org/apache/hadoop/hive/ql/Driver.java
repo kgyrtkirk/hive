@@ -1193,6 +1193,11 @@ public class Driver implements IDriver {
     return HiveOperationType.valueOf(op.name());
   }
 
+  @Override
+  public HiveConf getConf() {
+    return conf;
+  }
+
   /**
    * @return The current query plan associated with this Driver, if any.
    */

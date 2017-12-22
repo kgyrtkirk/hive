@@ -119,6 +119,7 @@ public class TestPermsGrp extends TestCase {
       // Next user did specify perms.
       try {
         callHCatCli(new String[]{"-e", "create table simptbl (name string) stored as RCFILE", "-p", "rwx-wx---"});
+        fail();
       } catch (Exception e) {
         assertTrue(e instanceof ExitException);
         assertEquals(((ExitException) e).getStatus(), 0);
@@ -133,7 +134,7 @@ public class TestPermsGrp extends TestCase {
       // make sure create table fails.
       try {
         callHCatCli(new String[]{"-e", "create table simptbl (name string) stored as RCFILE", "-p", "rwx"});
-        assert false;
+        fail();
       } catch (Exception me) {
         assertTrue(me instanceof ExitException);
       }
@@ -141,7 +142,7 @@ public class TestPermsGrp extends TestCase {
       dfsPath = clientWH.getDefaultTablePath(db, tblName);
       try {
         dfsPath.getFileSystem(hcatConf).getFileStatus(dfsPath);
-        assert false;
+        fail();
       } catch (Exception fnfe) {
         assertTrue(fnfe instanceof FileNotFoundException);
       }
@@ -149,7 +150,7 @@ public class TestPermsGrp extends TestCase {
       // And no metadata gets created.
       try {
         msc.getTable(Warehouse.DEFAULT_DATABASE_NAME, tblName);
-        assert false;
+        fail();
       } catch (Exception e) {
         assertTrue(e instanceof NoSuchObjectException);
         assertEquals("default.simptbl table not found", e.getMessage());
@@ -162,7 +163,7 @@ public class TestPermsGrp extends TestCase {
       try {
         // create table must fail.
         callHCatCli(new String[]{"-e", "create table simptbl (name string) stored as RCFILE", "-p", "rw-rw-rw-", "-g", "THIS_CANNOT_BE_A_VALID_GRP_NAME_EVER"});
-        assert false;
+        fail();
       } catch (Exception me) {
         assertTrue(me instanceof SecurityException);
       }
@@ -170,7 +171,7 @@ public class TestPermsGrp extends TestCase {
       try {
         // no metadata should get created.
         msc.getTable(dbName, tblName);
-        assert false;
+        fail();
       } catch (Exception e) {
         assertTrue(e instanceof NoSuchObjectException);
         assertEquals("default.simptbl table not found", e.getMessage());
@@ -178,7 +179,7 @@ public class TestPermsGrp extends TestCase {
       try {
         // neither dir should get created.
         dfsPath.getFileSystem(hcatConf).getFileStatus(dfsPath);
-        assert false;
+        fail();
       } catch (Exception e) {
         assertTrue(e instanceof FileNotFoundException);
       }
