@@ -1832,7 +1832,7 @@ public class HiveConf extends Configuration {
     // annotation. But the file may be compressed, encoded and serialized which may be lesser in size
     // than the actual uncompressed/raw data size. This factor will be multiplied to file size to estimate
     // the raw data size.
-    HIVE_STATS_DESERIALIZATION_FACTOR("hive.stats.deserialization.factor", (float) 1.0,
+    HIVE_STATS_DESERIALIZATION_FACTOR("hive.stats.deserialization.factor", (float) 10.0,
         "Hive/Tez optimizer estimates the data size flowing through each of the operators. In the absence\n" +
         "of basic statistics like number of rows and data size, file size is used to estimate the number\n" +
         "of rows and data size. Since files in tables/partitions are serialized (and optionally\n" +
@@ -3582,6 +3582,7 @@ public class HiveConf extends Configuration {
     HIVE_MM_AVOID_GLOBSTATUS_ON_S3("hive.mm.avoid.s3.globstatus", true,
         "Whether to use listFiles (optimized on S3) instead of globStatus when on S3."),
 
+    // If a parameter is added to the restricted list, add a test in TestRestrictedList.Java
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
         "hive.security.authenticator.manager,hive.security.authorization.manager," +
         "hive.security.metastore.authorization.manager,hive.security.metastore.authenticator.manager," +
@@ -3610,7 +3611,9 @@ public class HiveConf extends Configuration {
             "bonecp.,"+
             "hive.druid.broker.address.default,"+
             "hive.druid.coordinator.address.default,"+
-            "hikari.",
+            "hikari.,"+
+            "hadoop.bin.path,"+
+            "yarn.bin.path",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
@@ -4750,6 +4753,10 @@ public class HiveConf extends Configuration {
 
   public static void setHiveSiteLocation(URL location) {
     hiveSiteURL = location;
+  }
+
+  public static void setHivemetastoreSiteUrl(URL location) {
+    hivemetastoreSiteUrl = location;
   }
 
   public static URL getHiveSiteLocation() {

@@ -4749,9 +4749,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public void createResourcePlan(WMResourcePlan resourcePlan) throws HiveException {
+  public void createResourcePlan(WMResourcePlan resourcePlan, String copyFromName)
+      throws HiveException {
     try {
-      getMSC().createResourcePlan(resourcePlan);
+      getMSC().createResourcePlan(resourcePlan, copyFromName);
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -4784,9 +4785,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public WMFullResourcePlan alterResourcePlan(String rpName, WMResourcePlan resourcePlan,
-      boolean canActivateDisabled) throws HiveException {
+      boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace)
+          throws HiveException {
     try {
-      return getMSC().alterResourcePlan(rpName, resourcePlan, canActivateDisabled);
+      return getMSC().alterResourcePlan(
+          rpName, resourcePlan, canActivateDisabled, isForceDeactivate, isReplace);
     } catch (Exception e) {
       throw new HiveException(e);
     }

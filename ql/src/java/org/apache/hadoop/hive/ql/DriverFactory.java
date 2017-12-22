@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql;
 
+<<<<<<< HEAD
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,14 +26,21 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+=======
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.session.SessionState;
+>>>>>>> asf/master
 
 /**
  * Constructs a driver for ql clients
  */
 public class DriverFactory {
 
+<<<<<<< HEAD
   private static boolean mmm;
 
+=======
+>>>>>>> asf/master
   public static IDriver newDriver(HiveConf conf) {
     return newDriver(getNewQueryState(conf), null, null);
   }
@@ -53,6 +61,7 @@ public class DriverFactory {
     return strategy.build(queryState, userName, queryInfo);
   }
 
+<<<<<<< HEAD
   public static class ProtectedHiveConf extends HiveConf {
 
     private static transient final Logger LOG = LoggerFactory.getLogger(ProtectedHiveConf.class);
@@ -111,6 +120,8 @@ public class DriverFactory {
 
   }
 
+=======
+>>>>>>> asf/master
   private static QueryState getNewQueryState(HiveConf conf) {
     // FIXME: isolate hiveConf used for a single query
     return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
@@ -124,8 +135,11 @@ public class DriverFactory {
     return newDriver(conf);
   }
 
+<<<<<<< HEAD
   public static void setFTsetMode(boolean b) {
     mmm = b;
   }
 
+=======
+>>>>>>> asf/master
 }
