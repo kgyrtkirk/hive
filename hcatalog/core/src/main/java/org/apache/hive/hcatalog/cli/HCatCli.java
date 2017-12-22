@@ -222,8 +222,9 @@ public class HCatCli {
   }
 
   private static void setConfProperties(HiveConf conf, Properties props) {
-    for (java.util.Map.Entry<Object, Object> e : props.entrySet())
+    for (java.util.Map.Entry<Object, Object> e : props.entrySet()) {
       conf.set((String) e.getKey(), (String) e.getValue());
+    }
   }
 
   private static int processLine(String line) {
@@ -286,7 +287,7 @@ public class HCatCli {
       return new DfsProcessor(ss.getConf()).run(cmd.substring(firstToken.length()).trim()).getResponseCode();
     }
 
-    HCatDriver driver = new HCatDriver();
+    HCatDriver driver = new HCatDriver(ss.getConf());
 
     int ret = driver.run(cmd).getResponseCode();
 

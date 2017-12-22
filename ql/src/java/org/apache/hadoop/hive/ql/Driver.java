@@ -367,8 +367,7 @@ public class Driver implements IDriver {
   }
 
   public Driver() {
-    this(getNewQueryState((SessionState.get() != null) ?
-        SessionState.get().getConf() : new HiveConf()), null);
+    this(getNewQueryState((SessionState.get() != null) ? SessionState.get().getConf() : new HiveConf()), null);
   }
 
   public Driver(HiveConf conf) {

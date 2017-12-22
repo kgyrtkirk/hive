@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * Constructs a driver for ql clients
@@ -50,13 +49,4 @@ public class DriverFactory {
     HiveConf isolatedConf = new HiveConf(conf);
     return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(isolatedConf).build();
   }
-
-  // FIXME: remove this method ; and use the conf at the callsite...
-  @Deprecated
-  public static IDriver newDriver() {
-    // only CLIDriver enter at this point
-    HiveConf conf = (SessionState.get() != null) ? SessionState.get().getConf() : new HiveConf();
-    return newDriver(conf);
-  }
-
 }
