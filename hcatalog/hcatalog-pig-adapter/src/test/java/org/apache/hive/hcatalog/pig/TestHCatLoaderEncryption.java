@@ -106,8 +106,6 @@ public class TestHCatLoaderEncryption {
 
   @Parameterized.Parameters
   public static Collection<Object[]> generateParameters() {
-    DriverFactory.setFTsetMode(false);
-
     return StorageFormats.names();
   }
 
