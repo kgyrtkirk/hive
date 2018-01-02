@@ -46,7 +46,6 @@ public class DriverFactory {
   }
 
   private static QueryState getNewQueryState(HiveConf conf) {
-    HiveConf isolatedConf = new HiveConf(conf);
-    return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(isolatedConf).build();
+    return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
   }
 }

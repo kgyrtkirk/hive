@@ -182,14 +182,13 @@ public class QueryState {
      * @return The generated QueryState object
      */
     public QueryState build() {
-      HiveConf queryConf = hiveConf;
+      HiveConf queryConf;
 
-      if (queryConf == null) {
-        // Generate a new conf if necessary
+      // isolate query conf
+      if (hiveConf == null) {
         queryConf = new HiveConf();
-      } else if (runAsync || (confOverlay != null && !confOverlay.isEmpty())) {
-        // Detach the original conf if necessary
-        queryConf = new HiveConf(queryConf);
+      } else {
+        queryConf = new HiveConf(hiveConf);
       }
 
       // Set the specific parameters if needed
@@ -206,7 +205,13 @@ public class QueryState {
 
       // Generate the new queryId if needed
       if (generateNewQueryId) {
-        queryConf.setVar(HiveConf.ConfVars.HIVEQUERYID, QueryPlan.makeQueryId());
+        String queryId = QueryPlan.makeQueryId();
+        queryConf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+        // FIXME: druid storage handler relies on query.id to maintain some staging directories
+        // expose queryid to session level
+        if (hiveConf != null) {
+          hiveConf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+        }
       }
 
       QueryState queryState = new QueryState(queryConf);
