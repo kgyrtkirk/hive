@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +33,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
@@ -74,7 +75,7 @@ public class TestHiveAuthorizerShowFilters {
    * filterArguments
    */
   protected static class MockedHiveAuthorizerFactory implements HiveAuthorizerFactory {
-    protected class AuthorizerWithFilterCmdImpl implements HiveAuthorizer {
+    protected abstract class AuthorizerWithFilterCmdImpl implements HiveAuthorizer {
       @Override
       public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs,
           HiveAuthzContext context) throws HiveAuthzPluginException, HiveAccessControlException {
@@ -88,114 +89,23 @@ public class TestHiveAuthorizerShowFilters {
         }
         return filteredResults;
       }
-
-      @Override
-      public VERSION getVersion() {
-        return null;
-      }
-
-      @Override
-      public void grantPrivileges(List<HivePrincipal> hivePrincipals, List<HivePrivilege> hivePrivileges,
-          HivePrivilegeObject hivePrivObject, HivePrincipal grantorPrincipal, boolean grantOption)
-          throws HiveAuthzPluginException, HiveAccessControlException {
-        return;
-      }
-
-      @Override
-      public void revokePrivileges(List<HivePrincipal> hivePrincipals, List<HivePrivilege> hivePrivileges,
-          HivePrivilegeObject hivePrivObject, HivePrincipal grantorPrincipal, boolean grantOption)
-          throws HiveAuthzPluginException, HiveAccessControlException {
-        return;
-      }
-
-      @Override
-      public void createRole(String roleName, HivePrincipal adminGrantor) throws HiveAuthzPluginException, HiveAccessControlException {
-        return;
-      }
-
-      @Override
-      public void dropRole(String roleName) throws HiveAuthzPluginException, HiveAccessControlException {
-        return;
-      }
-
-      @Override
-      public List<HiveRoleGrant> getPrincipalGrantInfoForRole(String roleName) throws HiveAuthzPluginException, HiveAccessControlException {
-        return Collections.emptyList();
-      }
-
-      @Override
-      public List<HiveRoleGrant> getRoleGrantInfoForPrincipal(HivePrincipal principal)
-          throws HiveAuthzPluginException, HiveAccessControlException {
-        return Collections.emptyList();
-      }
-
-      @Override
-      public void grantRole(List<HivePrincipal> hivePrincipals, List<String> roles, boolean grantOption, HivePrincipal grantorPrinc)
-          throws HiveAuthzPluginException, HiveAccessControlException {
-        return;
-      }
-
-      @Override
-      public void revokeRole(List<HivePrincipal> hivePrincipals, List<String> roles, boolean grantOption, HivePrincipal grantorPrinc)
-          throws HiveAuthzPluginException, HiveAccessControlException {
-        return;
-      }
-
-      @Override
-      public void checkPrivileges(HiveOperationType hiveOpType, List<HivePrivilegeObject> inputsHObjs,
-          List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context) throws HiveAuthzPluginException, HiveAccessControlException {
-        return;
-      }
-
-      @Override
-      public List<String> getAllRoles() throws HiveAuthzPluginException, HiveAccessControlException {
-        return Collections.emptyList();
-      }
-
-      @Override
-      public List<HivePrivilegeInfo> showPrivileges(HivePrincipal principal, HivePrivilegeObject privObj)
-          throws HiveAuthzPluginException, HiveAccessControlException {
-        return Collections.emptyList();
-      }
-
-      @Override
-      public void setCurrentRole(String roleName) throws HiveAccessControlException, HiveAuthzPluginException {
-        return;
-      }
-
-      @Override
-      public List<String> getCurrentRoleNames() throws HiveAuthzPluginException {
-        return Collections.emptyList();
-      }
-
-      @Override
-      public void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException {
-      }
-
-      @Override
-      public Object getHiveAuthorizationTranslator() throws HiveAuthzPluginException {
-        return null;
-      }
-
-      @Override
-      public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(HiveAuthzContext context, List<HivePrivilegeObject> privObjs)
-          throws SemanticException {
-        return Collections.emptyList();
-      }
-
-      @Override
-      public boolean needTransform() {
-        return false;
-      }
     }
-
+    
     @Override
     public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
         HiveConf conf, HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) {
       Mockito.validateMockitoUsage();
 
-      mockedAuthorizer = new AuthorizerWithFilterCmdImpl();
+      mockedAuthorizer = Mockito.mock(AuthorizerWithFilterCmdImpl.class, Mockito.withSettings()
+          .verboseLogging());
 
+      try {
+        Mockito.when(
+            mockedAuthorizer.filterListCmdObjects((List<HivePrivilegeObject>) any(),
+                (HiveAuthzContext) any())).thenCallRealMethod();
+      } catch (Exception e) {
+        org.junit.Assert.fail("Caught exception " + e);
+      }
       return mockedAuthorizer;
     }
 
@@ -213,8 +123,7 @@ public class TestHiveAuthorizerShowFilters {
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     UtilsForTest.setNewDerbyDbLocation(conf, TestHiveAuthorizerShowFilters.class.getSimpleName());
 
-    SessionState ss = SessionState.start(conf);
-    ss.applyAuthorizationPolicy();
+    SessionState.start(conf);
     driver = DriverFactory.newDriver(conf);
     runCmd("create table " + tableName1
         + " (i int, j int, k string) partitioned by (city string, `date` string) ");
