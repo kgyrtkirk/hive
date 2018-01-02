@@ -36,7 +36,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
@@ -1171,7 +1170,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * in order to give them a chance to compute any additional plan information
    * needed.  Does nothing by default.
    */
-  public void augmentPlan(HiveConf conf) {
+  public void augmentPlan() {
   }
 
   public ExecMapperContext getExecContext() {

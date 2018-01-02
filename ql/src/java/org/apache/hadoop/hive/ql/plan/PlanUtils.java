@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -61,6 +62,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
@@ -303,7 +305,8 @@ public final class PlanUtils {
  /**
    * Generate a table descriptor from a createTableDesc.
    */
-  public static TableDesc getTableDesc(CreateTableDesc crtTblDesc, String cols, String colTypes, Configuration conf) {
+  public static TableDesc getTableDesc(CreateTableDesc crtTblDesc, String cols,
+      String colTypes) {
 
     TableDesc ret;
 
@@ -312,7 +315,7 @@ public final class PlanUtils {
       HiveStorageHandler storageHandler = null;
       if (crtTblDesc.getStorageHandler() != null) {
         storageHandler = HiveUtils.getStorageHandler(
-            conf, crtTblDesc.getStorageHandler());
+                SessionState.getSessionConf(), crtTblDesc.getStorageHandler());
       }
 
       Class<? extends Deserializer> serdeClass = getDefaultSerDe();
@@ -882,10 +885,9 @@ public final class PlanUtils {
    * and invokes {@link HiveStorageHandler#configureInputJobProperties(TableDesc, java.util.Map)}.
    *
    * @param tableDesc table descriptor
-   * @param conf
    */
-  public static void configureInputJobPropertiesForStorageHandler(TableDesc tableDesc, Configuration conf) {
-    configureJobPropertiesForStorageHandler(true, tableDesc, conf);
+  public static void configureInputJobPropertiesForStorageHandler(TableDesc tableDesc) {
+      configureJobPropertiesForStorageHandler(true,tableDesc);
   }
 
   /**
@@ -893,22 +895,24 @@ public final class PlanUtils {
    * and invokes {@link HiveStorageHandler#configureOutputJobProperties(TableDesc, java.util.Map)}.
    *
    * @param tableDesc table descriptor
-   * @param  conf
    */
-  public static void configureOutputJobPropertiesForStorageHandler(TableDesc tableDesc, Configuration conf) {
-    configureJobPropertiesForStorageHandler(false, tableDesc, conf);
+  public static void configureOutputJobPropertiesForStorageHandler(TableDesc tableDesc) {
+      configureJobPropertiesForStorageHandler(false,tableDesc);
   }
 
-  private static void configureJobPropertiesForStorageHandler(boolean input, TableDesc tableDesc, Configuration conf) {
+  private static void configureJobPropertiesForStorageHandler(boolean input,
+    TableDesc tableDesc) {
 
     if (tableDesc == null) {
       return;
     }
 
     try {
-      String className =
-          tableDesc.getProperties().getProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
-      HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(conf, className);
+      HiveStorageHandler storageHandler =
+        HiveUtils.getStorageHandler(
+          Hive.get().getConf(),
+          tableDesc.getProperties().getProperty(
+            org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE));
       if (storageHandler != null) {
         Map<String, String> jobProperties = new LinkedHashMap<String, String>();
         Map<String, String> jobSecrets = new LinkedHashMap<String, String>();

@@ -381,9 +381,7 @@ public class Table implements Serializable {
       if (spec.containsKey(fs.getName())) {
         ++columnsFound;
       }
-      if (columnsFound == spec.size()) {
-        break;
-      }
+      if (columnsFound == spec.size()) break;
     }
     if (columnsFound < spec.size()) {
       throw new ValidationFailureSemanticException("Partition spec " + spec + " contains non-partition columns");
@@ -974,20 +972,13 @@ public class Table implements Serializable {
 
   public static boolean shouldStoreFieldsInMetastore(
       HiveConf conf, String serdeLib, Map<String, String> tableParams) {
-    if (hasMetastoreBasedSchema(conf, serdeLib)) {
-      return true;
-    }
-    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_LEGACY_SCHEMA_FOR_ALL_SERDES)) {
-      return true;
-    }
+    if (hasMetastoreBasedSchema(conf, serdeLib))  return true;
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_LEGACY_SCHEMA_FOR_ALL_SERDES)) return true;
     // Table may or may not be using metastore. Only the SerDe can tell us.
     AbstractSerDe deserializer = null;
     try {
       Class<?> clazz = conf.getClassByName(serdeLib);
-      if (!AbstractSerDe.class.isAssignableFrom(clazz))
-       {
-        return true; // The default.
-      }
+      if (!AbstractSerDe.class.isAssignableFrom(clazz)) return true; // The default.
       deserializer = ReflectionUtil.newInstance(
           conf.getClassByName(serdeLib).asSubclass(AbstractSerDe.class), conf);
     } catch (Exception ex) {

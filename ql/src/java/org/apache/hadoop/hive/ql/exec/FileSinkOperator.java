@@ -22,6 +22,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -83,10 +84,24 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
 
 /**
  * File Sink operator implementation.
@@ -349,9 +364,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           // affects some less obscure scenario.
           try {
             FileSystem fpfs = finalPath.getFileSystem(hconf);
-            if (fpfs.exists(finalPath)) {
-              throw new RuntimeException(finalPath + " already exists");
-            }
+            if (fpfs.exists(finalPath)) throw new RuntimeException(finalPath + " already exists");
           } catch (IOException e) {
             throw new RuntimeException(e);
           }
@@ -1383,8 +1396,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   @Override
-  public void augmentPlan(HiveConf conf) {
-    PlanUtils.configureOutputJobPropertiesForStorageHandler(getConf().getTableInfo(), conf);
+  public void augmentPlan() {
+    PlanUtils.configureOutputJobPropertiesForStorageHandler(
+        getConf().getTableInfo());
   }
 
   public void checkOutputSpecs(FileSystem ignored, JobConf job) throws IOException {

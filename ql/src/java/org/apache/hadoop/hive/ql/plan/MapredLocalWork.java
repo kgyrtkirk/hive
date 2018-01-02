@@ -26,10 +26,8 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -138,9 +136,9 @@ public class MapredLocalWork implements Serializable {
     if (bucketMapjoinContext != null) {
       bucketMapjoinContext.deriveBucketMapJoinMapping();
     }
-    for (Entry<String, FetchWork> entry : aliasToFetchWork.entrySet()) {
-      Configuration conf = aliasToWork.get(entry.getKey()).getConfiguration();
-      PlanUtils.configureInputJobPropertiesForStorageHandler(entry.getValue().getTblDesc(), conf);
+    for (FetchWork fetchWork : aliasToFetchWork.values()) {
+      PlanUtils.configureInputJobPropertiesForStorageHandler(
+        fetchWork.getTblDesc());
     }
   }
 

@@ -23,10 +23,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -300,13 +296,9 @@ public final class HiveUtils {
   public static HiveStorageHandler getStorageHandler(
     Configuration conf, String className) throws HiveException {
 
-
     if (className == null) {
       return null;
     }
-
-    Preconditions.checkNotNull(Strings.emptyToNull(HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID)), HiveConf.ConfVars.HIVEQUERYID);
-
     try {
       Class<? extends HiveStorageHandler> handlerClass =
         (Class<? extends HiveStorageHandler>)

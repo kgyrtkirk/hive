@@ -3032,7 +3032,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       RowResolver rr) {
     OpParseContext ctx = new OpParseContext(rr);
     opParseCtx.put(op, ctx);
-    op.augmentPlan(conf);
+    op.augmentPlan();
     return op;
   }
 
@@ -7081,7 +7081,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           table_desc = PlanUtils.getDefaultTableDesc(qb.getDirectoryDesc(), cols, colTypes);
         }
       } else {
-        table_desc = PlanUtils.getTableDesc(tblDesc, cols, colTypes, conf);
+        table_desc = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
       }
 
       if (!outputs.add(new WriteEntity(dest_path, !isDfsDir, isDestTempFile))) {
@@ -7261,7 +7261,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         //INSERT [OVERWRITE] path
         String destTableFullName = dest_tab.getCompleteName().replace('@', '.');
         Map<String, ASTNode> iowMap = qb.getParseInfo().getInsertOverwriteTables();
-        if (iowMap.containsKey(destTableFullName) &&
+        if (iowMap.containsKey(destTableFullName) && 
           qb.getParseInfo().isDestToOpTypeInsertOverwrite(dest)) {
           isInsertOverwrite = true;
         }
