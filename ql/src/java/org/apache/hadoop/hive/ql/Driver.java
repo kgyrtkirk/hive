@@ -651,6 +651,8 @@ public class Driver implements IDriver {
         queryState.getHiveOperation(), schema);
 
       conf.setQueryString(queryStr);
+      // FIXME: sideeffect will leave the last query set at the session level
+      SessionState.get().getConf().setQueryString(queryStr);
 
       conf.set("mapreduce.workflow.id", "hive_" + queryId);
       conf.set("mapreduce.workflow.name", queryStr);
