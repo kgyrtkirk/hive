@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
@@ -469,7 +468,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     try {
       Utilities.copyTablePropertiesToConf(table, conf);
       if(tableScan != null) {
-        AcidUtils.setTransactionalTableScan(conf, tableScan.getConf().isAcidTable());
+        AcidUtils.setAcidTableScan(conf, tableScan.getConf().isAcidTable());
       }
     } catch (HiveException e) {
       throw new IOException(e);
@@ -852,7 +851,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         // push down filters
         pushFilters(jobConf, ts);
 
-        AcidUtils.setTransactionalTableScan(job, ts.getConf().isAcidTable());
+        AcidUtils.setAcidTableScan(job, ts.getConf().isAcidTable());
         AcidUtils.setAcidOperationalProperties(job, ts.getConf().getAcidOperationalProperties());
       }
     }

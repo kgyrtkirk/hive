@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -55,13 +56,10 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
   String getTestDataDir() {
     return TEST_DATA_DIR;
   }
-  @Override
-  @Before
-  public void setUp() throws Exception {
-    setUpInternal();
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
-  }
 
+  private boolean shouldVectorize() {
+    return hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
+  }
   /**
    * Tests that Acid can work with un-bucketed tables.
    */
@@ -70,7 +68,7 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
     int[][] sourceVals1 = {{0,0,0},{3,3,3}};
     int[][] sourceVals2 = {{1,1,1},{2,2,2}};
     runStatementOnDriver("drop table if exists tmp");
-    runStatementOnDriver("create table tmp (c1 integer, c2 integer, c3 integer) stored as orc");
+    runStatementOnDriver("create table tmp (c1 integer, c2 integer, c3 integer) stored as orc tblproperties('transactional'='false')");
     runStatementOnDriver("insert into tmp " + makeValuesClause(sourceVals1));
     runStatementOnDriver("insert into tmp " + makeValuesClause(sourceVals2));
     runStatementOnDriver("drop table if exists nobuckets");
@@ -190,7 +188,7 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
 
     runStatementOnDriver("insert into " + Table.ACIDTBL + makeValuesClause(values));
     runStatementOnDriver("create table myctas2 stored as ORC TBLPROPERTIES ('transactional" +
-      "'='true', 'transactional_properties'='default') as select a, b from " + Table.ACIDTBL);
+      "'='true', 'transactional_properties'='default') as select a, b from " + Table.ACIDTBL);//todo: try this with acid default - it seem makeing table acid in listener is too late
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from myctas2 order by ROW__ID");
     String expected2[][] = {
       {"{\"transactionid\":17,\"bucketid\":536870912,\"rowid\":0}\t3\t4", "warehouse/myctas2/delta_0000017_0000017_0000/bucket_00000"},
@@ -351,9 +349,9 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     Assert.assertEquals(2, BucketCodec.determineVersion(537001984).decodeWriterId(537001984));
     Assert.assertEquals(1, BucketCodec.determineVersion(536936448).decodeWriterId(536936448));
 
-    assertVectorized(true, "update T set b = 88 where b = 80");
+    assertVectorized(shouldVectorize(), "update T set b = 88 where b = 80");
     runStatementOnDriver("update T set b = 88 where b = 80");
-    assertVectorized(true, "delete from T where b = 8");
+    assertVectorized(shouldVectorize(), "delete from T where b = 8");
     runStatementOnDriver("delete from T where b = 8");
     String expected3[][] = {
       {"{\"transactionid\":0,\"bucketid\":537001984,\"rowid\":0}\t1\t2",  "warehouse/t/000002_0"},
@@ -534,7 +532,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     //this enables vectorization of ROW__ID
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ROW_IDENTIFIER_ENABLED, true);//HIVE-12631
     runStatementOnDriver("drop table if exists T");
-    runStatementOnDriver("create table T(a int, b int) stored as orc");
+    runStatementOnDriver("create table T(a int, b int) stored as orc tblproperties('transactional'='false')");
     int[][] values = {{1,2},{2,4},{5,6},{6,8},{9,10}};
     runStatementOnDriver("insert into T(a, b) " + makeValuesClause(values));
     //, 'transactional_properties'='default'
@@ -550,7 +548,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     checkExpected(rs, expected, "After conversion");
     Assert.assertEquals(Integer.toString(6), rs.get(0));
     Assert.assertEquals(Integer.toString(9), rs.get(1));
-    assertVectorized(true, query);
+    assertVectorized(shouldVectorize(), query);
 
     //why isn't PPD working.... - it is working but storage layer doesn't do row level filtering; only row group level
     //this uses VectorizedOrcAcidRowBatchReader
@@ -561,7 +559,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
       {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}", "9"}
     };
     checkExpected(rs, expected1, "After conversion with VC1");
-    assertVectorized(true, query);
+    assertVectorized(shouldVectorize(), query);
 
     //this uses VectorizedOrcAcidRowBatchReader
     query = "select ROW__ID, a from T where b > 0 order by a";
@@ -574,7 +572,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
       {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}", "9"}
     };
     checkExpected(rs, expected2, "After conversion with VC2");
-    assertVectorized(true, query);
+    assertVectorized(shouldVectorize(), query);
 
     //doesn't vectorize (uses neither of the Vectorzied Acid readers)
     query = "select ROW__ID, a, INPUT__FILE__NAME from T where b > 6 order by a";
@@ -601,7 +599,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
       {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}","10"}
     };
     checkExpected(rs, expected4, "After conversion with VC4");
-    assertVectorized(true, query);
+    assertVectorized(shouldVectorize(), query);
 
     runStatementOnDriver("alter table T compact 'major'");
     TestTxnCommands2.runWorker(hiveConf);
@@ -698,6 +696,22 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     //now check that stats were updated
     map = hms.getPartitionColumnStatistics("default","T", partNames, colNames);
     Assert.assertEquals("", 5, map.get(partNames.get(0)).get(0).getStatsData().getLongStats().getHighValue());
+  }
+  @Ignore("enable after HIVE-18294")
+  @Test
+  public void testDefault() throws Exception {
+    runStatementOnDriver("drop table if exists T");
+    runStatementOnDriver("create table T (a int, b int) stored as orc");
+    runStatementOnDriver("insert into T values(1,2),(3,4)");
+    String query = "select ROW__ID, a, b, INPUT__FILE__NAME from T order by a, b";
+    List<String> rs = runStatementOnDriver(query);
+    String[][] expected = {
+      //this proves data is written in Acid layout so T was made Acid
+      {"{\"transactionid\":15,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/delta_0000015_0000015_0000/bucket_00000"},
+      {"{\"transactionid\":15,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/delta_0000015_0000015_0000/bucket_00000"}
+    };
+    checkExpected(rs, expected, "insert data");
+
   }
 }
 

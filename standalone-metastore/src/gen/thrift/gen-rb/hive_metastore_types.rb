@@ -133,6 +133,13 @@ module WMResourcePlanStatus
   VALID_VALUES = Set.new([ACTIVE, ENABLED, DISABLED]).freeze
 end
 
+module WMPoolSchedulingPolicy
+  FAIR = 1
+  FIFO = 2
+  VALUE_MAP = {1 => "FAIR", 2 => "FIFO"}
+  VALID_VALUES = Set.new([FAIR, FIFO]).freeze
+end
+
 class Version
   include ::Thrift::Struct, ::Thrift::Struct_Union
   VERSION = 1
@@ -3311,12 +3318,14 @@ class WMTrigger
   TRIGGERNAME = 2
   TRIGGEREXPRESSION = 3
   ACTIONEXPRESSION = 4
+  ISINUNMANAGED = 5
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName'},
     TRIGGERNAME => {:type => ::Thrift::Types::STRING, :name => 'triggerName'},
     TRIGGEREXPRESSION => {:type => ::Thrift::Types::STRING, :name => 'triggerExpression', :optional => true},
-    ACTIONEXPRESSION => {:type => ::Thrift::Types::STRING, :name => 'actionExpression', :optional => true}
+    ACTIONEXPRESSION => {:type => ::Thrift::Types::STRING, :name => 'actionExpression', :optional => true},
+    ISINUNMANAGED => {:type => ::Thrift::Types::BOOL, :name => 'isInUnmanaged', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3405,9 +3414,11 @@ end
 class WMCreateResourcePlanRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   RESOURCEPLAN = 1
+  COPYFROM = 2
 
   FIELDS = {
-    RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMResourcePlan, :optional => true}
+    RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMResourcePlan, :optional => true},
+    COPYFROM => {:type => ::Thrift::Types::STRING, :name => 'copyFrom', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3532,11 +3543,15 @@ class WMAlterResourcePlanRequest
   RESOURCEPLANNAME = 1
   RESOURCEPLAN = 2
   ISENABLEANDACTIVATE = 3
+  ISFORCEDEACTIVATE = 4
+  ISREPLACE = 5
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true},
     RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMResourcePlan, :optional => true},
-    ISENABLEANDACTIVATE => {:type => ::Thrift::Types::BOOL, :name => 'isEnableAndActivate', :optional => true}
+    ISENABLEANDACTIVATE => {:type => ::Thrift::Types::BOOL, :name => 'isEnableAndActivate', :optional => true},
+    ISFORCEDEACTIVATE => {:type => ::Thrift::Types::BOOL, :name => 'isForceDeactivate', :optional => true},
+    ISREPLACE => {:type => ::Thrift::Types::BOOL, :name => 'isReplace', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3581,10 +3596,10 @@ end
 
 class WMValidateResourcePlanResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  ISVALID = 1
+  ERRORS = 1
 
   FIELDS = {
-    ISVALID => {:type => ::Thrift::Types::BOOL, :name => 'isValid', :optional => true}
+    ERRORS => {:type => ::Thrift::Types::LIST, :name => 'errors', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

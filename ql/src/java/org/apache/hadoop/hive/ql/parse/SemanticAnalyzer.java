@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -6717,7 +6716,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         nullOrder.append(sortOrder == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC ? 'a' : 'z');
       }
       input = genReduceSinkPlan(input, partnCols, sortCols, order.toString(), nullOrder.toString(),
-              maxReducers, (AcidUtils.isFullAcidTable(dest_tab) ?
+              maxReducers, (AcidUtils.isAcidTable(dest_tab) ?
               getAcidType(table_desc.getOutputFileFormatClass(), dest) : AcidUtils.Operation.NOT_ACID));
       reduceSinkOperatorsAddedByEnforceBucketingSorting.add((ReduceSinkOperator)input.getParentOperators().get(0));
       ctx.setMultiFileSpray(multiFileSpray);
@@ -6782,8 +6781,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Integer dest_type = qbm.getDestTypeForAlias(dest);
 
     Table dest_tab = null; // destination table if any
-    boolean destTableIsAcid = false;     // true for full ACID table and MM table
-    boolean destTableIsFullAcid = false; // should the destination table be written to using ACID
+    boolean destTableIsTransactional;     // true for full ACID table and MM table
+    boolean destTableIsFullAcid; // should the destination table be written to using ACID
     boolean destTableIsTemporary = false;
     boolean destTableIsMaterialization = false;
     Partition dest_part = null;// destination partition if any
@@ -6804,8 +6803,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case QBMetaData.DEST_TABLE: {
 
       dest_tab = qbm.getDestTableForAlias(dest);
-      destTableIsAcid = AcidUtils.isAcidTable(dest_tab);
-      destTableIsFullAcid = AcidUtils.isFullAcidTable(dest_tab);
+      destTableIsTransactional = AcidUtils.isTransactionalTable(dest_tab);
+      destTableIsFullAcid = AcidUtils.isAcidTable(dest_tab);
       destTableIsTemporary = dest_tab.isTemporary();
 
       // Is the user trying to insert into a external tables
@@ -6815,6 +6814,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       dest_path = dest_tab.getPath();
 
       checkImmutableTable(qb, dest_tab, dest_path, false);
+
+      // check for partition
+      List<FieldSchema> parts = dest_tab.getPartitionKeys();
+      if (parts != null && parts.size() > 0) { // table is partitioned
+        if (partSpec == null || partSpec.size() == 0) { // user did NOT specify partition
+          throw new SemanticException(generateErrorMessage(
+              qb.getParseInfo().getDestForClause(dest),
+              ErrorMsg.NEED_PARTITION_ERROR.getMsg()));
+        }
+        dpCtx = qbm.getDPCtx(dest);
+        if (dpCtx == null) {
+          dest_tab.validatePartColumnNames(partSpec, false);
+          dpCtx = new DynamicPartitionCtx(dest_tab, partSpec,
+              conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
+              conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
+          qbm.setDPCtx(dest, dpCtx);
+        }
+      }
 
       // Check for dynamic partitions.
       dpCtx = checkDynPart(qb, qbm, dest_tab, partSpec, dest);
@@ -6857,10 +6874,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
         if (destTableIsFullAcid) {
           acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
+          //todo: should this be done for MM?  is it ok to use CombineHiveInputFormat with MM
           checkAcidConstraints(qb, table_desc, dest_tab);
-        }
-        if (AcidUtils.isInsertOnlyTable(table_desc.getProperties())) {
-          acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
         }
         if (isMmTable) {
           txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
@@ -6874,7 +6889,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
         // deltas and base and leave them up to the cleaner to clean up
         LoadFileType loadType = (!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
-                dest_tab.getTableName()) && !destTableIsAcid)
+                dest_tab.getTableName()) && !destTableIsTransactional)
                 ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING;
         ltd.setLoadFileType(loadType);
         ltd.setLbCtx(lbCtx);
@@ -6898,8 +6913,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       dest_part = qbm.getDestPartitionForAlias(dest);
       dest_tab = dest_part.getTable();
-      destTableIsAcid = AcidUtils.isAcidTable(dest_tab);
-      destTableIsFullAcid = AcidUtils.isFullAcidTable(dest_tab);
+      destTableIsTransactional = AcidUtils.isTransactionalTable(dest_tab);
+      destTableIsFullAcid = AcidUtils.isAcidTable(dest_tab);
 
       checkExternalTable(dest_tab);
 
@@ -6934,10 +6949,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
       if (destTableIsFullAcid) {
         acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
+        //todo: should this be done for MM?  is it ok to use CombineHiveInputFormat with MM?
         checkAcidConstraints(qb, table_desc, dest_tab);
-      }
-      if (AcidUtils.isInsertOnlyTable(dest_part.getTable().getParameters())) {
-        acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
       }
       if (isMmTable) {
         txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
@@ -6949,7 +6962,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
       // deltas and base and leave them up to the cleaner to clean up
       LoadFileType loadType = (!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
-              dest_tab.getTableName()) && !destTableIsAcid) // // Both Full-acid and MM tables are excluded.
+              dest_tab.getTableName()) && !destTableIsTransactional) // // Both Full-acid and MM tables are excluded.
               ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING;
       ltd.setLoadFileType(loadType);
       ltd.setLbCtx(lbCtx);
@@ -7022,8 +7035,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         viewDesc.setSchema(new ArrayList<FieldSchema>(field_schemas));
       }
 
-      destTableIsAcid = tblDesc != null && AcidUtils.isAcidTable(tblDesc);
-      destTableIsFullAcid = tblDesc != null && AcidUtils.isFullAcidTable(tblDesc);
+      destTableIsTransactional = tblDesc != null && AcidUtils.isTransactionalTable(tblDesc);
+      destTableIsFullAcid = tblDesc != null && AcidUtils.isAcidTable(tblDesc);
 
       boolean isDestTempFile = true;
       if (!ctx.isMRTmpFileURI(dest_path.toUri().toString())) {
@@ -7036,7 +7049,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       boolean isDfsDir = (dest_type.intValue() == QBMetaData.DEST_DFS_FILE);
       // Create LFD even for MM CTAS - it's a no-op move, but it still seems to be used for stats.
       loadFileWork.add(new LoadFileDesc(tblDesc, viewDesc, queryTmpdir, dest_path, isDfsDir, cols,
-          colTypes, destTableIsAcid ? Operation.INSERT : Operation.NOT_ACID, isMmCtas));
+          colTypes,
+        destTableIsFullAcid ?//there is a change here - prev version had 'transadtional', one beofre' acid'
+            Operation.INSERT : Operation.NOT_ACID,
+          isMmCtas));
       if (tblDesc == null) {
         if (viewDesc != null) {
           table_desc = PlanUtils.getTableDesc(viewDesc, cols, colTypes);
@@ -7123,7 +7139,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     FileSinkDesc fileSinkDesc = createFileSinkDesc(dest, table_desc, dest_part,
-        dest_path, currentTableId, destTableIsAcid, destTableIsTemporary,
+        dest_path, currentTableId, destTableIsFullAcid, destTableIsTemporary,//this was 1/4 acid
         destTableIsMaterialization, queryTmpdir, rsCtx, dpCtx, lbCtx, fsRS,
         canBeMerged, dest_tab, txnId, isMmCtas, dest_type, qb);
     if (isMmCtas) {
@@ -7319,8 +7335,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void handleLineage(LoadTableDesc ltd, Operator output)
       throws SemanticException {
-    if (ltd != null && SessionState.get() != null) {
-      SessionState.get().getLineageState()
+    if (ltd != null) {
+      queryState.getLineageState()
           .mapDirToOp(ltd.getSourcePath(), output);
     } else if ( queryState.getCommandType().equals(HiveOperation.CREATETABLE_AS_SELECT.getOperationName())) {
 
@@ -7333,7 +7349,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(e);
       }
 
-      SessionState.get().getLineageState()
+      queryState.getLineageState()
               .mapDirToOp(tlocation, output);
     }
   }
@@ -7402,7 +7418,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     try {
       FileSystem fs = dest_path.getFileSystem(conf);
-      if (! MetaStoreUtils.isDirEmpty(fs,dest_path)){
+      if (! org.apache.hadoop.hive.metastore.utils.FileUtils.isDirEmpty(fs,dest_path)){
         LOG.warn("Attempted write into an immutable table : "
             + dest_tab.getTableName() + " : " + dest_path);
         throw new SemanticException(
@@ -7478,11 +7494,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return colName;
   }
 
-  // Check constraints on acid tables.  This includes
-  // * Check that the table is bucketed
-  // * Check that the table is not sorted
-  // This method assumes you have already decided that this is an Acid write.  Don't call it if
-  // that isn't true.
   private void checkAcidConstraints(QB qb, TableDesc tableDesc,
                                     Table table) throws SemanticException {
     /*
@@ -7495,10 +7506,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     backwards incompatible.
     */
     conf.set(AcidUtils.CONF_ACID_KEY, "true");
-
-    if (table.getSortCols() != null && table.getSortCols().size() > 0) {
-      throw new SemanticException(ErrorMsg.ACID_NO_SORTED_BUCKETS, table.getTableName());
-    }
   }
 
   /**
@@ -11668,7 +11675,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             pCtx = t.transform(pCtx);
           }
           // we just use view name as location.
-          SessionState.get().getLineageState()
+          queryState.getLineageState()
               .mapDirToOp(new Path(createVwDesc.getViewName()), sinkOp);
         }
         return;
@@ -12106,8 +12113,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (p != null) {
         tbl = p.getTable();
       }
-      if (tbl != null && (AcidUtils.isFullAcidTable(tbl) || AcidUtils.isInsertOnlyTable(tbl.getParameters()))) {
-        acidInQuery = true;
+      if (tbl != null && AcidUtils.isTransactionalTable(tbl)) {
+        transactionalInQuery = true;
         checkAcidTxnManager(tbl);
       }
     }
@@ -12169,8 +12176,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         tbl = writeEntity.getTable();
       }
 
-      if (tbl != null && (AcidUtils.isFullAcidTable(tbl) || AcidUtils.isInsertOnlyTable(tbl.getParameters()))) {
-        acidInQuery = true;
+      if (tbl != null && AcidUtils.isTransactionalTable(tbl)) {
+        transactionalInQuery = true;
         checkAcidTxnManager(tbl);
       }
     }
@@ -12713,7 +12720,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // We need to go lookup the table and get the select statement and then parse it.
       try {
         Table tab = getTableObjectByName(dbDotTable, true);
-        String viewText = tab.getViewOriginalText();
+        // We need to use the expanded text for the materialized view, as it will contain
+        // the qualified table aliases, etc.
+        String viewText = tab.getViewExpandedText();
         if (viewText.trim().isEmpty()) {
           throw new SemanticException(ErrorMsg.MATERIALIZED_VIEW_DEF_EMPTY);
         }
@@ -12841,7 +12850,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (int child_pos = 0; child_pos < child_count; ++child_pos) {
         ASTNode node = (ASTNode) next.getChild(child_pos);
         int type = node.getToken().getType();
-        if (type == HiveParser.TOK_SELECT) {
+        if (type == HiveParser.TOK_SELECT || type == HiveParser.TOK_SELECTDI) {
           selectNode = node;
         } else if (type == HiveParser.TOK_GROUPBY) {
           groupbyNode = node;
@@ -12877,7 +12886,49 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
 
-        // orderby position will be processed in genPlan
+        // replace each of the position alias in ORDERBY with the actual column name,
+        // if cbo is enabled, orderby position will be processed in genPlan
+        if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)
+            && orderbyNode != null) {
+          isAllCol = false;
+          for (int child_pos = 0; child_pos < selectNode.getChildCount(); ++child_pos) {
+            ASTNode node = (ASTNode) selectNode.getChild(child_pos).getChild(0);
+            if (node != null && node.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
+              isAllCol = true;
+            }
+          }
+          for (int child_pos = 0; child_pos < orderbyNode.getChildCount(); ++child_pos) {
+            ASTNode colNode = null;
+            ASTNode node = null;
+            if (orderbyNode.getChildCount() > 0) {
+              colNode = (ASTNode) orderbyNode.getChild(child_pos).getChild(0);
+              if (colNode.getChildCount() > 0) {
+                node = (ASTNode) colNode.getChild(0);
+              }
+            }
+            if (node != null && node.getToken().getType() == HiveParser.Number) {
+              if (isObyByPos) {
+                if (!isAllCol) {
+                  int pos = Integer.parseInt(node.getText());
+                  if (pos > 0 && pos <= selectExpCnt && selectNode.getChild(pos - 1).getChildCount() > 0) {
+                    colNode.setChild(0, selectNode.getChild(pos - 1).getChild(0));
+                  } else {
+                    throw new SemanticException(
+                      ErrorMsg.INVALID_POSITION_ALIAS_IN_ORDERBY.getMsg(
+                      "Position alias: " + pos + " does not exist\n" +
+                      "The Select List is indexed from 1 to " + selectExpCnt));
+                  }
+                } else {
+                  throw new SemanticException(
+                    ErrorMsg.NO_SUPPORTED_ORDERBY_ALLCOLREF_POS.getMsg());
+                }
+              } else { //if not using position alias and it is a number.
+                warn("Using constant number " + node.getText() +
+                  " in order by. If you try to use position alias when hive.orderby.position.alias is false, the position alias will be ignored.");
+              }
+            }
+          }
+        }
       }
 
       for (int i = next.getChildren().size() - 1; i >= 0; i--) {

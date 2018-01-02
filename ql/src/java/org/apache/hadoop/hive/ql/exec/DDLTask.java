@@ -21,13 +21,13 @@ package org.apache.hadoop.hive.ql.exec;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 
-import java.util.concurrent.ExecutionException;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 
+import java.util.concurrent.ExecutionException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
-
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
@@ -55,7 +55,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -72,7 +71,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -111,6 +110,7 @@ import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -686,7 +686,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int createResourcePlan(Hive db, CreateResourcePlanDesc createResourcePlanDesc)
       throws HiveException {
-    db.createResourcePlan(createResourcePlanDesc.getResourcePlan());
+    db.createResourcePlan(createResourcePlanDesc.getResourcePlan(),
+        createResourcePlanDesc.getCopyFromName());
     return 0;
   }
 
@@ -713,7 +714,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int alterResourcePlan(Hive db, AlterResourcePlanDesc desc) throws HiveException {
     if (desc.shouldValidate()) {
-      return db.validateResourcePlan(desc.getResourcePlanName()) ? 0 : 1;
+      List<String> errors = db.validateResourcePlan(desc.getResourcePlanName());
+      try (DataOutputStream out = getOutputStream(desc.getResFile())) {
+        formatter.showErrors(out, errors);
+      } catch (IOException e) {
+        throw new HiveException(e);
+      };
+      return 0;
     }
 
     WMResourcePlan resourcePlan = desc.getResourcePlan();
@@ -721,22 +728,37 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     final TezSessionPoolManager pm = TezSessionPoolManager.getInstance();
     boolean isActivate = false, isInTest = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
     if (resourcePlan.getStatus() != null) {
-      resourcePlan.setStatus(resourcePlan.getStatus());
       isActivate = resourcePlan.getStatus() == WMResourcePlanStatus.ACTIVE;
     }
 
-    WMFullResourcePlan appliedRp = db.alterResourcePlan(
-      desc.getResourcePlanName(), resourcePlan, desc.isEnableActivate());
-    if (!isActivate || (wm == null && isInTest) || (pm == null && isInTest)) {
-      return 0;
+    WMFullResourcePlan appliedRp = db.alterResourcePlan(desc.getResourcePlanName(), resourcePlan,
+        desc.isEnableActivate(), desc.isForceDeactivate(), desc.isReplace());
+    boolean mustHaveAppliedChange = isActivate || desc.isForceDeactivate();
+    if (!mustHaveAppliedChange && !desc.isReplace()) {
+      return 0; // The modification cannot affect an active plan.
     }
+    if (appliedRp == null && !mustHaveAppliedChange) return 0; // Replacing an inactive plan.
+    if (wm == null && isInTest) return 0; // Skip for tests if WM is not present.
 
-    if (appliedRp == null) {
-      throw new HiveException("Cannot get a resource plan to apply");
+    if ((appliedRp == null) != desc.isForceDeactivate()) {
+      throw new HiveException("Cannot get a resource plan to apply; or non-null plan on disable");
       // TODO: shut down HS2?
     }
-    final String name = resourcePlan.getName();
-    LOG.info("Activating a new resource plan " + name + ": " + appliedRp);
+    assert appliedRp == null || appliedRp.getPlan().getStatus() == WMResourcePlanStatus.ACTIVE;
+
+    handleWorkloadManagementServiceChange(wm, pm, isActivate, appliedRp);
+    return 0;
+  }
+
+  private int handleWorkloadManagementServiceChange(WorkloadManager wm, TezSessionPoolManager pm,
+      boolean isActivate, WMFullResourcePlan appliedRp) throws HiveException {
+    String name = null;
+    if (isActivate) {
+      name = appliedRp.getPlan().getName();
+      LOG.info("Activating a new resource plan " + name + ": " + appliedRp);
+    } else {
+      LOG.info("Disabling workload management");
+    }
     if (wm != null) {
       // Note: as per our current constraints, the behavior of two parallel activates is
       //       undefined; although only one will succeed and the other will receive exception.
@@ -747,20 +769,27 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         // Note: we may add an async option in future. For now, let the task fail for the user.
         future.get();
         isOk = true;
-        LOG.info("Successfully activated resource plan " + name);
-        return 0;
+        if (isActivate) {
+          LOG.info("Successfully activated resource plan " + name);
+        } else {
+          LOG.info("Successfully disabled workload management");
+        }
       } catch (InterruptedException | ExecutionException e) {
         throw new HiveException(e);
       } finally {
         if (!isOk) {
-          LOG.error("Failed to activate resource plan " + name);
+          if (isActivate) {
+            LOG.error("Failed to activate resource plan " + name);
+          } else {
+            LOG.error("Failed to disable workload management");
+          }
           // TODO: shut down HS2?
         }
       }
     }
     if (pm != null) {
       pm.updateTriggers(appliedRp);
-      LOG.info("Updated tez session pool manager with active resource plan: {}", appliedRp.getPlan().getName());
+      LOG.info("Updated tez session pool manager with active resource plan: {}", name);
     }
     return 0;
   }
@@ -811,8 +840,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int createOrDropTriggerToPoolMapping(Hive db, CreateOrDropTriggerToPoolMappingDesc desc)
       throws HiveException {
-    db.createOrDropTriggerToPoolMapping(desc.getResourcePlanName(), desc.getTriggerName(),
-        desc.getPoolPath(), desc.shouldDrop());
+    if (!desc.isUnmanagedPool()) {
+      db.createOrDropTriggerToPoolMapping(desc.getResourcePlanName(), desc.getTriggerName(),
+          desc.getPoolPath(), desc.shouldDrop());
+    } else {
+      assert desc.getPoolPath() == null;
+      WMTrigger trigger = new WMTrigger(desc.getResourcePlanName(), desc.getTriggerName());
+      // If we are dropping from unmanaged, unset the flag; and vice versa
+      trigger.setIsInUnmanaged(!desc.shouldDrop());
+      db.alterWMTrigger(trigger);
+    }
     return 0;
   }
 
@@ -1153,15 +1190,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
     }
 
+    Map<String, String> params = database.getParameters();
+    if ((null != alterDbDesc.getReplicationSpec())
+        && !alterDbDesc.getReplicationSpec().allowEventReplacementInto(params)) {
+      LOG.debug("DDLTask: Alter Database {} is skipped as database is newer than update", dbName);
+      return 0; // no replacement, the existing database state is newer than our update.
+    }
+
     switch (alterDbDesc.getAlterType()) {
     case ALTER_PROPERTY:
       Map<String, String> newParams = alterDbDesc.getDatabaseProperties();
-      Map<String, String> params = database.getParameters();
-
-      if (!alterDbDesc.getReplicationSpec().allowEventReplacementInto(params)) {
-        LOG.debug("DDLTask: Alter Database {} is skipped as database is newer than update", dbName);
-        return 0; // no replacement, the existing database state is newer than our update.
-      }
 
       // if both old and new params are not null, merge them
       if (params != null && newParams != null) {
@@ -2156,7 +2194,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int compact(Hive db, AlterTableSimpleDesc desc) throws HiveException {
 
     Table tbl = db.getTable(desc.getTableName());
-    if (!AcidUtils.isFullAcidTable(tbl) && !AcidUtils.isInsertOnlyTable(tbl.getParameters())) {
+    if (!AcidUtils.isAcidTable(tbl) && !AcidUtils.isInsertOnlyTable(tbl.getParameters())) {
       throw new HiveException(ErrorMsg.NONACID_COMPACTION_NOT_SUPPORTED, tbl.getDbName(),
           tbl.getTableName());
     }
@@ -4213,7 +4251,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           // the fields so that new SerDe could operate. Note that this may fail if some fields
           // from old SerDe are too long to be stored in metastore, but there's nothing we can do.
           try {
-            Deserializer oldSerde = MetaStoreUtils.getDeserializer(
+            Deserializer oldSerde = HiveMetaStoreUtils.getDeserializer(
                 conf, tbl.getTTable(), false, oldSerdeName);
             tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getTableName(), oldSerde));
           } catch (MetaException ex) {
@@ -4471,7 +4509,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
     // Don't set inputs and outputs - the locks have already been taken so it's pointless.
-    MoveWork mw = new MoveWork(null, null, null, null, false, SessionState.get().getLineageState());
+    MoveWork mw = new MoveWork(null, null, null, null, false);
     mw.setMultiFilesDesc(new LoadMultiFilesDesc(srcs, tgts, true, null, null));
     ImportCommitWork icw = new ImportCommitWork(tbl.getDbName(), tbl.getTableName(), mmWriteId, stmtId);
     Task<?> mv = TaskFactory.get(mw, conf), ic = TaskFactory.get(icw, conf);
@@ -4902,7 +4940,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         Table createdTable = db.getTable(tbl.getDbName(), tbl.getTableName());
         if (crtTbl.isCTAS()) {
           DataContainer dc = new DataContainer(createdTable.getTTable());
-          SessionState.get().getLineageState().setLineage(
+          queryState.getLineageState().setLineage(
                   createdTable.getPath(), dc, createdTable.getCols()
           );
         }
@@ -5130,7 +5168,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       //set lineage info
       DataContainer dc = new DataContainer(tbl.getTTable());
-      SessionState.get().getLineageState().setLineage(new Path(crtView.getViewName()), dc, tbl.getCols());
+      queryState.getLineageState().setLineage(new Path(crtView.getViewName()), dc, tbl.getCols());
     }
     return 0;
   }

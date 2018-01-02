@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
+import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -37,8 +38,13 @@ import org.apache.hive.hcatalog.common.HCatConstants;
 
 public class HCatDriver {
 
-  IDriver driver;
+  private IDriver driver;
 
+  public HCatDriver() {
+    driver = DriverFactory.newDriver();
+  }
+
+  @Override
   public CommandProcessorResponse run(String command) {
 
     CommandProcessorResponse cpr = null;

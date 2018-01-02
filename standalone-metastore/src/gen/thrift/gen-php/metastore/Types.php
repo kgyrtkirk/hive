@@ -187,6 +187,15 @@ final class WMResourcePlanStatus {
   );
 }
 
+final class WMPoolSchedulingPolicy {
+  const FAIR = 1;
+  const FIFO = 2;
+  static public $__names = array(
+    1 => 'FAIR',
+    2 => 'FIFO',
+  );
+}
+
 class Version {
   static $_TSPEC;
 
@@ -20773,6 +20782,10 @@ class WMTrigger {
    * @var string
    */
   public $actionExpression = null;
+  /**
+   * @var bool
+   */
+  public $isInUnmanaged = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -20793,6 +20806,10 @@ class WMTrigger {
           'var' => 'actionExpression',
           'type' => TType::STRING,
           ),
+        5 => array(
+          'var' => 'isInUnmanaged',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -20807,6 +20824,9 @@ class WMTrigger {
       }
       if (isset($vals['actionExpression'])) {
         $this->actionExpression = $vals['actionExpression'];
+      }
+      if (isset($vals['isInUnmanaged'])) {
+        $this->isInUnmanaged = $vals['isInUnmanaged'];
       }
     }
   }
@@ -20858,6 +20878,13 @@ class WMTrigger {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isInUnmanaged);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -20889,6 +20916,11 @@ class WMTrigger {
     if ($this->actionExpression !== null) {
       $xfer += $output->writeFieldBegin('actionExpression', TType::STRING, 4);
       $xfer += $output->writeString($this->actionExpression);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->isInUnmanaged !== null) {
+      $xfer += $output->writeFieldBegin('isInUnmanaged', TType::BOOL, 5);
+      $xfer += $output->writeBool($this->isInUnmanaged);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -21454,6 +21486,10 @@ class WMCreateResourcePlanRequest {
    * @var \metastore\WMResourcePlan
    */
   public $resourcePlan = null;
+  /**
+   * @var string
+   */
+  public $copyFrom = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -21463,11 +21499,18 @@ class WMCreateResourcePlanRequest {
           'type' => TType::STRUCT,
           'class' => '\metastore\WMResourcePlan',
           ),
+        2 => array(
+          'var' => 'copyFrom',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['resourcePlan'])) {
         $this->resourcePlan = $vals['resourcePlan'];
+      }
+      if (isset($vals['copyFrom'])) {
+        $this->copyFrom = $vals['copyFrom'];
       }
     }
   }
@@ -21499,6 +21542,13 @@ class WMCreateResourcePlanRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->copyFrom);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -21518,6 +21568,11 @@ class WMCreateResourcePlanRequest {
       }
       $xfer += $output->writeFieldBegin('resourcePlan', TType::STRUCT, 1);
       $xfer += $this->resourcePlan->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->copyFrom !== null) {
+      $xfer += $output->writeFieldBegin('copyFrom', TType::STRING, 2);
+      $xfer += $output->writeString($this->copyFrom);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -22030,6 +22085,14 @@ class WMAlterResourcePlanRequest {
    * @var bool
    */
   public $isEnableAndActivate = null;
+  /**
+   * @var bool
+   */
+  public $isForceDeactivate = null;
+  /**
+   * @var bool
+   */
+  public $isReplace = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -22047,6 +22110,14 @@ class WMAlterResourcePlanRequest {
           'var' => 'isEnableAndActivate',
           'type' => TType::BOOL,
           ),
+        4 => array(
+          'var' => 'isForceDeactivate',
+          'type' => TType::BOOL,
+          ),
+        5 => array(
+          'var' => 'isReplace',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -22058,6 +22129,12 @@ class WMAlterResourcePlanRequest {
       }
       if (isset($vals['isEnableAndActivate'])) {
         $this->isEnableAndActivate = $vals['isEnableAndActivate'];
+      }
+      if (isset($vals['isForceDeactivate'])) {
+        $this->isForceDeactivate = $vals['isForceDeactivate'];
+      }
+      if (isset($vals['isReplace'])) {
+        $this->isReplace = $vals['isReplace'];
       }
     }
   }
@@ -22103,6 +22180,20 @@ class WMAlterResourcePlanRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isForceDeactivate);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isReplace);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -22132,6 +22223,16 @@ class WMAlterResourcePlanRequest {
     if ($this->isEnableAndActivate !== null) {
       $xfer += $output->writeFieldBegin('isEnableAndActivate', TType::BOOL, 3);
       $xfer += $output->writeBool($this->isEnableAndActivate);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->isForceDeactivate !== null) {
+      $xfer += $output->writeFieldBegin('isForceDeactivate', TType::BOOL, 4);
+      $xfer += $output->writeBool($this->isForceDeactivate);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->isReplace !== null) {
+      $xfer += $output->writeFieldBegin('isReplace', TType::BOOL, 5);
+      $xfer += $output->writeBool($this->isReplace);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -22300,22 +22401,26 @@ class WMValidateResourcePlanResponse {
   static $_TSPEC;
 
   /**
-   * @var bool
+   * @var string[]
    */
-  public $isValid = null;
+  public $errors = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         1 => array(
-          'var' => 'isValid',
-          'type' => TType::BOOL,
+          'var' => 'errors',
+          'type' => TType::LST,
+          'etype' => TType::STRING,
+          'elem' => array(
+            'type' => TType::STRING,
+            ),
           ),
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['isValid'])) {
-        $this->isValid = $vals['isValid'];
+      if (isset($vals['errors'])) {
+        $this->errors = $vals['errors'];
       }
     }
   }
@@ -22340,8 +22445,18 @@ class WMValidateResourcePlanResponse {
       switch ($fid)
       {
         case 1:
-          if ($ftype == TType::BOOL) {
-            $xfer += $input->readBool($this->isValid);
+          if ($ftype == TType::LST) {
+            $this->errors = array();
+            $_size687 = 0;
+            $_etype690 = 0;
+            $xfer += $input->readListBegin($_etype690, $_size687);
+            for ($_i691 = 0; $_i691 < $_size687; ++$_i691)
+            {
+              $elem692 = null;
+              $xfer += $input->readString($elem692);
+              $this->errors []= $elem692;
+            }
+            $xfer += $input->readListEnd();
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -22359,9 +22474,21 @@ class WMValidateResourcePlanResponse {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('WMValidateResourcePlanResponse');
-    if ($this->isValid !== null) {
-      $xfer += $output->writeFieldBegin('isValid', TType::BOOL, 1);
-      $xfer += $output->writeBool($this->isValid);
+    if ($this->errors !== null) {
+      if (!is_array($this->errors)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('errors', TType::LST, 1);
+      {
+        $output->writeListBegin(TType::STRING, count($this->errors));
+        {
+          foreach ($this->errors as $iter693)
+          {
+            $xfer += $output->writeString($iter693);
+          }
+        }
+        $output->writeListEnd();
+      }
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -23030,15 +23157,15 @@ class WMGetTriggersForResourePlanResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->triggers = array();
-            $_size687 = 0;
-            $_etype690 = 0;
-            $xfer += $input->readListBegin($_etype690, $_size687);
-            for ($_i691 = 0; $_i691 < $_size687; ++$_i691)
+            $_size694 = 0;
+            $_etype697 = 0;
+            $xfer += $input->readListBegin($_etype697, $_size694);
+            for ($_i698 = 0; $_i698 < $_size694; ++$_i698)
             {
-              $elem692 = null;
-              $elem692 = new \metastore\WMTrigger();
-              $xfer += $elem692->read($input);
-              $this->triggers []= $elem692;
+              $elem699 = null;
+              $elem699 = new \metastore\WMTrigger();
+              $xfer += $elem699->read($input);
+              $this->triggers []= $elem699;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -23066,9 +23193,9 @@ class WMGetTriggersForResourePlanResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->triggers));
         {
-          foreach ($this->triggers as $iter693)
+          foreach ($this->triggers as $iter700)
           {
-            $xfer += $iter693->write($output);
+            $xfer += $iter700->write($output);
           }
         }
         $output->writeListEnd();

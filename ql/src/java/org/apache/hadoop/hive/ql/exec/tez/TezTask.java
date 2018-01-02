@@ -18,23 +18,20 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hive.common.util.Ref;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nullable;
-
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -44,7 +41,6 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -63,13 +59,12 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.wm.TriggerContext;
+import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.LocalResource;
-import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.tez.client.CallerContext;
 import org.apache.tez.client.TezClient;
 import org.apache.tez.common.counters.CounterGroup;
@@ -89,7 +84,6 @@ import org.apache.tez.dag.api.client.DAGStatus;
 import org.apache.tez.dag.api.client.StatusGetOpts;
 import org.apache.tez.dag.api.client.VertexStatus;
 import org.json.JSONObject;
-
 import com.google.common.annotations.VisibleForTesting;
 
 /**
@@ -135,7 +129,7 @@ public class TezTask extends Task<TezWork> {
     int rc = 1;
     boolean cleanContext = false;
     Context ctx = null;
-    TezSessionState session = null;
+    Ref<TezSessionState> sessionRef = Ref.from(null);
 
     try {
       // Get or create Context object. If we create it we have to clean it later as well.
@@ -146,81 +140,74 @@ public class TezTask extends Task<TezWork> {
         // some DDL task that directly executes a TezTask does not setup Context and hence TriggerContext.
         // Setting queryId is messed up. Some DDL tasks have executionId instead of proper queryId.
         String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
-        TriggerContext triggerContext = new TriggerContext(System.currentTimeMillis(), queryId);
-        ctx.setTriggerContext(triggerContext);
+        WmContext wmContext = new WmContext(System.currentTimeMillis(), queryId);
+        ctx.setWmContext(wmContext);
       }
-
       // Need to remove this static hack. But this is the way currently to get a session.
       SessionState ss = SessionState.get();
       // Note: given that we return pool sessions to the pool in the finally block below, and that
       //       we need to set the global to null to do that, this "reuse" may be pointless.
-      session = ss.getTezSession();
+      TezSessionState session = sessionRef.value = ss.getTezSession();
       if (session != null && !session.isOpen()) {
         LOG.warn("The session: " + session + " has not been opened");
       }
-      Set<String> desiredCounters = new HashSet<>();
+
       // We only need a username for UGI to use for groups; getGroups will fetch the groups
       // based on Hadoop configuration, as documented at
       // https://hadoop.apache.org/docs/r2.8.0/hadoop-project-dist/hadoop-common/GroupsMapping.html
       String userName = ss.getUserName();
-      MappingInput mi = (userName == null) ? new MappingInput("anonymous", null)
-        : new MappingInput(ss.getUserName(),
-            UserGroupInformation.createRemoteUser(ss.getUserName()).getGroups());
-      session = WorkloadManagerFederation.getSession(
-          session, conf, mi, getWork().getLlapMode(), desiredCounters);
+      List<String> groups = null;
+      if (userName == null) {
+        userName = "anonymous";
+      } else {
+        groups = UserGroupInformation.createRemoteUser(ss.getUserName()).getGroups();
+      }
+      MappingInput mi = new MappingInput(userName, groups, ss.getHiveVariables().get("wmpool"));
 
-      TriggerContext triggerContext = ctx.getTriggerContext();
-      triggerContext.setDesiredCounters(desiredCounters);
-      LOG.info("Subscribed to counters: {} for queryId: {}",
-          desiredCounters, triggerContext.getQueryId());
-      ss.setTezSession(session);
-      session.setTriggerContext(triggerContext);
+      WmContext wmContext = ctx.getWmContext();
+      // jobConf will hold all the configuration for hadoop, tez, and hive
+      JobConf jobConf = utils.createConfiguration(conf);
+      // Get all user jars from work (e.g. input format stuff).
+      String[] allNonConfFiles = work.configureJobConfAndExtractJars(jobConf);
+      // DAG scratch dir. We get a session from the pool so it may be different from Tez one.
+      // TODO: we could perhaps reuse the same directory for HiveResources?
+      Path scratchDir = utils.createTezDir(ctx.getMRScratchDir(), conf);
+      CallerContext callerContext = CallerContext.create(
+          "HIVE", queryPlan.getQueryId(), "HIVE_QUERY_ID", queryPlan.getQueryStr());
+
+      session = sessionRef.value = WorkloadManagerFederation.getSession(
+          sessionRef.value, conf, mi, getWork().getLlapMode(), wmContext);
+
       try {
-        // jobConf will hold all the configuration for hadoop, tez, and hive
-        JobConf jobConf = utils.createConfiguration(conf);
+        ss.setTezSession(session);
+        LOG.info("Subscribed to counters: {} for queryId: {}", wmContext.getSubscribedCounters(),
+          wmContext.getQueryId());
 
-        // Get all user jars from work (e.g. input format stuff).
-        String[] inputOutputJars = work.configureJobConfAndExtractJars(jobConf);
+        // Ensure the session is open and has the necessary local resources.
+        // This would refresh any conf resources and also local resources.
+        ensureSessionHasResources(session, allNonConfFiles);
 
-        // we will localize all the files (jars, plans, hashtables) to the
-        // scratch dir. let's create this and tmp first.
-        Path scratchDir = ctx.getMRScratchDir();
+        // This is a combination of the jar stuff from conf, and not from conf.
+        List<LocalResource> allNonAppResources = session.getLocalizedResources();
+        logResources(allNonAppResources);
 
-        // create the tez tmp dir
-        scratchDir = utils.createTezDir(scratchDir, conf);
-
-        // This is used to compare global and vertex resources. Global resources are originally
-        // derived from session conf via localizeTempFilesFromConf. So, use that here.
-        Configuration sessionConf = (session.getConf() != null) ? session.getConf() : conf;
-        Map<String,LocalResource> inputOutputLocalResources =
-            getExtraLocalResources(jobConf, scratchDir, inputOutputJars, sessionConf);
-
-        // Ensure the session is open and has the necessary local resources
-        updateSession(session, jobConf, scratchDir, inputOutputJars, inputOutputLocalResources);
-
-        List<LocalResource> additionalLr = session.getLocalizedResources();
-        logResources(additionalLr);
-
-        // unless already installed on all the cluster nodes, we'll have to
-        // localize hive-exec.jar as well.
-        LocalResource appJarLr = session.getAppJarLr();
+        Map<String, LocalResource> allResources = DagUtils.createTezLrMap(
+            session.getAppJarLr(), allNonAppResources);
 
         // next we translate the TezWork to a Tez DAG
-        DAG dag = build(jobConf, work, scratchDir, appJarLr, additionalLr, ctx);
-        CallerContext callerContext = CallerContext.create(
-            "HIVE", queryPlan.getQueryId(),
-            "HIVE_QUERY_ID", queryPlan.getQueryStr());
+        DAG dag = build(jobConf, work, scratchDir, ctx, allResources);
         dag.setCallerContext(callerContext);
 
-        // Add the extra resources to the dag
-        addExtraResourcesToDag(session, dag, inputOutputJars, inputOutputLocalResources);
+        // Note: we no longer call addTaskLocalFiles because all the resources are correctly
+        //       updated in the session resource lists now, and thus added to vertices.
+        //       If something breaks, dag.addTaskLocalFiles might need to be called here.
 
         // Check isShutdown opportunistically; it's never unset.
         if (this.isShutdown) {
           throw new HiveException("Operation cancelled");
         }
-        DAGClient dagClient = submit(jobConf, dag, scratchDir, appJarLr, session,
-            additionalLr, inputOutputJars, inputOutputLocalResources);
+        DAGClient dagClient = submit(jobConf, dag, sessionRef);
+        session = sessionRef.value;
         boolean wasShutdown = false;
         synchronized (dagClientLock) {
           assert this.dagClient == null;
@@ -256,11 +243,23 @@ public class TezTask extends Task<TezWork> {
         //       Currently, reopen on an attempted reuse will take care of that; we cannot tell
         //       if the session is usable until we try.
         // We return this to the pool even if it's unusable; reopen is supposed to handle this.
+        wmContext = ctx.getWmContext();
         try {
-          session.returnToSessionManager();
+          if (sessionRef.value != null) {
+            sessionRef.value.returnToSessionManager();
+          }
         } catch (Exception e) {
           LOG.error("Failed to return session: {} to pool", session, e);
           throw e;
+        }
+
+        if (!conf.getVar(HiveConf.ConfVars.TEZ_SESSION_EVENTS_SUMMARY).equalsIgnoreCase("none") &&
+          wmContext != null) {
+          if (conf.getVar(HiveConf.ConfVars.TEZ_SESSION_EVENTS_SUMMARY).equalsIgnoreCase("json")) {
+            wmContext.printJson(console);
+          } else if (conf.getVar(HiveConf.ConfVars.TEZ_SESSION_EVENTS_SUMMARY).equalsIgnoreCase("text")) {
+            wmContext.print(console);
+          }
         }
       }
 
@@ -337,61 +336,23 @@ public class TezTask extends Task<TezWork> {
   }
 
   /**
-   * Converted the list of jars into local resources
-   */
-  Map<String,LocalResource> getExtraLocalResources(JobConf jobConf, Path scratchDir,
-      String[] inputOutputJars, Configuration sessionConf) throws Exception {
-    final Map<String,LocalResource> resources = new HashMap<String,LocalResource>();
-    // Skip the files already in session local resources...
-    final List<LocalResource> localResources = utils.localizeTempFiles(scratchDir.toString(),
-        jobConf, inputOutputJars, DagUtils.getTempFilesFromConf(sessionConf));
-    if (null != localResources) {
-      for (LocalResource lr : localResources) {
-        resources.put(utils.getBaseName(lr), lr);
-      }
-    }
-    return resources;
-  }
-
-  /**
    * Ensures that the Tez Session is open and the AM has all necessary jars configured.
    */
-  void updateSession(TezSessionState session,
-      JobConf jobConf, Path scratchDir, String[] inputOutputJars,
-      Map<String,LocalResource> extraResources) throws Exception {
-    final boolean missingLocalResources = !session
-        .hasResources(inputOutputJars);
-
+  @VisibleForTesting
+  void ensureSessionHasResources(
+      TezSessionState session, String[] nonConfResources) throws Exception {
     TezClient client = session.getSession();
     // TODO null can also mean that this operation was interrupted. Should we really try to re-create the session in that case ?
     if (client == null) {
+      // Note: the only sane case where this can happen is the non-pool one. We should get rid
+      //       of it, in non-pool case perf doesn't matter so we might as well open at get time
+      //       and then call update like we do in the else.
       // Can happen if the user sets the tez flag after the session was established.
       LOG.info("Tez session hasn't been created yet. Opening session");
-      session.open(inputOutputJars);
+      session.open(nonConfResources);
     } else {
       LOG.info("Session is already open");
-
-      // Ensure the open session has the necessary resources (StorageHandler)
-      if (missingLocalResources) {
-        LOG.info("Tez session missing resources," +
-            " adding additional necessary resources");
-        client.addAppMasterLocalFiles(extraResources);
-      }
-
-      session.refreshLocalResourcesFromConf(conf);
-    }
-  }
-
-  /**
-   * Adds any necessary resources that must be localized in each vertex to the DAG.
-   */
-  void addExtraResourcesToDag(TezSessionState session, DAG dag,
-      String[] inputOutputJars,
-      Map<String,LocalResource> inputOutputLocalResources) throws Exception {
-    if (!session.hasResources(inputOutputJars)) {
-      if (null != inputOutputLocalResources) {
-        dag.addTaskLocalFiles(inputOutputLocalResources);
-      }
+      session.ensureLocalResources(conf, nonConfResources);
     }
   }
 
@@ -403,9 +364,8 @@ public class TezTask extends Task<TezWork> {
     }
   }
 
-  DAG build(JobConf conf, TezWork work, Path scratchDir,
-      LocalResource appJarLr, List<LocalResource> additionalLr, Context ctx)
-      throws Exception {
+  DAG build(JobConf conf, TezWork work, Path scratchDir, Context ctx,
+      Map<String, LocalResource> vertexResources) throws Exception {
 
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_BUILD_DAG);
 
@@ -423,7 +383,7 @@ public class TezTask extends Task<TezWork> {
     DAG dag = DAG.create(dagName);
 
     // set some info for the query
-    JSONObject json = new JSONObject(new LinkedHashMap()).put("context", "Hive")
+    JSONObject json = new JSONObject(new LinkedHashMap<>()).put("context", "Hive")
         .put("description", ctx.getCmd());
     String dagInfo = json.toString();
 
@@ -471,7 +431,6 @@ public class TezTask extends Task<TezWork> {
 
         // For a vertex group, all Outputs use the same Key-class, Val-class and partitioner.
         // Pick any one source vertex to figure out the Edge configuration.
-       
 
         // now hook up the children
         for (BaseWork v: children) {
@@ -485,9 +444,8 @@ public class TezTask extends Task<TezWork> {
         // Regular vertices
         JobConf wxConf = utils.initializeVertexConf(conf, ctx, w);
         checkOutputSpec(w, wxConf);
-        Vertex wx =
-            utils.createVertex(wxConf, w, scratchDir, appJarLr, additionalLr, fs, ctx, !isFinal,
-                work, work.getVertexType(w));
+        Vertex wx = utils.createVertex(wxConf, w, scratchDir, fs, ctx, !isFinal,
+            work, work.getVertexType(w), vertexResources);
         if (w.getReservedMemoryMB() > 0) {
           // If reversedMemoryMB is set, make memory allocation fraction adjustment as needed
           double frac = DagUtils.adjustMemoryReserveFraction(w.getReservedMemoryMB(), super.conf);
@@ -545,38 +503,28 @@ public class TezTask extends Task<TezWork> {
     dag.setAccessControls(ac);
   }
 
-  DAGClient submit(JobConf conf, DAG dag, Path scratchDir,
-      LocalResource appJarLr, TezSessionState sessionState,
-      List<LocalResource> additionalLr, String[] inputOutputJars,
-      Map<String,LocalResource> inputOutputLocalResources)
-      throws Exception {
+  private TezSessionState getNewTezSessionOnError(
+      TezSessionState oldSession) throws Exception {
+    // Note: we don't pass the config to reopen. If the session was already open, it would
+    //       have kept running with its current config - preserve that behavior.
+    TezSessionState newSession = oldSession.reopen();
+    console.printInfo("Session re-established.");
+    return newSession;
+  }
+
+  DAGClient submit(JobConf conf, DAG dag, Ref<TezSessionState> sessionStateRef) throws Exception {
 
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
     DAGClient dagClient = null;
-
-    Map<String, LocalResource> resourceMap = new HashMap<String, LocalResource>();
-    if (additionalLr != null) {
-      for (LocalResource lr: additionalLr) {
-        if (lr.getType() == LocalResourceType.FILE) {
-          // TEZ AM will only localize FILE (no script operators in the AM)
-          resourceMap.put(utils.getBaseName(lr), lr);
-        }
-      }
-    }
-
+    TezSessionState sessionState = sessionStateRef.value;
     try {
       try {
         // ready to start execution on the cluster
-        sessionState.getSession().addAppMasterLocalFiles(resourceMap);
         dagClient = sessionState.getSession().submitDAG(dag);
       } catch (SessionNotRunning nr) {
         console.printInfo("Tez session was closed. Reopening...");
-
-        // close the old one, but keep the tmp files around
-        // conf is passed in only for the case when session conf is null (tests and legacy paths?)
-        sessionState = sessionState.reopen(conf, inputOutputJars);
+        sessionStateRef.value = sessionState = getNewTezSessionOnError(sessionState);
         console.printInfo("Session re-established.");
-
         dagClient = sessionState.getSession().submitDAG(dag);
       }
     } catch (Exception e) {
@@ -584,14 +532,12 @@ public class TezTask extends Task<TezWork> {
       try {
         console.printInfo("Dag submit failed due to " + e.getMessage() + " stack trace: "
             + Arrays.toString(e.getStackTrace()) + " retrying...");
-        // TODO: this is temporary, need to refactor how reopen is invoked.
-        TriggerContext oldCtx = sessionState.getTriggerContext();
-        sessionState = sessionState.reopen(conf, inputOutputJars);
-        sessionState.setTriggerContext(oldCtx);
+        sessionStateRef.value = sessionState = getNewTezSessionOnError(sessionState);
         dagClient = sessionState.getSession().submitDAG(dag);
       } catch (Exception retryException) {
         // we failed to submit after retrying. Destroy session and bail.
         sessionState.destroy();
+        sessionStateRef.value = null;
         throw retryException;
       }
     }
