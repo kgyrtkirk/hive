@@ -133,6 +133,13 @@ module WMResourcePlanStatus
   VALID_VALUES = Set.new([ACTIVE, ENABLED, DISABLED]).freeze
 end
 
+module WMPoolSchedulingPolicy
+  FAIR = 1
+  FIFO = 2
+  VALUE_MAP = {1 => "FAIR", 2 => "FIFO"}
+  VALID_VALUES = Set.new([FAIR, FIFO]).freeze
+end
+
 class Version
   include ::Thrift::Struct, ::Thrift::Struct_Union
   VERSION = 1
@@ -3311,12 +3318,14 @@ class WMTrigger
   TRIGGERNAME = 2
   TRIGGEREXPRESSION = 3
   ACTIONEXPRESSION = 4
+  ISINUNMANAGED = 5
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName'},
     TRIGGERNAME => {:type => ::Thrift::Types::STRING, :name => 'triggerName'},
     TRIGGEREXPRESSION => {:type => ::Thrift::Types::STRING, :name => 'triggerExpression', :optional => true},
-    ACTIONEXPRESSION => {:type => ::Thrift::Types::STRING, :name => 'actionExpression', :optional => true}
+    ACTIONEXPRESSION => {:type => ::Thrift::Types::STRING, :name => 'actionExpression', :optional => true},
+    ISINUNMANAGED => {:type => ::Thrift::Types::BOOL, :name => 'isInUnmanaged', :optional => true}
   }
 
   def struct_fields; FIELDS; end

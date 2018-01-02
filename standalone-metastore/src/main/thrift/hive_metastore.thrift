@@ -1039,6 +1039,11 @@ enum WMResourcePlanStatus {
   DISABLED = 3
 }
 
+enum  WMPoolSchedulingPolicy {
+  FAIR = 1,
+  FIFO = 2
+}
+
 struct WMResourcePlan {
   1: required string name;
   2: optional WMResourcePlanStatus status;
@@ -1059,6 +1064,7 @@ struct WMTrigger {
   2: required string triggerName;
   3: optional string triggerExpression;
   4: optional string actionExpression;
+  5: optional bool isInUnmanaged;
 }
 
 struct WMMapping {

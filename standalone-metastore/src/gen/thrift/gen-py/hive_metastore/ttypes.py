@@ -281,6 +281,20 @@ class WMResourcePlanStatus:
     "DISABLED": 3,
   }
 
+class WMPoolSchedulingPolicy:
+  FAIR = 1
+  FIFO = 2
+
+  _VALUES_TO_NAMES = {
+    1: "FAIR",
+    2: "FIFO",
+  }
+
+  _NAMES_TO_VALUES = {
+    "FAIR": 1,
+    "FIFO": 2,
+  }
+
 
 class Version:
   """
@@ -14656,6 +14670,7 @@ class WMTrigger:
    - triggerName
    - triggerExpression
    - actionExpression
+   - isInUnmanaged
   """
 
   thrift_spec = (
@@ -14664,13 +14679,15 @@ class WMTrigger:
     (2, TType.STRING, 'triggerName', None, None, ), # 2
     (3, TType.STRING, 'triggerExpression', None, None, ), # 3
     (4, TType.STRING, 'actionExpression', None, None, ), # 4
+    (5, TType.BOOL, 'isInUnmanaged', None, None, ), # 5
   )
 
-  def __init__(self, resourcePlanName=None, triggerName=None, triggerExpression=None, actionExpression=None,):
+  def __init__(self, resourcePlanName=None, triggerName=None, triggerExpression=None, actionExpression=None, isInUnmanaged=None,):
     self.resourcePlanName = resourcePlanName
     self.triggerName = triggerName
     self.triggerExpression = triggerExpression
     self.actionExpression = actionExpression
+    self.isInUnmanaged = isInUnmanaged
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -14701,6 +14718,11 @@ class WMTrigger:
           self.actionExpression = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.BOOL:
+          self.isInUnmanaged = iprot.readBool()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -14727,6 +14749,10 @@ class WMTrigger:
       oprot.writeFieldBegin('actionExpression', TType.STRING, 4)
       oprot.writeString(self.actionExpression)
       oprot.writeFieldEnd()
+    if self.isInUnmanaged is not None:
+      oprot.writeFieldBegin('isInUnmanaged', TType.BOOL, 5)
+      oprot.writeBool(self.isInUnmanaged)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -14744,6 +14770,7 @@ class WMTrigger:
     value = (value * 31) ^ hash(self.triggerName)
     value = (value * 31) ^ hash(self.triggerExpression)
     value = (value * 31) ^ hash(self.actionExpression)
+    value = (value * 31) ^ hash(self.isInUnmanaged)
     return value
 
   def __repr__(self):
