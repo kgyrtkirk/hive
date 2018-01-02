@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
+import org.apache.hive.jdbc.HiveStatement;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -124,6 +125,28 @@ public class TestJdbcWithSQLAuthorization {
         assertTrue("Checking permission denied error", msg.contains("OBJECT OWNERSHIP"));
       }
     }
+
+    {
+      // try dropping table as user2 + async - should fail
+      Connection hs2Conn = getConnection("user2");
+      try {
+        HiveStatement stmt = (HiveStatement) hs2Conn.createStatement();
+        stmt.executeAsync("drop table " + tableName2);
+        ResultSet rs = stmt.getResultSet();
+        while (rs.next()) {
+        }
+        fail("Exception due to authorization failure is expected");
+      } catch (SQLException e) {
+        String msg = e.getMessage();
+        System.err.println("Got SQLException with message " + msg);
+        // check parts of the error, not the whole string so as not to tightly
+        // couple the error message with test
+        assertTrue("Checking permission denied error", msg.contains("user2"));
+        assertTrue("Checking permission denied error", msg.contains(tableName2));
+        assertTrue("Checking permission denied error", msg.contains("OBJECT OWNERSHIP"));
+      }
+    }
+
   }
 
   private Connection getConnection(String userName) throws Exception {
