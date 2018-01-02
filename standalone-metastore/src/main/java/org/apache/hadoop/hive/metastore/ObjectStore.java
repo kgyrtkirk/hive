@@ -9631,7 +9631,8 @@ public class ObjectStore implements RawStore, Configurable {
         p2t = new HashSet<>();
       }
       MWMTrigger trigger = new MWMTrigger(dest, copyTrigger.getName(),
-          copyTrigger.getTriggerExpression(), copyTrigger.getActionExpression(), p2t);
+          copyTrigger.getTriggerExpression(), copyTrigger.getActionExpression(), p2t,
+          copyTrigger.getIsInUnmanaged());
       pm.makePersistent(trigger);
       for (MWMPool pool : p2t) {
         pool.getTriggers().add(trigger);
@@ -9669,7 +9670,6 @@ public class ObjectStore implements RawStore, Configurable {
         rp.addToPoolTriggers(new WMPoolTrigger(mPool.getPath(), mTrigger.getName()));
       }
     }
-    // TODO: add global triggers to pTPT map depending on how they are stored, with a special key?
     for (MWMTrigger mTrigger : mplan.getTriggers()) {
       rp.addToTriggers(fromMWMTrigger(mTrigger, mplan.getName()));
     }
@@ -10052,7 +10052,10 @@ public class ObjectStore implements RawStore, Configurable {
         currentPoolData.queryParallelism = pool.getQueryParallelism();
         parentPoolData.totalChildrenQueryParallelism += pool.getQueryParallelism();
       }
-      // Check for valid pool.getSchedulingPolicy();
+      if (!MetaStoreUtils.isValidSchedulingPolicy(pool.getSchedulingPolicy())) {
+        errors.add("Invalid scheduling policy "
+            + pool.getSchedulingPolicy() + " for pool: " + pool.getPath());
+      }
     }
     for (Entry<String, PoolData> entry : poolInfo.entrySet()) {
       PoolData poolData = entry.getValue();
@@ -10141,7 +10144,8 @@ public class ObjectStore implements RawStore, Configurable {
       MWMResourcePlan resourcePlan = getMWMResourcePlan(trigger.getResourcePlanName(), true);
       MWMTrigger mTrigger = new MWMTrigger(resourcePlan,
           normalizeIdentifier(trigger.getTriggerName()), trigger.getTriggerExpression(),
-          trigger.getActionExpression(), null);
+          trigger.getActionExpression(), null,
+          trigger.isSetIsInUnmanaged() && trigger.isIsInUnmanaged());
       pm.makePersistent(mTrigger);
       commited = commitTransaction();
     } catch (Exception e) {
@@ -10162,8 +10166,15 @@ public class ObjectStore implements RawStore, Configurable {
       MWMResourcePlan resourcePlan = getMWMResourcePlan(trigger.getResourcePlanName(), true);
       MWMTrigger mTrigger = getTrigger(resourcePlan, trigger.getTriggerName());
       // Update the object.
-      mTrigger.setTriggerExpression(trigger.getTriggerExpression());
-      mTrigger.setActionExpression(trigger.getActionExpression());
+      if (trigger.isSetTriggerExpression()) {
+        mTrigger.setTriggerExpression(trigger.getTriggerExpression());
+      }
+      if (trigger.isSetActionExpression()) {
+        mTrigger.setActionExpression(trigger.getActionExpression());
+      }
+      if (trigger.isSetIsInUnmanaged()) {
+        mTrigger.setIsInUnmanaged(trigger.isIsInUnmanaged());
+      }
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, query);
@@ -10252,6 +10263,7 @@ public class ObjectStore implements RawStore, Configurable {
     trigger.setTriggerName(mTrigger.getName());
     trigger.setTriggerExpression(mTrigger.getTriggerExpression());
     trigger.setActionExpression(mTrigger.getActionExpression());
+    trigger.setIsInUnmanaged(mTrigger.getIsInUnmanaged());
     return trigger;
   }
 
@@ -10266,8 +10278,12 @@ public class ObjectStore implements RawStore, Configurable {
       if (!poolParentExists(resourcePlan, pool.getPoolPath())) {
         throw new NoSuchObjectException("Pool path is invalid, the parent does not exist");
       }
+      String policy = pool.getSchedulingPolicy();
+      if (!MetaStoreUtils.isValidSchedulingPolicy(policy)) {
+        throw new InvalidOperationException("Invalid scheduling policy " + policy);
+      }
       MWMPool mPool = new MWMPool(resourcePlan, pool.getPoolPath(), pool.getAllocFraction(),
-          pool.getQueryParallelism(), pool.getSchedulingPolicy());
+          pool.getQueryParallelism(), policy);
       pm.makePersistent(mPool);
       commited = commitTransaction();
     } catch (Exception e) {
@@ -10294,6 +10310,10 @@ public class ObjectStore implements RawStore, Configurable {
         mPool.setQueryParallelism(pool.getQueryParallelism());
       }
       if (pool.isSetSchedulingPolicy()) {
+        String policy = pool.getSchedulingPolicy();
+        if (!MetaStoreUtils.isValidSchedulingPolicy(policy)) {
+          throw new InvalidOperationException("Invalid scheduling policy " + policy);
+        }
         mPool.setSchedulingPolicy(pool.getSchedulingPolicy());
       }
       if (pool.isSetPoolPath() && !pool.getPoolPath().equals(mPool.getPath())) {
