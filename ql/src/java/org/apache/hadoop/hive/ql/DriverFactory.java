@@ -27,10 +27,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  */
 public class DriverFactory {
 
-  public static IDriver newDriver(HiveConf conf) {
-    return newDriver(getNewQueryState(conf), null, null);
-  }
-
   enum ExecutionStrategy {
     none {
       @Override
@@ -60,16 +56,7 @@ public class DriverFactory {
   }
 
   private static QueryState getNewQueryState(HiveConf conf) {
-    // FIXME: isolate hiveConf used for a single query
-    return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
+    HiveConf isolatedConf = new HiveConf(conf);
+    return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(isolatedConf).build();
   }
-
-  // FIXME: remove this method ; and use the conf at the callsite...
-  @Deprecated
-  public static IDriver newDriver() {
-    // only CLIDriver enter at this point
-    HiveConf conf = (SessionState.get() != null) ? SessionState.get().getConf() : new HiveConf();
-    return newDriver(conf);
-  }
-
 }

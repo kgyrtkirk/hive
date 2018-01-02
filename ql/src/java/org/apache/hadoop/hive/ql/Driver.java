@@ -367,8 +367,7 @@ public class Driver implements IDriver {
   }
 
   public Driver() {
-    this(getNewQueryState((SessionState.get() != null) ?
-        SessionState.get().getConf() : new HiveConf()), null);
+    this(getNewQueryState((SessionState.get() != null) ? SessionState.get().getConf() : new HiveConf()), null);
   }
 
   public Driver(HiveConf conf) {
@@ -1192,6 +1191,11 @@ public class Driver implements IDriver {
 
   private static HiveOperationType getHiveOperationType(HiveOperation op) {
     return HiveOperationType.valueOf(op.name());
+  }
+
+  @Override
+  public HiveConf getConf() {
+    return conf;
   }
 
   /**
