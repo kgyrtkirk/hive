@@ -123,8 +123,6 @@ public class PartitionDesc implements Serializable, Cloneable {
   private void PartitionDescConstructorHelper(final Partition part,final TableDesc tblDesc, boolean setInputFileFormat)
     throws HiveException {
 
-    PlanUtils.configureInputJobPropertiesForStorageHandler(tblDesc);
-
     this.tableDesc = tblDesc;
 
     setPartSpec(part.getSpec());

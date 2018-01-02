@@ -52,7 +52,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -361,7 +360,7 @@ public final class Utilities {
   }
 
   public static BaseWork getMergeWork(Configuration jconf) {
-    String currentMergePrefix = jconf.get(DagUtils.TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX); 
+    String currentMergePrefix = jconf.get(DagUtils.TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX);
     if (StringUtils.isEmpty(currentMergePrefix)) {
       return null;
     }
@@ -2489,7 +2488,7 @@ public final class Utilities {
                   TableScanOperator scanOp = (TableScanOperator) aliasToWork.get(alias);
                   Utilities.setColumnNameList(jobConf, scanOp, true);
                   Utilities.setColumnTypeList(jobConf, scanOp, true);
-                  PlanUtils.configureInputJobPropertiesForStorageHandler(tableDesc);
+                  PlanUtils.configureInputJobPropertiesForStorageHandler(tableDesc, conf);
                   Utilities.copyTableJobPropertiesToConf(tableDesc, jobConf);
                   total += estimator.estimate(jobConf, scanOp, -1).getTotalLength();
                 }
@@ -4209,7 +4208,7 @@ public final class Utilities {
   }
 
   private static Path getManifestDir(Path specPath, long txnId, int stmtId, String unionSuffix, boolean isInsertOverwrite) {
-    Path manifestPath = new Path(specPath, "_tmp." + 
+    Path manifestPath = new Path(specPath, "_tmp." +
       AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, txnId, txnId, stmtId));
 
     return (unionSuffix == null) ? manifestPath : new Path(manifestPath, unionSuffix);

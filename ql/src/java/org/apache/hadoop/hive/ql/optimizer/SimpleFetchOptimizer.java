@@ -393,7 +393,7 @@ public class SimpleFetchOptimizer extends Transform {
       if (!table.isPartitioned()) {
         inputs.add(new ReadEntity(table, parent, !table.isView() && parent == null));
         FetchWork work = new FetchWork(table.getPath(), tableDesc);
-        PlanUtils.configureInputJobPropertiesForStorageHandler(work.getTblDesc());
+        PlanUtils.configureInputJobPropertiesForStorageHandler(work.getTblDesc(), scanOp.getConfiguration());
         work.setSplitSample(splitSample);
         return work;
       }
@@ -411,7 +411,7 @@ public class SimpleFetchOptimizer extends Transform {
       FetchWork work = new FetchWork(listP, partP, table);
       if (!work.getPartDesc().isEmpty()) {
         PartitionDesc part0 = work.getPartDesc().get(0);
-        PlanUtils.configureInputJobPropertiesForStorageHandler(part0.getTableDesc());
+        PlanUtils.configureInputJobPropertiesForStorageHandler(part0.getTableDesc(), scanOp.getConfiguration());
         work.setSplitSample(splitSample);
       }
       return work;
@@ -452,7 +452,7 @@ public class SimpleFetchOptimizer extends Transform {
         if (handler instanceof InputEstimator) {
           InputEstimator estimator = (InputEstimator) handler;
           TableDesc tableDesc = Utilities.getTableDesc(table);
-          PlanUtils.configureInputJobPropertiesForStorageHandler(tableDesc);
+          PlanUtils.configureInputJobPropertiesForStorageHandler(tableDesc, jobConf);
           Utilities.copyTableJobPropertiesToConf(tableDesc, jobConf);
           long len = estimator.estimate(jobConf, scanOp, threshold).getTotalLength();
           if (LOG.isDebugEnabled()) {
