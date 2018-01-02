@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.druid.serde;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -47,7 +46,7 @@ public class DruidTopNQueryRecordReader
 
   private Result<TopNResultValue> current;
 
-  private Iterator<DimensionAndMetricValueExtractor> values = Collections.emptyIterator();
+  private Iterator<DimensionAndMetricValueExtractor> values = Iterators.emptyIterator();
 
   @Override
   protected JavaType getResultTypeDef() {
