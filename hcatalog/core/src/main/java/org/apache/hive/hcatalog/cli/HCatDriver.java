@@ -44,7 +44,6 @@ public class HCatDriver {
     driver = DriverFactory.newDriver(hiveConf);
   }
 
-  @Override
   public CommandProcessorResponse run(String command) {
 
     CommandProcessorResponse cpr = null;
