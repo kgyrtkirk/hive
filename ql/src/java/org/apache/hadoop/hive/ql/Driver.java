@@ -170,7 +170,7 @@ public class Driver implements IDriver {
   private LockedDriverState lDrvState = new LockedDriverState();
 
   // Query specific info
-  private QueryState queryState;
+  private final QueryState queryState;
 
   // Query hooks that execute before compilation and after execution
   private QueryLifeTimeHookRunner queryLifeTimeHookRunner;
@@ -378,10 +378,6 @@ public class Driver implements IDriver {
   // or compile another query
   public Driver(HiveConf conf, LineageState lineageState) {
     this(getNewQueryState(conf, lineageState), null);
-  }
-
-  public Driver(HiveConf conf, HiveTxnManager txnMgr) {
-    this(getNewQueryState(conf), null, null, txnMgr);
   }
 
   // Pass lineageState when a driver instantiates another Driver to run
@@ -2534,19 +2530,6 @@ public class Driver implements IDriver {
   @Override
   public void setOperationId(String opId) {
     this.operationId = opId;
-  }
-
-  /**
-   * Resets QueryState to get new queryId on Driver reuse.
-   */
-
-  @Override
-  public void resetQueryState() {
-    // Note: Driver cleanup for reuse at this point is not very clear. The assumption here is that
-    // repeated compile/execute calls create new contexts, plan, etc., so we don't need to worry
-    // propagating queryState into those existing fields, or resetting them.
-    releaseResources();
-    this.queryState = getNewQueryState(queryState.getConf());
   }
 
   public QueryState getQueryState() {

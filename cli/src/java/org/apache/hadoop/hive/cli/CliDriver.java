@@ -68,7 +68,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.tez.TezJobExecHelper;
@@ -411,11 +410,9 @@ public class CliDriver {
         lastRet = ret;
         boolean ignoreErrors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS);
         if (ret != 0 && !ignoreErrors) {
-          CommandProcessorFactory.clean((HiveConf) conf);
           return ret;
         }
       }
-      CommandProcessorFactory.clean((HiveConf) conf);
       return lastRet;
     } finally {
       // Once we are done processing the line, restore the old handler

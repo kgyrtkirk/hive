@@ -21,10 +21,7 @@ package org.apache.hadoop.hive.ql.processors;
 import static org.apache.commons.lang.StringUtils.isBlank;
 
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -33,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
-import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -46,8 +42,6 @@ public final class CommandProcessorFactory {
   private CommandProcessorFactory() {
     // prevent instantiation
   }
-
-  private static final Map<HiveConf, IDriver> mapDrivers = Collections.synchronizedMap(new HashMap<HiveConf, IDriver>());
 
   public static CommandProcessor getForHiveCommand(String[] cmd, HiveConf conf)
     throws SQLException {
@@ -116,23 +110,7 @@ public final class CommandProcessorFactory {
     if (isBlank(cmd[0])) {
       return null;
     } else {
-      IDriver drv = mapDrivers.get(conf);
-      if (drv == null) {
-        drv = DriverFactory.newDriver(conf);
-        mapDrivers.put(conf, drv);
-      } else {
-        drv.resetQueryState();
-      }
-      return drv;
+      return DriverFactory.newDriver(conf);
     }
-  }
-
-  public static void clean(HiveConf conf) {
-    IDriver drv = mapDrivers.get(conf);
-    if (drv != null) {
-      drv.destroy();
-    }
-
-    mapDrivers.remove(conf);
   }
 }
