@@ -271,6 +271,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         LOG.info("Materializing the query for LLAPIF; CTAS: " + ctas);
 
         try {
+          driver.releaseResources();
           HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, originalMode);
           cpr = driver.run(ctas, false);
         } catch (CommandNeedRetryException e) {

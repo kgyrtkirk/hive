@@ -1370,7 +1370,7 @@ public class Driver implements IDriver {
    * Release some resources after a query is executed
    * while keeping the result around.
    */
-  private void releaseResources() {
+  public void releaseResources() {
     releasePlan();
     releaseDriverContext();
   }
