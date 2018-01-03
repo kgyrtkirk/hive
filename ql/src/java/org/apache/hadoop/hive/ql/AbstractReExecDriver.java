@@ -40,12 +40,14 @@ public abstract class AbstractReExecDriver implements IDriver {
     @Override
     public void run(HookContext hookContext) throws Exception {
       switch (hookContext.getHookType()) {
-        case POST_EXEC_HOOK:
-          onExecutionSuccess(hookContext);
-          break;
-        case ON_FAILURE_HOOK:
-          onExecutionFailure(hookContext);
-          break;
+      case PRE_EXEC_HOOK:
+        break;
+      case POST_EXEC_HOOK:
+        onExecutionSuccess(hookContext);
+        break;
+      case ON_FAILURE_HOOK:
+        onExecutionFailure(hookContext);
+        break;
       }
     }
   }
