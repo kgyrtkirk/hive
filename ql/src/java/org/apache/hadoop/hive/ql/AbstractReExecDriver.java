@@ -71,7 +71,8 @@ public abstract class AbstractReExecDriver implements IDriver {
   private Driver coreDriver;
   private QueryState queryState;
 
-  protected HiveConf getConf() {
+  @Override
+  public HiveConf getConf() {
     return queryState.getConf();
   }
 
@@ -172,11 +173,6 @@ public abstract class AbstractReExecDriver implements IDriver {
   @Override
   public void destroy() {
     coreDriver.destroy();
-  }
-
-  @Override
-  public void resetQueryState() {
-    coreDriver.resetQueryState();
   }
 
   abstract protected boolean shouldReExecute();
