@@ -202,7 +202,13 @@ public class QueryState {
           "hive.metastore.rawstore.impl", "hive.security.authenticator.manager", "hive.security.authorization.createtable.owner.grants",
           "hive.session.id", "hive.test.init.phase", "hive.test.shutdown.phase", "_hive.tmp_table_space", "hive.zookeeper.client.port",
           "hive.zookeeper.quorum", "io.file.buffer.size", "mapreduce.job.name", "mapreduce.workflow.name", "test.data.dir",
-          "hive.query.id");
+          "hive.query.id", "hive.query.id",
+
+          //          "hive.doing.acid",
+
+          "mapreduce.workflow.adjacency.Stage-0", "mapreduce.workflow.id", "mapreduce.workflow.node.name"
+
+      );
 
       private final HiveConf pc;
 
