@@ -435,6 +435,7 @@ public class Driver implements IDriver {
    * @return The new QueryState object
    */
   // move to driverFactory ; with those constructors...
+  // HIVE-18238: try to remove before submitting
   @Deprecated
   private static QueryState getNewQueryState(HiveConf conf) {
     return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
@@ -536,6 +537,9 @@ public class Driver implements IDriver {
 
     LOG.info("Compiling command(queryId=" + queryId + "): " + queryStr);
 
+    conf.setQueryString(queryStr);
+    // FIXME: sideeffect will leave the last query set at the session level
+    SessionState.get().getConf().setQueryString(queryStr);
     SessionState.get().setupQueryCurrentTimestamp();
 
     // Whether any error occurred during query compilation. Used for query lifetime hook.
@@ -650,9 +654,6 @@ public class Driver implements IDriver {
       plan = new QueryPlan(queryStr, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
         queryState.getHiveOperation(), schema);
 
-      conf.setQueryString(queryStr);
-      // FIXME: sideeffect will leave the last query set at the session level
-      SessionState.get().getConf().setQueryString(queryStr);
 
       conf.set("mapreduce.workflow.id", "hive_" + queryId);
       conf.set("mapreduce.workflow.name", queryStr);

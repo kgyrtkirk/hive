@@ -106,7 +106,10 @@ public class QueryState {
    */
   public static class Builder {
     private Map<String, String> confOverlay = null;
+    // HIVE-18238: remove before submitting
+    @Deprecated
     private boolean runAsync = false;
+    private boolean isolated = true;
     private boolean generateNewQueryId = false;
     private HiveConf hiveConf = null;
     private LineageState lineageState = null;
@@ -137,6 +140,16 @@ public class QueryState {
      */
     public Builder withConfOverlay(Map<String, String> confOverlay) {
       this.confOverlay = confOverlay;
+      return this;
+    }
+
+    /**
+     * Disable configuration isolation.
+     *
+     * For internal use / testing purposes only.
+     */
+    public Builder nonIsolated() {
+      isolated = false;
       return this;
     }
 
@@ -184,11 +197,15 @@ public class QueryState {
     public QueryState build() {
       HiveConf queryConf;
 
-      // isolate query conf
-      if (hiveConf == null) {
-        queryConf = new HiveConf();
+      if (isolated) {
+        // isolate query conf
+        if (hiveConf == null) {
+          queryConf = new HiveConf();
+        } else {
+          queryConf = new HiveConf(hiveConf);
+        }
       } else {
-        queryConf = new HiveConf(hiveConf);
+        queryConf = hiveConf;
       }
 
       // Set the specific parameters if needed
