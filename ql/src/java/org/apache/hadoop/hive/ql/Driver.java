@@ -170,7 +170,7 @@ public class Driver implements IDriver {
   private LockedDriverState lDrvState = new LockedDriverState();
 
   // Query specific info
-  private QueryState queryState;
+  private final QueryState queryState;
 
   // Query hooks that execute before compilation and after execution
   private QueryLifeTimeHookRunner queryLifeTimeHookRunner;
@@ -380,10 +380,6 @@ public class Driver implements IDriver {
     this(getNewQueryState(conf, lineageState), null);
   }
 
-  public Driver(HiveConf conf, HiveTxnManager txnMgr) {
-    this(getNewQueryState(conf), null, null, txnMgr);
-  }
-
   // Pass lineageState when a driver instantiates another Driver to run
   // or compile another query
   public Driver(HiveConf conf, Context ctx, LineageState lineageState) {
@@ -435,6 +431,7 @@ public class Driver implements IDriver {
    * @return The new QueryState object
    */
   // move to driverFactory ; with those constructors...
+  // HIVE-18238: try to remove before submitting
   @Deprecated
   private static QueryState getNewQueryState(HiveConf conf) {
     return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
@@ -536,6 +533,9 @@ public class Driver implements IDriver {
 
     LOG.info("Compiling command(queryId=" + queryId + "): " + queryStr);
 
+    conf.setQueryString(queryStr);
+    // FIXME: sideeffect will leave the last query set at the session level
+    SessionState.get().getConf().setQueryString(queryStr);
     SessionState.get().setupQueryCurrentTimestamp();
 
     // Whether any error occurred during query compilation. Used for query lifetime hook.
@@ -650,7 +650,6 @@ public class Driver implements IDriver {
       plan = new QueryPlan(queryStr, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
         queryState.getHiveOperation(), schema);
 
-      conf.setQueryString(queryStr);
 
       conf.set("mapreduce.workflow.id", "hive_" + queryId);
       conf.set("mapreduce.workflow.name", queryStr);
@@ -1371,7 +1370,7 @@ public class Driver implements IDriver {
    * Release some resources after a query is executed
    * while keeping the result around.
    */
-  private void releaseResources() {
+  public void releaseResources() {
     releasePlan();
     releaseDriverContext();
   }
@@ -2531,19 +2530,6 @@ public class Driver implements IDriver {
   @Override
   public void setOperationId(String opId) {
     this.operationId = opId;
-  }
-
-  /**
-   * Resets QueryState to get new queryId on Driver reuse.
-   */
-
-  @Override
-  public void resetQueryState() {
-    // Note: Driver cleanup for reuse at this point is not very clear. The assumption here is that
-    // repeated compile/execute calls create new contexts, plan, etc., so we don't need to worry
-    // propagating queryState into those existing fields, or resetting them.
-    releaseResources();
-    this.queryState = getNewQueryState(queryState.getConf());
   }
 
   public QueryState getQueryState() {

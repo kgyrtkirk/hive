@@ -66,8 +66,6 @@ public interface IDriver extends CommandProcessor {
   int close();
   void destroy();
 
-  void resetQueryState();
-
   // FIXME: remove after moving hcat fsperms to a hook
   HiveConf getConf();
 }

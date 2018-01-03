@@ -19,11 +19,15 @@
 package org.apache.hadoop.hive.ql;
 
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.hadoop.hbase.shaded.com.google.common.collect.Sets;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.LineageState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class to store query level info such as queryId. Multiple queries can run
@@ -106,7 +110,10 @@ public class QueryState {
    */
   public static class Builder {
     private Map<String, String> confOverlay = null;
+    // HIVE-18238: remove before submitting
+    @Deprecated
     private boolean runAsync = false;
+    private boolean isolated = true;
     private boolean generateNewQueryId = false;
     private HiveConf hiveConf = null;
     private LineageState lineageState = null;
@@ -137,6 +144,16 @@ public class QueryState {
      */
     public Builder withConfOverlay(Map<String, String> confOverlay) {
       this.confOverlay = confOverlay;
+      return this;
+    }
+
+    /**
+     * Disable configuration isolation.
+     *
+     * For internal use / testing purposes only.
+     */
+    public Builder nonIsolated() {
+      isolated = false;
       return this;
     }
 
@@ -173,6 +190,59 @@ public class QueryState {
       return this;
     }
 
+    private static final Logger LOG = LoggerFactory.getLogger(QueryState.class);
+
+    public class HiveConf1 extends HiveConf {
+
+      //      Set<String> protected1 = Sets.newHashSet("hive.txn.valid.txns");
+
+      Set<String> protected1 = Sets.newHashSet("hive.txn.valid.txns", "fs.permissions.umask-mode", "fs.scheme.class",
+          "hive.conf.restricted.list", "hive.exec.dynamic.partition.mode", "hive.execution.engine", "_hive.hdfs.session.path",
+          "hive.internal.ss.authz.settings.applied.marker", "_hive.local.session.path", "hive.mapred.mode", "hive.metastore.filter.hook",
+          "hive.metastore.rawstore.impl", "hive.security.authenticator.manager", "hive.security.authorization.createtable.owner.grants",
+          "hive.session.id", "hive.test.init.phase", "hive.test.shutdown.phase", "_hive.tmp_table_space", "hive.zookeeper.client.port",
+          "hive.zookeeper.quorum", "io.file.buffer.size", "mapreduce.job.name", "mapreduce.workflow.name", "test.data.dir",
+          "hive.query.id", "hive.query.id",
+
+          //          "hive.doing.acid",
+
+          "mapreduce.workflow.adjacency.Stage-0", "mapreduce.workflow.id", "mapreduce.workflow.node.name"
+
+      );
+
+      private final HiveConf pc;
+
+      public HiveConf1() {
+        this(new HiveConf());
+      }
+
+      public HiveConf1(HiveConf hiveConf) {
+        super(hiveConf);
+        pc = hiveConf;
+      }
+
+      @Override
+      public void set(String arg0, String arg1, String arg2) {
+        LOG.info("set3|{}|{}|{}", arg0, arg1, arg2);
+        super.set(arg0, arg1, arg2);
+        if(!protected1.contains(arg0)) {
+          pc.set(arg0, arg1, arg2);
+          LOG.info("BYP3|{}|{}|{}", arg0, arg1, arg2);
+        }
+      }
+
+      @Override
+      public void set(String name, String value) {
+        LOG.info("set2|{}|{}", name, value);
+        super.set(name, value);
+        if(!protected1.contains(name)) {
+          pc.set(name, value);
+          LOG.info("BYP2|{}|{}", name, value);
+        }
+      }
+
+    }
+
     /**
      * Creates the QueryState object. The default values are:
      * - runAsync false
@@ -182,14 +252,17 @@ public class QueryState {
      * @return The generated QueryState object
      */
     public QueryState build() {
-      HiveConf queryConf = hiveConf;
+      HiveConf queryConf;
 
-      if (queryConf == null) {
-        // Generate a new conf if necessary
-        queryConf = new HiveConf();
-      } else if (runAsync || (confOverlay != null && !confOverlay.isEmpty())) {
-        // Detach the original conf if necessary
-        queryConf = new HiveConf(queryConf);
+      if (isolated) {
+        // isolate query conf
+        if (hiveConf == null) {
+          queryConf = new HiveConf();
+        } else {
+          queryConf = new HiveConf(hiveConf);
+        }
+      } else {
+        queryConf = hiveConf;
       }
 
       // Set the specific parameters if needed
@@ -206,7 +279,13 @@ public class QueryState {
 
       // Generate the new queryId if needed
       if (generateNewQueryId) {
-        queryConf.setVar(HiveConf.ConfVars.HIVEQUERYID, QueryPlan.makeQueryId());
+        String queryId = QueryPlan.makeQueryId();
+        queryConf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+        // FIXME: druid storage handler relies on query.id to maintain some staging directories
+        // expose queryid to session level
+        if (hiveConf != null) {
+          hiveConf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+        }
       }
 
       QueryState queryState = new QueryState(queryConf);
