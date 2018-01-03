@@ -54,7 +54,6 @@ import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.hooks.TezRuntimeStatisticsHook;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.CompositeProcessor;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -272,7 +271,9 @@ public class TezCompiler extends TaskCompiler {
 
         SemiJoinBranchInfo sjInfo =
                 context.parseContext.getRsToSemiJoinBranchInfo().get(o);
-        if (sjInfo == null ) continue;
+        if (sjInfo == null ) {
+          continue;
+        }
         if (sjInfo.getIsHint()) {
           // Skipping because of hint. Mark this info,
           hasHint = true;
@@ -416,23 +417,24 @@ public class TezCompiler extends TaskCompiler {
   }
 
   private void runStatsAnnotation(OptimizeTezProcContext procCtx) throws SemanticException {
-    if(procCtx.conf.getBoolVar(ConfVars.HIVE_STATS_CACHE_RUNTIME_STATS)) {
-      Set<String> postHooks = Sets.newHashSet(Splitter.on(",").trimResults().omitEmptyStrings().split(
-        Strings.nullToEmpty(HiveConf.getVar(procCtx.conf, ConfVars.POSTEXECHOOKS))));
-      if (!postHooks.contains(TezRuntimeStatisticsHook.class.getName())) {
-        postHooks.add(TezRuntimeStatisticsHook.class.getName());
-        String updatedHooks = Joiner.on(",").join(postHooks);
-        procCtx.conf.setVar(ConfVars.POSTEXECHOOKS, updatedHooks);
-      }
-
-      Set<String> failureHooks = Sets.newHashSet(Splitter.on(",").trimResults().omitEmptyStrings().split(
-        Strings.nullToEmpty(HiveConf.getVar(procCtx.conf, ConfVars.ONFAILUREHOOKS))));
-      if (!failureHooks.contains(TezRuntimeStatisticsHook.class.getName())) {
-        failureHooks.add(TezRuntimeStatisticsHook.class.getName());
-        String updatedHooks = Joiner.on(",").join(failureHooks);
-        procCtx.conf.setVar(ConfVars.ONFAILUREHOOKS, updatedHooks);
-      }
-    }
+    // REOPT-PRASH-3
+    //    if(procCtx.conf.getBoolVar(ConfVars.HIVE_STATS_CACHE_RUNTIME_STATS)) {
+    //      Set<String> postHooks = Sets.newHashSet(Splitter.on(",").trimResults().omitEmptyStrings().split(
+    //        Strings.nullToEmpty(HiveConf.getVar(procCtx.conf, ConfVars.POSTEXECHOOKS))));
+    //      if (!postHooks.contains(TezRuntimeStatisticsHook.class.getName())) {
+    //        postHooks.add(TezRuntimeStatisticsHook.class.getName());
+    //        String updatedHooks = Joiner.on(",").join(postHooks);
+    //        procCtx.conf.setVar(ConfVars.POSTEXECHOOKS, updatedHooks);
+    //      }
+    //
+    //      Set<String> failureHooks = Sets.newHashSet(Splitter.on(",").trimResults().omitEmptyStrings().split(
+    //        Strings.nullToEmpty(HiveConf.getVar(procCtx.conf, ConfVars.ONFAILUREHOOKS))));
+    //      if (!failureHooks.contains(TezRuntimeStatisticsHook.class.getName())) {
+    //        failureHooks.add(TezRuntimeStatisticsHook.class.getName());
+    //        String updatedHooks = Joiner.on(",").join(failureHooks);
+    //        procCtx.conf.setVar(ConfVars.ONFAILUREHOOKS, updatedHooks);
+    //      }
+    //    }
     new AnnotateWithStatistics().transform(procCtx.parseContext);
     new AnnotateWithOpTraits().transform(procCtx.parseContext);
   }
@@ -890,7 +892,9 @@ public class TezCompiler extends TaskCompiler {
 
         ReduceSinkOperator rs = ((ReduceSinkOperator) child);
         SemiJoinBranchInfo sjInfo = pCtx.getRsToSemiJoinBranchInfo().get(rs);
-        if (sjInfo == null) continue;
+        if (sjInfo == null) {
+          continue;
+        }
 
         TableScanOperator ts = sjInfo.getTsOp();
         // This is a semijoin branch. Find if this is creating a potential
@@ -949,7 +953,9 @@ public class TezCompiler extends TaskCompiler {
         GenericUDAFBloomFilterEvaluator udafBloomFilterEvaluator =
                 (GenericUDAFBloomFilterEvaluator) agg.getGenericUDAFEvaluator();
         if (udafBloomFilterEvaluator.hasHintEntries())
+         {
           return null; // Created using hint, skip it
+        }
 
         long expectedEntries = udafBloomFilterEvaluator.getExpectedEntries();
         if (expectedEntries == -1 || expectedEntries >
@@ -1076,7 +1082,9 @@ public class TezCompiler extends TaskCompiler {
 
           ReduceSinkOperator rs = (ReduceSinkOperator) child;
           SemiJoinBranchInfo sjInfo = parseContext.getRsToSemiJoinBranchInfo().get(rs);
-          if (sjInfo == null) continue;
+          if (sjInfo == null) {
+            continue;
+          }
 
           TableScanOperator ts = sjInfo.getTsOp();
           if (ts != bigTableTS) {
