@@ -2460,14 +2460,13 @@ public class Driver implements IDriver {
 
   // is called to stop the query if it is running, clean query results, and release resources.
   @Override
-  public int close() {
+  public void close() {
     lDrvState.stateLock.lock();
     try {
       releaseDriverContext();
       if (lDrvState.driverState == DriverState.COMPILING ||
           lDrvState.driverState == DriverState.EXECUTING) {
         lDrvState.abort();
-        return 0;
       }
       releasePlan();
       releaseFetchTask();
@@ -2478,7 +2477,7 @@ public class Driver implements IDriver {
       lDrvState.stateLock.unlock();
       LockedDriverState.removeLockedDriverState();
     }
-    return 0;
+    destroy();
   }
 
   // is usually called after close() to commit or rollback a query and end the driver life cycle.

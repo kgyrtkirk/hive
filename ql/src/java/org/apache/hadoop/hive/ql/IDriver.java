@@ -63,7 +63,8 @@ public interface IDriver extends CommandProcessor {
   void resetFetch() throws IOException;
 
   // close&destroy is used in seq coupling most of the time - the difference is either not clear; or not relevant - remove?
-  int close();
+  @Override
+  void close();
   void destroy();
 
   // FIXME: remove after moving hcat fsperms to a hook
