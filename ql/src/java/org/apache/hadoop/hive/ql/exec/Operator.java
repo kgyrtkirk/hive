@@ -84,8 +84,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected final AtomicBoolean abortOp;
   private transient ExecMapperContext execContext;
   private transient boolean rootInitializeCalled = false;
-  protected final transient LongWritable runTimeRowsWritable = new LongWritable();
-  protected final transient LongWritable recordCounter = new LongWritable();
   protected transient long numRows = 0;
   protected transient long runTimeNumRows = 0;
   protected int indexForTezUnion = -1;
@@ -498,8 +496,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     this.hconf = hconf;
     rootInitializeCalled = true;
     runTimeNumRows = 0;
-    statsMap.put(Counter.RECORDS_OUT_OPERATOR.name() + "_" + getOperatorId(), runTimeRowsWritable);
-    statsMap.put(getCounterName(Counter.RECORDS_OUT_INTERMEDIATE, hconf), recordCounter);
   }
 
   public String getCounterName(Counter counter, Configuration hconf) {
@@ -756,8 +752,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     if (conf != null && conf.getRuntimeStatsTmpDir() != null) {
       publishRunTimeStats();
     }
-    runTimeRowsWritable.set(runTimeNumRows);
-    recordCounter.set(numRows);
+    LongWritable runTimeRowsWritable = new LongWritable(runTimeNumRows);
+    LongWritable recordCounter = new LongWritable(numRows);
+    statsMap.put(Counter.RECORDS_OUT_OPERATOR.name() + "_" + getOperatorId(), runTimeRowsWritable);
+    statsMap.put(getCounterName(Counter.RECORDS_OUT_INTERMEDIATE, hconf), recordCounter);
+
   }
 
   private boolean jobCloseDone = false;

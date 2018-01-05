@@ -834,6 +834,7 @@ public class QueryPlan implements Serializable {
     return autoCommitValue;
   }
 
+  // FIXME: probably remove these...
   public static String getQueryMD5(String queryString) throws NoSuchAlgorithmException {
     MessageDigest  md = MessageDigest.getInstance("MD5");
     String query = normalizeQuery(queryString);
