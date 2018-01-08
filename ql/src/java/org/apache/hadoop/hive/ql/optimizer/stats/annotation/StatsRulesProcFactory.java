@@ -2361,6 +2361,13 @@ public class StatsRulesProcFactory {
           outStats.setColumnStats(colStats);
         }
 
+        OperatorStatSource oss = ReOptimizeDriver.getOperatorStats();
+        OperatorStats os = oss.lookup(rop);
+        if (os != null) {
+          outStats.setNumRows(os.getOutputRecords());
+          //          outStats = new Statistics(os.getOutputRecords(), stats.getAvgRowSize() * os.getOutputRecords());
+          //          outStats.setColumnStats(stats.getColumnStats());
+        }
 
         // REOPT-PRASH-2
         // check if runtime stats is available
