@@ -31,6 +31,8 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ReOptimizeDriver;
+import org.apache.hadoop.hive.ql.ReOptimizeDriver.OperatorStatSource;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
@@ -71,6 +73,7 @@ import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorStats;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
@@ -131,7 +134,19 @@ public class StatsRulesProcFactory {
       try {
         // gather statistics for the first time and the attach it to table scan operator
         Statistics stats = StatsUtils.collectStatistics(aspCtx.getConf(), partList, colStatsCached, table, tsop);
-        Statistics outStats = stats.clone();
+        Statistics outStats;
+
+        OperatorStatSource oss = ReOptimizeDriver.getOperatorStats();
+        OperatorStats os = oss.lookup(tsop);
+        if (os != null) {
+          outStats = stats.clone();
+          outStats.setNumRows(os.getOutputRecords());
+          //          outStats = new Statistics(os.getOutputRecords(), stats.getAvgRowSize() * os.getOutputRecords());
+          //          outStats.setColumnStats(stats.getColumnStats());
+        } else {
+          outStats = stats.clone();
+        }
+
         // check if runtime stats is available
         // REOPT-PRASH-2
         //        if(aspCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_CACHE_RUNTIME_STATS)) {
@@ -2336,6 +2351,7 @@ public class StatsRulesProcFactory {
 
           outStats.setColumnStats(colStats);
         }
+
 
         // REOPT-PRASH-2
         // check if runtime stats is available

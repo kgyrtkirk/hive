@@ -7,7 +7,7 @@ insert into px values (2,2),(3,3),(5,5),(7,7),(11,11);
 
 
 set hive.explain.user=true;
-set hive.query.reexecution.strategy=overlay;
+set hive.query.reexecution.strategy=reoptimize;
 set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecTezSummaryPrinter;
 
 explain 

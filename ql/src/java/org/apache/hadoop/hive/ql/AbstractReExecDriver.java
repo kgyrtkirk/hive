@@ -70,7 +70,7 @@ public abstract class AbstractReExecDriver implements IDriver {
     }
   }
 
-  private Driver coreDriver;
+  protected Driver coreDriver;
   private QueryState queryState;
 
   @Override
@@ -178,5 +178,8 @@ public abstract class AbstractReExecDriver implements IDriver {
   }
 
   abstract protected boolean shouldReExecute();
+
+  protected void finish0() {
+  }
 
 }
