@@ -149,7 +149,8 @@ public class HCatDriver {
   }
 
   public int close() {
-    return driver.close();
+    driver.close();
+    return 0;
   }
 
   public boolean getResults(ArrayList<String> res) throws IOException, CommandNeedRetryException {
