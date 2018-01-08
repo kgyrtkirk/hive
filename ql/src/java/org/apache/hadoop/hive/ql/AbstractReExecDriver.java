@@ -168,8 +168,8 @@ public abstract class AbstractReExecDriver implements IDriver {
   }
 
   @Override
-  public int close() {
-    return coreDriver.close();
+  public void close() {
+    coreDriver.close();
   }
 
   @Override
