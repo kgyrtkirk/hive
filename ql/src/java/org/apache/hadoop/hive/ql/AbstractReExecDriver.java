@@ -126,8 +126,17 @@ public abstract class AbstractReExecDriver implements IDriver {
 
   @Override
   public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
-    CommandProcessorResponse run0 = coreDriver.run(command);
-    if (run0.getResponseCode() == 0 || !shouldReExecute()) {
+    String firstCommand = command;
+    boolean forceRexec = false;
+    // FIXME: new var?
+    if (coreDriver.getConf().getBoolean("hive.query.reexecution.explain", false)) {
+      if (command.trim().startsWith("explain")) {
+        firstCommand = command.trim().substring("explain".length());
+        forceRexec = true;
+      }
+    }
+    CommandProcessorResponse run0 = coreDriver.run(firstCommand);
+    if (!forceRexec && (run0.getResponseCode() == 0 || !shouldReExecute())) {
       return run0;
     }
 

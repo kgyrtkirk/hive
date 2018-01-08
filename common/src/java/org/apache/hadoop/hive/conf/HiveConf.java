@@ -3651,6 +3651,8 @@ public class HiveConf extends Configuration {
         "Maximum number of threads that Hive uses to list file information from file systems (recommended > 1 for blobstore)."),
     HIVE_QUERY_REEXECUTION_STRATEGY("hive.query.reexecution.strategy", "none", new StringSet("none", "overlay", "reoptimize"),
         "none: no recovery\noverlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of execution errors"),
+    HIVE_QUERY_REEXECUTION_EXPLAIN("hive.query.reexecution.explain", "false", new StringSet("false", "true"),
+        ""),
 
     /* BLOBSTORE section */
 
@@ -5016,6 +5018,7 @@ public class HiveConf extends Configuration {
     }
   }
 
+  // FIXME: safe-apply as QueryState overlay; and use this method there too.
   public void putAll(Map<String, String> overlay) {
     for (Entry<String, String> entry : overlay.entrySet()) {
       set(entry.getKey(), entry.getValue());
