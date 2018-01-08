@@ -1,20 +1,11 @@
 
-set hive.llap.skip.compile.udf.check=true;
--- set hive.llap.execution.mode=auto;
+create table tx(a int,f string);
+insert into tx values (1,'non_existent_file');
 
-compile `import org.apache.hadoop.hive.ql.exec.UDF \;
+set zzz=1;
+set reexec.overlay.zzz=2;
 
-public class Pyth extends UDF {
-  public double evaluate(double a, double b){
-    throw new OutOfMemoryError("Fake-OOM from retry_failure_oom.q")\;
-  }
-} ` AS GROOVY NAMED Pyth.groovy;
-CREATE TEMPORARY FUNCTION Pyth as 'Pyth';
+set hive.query.reexecution.strategy=overlay;
 
-create table t (a integer,b integer);
-insert into t values (1,1),(2,2);
-
-SELECT Pyth(a,4) from t group by a,b;
-
-DROP TEMPORARY FUNCTION Pyth;
+select assert_true_oom(${hiveconf:zzz} > a) from tx group by a;
 
