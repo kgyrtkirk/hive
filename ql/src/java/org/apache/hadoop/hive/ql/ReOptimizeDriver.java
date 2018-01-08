@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
@@ -59,7 +58,7 @@ public class ReOptimizeDriver extends AbstractReExecDriver {
       os = new HashMap<>();
     }
 
-    public OperatorStats lookup(TableScanOperator tsop) {
+    public OperatorStats lookup(Operator<?> tsop) {
       return os.get(tsop.getOperatorId());
     }
 

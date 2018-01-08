@@ -351,6 +351,15 @@ public class StatsRulesProcFactory {
             LOG.debug("[1] STATS-" + fop.toString() + ": " + st.extendedToString());
           }
         }
+
+        OperatorStatSource oss = ReOptimizeDriver.getOperatorStats();
+        OperatorStats os = oss.lookup(fop);
+        if (os != null) {
+          st.setNumRows(os.getOutputRecords());
+          //          outStats = new Statistics(os.getOutputRecords(), stats.getAvgRowSize() * os.getOutputRecords());
+          //          outStats.setColumnStats(stats.getColumnStats());
+        }
+
         fop.setStatistics(st);
         aspCtx.setAndExprStats(null);
       }
