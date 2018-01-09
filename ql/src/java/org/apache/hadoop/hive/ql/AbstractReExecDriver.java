@@ -72,6 +72,7 @@ public abstract class AbstractReExecDriver implements IDriver {
 
   protected Driver coreDriver;
   private QueryState queryState;
+  private String currentQuery;
 
   @Override
   public HiveConf getConf() {
@@ -96,6 +97,7 @@ public abstract class AbstractReExecDriver implements IDriver {
 
   @Override
   public CommandProcessorResponse compileAndRespond(String statement) {
+    currentQuery = statement;
     return coreDriver.compileAndRespond(statement);
   }
 
@@ -121,27 +123,35 @@ public abstract class AbstractReExecDriver implements IDriver {
 
   @Override
   public CommandProcessorResponse run() throws CommandNeedRetryException {
-    return coreDriver.run();
+    String firstCommand = currentQuery;
+    boolean forceRexec = false;
+    // FIXME: new var?
+    if (coreDriver.getConf().getBoolean("hive.query.reexecution.explain", false)) {
+      if (currentQuery.trim().toLowerCase().startsWith("explain")) {
+        firstCommand = currentQuery.trim().substring("explain".length());
+        forceRexec = true;
+      }
+    }
+    CommandProcessorResponse cpr;
+    if (!forceRexec) {
+      cpr = coreDriver.run();
+      if (cpr.getResponseCode() == 0 || !shouldReExecute()) {
+        return cpr;
+      }
+    } else {
+      coreDriver.run(firstCommand);
+    }
+    prepareToReExecute();
+    return coreDriver.run(currentQuery);
   }
 
   @Override
   public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
-    String firstCommand = command;
-    boolean forceRexec = false;
-    // FIXME: new var?
-    if (coreDriver.getConf().getBoolean("hive.query.reexecution.explain", false)) {
-      if (command.trim().startsWith("explain")) {
-        firstCommand = command.trim().substring("explain".length());
-        forceRexec = true;
-      }
+    CommandProcessorResponse r0 = compileAndRespond(command);
+    if (r0.getResponseCode() != 0) {
+      return r0;
     }
-    CommandProcessorResponse run0 = coreDriver.run(firstCommand);
-    if (!forceRexec && (run0.getResponseCode() == 0 || !shouldReExecute())) {
-      return run0;
-    }
-
-    prepareToReExecute();
-    return coreDriver.run(command);
+    return run();
   }
 
   protected abstract void prepareToReExecute();
