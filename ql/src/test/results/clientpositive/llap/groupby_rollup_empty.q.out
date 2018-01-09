@@ -232,3 +232,66 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx2
 #### A masked pattern was here ####
 NULL	NULL	asd	1	NULL,1
+PREHOOK: query: insert into tx2 values
+(1,2,3,1.1,'x'),
+(3,2,3,1.1,'y')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@tx2
+POSTHOOK: query: insert into tx2 values
+(1,2,3,1.1,'x'),
+(3,2,3,1.1,'y')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@tx2
+POSTHOOK: Lineage: tx2.a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: tx2.b EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: tx2.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: tx2.d EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: tx2.u SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+PREHOOK: query: select  sum(c),
+	max(u),
+	'asd',
+        grouping(b),
+	'NULL,1' as expected
+from    tx2
+where	a=2
+group by a,b,d grouping sets (b, (),a, d)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tx2
+#### A masked pattern was here ####
+POSTHOOK: query: select  sum(c),
+	max(u),
+	'asd',
+        grouping(b),
+	'NULL,1' as expected
+from    tx2
+where	a=2
+group by a,b,d grouping sets (b, (),a, d)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx2
+#### A masked pattern was here ####
+NULL	NULL	asd	1	NULL,1
+PREHOOK: query: select  sum(c),
+	max(u),
+	collect_set(u),
+	'asd',
+        grouping(b),
+	'NULL,1' as expected
+from    tx2
+where	a=2
+group by a,b,d grouping sets ( b, (), a, d)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tx2
+#### A masked pattern was here ####
+POSTHOOK: query: select  sum(c),
+	max(u),
+	collect_set(u),
+	'asd',
+        grouping(b),
+	'NULL,1' as expected
+from    tx2
+where	a=2
+group by a,b,d grouping sets ( b, (), a, d)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx2
+#### A masked pattern was here ####
+NULL	NULL	[]	asd	1	NULL,1
