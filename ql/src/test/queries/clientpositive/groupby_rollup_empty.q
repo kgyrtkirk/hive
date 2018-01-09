@@ -69,27 +69,6 @@ insert into tx2 values
 (1,2,3,1.1,'x','b'),
 (3,2,3,1.1,'y','b');
 
-select  sum(c),
-	max(u),
-	max(bi),
-	'asd',
-        grouping(b),
-	'NULL,1' as expected
-from    tx2
-where	a=2
-group by a,b,d grouping sets (b, (),a, d);
-
-select  sum(c),
-	max(u),
-	collect_set(u),
-	collect_set(bi),
-	'asd',
-        grouping(b),
-	'NULL,1' as expected
-from    tx2
-where	a=2
-group by a,b,d grouping sets ( b, (), a, d);
-
 select  sum(a),
 	u,
 	bi,
