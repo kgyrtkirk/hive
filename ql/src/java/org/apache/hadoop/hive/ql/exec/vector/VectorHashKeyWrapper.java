@@ -480,6 +480,10 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     Arrays.fill(isNull, false);
   }
 
+  public void setNull() {
+    Arrays.fill(isNull, true);
+  }
+
   public boolean isNull(int keyIndex) {
     return isNull[keyIndex];
   }
