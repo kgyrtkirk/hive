@@ -300,6 +300,13 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     throw new UnsupportedOperationException();
   }
 
+  public void assignLong(int keyIndex, int index, long v) {
+    isNull[keyIndex] = false;
+    longValues[index] = v;
+  }
+
+  // FIXME: isNull is not updated; which might cause problems
+  @Deprecated
   public void assignLong(int index, long v) {
     longValues[index] = v;
   }
