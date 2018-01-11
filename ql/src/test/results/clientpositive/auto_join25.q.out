@@ -64,6 +64,9 @@ PREHOOK: Output: default@dest_j2
 Hive Runtime Error: Map local work exhausted memory
 FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
+Hive Runtime Error: Map local work exhausted memory
+FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
+ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 POSTHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key)
 INSERT OVERWRITE TABLE dest_j2 SELECT src1.key, src3.value
 POSTHOOK: type: QUERY
@@ -76,7 +79,7 @@ RUN: Stage-15:MAPREDLOCAL
 RUN: Stage-1:MAPRED
 RUN: Stage-9:CONDITIONAL
 RUN: Stage-13:MAPREDLOCAL
-RUN: Stage-7:MAPRED
+RUN: Stage-2:MAPRED
 RUN: Stage-0:MOVE
 RUN: Stage-4:MAPRED
 RUN: Stage-3:STATS
@@ -104,6 +107,9 @@ INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest_j1
+Hive Runtime Error: Map local work exhausted memory
+FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
+ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 POSTHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
 POSTHOOK: type: QUERY
@@ -113,7 +119,7 @@ POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 RUN: Stage-7:CONDITIONAL
 RUN: Stage-8:MAPREDLOCAL
-RUN: Stage-5:MAPRED
+RUN: Stage-1:MAPRED
 RUN: Stage-0:MOVE
 RUN: Stage-3:MAPRED
 RUN: Stage-2:STATS
