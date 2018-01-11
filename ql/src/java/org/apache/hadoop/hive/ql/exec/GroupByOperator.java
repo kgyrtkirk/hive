@@ -65,8 +65,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.tez.runtime.RuntimeTask;
+import org.apache.tez.runtime.api.ProcessorContext;
+import org.apache.tez.runtime.api.impl.TezProcessorContextImpl;
+import org.apache.tez.runtime.api.impl.TezTaskContextImpl;
 
 import javolution.util.FastBitSet;
 
@@ -129,9 +133,9 @@ public class GroupByOperator extends Operator<GroupByDesc> {
 
   private transient boolean groupingSetsPresent;      // generates grouping set
   private transient int groupingSetsPosition;         // position of grouping set, generally the last of keys
-  private transient List<Integer> groupingSets;       // declared grouping set values
+  private transient List<Long> groupingSets;       // declared grouping set values
   private transient FastBitSet[] groupingSetsBitSet;  // bitsets acquired from grouping set values
-  private transient IntWritable[] newKeysGroupingSets;
+  private transient LongWritable[] newKeysGroupingSets;
 
   // for these positions, some variable primitive type (String) is used, so size
   // cannot be estimated. sample it at runtime.
@@ -179,7 +183,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
    * @param length
    * @return
    */
-  public static FastBitSet groupingSet2BitSet(int value, int length) {
+  public static FastBitSet groupingSet2BitSet(long value, int length) {
     FastBitSet bits = new FastBitSet();
     for (int index = length - 1; index >= 0; index--) {
       if (value % 2 != 0) {
@@ -230,13 +234,13 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     if (groupingSetsPresent) {
       groupingSets = conf.getListGroupingSets();
       groupingSetsPosition = conf.getGroupingSetPosition();
-      newKeysGroupingSets = new IntWritable[groupingSets.size()];
+      newKeysGroupingSets = new LongWritable[groupingSets.size()];
       groupingSetsBitSet = new FastBitSet[groupingSets.size()];
 
       int pos = 0;
-      for (Integer groupingSet: groupingSets) {
+      for (Long groupingSet: groupingSets) {
         // Create the mapping corresponding to the grouping set
-        newKeysGroupingSets[pos] = new IntWritable(groupingSet);
+        newKeysGroupingSets[pos] = new LongWritable(groupingSet);
         groupingSetsBitSet[pos] = groupingSet2BitSet(groupingSet, groupingSetsPosition);
         pos++;
       }
@@ -1101,7 +1105,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
           Object[] keys=new Object[outputKeyLength];
           int pos = conf.getGroupingSetPosition();
           if (pos >= 0 && pos < outputKeyLength) {
-            keys[pos] = new IntWritable((1 << pos) - 1);
+            keys[pos] = new LongWritable((1L << pos) - 1);
           }
           forward(keys, aggregations);
         } else {
@@ -1173,11 +1177,11 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       return true;
     }
     int groupingSetPosition = desc.getGroupingSetPosition();
-    List<Integer> listGroupingSets = desc.getListGroupingSets();
+    List<Long> listGroupingSets = desc.getListGroupingSets();
     // groupingSets are known at map/reducer side; but have to do real processing
     // hence grouppingSetsPresent is true only at map side
     if (groupingSetPosition >= 0 && listGroupingSets != null) {
-      Integer emptyGrouping = (1 << groupingSetPosition) - 1;
+      Long emptyGrouping = (1L << groupingSetPosition) - 1;
       if (listGroupingSets.contains(emptyGrouping)) {
         return true;
       }
@@ -1189,6 +1193,19 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     MapredContext ctx = TezContext.get();
     if (ctx != null && ctx instanceof TezContext) {
       TezContext tezContext = (TezContext) ctx;
+
+      try {
+        ProcessorContext pc = tezContext.getTezProcessorContext();
+        Field f = TezTaskContextImpl.class.getDeclaredField("runtimeTask");
+        TezProcessorContextImpl a = null;
+        f.setAccessible(true);
+        RuntimeTask rt = (RuntimeTask) f.get(pc);
+        if (rt.getEventCounter() != 0) {
+          return false;
+        }
+      } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+        throw new RuntimeException(e);
+      }
       return tezContext.getTezProcessorContext().getTaskIndex() == 0;
     }
     return true;
