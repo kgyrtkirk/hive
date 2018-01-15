@@ -140,7 +140,8 @@ public class StatsRulesProcFactory {
         OperatorStats os = oss.lookup(tsop);
         if (os != null) {
           outStats = stats.clone();
-          outStats.setNumRows(os.getOutputRecords());
+          outStats = outStats.scaleToRowCount2(os.getOutputRecords());
+          //          outStats.setNumRows(os.getOutputRecords());
           //          outStats = new Statistics(os.getOutputRecords(), stats.getAvgRowSize() * os.getOutputRecords());
           //          outStats.setColumnStats(stats.getColumnStats());
         } else {
@@ -355,7 +356,8 @@ public class StatsRulesProcFactory {
         OperatorStatSource oss = ReOptimizeDriver.getOperatorStats();
         OperatorStats os = oss.lookup(fop);
         if (os != null) {
-          st.setNumRows(os.getOutputRecords());
+          st = st.scaleToRowCount2(os.getOutputRecords());
+          //          st.setNumRows(os.getOutputRecords());
           //          outStats = new Statistics(os.getOutputRecords(), stats.getAvgRowSize() * os.getOutputRecords());
           //          outStats.setColumnStats(stats.getColumnStats());
         }
@@ -2364,7 +2366,9 @@ public class StatsRulesProcFactory {
         OperatorStatSource oss = ReOptimizeDriver.getOperatorStats();
         OperatorStats os = oss.lookup(rop);
         if (os != null) {
-          outStats.setNumRows(os.getOutputRecords());
+          outStats = outStats.scaleToRowCount2(os.getOutputRecords());
+
+          //          outStats.setNumRows(os.getOutputRecords());
           //          outStats = new Statistics(os.getOutputRecords(), stats.getAvgRowSize() * os.getOutputRecords());
           //          outStats.setColumnStats(stats.getColumnStats());
         }

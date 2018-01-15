@@ -312,6 +312,17 @@ public class Statistics implements Serializable {
     this.runTimeNumRows = runTimeNumRows;
   }
 
+  public Statistics scaleToRowCount2(long newRowCount) {
+    Statistics ret = clone();
+    if (numRows == 0) {
+      return ret;
+    }
+    // FIXME: using real scaling by new/old ration might yield better results?
+    ret.numRows = newRowCount;
+    ret.dataSize = StatsUtils.safeMult(getAvgRowSize(), newRowCount);
+    return ret;
+  }
+
   public Statistics scaleToRowCount(long newRowCount) {
     Statistics ret;
     ret = clone();
