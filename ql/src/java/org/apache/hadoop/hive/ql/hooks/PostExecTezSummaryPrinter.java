@@ -83,7 +83,13 @@ public class PostExecTezSummaryPrinter implements ExecuteWithHookContext {
                 console.printInfo("   " + counter.getDisplayName() + ": " + counter.getValue(), false);
               }
             }
+          } else if (group.getName().equals(org.apache.tez.common.counters.TaskCounter.class.getName())) {
+            console.printInfo(tezTask.getId() + " org.apache.tez.common.counters.TaskCounter COUNTERS:", false);
+            for (TezCounter counter : group) {
+                console.printError("   " + counter.getDisplayName() + ": " + counter.getValue());
+            }
           }
+
         }
       }
     }
