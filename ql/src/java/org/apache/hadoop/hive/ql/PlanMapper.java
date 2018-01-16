@@ -18,24 +18,34 @@
 
 package org.apache.hadoop.hive.ql;
 
-import org.apache.calcite.rel.core.Filter;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 // FIXME: rename to EquivGroupMapper?
 public class PlanMapper {
 
+  private Map<Object, EquivGroup> objectMap = new HashMap<>();
 
+  class EquivGroup {
+    Set<Object> members = new HashSet<>();
 
-  public void link(ASTNode condn, Operator<?> output) {
-    //    getEntry(condn).setOperator(output);
+    public void add(Object o) {
+      members.add(o);
+      objectMap.put(o, this);
+    }
   }
 
-  public void link(ASTNode cond, Filter where) {
-    throw new RuntimeException();
-    // TODO Auto-generated method stub
-    //
+  public void link(Object o1, Object o2) {
+    EquivGroup g1 = objectMap.get(o1);
+    EquivGroup g2 = objectMap.get(o2);
+    if (g1 != null && g2 != null && g1 != g2) {
+      throw new RuntimeException("equivalence mapping violation");
+    }
+    EquivGroup targetGroup = (g1 != null) ? g1 : (g2 != null ? g2 : new EquivGroup());
+    targetGroup.add(o1);
+    targetGroup.add(o2);
   }
-
 
 }
