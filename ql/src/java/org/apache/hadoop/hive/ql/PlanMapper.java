@@ -24,7 +24,10 @@ import java.util.Map;
 import java.util.Set;
 
 // FIXME: rename to EquivGroupMapper?
+// FIXME: consider moving this to a different package
 public class PlanMapper {
+
+  Set<EquivGroup> groups = new HashSet<>();
 
   private Map<Object, EquivGroup> objectMap = new HashMap<>();
 
@@ -44,6 +47,7 @@ public class PlanMapper {
       throw new RuntimeException("equivalence mapping violation");
     }
     EquivGroup targetGroup = (g1 != null) ? g1 : (g2 != null ? g2 : new EquivGroup());
+    groups.add(targetGroup);
     targetGroup.add(o1);
     targetGroup.add(o2);
   }
