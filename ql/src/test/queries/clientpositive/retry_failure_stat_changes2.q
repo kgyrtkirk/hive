@@ -11,13 +11,13 @@ create table tw(id_uw int,w int);
 
 from s
 insert overwrite table tu
-	select x as id_uv,x as id_uw,x as u
+	select x,x,x
 	where x<=6 or x=10
 insert overwrite table tv
-	select x as id_uv,x as v
+	select x,x
 	where x<=3 or x=10
 insert overwrite table tw
-	select x as id_uw,x as w
+	select x,x
 ;
 
 
@@ -27,6 +27,7 @@ set hive.explain.user=true;
 set hive.query.reexecution.explain=true;
 -- set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecTezSummaryPrinter;
 
+explain analyze
 select sum(u*v*w) from tu
 	join tv on (tu.id_uv=tv.id_uv)
 	join tw on (tu.id_uw=tw.id_uw)
