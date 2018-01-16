@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorStats;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
@@ -168,6 +169,11 @@ public class ReOptimizeDriver extends AbstractReExecDriver {
 
   public static OperatorStatSource getOperatorStats() {
     return oss;
+  }
+
+  @Override
+  public CommandProcessorResponse run() throws CommandNeedRetryException {
+    return super.run();
   }
 
 }

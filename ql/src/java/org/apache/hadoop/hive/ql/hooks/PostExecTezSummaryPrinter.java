@@ -61,6 +61,11 @@ public class PostExecTezSummaryPrinter implements ExecuteWithHookContext {
       if (counters != null) {
         String hiveCountersGroup = HiveConf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP);
         for (CounterGroup group : counters) {
+          if(true){            console.printInfo(tezTask.getId() + " " + group.getName() + "  COUNTERS:", false);
+          for (TezCounter counter : group) {
+            console.printError("   " + counter.getDisplayName() + ": " + counter.getValue());
+            }
+          }else {
           if (hiveCountersGroup.equals(group.getDisplayName())) {
             console.printInfo(tezTask.getId() + " HIVE COUNTERS:", false);
             for (TezCounter counter : group) {
@@ -88,6 +93,12 @@ public class PostExecTezSummaryPrinter implements ExecuteWithHookContext {
             for (TezCounter counter : group) {
                 console.printError("   " + counter.getDisplayName() + ": " + counter.getValue());
             }
+          } else {
+            console.printInfo(tezTask.getId() + " " + group.getName() + "  COUNTERS:", false);
+            for (TezCounter counter : group) {
+              console.printError("   " + counter.getDisplayName() + ": " + counter.getValue());
+          }
+          }
           }
 
         }
