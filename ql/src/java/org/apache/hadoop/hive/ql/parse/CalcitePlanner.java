@@ -1165,7 +1165,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   ASTNode getOptimizedAST() throws SemanticException {
     RelNode optimizedOptiqPlan = logicalPlan();
     ASTNode optiqOptimizedAST = ASTConverter.convert(optimizedOptiqPlan, resultSchema,
-            HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COLUMN_ALIGNMENT));
+            HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COLUMN_ALIGNMENT),ctx.getPlanMapper());
     return optiqOptimizedAST;
   }
 

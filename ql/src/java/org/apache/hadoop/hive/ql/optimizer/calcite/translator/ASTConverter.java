@@ -60,6 +60,7 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.PlanMapper;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -92,16 +93,19 @@ public class ASTConverter {
 
   private long             derivedTableCount;
 
-  ASTConverter(RelNode root, long dtCounterInitVal) {
+  private PlanMapper planMapper;
+
+  ASTConverter(RelNode root, long dtCounterInitVal, PlanMapper planMapper) {
     this.root = root;
     hiveAST = new HiveAST();
     this.derivedTableCount = dtCounterInitVal;
+    this.planMapper = planMapper;
   }
 
-  public static ASTNode convert(final RelNode relNode, List<FieldSchema> resultSchema, boolean alignColumns)
+  public static ASTNode convert(final RelNode relNode, List<FieldSchema> resultSchema, boolean alignColumns, PlanMapper planMapper)
       throws CalciteSemanticException {
     RelNode root = PlanModifierForASTConv.convertOpTree(relNode, resultSchema, alignColumns);
-    ASTConverter c = new ASTConverter(root, 0);
+    ASTConverter c = new ASTConverter(root, 0, planMapper);
     return c.convert();
   }
 
@@ -124,7 +128,7 @@ public class ASTConverter {
     if (where != null) {
       ASTNode cond = where.getCondition().accept(new RexVisitor(schema));
       hiveAST.where = ASTBuilder.where(cond);
-
+      planMapper.link(cond, where);
     }
 
     /*
@@ -378,16 +382,16 @@ public class ASTConverter {
       }
     } else if (r instanceof Union) {
       Union u = ((Union) r);
-      ASTNode left = new ASTConverter(((Union) r).getInput(0), this.derivedTableCount).convert();
+      ASTNode left = new ASTConverter(((Union) r).getInput(0), this.derivedTableCount, planMapper).convert();
       for (int ind = 1; ind < u.getInputs().size(); ind++) {
         left = getUnionAllAST(left, new ASTConverter(((Union) r).getInput(ind),
-            this.derivedTableCount).convert());
+            this.derivedTableCount, planMapper).convert());
         String sqAlias = nextAlias();
         ast = ASTBuilder.subQuery(left, sqAlias);
         s = new Schema((Union) r, sqAlias);
       }
     } else {
-      ASTConverter src = new ASTConverter(r, this.derivedTableCount);
+      ASTConverter src = new ASTConverter(r, this.derivedTableCount, planMapper);
       ASTNode srcAST = src.convert();
       String sqAlias = nextAlias();
       s = src.getRowSchema(sqAlias);
