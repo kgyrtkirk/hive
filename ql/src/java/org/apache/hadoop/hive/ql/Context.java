@@ -155,6 +155,8 @@ public class Context {
   private Operation operation = Operation.OTHER;
   private WmContext wmContext;
 
+  private PlanMapper planMapper = new PlanMapper();
+
   public void setOperation(Operation operation) {
     this.operation = operation;
   }
@@ -178,6 +180,7 @@ public class Context {
     DestClausePrefix(String prefix) {
       this.prefix = prefix;
     }
+    @Override
     public String toString() {
       return prefix;
     }
@@ -230,7 +233,7 @@ public class Context {
       }
       if(!thisIsInASubquery) {
         throw new IllegalStateException("Expected '" + getMatchedText(curNode) + "' to be in sub-query or set operation.");
-      } 
+      }
       return DestClausePrefix.INSERT;
     }
     switch (operation) {
@@ -253,7 +256,7 @@ public class Context {
         assert insert != null && insert.getType() == HiveParser.TOK_INSERT;
         ASTNode query = (ASTNode) insert.getParent();
         assert query != null && query.getType() == HiveParser.TOK_QUERY;
-        
+
         for(int childIdx = 1; childIdx < query.getChildCount(); childIdx++) {//1st child is TOK_FROM
           assert query.getChild(childIdx).getType() == HiveParser.TOK_INSERT;
           if(insert == query.getChild(childIdx)) {
@@ -1041,5 +1044,9 @@ public class Context {
 
   public String getExecutionId() {
     return executionId;
+  }
+
+  public PlanMapper getPlanMapper() {
+    return planMapper;
   }
 }
