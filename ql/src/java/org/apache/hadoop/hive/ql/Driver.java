@@ -104,6 +104,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -276,10 +277,15 @@ public class Driver implements IDriver {
     return schema;
   }
 
-public Context  getContext(){
+  // FIXME: consider not adding this method..
+  public Context getContext() {
     return ctx;
   }
-  
+
+  public PlanMapper getPlanMapper() {
+    return ctx.getPlanMapper();
+  }
+
   /**
    * Get a Schema with fields represented with native Hive types
    */

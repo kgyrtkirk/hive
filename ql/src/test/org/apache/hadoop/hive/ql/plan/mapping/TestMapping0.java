@@ -19,15 +19,12 @@
 package org.apache.hadoop.hive.ql.plan.mapping;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.util.List;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.HiveFilterRef;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
@@ -51,22 +48,7 @@ public class TestMapping0 {
     dropTables(driver);
     String cmds[] = {
         // @formatter:off
-        "create table s (x int)",
-        "insert into s values (1),(2),(3),(4),(5),(6),(7),(8),(9),(10)",
         "create table tu(id_uv int,id_uw int,u int)",
-        "create table tv(id_uv int,v int)",
-        "create table tw(id_uw int,w int)",
-
-        "from s\n" +
-        "insert overwrite table tu\n" +
-        "        select x,x,x\n" +
-        "        where x<=6 or x=10\n" +
-        "insert overwrite table tv\n" +
-        "        select x,x\n" +
-        "        where x<=3 or x=10\n" +
-        "insert overwrite table tw\n" +
-        "        select x,x\n" +
-        "",
         // @formatter:on
     };
     for (String cmd : cmds) {
@@ -90,38 +72,21 @@ public class TestMapping0 {
   }
 
   @Test
-  public void axe1() {
-  }
-
-  @Test
-  //  @Ignore("this will need a proper condition comparator")
-  public void testMapping() throws ParseException {
+  public void testMappingSameQuery() throws ParseException {
     IDriver driver = createDriver();
-    String query0 = "select sum(id_uv),sum(u) from tu where u>1";
-    String query1 = "select sum(u),sum(id_uv) from tu where u>1";
+    String query = "select sum(id_uv),sum(u) from tu where u>1";
     int ret;
-    ret = driver.compile(query0);
+    ret = driver.compile(query);
     assertEquals("Checking command success", 0, ret);
     PlanMapper pm0 = ((Driver) driver).getContext().getPlanMapper();
-    ret = driver.compile(query1);
+    ret = driver.compile(query);
     assertEquals("Checking command success", 0, ret);
     PlanMapper pm1 = ((Driver) driver).getContext().getPlanMapper();
-
-    pm0.runMapper(HiveFilterRef.MAPPER);
-    pm1.runMapper(HiveFilterRef.MAPPER);
-
-    HiveFilter n0 = pm0.getAll(HiveFilter.class).get(0);
-    HiveFilter n1 = pm1.getAll(HiveFilter.class).get(0);
 
     HiveFilterRef fm0 = pm0.getAll(HiveFilterRef.class).get(0);
     HiveFilterRef fm1 = pm1.getAll(HiveFilterRef.class).get(0);
 
-    //    boolean aa = n0.getCondition().equals(n1.getCondition());
-    boolean aa = fm0.equals(fm1);
-    System.out.println(aa);
-    assertTrue(aa);
-
-    int asdf = 1;
+    assertEquals(fm0, fm1);
   }
 
   @Test

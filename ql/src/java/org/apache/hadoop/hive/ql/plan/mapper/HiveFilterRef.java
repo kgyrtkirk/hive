@@ -51,6 +51,11 @@ public class HiveFilterRef {
     return Objects.equals(myKey, other.myKey);
   }
 
+  @Override
+  public String toString() {
+    return String.format("REF\n%s", myKey);
+  }
+
   private static class HiveFilterMapper implements GroupTransformer {
 
     @Override
