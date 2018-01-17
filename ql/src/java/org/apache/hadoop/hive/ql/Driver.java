@@ -105,6 +105,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapperProcess;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -668,6 +669,8 @@ public class Driver implements IDriver {
       if (plan.getFetchTask() != null) {
         plan.getFetchTask().initialize(queryState, plan, null, ctx.getOpContext());
       }
+
+      PlanMapperProcess.runPostProcess(ctx.getPlanMapper());
 
       //do the authorization check
       if (!sem.skipAuthorization() &&
