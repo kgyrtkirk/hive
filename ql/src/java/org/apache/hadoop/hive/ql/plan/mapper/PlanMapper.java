@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql;
+package org.apache.hadoop.hive.ql.plan.mapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,11 +71,6 @@ public class PlanMapper {
       ret.addAll(g.getAll(clazz));
     }
     return ret;
-  }
-
-  // FIXME: seems more like a visitor?
-  public interface GroupTransformer {
-    void map(EquivGroup group);
   }
 
   public void runMapper(GroupTransformer mapper) {
