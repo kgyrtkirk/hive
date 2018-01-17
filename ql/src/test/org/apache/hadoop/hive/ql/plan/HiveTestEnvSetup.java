@@ -18,17 +18,65 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import org.junit.rules.ExternalResource;
+
+import com.google.common.collect.Sets;
 
 // FIXME: move this to somewhere else
 public class HiveTestEnvSetup extends ExternalResource {
 
+  public static final String HIVE_ROOT = getHiveRoot();
+
+  private static String getHiveRoot() {
+    List<String> candidateSiblings = new ArrayList<>();
+    if (System.getProperty("hive.root") != null) {
+      try {
+        candidateSiblings.add(new File(System.getProperty("hive.root")).getCanonicalPath());
+      } catch (IOException e) {
+        throw new RuntimeException("error getting hive.root", e);
+      }
+    }
+    candidateSiblings.add(new File(".").getAbsolutePath());
+
+    for (String string : candidateSiblings) {
+      File curr = new File(string);
+      do {
+        Set<String> lls = Sets.newHashSet(curr.list());
+        if (lls.contains("itests") && lls.contains("ql") && lls.contains("metastore")) {
+          System.out.println("detected hiveRoot: " + curr);
+          return ensurePathEndsInSlash(curr.getAbsolutePath());
+        }
+        curr = curr.getParentFile();
+      } while (curr != null);
+    }
+    throw new RuntimeException("unable to find hiveRoot");
+  }
+
+  public static String ensurePathEndsInSlash(String path) {
+    if (path == null) {
+      throw new NullPointerException("Path cannot be null");
+    }
+    if (path.endsWith(File.separator)) {
+      return path;
+    } else {
+      return path + File.separator;
+    }
+  }
+
   @Override
   protected void before() throws Throwable {
+
   }
 
   @Override
   protected void after() {
   }
+
 
 }

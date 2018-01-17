@@ -119,6 +119,7 @@ import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.HiveTestEnvSetup;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -2158,15 +2159,10 @@ public class QTestUtil {
     System.err.flush();
   }
 
+  // FIXME: inline
+  @Deprecated
   public static String ensurePathEndsInSlash(String path) {
-    if(path == null) {
-      throw new NullPointerException("Path cannot be null");
-    }
-    if(path.endsWith(File.separator)) {
-      return path;
-    } else {
-      return path + File.separator;
-    }
+    return HiveTestEnvSetup.ensurePathEndsInSlash(path);
   }
 
   private static String[] cachedQvFileList = null;
