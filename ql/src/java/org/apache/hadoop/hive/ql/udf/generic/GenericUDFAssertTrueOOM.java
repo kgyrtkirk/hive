@@ -18,10 +18,12 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -31,8 +33,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.BooleanWritable;
 
 @UDFType(deterministic = false)
-public class GenericUDFReExecHelper extends GenericUDF {
+public class GenericUDFAssertTrueOOM extends GenericUDF {
   private ObjectInspectorConverters.Converter conditionConverter = null;
+
+  public GenericUDFAssertTrueOOM() {
+    HiveConf conf = SessionState.getSessionConf();
+    if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
+      throw new RuntimeException("this UDF is only available in testmode");
+    }
+  }
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
