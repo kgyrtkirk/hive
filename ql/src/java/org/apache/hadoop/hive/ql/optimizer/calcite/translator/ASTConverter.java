@@ -349,6 +349,7 @@ public class ASTConverter {
       TableScan f = (TableScan) r;
       s = new Schema(f);
       ast = ASTBuilder.table(f);
+      planMapper.link(ast, f);
     } else if (r instanceof DruidQuery) {
       DruidQuery f = (DruidQuery) r;
       s = new Schema(f);

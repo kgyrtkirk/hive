@@ -59,6 +59,7 @@ public class ReOptimizeDriver extends AbstractReExecDriver {
       os = new HashMap<>();
     }
 
+    @Deprecated
     public OperatorStats lookup(Operator<?> tsop) {
       return os.get(tsop.getOperatorId());
     }
@@ -98,7 +99,7 @@ public class ReOptimizeDriver extends AbstractReExecDriver {
 
   @Override
   protected void onExecutionSuccess(HookContext hookContext) {
-
+    onExecutionSuccess(hookContext);
   }
 
   @Override
@@ -110,7 +111,7 @@ public class ReOptimizeDriver extends AbstractReExecDriver {
       List<BaseWork> baseWorks = tezTask.getWork().getAllWork();
       for (BaseWork baseWork : baseWorks) {
         String vertexName = baseWork.getName();
-        LOG.info("Updating runtime statistics for tez task: {}", vertexName);
+        LOG.info("Reading runtime statistics for tez vertex task: {}", vertexName);
         TezCounters counters = tezTask.getTezCounters();
         if (counters != null) {
           String groupName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP);
