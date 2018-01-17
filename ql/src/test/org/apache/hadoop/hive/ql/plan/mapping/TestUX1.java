@@ -21,20 +21,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-import java.util.Objects;
-
-import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.parse.ParseException;
-import org.apache.hadoop.hive.ql.plan.mapper.GroupTransformer;
+import org.apache.hadoop.hive.ql.plan.mapper.HiveFilterRef;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
@@ -92,46 +87,8 @@ public class TestUX1 {
     }
   }
 
-  public static class HiveFilterRef {
 
-    // this is just a rough plan/operator indepentent ref
-    private String myKey;
 
-    public HiveFilterRef(HiveFilter filter) {
-      myKey = RelOptUtil.toString(filter);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hashCode(myKey);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (obj == null || getClass() != obj.getClass()) {
-        return false;
-      }
-      final HiveFilterRef other = (HiveFilterRef) obj;
-      return Objects.equals(myKey, other.myKey);
-    }
-
-  }
-
-  private static class HiveFilterMapper implements GroupTransformer {
-
-    @Override
-    public void map(EquivGroup group) {
-      List<HiveFilter> filters = group.getAll(HiveFilter.class);
-      if (filters.size() != 1) {
-        return;
-      }
-      HiveFilter filter = filters.get(0);
-      if (filter.getChildExps().size() == 1 && filter.getInput() instanceof HiveTableScan) {
-        group.add(new HiveFilterRef(filter));
-      }
-    }
-
-  }
 
   @Test
   public void axe1() {
@@ -151,8 +108,8 @@ public class TestUX1 {
     assertEquals("Checking command success", 0, ret);
     PlanMapper pm1 = ((Driver) driver).getContext().getPlanMapper();
 
-    pm0.runMapper(new HiveFilterMapper());
-    pm1.runMapper(new HiveFilterMapper());
+    pm0.runMapper(HiveFilterRef.MAPPER);
+    pm1.runMapper(HiveFilterRef.MAPPER);
 
     HiveFilter n0 = pm0.getAll(HiveFilter.class).get(0);
     HiveFilter n1 = pm1.getAll(HiveFilter.class).get(0);
