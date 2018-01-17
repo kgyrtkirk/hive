@@ -28,10 +28,14 @@ import org.apache.hadoop.hive.ql.PlanMapper;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.AfterClass;
 import org.junit.Test;
 
 public class TestUX1 {
+
+  @ClassRule
+  public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
 
   @BeforeClass
   public static void beforeClass() throws Exception {

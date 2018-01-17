@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.calcite.rel.core.CorrelationId;
 import java.util.Set;
 import java.util.HashSet;
- 
+
 public class HiveFilter extends Filter implements HiveRelNode {
 
   public HiveFilter(RelOptCluster cluster, RelTraitSet traits, RelNode child, RexNode condition) {
@@ -109,6 +109,7 @@ public class HiveFilter extends Filter implements HiveRelNode {
       return allCorrVars;
   }
 
+  @Override
   public RelNode accept(RelShuttle shuttle) {
     if (shuttle instanceof HiveRelShuttle) {
       return ((HiveRelShuttle)shuttle).visit(this);
