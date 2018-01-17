@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,7 +33,7 @@ public class PlanMapper {
 
   private Map<Object, EquivGroup> objectMap = new HashMap<>();
 
-  class EquivGroup {
+  public class EquivGroup {
     Set<Object> members = new HashSet<>();
 
     public void add(Object o) {
@@ -43,7 +42,7 @@ public class PlanMapper {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> Collection<T> getAll(Class<T> clazz) {
+    public <T> List<T> getAll(Class<T> clazz) {
       List<T> ret = new ArrayList<>();
       for (Object m : members) {
         if (clazz.isInstance(m)) {
@@ -72,6 +71,17 @@ public class PlanMapper {
       ret.addAll(g.getAll(clazz));
     }
     return ret;
+  }
+
+  // FIXME: seems more like a visitor?
+  public interface GroupTransformer {
+    void map(EquivGroup group);
+  }
+
+  public void runMapper(GroupTransformer mapper) {
+    for (EquivGroup equivGroup : groups) {
+      mapper.map(equivGroup);
+    }
   }
 
 }

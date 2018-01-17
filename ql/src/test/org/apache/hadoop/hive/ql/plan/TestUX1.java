@@ -18,19 +18,27 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Objects;
 
+import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.PlanMapper;
+import org.apache.hadoop.hive.ql.PlanMapper.EquivGroup;
+import org.apache.hadoop.hive.ql.PlanMapper.GroupTransformer;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.AfterClass;
 import org.junit.Test;
 
@@ -83,7 +91,84 @@ public class TestUX1 {
     }
   }
 
+  public static class HiveFilterRef {
+
+    // this is just a rough plan/operator indepentent ref
+    private String myKey;
+
+    public HiveFilterRef(HiveFilter filter) {
+      myKey = RelOptUtil.toString(filter);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hashCode(myKey);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == null || getClass() != obj.getClass()) {
+        return false;
+      }
+      final HiveFilterRef other = (HiveFilterRef) obj;
+      return Objects.equals(myKey, other.myKey);
+    }
+
+  }
+
+  private static class HiveFilterMapper implements GroupTransformer {
+
+    @Override
+    public void map(EquivGroup group) {
+      List<HiveFilter> filters = group.getAll(HiveFilter.class);
+      if (filters.size() != 1) {
+        return;
+      }
+      HiveFilter filter = filters.get(0);
+      if (filter.getChildExps().size() == 1 && filter.getInput() instanceof HiveTableScan) {
+        group.add(new HiveFilterRef(filter));
+      }
+    }
+
+  }
+
   @Test
+  public void axe1() {
+  }
+
+  @Test
+  //  @Ignore("this will need a proper condition comparator")
+  public void testMapping() throws ParseException {
+    IDriver driver = createDriver();
+    String query0 = "select sum(id_uv),sum(u) from tu where u>1";
+    String query1 = "select sum(u),sum(id_uv) from tu where u>1";
+    int ret;
+    ret = driver.compile(query0);
+    assertEquals("Checking command success", 0, ret);
+    PlanMapper pm0 = ((Driver) driver).getContext().getPlanMapper();
+    ret = driver.compile(query1);
+    assertEquals("Checking command success", 0, ret);
+    PlanMapper pm1 = ((Driver) driver).getContext().getPlanMapper();
+
+    pm0.runMapper(new HiveFilterMapper());
+    pm1.runMapper(new HiveFilterMapper());
+
+    HiveFilter n0 = pm0.getAll(HiveFilter.class).get(0);
+    HiveFilter n1 = pm1.getAll(HiveFilter.class).get(0);
+
+    HiveFilterRef fm0 = pm0.getAll(HiveFilterRef.class).get(0);
+    HiveFilterRef fm1 = pm1.getAll(HiveFilterRef.class).get(0);
+
+    //    boolean aa = n0.getCondition().equals(n1.getCondition());
+    boolean aa = fm0.equals(fm1);
+    System.out.println(aa);
+    assertTrue(aa);
+
+    int asdf = 1;
+  }
+
+  @Test
+  @Ignore
   public void testSelectEntityDirect() throws ParseException {
     IDriver driver = createDriver();
     // @formatter:off
@@ -98,7 +183,7 @@ public class TestUX1 {
     PlanMapper pm0 = ((Driver) driver).getContext().getPlanMapper();
     ret = driver.compile(query);
     assertEquals("Checking command success", 0, ret);
-    PlanMapper pm1 = ((Driver)driver).getContext().getPlanMapper();
+    PlanMapper pm1 = ((Driver) driver).getContext().getPlanMapper();
 
     List<RelNode> nodes0 = pm0.getAll(RelNode.class);
     List<RelNode> nodes1 = pm1.getAll(RelNode.class);
