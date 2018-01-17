@@ -75,11 +75,33 @@ public class TestMapping0 {
   public void testMappingSameQuery() throws ParseException {
     IDriver driver = createDriver();
     String query = "select sum(id_uv),sum(u) from tu where u>1";
-    int ret;
-    ret = driver.compile(query);
+    PlanMapper pm0 = getMapperForQuery(driver, query);
+    PlanMapper pm1 = getMapperForQuery(driver, query);
+
+    HiveFilterRef fm0 = pm0.getAll(HiveFilterRef.class).get(0);
+    HiveFilterRef fm1 = pm1.getAll(HiveFilterRef.class).get(0);
+
+    assertEquals(fm0, fm1);
+  }
+
+  private PlanMapper getMapperForQuery(IDriver driver, String query) {
+    int ret = driver.compile(query);
     assertEquals("Checking command success", 0, ret);
     PlanMapper pm0 = ((Driver) driver).getContext().getPlanMapper();
-    ret = driver.compile(query);
+    return pm0;
+  }
+
+  @Test
+  @Ignore
+  public void testMappingLookup() throws ParseException {
+    IDriver driver = createDriver();
+    String query0 = "select sum(id_uv),sum(u) from tu where u>1";
+    String query1 = "select sum(id_uv),sum(u) from tu where u>1";
+    int ret;
+    ret = driver.compile(query0);
+    assertEquals("Checking command success", 0, ret);
+    PlanMapper pm0 = ((Driver) driver).getContext().getPlanMapper();
+    ret = driver.compile(query1);
     assertEquals("Checking command success", 0, ret);
     PlanMapper pm1 = ((Driver) driver).getContext().getPlanMapper();
 
@@ -100,9 +122,7 @@ public class TestMapping0 {
     "        where w>9 and u>1 and v>3";
     // @formatter:on
     int ret;
-    ret = driver.compile(query);
-    assertEquals("Checking command success", 0, ret);
-    PlanMapper pm0 = ((Driver) driver).getContext().getPlanMapper();
+    PlanMapper pm0 = getMapperForQuery(driver, query);
     ret = driver.compile(query);
     assertEquals("Checking command success", 0, ret);
     PlanMapper pm1 = ((Driver) driver).getContext().getPlanMapper();
