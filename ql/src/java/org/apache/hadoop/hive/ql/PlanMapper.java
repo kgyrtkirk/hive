@@ -18,8 +18,11 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,6 +41,17 @@ public class PlanMapper {
       members.add(o);
       objectMap.put(o, this);
     }
+
+    @SuppressWarnings("unchecked")
+    public <T> Collection<T> getAll(Class<T> clazz) {
+      List<T> ret = new ArrayList<>();
+      for (Object m : members) {
+        if (clazz.isInstance(m)) {
+          ret.add((T) m);
+        }
+      }
+      return ret;
+    }
   }
 
   public void link(Object o1, Object o2) {
@@ -50,6 +64,14 @@ public class PlanMapper {
     groups.add(targetGroup);
     targetGroup.add(o1);
     targetGroup.add(o2);
+  }
+
+  public <T> List<T> getAll(Class<T> clazz) {
+    List<T> ret = new ArrayList<>();
+    for (EquivGroup g : groups) {
+      ret.addAll(g.getAll(clazz));
+    }
+    return ret;
   }
 
 }

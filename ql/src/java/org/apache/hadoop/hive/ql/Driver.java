@@ -276,6 +276,10 @@ public class Driver implements IDriver {
     return schema;
   }
 
+public Context  getContext(){
+    return ctx;
+  }
+  
   /**
    * Get a Schema with fields represented with native Hive types
    */
