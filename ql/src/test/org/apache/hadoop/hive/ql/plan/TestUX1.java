@@ -24,6 +24,8 @@ import java.util.List;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.PlanMapper;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -39,7 +41,7 @@ public class TestUX1 {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    Driver driver = createDriver();
+    IDriver driver = createDriver();
     dropTables(driver);
     String cmds[] = {
         // @formatter:off
@@ -69,20 +71,21 @@ public class TestUX1 {
 
   @AfterClass
   public static void afterClass() throws Exception {
-    Driver driver = createDriver();
+    IDriver driver = createDriver();
     dropTables(driver);
   }
 
-  public static void dropTables(Driver driver) throws Exception {
+  public static void dropTables(IDriver driver) throws Exception {
     String tables[] = { "s", "tu", "tv", "tw" };
     for (String t : tables) {
-      driver.run("drop table if exists " + t);
+      int ret = driver.run("drop table if exists " + t).getResponseCode();
+      assertEquals("Checking command success", 0, ret);
     }
   }
 
   @Test
   public void testSelectEntityDirect() throws ParseException {
-    Driver driver = createDriver();
+    IDriver driver = createDriver();
     // @formatter:off
     String query="select sum(u*v*w) from tu\n" +
     "        join tv on (tu.id_uv=tv.id_uv)\n" +
@@ -92,10 +95,10 @@ public class TestUX1 {
     int ret;
     ret = driver.compile(query);
     assertEquals("Checking command success", 0, ret);
-    PlanMapper pm0 = driver.getContext().getPlanMapper();
+    PlanMapper pm0 = ((Driver) driver).getContext().getPlanMapper();
     ret = driver.compile(query);
     assertEquals("Checking command success", 0, ret);
-    PlanMapper pm1 = driver.getContext().getPlanMapper();
+    PlanMapper pm1 = ((Driver)driver).getContext().getPlanMapper();
 
     List<RelNode> nodes0 = pm0.getAll(RelNode.class);
     List<RelNode> nodes1 = pm1.getAll(RelNode.class);
@@ -103,14 +106,15 @@ public class TestUX1 {
     int asdf = 1;
   }
 
-  private static Driver createDriver() {
+  private static IDriver createDriver() {
     HiveConf conf = new HiveConf(Driver.class);
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     //    conf.setVar(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, CheckInputReadEntityDirect.class.getName());
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     SessionState.start(conf);
-    Driver driver = new Driver(conf);
+
+    IDriver driver = DriverFactory.newDriver(conf);
     return driver;
   }
 
