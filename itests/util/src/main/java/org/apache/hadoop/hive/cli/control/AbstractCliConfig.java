@@ -34,7 +34,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.QTestUtil.FsType;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
-import org.apache.hadoop.hive.ql.plan.HiveTestEnvSetup;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 
 import com.google.common.base.Splitter;
 

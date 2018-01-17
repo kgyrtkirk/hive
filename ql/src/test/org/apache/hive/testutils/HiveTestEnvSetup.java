@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hive.testutils;
 
 import java.io.File;
 import java.io.IOException;
