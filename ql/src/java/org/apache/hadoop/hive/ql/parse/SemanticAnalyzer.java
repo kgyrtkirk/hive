@@ -3172,9 +3172,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new FilterDesc(filterCond, false), new RowSchema(
             inputRR.getColumnInfos()), input), inputRR);
-    
+
     ctx.getPlanMapper().link(condn, output);
-    
+
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created Filter Plan for " + qb.getId() + " row schema: "
           + inputRR.toString());
@@ -10633,6 +10633,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       Operator op = genTablePlan(alias, qb);
       aliasToOpInfo.put(alias, op);
+      // FIXME: this getParent() call seems to be fishy
+      ctx.getPlanMapper().link(qb.getParseInfo().getSrcForAlias(alias).getParent(), op);
     }
 
     if (aliasToOpInfo.isEmpty()) {

@@ -94,11 +94,10 @@ public class TestMapping0 {
   }
 
   @Test
-  @Ignore
   public void testMappingLookup() throws ParseException {
     IDriver driver = createDriver();
     PlanMapper pm0 = getMapperForQuery(driver, "select sum(id_uv),sum(u) from tu where u>1");
-    PlanMapper pm1 = getMapperForQuery(driver, "select sum(id_uv),sum(u) from tu where u>1 and id_uv>1");
+    PlanMapper pm1 = getMapperForQuery(driver, "select sum(id_uv),sum(u) from tu where u>1");
 
     HiveFilterRef fm0 = pm0.getAll(HiveFilterRef.class).get(0);
     Object rn = pm1.lookup(RelNode.class, fm0);

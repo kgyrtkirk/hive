@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 
 // FIXME: rename to EquivGroupMapper?
@@ -79,8 +81,17 @@ public class PlanMapper {
     }
   }
 
-  public <T> T lookup(Class<T> class1, HiveFilterRef fm0) {
-    throw new RuntimeException();
+  public <T> List<T> lookupAll(Class<T> clazz, Object key) {
+    EquivGroup group = objectMap.get(key);
+    if (group == null) {
+      throw new NoSuchElementException(Objects.toString(key));
+    }
+    return group.getAll(clazz);
+  }
+
+  public <T> T lookup(Class<T> clazz, Object key) {
+    List<T> all = lookupAll(clazz, key);
+    return all.get(0);
   }
 
 }
