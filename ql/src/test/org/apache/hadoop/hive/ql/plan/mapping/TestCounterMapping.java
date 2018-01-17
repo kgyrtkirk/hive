@@ -19,18 +19,20 @@ package org.apache.hadoop.hive.ql.plan.mapping;
 
 import static org.junit.Assert.assertEquals;
 import java.util.List;
-import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
+import org.apache.hadoop.hive.ql.plan.mapper.HiveFilterRef;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestCounterMapping {
@@ -82,8 +84,32 @@ public class TestCounterMapping {
     }
   }
 
+  private PlanMapper getMapperForQuery(IDriver driver, String query) {
+    int ret;
+    try {
+      ret = driver.run(query).getResponseCode();
+    } catch (CommandNeedRetryException e) {
+      throw new RuntimeException("remove this exception");
+    }
+    assertEquals("Checking command success", 0, ret);
+    PlanMapper pm0 = ((Driver) driver).getContext().getPlanMapper();
+    return pm0;
+  }
+
   @Test
   public void testFilterNodesHasRuntimeInfo() throws ParseException {
+    IDriver driver = createDriver();
+    String query="select sum(u) from tu where u>1";
+    PlanMapper pm = getMapperForQuery(driver, query);
+
+    List<HiveFilterRef> nodes = pm.getAll(HiveFilterRef.class);
+
+    int asdf = 1;
+  }
+
+  @Test
+  @Ignore
+  public void testFilterNodesHasRuntimeInfoXXX() throws ParseException {
     IDriver driver = createDriver();
     // @formatter:off
     String query="select sum(u*v*w) from tu\n" +
@@ -91,16 +117,9 @@ public class TestCounterMapping {
     "        join tw on (tu.id_uw=tw.id_uw)\n" +
     "        where w>9 and u>1 and v>3";
     // @formatter:on
-    int ret;
-    ret = driver.compile(query);
-    assertEquals("Checking command success", 0, ret);
-    PlanMapper pm0 = ((Driver) driver).getContext().getPlanMapper();
-    ret = driver.compile(query);
-    assertEquals("Checking command success", 0, ret);
-    PlanMapper pm1 = ((Driver) driver).getContext().getPlanMapper();
+    PlanMapper pm = getMapperForQuery(driver, query);
 
-    List<RelNode> nodes0 = pm0.getAll(RelNode.class);
-    List<RelNode> nodes1 = pm1.getAll(RelNode.class);
+    List<HiveFilterRef> nodes = pm.getAll(HiveFilterRef.class);
 
     int asdf = 1;
   }
@@ -110,6 +129,7 @@ public class TestCounterMapping {
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     //    conf.setVar(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, CheckInputReadEntityDirect.class.getName());
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     SessionState.start(conf);
 
