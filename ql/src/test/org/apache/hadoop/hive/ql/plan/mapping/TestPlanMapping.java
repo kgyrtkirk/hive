@@ -38,7 +38,7 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class TestMapping0 {
+public class TestPlanMapping {
 
   @ClassRule
   public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
@@ -65,12 +65,20 @@ public class TestMapping0 {
     dropTables(driver);
   }
 
+
   public static void dropTables(IDriver driver) throws Exception {
     String tables[] = { "s", "tu", "tv", "tw" };
     for (String t : tables) {
       int ret = driver.run("drop table if exists " + t).getResponseCode();
       assertEquals("Checking command success", 0, ret);
     }
+  }
+
+  private PlanMapper getMapperForQuery(IDriver driver, String query) {
+    int ret = driver.compile(query);
+    assertEquals("Checking command success", 0, ret);
+    PlanMapper pm0 = ((Driver) driver).getContext().getPlanMapper();
+    return pm0;
   }
 
   @Test
@@ -86,18 +94,24 @@ public class TestMapping0 {
     assertEquals(fm0, fm1);
   }
 
-  private PlanMapper getMapperForQuery(IDriver driver, String query) {
-    int ret = driver.compile(query);
-    assertEquals("Checking command success", 0, ret);
-    PlanMapper pm0 = ((Driver) driver).getContext().getPlanMapper();
-    return pm0;
-  }
-
   @Test
   public void testMappingLookup() throws ParseException {
     IDriver driver = createDriver();
     PlanMapper pm0 = getMapperForQuery(driver, "select sum(id_uv),sum(u) from tu where u>1");
     PlanMapper pm1 = getMapperForQuery(driver, "select sum(id_uv),sum(u) from tu where u>1");
+
+    HiveFilterRef fm0 = pm0.getAll(HiveFilterRef.class).get(0);
+    Object rn = pm1.lookup(RelNode.class, fm0);
+
+    assertNotNull(rn);
+  }
+
+  @Test
+  @Ignore("this will currently not work ; and not needed")
+  public void testMappingDifferentAlias() throws ParseException {
+    IDriver driver = createDriver();
+    PlanMapper pm0 = getMapperForQuery(driver, "select sum(id_uv),sum(u) from tu as foo where u>1");
+    PlanMapper pm1 = getMapperForQuery(driver, "select sum(id_uv),sum(u) from tu as bar where u>1");
 
     HiveFilterRef fm0 = pm0.getAll(HiveFilterRef.class).get(0);
     Object rn = pm1.lookup(RelNode.class, fm0);
