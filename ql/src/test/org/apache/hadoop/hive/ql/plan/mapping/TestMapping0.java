@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.plan.mapping;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.util.List;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -95,20 +97,13 @@ public class TestMapping0 {
   @Ignore
   public void testMappingLookup() throws ParseException {
     IDriver driver = createDriver();
-    String query0 = "select sum(id_uv),sum(u) from tu where u>1";
-    String query1 = "select sum(id_uv),sum(u) from tu where u>1";
-    int ret;
-    ret = driver.compile(query0);
-    assertEquals("Checking command success", 0, ret);
-    PlanMapper pm0 = ((Driver) driver).getContext().getPlanMapper();
-    ret = driver.compile(query1);
-    assertEquals("Checking command success", 0, ret);
-    PlanMapper pm1 = ((Driver) driver).getContext().getPlanMapper();
+    PlanMapper pm0 = getMapperForQuery(driver, "select sum(id_uv),sum(u) from tu where u>1");
+    PlanMapper pm1 = getMapperForQuery(driver, "select sum(id_uv),sum(u) from tu where u>1 and id_uv>1");
 
     HiveFilterRef fm0 = pm0.getAll(HiveFilterRef.class).get(0);
-    HiveFilterRef fm1 = pm1.getAll(HiveFilterRef.class).get(0);
+    Object rn = pm1.lookup(RelNode.class, fm0);
 
-    assertEquals(fm0, fm1);
+    assertNotNull(rn);
   }
 
   @Test

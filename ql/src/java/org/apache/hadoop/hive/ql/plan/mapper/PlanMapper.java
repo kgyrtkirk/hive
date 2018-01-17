@@ -79,4 +79,8 @@ public class PlanMapper {
     }
   }
 
+  public <T> T lookup(Class<T> class1, HiveFilterRef fm0) {
+    throw new RuntimeException();
+  }
+
 }
