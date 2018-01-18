@@ -152,4 +152,12 @@ public class HiveTestEnvSetup extends ExternalResource {
     }
   }
 
+  public File getDir(String string) {
+    try {
+      return tmpFolderRule.newFolder(string);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
 }

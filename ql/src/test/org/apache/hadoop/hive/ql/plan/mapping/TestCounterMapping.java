@@ -18,7 +18,11 @@
 package org.apache.hadoop.hive.ql.plan.mapping;
 
 import static org.junit.Assert.assertEquals;
+
+import java.io.File;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
@@ -32,6 +36,9 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.testutils.HiveTestEnvSetup;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooKeeper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -129,6 +136,9 @@ public class TestCounterMapping {
 
   private static IDriver createDriver() {
     HiveConf conf = new HiveConf(Driver.class);
+
+    setupZookeeper(conf, env_setup.getDir("zookeeper"));
+
     HadoopShims shims = ShimLoader.getHadoopShims();
     MiniMrShim mr1 = shims.getLocalMiniTezCluster(conf, true);
     mr1.setupConfiguration(conf);
@@ -142,6 +152,29 @@ public class TestCounterMapping {
 
     IDriver driver = DriverFactory.newDriver(conf);
     return driver;
+  }
+
+  private static void setupZookeeper(HiveConf conf, File tmpDir) {
+
+    try {
+      MiniZooKeeperCluster zooKeeperCluster = new MiniZooKeeperCluster();
+      int zkPort;
+      zkPort = zooKeeperCluster.startup(tmpDir);
+
+      int sessionTimeout = (int) conf.getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT, TimeUnit.MILLISECONDS);
+      ZooKeeper zooKeeper = new ZooKeeper("localhost:" + zkPort, sessionTimeout, new Watcher() {
+        @Override
+        public void process(WatchedEvent arg0) {
+        }
+      });
+
+      String zkServer = "localhost";
+      conf.set("hive.zookeeper.quorum", zkServer);
+      conf.set("hive.zookeeper.client.port", "" + zkPort);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
   }
 
 }
