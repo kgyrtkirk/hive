@@ -68,7 +68,7 @@ public class HiveTestEnvSetup extends ExternalResource {
     //  -Dmapred.job.tracker=local
     System.setProperty("mapred.job.tracker", "local");
     //  -Dlog4j.configurationFile=file://${test.tmp.dir}/conf/hive-log4j2.properties
-    System.setProperty("mapred.job.tracker", "file://" + tmpFolderPath + "/conf/hive-log4j2.properties");
+    System.setProperty("log4j.configurationFile", "file://" + tmpFolderPath + "/conf/hive-log4j2.properties");
     //  -Dlog4j.debug=true
     System.setProperty("log4j.debug", "true");
     //  -Djava.io.tmpdir=${test.tmp.dir}
