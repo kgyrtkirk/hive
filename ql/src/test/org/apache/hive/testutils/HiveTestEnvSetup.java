@@ -32,6 +32,9 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.CuratorFrameworkSingleton;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 import org.apache.hadoop.hive.ql.plan.mapping.MiniZooKeeperCluster;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
@@ -197,6 +200,22 @@ public class HiveTestEnvSetup extends ExternalResource {
 
   }
 
+  static class SetupTez implements UX1 {
+    private MiniMrShim mr1;
+
+    @Override
+    public void beforeClass(HiveTestEnvContext ctx) throws Exception {
+      HadoopShims shims = ShimLoader.getHadoopShims();
+      mr1 = shims.getLocalMiniTezCluster(ctx.hiveConf, true);
+      mr1.setupConfiguration(ctx.hiveConf);
+    }
+
+    @Override
+    public void afterClass(HiveTestEnvContext ctx) throws Exception {
+      mr1.shutdown();
+    }
+  }
+
   public static final String HIVE_ROOT = getHiveRoot();
   public static final String DATA_DIR = HIVE_ROOT + "/data/";
   List<UX1> parts = new ArrayList<>();
@@ -206,6 +225,7 @@ public class HiveTestEnvSetup extends ExternalResource {
     parts.add(new SetTestEnvs());
     parts.add(new SetupHiveConf());
     parts.add(new SetupZookeeper());
+    parts.add(new SetupTez());
   }
 
   TemporaryFolder tmpFolderRule = new TemporaryFolder(new File(HIVE_ROOT + "/target/tmp"));

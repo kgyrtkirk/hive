@@ -29,9 +29,6 @@ import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.HiveFilterRef;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -138,12 +135,8 @@ public class TestCounterMapping {
     //    HiveConf conf = new HiveConf(Driver.class);
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
-
     //    setupZookeeper(conf, f1);
 
-    HadoopShims shims = ShimLoader.getHadoopShims();
-    MiniMrShim mr1 = shims.getLocalMiniTezCluster(conf, true);
-    mr1.setupConfiguration(conf);
 
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
