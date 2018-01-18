@@ -22,19 +22,18 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.calcite.plan.RelOptUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 
-public class HiveFilterRef {
+public class HiveTableScanRef {
 
-  public static final GroupTransformer MAPPER = new HiveFilterMapper();
+  public static final GroupTransformer MAPPER = new HiveTableScanMapper();
 
   // this is just a rough plan/operator indepentent ref
   private String myKey;
 
-  HiveFilterRef(HiveFilter filter) {
-    myKey = RelOptUtil.toString(filter);
+  HiveTableScanRef(HiveTableScan scan) {
+    myKey = RelOptUtil.toString(scan);
   }
 
   @Override
@@ -47,7 +46,7 @@ public class HiveFilterRef {
     if (obj == null || getClass() != obj.getClass()) {
       return false;
     }
-    final HiveFilterRef other = (HiveFilterRef) obj;
+    final HiveTableScanRef other = (HiveTableScanRef) obj;
     return Objects.equals(myKey, other.myKey);
   }
 
@@ -56,18 +55,16 @@ public class HiveFilterRef {
     return String.format("REF\n%s", myKey);
   }
 
-  private static class HiveFilterMapper implements GroupTransformer {
+  private static class HiveTableScanMapper implements GroupTransformer {
 
     @Override
     public void map(EquivGroup group) {
-      List<HiveFilter> filters = group.getAll(HiveFilter.class);
+      List<HiveTableScan> filters = group.getAll(HiveTableScan.class);
       if (filters.size() != 1) {
         return;
       }
-      HiveFilter filter = filters.get(0);
-      if (filter.getChildExps().size() == 1 && filter.getInput() instanceof HiveTableScan) {
-        group.add(new HiveFilterRef(filter));
-      }
+      HiveTableScan scan = filters.get(0);
+      group.add(new HiveTableScanRef(scan));
     }
   }
 }

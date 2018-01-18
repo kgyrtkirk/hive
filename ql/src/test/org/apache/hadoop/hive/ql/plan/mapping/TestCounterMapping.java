@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.OperatorStats;
 import org.apache.hadoop.hive.ql.plan.mapper.HiveFilterRef;
+import org.apache.hadoop.hive.ql.plan.mapper.HiveTableScanRef;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
@@ -110,9 +111,9 @@ public class TestCounterMapping {
     String query="select sum(u) from tu where u>1";
     PlanMapper pm = getMapperForQuery(driver, query);
 
-    HiveFilterRef ref = pm.getAll(HiveFilterRef.class).get(0);
+    HiveTableScanRef ref = pm.getAll(HiveTableScanRef.class).get(0);
     OperatorStats stats = pm.lookup(OperatorStats.class, ref);
-    assertEquals(stats.getOutputRecords(), 8);
+    assertEquals(7, stats.getOutputRecords());
   }
 
   @Test

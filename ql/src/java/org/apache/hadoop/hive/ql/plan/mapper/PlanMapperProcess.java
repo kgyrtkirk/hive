@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan.mapper;
 public class PlanMapperProcess {
 
   public static void runPostProcess(PlanMapper planMapper) {
+    planMapper.runMapper(HiveTableScanRef.MAPPER);
     planMapper.runMapper(HiveFilterRef.MAPPER);
   }
 
