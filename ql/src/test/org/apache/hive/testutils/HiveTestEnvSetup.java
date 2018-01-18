@@ -51,7 +51,7 @@ public class HiveTestEnvSetup extends ExternalResource {
     // FIXME: change scope; remove myriad of vars
     String DATA_DIR = HIVE_ROOT + "/data/";
     FileUtils.copyDirectory(new File(DATA_DIR + "/conf/"), new File(tmpFolder, "conf"));
-    FileUtils.copyDirectory(new File(DATA_DIR + "/conf/llap"), new File(tmpFolder, "conf"));
+    FileUtils.copyDirectory(new File(DATA_DIR + "/conf/tez"), new File(tmpFolder, "conf"));
 
     //    System.out.println(System.getProperty("project_loc"));
     //    -Xmx2048m -XX:MaxPermSize=512m -Dbuild.dir=${project.build.directory}

@@ -117,7 +117,7 @@ public class TestCounterMapping {
     int asdf = 1;
   }
 
-  @Test
+  //  @Test
   @Ignore
   public void testFilterNodesHasRuntimeInfoXXX() throws ParseException {
     IDriver driver = createDriver();
