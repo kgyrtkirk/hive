@@ -18,12 +18,15 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
-public class PlanMapperProcess {
+import java.util.Optional;
 
-  public static void runPostProcess(PlanMapper planMapper) {
-    planMapper.runMapper(HiveTableScanRef.MAPPER);
-    planMapper.runMapper(HiveFilterRef.MAPPER);
-    planMapper.runMapper(OperatorRef.MAPPER);
-  }
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.plan.OperatorStats;
+
+public interface RuntimeStatsSource {
+
+  @Deprecated
+  // FIXME: return type is ok?
+  public Optional<OperatorStats> lookup(Operator<?> tsop);
 
 }

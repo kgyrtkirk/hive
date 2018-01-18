@@ -59,12 +59,14 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.plan.mapper.RuntimeStatsSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.spark_project.guava.base.Optional;
 
 /**
  * Context for Semantic Analyzers. Usage: not reusable - construct a new one for
@@ -156,7 +158,9 @@ public class Context {
   private Operation operation = Operation.OTHER;
   private WmContext wmContext;
 
+  private boolean isExplainPlan = false;
   private PlanMapper planMapper = new PlanMapper();
+  private RuntimeStatsSource runtimeStatsSource;
 
   public void setOperation(Operation operation) {
     this.operation = operation;
@@ -1010,7 +1014,7 @@ public class Context {
   public ExplainConfiguration getExplainConfig() {
     return explainConfig;
   }
-  private boolean isExplainPlan = false;
+
   public boolean isExplainPlan() {
     return isExplainPlan;
   }
@@ -1049,5 +1053,13 @@ public class Context {
 
   public PlanMapper getPlanMapper() {
     return planMapper;
+  }
+
+  public void setRuntimeStatsSource(RuntimeStatsSource runtimeStatsSource) {
+    this.runtimeStatsSource = runtimeStatsSource;
+  }
+
+  public Optional<RuntimeStatsSource> getRuntimeStatsSource() {
+    return Optional.fromNullable(runtimeStatsSource);
   }
 }

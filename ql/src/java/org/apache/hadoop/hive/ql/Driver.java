@@ -106,6 +106,7 @@ import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapperProcess;
+import org.apache.hadoop.hive.ql.plan.mapper.RuntimeStatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -190,6 +191,7 @@ public class Driver implements IDriver {
   // Transaction manager used for the query. This will be set at compile time based on
   // either initTxnMgr or from the SessionState, in that order.
   private HiveTxnManager queryTxnMgr;
+  private RuntimeStatsSource runtimeStatsSource;
 
   private enum DriverState {
     INITIALIZED,
@@ -587,6 +589,7 @@ public class Driver implements IDriver {
         setTriggerContext(queryId);
       }
 
+      ctx.setRuntimeStatsSource(runtimeStatsSource);
       ctx.setTryCount(getTryCount());
       ctx.setCmd(command);
       ctx.setHDFSCleanup(true);
@@ -2549,5 +2552,9 @@ public class Driver implements IDriver {
 
   public QueryState getQueryState() {
     return queryState;
+  }
+
+  public void setRuntimeStatsSource(RuntimeStatsSource runtimeStatsSource) {
+    this.runtimeStatsSource = runtimeStatsSource;
   }
 }

@@ -18,6 +18,7 @@ package org.apache.hadoop.hive.ql.plan;
 /**
  *
  */
+// FIXME: move this class
 public class OperatorStats {
   private String operatorId;
   //  private long inputRecords;

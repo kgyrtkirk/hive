@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorStats;
 import org.apache.hadoop.hive.ql.plan.mapper.HiveFilterRef;
 import org.apache.hadoop.hive.ql.plan.mapper.HiveTableScanRef;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.plan.mapper.SimpleRuntimeStatsSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
@@ -121,6 +122,19 @@ public class TestCounterMapping {
     IDriver driver = createDriver();
     String query = "select sum(u) from tu where u>1";
     PlanMapper pm = getMapperForQuery(driver, query);
+
+    HiveFilterRef ref = pm.getAll(HiveFilterRef.class).get(0);
+    OperatorStats stats = pm.lookup(OperatorStats.class, ref);
+    assertEquals(6, stats.getOutputRecords());
+  }
+
+  @Test
+  public void testUsageOfRuntimeInfo() throws ParseException {
+    IDriver driver = createDriver();
+    String query = "select sum(u) from tu where u>1";
+    PlanMapper pm = getMapperForQuery(driver, query);
+
+    ((Driver) driver).setRuntimeStatsSource(new SimpleRuntimeStatsSource(pm));
 
     HiveFilterRef ref = pm.getAll(HiveFilterRef.class).get(0);
     OperatorStats stats = pm.lookup(OperatorStats.class, ref);

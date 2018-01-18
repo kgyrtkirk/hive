@@ -18,12 +18,28 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
-public class PlanMapperProcess {
+import java.util.Optional;
 
-  public static void runPostProcess(PlanMapper planMapper) {
-    planMapper.runMapper(HiveTableScanRef.MAPPER);
-    planMapper.runMapper(HiveFilterRef.MAPPER);
-    planMapper.runMapper(OperatorRef.MAPPER);
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.plan.OperatorStats;
+
+public class SimpleRuntimeStatsSource implements RuntimeStatsSource {
+
+  private final PlanMapper pm;
+
+  public SimpleRuntimeStatsSource(PlanMapper pm) {
+    this.pm = pm;
+  }
+
+  @Override
+  public Optional<OperatorStats> lookup(Operator<?> tsop) {
+    try {
+      OperatorRef ref = OperatorRef.of(tsop);
+      OperatorStats v = pm.lookup(OperatorStats.class, ref);
+      return Optional.of(v);
+    } catch (IllegalArgumentException iae) {
+      return Optional.empty();
+    }
   }
 
 }

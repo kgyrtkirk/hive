@@ -27,10 +27,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ReOptimizeDriver;
 import org.apache.hadoop.hive.ql.ReOptimizeDriver.OperatorStatSource;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -76,6 +78,8 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorStats;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.plan.mapper.RuntimeStatsSource;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -134,19 +138,8 @@ public class StatsRulesProcFactory {
       try {
         // gather statistics for the first time and the attach it to table scan operator
         Statistics stats = StatsUtils.collectStatistics(aspCtx.getConf(), partList, colStatsCached, table, tsop);
-        Statistics outStats;
 
-        OperatorStatSource oss = ReOptimizeDriver.getOperatorStats();
-        OperatorStats os = oss.lookup(tsop);
-        if (os != null) {
-          outStats = stats.clone();
-          outStats = outStats.scaleToRowCount2(os.getOutputRecords());
-          //          outStats.setNumRows(os.getOutputRecords());
-          //          outStats = new Statistics(os.getOutputRecords(), stats.getAvgRowSize() * os.getOutputRecords());
-          //          outStats.setColumnStats(stats.getColumnStats());
-        } else {
-          outStats = stats.clone();
-        }
+        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, tsop);
 
         // check if runtime stats is available
         // REOPT-PRASH-2
@@ -185,7 +178,7 @@ public class StatsRulesProcFactory {
         //          }
         //        }
 
-        tsop.setStatistics(outStats);
+        tsop.setStatistics(stats);
 
         if (LOG.isDebugEnabled()) {
           LOG.debug("[0] STATS-" + tsop.toString() + " (" + table.getTableName() + "): " +
@@ -196,6 +189,24 @@ public class StatsRulesProcFactory {
         throw new SemanticException(e);
       }
       return null;
+    }
+
+    private Statistics applyRuntimeStats(Context context, Statistics stats, Operator<?> op) {
+      if (!context.getRuntimeStatsSource().isPresent()) {
+        return stats;
+      }
+      RuntimeStatsSource rss = context.getRuntimeStatsSource().get();
+      PlanMapper pm = context.getPlanMapper();
+
+      Optional<OperatorStats> os = rss.lookup(op);
+
+      if (!os.isPresent()) {
+        return stats;
+      }
+
+      Statistics outStats = stats.clone();
+      outStats = outStats.scaleToRowCount2(os.get().getOutputRecords());
+      return outStats;
     }
   }
 
