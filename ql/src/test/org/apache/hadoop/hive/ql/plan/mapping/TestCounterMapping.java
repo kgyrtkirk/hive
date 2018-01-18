@@ -106,7 +106,7 @@ public class TestCounterMapping {
   }
 
   @Test
-  public void testFilterNodesHasRuntimeInfo() throws ParseException {
+  public void testTableScanHasRuntimeInfo() throws ParseException {
     IDriver driver = createDriver();
     String query="select sum(u) from tu where u>1";
     PlanMapper pm = getMapperForQuery(driver, query);
@@ -114,6 +114,17 @@ public class TestCounterMapping {
     HiveTableScanRef ref = pm.getAll(HiveTableScanRef.class).get(0);
     OperatorStats stats = pm.lookup(OperatorStats.class, ref);
     assertEquals(7, stats.getOutputRecords());
+  }
+
+  @Test
+  public void testFilterHasRuntimeInfo() throws ParseException {
+    IDriver driver = createDriver();
+    String query = "select sum(u) from tu where u>1";
+    PlanMapper pm = getMapperForQuery(driver, query);
+
+    HiveFilterRef ref = pm.getAll(HiveFilterRef.class).get(0);
+    OperatorStats stats = pm.lookup(OperatorStats.class, ref);
+    assertEquals(6, stats.getOutputRecords());
   }
 
   @Test
