@@ -18,8 +18,10 @@
 package org.apache.hadoop.hive.ql.plan.mapping;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,12 +32,14 @@ import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.OperatorStats;
 import org.apache.hadoop.hive.ql.plan.mapper.HiveFilterRef;
 import org.apache.hadoop.hive.ql.plan.mapper.HiveTableScanRef;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.SimpleRuntimeStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
@@ -165,6 +169,35 @@ public class TestCounterMapping {
   }
 
   @Test
+  public void testMappingJoinLookup() throws ParseException {
+    IDriver driver = createDriver();
+
+    PlanMapper pm0 = getMapperForQuery(driver, "select sum(tu.id_uv),sum(u) from tu join tv on (tu.id_uv = tv.id_uv) where u>1 and v>1");
+
+    Iterator<EquivGroup> itG = pm0.iterateGroups();
+    int checkedOperators = 0;
+    // FIXME: introduce the Operator trimmer mapper!
+    while (itG.hasNext()) {
+      EquivGroup g = itG.next();
+      List<HiveFilter> hfs = g.getAll(HiveFilter.class);
+      List<OperatorStats> oss = g.getAll(OperatorStats.class);
+      List<FilterOperator> fos = g.getAll(FilterOperator.class);
+
+      if (fos.size() > 0 && oss.size() > 0) {
+        if (hfs.size() == 0) {
+          fail("HiveFilter is not connected?");
+        }
+        OperatorStats os = oss.get(0);
+        if (!(os.getOutputRecords() == 3 || os.getOutputRecords() == 6)) {
+          fail("nonexpected number of records produced");
+        }
+        checkedOperators++;
+      }
+    }
+    assertEquals(2, checkedOperators);
+  }
+
+  @Test
   @Ignore
   public void testFilterNodesHasRuntimeInfoXXX() throws ParseException {
     IDriver driver = createDriver();
@@ -183,6 +216,8 @@ public class TestCounterMapping {
   private static IDriver createDriver() {
     //    HiveConf conf = new HiveConf(Driver.class);
     HiveConf conf = env_setup.getTestCtx().hiveConf;
+    conf.set("hive.auto.convert.join", "false");
+    conf.set("hive.optimize.ppd", "false");
 
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

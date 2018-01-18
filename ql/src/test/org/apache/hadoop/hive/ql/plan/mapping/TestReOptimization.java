@@ -139,21 +139,6 @@ public class TestReOptimization {
       }
     }
     assertEquals(2, checkedOperators);
-    //    List<FilterOperator> filters1 = pm.lookupGroupsContaining(FilterOperator.class, OperatorStats.class);
-    //    FilterOperator filter = filters1.get(0);
-
-    //
-    //    ((Driver) driver).setRuntimeStatsSource(new SimpleRuntimeStatsSource(pm1));
-    //
-    //    PlanMapper pm2 = getMapperForQuery(driver, query);
-    //
-    //    List<FilterOperator> filters2 = pm2.getAll(FilterOperator.class);
-    //    filters2.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
-    //    FilterOperator filter2 = filters2.get(0);
-    //
-    //    assertEquals("original check", 7, filter1.getStatistics().getNumRows());
-    //    assertEquals("optimized check", 6, filter2.getStatistics().getNumRows());
-
   }
 
   private static IDriver createDriver() {

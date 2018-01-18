@@ -136,6 +136,8 @@ public class HiveTestEnvSetup extends ExternalResource {
 
   static class SetupHiveConf implements UX1 {
 
+    private HiveConf savedConf;
+
     @Override
     public void beforeClass(HiveTestEnvContext ctx) throws Exception {
 
@@ -152,7 +154,17 @@ public class HiveTestEnvSetup extends ExternalResource {
     }
 
     @Override
+    public void beforeMethod(HiveTestEnvContext ctx) throws Exception {
+      if (savedConf == null) {
+        savedConf = new HiveConf(ctx.hiveConf);
+      }
+      // service a fresh conf for every testMethod
+      ctx.hiveConf = new HiveConf(savedConf);
+    }
+
+    @Override
     public void afterClass(HiveTestEnvContext ctx) throws Exception {
+      savedConf = null;
       ctx.hiveConf = null;
     }
   }

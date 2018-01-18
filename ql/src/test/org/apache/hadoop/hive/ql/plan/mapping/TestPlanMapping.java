@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import java.util.List;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -51,6 +52,7 @@ public class TestPlanMapping {
     String cmds[] = {
         // @formatter:off
         "create table tu(id_uv int,id_uw int,u int)",
+        "create table tv(id_uv int,v int)",
         // @formatter:on
     };
     for (String cmd : cmds) {
@@ -74,19 +76,30 @@ public class TestPlanMapping {
     }
   }
 
-  private PlanMapper getMapperForQuery(IDriver driver, String query) {
+  private PlanMapper getMapperForCompiledQuery(IDriver driver, String query) {
     int ret = driver.compile(query);
     assertEquals("Checking command success", 0, ret);
     PlanMapper pm0 = ((Driver) driver).getContext().getPlanMapper();
     return pm0;
   }
 
+  private PlanMapper getMapperForExecutedQuery(IDriver driver, String query) {
+    try {
+      int ret = driver.run(query).getResponseCode();
+      assertEquals("Checking command success", 0, ret);
+      PlanMapper pm0 = ((Driver) driver).getContext().getPlanMapper();
+      return pm0;
+    } catch (CommandNeedRetryException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   @Test
   public void testMappingSameQuery() throws ParseException {
     IDriver driver = createDriver();
     String query = "select sum(id_uv),sum(u) from tu where u>1";
-    PlanMapper pm0 = getMapperForQuery(driver, query);
-    PlanMapper pm1 = getMapperForQuery(driver, query);
+    PlanMapper pm0 = getMapperForCompiledQuery(driver, query);
+    PlanMapper pm1 = getMapperForCompiledQuery(driver, query);
 
     HiveFilterRef fm0 = pm0.getAll(HiveFilterRef.class).get(0);
     HiveFilterRef fm1 = pm1.getAll(HiveFilterRef.class).get(0);
@@ -97,8 +110,8 @@ public class TestPlanMapping {
   @Test
   public void testMappingLookup() throws ParseException {
     IDriver driver = createDriver();
-    PlanMapper pm0 = getMapperForQuery(driver, "select sum(id_uv),sum(u) from tu where u>1");
-    PlanMapper pm1 = getMapperForQuery(driver, "select sum(id_uv),sum(u) from tu where u>1");
+    PlanMapper pm0 = getMapperForCompiledQuery(driver, "select sum(id_uv),sum(u) from tu where u>1");
+    PlanMapper pm1 = getMapperForCompiledQuery(driver, "select sum(id_uv),sum(u) from tu where u>1");
 
     HiveFilterRef fm0 = pm0.getAll(HiveFilterRef.class).get(0);
     Object rn = pm1.lookup(RelNode.class, fm0);
@@ -110,8 +123,8 @@ public class TestPlanMapping {
   @Ignore("this will currently not work ; and not needed")
   public void testMappingDifferentAlias() throws ParseException {
     IDriver driver = createDriver();
-    PlanMapper pm0 = getMapperForQuery(driver, "select sum(id_uv),sum(u) from tu as foo where u>1");
-    PlanMapper pm1 = getMapperForQuery(driver, "select sum(id_uv),sum(u) from tu as bar where u>1");
+    PlanMapper pm0 = getMapperForCompiledQuery(driver, "select sum(id_uv),sum(u) from tu as foo where u>1");
+    PlanMapper pm1 = getMapperForCompiledQuery(driver, "select sum(id_uv),sum(u) from tu as bar where u>1");
 
     HiveFilterRef fm0 = pm0.getAll(HiveFilterRef.class).get(0);
     Object rn = pm1.lookup(RelNode.class, fm0);
@@ -130,7 +143,7 @@ public class TestPlanMapping {
     "        where w>9 and u>1 and v>3";
     // @formatter:on
     int ret;
-    PlanMapper pm0 = getMapperForQuery(driver, query);
+    PlanMapper pm0 = getMapperForCompiledQuery(driver, query);
     ret = driver.compile(query);
     assertEquals("Checking command success", 0, ret);
     PlanMapper pm1 = ((Driver) driver).getContext().getPlanMapper();
