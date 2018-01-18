@@ -109,7 +109,8 @@ public class TestCounterMapping {
     String query="select sum(u) from tu where u>1";
     PlanMapper pm = getMapperForQuery(driver, query);
 
-    List<HiveFilterRef> nodes = pm.getAll(HiveFilterRef.class);
+    HiveFilterRef ref = pm.getAll(HiveFilterRef.class).get(0);
+    pm.lookup(Object.class, ref);
 
   }
 

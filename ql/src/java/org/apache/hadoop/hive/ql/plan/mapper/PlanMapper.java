@@ -93,6 +93,9 @@ public class PlanMapper {
 
   public <T> T lookup(Class<T> clazz, Object key) {
     List<T> all = lookupAll(clazz, key);
+    if (all.size() != 1) {
+      throw new RuntimeException("Expected match count is 1; but got:" + all);
+    }
     return all.get(0);
   }
 
