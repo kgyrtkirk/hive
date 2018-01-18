@@ -59,11 +59,9 @@ public class OperatorRef {
     @Override
     public void map(EquivGroup group) {
       List<Operator> filters = group.getAll(Operator.class);
-      if (filters.size() != 1) {
-        return;
+      for (Operator op : filters) {
+        group.add(new OperatorRef(op));
       }
-      Operator op = filters.get(0);
-      group.add(new OperatorRef(op));
     }
   }
 

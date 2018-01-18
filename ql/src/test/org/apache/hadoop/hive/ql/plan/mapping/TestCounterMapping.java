@@ -19,12 +19,17 @@ package org.apache.hadoop.hive.ql.plan.mapping;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.OperatorStats;
 import org.apache.hadoop.hive.ql.plan.mapper.HiveFilterRef;
@@ -48,6 +53,14 @@ public class TestCounterMapping {
 
   @Rule
   public TestRule methodRule = env_setup.getMethodRule();
+
+  static Comparator<Operator<?>> OPERATOR_ID_COMPARATOR = new Comparator<Operator<?>>() {
+
+    @Override
+    public int compare(Operator<?> o1, Operator<?> o2) {
+      return Objects.compare(o1.getOperatorId(), o2.getOperatorId(), Comparator.naturalOrder());
+    }
+  };
 
 
   @BeforeClass
@@ -132,13 +145,23 @@ public class TestCounterMapping {
   public void testUsageOfRuntimeInfo() throws ParseException {
     IDriver driver = createDriver();
     String query = "select sum(u) from tu where u>1";
-    PlanMapper pm = getMapperForQuery(driver, query);
+    PlanMapper pm1 = getMapperForQuery(driver, query);
 
-    ((Driver) driver).setRuntimeStatsSource(new SimpleRuntimeStatsSource(pm));
+    List<FilterOperator> filters1 = pm1.getAll(FilterOperator.class);
+    filters1.sort(OPERATOR_ID_COMPARATOR.reversed());
+    FilterOperator filter1 = filters1.get(0);
 
-    HiveFilterRef ref = pm.getAll(HiveFilterRef.class).get(0);
-    OperatorStats stats = pm.lookup(OperatorStats.class, ref);
-    assertEquals(6, stats.getOutputRecords());
+    ((Driver) driver).setRuntimeStatsSource(new SimpleRuntimeStatsSource(pm1));
+
+    PlanMapper pm2 = getMapperForQuery(driver, query);
+
+    List<FilterOperator> filters2 = pm2.getAll(FilterOperator.class);
+    filters2.sort(OPERATOR_ID_COMPARATOR.reversed());
+    FilterOperator filter2 = filters2.get(0);
+
+    assertEquals("original check", 7, filter1.getStatistics().getNumRows());
+    assertEquals("optimized check", 6, filter2.getStatistics().getNumRows());
+
   }
 
   @Test

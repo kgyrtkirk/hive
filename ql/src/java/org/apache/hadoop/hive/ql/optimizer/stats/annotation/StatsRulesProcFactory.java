@@ -191,23 +191,6 @@ public class StatsRulesProcFactory {
       return null;
     }
 
-    private Statistics applyRuntimeStats(Context context, Statistics stats, Operator<?> op) {
-      if (!context.getRuntimeStatsSource().isPresent()) {
-        return stats;
-      }
-      RuntimeStatsSource rss = context.getRuntimeStatsSource().get();
-      PlanMapper pm = context.getPlanMapper();
-
-      Optional<OperatorStats> os = rss.lookup(op);
-
-      if (!os.isPresent()) {
-        return stats;
-      }
-
-      Statistics outStats = stats.clone();
-      outStats = outStats.scaleToRowCount2(os.get().getOutputRecords());
-      return outStats;
-    }
   }
 
   /**
@@ -364,16 +347,10 @@ public class StatsRulesProcFactory {
           }
         }
 
-        OperatorStatSource oss = ReOptimizeDriver.getOperatorStats();
-        OperatorStats os = oss.lookup(fop);
-        if (os != null) {
-          st = st.scaleToRowCount2(os.getOutputRecords());
-          //          st.setNumRows(os.getOutputRecords());
-          //          outStats = new Statistics(os.getOutputRecords(), stats.getAvgRowSize() * os.getOutputRecords());
-          //          outStats.setColumnStats(stats.getColumnStats());
-        }
+        st = applyRuntimeStats(aspCtx.getParseContext().getContext(), st, fop);
 
         fop.setStatistics(st);
+
         aspCtx.setAndExprStats(null);
       }
       return null;
@@ -2586,4 +2563,23 @@ public class StatsRulesProcFactory {
     return stats != null && stats.getBasicStatsState().equals(Statistics.State.COMPLETE)
         && !stats.getColumnStatsState().equals(Statistics.State.NONE);
   }
+
+  private static Statistics applyRuntimeStats(Context context, Statistics stats, Operator<?> op) {
+    if (!context.getRuntimeStatsSource().isPresent()) {
+      return stats;
+    }
+    RuntimeStatsSource rss = context.getRuntimeStatsSource().get();
+    PlanMapper pm = context.getPlanMapper();
+
+    Optional<OperatorStats> os = rss.lookup(op);
+
+    if (!os.isPresent()) {
+      return stats;
+    }
+
+    Statistics outStats = stats.clone();
+    outStats = outStats.scaleToRowCount2(os.get().getOutputRecords());
+    return outStats;
+  }
+
 }

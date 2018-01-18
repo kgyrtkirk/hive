@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -37,7 +38,7 @@ public class SimpleRuntimeStatsSource implements RuntimeStatsSource {
       OperatorRef ref = OperatorRef.of(tsop);
       OperatorStats v = pm.lookup(OperatorStats.class, ref);
       return Optional.of(v);
-    } catch (IllegalArgumentException iae) {
+    } catch (NoSuchElementException | IllegalArgumentException iae) {
       return Optional.empty();
     }
   }
