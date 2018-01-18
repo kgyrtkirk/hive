@@ -86,7 +86,6 @@ import org.apache.tez.serviceplugins.api.ContainerLauncherDescriptor;
 import org.apache.tez.serviceplugins.api.ServicePluginsDescriptor;
 import org.apache.tez.serviceplugins.api.TaskCommunicatorDescriptor;
 import org.apache.tez.serviceplugins.api.TaskSchedulerDescriptor;
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.slf4j.Logger;
@@ -162,6 +161,7 @@ public class TezSessionState {
     this.conf = conf;
   }
 
+  @Override
   public String toString() {
     return "sessionId=" + sessionId + ", queueName=" + queueName + ", user=" + user
         + ", doAs=" + doAsEnabled + ", isOpen=" + isOpen() + ", isDefault=" + defaultQueue;
@@ -177,7 +177,9 @@ public class TezSessionState {
   }
 
   public boolean isOpening() {
-    if (session != null || sessionFuture == null) return false;
+    if (session != null || sessionFuture == null) {
+      return false;
+    }
     try {
       session = sessionFuture.get(0, TimeUnit.NANOSECONDS);
     } catch (InterruptedException e) {
@@ -194,8 +196,12 @@ public class TezSessionState {
   }
 
   public boolean isOpen() {
-    if (session != null) return true;
-    if (sessionFuture == null) return false;
+    if (session != null) {
+      return true;
+    }
+    if (sessionFuture == null) {
+      return false;
+    }
     try {
       session = sessionFuture.get(0, TimeUnit.NANOSECONDS);
     } catch (InterruptedException e) {
@@ -428,8 +434,11 @@ public class TezSessionState {
       try {
         session.waitTillReady();
       } catch (InterruptedException ie) {
-        if (isOnThread) throw new IOException(ie);
-        //ignore
+        if (isOnThread)
+         {
+          throw new IOException(ie);
+          //ignore
+        }
       }
       isSuccessful = true;
       // sessionState.getQueueName() comes from cluster wide configured queue names.
@@ -460,7 +469,9 @@ public class TezSessionState {
   }
 
   public void endOpen() throws InterruptedException, CancellationException {
-    if (this.session != null || this.sessionFuture == null) return;
+    if (this.session != null || this.sessionFuture == null) {
+      return;
+    }
     try {
       this.session = this.sessionFuture.get();
     } catch (ExecutionException e) {
@@ -587,7 +598,9 @@ public class TezSessionState {
       if (hasResources) {
         for (String s : newFilesNotFromConf) {
           hasResources = resources.additionalFilesNotFromConf.contains(s);
-          if (!hasResources) break;
+          if (!hasResources) {
+            break;
+          }
         }
       }
       if (!hasResources) {
@@ -857,7 +870,9 @@ public class TezSessionState {
 
   /** Mark session as free for use from TezTask, for safety/debugging purposes. */
   public void markFree() {
-    if (ownerThread.getAndSet(null) == null) throw new AssertionError("Not in use");
+    if (ownerThread.getAndSet(null) == null) {
+      throw new AssertionError("Not in use");
+    }
   }
 
   /** Mark session as being in use from TezTask, for safety/debugging purposes. */

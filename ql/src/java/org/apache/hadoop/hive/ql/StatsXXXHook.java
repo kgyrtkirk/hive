@@ -68,7 +68,8 @@ public class StatsXXXHook implements ExecuteWithHookContext {
             }
 
             if (operatorStats != null) {
-              opStats.put(operatorId, operatorStats);
+              hookContext.getContext().getPlanMapper().link(op, operatorStats);
+              //              opStats.put(operatorId, operatorStats);
             } else {
               LOG.warn("Unable to get statistics for vertex: {} opId: {} groupName: {}", vertexName, operatorId, groupName);
             }

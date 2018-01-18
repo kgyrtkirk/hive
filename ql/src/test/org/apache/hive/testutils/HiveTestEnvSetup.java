@@ -50,7 +50,8 @@ public class HiveTestEnvSetup extends ExternalResource {
 
     // FIXME: change scope; remove myriad of vars
     String DATA_DIR = HIVE_ROOT + "/data/";
-    FileUtils.copyDirectory(new File(DATA_DIR + "/conf"), new File(tmpFolder, "conf"));
+    FileUtils.copyDirectory(new File(DATA_DIR + "/conf/"), new File(tmpFolder, "conf"));
+    //    FileUtils.copyDirectory(new File(DATA_DIR + "/conf/llap"), new File(tmpFolder, "conf"));
 
     //    System.out.println(System.getProperty("project_loc"));
     //    -Xmx2048m -XX:MaxPermSize=512m -Dbuild.dir=${project.build.directory}
@@ -92,6 +93,8 @@ public class HiveTestEnvSetup extends ExternalResource {
 
     System.setProperty("test.src.tables", "src");
 
+    System.setProperty("hive.jar.directory", tmpFolderPath);
+
     File confFolder = new File(tmpFolder, "conf");
     HiveConf.setHiveSiteLocation(new File(confFolder, "hive-site.xml").toURI().toURL());
     HiveConf.setHivemetastoreSiteUrl(new File(confFolder, "hivemetastore-site.xml").toURI().toURL());
@@ -104,6 +107,7 @@ public class HiveTestEnvSetup extends ExternalResource {
 
     // renew the metastore since the cluster type is unencrypted
     //    Hive db = Hive.get(conf); // propagate new conf to meta store
+
 
   }
 

@@ -126,11 +126,15 @@ public class TestCounterMapping {
 
   private static IDriver createDriver() {
     HiveConf conf = new HiveConf(Driver.class);
+    //    HadoopShims shims = ShimLoader.getHadoopShims();
+    //    MiniMrShim mr1 = shims.getLocalMiniTezCluster(conf, true);
+    //    mr1.setupConfiguration(conf);
+
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     //    conf.setVar(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, CheckInputReadEntityDirect.class.getName());
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    HiveConf.setVar(conf, HiveConf.ConfVars.POSTEXECHOOKS, "org.apache.hadoop.hive.ql.StatsXXXHook");
     SessionState.start(conf);
 
     IDriver driver = DriverFactory.newDriver(conf);
