@@ -19,10 +19,7 @@ package org.apache.hadoop.hive.ql.plan.mapping;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
@@ -36,19 +33,22 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.testutils.HiveTestEnvSetup;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 public class TestCounterMapping {
 
   @ClassRule
   public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
+
+  @Rule
+  public TestRule methodRule = env_setup.getMethodRule();
+
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -117,7 +117,7 @@ public class TestCounterMapping {
     int asdf = 1;
   }
 
-//  @Test
+  @Test
   @Ignore
   public void testFilterNodesHasRuntimeInfoXXX() throws ParseException {
     IDriver driver = createDriver();
@@ -135,9 +135,11 @@ public class TestCounterMapping {
   }
 
   private static IDriver createDriver() {
-    HiveConf conf = new HiveConf(Driver.class);
+    //    HiveConf conf = new HiveConf(Driver.class);
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
 
-    setupZookeeper(conf, env_setup.getDir("zookeeper"));
+
+    //    setupZookeeper(conf, f1);
 
     HadoopShims shims = ShimLoader.getHadoopShims();
     MiniMrShim mr1 = shims.getLocalMiniTezCluster(conf, true);
@@ -154,27 +156,5 @@ public class TestCounterMapping {
     return driver;
   }
 
-  private static void setupZookeeper(HiveConf conf, File tmpDir) {
-
-    try {
-      MiniZooKeeperCluster zooKeeperCluster = new MiniZooKeeperCluster();
-      int zkPort;
-      zkPort = zooKeeperCluster.startup(tmpDir);
-
-      int sessionTimeout = (int) conf.getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT, TimeUnit.MILLISECONDS);
-      ZooKeeper zooKeeper = new ZooKeeper("localhost:" + zkPort, sessionTimeout, new Watcher() {
-        @Override
-        public void process(WatchedEvent arg0) {
-        }
-      });
-
-      String zkServer = "localhost";
-      conf.set("hive.zookeeper.quorum", zkServer);
-      conf.set("hive.zookeeper.client.port", "" + zkPort);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-
-  }
 
 }

@@ -23,97 +23,231 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.hbase.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.lockmgr.zookeeper.CuratorFrameworkSingleton;
+import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
+import org.apache.hadoop.hive.ql.plan.mapping.MiniZooKeeperCluster;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooKeeper;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestRule;
 
 import com.google.common.collect.Sets;
 
 // FIXME: move this to somewhere else
+/**
+ * Helps in setting up environments to run high level hive tests
+ *
+ * Because setting up such a complex environment is a bit more sophisticated than it should;
+ * this class introduces some helper concepts beyond what juni4 has
+ *
+ * <ul>
+ *  <li>parts are decomposed into smaller {@link UX1}
+ *  <li>{@link HiveTestEnvContext} is visible to every methodcall</li>
+ *  <li>invocation order of before calls are "forward"
+ *  <li>invocation order of before calls are "backward"
+ *  </ul>
+ *
+ *  the above are almost entirely in sync with junit concept;
+ *  with the addition that this way it easier to communicate with the other rules..
+ */
 public class HiveTestEnvSetup extends ExternalResource {
 
+  static interface UX1 {
+    default void beforeClass(HiveTestEnvContext ctx) throws Exception {
+    }
+
+    default void afterClass(HiveTestEnvContext ctx) throws Exception {
+    }
+
+    default void beforeMethod(HiveTestEnvContext ctx) throws Exception {
+    }
+
+    default void afterMethod(HiveTestEnvContext ctx) throws Exception {
+    }
+  }
+
+  public static class HiveTestEnvContext {
+
+    public File tmpFolder;
+    public HiveConf hiveConf;
+
+  }
+
+  static class TmpDirSetup implements UX1 {
+
+    public TemporaryFolder tmpFolderRule = new TemporaryFolder(new File(HIVE_ROOT + "/target/tmp"));
+
+    @Override
+    public void beforeClass(HiveTestEnvContext ctx) throws Exception {
+      tmpFolderRule.create();
+      ctx.tmpFolder = tmpFolderRule.getRoot();
+    }
+
+    @Override
+    public void afterClass(HiveTestEnvContext ctx) {
+      tmpFolderRule.delete();
+      ctx.tmpFolder = null;
+    }
+  }
+
+
+  static class SetTestEnvs implements UX1 {
+    @Override
+    public void beforeClass(HiveTestEnvContext ctx) throws Exception {
+
+      File tmpFolder = ctx.tmpFolder;
+      String tmpFolderPath = tmpFolder.getAbsolutePath();
+
+      // these are mostly copied from the root pom.xml
+      System.setProperty("build.test.dir", tmpFolderPath);
+      System.setProperty("derby.stream.error.file", tmpFolderPath + "/derby.log");
+      System.setProperty("hadoop.bin.path", HIVE_ROOT + "/testutils/hadoop");
+      System.setProperty("hadoop.log.dir", tmpFolderPath);
+      System.setProperty("mapred.job.tracker", "local");
+      System.setProperty("log4j.configurationFile", "file://" + tmpFolderPath + "/conf/hive-log4j2.properties");
+      System.setProperty("log4j.debug", "true");
+      System.setProperty("java.io.tmpdir", tmpFolderPath);
+      System.setProperty("test.build.data", tmpFolderPath);
+      System.setProperty("test.data.files", DATA_DIR + "/files");
+      System.setProperty("test.data.dir", DATA_DIR + "/files");
+      System.setProperty("test.tmp.dir", tmpFolderPath);
+      System.setProperty("test.tmp.dir.uri", "file://" + tmpFolderPath);
+      System.setProperty("test.dfs.mkdir", "-mkdir -p");
+      System.setProperty("test.warehouse.dir", tmpFolderPath + "/warehouse"); // this is changed to be *under* tmp dir
+      System.setProperty("java.net.preferIPv4Stack", "true"); // not sure if this will have any effect..
+      System.setProperty("test.src.tables", "src");
+      System.setProperty("hive.jar.directory", tmpFolderPath);
+    }
+
+  }
+
+  static class SetupHiveConf implements UX1 {
+
+    @Override
+    public void beforeClass(HiveTestEnvContext ctx) throws Exception {
+
+      File confFolder = new File(ctx.tmpFolder, "conf");
+
+      FileUtils.copyDirectory(new File(DATA_DIR + "/conf/"), confFolder);
+      FileUtils.copyDirectory(new File(DATA_DIR + "/conf/tez"), confFolder);
+
+      HiveConf.setHiveSiteLocation(new File(confFolder, "hive-site.xml").toURI().toURL());
+      HiveConf.setHivemetastoreSiteUrl(new File(confFolder, "hivemetastore-site.xml").toURI().toURL());
+      // FIXME: hiveServer2SiteUrl is not settable?
+
+      ctx.hiveConf = new HiveConf(IDriver.class);
+    }
+
+    @Override
+    public void afterClass(HiveTestEnvContext ctx) throws Exception {
+      ctx.hiveConf = null;
+    }
+  }
+
+  static class SetupZookeeper implements UX1 {
+
+    private ZooKeeper zooKeeper;
+    private MiniZooKeeperCluster zooKeeperCluster;
+    private int zkPort;
+
+    @Override
+    public void beforeClass(HiveTestEnvContext ctx) throws Exception {
+      File tmpDir = new File(ctx.tmpFolder, "zookeeper");
+      zooKeeperCluster = new MiniZooKeeperCluster();
+      zkPort = zooKeeperCluster.startup(tmpDir);
+    }
+
+    @Override
+    public void beforeMethod(HiveTestEnvContext ctx) throws Exception {
+      int sessionTimeout = (int) ctx.hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT, TimeUnit.MILLISECONDS);
+      zooKeeper = new ZooKeeper("localhost:" + zkPort, sessionTimeout, new Watcher() {
+        @Override
+        public void process(WatchedEvent arg0) {
+        }
+      });
+
+      String zkServer = "localhost";
+      ctx.hiveConf.set("hive.zookeeper.quorum", zkServer);
+      ctx.hiveConf.set("hive.zookeeper.client.port", "" + zkPort);
+    }
+
+    @Override
+    public void afterMethod(HiveTestEnvContext ctx) throws Exception {
+      zooKeeper.close();
+      ZooKeeperHiveLockManager.releaseAllLocks(ctx.hiveConf);
+    }
+
+    @Override
+    public void afterClass(HiveTestEnvContext ctx) throws Exception {
+      CuratorFrameworkSingleton.closeAndReleaseInstance();
+
+      if (zooKeeperCluster != null) {
+        zooKeeperCluster.shutdown();
+        zooKeeperCluster = null;
+      }
+    }
+
+  }
+
   public static final String HIVE_ROOT = getHiveRoot();
+  public static final String DATA_DIR = HIVE_ROOT + "/data/";
+  List<UX1> parts = new ArrayList<>();
+
+  public HiveTestEnvSetup() {
+    parts.add(new TmpDirSetup());
+    parts.add(new SetTestEnvs());
+    parts.add(new SetupHiveConf());
+    parts.add(new SetupZookeeper());
+  }
 
   TemporaryFolder tmpFolderRule = new TemporaryFolder(new File(HIVE_ROOT + "/target/tmp"));
+  private HiveTestEnvContext testEnvContext = new HiveTestEnvContext();
 
   @Override
   protected void before() throws Throwable {
-
-    tmpFolderRule.create();
-    File tmpFolder = tmpFolderRule.getRoot();
-    String tmpFolderPath = tmpFolder.getAbsolutePath();
-
-    //    System.setProperty("datanucleus.schema.autoCreateAll", "true");
-
-    // FIXME: change scope; remove myriad of vars
-    String DATA_DIR = HIVE_ROOT + "/data/";
-    FileUtils.copyDirectory(new File(DATA_DIR + "/conf/"), new File(tmpFolder, "conf"));
-    FileUtils.copyDirectory(new File(DATA_DIR + "/conf/tez"), new File(tmpFolder, "conf"));
-
-    //    System.out.println(System.getProperty("project_loc"));
-    //    -Xmx2048m -XX:MaxPermSize=512m -Dbuild.dir=${project.build.directory}
-    //  -Dbuild.test.dir=${test.tmp.dir}
-    System.setProperty("build.test.dir", tmpFolderPath);
-    //  -Dderby.stream.error.file=${test.tmp.dir}/derby.log
-    System.setProperty("derby.stream.error.file", tmpFolderPath + "/derby.log");
-    //  -Dhadoop.bin.path=${hadoop.bin.path}
-    System.setProperty("hadoop.bin.path", HIVE_ROOT + "/testutils/hadoop");
-
-    //  -Dhadoop.log.dir=${test.tmp.dir}
-    System.setProperty("hadoop.log.dir", tmpFolderPath);
-    //  -Dhive.root=${hive.root}/
-    //  -Dmapred.job.tracker=local
-    System.setProperty("mapred.job.tracker", "local");
-    //  -Dlog4j.configurationFile=file://${test.tmp.dir}/conf/hive-log4j2.properties
-    System.setProperty("log4j.configurationFile", "file://" + tmpFolderPath + "/conf/hive-log4j2.properties");
-    //  -Dlog4j.debug=true
-    System.setProperty("log4j.debug", "true");
-    //  -Djava.io.tmpdir=${test.tmp.dir}
-    System.setProperty("java.io.tmpdir", tmpFolderPath);
-    //  -Dtest.build.data=${test.tmp.dir}
-    System.setProperty("test.build.data", tmpFolderPath);
-    //  -Dtest.data.files=${hive.root}/data/files
-    System.setProperty("test.data.files", DATA_DIR + "/files");
-    //  -Dtest.data.dir=${hive.root}/data/files
-    System.setProperty("test.data.dir", DATA_DIR + "/files");
-    //  -Dtest.tmp.dir=${test.tmp.dir}
-    System.setProperty("test.tmp.dir", tmpFolderPath);
-    //  -Dtest.tmp.dir.uri="file://${test.tmp.dir}"
-    System.setProperty("test.tmp.dir.uri", "file://" + tmpFolderPath);
-    //  -Dtest.dfs.mkdir="-mkdir -p"
-    System.setProperty("test.dfs.mkdir", "-mkdir -p");
-    //  -Dtest.output.overwrite=false
-    //  -Dtest.warehouse.dir=${test.tmp.dir}/../warehouse
-    System.setProperty("test.warehouse.dir", tmpFolderPath + "/warehouse"); // this is changed to be *under* tmp dir
-    //  -Djava.net.preferIPv4Stack=true
-    System.setProperty("java.net.preferIPv4Stack", "true"); // not sure if this will have any effect..
-
-    System.setProperty("test.src.tables", "src");
-
-    System.setProperty("hive.jar.directory", tmpFolderPath);
-
-    File confFolder = new File(tmpFolder, "conf");
-    HiveConf.setHiveSiteLocation(new File(confFolder, "hive-site.xml").toURI().toURL());
-    HiveConf.setHivemetastoreSiteUrl(new File(confFolder, "hivemetastore-site.xml").toURI().toURL());
-    // FIXME: hiveServer2SiteUrl is not settable?
-
-    // XXX??
-    HiveConf conf = new HiveConf(IDriver.class);
-    //    initConf();
-    //    initConfFromSetup();
-
-    // renew the metastore since the cluster type is unencrypted
-    //    Hive db = Hive.get(conf); // propagate new conf to meta store
-
-
+    for (UX1 p : parts) {
+      p.beforeClass(testEnvContext);
+    }
   }
 
   @Override
   protected void after() {
-    tmpFolderRule.delete();
+    try {
+      for (UX1 p : Lists.reverse(parts)) {
+        p.afterClass(testEnvContext);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("test-subsystem error", e);
+    }
+  }
+
+  class MethodRuleProxy extends ExternalResource {
+
+    @Override
+    protected void before() throws Throwable {
+      for (UX1 p : parts) {
+        p.beforeMethod(testEnvContext);
+      }
+    }
+
+    @Override
+    protected void after() {
+      try {
+        for (UX1 p : Lists.reverse(parts)) {
+          p.afterMethod(testEnvContext);
+        }
+      } catch (Exception e) {
+        throw new RuntimeException("test-subsystem error", e);
+      }
+    }
   }
 
   private static String getHiveRoot() {
@@ -158,6 +292,19 @@ public class HiveTestEnvSetup extends ExternalResource {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public TestRule getMethodRule() {
+    return new MethodRuleProxy();
+  }
+
+  // FIXME: individual getters or return the whole context; and the user may take whatever he wants..
+  public HiveConf getHiveConf() {
+    return testEnvContext.hiveConf;
+  }
+
+  public HiveTestEnvContext getTestCtx() {
+    return testEnvContext;
   }
 
 }
