@@ -34,7 +34,6 @@ import java.util.Stack;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ReOptimizeDriver;
-import org.apache.hadoop.hive.ql.ReOptimizeDriver.OperatorStatSource;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
@@ -2351,15 +2350,7 @@ public class StatsRulesProcFactory {
           outStats.setColumnStats(colStats);
         }
 
-        OperatorStatSource oss = ReOptimizeDriver.getOperatorStats();
-        OperatorStats os = oss.lookup(rop);
-        if (os != null) {
-          outStats = outStats.scaleToRowCount2(os.getOutputRecords());
-
-          //          outStats.setNumRows(os.getOutputRecords());
-          //          outStats = new Statistics(os.getOutputRecords(), stats.getAvgRowSize() * os.getOutputRecords());
-          //          outStats.setColumnStats(stats.getColumnStats());
-        }
+        outStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), outStats, rop);
 
         // REOPT-PRASH-2
         // check if runtime stats is available

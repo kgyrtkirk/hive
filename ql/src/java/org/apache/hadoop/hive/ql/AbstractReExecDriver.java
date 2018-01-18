@@ -65,6 +65,7 @@ public abstract class AbstractReExecDriver implements IDriver {
       if (ExecuteWithHookContext.class.equals(clazz)) {
         // FIXME: address this warning
         ret.add((T) new ReExecutionInfoHook());
+        ret.add((T) new StatsXXXHook());
       }
       return ret;
     }

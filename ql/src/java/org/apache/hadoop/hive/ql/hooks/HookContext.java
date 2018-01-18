@@ -241,6 +241,8 @@ public class HookContext {
     return queryInfo;
   }
 
+  // FIXME: hide this...we don't want to invite users to get access to this
+  @Deprecated
   public Context getContext() {
     return ctx;
   }

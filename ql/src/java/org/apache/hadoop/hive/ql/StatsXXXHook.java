@@ -18,16 +18,14 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
+import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorStats;
@@ -40,10 +38,13 @@ public class StatsXXXHook implements ExecuteWithHookContext {
 
   private static final Logger LOG = LoggerFactory.getLogger(StatsXXXHook.class);
 
-  private Map<String, OperatorStats> opStats = new HashMap<>();
-
   @Override
   public void run(HookContext hookContext) throws Exception {
+
+    if (hookContext.getHookType() == HookType.PRE_EXEC_HOOK) {
+      return;
+    }
+
     HiveConf conf = hookContext.getConf();
     QueryPlan plan = hookContext.getQueryPlan();
     List<TezTask> rootTasks = Utilities.getTezTasks(plan.getRootTasks());
