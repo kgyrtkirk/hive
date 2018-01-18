@@ -41,7 +41,6 @@ import org.junit.rules.TestRule;
 
 import com.google.common.collect.Sets;
 
-// FIXME: move this to somewhere else
 /**
  * Helps in setting up environments to run high level hive tests
  *
@@ -58,6 +57,7 @@ import com.google.common.collect.Sets;
  *  the above are almost entirely in sync with junit concept;
  *  with the addition that this way it easier to communicate with the other rules..
  */
+//FIXME: move this to somewhere else?
 public class HiveTestEnvSetup extends ExternalResource {
 
   static interface UX1 {
@@ -296,11 +296,6 @@ public class HiveTestEnvSetup extends ExternalResource {
 
   public TestRule getMethodRule() {
     return new MethodRuleProxy();
-  }
-
-  // FIXME: individual getters or return the whole context; and the user may take whatever he wants..
-  public HiveConf getHiveConf() {
-    return testEnvContext.hiveConf;
   }
 
   public HiveTestEnvContext getTestCtx() {
