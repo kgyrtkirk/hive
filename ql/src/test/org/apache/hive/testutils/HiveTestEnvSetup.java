@@ -62,6 +62,11 @@ import com.google.common.collect.Sets;
  *
  *  as a matter of fact with junit5 the above is almost entirely possible w/o workarounds...
  *  and TestExtensionContext can be also used to carry HiveTestEnvContext
+ *
+ *  we can't upgrade to junit5
+ *    * unfortunately surefire 2.20.1 is not supported; https://github.com/junit-team/junit5/issues/809
+ *    * using 2.19.1 would re-introduce the idea specific remote debug issue
+ *  so we should live with this mid-term solution
  */
 //FIXME: move this to somewhere else?
 public class HiveTestEnvSetup extends ExternalResource {
