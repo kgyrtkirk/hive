@@ -22,7 +22,6 @@ import javax.annotation.Nonnull;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * Constructs a driver for ql clients
