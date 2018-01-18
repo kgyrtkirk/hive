@@ -60,7 +60,8 @@ import com.google.common.collect.Sets;
  *  the above are almost entirely in sync with junit concept;
  *  with the addition that this way it easier to communicate with the other rules..
  *
- *  as a matter of fact with junit5 the above is almost entirely possible w/o workarounds...will check that out later
+ *  as a matter of fact with junit5 the above is almost entirely possible w/o workarounds...
+ *  and TestExtensionContext can be also used to carry HiveTestEnvContext
  */
 //FIXME: move this to somewhere else?
 public class HiveTestEnvSetup extends ExternalResource {
