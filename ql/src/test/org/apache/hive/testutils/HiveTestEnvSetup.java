@@ -51,7 +51,7 @@ import com.google.common.collect.Sets;
  * this class introduces some helper concepts beyond what juni4 has
  *
  * <ul>
- *  <li>parts are decomposed into smaller {@link UX1}
+ *  <li>parts are decomposed into smaller {@link IHiveTestRule}
  *  <li>{@link HiveTestEnvContext} is visible to every methodcall</li>
  *  <li>invocation order of before calls are "forward"
  *  <li>invocation order of before calls are "backward"
@@ -71,7 +71,7 @@ import com.google.common.collect.Sets;
 //FIXME: move this to somewhere else?
 public class HiveTestEnvSetup extends ExternalResource {
 
-  static interface UX1 {
+  static interface IHiveTestRule {
     default void beforeClass(HiveTestEnvContext ctx) throws Exception {
     }
 
@@ -92,7 +92,7 @@ public class HiveTestEnvSetup extends ExternalResource {
 
   }
 
-  static class TmpDirSetup implements UX1 {
+  static class TmpDirSetup implements IHiveTestRule {
 
     public TemporaryFolder tmpFolderRule = new TemporaryFolder(new File(HIVE_ROOT + "/target/tmp"));
 
@@ -110,7 +110,7 @@ public class HiveTestEnvSetup extends ExternalResource {
   }
 
 
-  static class SetTestEnvs implements UX1 {
+  static class SetTestEnvs implements IHiveTestRule {
     @Override
     public void beforeClass(HiveTestEnvContext ctx) throws Exception {
 
@@ -140,7 +140,7 @@ public class HiveTestEnvSetup extends ExternalResource {
 
   }
 
-  static class SetupHiveConf implements UX1 {
+  static class SetupHiveConf implements IHiveTestRule {
 
     private HiveConf savedConf;
 
@@ -175,7 +175,7 @@ public class HiveTestEnvSetup extends ExternalResource {
     }
   }
 
-  static class SetupZookeeper implements UX1 {
+  static class SetupZookeeper implements IHiveTestRule {
 
     private ZooKeeper zooKeeper;
     private MiniZooKeeperCluster zooKeeperCluster;
@@ -220,7 +220,7 @@ public class HiveTestEnvSetup extends ExternalResource {
 
   }
 
-  static class SetupTez implements UX1 {
+  static class SetupTez implements IHiveTestRule {
     private MiniMrShim mr1;
 
     @Override
@@ -238,7 +238,7 @@ public class HiveTestEnvSetup extends ExternalResource {
 
   public static final String HIVE_ROOT = getHiveRoot();
   public static final String DATA_DIR = HIVE_ROOT + "/data/";
-  List<UX1> parts = new ArrayList<>();
+  List<IHiveTestRule> parts = new ArrayList<>();
 
   public HiveTestEnvSetup() {
     parts.add(new TmpDirSetup());
@@ -253,7 +253,7 @@ public class HiveTestEnvSetup extends ExternalResource {
 
   @Override
   protected void before() throws Throwable {
-    for (UX1 p : parts) {
+    for (IHiveTestRule p : parts) {
       p.beforeClass(testEnvContext);
     }
   }
@@ -261,7 +261,7 @@ public class HiveTestEnvSetup extends ExternalResource {
   @Override
   protected void after() {
     try {
-      for (UX1 p : Lists.reverse(parts)) {
+      for (IHiveTestRule p : Lists.reverse(parts)) {
         p.afterClass(testEnvContext);
       }
     } catch (Exception e) {
@@ -273,7 +273,7 @@ public class HiveTestEnvSetup extends ExternalResource {
 
     @Override
     protected void before() throws Throwable {
-      for (UX1 p : parts) {
+      for (IHiveTestRule p : parts) {
         p.beforeMethod(testEnvContext);
       }
     }
@@ -281,7 +281,7 @@ public class HiveTestEnvSetup extends ExternalResource {
     @Override
     protected void after() {
       try {
-        for (UX1 p : Lists.reverse(parts)) {
+        for (IHiveTestRule p : Lists.reverse(parts)) {
           p.afterMethod(testEnvContext);
         }
       } catch (Exception e) {
