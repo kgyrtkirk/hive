@@ -29,6 +29,7 @@ public class SimpleRuntimeStatsSource implements RuntimeStatsSource {
   private final PlanMapper pm;
 
   public SimpleRuntimeStatsSource(PlanMapper pm) {
+    PlanMapperProcess.runPostProcess(pm);
     this.pm = pm;
   }
 

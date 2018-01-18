@@ -21,11 +21,14 @@ package org.apache.hadoop.hive.ql.plan.mapper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
+
+import com.google.common.annotations.VisibleForTesting;
 
 // FIXME: rename to EquivGroupMapper?
 // FIXME: consider moving this to a different package
@@ -98,6 +101,13 @@ public class PlanMapper {
       throw new IllegalArgumentException("Expected match count is 1; but got:" + all);
     }
     return all.get(0);
+  }
+
+  // FIXME: find a more natural way...
+  @VisibleForTesting
+  public Iterator<EquivGroup> iterateGroups() {
+    return groups.iterator();
+
   }
 
 }
