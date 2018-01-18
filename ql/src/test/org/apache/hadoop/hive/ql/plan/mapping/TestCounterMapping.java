@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
+import org.apache.hadoop.hive.ql.plan.OperatorStats;
 import org.apache.hadoop.hive.ql.plan.mapper.HiveFilterRef;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -110,8 +111,8 @@ public class TestCounterMapping {
     PlanMapper pm = getMapperForQuery(driver, query);
 
     HiveFilterRef ref = pm.getAll(HiveFilterRef.class).get(0);
-    pm.lookup(Object.class, ref);
-
+    OperatorStats stats = pm.lookup(OperatorStats.class, ref);
+    assertEquals(stats.getOutputRecords(), 8);
   }
 
   @Test

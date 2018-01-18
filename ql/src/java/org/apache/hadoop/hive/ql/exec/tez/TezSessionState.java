@@ -20,9 +20,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import org.apache.hadoop.registry.client.api.RegistryOperations;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,8 +37,6 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.zip.ZipOutputStream;
-
 import javax.security.auth.login.LoginException;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -286,15 +282,7 @@ public class TezSessionState {
 
     // unless already installed on all the cluster nodes, we'll have to
     // localize hive-exec.jar as well.
-    String execJarPathLocal = utils.getExecJarPathLocal();
-
-    if (conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
-      if (new File(new URI(execJarPathLocal).getPath()).isDirectory()) {
-        // IDE support for running tez jobs
-        execJarPathLocal = createEmptyArchive();
-      }
-    }
-    appJarLr = createJarLocalResource(execJarPathLocal);
+    appJarLr = createJarLocalResource(utils.getExecJarPathLocal(conf));
 
     // configuration for the application master
     final Map<String, LocalResource> commonLocalResources = new HashMap<String, LocalResource>();
@@ -387,17 +375,6 @@ public class TezSessionState {
       // We assume here nobody will try to get session before open() returns.
       this.console = console;
       this.sessionFuture = sessionFuture;
-    }
-  }
-
-  private String createEmptyArchive() {
-    try {
-      File outputJar = new File(System.getProperty("build.test.dir"), "empty.jar");
-      ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(outputJar));
-      zos.close();
-      return outputJar.getAbsolutePath();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
     }
   }
 
