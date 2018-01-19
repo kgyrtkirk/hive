@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.plan.mapping;
+package org.apache.hive.testutils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,7 +34,6 @@ import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.yetus.audience.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.zookeeper.server.NIOServerCnxnFactory;
@@ -50,8 +49,7 @@ import org.apache.hadoop.hbase.shaded.com.google.common.annotations.VisibleForTe
  *
  *XXX: copied from the only used class by qtestutil from hbase-tests
  */
-@InterfaceAudience.Public
-public class MiniZooKeeperCluster {
+class MiniZooKeeperCluster {
   private static final Log LOG = LogFactory.getLog(MiniZooKeeperCluster.class);
 
   private static final int TICK_TIME = 2000;
