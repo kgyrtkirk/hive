@@ -433,8 +433,7 @@ public class TezSessionState {
       try {
         session.waitTillReady();
       } catch (InterruptedException ie) {
-        if (isOnThread)
-         {
+        if (isOnThread) {
           throw new IOException(ie);
           //ignore
         }
