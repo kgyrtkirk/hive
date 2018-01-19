@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan.mapping;
+package org.apache.hive.testutils;
 
 import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
@@ -25,18 +25,23 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
-public class TestPlanMapping {
+public class TestHiveTestEnvSetup {
 
   @ClassRule
   public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
 
+  @Rule
+  public TestRule methodRule = env_setup.getMethodRule();
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -44,8 +49,8 @@ public class TestPlanMapping {
     dropTables(driver);
     String cmds[] = {
         // @formatter:off
-        "create table tu(id_uv int,id_uw int,u int)",
-        "create table tv(id_uv int,v int)",
+        "create table tu(u int)",
+        "insert into tu values (1),(2),(3)",
         // @formatter:on
     };
     for (String cmd : cmds) {
@@ -60,7 +65,6 @@ public class TestPlanMapping {
     dropTables(driver);
   }
 
-
   public static void dropTables(IDriver driver) throws Exception {
     String tables[] = { "s", "tu", "tv", "tw" };
     for (String t : tables) {
@@ -72,11 +76,15 @@ public class TestPlanMapping {
   @Test
   public void testMappingSameQuery() throws ParseException, Exception {
     IDriver driver = createDriver();
-    String query = "select sum(id_uv),sum(u) from tu where u>1";
+    String query = "select sum(u*u),sum(u) from tu where u>1";
+    CommandProcessorResponse ret = driver.run(query);
+    assertEquals(0, ret.getResponseCode());
 
     List res = new ArrayList();
     driver.getFetchTask().fetch(res);
     System.out.println(res);
+    assertEquals(1, res.size());
+    assertEquals("13\t5", res.get(0));
   }
 
 
