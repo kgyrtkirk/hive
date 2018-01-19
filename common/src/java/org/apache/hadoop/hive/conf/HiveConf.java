@@ -462,6 +462,18 @@ public class HiveConf extends Configuration {
     REPL_DUMPDIR_TTL("hive.repl.dumpdir.ttl", "7d",
         new TimeValidator(TimeUnit.DAYS),
         "TTL of dump dirs before cleanup."),
+    REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
+        "Indicates whether replication dump only metadata information or data + metadata."),
+    REPL_DUMP_INCLUDE_ACID_TABLES("hive.repl.dump.include.acid.tables", false,
+        "Indicates if repl dump should include information about ACID tables. It should be \n"
+            + "used in conjunction with 'hive.repl.dump.metadata.only' to enable copying of \n"
+            + "metadata for acid tables which do not require the corresponding transaction \n"
+            + "semantics to be applied on target. This can be removed when ACID table \n"
+            + "replication is supported."),
+    //https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html#Running_as_the_superuser
+    REPL_ADD_RAW_RESERVED_NAMESPACE("hive.repl.add.raw.reserved.namespace", false,
+        "For TDE with same encryption keys on source and target, allow Distcp super user to access \n"
+            + "the raw bytes from filesystem without decrypting on source and then encrypting on target."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
@@ -1137,6 +1149,12 @@ public class HiveConf extends Configuration {
     // materialized views
     HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING("hive.materializedview.rewriting", false,
         "Whether to try to rewrite queries using the materialized views enabled for rewriting"),
+    HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW("hive.materializedview.rewriting.time.window", 0,
+        "Time window, specified in seconds, after which outdated materialized views become invalid for automatic query rewriting.\n" +
+        "For instance, if a materialized view is created and afterwards one of its source tables is changed at " +
+        "moment in time t0, the materialized view will not be considered for rewriting anymore after t0 plus " +
+        "the value assigned to this property. Default value 0 means that the materialized view cannot be " +
+        "outdated to be used automatically in query rewriting."),
     HIVE_MATERIALIZED_VIEW_FILE_FORMAT("hive.materializedview.fileformat", "ORC",
         new StringSet("none", "TextFile", "SequenceFile", "RCfile", "ORC"),
         "Default file format for CREATE MATERIALIZED VIEW statement"),
@@ -1364,6 +1382,8 @@ public class HiveConf extends Configuration {
         "while writing a table with ORC file format, enabling this config will do stripe-level\n" +
         "fast merge for small ORC files. Note that enabling this config will not honor the\n" +
         "padding tolerance config (hive.exec.orc.block.padding.tolerance)."),
+    HIVE_ORC_CODEC_POOL("hive.use.orc.codec.pool", true,
+        "Whether to use codec pool in ORC. Disable if there are bugs with codec reuse."),
 
     HIVEUSEEXPLICITRCFILEHEADER("hive.exec.rcfile.use.explicit.header", true,
         "If this is set the header for RCFiles will simply be RCF.  If this is not\n" +
@@ -1752,8 +1772,6 @@ public class HiveConf extends Configuration {
         "The Java class (implementing the StatsPublisher interface) that is used by default if hive.stats.dbclass is custom type."),
     HIVE_STATS_DEFAULT_AGGREGATOR("hive.stats.default.aggregator", "",
         "The Java class (implementing the StatsAggregator interface) that is used by default if hive.stats.dbclass is custom type."),
-    HIVE_STATS_ATOMIC("hive.stats.atomic", false,
-        "whether to update metastore stats only if all stats are available"),
     CLIENT_STATS_COUNTERS("hive.client.stats.counters", "",
         "Subset of counters that should be of interest for hive.client.stats.publishers (when one wants to limit their publishing). \n" +
         "Non-display names should be used"),
@@ -2412,6 +2430,11 @@ public class HiveConf extends Configuration {
         "Setting it to 0s disables the timeout."),
     HIVE_SERVER2_PARALLEL_OPS_IN_SESSION("hive.server2.parallel.ops.in.session", true,
         "Whether to allow several parallel operations (such as SQL statements) in one session."),
+    HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL("hive.server2.materializedviews.registry.impl", "DEFAULT",
+        new StringSet("DEFAULT", "DUMMY"),
+        "The implementation that we should use for the materialized views registry. \n" +
+        "  DEFAULT: Default cache for materialized views\n" +
+        "  DUMMY: Do not cache materialized views and hence forward requests to metastore"),
 
     // HiveServer2 WebUI
     HIVE_SERVER2_WEBUI_BIND_HOST("hive.server2.webui.host", "0.0.0.0", "The host address the HiveServer2 WebUI will listen on"),
@@ -3185,6 +3208,13 @@ public class HiveConf extends Configuration {
         "MR LineRecordRedader into LLAP cache, if this feature is enabled. Safety flag."),
     LLAP_ORC_ENABLE_TIME_COUNTERS("hive.llap.io.orc.time.counters", true,
         "Whether to enable time counters for LLAP IO layer (time spent in HDFS, etc.)"),
+    LLAP_IO_VRB_QUEUE_LIMIT_BASE("hive.llap.io.vrb.queue.limit.base", 10000,
+        "The default queue size for VRBs produced by a LLAP IO thread when the processing is\n" +
+        "slower than the IO. The actual queue size is set per fragment, and is adjusted down\n" +
+        "from the base, depending on the schema."),
+    LLAP_IO_VRB_QUEUE_LIMIT_MIN("hive.llap.io.vrb.queue.limit.min", 10,
+        "The minimum queue size for VRBs produced by a LLAP IO thread when the processing is\n" +
+        "slower than the IO (used when determining the size from base size)."),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", false,
         "Whether or not to allow the planner to run vertices in the AM."),
     LLAP_AUTO_ENFORCE_TREE("hive.llap.auto.enforce.tree", true,
@@ -3400,6 +3430,9 @@ public class HiveConf extends Configuration {
       "Backoff factor on successive blacklists of a node due to some failures. Blacklist times\n" +
       "start at the min timeout and go up to the max timeout based on this backoff factor.",
       "llap.task.scheduler.node.disable.backoff.factor"),
+    LLAP_TASK_SCHEDULER_PREEMPT_INDEPENDENT("hive.llap.task.scheduler.preempt.independent", false,
+      "Whether the AM LLAP scheduler should preempt a lower priority task for a higher pri one\n" +
+      "even if the former doesn't depend on the latter (e.g. for two parallel sides of a union)."),
     LLAP_TASK_SCHEDULER_NUM_SCHEDULABLE_TASKS_PER_NODE(
       "hive.llap.task.scheduler.num.schedulable.tasks.per.node", 0,
       "The number of tasks the AM TaskScheduler will try allocating per node. 0 indicates that\n" +

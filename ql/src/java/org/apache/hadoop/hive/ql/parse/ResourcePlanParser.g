@@ -56,6 +56,21 @@ rpAssignList
   : rpAssign (COMMA rpAssign)* -> rpAssign+
   ;
 
+rpUnassign
+@init { gParent.pushMsg("rpAssign", state); }
+@after { gParent.popMsg(state); }
+  : (
+      (KW_QUERY_PARALLELISM) -> ^(TOK_QUERY_PARALLELISM TOK_NULL)
+    | (KW_DEFAULT KW_POOL) -> ^(TOK_DEFAULT_POOL TOK_NULL)
+    )
+  ;
+
+rpUnassignList
+@init { gParent.pushMsg("rpAssignList", state); }
+@after { gParent.popMsg(state); }
+  : rpUnassign (COMMA rpUnassign)* -> rpUnassign+
+  ;
+
 createResourcePlanStatement
 @init { gParent.pushMsg("create resource plan statement", state); }
 @after { gParent.popMsg(state); }
@@ -70,6 +85,8 @@ withReplace : KW_WITH KW_REPLACE -> ^(TOK_REPLACE);
 activate : KW_ACTIVATE withReplace? -> ^(TOK_ACTIVATE withReplace?);
 enable : KW_ENABLE -> ^(TOK_ENABLE);
 disable : KW_DISABLE -> ^(TOK_DISABLE);
+unmanaged : KW_UNMANAGED -> ^(TOK_UNMANAGED);
+
 
 alterResourcePlanStatement
 @init { gParent.pushMsg("alter resource plan statement", state); }
@@ -78,6 +95,7 @@ alterResourcePlanStatement
           (KW_VALIDATE -> ^(TOK_ALTER_RP $name TOK_VALIDATE))
         | (KW_DISABLE -> ^(TOK_ALTER_RP $name TOK_DISABLE))
         | (KW_SET rpAssignList -> ^(TOK_ALTER_RP $name rpAssignList))
+        | (KW_UNSET rpUnassignList -> ^(TOK_ALTER_RP $name rpUnassignList))
         | (KW_RENAME KW_TO newName=identifier -> ^(TOK_ALTER_RP $name ^(TOK_RENAME $newName)))
         | ((activate enable? | enable activate?) -> ^(TOK_ALTER_RP $name activate? enable?))
       )
@@ -217,6 +235,7 @@ alterPoolStatement
 @after { gParent.popMsg(state); }
     : KW_ALTER KW_POOL rpName=identifier DOT poolPath (
         (KW_SET poolAssignList -> ^(TOK_ALTER_POOL $rpName poolPath poolAssignList))
+        | (KW_UNSET KW_SCHEDULING_POLICY -> ^(TOK_ALTER_POOL $rpName poolPath ^(TOK_SCHEDULING_POLICY TOK_NULL)))
         | (KW_ADD KW_TRIGGER triggerName=identifier
             -> ^(TOK_ALTER_POOL $rpName poolPath ^(TOK_ADD_TRIGGER $triggerName)))
         | (KW_DROP KW_TRIGGER triggerName=identifier
@@ -234,27 +253,27 @@ dropPoolStatement
 createMappingStatement
 @init { gParent.pushMsg("create mapping statement", state); }
 @after { gParent.popMsg(state); }
-    : (KW_CREATE mappingType=(KW_USER | KW_GROUP)
+    : (KW_CREATE mappingType=(KW_USER | KW_GROUP | KW_APPLICATION)
          KW_MAPPING name=StringLiteral
-         KW_IN rpName=identifier KW_TO poolPath
+         KW_IN rpName=identifier ((KW_TO path=poolPath) | unmanaged)
          (KW_WITH KW_ORDER order=Number)?)
-    -> ^(TOK_CREATE_MAPPING $rpName $mappingType $name poolPath $order?)
+    -> ^(TOK_CREATE_MAPPING $rpName $mappingType $name $path? unmanaged? $order?)
     ;
 
 alterMappingStatement
 @init { gParent.pushMsg("alter mapping statement", state); }
 @after { gParent.popMsg(state); }
-    : (KW_ALTER mappingType=(KW_USER | KW_GROUP) KW_MAPPING
+    : (KW_ALTER mappingType=(KW_USER | KW_GROUP | KW_APPLICATION) KW_MAPPING
          KW_MAPPING name=StringLiteral
-         KW_IN rpName=identifier KW_TO poolPath
+         KW_IN rpName=identifier ((KW_TO path=poolPath) | unmanaged)
          (KW_WITH KW_ORDER order=Number)?)
-    -> ^(TOK_ALTER_MAPPING $rpName $mappingType $name poolPath $order?)
+    -> ^(TOK_ALTER_MAPPING $rpName $mappingType $name $path? unmanaged? $order?)
     ;
 
 dropMappingStatement
 @init { gParent.pushMsg("drop mapping statement", state); }
 @after { gParent.popMsg(state); }
-    : KW_DROP mappingType=(KW_USER | KW_GROUP) KW_MAPPING
+    : KW_DROP mappingType=(KW_USER | KW_GROUP | KW_APPLICATION) KW_MAPPING
          name=StringLiteral KW_IN rpName=identifier
     -> ^(TOK_DROP_MAPPING $rpName $mappingType $name)
     ;
