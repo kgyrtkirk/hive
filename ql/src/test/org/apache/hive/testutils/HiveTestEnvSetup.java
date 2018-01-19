@@ -68,7 +68,6 @@ import com.google.common.collect.Sets;
  *    * using 2.19.1 would re-introduce the idea specific remote debug issue
  *  so we should live with this mid-term solution
  */
-//FIXME: move this to somewhere else?
 public class HiveTestEnvSetup extends ExternalResource {
 
   static interface IHiveTestRule {
