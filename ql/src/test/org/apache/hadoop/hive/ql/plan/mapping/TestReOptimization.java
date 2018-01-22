@@ -108,7 +108,7 @@ public class TestReOptimization {
   }
 
   @Test
-  public void testUsageOfRuntimeInfo() throws ParseException {
+  public void testStatsAreSetInReopt() throws ParseException {
     IDriver driver = createDriver();
     String query = "select assert_true_oom(${hiveconf:zzz} > sum(u*v)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
 
@@ -120,8 +120,8 @@ public class TestReOptimization {
       EquivGroup g = itG.next();
       List<FilterOperator> fos = g.getAll(FilterOperator.class);
       List<OperatorStats> oss = g.getAll(OperatorStats.class);
-      //      List<HiveFilter> hf = g.getAll(HiveFilter.class);
       // FIXME: oss seems to contain duplicates
+      //      List<HiveFilter> hf = g.getAll(HiveFilter.class);
 
       if (fos.size() > 0 && oss.size() > 0) {
         fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
@@ -142,7 +142,6 @@ public class TestReOptimization {
   }
 
   private static IDriver createDriver() {
-    //    HiveConf conf = new HiveConf(Driver.class);
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
     conf.set("hive.query.reexecution.strategy", "reoptimize");
@@ -151,7 +150,6 @@ public class TestReOptimization {
     //
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    //    conf.setVar(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, CheckInputReadEntityDirect.class.getName());
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     HiveConf.setVar(conf, HiveConf.ConfVars.POSTEXECHOOKS, "org.apache.hadoop.hive.ql.StatsXXXHook");
     SessionState.start(conf);
