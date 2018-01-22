@@ -1,9 +1,12 @@
-PREHOOK: query: select custom_struct_parse('{"label":"1","cnt":"2"}')
+PREHOOK: query: select custom_struct_parse(
+#### A masked pattern was here ####
+)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: select custom_struct_parse('{"label":"1","cnt":"2"}')
+POSTHOOK: query: select custom_struct_parse(
+#### A masked pattern was here ####
+)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-[{"label":"{\"label\":\"1\",\"cnt\":\"2\"}","cnt":21}]

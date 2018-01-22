@@ -1,6 +1,7 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +18,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TextConverter;
 
 @Description(name = "custom_struct_parse")
@@ -51,7 +54,12 @@ public class CustomStructParse extends GenericUDF {
     public String amendment_effective_date;
     public String delete_flag;
     public String product_held_close_date;
+
+    // was not in the original schem
+    public String expiry_date;
+
   }
+
 
   List<PayLoadClass> payload;
 
@@ -71,7 +79,7 @@ public class CustomStructParse extends GenericUDF {
 
     inputConverter = new TextConverter(argumentOI);
 
-    outputOI = buildOutputOI();
+    outputOI = buildOutputOI2();
     return outputOI;
   }
 
@@ -81,15 +89,20 @@ public class CustomStructParse extends GenericUDF {
     if (valObject == null) {
       return null;
     }
-    Object stringInput = ((Text) inputConverter.convert(valObject)).toString();
+    String stringInput = ((Text) inputConverter.convert(valObject)).toString();
 
-    Object retVal[] = new Object[2];
-    retVal[0] = new Text((String) stringInput);
-    retVal[1] = new LongWritable(21);
+    ObjectMapper mapper = new ObjectMapper();
+    try {
+      PayLoadClass[] myObjects = mapper.readValue(stringInput, PayLoadClass[].class);
+      ArrayList ret = new ArrayList<>();
+      for (PayLoadClass payLoadClass : myObjects) {
+        ret.add(flattenStruct(payLoadClass));
+      }
 
-    List<Object> rv = new ArrayList<>();
-    rv.add(retVal);
-    return rv;
+      return ret;
+    } catch (IOException e) {
+      throw new RuntimeException("error running custom struct handler",e);
+    }
 
   }
 
@@ -97,20 +110,6 @@ public class CustomStructParse extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     return getStandardDisplayString("custom_struct_parse", children);
-  }
-
-  public ObjectInspector buildOutputOI() {
-    ArrayList<String> fname = new ArrayList<String>();
-    ArrayList<ObjectInspector> foi = new ArrayList<ObjectInspector>();
-    fname.add("label");
-    foi.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-    fname.add("cnt");
-    foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
-
-    StandardStructObjectInspector sOI = ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
-    StandardListObjectInspector listOI = ObjectInspectorFactory.getStandardListObjectInspector(sOI);
-
-    return listOI;
   }
 
   public ObjectInspector buildOutputOI2() {
@@ -123,7 +122,10 @@ public class CustomStructParse extends GenericUDF {
       fname.add(field.getName());
       foi.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
     }
-    return argumentOI;
+    StandardStructObjectInspector sOI = ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
+    StandardListObjectInspector listOI = ObjectInspectorFactory.getStandardListObjectInspector(sOI);
+
+    return listOI;
   }
 
   public Object flattenStruct(PayLoadClass pc) {
