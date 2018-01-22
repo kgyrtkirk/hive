@@ -52,6 +52,7 @@ public class CustomStructParse extends GenericUDF {
     public String amendment_effective_date;
     public String delete_flag;
     public String product_held_close_date;
+    public String product_held_close_dateX;
 
     // was not in the original schem
     public String expiry_date;
