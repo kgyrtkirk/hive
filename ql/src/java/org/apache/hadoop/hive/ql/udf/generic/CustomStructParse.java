@@ -4,8 +4,6 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -59,10 +57,6 @@ public class CustomStructParse extends GenericUDF {
     public String expiry_date;
 
   }
-
-
-  List<PayLoadClass> payload;
-
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
