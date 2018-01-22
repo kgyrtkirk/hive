@@ -213,6 +213,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("ceiling", GenericUDFCeil.class);
     system.registerUDF("rand", UDFRand.class, false);
     system.registerGenericUDF("abs", GenericUDFAbs.class);
+    system.registerGenericUDF("custom_struct_parse", CustomStructParse.class);
     system.registerGenericUDF("sq_count_check", GenericUDFSQCountCheck.class);
     system.registerGenericUDF("pmod", GenericUDFPosMod.class);
 
@@ -1660,7 +1661,9 @@ public final class FunctionRegistry {
 
   public static boolean isPermanentFunction(ExprNodeGenericFuncDesc fnExpr) {
     GenericUDF udf = fnExpr.getGenericUDF();
-    if (udf == null) return false;
+    if (udf == null) {
+      return false;
+    }
 
     Class<?> clazz = udf.getClass();
     if (udf instanceof GenericUDFBridge) {
@@ -1786,7 +1789,9 @@ public final class FunctionRegistry {
    */
   public static boolean isBuiltInFuncExpr(ExprNodeGenericFuncDesc fnExpr) {
     GenericUDF udf = fnExpr.getGenericUDF();
-    if (udf == null) return false;
+    if (udf == null) {
+      return false;
+    }
 
     Class clazz = udf.getClass();
     if (udf instanceof GenericUDFBridge) {
