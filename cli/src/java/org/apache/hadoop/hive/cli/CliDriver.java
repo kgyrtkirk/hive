@@ -220,83 +220,82 @@ public class CliDriver {
   int processLocalCmd(String cmd, CommandProcessor proc, CliSessionState ss) {
     int ret = 0;
 
-        if (proc != null) {
-          if (proc instanceof IDriver) {
-            IDriver qp = (IDriver) proc;
-            PrintStream out = ss.out;
-            long start = System.currentTimeMillis();
-            if (ss.getIsVerbose()) {
-              out.println(cmd);
+    if (proc != null) {
+      if (proc instanceof IDriver) {
+        IDriver qp = (IDriver) proc;
+        PrintStream out = ss.out;
+        long start = System.currentTimeMillis();
+        if (ss.getIsVerbose()) {
+          out.println(cmd);
+        }
+
+        ret = qp.run(cmd).getResponseCode();
+        if (ret != 0) {
+          qp.close();
+          return ret;
+        }
+
+        // query has run capture the time
+        long end = System.currentTimeMillis();
+        double timeTaken = (end - start) / 1000.0;
+
+        ArrayList<String> res = new ArrayList<String>();
+
+        printHeader(qp, out);
+
+        // print the results
+        int counter = 0;
+        try {
+          if (out instanceof FetchConverter) {
+            ((FetchConverter) out).fetchStarted();
+          }
+          while (qp.getResults(res)) {
+            for (String r : res) {
+              out.println(r);
             }
-
-            ret = qp.run(cmd).getResponseCode();
-            if (ret != 0) {
-              qp.close();
-              return ret;
+            counter += res.size();
+            res.clear();
+            if (out.checkError()) {
+              break;
             }
+          }
+        } catch (IOException e) {
+          console.printError("Failed with exception " + e.getClass().getName() + ":" + e.getMessage(),
+              "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+          ret = 1;
+        }
 
-            // query has run capture the time
-            long end = System.currentTimeMillis();
-            double timeTaken = (end - start) / 1000.0;
+        int cret = qp.close();
+        if (ret == 0) {
+          ret = cret;
+        }
 
-            ArrayList<String> res = new ArrayList<String>();
+        if (out instanceof FetchConverter) {
+          ((FetchConverter) out).fetchFinished();
+        }
 
-            printHeader(qp, out);
+        console.printInfo(
+            "Time taken: " + timeTaken + " seconds" + (counter == 0 ? "" : ", Fetched: " + counter + " row(s)"));
+      } else {
+        String firstToken = tokenizeCmd(cmd.trim())[0];
+        String cmd_1 = getFirstCmd(cmd.trim(), firstToken.length());
 
-            // print the results
-            int counter = 0;
-            try {
-              if (out instanceof FetchConverter) {
-                ((FetchConverter)out).fetchStarted();
-              }
-              while (qp.getResults(res)) {
-                for (String r : res) {
-                  out.println(r);
-                }
-                counter += res.size();
-                res.clear();
-                if (out.checkError()) {
-                  break;
-                }
-              }
-            } catch (IOException e) {
-              console.printError("Failed with exception " + e.getClass().getName() + ":"
-                  + e.getMessage(), "\n"
-                  + org.apache.hadoop.util.StringUtils.stringifyException(e));
-              ret = 1;
-            }
-
-            int cret = qp.close();
-            if (ret == 0) {
-              ret = cret;
-            }
-
-            if (out instanceof FetchConverter) {
-              ((FetchConverter)out).fetchFinished();
-            }
-
-            console.printInfo("Time taken: " + timeTaken + " seconds" +
-                (counter == 0 ? "" : ", Fetched: " + counter + " row(s)"));
-          } else {
-            String firstToken = tokenizeCmd(cmd.trim())[0];
-            String cmd_1 = getFirstCmd(cmd.trim(), firstToken.length());
-
-            if (ss.getIsVerbose()) {
-              ss.out.println(firstToken + " " + cmd_1);
-            }
-            CommandProcessorResponse res = proc.run(cmd_1);
-            if (res.getResponseCode() != 0) {
-              ss.out.println("Query returned non-zero code: " + res.getResponseCode() +
-                  ", cause: " + res.getErrorMessage());
-            }
-            if (res.getConsoleMessages() != null) {
-              for (String consoleMsg : res.getConsoleMessages()) {
-                console.printInfo(consoleMsg);
-              }
-            }
-            ret = res.getResponseCode();
+        if (ss.getIsVerbose()) {
+          ss.out.println(firstToken + " " + cmd_1);
+        }
+        CommandProcessorResponse res = proc.run(cmd_1);
+        if (res.getResponseCode() != 0) {
+          ss.out
+              .println("Query returned non-zero code: " + res.getResponseCode() + ", cause: " + res.getErrorMessage());
+        }
+        if (res.getConsoleMessages() != null) {
+          for (String consoleMsg : res.getConsoleMessages()) {
+            console.printInfo(consoleMsg);
           }
         }
+        ret = res.getResponseCode();
+      }
+    }
 
     return ret;
   }
@@ -379,7 +378,7 @@ public class CliDriver {
 
       // we can not use "split" function directly as ";" may be quoted
       List<String> commands = splitSemiColon(line);
-      
+
       String command = "";
       for (String oneCmd : commands) {
 
@@ -411,7 +410,7 @@ public class CliDriver {
       }
     }
   }
-  
+
   public static List<String> splitSemiColon(String line) {
     boolean insideSingleQuote = false;
     boolean insideDoubleQuote = false;
