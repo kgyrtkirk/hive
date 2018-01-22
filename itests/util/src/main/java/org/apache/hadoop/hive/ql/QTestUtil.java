@@ -70,16 +70,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileStatus;
@@ -129,6 +126,8 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.StreamPrinter;
+import org.apache.hive.druid.MiniDruidCluster;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.tools.ant.BuildException;
 import org.apache.zookeeper.WatchedEvent;
@@ -138,6 +137,8 @@ import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
 import junit.framework.TestSuite;
@@ -2164,15 +2165,10 @@ public class QTestUtil {
     System.err.flush();
   }
 
+  // FIXME: inline
+  @Deprecated
   public static String ensurePathEndsInSlash(String path) {
-    if(path == null) {
-      throw new NullPointerException("Path cannot be null");
-    }
-    if(path.endsWith(File.separator)) {
-      return path;
-    } else {
-      return path + File.separator;
-    }
+    return HiveTestEnvSetup.ensurePathEndsInSlash(path);
   }
 
   private static String[] cachedQvFileList = null;
