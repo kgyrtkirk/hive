@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hbase.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.CuratorFrameworkSingleton;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
@@ -149,6 +150,7 @@ public class HiveTestEnvSetup extends ExternalResource {
       // FIXME: hiveServer2SiteUrl is not settable?
 
       ctx.hiveConf = new HiveConf(IDriver.class);
+      ctx.hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST_IDE, true);
     }
 
     @Override

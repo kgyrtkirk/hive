@@ -1068,7 +1068,7 @@ public class DagUtils {
     // returns the location on disc of the jar of this class.
 
     URI uri = DagUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-    if (configuration.getBoolean(ConfVars.HIVE_IN_TEST.varname, false)) {
+    if (configuration.getBoolean(ConfVars.HIVE_IN_TEST_IDE.varname, false)) {
       if (new File(uri.getPath()).isDirectory()) {
         // IDE support for running tez jobs
         uri = createEmptyArchive();
