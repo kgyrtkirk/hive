@@ -158,7 +158,6 @@ public class Driver implements IDriver {
 
   // A limit on the number of threads that can be launched
   private int maxthreads;
-  private int tryCount = Integer.MAX_VALUE;
 
   private String userName;
 
@@ -577,7 +576,6 @@ public class Driver implements IDriver {
         setTriggerContext(queryId);
       }
 
-      ctx.setTryCount(getTryCount());
       ctx.setCmd(command);
       ctx.setHDFSCleanup(true);
 
@@ -2343,15 +2341,6 @@ public class Driver implements IDriver {
       ctx.resetStream();
       resStream = null;
     }
-  }
-
-  public int getTryCount() {
-    return tryCount;
-  }
-
-  @Override
-  public void setTryCount(int tryCount) {
-    this.tryCount = tryCount;
   }
 
   // DriverContext could be released in the query and close processes at same

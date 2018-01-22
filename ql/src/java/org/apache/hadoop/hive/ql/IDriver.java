@@ -41,8 +41,6 @@ public interface IDriver extends CommandProcessor {
 
   void setOperationId(String guid64);
 
-  void setTryCount(int maxValue);
-
   CommandProcessorResponse run();
   @Override
   CommandProcessorResponse run(String command);

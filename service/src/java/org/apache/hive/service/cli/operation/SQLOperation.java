@@ -196,8 +196,6 @@ public class SQLOperation extends ExecuteStatementOperation {
       // In Hive server mode, we are not able to retry in the FetchTask
       // case, when calling fetch queries since execute() has returned.
       // For now, we disable the test attempts.
-      driver.setTryCount(Integer.MAX_VALUE);
-
       response = driver.compileAndRespond(statement);
       if (0 != response.getResponseCode()) {
         throw toSQLException("Error while compiling statement", response);
@@ -248,7 +246,6 @@ public class SQLOperation extends ExecuteStatementOperation {
       // In Hive server mode, we are not able to retry in the FetchTask
       // case, when calling fetch queries since execute() has returned.
       // For now, we disable the test attempts.
-      driver.setTryCount(Integer.MAX_VALUE);
       response = driver.run();
       if (0 != response.getResponseCode()) {
         throw toSQLException("Error while processing statement", response);
