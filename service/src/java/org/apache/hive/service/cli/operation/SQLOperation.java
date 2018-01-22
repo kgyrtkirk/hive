@@ -87,7 +87,6 @@ import org.codehaus.jackson.map.ObjectMapper;
  * SQLOperation.
  *
  */
-@SuppressWarnings("deprecation")
 public class SQLOperation extends ExecuteStatementOperation {
   private IDriver driver = null;
   private CommandProcessorResponse response;
