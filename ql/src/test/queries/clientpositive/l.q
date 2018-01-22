@@ -4,3 +4,6 @@ create table q as select custom_struct_parse(
 ) as f;
 
 select f.product_held_role_narrative from q;
+
+
+select json_read('[{"s":{"a":"valA"},"c":[1,2,3]},null]','array<struct<c:array<int>,s:struct<a:string,b:string>>>');

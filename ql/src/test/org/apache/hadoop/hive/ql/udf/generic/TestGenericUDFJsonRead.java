@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -63,12 +64,23 @@ public class TestGenericUDFJsonRead {
     ObjectInspector[] arguments = buildArguments("array<string>");
     udf.initialize(arguments);
 
-    Object res = udf.evaluate(evalArgs("[\"a\",\"b\"]"));
+    Object res = udf.evaluate(evalArgs("[\"a\",\"b\",null]"));
     assertTrue(res instanceof List<?>);
     List<?> l = (List<?>) res;
-    assertEquals(2, l.size());
+    assertEquals(3, l.size());
     assertEquals(new Text("a"), l.get(0));
     assertEquals(new Text("b"), l.get(1));
+    assertEquals(null, l.get(2));
+  }
+
+  @Test
+  public void testListNull() throws HiveException {
+    GenericUDFJsonRead udf = new GenericUDFJsonRead();
+    ObjectInspector[] arguments = buildArguments("array<string>");
+    udf.initialize(arguments);
+
+    Object res = udf.evaluate(evalArgs("null"));
+    assertNull(res);
   }
 
   @Test
@@ -81,6 +93,30 @@ public class TestGenericUDFJsonRead {
     assertTrue(res instanceof Object[]);
     Object o[] = (Object[]) res;
     assertEquals(new Text("b"), o[0]);
+  }
+
+  @Test
+  public void testStructNull() throws HiveException {
+    GenericUDFJsonRead udf = new GenericUDFJsonRead();
+    ObjectInspector[] arguments = buildArguments("struct<a:string>");
+    udf.initialize(arguments);
+
+    Object res = udf.evaluate(evalArgs("{\"a\":null}"));
+    assertTrue(res instanceof Object[]);
+    Object o[] = (Object[]) res;
+    assertEquals(null, o[0]);
+  }
+
+  @Test
+  public void testStructNull2() throws HiveException {
+    GenericUDFJsonRead udf = new GenericUDFJsonRead();
+    ObjectInspector[] arguments = buildArguments("struct<a:struct<x:string>>");
+    udf.initialize(arguments);
+
+    Object res = udf.evaluate(evalArgs("{\"a\":null}"));
+    assertTrue(res instanceof Object[]);
+    Object o[] = (Object[]) res;
+    assertEquals(null, o[0]);
   }
 
   private DeferredObject[] evalArgs(String string) {
