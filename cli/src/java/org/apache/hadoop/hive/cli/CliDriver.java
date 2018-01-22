@@ -66,9 +66,7 @@ import org.apache.hadoop.hive.conf.Validator;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.tez.TezJobExecHelper;
@@ -220,13 +218,8 @@ public class CliDriver {
   }
 
   int processLocalCmd(String cmd, CommandProcessor proc, CliSessionState ss) {
-    int tryCount = 0;
-    boolean needRetry;
     int ret = 0;
 
-    do {
-      try {
-        needRetry = false;
         if (proc != null) {
           if (proc instanceof IDriver) {
             IDriver qp = (IDriver) proc;
@@ -236,7 +229,6 @@ public class CliDriver {
               out.println(cmd);
             }
 
-            qp.setTryCount(tryCount);
             ret = qp.run(cmd).getResponseCode();
             if (ret != 0) {
               qp.close();
@@ -305,12 +297,6 @@ public class CliDriver {
             ret = res.getResponseCode();
           }
         }
-      } catch (CommandNeedRetryException e) {
-        console.printInfo("Retry query with a different approach...");
-        tryCount++;
-        needRetry = true;
-      }
-    } while (needRetry);
 
     return ret;
   }

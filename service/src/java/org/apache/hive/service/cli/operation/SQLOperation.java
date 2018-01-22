@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.QueryDisplay;
@@ -493,8 +492,6 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
       return rowSet;
     } catch (IOException e) {
-      throw new HiveSQLException(e);
-    } catch (CommandNeedRetryException e) {
       throw new HiveSQLException(e);
     } catch (Exception e) {
       throw new HiveSQLException(e);
