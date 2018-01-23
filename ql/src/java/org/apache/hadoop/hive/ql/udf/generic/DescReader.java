@@ -33,7 +33,7 @@ public class DescReader {
     }
 
     public void add(Col col, boolean partition2) {
-      if(partition2) {
+      if (partition2) {
         parts.add(col);
       } else {
         cols.add(col);
@@ -49,7 +49,6 @@ public class DescReader {
         sb.append("partitioned by (\n  " + getColsDemoteComplexToString(parts) + ")\n ");
       }
       sb.append(";");
-
 
       return sb.toString();
     }
@@ -81,7 +80,7 @@ public class DescReader {
       for (Col c : allCols) {
         String colStr;
         if (isComplex(c.type)) {
-          colStr = String.format("json_parse(%s,'%s') as %s", c.name, c.type, c.name);
+          colStr = String.format("json_read(%s,'%s') as %s", c.name, c.type, c.name);
         } else {
           colStr = c.name;
         }

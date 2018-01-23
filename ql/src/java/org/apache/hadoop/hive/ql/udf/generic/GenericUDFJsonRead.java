@@ -122,7 +122,7 @@ public class GenericUDFJsonRead extends GenericUDF {
       parser.nextToken();
       return null;
     }
-    if (!parser.isExpectedStartObjectToken()) {
+    if (parser.getCurrentToken() != JsonToken.START_OBJECT) {
       throw new HiveException("struct expected");
     }
     JsonToken currentToken = parser.nextToken();
@@ -158,7 +158,7 @@ public class GenericUDFJsonRead extends GenericUDF {
       return null;
     }
 
-    if (!parser.isExpectedStartArrayToken()) {
+    if (parser.getCurrentToken() != JsonToken.START_ARRAY) {
       throw new HiveException("array expected");
     }
     JsonToken currentToken = parser.nextToken();
