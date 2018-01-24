@@ -953,8 +953,7 @@ public class DagUtils {
   }
 
   public static String[] getTempFilesFromConf(Configuration conf) {
-    if (conf == null)
-     {
+    if (conf == null) {
       return new String[0]; // In tests.
     }
     String addedFiles = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
