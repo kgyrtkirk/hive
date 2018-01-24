@@ -18,7 +18,15 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.util.Optional;
+
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.plan.OperatorStats;
+
 public interface StatsSource {
 
+  boolean canProvideStatsFor(Class<?> class1);
+
+  Optional<OperatorStats> lookup(HiveFilter filter);
 
 }

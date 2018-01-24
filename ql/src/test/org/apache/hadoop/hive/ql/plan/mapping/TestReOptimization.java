@@ -148,7 +148,7 @@ public class TestReOptimization {
     disablePPD();
     IDriver driver = createDriver();
     // @formatter:off
-    String query="select sum(u*v*w) from tu\n" +
+    String query="select assert_true_oom(${hiveconf:zzz} > sum(u*v*w)) from tu\n" +
     "        join tv on (tu.id_uv=tv.id_uv)\n" +
     "        join tw on (tu.id_uw=tw.id_uw)\n" +
     "        where w>9 and u>1 and v>3";

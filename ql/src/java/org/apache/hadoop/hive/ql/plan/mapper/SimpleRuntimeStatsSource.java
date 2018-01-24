@@ -22,6 +22,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.plan.OperatorStats;
 
 public class SimpleRuntimeStatsSource implements RuntimeStatsSource {
@@ -37,6 +38,28 @@ public class SimpleRuntimeStatsSource implements RuntimeStatsSource {
   public Optional<OperatorStats> lookup(Operator<?> tsop) {
     try {
       OperatorRef ref = OperatorRef.of(tsop);
+      OperatorStats v = pm.lookup(OperatorStats.class, ref);
+      return Optional.of(v);
+    } catch (NoSuchElementException | IllegalArgumentException iae) {
+      return Optional.empty();
+    }
+  }
+
+  @Override
+  public boolean canProvideStatsFor(Class<?> class1) {
+    if (Operator.class.isAssignableFrom(class1)) {
+      return true;
+    }
+    if (HiveFilter.class.isAssignableFrom(class1)) {
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  public Optional<OperatorStats> lookup(HiveFilter filter) {
+    try {
+      HiveFilterRef ref = HiveFilterRef.of(filter);
       OperatorStats v = pm.lookup(OperatorStats.class, ref);
       return Optional.of(v);
     } catch (NoSuchElementException | IllegalArgumentException iae) {

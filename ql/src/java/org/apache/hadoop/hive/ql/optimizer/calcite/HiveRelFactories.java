@@ -19,9 +19,9 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
-import org.apache.calcite.plan.Context;
 import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
@@ -53,6 +53,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
+import org.apache.hadoop.hive.ql.plan.OperatorStats;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 
 import com.google.common.collect.ImmutableList;
 
@@ -122,7 +124,19 @@ public class HiveRelFactories {
       RelOptCluster cluster = child.getCluster();
       HiveFilter filter = new HiveFilter(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, condition);
 
-      Context pc = cluster.getPlanner().getContext();
+      HivePlannerContext hpc = ((HivePlannerContext) cluster.getPlanner().getContext());
+      StatsSource ss = hpc.getStatsSource();
+
+      if (ss.canProvideStatsFor(HiveFilter.class)) {
+        Optional<OperatorStats> os = ss.lookup(filter);
+        if (os.isPresent()) {
+          HiveFilter.StatEnhancedHiveFilter newFilter =
+              new HiveFilter.StatEnhancedHiveFilter(cluster, TraitsUtil.getDefaultTraitSet(cluster), child,
+              condition, os.get().getOutputRecords());
+
+          return newFilter;
+        }
+      }
       //      RelNode scanCandidate = unboxed(child);
       //      if(scanCandidate instanceof HiveTableScan) {
       //        HiveTableScan hiveTableScan = (HiveTableScan) scanCandidate;

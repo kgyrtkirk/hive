@@ -70,4 +70,8 @@ public class HiveFilterRef {
       }
     }
   }
+
+  public static HiveFilterRef of(HiveFilter filter) {
+    return new HiveFilterRef(filter);
+  }
 }
