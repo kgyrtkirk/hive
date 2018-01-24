@@ -267,13 +267,10 @@ public class QueryState {
 
       // Set the specific parameters if needed
       if (confOverlay != null && !confOverlay.isEmpty()) {
-        // apply overlay query specific settings, if any
-        for (Map.Entry<String, String> confEntry : confOverlay.entrySet()) {
-          try {
-            queryConf.verifyAndSet(confEntry.getKey(), confEntry.getValue());
-          } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Error applying statement specific settings", e);
-          }
+        try {
+          queryConf.verifyAndSetAll(confOverlay);
+        } catch (IllegalArgumentException e) {
+          throw new RuntimeException("Error applying statement specific settings", e);
         }
       }
 

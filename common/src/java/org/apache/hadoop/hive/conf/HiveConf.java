@@ -5051,10 +5051,9 @@ public class HiveConf extends Configuration {
     }
   }
 
-  // FIXME: safe-apply as QueryState overlay; and use this method there too.
-  public void putAll(Map<String, String> overlay) {
+  public void verifyAndSetAll(Map<String, String> overlay) {
     for (Entry<String, String> entry : overlay.entrySet()) {
-      set(entry.getKey(), entry.getValue());
+      verifyAndSet(entry.getKey(), entry.getValue());
     }
   }
 

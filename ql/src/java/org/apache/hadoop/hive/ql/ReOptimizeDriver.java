@@ -51,7 +51,7 @@ public class ReOptimizeDriver extends AbstractReExecDriver {
     PlanMapper pm = coreDriver.getContext().getPlanMapper();
     coreDriver.setRuntimeStatsSource(new SimpleRuntimeStatsSource(pm));
     HiveConf conf = getConf();
-    conf.putAll(conf.subtree("reexec.overlay"));
+    conf.verifyAndSetAll(conf.subtree("reexec.overlay"));
   }
 
   @Override

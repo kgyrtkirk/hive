@@ -47,7 +47,7 @@ public class ReExecOverlayDriver extends AbstractReExecDriver {
   @Override
   protected void prepareToReExecute() {
     HiveConf conf = getConf();
-    conf.putAll(conf.subtree("reexec.overlay"));
+    conf.verifyAndSetAll(conf.subtree("reexec.overlay"));
   }
 
   @Override
