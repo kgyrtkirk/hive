@@ -39,7 +39,7 @@ public class PlanMapper {
   private Map<Object, EquivGroup> objectMap = new HashMap<>();
 
   // FIXME: find a better name
-  @Deprecated
+  //  @Deprecated
   public class EquivGroup {
     Set<Object> members = new HashSet<>();
 

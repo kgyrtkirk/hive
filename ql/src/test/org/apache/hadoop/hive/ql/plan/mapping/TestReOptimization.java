@@ -144,7 +144,7 @@ public class TestReOptimization {
   }
 
   @Test
-  public void testReOptimizationCanChangeJoinOrder() throws ParseException {
+  public void testReOptimizationCanSendBackStatsToCBO() throws ParseException {
     disablePPD();
     IDriver driver = createDriver();
     // @formatter:off
@@ -176,16 +176,7 @@ public class TestReOptimization {
         long cntFilter = RelMetadataQuery.instance().getRowCount(hf).longValue();
         assertEquals(os.getOutputRecords(), fo.getStatistics().getNumRows());
         assertEquals(os.getOutputRecords(), cntFilter);
-        //
-        //        FilterOperator fo = fos.get(0);
-        //        OperatorStats os = oss.get(0);
-        //
-        //        Statistics stats = fo.getStatistics();
-        //        assertEquals(os.getOutputRecords(), stats.getNumRows());
-        //
-        //        if (!(os.getOutputRecords() == 3 || os.getOutputRecords() == 6)) {
-        //          fail("nonexpected number of records produced");
-        //        }
+
         checkedOperators++;
       }
     }
