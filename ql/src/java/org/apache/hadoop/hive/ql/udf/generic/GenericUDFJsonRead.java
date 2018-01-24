@@ -82,6 +82,9 @@ public class GenericUDFJsonRead extends GenericUDF {
 
     try {
       String text = inputConverter.convert(valObject).toString();
+      if (text.trim().length() == 0) {
+        return null;
+      }
       JsonParser parser = factory.createParser(text);
 
       parser.nextToken();

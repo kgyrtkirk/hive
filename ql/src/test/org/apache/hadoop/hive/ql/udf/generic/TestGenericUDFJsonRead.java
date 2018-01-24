@@ -108,6 +108,30 @@ public class TestGenericUDFJsonRead {
   }
 
   @Test
+  public void testStructNull2x() throws HiveException {
+    GenericUDFJsonRead udf = new GenericUDFJsonRead();
+    ObjectInspector[] arguments = buildArguments("struct<a:string>");
+    udf.initialize(arguments);
+
+    Object res = udf.evaluate(evalArgs(""));
+    assertNull(res);
+    //    Object o[] = (Object[]) res;
+    //assertEquals(null, o[0]);
+  }
+
+  @Test
+  public void testStructNull2x3() throws HiveException {
+    GenericUDFJsonRead udf = new GenericUDFJsonRead();
+    ObjectInspector[] arguments = buildArguments("struct<a:string>");
+    udf.initialize(arguments);
+
+    Object res = udf.evaluate(new DeferredObject[] { new DeferredJavaObject(null), null });
+    assertNull(res);
+    //    Object o[] = (Object[]) res;
+    //assertEquals(null, o[0]);
+  }
+
+  @Test
   public void testStructNull2() throws HiveException {
     GenericUDFJsonRead udf = new GenericUDFJsonRead();
     ObjectInspector[] arguments = buildArguments("struct<a:struct<x:string>>");
