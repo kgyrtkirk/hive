@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
@@ -41,6 +42,7 @@ import org.apache.calcite.rel.core.RelFactories.SortFactory;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
@@ -130,10 +132,12 @@ public class HiveRelFactories {
       if (ss.canProvideStatsFor(HiveFilter.class)) {
         Optional<OperatorStats> os = ss.lookup(filter);
         if (os.isPresent()) {
+          long outputRecords = os.get().getOutputRecords();
           HiveFilter.StatEnhancedHiveFilter newFilter =
               new HiveFilter.StatEnhancedHiveFilter(cluster, TraitsUtil.getDefaultTraitSet(cluster), child,
-              condition, os.get().getOutputRecords());
+              condition, outputRecords);
 
+          String ss1 = RelOptUtil.toString(newFilter, SqlExplainLevel.ALL_ATTRIBUTES);
           return newFilter;
         }
       }
