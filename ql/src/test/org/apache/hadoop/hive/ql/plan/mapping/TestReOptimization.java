@@ -23,12 +23,14 @@ import static org.junit.Assert.fail;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.ReOptimizeDriver;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.OperatorStats;
 import org.apache.hadoop.hive.ql.plan.Statistics;
@@ -139,6 +141,64 @@ public class TestReOptimization {
       }
     }
     assertEquals(2, checkedOperators);
+  }
+
+  @Test
+  public void testReOptimizationCanChangeJoinOrder() throws ParseException {
+    disablePPD();
+    IDriver driver = createDriver();
+    // @formatter:off
+    String query="select sum(u*v*w) from tu\n" +
+    "        join tv on (tu.id_uv=tv.id_uv)\n" +
+    "        join tw on (tu.id_uw=tw.id_uw)\n" +
+    "        where w>9 and u>1 and v>3";
+    // @formatter:on
+    PlanMapper pm = getMapperForQuery(driver, query);
+
+    Iterator<EquivGroup> itG = pm.iterateGroups();
+    int checkedOperators = 0;
+    // FIXME: introduce the Operator trimmer mapper!
+    while (itG.hasNext()) {
+      EquivGroup g = itG.next();
+      List<FilterOperator> fos = g.getAll(FilterOperator.class);
+      List<OperatorStats> oss = g.getAll(OperatorStats.class);
+      List<HiveFilter> hfs = g.getAll(HiveFilter.class);
+      // FIXME: oss seems to contain duplicates
+      //      List<HiveFilter> hf = g.getAll(HiveFilter.class);
+
+      if (fos.size() > 0 && oss.size() > 0 && hfs.size() > 0) {
+        fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
+
+        HiveFilter hf = hfs.get(0);
+        FilterOperator fo = fos.get(0);
+        OperatorStats os = oss.get(0);
+
+        long cntFilter = RelMetadataQuery.instance().getRowCount(hf).longValue();
+        assertEquals(os.getOutputRecords(), fo.getStatistics().getNumRows());
+        assertEquals(os.getOutputRecords(), cntFilter);
+        //
+        //        FilterOperator fo = fos.get(0);
+        //        OperatorStats os = oss.get(0);
+        //
+        //        Statistics stats = fo.getStatistics();
+        //        assertEquals(os.getOutputRecords(), stats.getNumRows());
+        //
+        //        if (!(os.getOutputRecords() == 3 || os.getOutputRecords() == 6)) {
+        //          fail("nonexpected number of records produced");
+        //        }
+        checkedOperators++;
+      }
+    }
+    assertEquals(3, checkedOperators);
+
+  }
+
+  @Deprecated
+  private void disablePPD() {
+    // these things should be able to work with ppd on
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    conf.set("hive.optimize.ppd", "false");
+    //    conf.set("hive.auto.convert.join", "false");
   }
 
   private static IDriver createDriver() {
