@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.calcite.plan.Context;
 import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
@@ -120,8 +121,24 @@ public class HiveRelFactories {
     public RelNode createFilter(RelNode child, RexNode condition) {
       RelOptCluster cluster = child.getCluster();
       HiveFilter filter = new HiveFilter(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, condition);
+
+      Context pc = cluster.getPlanner().getContext();
+      //      RelNode scanCandidate = unboxed(child);
+      //      if(scanCandidate instanceof HiveTableScan) {
+      //        HiveTableScan hiveTableScan = (HiveTableScan) scanCandidate;
+      //        RelOptHiveTable tableScan = (RelOptHiveTable) hiveTableScan.getTable();
+      //        tableScan.getRowCount();
+      //      }
       return filter;
     }
+
+    //    private RelNode unboxed(RelNode child) {
+    //      if (HepRelVertex.class.isAssignableFrom(child.getClass())) {
+    //        HepRelVertex hep = (HepRelVertex) child;
+    //        return hep.getCurrentRel();
+    //      }
+    //      return child;
+    //    }
   }
 
   private static class HiveJoinFactoryImpl implements JoinFactory {

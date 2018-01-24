@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.RuntimeStatsSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -1061,5 +1062,14 @@ public class Context {
 
   public Optional<RuntimeStatsSource> getRuntimeStatsSource() {
     return Optional.fromNullable(runtimeStatsSource);
+  }
+
+  public RuntimeStatsSource getStatsSource() {
+    if (runtimeStatsSource != null) {
+      return runtimeStatsSource;
+    } else {
+      // hierarchical; add def stats also here
+      return new EmptyStatsSource();
+    }
   }
 }

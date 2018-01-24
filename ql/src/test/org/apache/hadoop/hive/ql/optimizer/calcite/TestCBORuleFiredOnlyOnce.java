@@ -40,6 +40,7 @@ import org.apache.calcite.rel.type.RelRecordType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
+import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -62,7 +63,7 @@ public class TestCBORuleFiredOnlyOnce {
     // Create rules registry to not trigger a rule more than once
     HiveRulesRegistry registry = new HiveRulesRegistry();
     HivePlannerContext context = new HivePlannerContext(null, registry, null,
-        null, null, null);
+        null, null, null, new EmptyStatsSource());
     HepPlanner planner = new HepPlanner(programBuilder.build(), context);
 
     // Cluster
