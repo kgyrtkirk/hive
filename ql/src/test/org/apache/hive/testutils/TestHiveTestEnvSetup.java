@@ -74,7 +74,7 @@ public class TestHiveTestEnvSetup {
   }
 
   @Test
-  public void testSample1() throws ParseException, Exception {
+  public void testMappingSameQuery() throws ParseException, Exception {
     IDriver driver = createDriver();
     String query = "select sum(u*u),sum(u) from tu where u>1";
     CommandProcessorResponse ret = driver.run(query);
@@ -86,21 +86,6 @@ public class TestHiveTestEnvSetup {
     assertEquals(1, res.size());
     assertEquals("13\t5", res.get(0));
   }
-
-  @Test
-  public void testSample2() throws ParseException, Exception {
-    IDriver driver = createDriver();
-    String query = "create table s1 (a struct<x:string,y:string>)";
-    CommandProcessorResponse ret = driver.run(query);
-    assertEquals(0, ret.getResponseCode());
-
-    //    List res = new ArrayList();
-    //    driver.getFetchTask().fetch(res);
-    //    System.out.println(res);
-    //    assertEquals(1, res.size());
-    //    assertEquals("13\t5", res.get(0));
-  }
-
 
 
   private static IDriver createDriver() {
