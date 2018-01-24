@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
-public interface StatsSourceD {
+public interface StatsSource {
+
 
 }

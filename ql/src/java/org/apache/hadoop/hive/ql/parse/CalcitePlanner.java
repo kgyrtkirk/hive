@@ -242,7 +242,7 @@ import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
-import org.apache.hadoop.hive.ql.plan.mapper.RuntimeStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
@@ -339,7 +339,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   private static RelOptPlanner createPlanner(
       HiveConf conf, Set<RelNode> corrScalarRexSQWithAgg, Set<RelNode> scalarAggNoGbyNoWin,
-      RuntimeStatsSource statsSource) {
+      StatsSource statsSource) {
     final Double maxSplitSize = (double) HiveConf.getLongVar(
             conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
     final Double maxMemory = (double) HiveConf.getLongVar(
@@ -1382,11 +1382,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
     // just last one.
     LinkedHashMap<RelNode, RowResolver>                   relToHiveRR                   = new LinkedHashMap<RelNode, RowResolver>();
     LinkedHashMap<RelNode, ImmutableMap<String, Integer>> relToHiveColNameCalcitePosMap = new LinkedHashMap<RelNode, ImmutableMap<String, Integer>>();
-    private final RuntimeStatsSource statsSource;
+    private final StatsSource statsSource;
 
     CalcitePlannerAction(
         Map<String, PrunedPartitionList> partitionCache,
-        RuntimeStatsSource statsSource,
+        StatsSource statsSource,
         ColumnAccessInfo columnAccessInfo) {
       this.partitionCache = partitionCache;
       this.statsSource = statsSource;

@@ -18,16 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
-import java.util.Optional;
+public class EmptyStatsSource implements StatsSource {
 
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.plan.OperatorStats;
-
-public class EmptyStatsSource implements RuntimeStatsSource {
-
-  @Override
-  public Optional<OperatorStats> lookup(Operator<?> tsop) {
-    return Optional.empty();
-  }
 
 }

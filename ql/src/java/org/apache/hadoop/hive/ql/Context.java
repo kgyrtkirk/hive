@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.RuntimeStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -1064,7 +1065,7 @@ public class Context {
     return Optional.fromNullable(runtimeStatsSource);
   }
 
-  public RuntimeStatsSource getStatsSource() {
+  public StatsSource getStatsSource() {
     if (runtimeStatsSource != null) {
       return runtimeStatsSource;
     } else {
