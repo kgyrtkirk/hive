@@ -37,14 +37,14 @@ public class GenericUDFAssertTrueOOM extends GenericUDF {
   private ObjectInspectorConverters.Converter conditionConverter = null;
 
   public GenericUDFAssertTrueOOM() {
-    HiveConf conf = SessionState.getSessionConf();
-    if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
-      throw new RuntimeException("this UDF is only available in testmode");
-    }
   }
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
+    HiveConf conf = SessionState.getSessionConf();
+    if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
+      throw new RuntimeException("this UDF is only available in testmode");
+    }
     if (arguments.length != 1) {
       throw new UDFArgumentLengthException("ASSERT_TRUE_OOM() expects one argument.");
     }
