@@ -2170,12 +2170,6 @@ public class QTestUtil {
     System.err.flush();
   }
 
-  // FIXME: inline
-  @Deprecated
-  public static String ensurePathEndsInSlash(String path) {
-    return HiveTestEnvSetup.ensurePathEndsInSlash(path);
-  }
-
   private static String[] cachedQvFileList = null;
   private static ImmutableList<String> cachedDefaultQvFileList = null;
   private static Pattern qvSuffix = Pattern.compile("_[0-9]+.qv$", Pattern.CASE_INSENSITIVE);
