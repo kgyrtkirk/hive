@@ -24,7 +24,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -36,111 +35,117 @@ import org.junit.Test;
 public class TestGenericUDFJsonRead {
 
   @Test(expected = UDFArgumentException.class)
-  public void testArgCnt1() throws HiveException {
-    GenericUDFJsonRead udf = new GenericUDFJsonRead();
-    ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-    ObjectInspector[] arguments = { valueOI };
-    udf.initialize(arguments);
+  public void testArgCnt1() throws Exception {
+    try (GenericUDFJsonRead udf = new GenericUDFJsonRead()) {
+      ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+      ObjectInspector[] arguments = { valueOI };
+      udf.initialize(arguments);
+    }
   }
 
   @Test(expected = UDFArgumentException.class)
-  public void testArgCnt3() throws HiveException {
-    GenericUDFJsonRead udf = new GenericUDFJsonRead();
-    ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-    ObjectInspector[] arguments = { valueOI, valueOI };
-    udf.initialize(arguments);
+  public void testArgCnt3() throws Exception {
+    try (GenericUDFJsonRead udf = new GenericUDFJsonRead()) {
+      ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+      ObjectInspector[] arguments = { valueOI, valueOI };
+      udf.initialize(arguments);
+    }
   }
 
   @Test(expected = UDFArgumentException.class)
-  public void testArgInvalidType() throws HiveException {
-    GenericUDFJsonRead udf = new GenericUDFJsonRead();
-    ObjectInspector[] arguments = buildArguments("asd");
-    udf.initialize(arguments);
+  public void testArgInvalidType() throws Exception {
+    try (GenericUDFJsonRead udf = new GenericUDFJsonRead()) {
+      ObjectInspector[] arguments = buildArguments("__invalid__type__");
+      udf.initialize(arguments);
+    }
   }
 
   @Test
-  public void testList() throws HiveException {
-    GenericUDFJsonRead udf = new GenericUDFJsonRead();
-    ObjectInspector[] arguments = buildArguments("array<string>");
-    udf.initialize(arguments);
+  public void testList() throws Exception {
+    try (GenericUDFJsonRead udf = new GenericUDFJsonRead()) {
+      ObjectInspector[] arguments = buildArguments("array<string>");
+      udf.initialize(arguments);
 
-    Object res = udf.evaluate(evalArgs("[\"a\",\"b\",null]"));
-    assertTrue(res instanceof List<?>);
-    List<?> l = (List<?>) res;
-    assertEquals(3, l.size());
-    assertEquals(new Text("a"), l.get(0));
-    assertEquals(new Text("b"), l.get(1));
-    assertEquals(null, l.get(2));
+      Object res = udf.evaluate(evalArgs("[\"a\",\"b\",null]"));
+      assertTrue(res instanceof List<?>);
+      List<?> l = (List<?>) res;
+      assertEquals(3, l.size());
+      assertEquals(new Text("a"), l.get(0));
+      assertEquals(new Text("b"), l.get(1));
+      assertEquals(null, l.get(2));
+    }
   }
 
   @Test
-  public void testListNull() throws HiveException {
-    GenericUDFJsonRead udf = new GenericUDFJsonRead();
-    ObjectInspector[] arguments = buildArguments("array<string>");
-    udf.initialize(arguments);
+  public void testListNull() throws Exception {
+    try (GenericUDFJsonRead udf = new GenericUDFJsonRead()) {
+      ObjectInspector[] arguments = buildArguments("array<string>");
+      udf.initialize(arguments);
 
-    Object res = udf.evaluate(evalArgs("null"));
-    assertNull(res);
+      Object res = udf.evaluate(evalArgs("null"));
+      assertNull(res);
+    }
   }
 
   @Test
-  public void testStruct() throws HiveException {
-    GenericUDFJsonRead udf = new GenericUDFJsonRead();
-    ObjectInspector[] arguments = buildArguments("struct<a:string>");
-    udf.initialize(arguments);
+  public void testSimpleStruct() throws Exception {
+    try (GenericUDFJsonRead udf = new GenericUDFJsonRead()) {
+      ObjectInspector[] arguments = buildArguments("struct<a:string>");
+      udf.initialize(arguments);
 
-    Object res = udf.evaluate(evalArgs("{\"a\":\"b\"}"));
-    assertTrue(res instanceof Object[]);
-    Object o[] = (Object[]) res;
-    assertEquals(new Text("b"), o[0]);
+      Object res = udf.evaluate(evalArgs("{\"a\":\"b\"}"));
+      assertTrue(res instanceof Object[]);
+      Object o[] = (Object[]) res;
+      assertEquals(new Text("b"), o[0]);
+    }
   }
 
   @Test
-  public void testStructNull() throws HiveException {
-    GenericUDFJsonRead udf = new GenericUDFJsonRead();
-    ObjectInspector[] arguments = buildArguments("struct<a:string>");
-    udf.initialize(arguments);
+  public void testStructNullField() throws Exception {
+    try (GenericUDFJsonRead udf = new GenericUDFJsonRead()) {
+      ObjectInspector[] arguments = buildArguments("struct<a:string>");
+      udf.initialize(arguments);
 
-    Object res = udf.evaluate(evalArgs("{\"a\":null}"));
-    assertTrue(res instanceof Object[]);
-    Object o[] = (Object[]) res;
-    assertEquals(null, o[0]);
+      Object res = udf.evaluate(evalArgs("{\"a\":null}"));
+      assertTrue(res instanceof Object[]);
+      Object o[] = (Object[]) res;
+      assertEquals(null, o[0]);
+    }
   }
 
   @Test
-  public void testStructNull2x() throws HiveException {
-    GenericUDFJsonRead udf = new GenericUDFJsonRead();
-    ObjectInspector[] arguments = buildArguments("struct<a:string>");
-    udf.initialize(arguments);
+  public void testStructEmptyString() throws Exception {
+    try (GenericUDFJsonRead udf = new GenericUDFJsonRead()) {
+      ObjectInspector[] arguments = buildArguments("struct<a:string>");
+      udf.initialize(arguments);
 
-    Object res = udf.evaluate(evalArgs(""));
-    assertNull(res);
-    //    Object o[] = (Object[]) res;
-    //assertEquals(null, o[0]);
+      Object res = udf.evaluate(evalArgs(""));
+      assertNull(res);
+    }
   }
 
   @Test
-  public void testStructNull2x3() throws HiveException {
-    GenericUDFJsonRead udf = new GenericUDFJsonRead();
-    ObjectInspector[] arguments = buildArguments("struct<a:string>");
-    udf.initialize(arguments);
+  public void testStructNull() throws Exception {
+    try (GenericUDFJsonRead udf = new GenericUDFJsonRead()) {
+      ObjectInspector[] arguments = buildArguments("struct<a:string>");
+      udf.initialize(arguments);
 
-    Object res = udf.evaluate(new DeferredObject[] { new DeferredJavaObject(null), null });
-    assertNull(res);
-    //    Object o[] = (Object[]) res;
-    //assertEquals(null, o[0]);
+      Object res = udf.evaluate(new DeferredObject[] { new DeferredJavaObject(null), null });
+      assertNull(res);
+    }
   }
 
   @Test
-  public void testStructNull2() throws HiveException {
-    GenericUDFJsonRead udf = new GenericUDFJsonRead();
-    ObjectInspector[] arguments = buildArguments("struct<a:struct<x:string>>");
-    udf.initialize(arguments);
+  public void testStructNullComplexField() throws Exception {
+    try (GenericUDFJsonRead udf = new GenericUDFJsonRead()) {
+      ObjectInspector[] arguments = buildArguments("struct<a:struct<x:string>>");
+      udf.initialize(arguments);
 
-    Object res = udf.evaluate(evalArgs("{\"a\":null}"));
-    assertTrue(res instanceof Object[]);
-    Object o[] = (Object[]) res;
-    assertEquals(null, o[0]);
+      Object res = udf.evaluate(evalArgs("{\"a\":null}"));
+      assertTrue(res instanceof Object[]);
+      Object o[] = (Object[]) res;
+      assertEquals(null, o[0]);
+    }
   }
 
   private DeferredObject[] evalArgs(String string) {
@@ -149,8 +154,7 @@ public class TestGenericUDFJsonRead {
 
   private ObjectInspector[] buildArguments(String typeStr) {
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-    ObjectInspector[] arguments = { valueOI, PrimitiveObjectInspectorFactory
-        .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo, new Text(typeStr)) };
+    ObjectInspector[] arguments = { valueOI, PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo, new Text(typeStr)) };
     return arguments;
   }
 
