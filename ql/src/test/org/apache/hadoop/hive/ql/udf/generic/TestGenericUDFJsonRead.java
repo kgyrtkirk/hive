@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -172,6 +173,20 @@ public class TestGenericUDFJsonRead {
       assertTrue(res instanceof Object[]);
       Object o[] = (Object[]) res;
       assertEquals(null, o[0]);
+    }
+  }
+
+  @Test
+  public void testMap() throws Exception {
+    try (GenericUDFJsonRead udf = new GenericUDFJsonRead()) {
+      ObjectInspector[] arguments = buildArguments("map<string,string>");
+      udf.initialize(arguments);
+
+      Object res = udf.evaluate(evalArgs("{\"a\":\"v\"}"));
+      assertTrue(res instanceof Map);
+      Map o = (Map) res;
+      assertEquals(1, o.size());
+      assertEquals(new Text("v"), o.get(new Text("a")));
     }
   }
 

@@ -19,13 +19,16 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
@@ -121,9 +124,50 @@ public class GenericUDFJsonRead extends GenericUDF {
       return parseList(parser, (ListObjectInspector) oi);
     case STRUCT:
       return parseStruct(parser, (StructObjectInspector) oi);
+    case MAP:
+      return parseMap(parser, (MapObjectInspector) oi);
     default:
       throw new HiveException("parsing of: " + oi.getCategory() + " is not handled");
     }
+  }
+
+  private static Object parseMap(JsonParser parser, MapObjectInspector oi) throws IOException, HiveException {
+
+    if (parser.getCurrentToken() == JsonToken.VALUE_NULL) {
+      parser.nextToken();
+      return null;
+    }
+
+    Map<Object, Object> ret = new LinkedHashMap<>();
+
+    if (parser.getCurrentToken() != JsonToken.START_OBJECT) {
+      throw new HiveException("struct expected");
+    }
+
+    if(!(oi.getMapKeyObjectInspector() instanceof PrimitiveObjectInspector ) ) {
+      throw new HiveException("map key must be a primitive");
+    }
+    PrimitiveObjectInspector keyOI = (PrimitiveObjectInspector) oi.getMapKeyObjectInspector();
+    ObjectInspector valOI = oi.getMapValueObjectInspector();
+
+    JsonToken currentToken = parser.nextToken();
+    while (currentToken != null && currentToken != JsonToken.END_OBJECT) {
+
+      if (currentToken != JsonToken.FIELD_NAME) {
+        throw new HiveException("unexpected token: " + currentToken);
+      }
+
+      Object key = parseMapKey(parser, keyOI);
+      Object val = parseDispatcher(parser, valOI);
+      ret.put(key, val);
+
+      currentToken = parser.getCurrentToken();
+    }
+    if (currentToken != null) {
+      parser.nextToken();
+    }
+    return ret;
+
   }
 
   private static Object parseStruct(JsonParser parser, StructObjectInspector oi)
@@ -206,6 +250,28 @@ public class GenericUDFJsonRead extends GenericUDF {
       case VALUE_NUMBER_INT:
       case VALUE_NUMBER_FLOAT:
       case VALUE_STRING:
+        Converter c =
+            ObjectInspectorConverters.getConverter(PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi);
+        return c.convert(parser.getValueAsString());
+      case VALUE_NULL:
+        return null;
+      default:
+        throw new HiveException("unexpected token type: " + currentToken);
+      }
+    } finally {
+      parser.nextToken();
+
+    }
+  }
+
+  private static Object parseMapKey(JsonParser parser, PrimitiveObjectInspector oi) throws HiveException, IOException {
+    JsonToken currentToken = parser.getCurrentToken();
+    if (currentToken == null) {
+      return null;
+    }
+    try {
+      switch (parser.getCurrentToken()) {
+      case FIELD_NAME:
         Converter c =
             ObjectInspectorConverters.getConverter(PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi);
         return c.convert(parser.getValueAsString());
