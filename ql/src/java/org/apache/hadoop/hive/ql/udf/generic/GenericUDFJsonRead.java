@@ -42,7 +42,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
-@Description(name = "json_read", extended = "parses a json into the given complex type")
+/**
+ * GenericUDF Class for SQL construct "nullif(a,b)".
+ */
+
+@Description(name = "json_read", value = "_FUNC_(json,type) - parses the given json according to the given complex type specification", extended = ""
+    + "Parsed as null: if the json is null, it is the empty string or if it contains only whitespaces\n"
+    + "Example:\n" + "select _FUNC_('[]','array<struct<a:string>>' ")
 public class GenericUDFJsonRead extends GenericUDF {
 
   private ObjectInspector outputOI;
@@ -179,7 +185,6 @@ public class GenericUDFJsonRead extends GenericUDF {
       throws HiveException, IOException {
     JsonToken currentToken = parser.getCurrentToken();
     if (currentToken == null) {
-      // FIXME: does this makes sense?
       return null;
     }
     try {
