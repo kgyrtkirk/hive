@@ -93,12 +93,16 @@ public class GenericUDFJsonRead extends GenericUDF {
       }
       JsonParser parser = factory.createParser(text);
 
-      parser.nextToken();
-      Object res = parseDispatcher(parser, outputOI);
-
-      return res;
-    } catch (IOException e) {
-      throw new HiveException("error parsing", e);
+      try {
+        parser.nextToken();
+        Object res = parseDispatcher(parser, outputOI);
+        return res;
+      } catch (Exception e) {
+        String locationStr = parser.getCurrentLocation().getLineNr() + "," + parser.getCurrentLocation().getColumnNr();
+        throw new HiveException("at[" + locationStr + "]: " + e.getMessage(), e);
+      }
+    } catch (Exception e) {
+      throw new HiveException("Error parsing json: " + e.getMessage(), e);
     }
   }
 
@@ -140,12 +144,16 @@ public class GenericUDFJsonRead extends GenericUDF {
       switch (currentToken) {
       case FIELD_NAME:
         String name = parser.getCurrentName();
-        StructField field = oi.getStructFieldRef(name);
-        if (field == null) {
-          throw new HiveException("field with name: " + name + " is unknown");
+        try {
+          StructField field = oi.getStructFieldRef(name);
+          if (field == null) {
+            throw new HiveException("undeclared field");
+          }
+          parser.nextToken();
+          ret[field.getFieldID()] = parseDispatcher(parser, field.getFieldObjectInspector());
+        } catch (Exception e) {
+          throw new HiveException("struct field " + name + ": " + e.getMessage(), e);
         }
-        parser.nextToken();
-        ret[field.getFieldID()] = parseDispatcher(parser, field.getFieldObjectInspector());
         break;
       default:
         throw new HiveException("unexpected token: " + currentToken);
@@ -171,10 +179,14 @@ public class GenericUDFJsonRead extends GenericUDF {
       throw new HiveException("array expected");
     }
     JsonToken currentToken = parser.nextToken();
+    try {
     while (currentToken != null && currentToken != JsonToken.END_ARRAY) {
       ObjectInspector eOI = oi.getListElementObjectInspector();
       ret.add(parseDispatcher(parser, eOI));
       currentToken = parser.getCurrentToken();
+    }
+    } catch (Exception e) {
+      throw new HiveException("array: " + e.getMessage(), e);
     }
     currentToken = parser.nextToken();
 

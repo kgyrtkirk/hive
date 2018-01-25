@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -148,13 +149,40 @@ public class TestGenericUDFJsonRead {
     }
   }
 
+  @Test(expected = HiveException.class)
+  public void testUndeclaredStructField() throws Exception {
+    try (GenericUDFJsonRead udf = new GenericUDFJsonRead()) {
+      ObjectInspector[] arguments = buildArguments("struct<a:int>");
+      udf.initialize(arguments);
+
+      Object res = udf.evaluate(evalArgs("{\"b\":null}"));
+      assertTrue(res instanceof Object[]);
+      Object o[] = (Object[]) res;
+      assertEquals(null, o[0]);
+    }
+  }
+
+  @Test(expected = HiveException.class)
+  public void testUnexpectedStruct() throws Exception {
+    try (GenericUDFJsonRead udf = new GenericUDFJsonRead()) {
+      ObjectInspector[] arguments = buildArguments("array<int>");
+      udf.initialize(arguments);
+
+      Object res = udf.evaluate(evalArgs("[1,22,2,{\"b\":null}]"));
+      assertTrue(res instanceof Object[]);
+      Object o[] = (Object[]) res;
+      assertEquals(null, o[0]);
+    }
+  }
+
   private DeferredObject[] evalArgs(String string) {
     return new DeferredObject[] { new DeferredJavaObject(new Text(string)), null };
   }
 
   private ObjectInspector[] buildArguments(String typeStr) {
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-    ObjectInspector[] arguments = { valueOI, PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo, new Text(typeStr)) };
+    ObjectInspector[] arguments = { valueOI, PrimitiveObjectInspectorFactory
+        .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo, new Text(typeStr)) };
     return arguments;
   }
 
