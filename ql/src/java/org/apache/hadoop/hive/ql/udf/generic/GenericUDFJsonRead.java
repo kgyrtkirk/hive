@@ -45,10 +45,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
-/**
- * GenericUDF Class for SQL construct "nullif(a,b)".
- */
-
 @Description(name = "json_read", value = "_FUNC_(json,type) - parses the given json according to the given complex type specification", extended = ""
     + "Parsed as null: if the json is null, it is the empty string or if it contains only whitespaces\n"
     + "Example:\n" + "select _FUNC_('[]','array<struct<a:string>>' ")
