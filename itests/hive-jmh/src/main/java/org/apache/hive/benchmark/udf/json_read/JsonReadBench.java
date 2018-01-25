@@ -57,12 +57,12 @@ public class JsonReadBench {
   }
 
   @Test
-  public void testMethod0() throws Exception {
-    testMethod(new MyState());
+  public void checkBenchMarkMethod() throws Exception {
+    benchmarkMethod(new MyState());
   }
 
   @Benchmark
-  public void testMethod(MyState state) throws Exception {
+  public void benchmarkMethod(MyState state) throws Exception {
     GenericUDFJsonRead udf = new GenericUDFJsonRead();
     ObjectInspector[] arguments = buildArguments(state.type);
     udf.initialize(arguments);

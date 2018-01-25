@@ -36,7 +36,7 @@ select json_read('[
     "neighborhoods": [],
     "attributes": {
         "By Appointment Only": true,
-        "Accepts Credit Cards": true, 
+        "Accepts Credit Cards": true,
         "Good For Groups": 1
     },
     "type": "business"
