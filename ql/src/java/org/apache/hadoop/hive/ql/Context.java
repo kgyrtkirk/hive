@@ -68,7 +68,8 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spark_project.guava.base.Optional;
+
+import com.google.common.base.Optional;
 
 /**
  * Context for Semantic Analyzers. Usage: not reusable - construct a new one for
