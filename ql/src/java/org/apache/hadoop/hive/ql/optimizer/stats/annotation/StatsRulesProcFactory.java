@@ -139,43 +139,6 @@ public class StatsRulesProcFactory {
 
         stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, tsop);
 
-        // check if runtime stats is available
-        // REOPT-PRASH-2
-        //        if(aspCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_CACHE_RUNTIME_STATS)) {
-        //          ParseContext parseContext = aspCtx.getParseContext();
-        //          String queryString = parseContext.getContext().getCmd();
-        //          // if this is explain plan, we need to get the underlying query so that we can show the runtime statistics
-        //          // in explain. TODO: this is required because of byte-to-byte query string match
-        //          if (parseContext.getContext().isExplainPlan()) {
-        //            queryString = parseContext.getContext().getExplainConfig().getQuery();
-        //          }
-        //          String queryMD5 = null;
-        //          try {
-        //            queryMD5 = QueryPlan.getQueryMD5(queryString);
-        //            LOG.info("Compilation. MD5: {} query: {}", queryMD5, QueryPlan.normalizeQuery(queryString));
-        //          } catch (NoSuchAlgorithmException e) {
-        //            LOG.warn("Not checking for runtime stats as query MD5 threw exception.", e);
-        //          }
-        //          if (queryMD5 != null) {
-        //            Map<String, OperatorStats> opStats = RuntimeStatisticsCache.RUNTIME_STATS_CACHE.getIfPresent(queryMD5);
-        //            if (opStats != null) {
-        //                OperatorStats operatorStats = opStats.get(tsop.getOperatorId());
-        //                if (operatorStats != null) {
-        //                  long oldRowCount = outStats.getNumRows();
-        //                  long oldDataSize = outStats.getDataSize();
-        //                  long newRowCount = operatorStats.getOutputRecords();
-        //                  outStats.setNumRows(newRowCount);
-        //                  long newDataSize = StatsUtils.getMaxIfOverflow(StatsUtils.getDataSizeFromColumnStats(outStats
-        //                    .getNumRows(), outStats.getColumnStats()));
-        //                  outStats.setDataSize(newDataSize);
-        //                  outStats.setRuntimeStats(true);
-        //                  LOG.info("Runtime statistics available for op: {} updated rowCount: {} -> {} dataSize: {} -> {}",
-        //                    tsop.getOperatorId(), oldRowCount, newRowCount, oldDataSize, newDataSize);
-        //                }
-        //            }
-        //          }
-        //        }
-
         tsop.setStatistics(stats);
 
         if (LOG.isDebugEnabled()) {
@@ -2351,42 +2314,6 @@ public class StatsRulesProcFactory {
 
         outStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), outStats, rop);
 
-        // REOPT-PRASH-2
-        // check if runtime stats is available
-        //        if (aspCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_CACHE_RUNTIME_STATS)) {
-        //          ParseContext parseContext = aspCtx.getParseContext();
-        //          String queryString = parseContext.getContext().getCmd();
-        //          // if this is explain plan, we need to get the underlying query so that we can show the runtime statistics
-        //          // in explain. TODO: this is required because of byte-to-byte query string match
-        //          if (parseContext.getContext().isExplainPlan()) {
-        //            queryString = parseContext.getContext().getExplainConfig().getQuery();
-        //          }
-        //          String queryMD5 = null;
-        //          try {
-        //            queryMD5 = QueryPlan.getQueryMD5(queryString);
-        //            LOG.info("Compilation. MD5: {} query: {}", queryMD5, QueryPlan.normalizeQuery(queryString));
-        //          } catch (NoSuchAlgorithmException e) {
-        //            LOG.warn("Not checking for runtime stats as query MD5 threw exception.", e);
-        //          }
-        //          if (queryMD5 != null) {
-        //            Map<String, OperatorStats> opStats = RuntimeStatisticsCache.RUNTIME_STATS_CACHE.getIfPresent(queryMD5);
-        //            if (opStats != null) {
-        //              OperatorStats operatorStats = opStats.get(rop.getOperatorId());
-        //              if (operatorStats != null) {
-        //                long oldRowCount = outStats.getNumRows();
-        //                long oldDataSize = outStats.getDataSize();
-        //                long newRowCount = operatorStats.getOutputRecords();
-        //                outStats.setNumRows(newRowCount);
-        //                long newDataSize =
-        //                    StatsUtils.getMaxIfOverflow(StatsUtils.getDataSizeFromColumnStats(outStats.getNumRows(), outStats.getColumnStats()));
-        //                outStats.setDataSize(newDataSize);
-        //                outStats.setRuntimeStats(true);
-        //                LOG.info("Runtime statistics available for op: {} updated rowCount: {} -> {} dataSize: {} -> {}", rop.getOperatorId(),
-        //                    oldRowCount, newRowCount, oldDataSize, newDataSize);
-        //              }
-        //            }
-        //          }
-        //        }
         rop.setStatistics(outStats);
         if (LOG.isDebugEnabled()) {
           LOG.debug("[0] STATS-" + rop.toString() + ": " + outStats.extendedToString());
