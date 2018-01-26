@@ -1,4 +1,4 @@
-/**
+/*
  *  Licensed to the Apache Software Foundation (ASF) under one
  *  or more contributor license agreements.  See the NOTICE file
  *  distributed with this work for additional information
@@ -126,11 +126,16 @@ public class SparkCompiler extends TaskCompiler {
     // Run Join releated optimizations
     runJoinOptimizations(procCtx);
 
-    // Remove DPP based on expected size of the output data
-    runRemoveDynamicPruning(procCtx);
+    if(conf.isSparkDPPAny()){
+      // Remove DPP based on expected size of the output data
+      runRemoveDynamicPruning(procCtx);
 
-    // Remove cyclic dependencies for DPP
-    runCycleAnalysisForPartitionPruning(procCtx);
+      // Remove cyclic dependencies for DPP
+      runCycleAnalysisForPartitionPruning(procCtx);
+
+      // Remove nested DPPs
+      SparkUtilities.removeNestedDPP(procCtx);
+    }
 
     // Re-run constant propagation so we fold any new constants introduced by the operator optimizers
     // Specifically necessary for DPP because we might have created lots of "and true and true" conditions
@@ -161,9 +166,6 @@ public class SparkCompiler extends TaskCompiler {
   }
 
   private void runCycleAnalysisForPartitionPruning(OptimizeSparkProcContext procCtx) {
-    if (!conf.isSparkDPPAny()) {
-      return;
-    }
 
     boolean cycleFree = false;
     while (!cycleFree) {
@@ -586,8 +588,7 @@ public class SparkCompiler extends TaskCompiler {
       LOG.debug("Skipping cross product analysis");
     }
 
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)
-        && ctx.getExplainAnalyze() == null) {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
       (new Vectorizer()).resolve(physicalCtx);
     } else {
       LOG.debug("Skipping vectorization");

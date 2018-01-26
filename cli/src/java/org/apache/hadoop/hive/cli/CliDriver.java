@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.cli.OptionsProcessor;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
+import org.apache.hadoop.hive.common.cli.EscapeCRLFHelper;
 import org.apache.hadoop.hive.common.cli.ShellCmdExecutor;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.io.FetchConverter;
@@ -71,6 +72,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.tez.TezJobExecHelper;
+import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
@@ -225,6 +227,7 @@ public class CliDriver {
   int processLocalCmd(String cmd, CommandProcessor proc, CliSessionState ss) {
     int tryCount = 0;
     boolean needRetry;
+    boolean escapeCRLF = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_ESCAPE_CRLF);
     int ret = 0;
 
     do {
@@ -262,6 +265,9 @@ public class CliDriver {
               }
               while (qp.getResults(res)) {
                 for (String r : res) {
+                  if (escapeCRLF) {
+                    r = EscapeCRLFHelper.escapeCRLF(r);
+                  }
                   out.println(r);
                 }
                 counter += res.size();
@@ -758,6 +764,9 @@ public class CliDriver {
     }
 
     ss.updateThreadName();
+
+    // Create views registry
+    HiveMaterializedViewsRegistry.get().init();
 
     // execute cli driver work
     try {

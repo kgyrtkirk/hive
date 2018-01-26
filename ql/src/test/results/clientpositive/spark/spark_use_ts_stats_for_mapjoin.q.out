@@ -87,13 +87,13 @@ FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 WHERE src1.key = 97
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT src1.key, src2.value
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 WHERE src1.key = 97
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 97	val_97
 97	val_97
 97	val_97
@@ -248,11 +248,11 @@ POSTHOOK: Lineage: dest.value SIMPLE [(src)src3.FieldSchema(name:value, type:str
 PREHOOK: query: SELECT sum(hash(dest.key,dest.value)) FROM dest
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT sum(hash(dest.key,dest.value)) FROM dest
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 33815990627
 PREHOOK: query: CREATE TABLE a (c1 STRING, c2 INT)
 PREHOOK: type: CREATETABLE
@@ -296,44 +296,54 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@e
 PREHOOK: query: INSERT INTO TABLE a VALUES ("a1", 1), ("a2", 2), ("a3", 3), ("a4", 4), ("a5", 5), ("a6", 6), ("a7", 7)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@a
 POSTHOOK: query: INSERT INTO TABLE a VALUES ("a1", 1), ("a2", 2), ("a3", 3), ("a4", 4), ("a5", 5), ("a6", 6), ("a7", 7)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@a
-POSTHOOK: Lineage: a.c1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: a.c2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: a.c1 SCRIPT []
+POSTHOOK: Lineage: a.c2 SCRIPT []
 PREHOOK: query: INSERT INTO TABLE b VALUES ("b1", 1), ("b2", 2), ("b3", 3), ("b4", 4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@b
 POSTHOOK: query: INSERT INTO TABLE b VALUES ("b1", 1), ("b2", 2), ("b3", 3), ("b4", 4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@b
-POSTHOOK: Lineage: b.c3 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: b.c4 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: b.c3 SCRIPT []
+POSTHOOK: Lineage: b.c4 SCRIPT []
 PREHOOK: query: INSERT INTO TABLE c VALUES ("c1", 1), ("c2", 2), ("c3", 3), ("c4", 4), ("c5", 5), ("c6", 6), ("c7", 7)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@c
 POSTHOOK: query: INSERT INTO TABLE c VALUES ("c1", 1), ("c2", 2), ("c3", 3), ("c4", 4), ("c5", 5), ("c6", 6), ("c7", 7)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@c
-POSTHOOK: Lineage: c.c1 SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: c.c2 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: c.c1 SCRIPT []
+POSTHOOK: Lineage: c.c2 SCRIPT []
 PREHOOK: query: INSERT INTO TABLE d VALUES ("d1", 1), ("d2", 2), ("d3", 3), ("d4", 4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@d
 POSTHOOK: query: INSERT INTO TABLE d VALUES ("d1", 1), ("d2", 2), ("d3", 3), ("d4", 4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@d
-POSTHOOK: Lineage: d.c3 SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: d.c4 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: d.c3 SCRIPT []
+POSTHOOK: Lineage: d.c4 SCRIPT []
 PREHOOK: query: INSERT INTO TABLE e VALUES ("d1", 1), ("d2", 2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@e
 POSTHOOK: query: INSERT INTO TABLE e VALUES ("d1", 1), ("d2", 2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@e
-POSTHOOK: Lineage: e.c5 SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: e.c6 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: e.c5 SCRIPT []
+POSTHOOK: Lineage: e.c6 SCRIPT []
 PREHOOK: query: EXPLAIN
 WITH t1 AS (
 SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3 FROM a JOIN b ON a.c2 = b.c4
@@ -548,7 +558,7 @@ PREHOOK: Input: default@b
 PREHOOK: Input: default@c
 PREHOOK: Input: default@d
 PREHOOK: Input: default@e
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: WITH t1 AS (
 SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3 FROM a JOIN b ON a.c2 = b.c4
 ),
@@ -568,7 +578,7 @@ POSTHOOK: Input: default@b
 POSTHOOK: Input: default@c
 POSTHOOK: Input: default@d
 POSTHOOK: Input: default@e
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 a1	b1	d1
 a2	b2	d2
 c1	d1	d1

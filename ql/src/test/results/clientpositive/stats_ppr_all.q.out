@@ -18,28 +18,34 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ss
 PREHOOK: query: insert into ss partition(country="US", year=2015, month=1, day=1) values(1,22.0)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ss@country=US/year=2015/month=1/day=1
 POSTHOOK: query: insert into ss partition(country="US", year=2015, month=1, day=1) values(1,22.0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ss@country=US/year=2015/month=1/day=1
-POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=1,day=1).order_amount EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=1,day=1).sales_order_id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=1,day=1).order_amount SCRIPT []
+POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=1,day=1).sales_order_id SCRIPT []
 PREHOOK: query: insert into ss partition(country="US", year=2015, month=2, day=1) values(2,2.0)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ss@country=US/year=2015/month=2/day=1
 POSTHOOK: query: insert into ss partition(country="US", year=2015, month=2, day=1) values(2,2.0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ss@country=US/year=2015/month=2/day=1
-POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=2,day=1).order_amount EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=2,day=1).sales_order_id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=2,day=1).order_amount SCRIPT []
+POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=2,day=1).sales_order_id SCRIPT []
 PREHOOK: query: insert into ss partition(country="US", year=2015, month=1, day=2) values(1,2.0)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ss@country=US/year=2015/month=1/day=2
 POSTHOOK: query: insert into ss partition(country="US", year=2015, month=1, day=2) values(1,2.0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ss@country=US/year=2015/month=1/day=2
-POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=1,day=2).order_amount EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=1,day=2).sales_order_id EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=1,day=2).order_amount SCRIPT []
+POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=1,day=2).sales_order_id SCRIPT []
 PREHOOK: query: ANALYZE TABLE ss PARTITION(country,year,month,day) compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ss
@@ -274,7 +280,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: ss
-          Statistics: Num rows: 2 Data size: 256 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0) (type: boolean)
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -42,9 +42,9 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
-import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenRewriteStream;
 import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.tree.TreeVisitor;
@@ -77,6 +77,7 @@ import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -108,6 +109,7 @@ import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
@@ -119,6 +121,7 @@ import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -242,6 +245,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.math.IntMath;
 
@@ -264,6 +268,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public static final String VALUES_TMP_TABLE_NAME_PREFIX = "Values__Tmp__Table__";
 
+  /** Marks the temporary table created for a serialized CTE. The table is scoped to the query. */
   static final String MATERIALIZATION_MARKER = "$MATERIALIZATION";
 
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
@@ -869,168 +874,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     out.write(to.getBytes(), 0, to.getLength());
   }
 
-  /**
-   * Generate a temp table out of a values clause
-   * See also {@link #preProcessForInsert(ASTNode, QB)}
-   */
-  private ASTNode genValuesTempTable(ASTNode originalFrom, QB qb) throws SemanticException {
-    Path dataDir = null;
-    if(!qb.getEncryptedTargetTablePaths().isEmpty()) {
-      //currently only Insert into T values(...) is supported thus only 1 values clause
-      //and only 1 target table are possible.  If/when support for
-      //select ... from values(...) is added an insert statement may have multiple
-      //encrypted target tables.
-      dataDir = ctx.getMRTmpPath(qb.getEncryptedTargetTablePaths().get(0).toUri());
-    }
-    // Pick a name for the table
-    SessionState ss = SessionState.get();
-    String tableName = VALUES_TMP_TABLE_NAME_PREFIX + ss.getNextValuesTempTableSuffix();
-
-    // Step 1, parse the values clause we were handed
-    List<? extends Node> fromChildren = originalFrom.getChildren();
-    // First child should be the virtual table ref
-    ASTNode virtualTableRef = (ASTNode)fromChildren.get(0);
-    assert virtualTableRef.getToken().getType() == HiveParser.TOK_VIRTUAL_TABREF :
-        "Expected first child of TOK_VIRTUAL_TABLE to be TOK_VIRTUAL_TABREF but was " +
-            virtualTableRef.getName();
-
-    List<? extends Node> virtualTableRefChildren = virtualTableRef.getChildren();
-    // First child of this should be the table name.  If it's anonymous,
-    // then we don't have a table name.
-    ASTNode tabName = (ASTNode)virtualTableRefChildren.get(0);
-    if (tabName.getToken().getType() != HiveParser.TOK_ANONYMOUS) {
-      // TODO, if you want to make select ... from (values(...) as foo(...) work,
-      // you need to parse this list of columns names and build it into the table
-      throw new SemanticException(ErrorMsg.VALUES_TABLE_CONSTRUCTOR_NOT_SUPPORTED.getMsg());
-    }
-
-    // The second child of the TOK_VIRTUAL_TABLE should be TOK_VALUES_TABLE
-    ASTNode valuesTable = (ASTNode)fromChildren.get(1);
-    assert valuesTable.getToken().getType() == HiveParser.TOK_VALUES_TABLE :
-        "Expected second child of TOK_VIRTUAL_TABLE to be TOK_VALUE_TABLE but was " +
-            valuesTable.getName();
-    // Each of the children of TOK_VALUES_TABLE will be a TOK_VALUE_ROW
-    List<? extends Node> valuesTableChildren = valuesTable.getChildren();
-
-    // Now that we're going to start reading through the rows, open a file to write the rows too
-    // If we leave this method before creating the temporary table we need to be sure to clean up
-    // this file.
-    Path tablePath = null;
-    FileSystem fs = null;
-    FSDataOutputStream out = null;
-    try {
-      if(dataDir == null) {
-        tablePath = Warehouse.getDnsPath(new Path(ss.getTempTableSpace(), tableName), conf);
-      }
-      else {
-        //if target table of insert is encrypted, make sure temporary table data is stored
-        //similarly encrypted
-        tablePath = Warehouse.getDnsPath(new Path(dataDir, tableName), conf);
-      }
-      fs = tablePath.getFileSystem(conf);
-      fs.mkdirs(tablePath);
-      Path dataFile = new Path(tablePath, "data_file");
-      out = fs.create(dataFile);
-      List<FieldSchema> fields = new ArrayList<FieldSchema>();
-
-      boolean firstRow = true;
-      for (Node n : valuesTableChildren) {
-        ASTNode valuesRow = (ASTNode) n;
-        assert valuesRow.getToken().getType() == HiveParser.TOK_VALUE_ROW :
-            "Expected child of TOK_VALUE_TABLE to be TOK_VALUE_ROW but was " + valuesRow.getName();
-        // Each of the children of this should be a literal
-        List<? extends Node> valuesRowChildren = valuesRow.getChildren();
-        boolean isFirst = true;
-        int nextColNum = 1;
-        for (Node n1 : valuesRowChildren) {
-          ASTNode value = (ASTNode) n1;
-          if (firstRow) {
-            fields.add(new FieldSchema("tmp_values_col" + nextColNum++, "string", ""));
-          }
-          if (isFirst) {
-            isFirst = false;
-          } else {
-            writeAsText("\u0001", out);
-          }
-          writeAsText(unparseExprForValuesClause(value), out);
-        }
-        writeAsText("\n", out);
-        firstRow = false;
-      }
-
-      // Step 2, create a temp table, using the created file as the data
-      StorageFormat format = new StorageFormat(conf);
-      format.processStorageFormat("TextFile");
-      Table table = db.newTable(tableName);
-      table.setSerializationLib(format.getSerde());
-      table.setFields(fields);
-      table.setDataLocation(tablePath);
-      table.getTTable().setTemporary(true);
-      table.setStoredAsSubDirectories(false);
-      table.setInputFormatClass(format.getInputFormat());
-      table.setOutputFormatClass(format.getOutputFormat());
-      db.createTable(table, false);
-    } catch (Exception e) {
-      String errMsg = ErrorMsg.INSERT_CANNOT_CREATE_TEMP_FILE.getMsg() + e.getMessage();
-      LOG.error(errMsg);
-      // Try to delete the file
-      if (fs != null && tablePath != null) {
-        try {
-          fs.delete(tablePath, false);
-        } catch (IOException swallowIt) {}
-      }
-      throw new SemanticException(errMsg, e);
-    } finally {
-        IOUtils.closeStream(out);
-    }
-
-    // Step 3, return a new subtree with a from clause built around that temp table
-    // The form of the tree is TOK_TABREF->TOK_TABNAME->identifier(tablename)
-    Token t = new ClassicToken(HiveParser.TOK_TABREF);
-    ASTNode tabRef = new ASTNode(t);
-    t = new ClassicToken(HiveParser.TOK_TABNAME);
-    ASTNode tabNameNode = new ASTNode(t);
-    tabRef.addChild(tabNameNode);
-    t = new ClassicToken(HiveParser.Identifier, tableName);
-    ASTNode identifier = new ASTNode(t);
-    tabNameNode.addChild(identifier);
-    return tabRef;
-  }
-
-  // Take an expression in the values clause and turn it back into a string.  This is far from
-  // comprehensive.  At the moment it only supports:
-  // * literals (all types)
-  // * unary negatives
-  // * true/false
-  private String unparseExprForValuesClause(ASTNode expr) throws SemanticException {
-    switch (expr.getToken().getType()) {
-      case HiveParser.Number:
-        return expr.getText();
-
-      case HiveParser.StringLiteral:
-        return BaseSemanticAnalyzer.unescapeSQLString(expr.getText());
-
-      case HiveParser.KW_FALSE:
-        // UDFToBoolean casts any non-empty string to true, so set this to false
-        return "";
-
-      case HiveParser.KW_TRUE:
-        return "TRUE";
-
-      case HiveParser.MINUS:
-        return "-" + unparseExprForValuesClause((ASTNode)expr.getChildren().get(0));
-
-      case HiveParser.TOK_NULL:
-        // Hive's text input will translate this as a null
-        return "\\N";
-
-      default:
-        throw new SemanticException("Expression of type " + expr.getText() +
-            " not supported in insert/values");
-    }
-
-  }
-
   private void assertCombineInputFormat(Tree numerator, String message) throws SemanticException {
     String inputFormat = conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez") ?
       HiveConf.getVar(conf, HiveConf.ConfVars.HIVETEZINPUTFORMAT):
@@ -1388,12 +1231,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private String processLateralView(QB qb, ASTNode lateralView)
       throws SemanticException {
     int numChildren = lateralView.getChildCount();
-
     assert (numChildren == 2);
+
+    if (!isCBOSupportedLateralView(lateralView)) {
+      queryProperties.setCBOSupportedLateralViews(false);
+    }
+
     ASTNode next = (ASTNode) lateralView.getChild(1);
-
     String alias = null;
-
     switch (next.getToken().getType()) {
     case HiveParser.TOK_TABREF:
       alias = processTable(qb, next);
@@ -1413,6 +1258,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     qb.getParseInfo().addLateralViewForAlias(alias, lateralView);
     qb.addAlias(alias);
     return alias;
+  }
+
+  private String extractLateralViewAlias(ASTNode lateralView) {
+    // Lateral view AST has the following shape:
+    // ^(TOK_LATERAL_VIEW
+    //   ^(TOK_SELECT ^(TOK_SELEXPR ^(TOK_FUNCTION Identifier params) identifier* tableAlias)))
+    ASTNode selExpr = (ASTNode) lateralView.getChild(0).getChild(0);
+    ASTNode astTableAlias = (ASTNode) Iterables.getLast(selExpr.getChildren());
+    return astTableAlias.getChild(0).getText();
   }
 
   /**
@@ -1557,12 +1411,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ASTNode frm = (ASTNode) ast.getChild(0);
         if (frm.getToken().getType() == HiveParser.TOK_TABREF) {
           processTable(qb, frm);
-        } else if (frm.getToken().getType() == HiveParser.TOK_VIRTUAL_TABLE) {
-          // Create a temp table with the passed values in it then rewrite this portion of the
-          // tree to be from that table.
-          ASTNode newFrom = genValuesTempTable(frm, qb);
-          ast.setChild(0, newFrom);
-          processTable(qb, newFrom);
         } else if (frm.getToken().getType() == HiveParser.TOK_SUBQUERY) {
           processSubQuery(qb, frm);
         } else if (frm.getToken().getType() == HiveParser.TOK_LATERAL_VIEW ||
@@ -5451,7 +5299,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ExprNodeDesc inputExpr = genExprNodeDesc(grpbyExpr,
           reduceSinkInputRowResolver);
       ColumnInfo prev = reduceSinkOutputRowResolver.getExpression(grpbyExpr);
-      if (prev != null && isDeterministic(inputExpr)) {
+      if (prev != null && isConsistentWithinQuery(inputExpr)) {
         colExprMap.put(prev.getInternalName(), inputExpr);
         continue;
       }
@@ -5468,9 +5316,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return reduceKeys;
   }
 
-  private boolean isDeterministic(ExprNodeDesc expr) throws SemanticException {
+  private boolean isConsistentWithinQuery(ExprNodeDesc expr) throws SemanticException {
     try {
-      return ExprNodeEvaluatorFactory.get(expr).isDeterministic();
+      return ExprNodeEvaluatorFactory.get(expr).isConsistentWithinQuery();
     } catch (Exception e) {
       throw new SemanticException(e);
     }
@@ -9570,7 +9418,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
 
+  boolean isCBOSupportedLateralView(ASTNode lateralView) {
+    return false;
+  }
+
   boolean continueJoinMerge() {
+    return true;
+  }
+
+  boolean shouldMerge(final QBJoinTree node, final QBJoinTree target) {
+    boolean isNodeOuterJoin=false, isNodeSemiJoin=false, hasNodePostJoinFilters=false;
+    boolean isTargetOuterJoin=false, isTargetSemiJoin=false, hasTargetPostJoinFilters=false;
+
+    isNodeOuterJoin = !node.getNoOuterJoin();
+    isNodeSemiJoin= !node.getNoSemiJoin();
+    hasNodePostJoinFilters = node.getPostJoinFilters().size() !=0;
+
+    isTargetOuterJoin = !target.getNoOuterJoin();
+    isTargetSemiJoin= !target.getNoSemiJoin();
+    hasTargetPostJoinFilters = target.getPostJoinFilters().size() !=0;
+
+    if((hasNodePostJoinFilters && (isNodeOuterJoin || isNodeSemiJoin))
+        || (hasTargetPostJoinFilters && (isTargetOuterJoin || isTargetSemiJoin))) {
+      return false;
+    }
     return true;
   }
 
@@ -9610,8 +9481,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (prevType != null && prevType != currType) {
           break;
         }
-        if ((!node.getNoOuterJoin() && node.getPostJoinFilters().size() != 0) ||
-                (!target.getNoOuterJoin() && target.getPostJoinFilters().size() != 0)) {
+        if(!shouldMerge(node, target)) {
           // Outer joins with post-filtering conditions cannot be merged
           break;
         }
@@ -11422,7 +11292,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // 4. continue analyzing from the child ASTNode.
     Phase1Ctx ctx_1 = initPhase1Ctx();
-    preProcessForInsert(child, qb);
     if (!doPhase1(child, qb, ctx_1, plannerCtx)) {
       // if phase1Result false return
       return false;
@@ -11437,49 +11306,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     plannerCtx.setParseTreeAttr(child, ctx_1);
 
     return true;
-  }
-
-  /**
-   * This will walk AST of an INSERT statement and assemble a list of target tables
-   * which are in an HDFS encryption zone.  This is needed to make sure that so that
-   * the data from values clause of Insert ... select values(...) is stored securely.
-   * See also {@link #genValuesTempTable(ASTNode, QB)}
-   * @throws SemanticException
-   */
-  private void preProcessForInsert(ASTNode node, QB qb) throws SemanticException {
-    try {
-      if(!(node != null && node.getToken() != null && node.getToken().getType() == HiveParser.TOK_QUERY)) {
-        return;
-      }
-      for (Node child : node.getChildren()) {
-        //each insert of multi insert looks like
-        //(TOK_INSERT (TOK_INSERT_INTO (TOK_TAB (TOK_TABNAME T1)))
-        if (((ASTNode) child).getToken().getType() != HiveParser.TOK_INSERT) {
-          continue;
-        }
-        ASTNode n = (ASTNode) ((ASTNode) child).getFirstChildWithType(HiveParser.TOK_INSERT_INTO);
-        if (n == null) {
-          continue;
-        }
-        n = (ASTNode) n.getFirstChildWithType(HiveParser.TOK_TAB);
-        if (n == null) {
-          continue;
-        }
-        n = (ASTNode) n.getFirstChildWithType(HiveParser.TOK_TABNAME);
-        if (n == null) {
-          continue;
-        }
-        String[] dbTab = getQualifiedTableName(n);
-        Table t = db.getTable(dbTab[0], dbTab[1]);
-        Path tablePath = t.getPath();
-        if (isPathEncrypted(tablePath)) {
-          qb.addEncryptedTargetTablePath(tablePath);
-        }
-      }
-    }
-    catch(Exception ex) {
-      throw new SemanticException(ex);
-    }
   }
 
   public void getHintsFromQB(QB qb, List<ASTNode> hints) {
@@ -11647,7 +11473,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // all the information for semanticcheck
       validateCreateView();
 
-      if (!createVwDesc.isMaterialized()) {
+      if (createVwDesc.isMaterialized()) {
+        createVwDesc.setTablesUsed(getTablesUsed(pCtx));
+      } else {
         // Since we're only creating a view (not executing it), we don't need to
         // optimize or translate the plan (and in fact, those procedures can
         // interfere with the view creation). So skip the rest of this method.
@@ -11767,7 +11595,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   protected void saveViewDefinition() throws SemanticException {
     if (createVwDesc.isMaterialized() && createVwDesc.isReplace()) {
-      // This is a rebuild, there's nothing to do here.
+      // This is a rebuild, there's nothing to do here
       return;
     }
 
@@ -11884,6 +11712,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     createVwDesc.setSchema(derivedSchema);
     createVwDesc.setViewExpandedText(expandedText);
+  }
+
+  private List<String> getTablesUsed(ParseContext parseCtx) throws SemanticException {
+    List<String> tablesUsed = new ArrayList<>();
+    for (TableScanOperator topOp : parseCtx.getTopOps().values()) {
+      Table table = topOp.getConf().getTableMetadata();
+      if (!table.isMaterializedTable() && !table.isView()) {
+        // Add to signature
+        tablesUsed.add(table.getFullyQualifiedName());
+      }
+    }
+    return tablesUsed;
   }
 
   static List<FieldSchema> convertRowSchemaToViewSchema(RowResolver rr) throws SemanticException {
@@ -12023,8 +11863,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         TypeCheckProcFactory.genExprNode(expr, tcCtx);
     ExprNodeDesc desc = nodeOutputs.get(expr);
     if (desc == null) {
-      String errMsg = tcCtx.getError();
-      if (errMsg == null) {
+        String tableOrCol = BaseSemanticAnalyzer.unescapeIdentifier(expr
+            .getChild(0).getText());
+        ColumnInfo colInfo = input.get(null, tableOrCol);
+        String errMsg;
+        if (colInfo == null && input.getIsExprResolver()){
+            errMsg = ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(expr);
+        } else {
+            errMsg = tcCtx.getError();
+        }
+        if (errMsg == null) {
         errMsg = "Error in parsing ";
       }
       throw new SemanticException(errMsg);
@@ -12203,14 +12051,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       validate(childTask, reworkMapredWork);
     }
   }
-
-  /**
-   * Get the row resolver given an operator.
-   */
-  public RowResolver getRowResolver(Operator opt) {
-    return opParseCtx.get(opt).getRowResolver();
-  }
-
   /**
    * Add default properties for table property. If a default parameter exists
    * in the tblProp, the value in tblProp will be kept.
@@ -12220,7 +12060,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @return Modified table property map
    */
   private Map<String, String> addDefaultProperties(
-      Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat) {
+      Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat,
+      String qualifiedTableName, List<Order> sortCols, boolean isMaterialization) {
     Map<String, String> retValue;
     if (tblProp == null) {
       retValue = new HashMap<String, String>();
@@ -12239,16 +12080,45 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
-    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY)
-        && !isExt && StringUtils.isBlank(storageFormat.getStorageHandler())
+    boolean makeInsertOnly = HiveConf.getBoolVar(conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY);
+    boolean makeAcid = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID) &&
+        HiveConf.getBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY) &&
+        DbTxnManager.class.getCanonicalName().equals(HiveConf.getVar(conf, ConfVars.HIVE_TXN_MANAGER));
+    if ((makeInsertOnly || makeAcid)
+        && !isExt  && !isMaterialization && StringUtils.isBlank(storageFormat.getStorageHandler())
+        //don't overwrite user choice if transactional attribute is explicitly set
         && !retValue.containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)) {
-      retValue.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
-      String oldProps = retValue.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-      if (oldProps != null) {
-        LOG.warn("Non-transactional table has transactional properties; overwriting " + oldProps);
+      if (makeInsertOnly) {
+        retValue.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
+        retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
+            TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
       }
-      retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
-          TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
+      if (makeAcid) {
+        /*for CTAS, TransactionalValidationListener.makeAcid() runs to late to make table Acid
+         so the initial write ends up running as non-acid...*/
+        try {
+          Class inputFormatClass = storageFormat.getInputFormat() == null ? null :
+              Class.forName(storageFormat.getInputFormat());
+          Class outputFormatClass = storageFormat.getOutputFormat() == null ? null :
+              Class.forName(storageFormat.getOutputFormat());
+          if (inputFormatClass == null || outputFormatClass == null ||
+              !AcidInputFormat.class.isAssignableFrom(inputFormatClass) ||
+              !AcidOutputFormat.class.isAssignableFrom(outputFormatClass)) {
+            return retValue;
+          }
+        } catch (ClassNotFoundException e) {
+          LOG.warn("Could not verify InputFormat=" + storageFormat.getInputFormat() + " or OutputFormat=" +
+              storageFormat.getOutputFormat() + "  for " + qualifiedTableName);
+          return retValue;
+        }
+        if(sortCols != null && !sortCols.isEmpty()) {
+          return retValue;
+        }
+        retValue.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
+        retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
+            TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY);
+        LOG.info("Automatically chose to make " + qualifiedTableName + " acid.");
+      }
     }
     return retValue;
   }
@@ -12473,7 +12343,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     switch (command_type) {
 
     case CREATE_TABLE: // REGULAR CREATE TABLE DDL
-      tblProps = addDefaultProperties(tblProps, isExt, storageFormat);
+      tblProps = addDefaultProperties(
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
 
       CreateTableDesc crtTblDesc = new CreateTableDesc(dbDotTab, isExt, isTemporary, cols, partCols,
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
@@ -12494,7 +12365,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
 
     case CTLT: // create table like <tbl_name>
-      tblProps = addDefaultProperties(tblProps, isExt, storageFormat);
+      tblProps = addDefaultProperties(
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
 
       if (isTemporary) {
         Table likeTable = getTable(likeTableName, false);
@@ -12571,7 +12443,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
-      tblProps = addDefaultProperties(tblProps, isExt, storageFormat);
+      tblProps = addDefaultProperties(
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
       tableDesc = new CreateTableDesc(qualifiedTabName[0], dbDotTab, isExt, isTemporary, cols,
           partCols, bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
           rowFormatParams.fieldEscape, rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim,
@@ -12752,13 +12625,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     try {
       Table oldView = getTable(createVwDesc.getViewName(), false);
 
-      // Do not allow view to be defined on temp table
+      // Do not allow view to be defined on temp table or other materialized view
       Set<String> tableAliases = qb.getTabAliases();
       for (String alias : tableAliases) {
         try {
           Table table = this.getTableObjectByName(qb.getTabNameForAlias(alias));
           if (table.isTemporary()) {
             throw new SemanticException("View definition references temporary table " + alias);
+          }
+          if (table.isMaterializedView()) {
+            throw new SemanticException("View definition references materialized view " + alias);
+          }
+          if (createVwDesc.isMaterialized() && createVwDesc.isRewriteEnabled() &&
+              !AcidUtils.isAcidTable(table)) {
+            throw new SemanticException("Automatic rewriting for materialized view cannot "
+                + "be enabled if the materialized view uses non-transactional tables");
           }
         } catch (HiveException ex) {
           throw new SemanticException(ex);

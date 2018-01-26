@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -3243,6 +3243,20 @@ public final class Utilities {
     List<Path> paths = getInputPaths(job, work, new Path(scratchDir), null, true);
 
     return paths;
+  }
+
+  /**
+   * Appends vertex name to specified counter name.
+   *
+   * @param counter counter to be appended with
+   * @param vertexName   vertex name
+   * @return counter name with vertex name appended
+   */
+  public static String getVertexCounterName(String counter, String vertexName) {
+    if (vertexName != null && !vertexName.isEmpty()) {
+      vertexName = "_" + vertexName.replace(" ", "_");
+    }
+    return counter + vertexName;
   }
 
   /**

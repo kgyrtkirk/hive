@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -325,7 +325,9 @@ public class ImportTableDesc {
   /**
    * @return whether this table is actually a view
    */
-  public boolean isView() { return table.isView(); }
+  public boolean isView() {
+    return table.isView();
+  }
 
   public boolean isMaterializedView() {
     return table.isMaterializedView();

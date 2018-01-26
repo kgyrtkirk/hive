@@ -53,7 +53,7 @@ import java.util.regex.Pattern;
 /**
  * A set of definitions of config values used by the Metastore.  One of the key aims of this
  * class is to provide backwards compatibility with existing Hive configuration keys while
- * allowing the metastore to have its own, Hive independant keys.   For this reason access to the
+ * allowing the metastore to have its own, Hive independent keys.   For this reason access to the
  * underlying Configuration object should always be done via the static methods provided here
  * rather than directly via {@link Configuration#get(String)} and
  * {@link Configuration#set(String, String)}.  All the methods of this class will handle checking
@@ -373,6 +373,9 @@ public class MetastoreConf {
     CONNECTION_USER_NAME("javax.jdo.option.ConnectionUserName",
         "javax.jdo.option.ConnectionUserName", "APP",
         "Username to use against metastore database"),
+    CREATE_TABLES_AS_ACID("metastore.create.as.acid", "hive.create.as.acid", false,
+        "Whether the eligible tables should be created as full ACID by default. Does \n" +
+            "not apply to external tables, the ones using storage handlers, etc."),
     COUNT_OPEN_TXNS_INTERVAL("metastore.count.open.txns.interval", "hive.count.open.txns.interval",
         1, TimeUnit.SECONDS, "Time in seconds between checks to count open transactions."),
     DATANUCLEUS_AUTOSTART("datanucleus.autoStartMechanismMode",
@@ -482,7 +485,7 @@ public class MetastoreConf {
         "hive.metastore.hbase.file.metadata.threads", 1,
         "Number of threads to use to read file metadata in background to cache it."),
     FILTER_HOOK("metastore.filter.hook", "hive.metastore.filter.hook",
-        "org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl",
+        org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl.class.getName(),
         "Metastore hook class for filtering the metadata read results. If hive.security.authorization.manager"
             + "is set to instance of HiveAuthorizerFactory, then this value is ignored."),
     FS_HANDLER_CLS("metastore.fs.handler.class", "hive.metastore.fs.handler.class",
@@ -1029,6 +1032,10 @@ public class MetastoreConf {
     throw new RuntimeException("You should never be creating one of these!");
   }
 
+  public static void setHiveSiteLocation(URL location) {
+    hiveSiteURL = location;
+  }
+
   public static Configuration newMetastoreConf() {
 
     Configuration conf = new Configuration();
@@ -1044,7 +1051,15 @@ public class MetastoreConf {
 
     // Add in hive-site.xml.  We add this first so that it gets overridden by the new metastore
     // specific files if they exist.
-    hiveSiteURL = findConfigFile(classLoader, "hive-site.xml");
+    if(hiveSiteURL == null) {
+      /*
+       * this 'if' is pretty lame - QTestUtil.QTestUtil() uses hiveSiteURL to load a specific
+       * hive-site.xml from data/conf/<subdir> so this makes it follow the same logic - otherwise
+       * HiveConf and MetastoreConf may load different hive-site.xml  ( For example,
+       * HiveConf uses data/conf/spark/hive-site.xml and MetastoreConf data/conf/hive-site.xml)
+       */
+      hiveSiteURL = findConfigFile(classLoader, "hive-site.xml");
+    }
     if (hiveSiteURL != null) conf.addResource(hiveSiteURL);
 
     // Now add hivemetastore-site.xml.  Again we add this before our own config files so that the

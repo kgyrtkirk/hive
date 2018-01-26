@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -253,7 +253,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       throws MetaException, InvalidOperationException, UnknownDBException, TException {
 
     dbName = dbName.toLowerCase();
-    if (SessionState.get().getTempTables().size() == 0) {
+    if (SessionState.get() == null || SessionState.get().getTempTables().size() == 0) {
       // No temp tables, just call underlying client
       return super.getTableObjectsByName(dbName, tableNames);
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.common.io.DiskRangeList.CreateHelper;
 import org.apache.hadoop.hive.common.io.DiskRangeList.MutateHelper;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.orc.CompressionCodec;
 import org.apache.orc.DataReader;
 import org.apache.orc.OrcConf;
@@ -54,6 +55,7 @@ import org.apache.orc.impl.OutStream;
 import org.apache.orc.impl.RecordReaderUtils;
 import org.apache.orc.impl.StreamName;
 import org.apache.orc.impl.StreamName.Area;
+import org.apache.orc.impl.WriterImpl;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.impl.BufferChunk;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace.RangesSrc;
@@ -126,6 +128,7 @@ class EncodedReaderImpl implements EncodedReader {
   private final DataReader dataReader;
   private boolean isDataReaderOpen = false;
   private final CompressionCodec codec;
+  private final boolean isCodecFromPool;
   private final boolean isCompressed;
   private final org.apache.orc.CompressionKind compressionKind;
   private final int bufferSize;
@@ -140,11 +143,12 @@ class EncodedReaderImpl implements EncodedReader {
   public EncodedReaderImpl(Object fileKey, List<OrcProto.Type> types,
       TypeDescription fileSchema, org.apache.orc.CompressionKind kind, WriterVersion version,
       int bufferSize, long strideRate, DataCache cacheWrapper, DataReader dataReader,
-      PoolFactory pf, IoTrace trace) throws IOException {
+      PoolFactory pf, IoTrace trace, boolean useCodecPool) throws IOException {
     this.fileKey = fileKey;
     this.compressionKind = kind;
     this.isCompressed = kind != org.apache.orc.CompressionKind.NONE;
-    this.codec = OrcCodecPool.getCodec(kind);
+    this.isCodecFromPool = useCodecPool;
+    this.codec = useCodecPool ? OrcCodecPool.getCodec(kind) : WriterImpl.createCodec(kind);
     this.types = types;
     this.fileSchema = fileSchema; // Note: this is redundant with types
     this.version = version;
@@ -353,7 +357,12 @@ class EncodedReaderImpl implements EncodedReader {
       if (hasIndexOnlyCols && (rgs == null)) {
         OrcEncodedColumnBatch ecb = POOLS.ecbPool.take();
         ecb.init(fileKey, stripeIx, OrcEncodedColumnBatch.ALL_RGS, included.length);
-        consumer.consumeData(ecb);
+        try {
+          consumer.consumeData(ecb);
+        } catch (InterruptedException e) {
+          LOG.error("IO thread interrupted while queueing data");
+          throw new IOException(e);
+        }
       } else {
         LOG.warn("Nothing to read for stripe [" + stripe + "]");
       }
@@ -466,15 +475,17 @@ class EncodedReaderImpl implements EncodedReader {
           hasErrorForEcb = false;
         } finally {
           if (hasErrorForEcb) {
-            try {
-              releaseEcbRefCountsOnError(ecb);
-            } catch (Throwable t) {
-              LOG.error("Error during the cleanup of an error; ignoring", t);
-            }
+            releaseEcbRefCountsOnError(ecb);
           }
         }
-        // After this, the non-initial refcounts are the responsibility of the consumer.
-        consumer.consumeData(ecb);
+        try {
+          consumer.consumeData(ecb);
+          // After this, the non-initial refcounts are the responsibility of the consumer.
+        } catch (InterruptedException e) {
+          LOG.error("IO thread interrupted while queueing data");
+          releaseEcbRefCountsOnError(ecb);
+          throw new IOException(e);
+        }
       }
 
       if (isTracingEnabled) {
@@ -584,20 +595,24 @@ class EncodedReaderImpl implements EncodedReader {
   }
 
   private void releaseEcbRefCountsOnError(OrcEncodedColumnBatch ecb) {
-    if (isTracingEnabled) {
-      LOG.trace("Unlocking the batch not sent to consumer, on error");
-    }
-    // We cannot send the ecb to consumer. Discard whatever is already there.
-    for (int colIx = 0; colIx < ecb.getTotalColCount(); ++colIx) {
-      if (!ecb.hasData(colIx)) continue;
-      ColumnStreamData[] datas = ecb.getColumnData(colIx);
-      for (ColumnStreamData data : datas) {
-        if (data == null || data.decRef() != 0) continue;
-        for (MemoryBuffer buf : data.getCacheBuffers()) {
-          if (buf == null) continue;
-          cacheWrapper.releaseBuffer(buf);
+    try {
+      if (isTracingEnabled) {
+        LOG.trace("Unlocking the batch not sent to consumer, on error");
+      }
+      // We cannot send the ecb to consumer. Discard whatever is already there.
+      for (int colIx = 0; colIx < ecb.getTotalColCount(); ++colIx) {
+        if (!ecb.hasData(colIx)) continue;
+        ColumnStreamData[] datas = ecb.getColumnData(colIx);
+        for (ColumnStreamData data : datas) {
+          if (data == null || data.decRef() != 0) continue;
+          for (MemoryBuffer buf : data.getCacheBuffers()) {
+            if (buf == null) continue;
+            cacheWrapper.releaseBuffer(buf);
+          }
         }
       }
+    } catch (Throwable t) {
+      LOG.error("Error during the cleanup of an error; ignoring", t);
     }
   }
 
@@ -661,7 +676,11 @@ class EncodedReaderImpl implements EncodedReader {
 
   @Override
   public void close() throws IOException {
-    OrcCodecPool.returnCodec(compressionKind, codec);
+    if (isCodecFromPool) {
+      OrcCodecPool.returnCodec(compressionKind, codec);
+    } else {
+      codec.close();
+    }
     dataReader.close();
   }
 
@@ -1218,14 +1237,61 @@ class EncodedReaderImpl implements EncodedReader {
   private static void decompressChunk(
       ByteBuffer src, CompressionCodec codec, ByteBuffer dest) throws IOException {
     int startPos = dest.position(), startLim = dest.limit();
+    int startSrcPos = src.position(), startSrcLim = src.limit();
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("Decompressing " + src.remaining() + " bytes to dest buffer pos "
+          + dest.position() + ", limit " + dest.limit());
+    }
     codec.decompress(src, dest);
-    // Codec resets the position to 0 and limit to correct limit.
     dest.position(startPos);
     int newLim = dest.limit();
     if (newLim > startLim) {
       throw new AssertionError("After codec, buffer [" + startPos + ", " + startLim
           + ") became [" + dest.position() + ", " + newLim + ")");
     }
+    if (dest.remaining() > 0) return;
+
+    // There's a bug in native decompressor. See HADOOP-15171
+    dest.limit(startLim);
+    src.position(startSrcPos);
+    src.limit(startSrcLim);
+    LOG.warn("The codec has produced 0 bytes for " + src.remaining() + " bytes at pos "
+        + src.position() + ", data hash " + src.hashCode() + ": [" +  logSomeBytes(src));
+    ByteBuffer srcHeap = ByteBuffer.allocate(src.remaining()),
+        destHeap = ByteBuffer.allocate(dest.remaining());
+    int destHeapPos = destHeap.position();
+    srcHeap.put(src);
+    srcHeap.position(startSrcPos);
+    codec.decompress(srcHeap, destHeap);
+    destHeap.position(destHeapPos);
+    int newLen = destHeap.remaining();
+    LOG.warn("Fell back to JDK decompressor with memcopy; got " + newLen + " bytes");
+    dest.put(destHeap);
+    dest.position(startPos);
+    dest.limit(startPos + newLen);
+  }
+
+  private static String logSomeBytes(ByteBuffer src) {
+    final int max = 500;
+    StringBuilder sb = new StringBuilder();
+    int base = src.position(), end = base + Math.min(max, src.remaining());
+    for (int i = base; i < end; ++i) {
+      if (i != base) {
+        sb.append(' ');
+      }
+      int b = src.get(i) & 0xff;
+      if (b <= 0xf) {
+        sb.append('0');
+      }
+      sb.append(Integer.toHexString(b));
+    }
+    int rem = src.remaining() - max;
+    if (rem > 0) {
+      sb.append(" ... (").append(rem).append(" bytes)]");
+    } else {
+      sb.append("]");
+    }
+    return sb.toString();
   }
 
   private void ponderReleaseInitialRefcount(
@@ -1741,16 +1807,17 @@ class EncodedReaderImpl implements EncodedReader {
     }
 
     private boolean ensureRangeWithData() {
-      if (range != null && range.remaining() > 0) return true;
-      ++rangeIx;
-      if (rangeIx == ranges.size()) return false;
-      range = ranges.get(rangeIx).getByteBufferDup();
+      while (range == null || range.remaining() <= 0) {
+        ++rangeIx;
+        if (rangeIx == ranges.size()) return false;
+        range = ranges.get(rangeIx).getByteBufferDup();
+      }
       return true;
     }
 
     @Override
     public int read(byte[] data, int offset, int length) {
-      if (!ensureRangeWithData()) {
+     if (!ensureRangeWithData()) {
         return -1;
       }
       int actualLength = Math.min(length, range.remaining());
@@ -1803,6 +1870,7 @@ class EncodedReaderImpl implements EncodedReader {
       if (isTracingEnabled) {
         LOG.trace("Creating context: " + colCtxs[i].toString());
       }
+      trace.logColumnRead(i, colRgIx, ColumnEncoding.Kind.DIRECT); // Bogus encoding.
     }
     long offset = 0;
     for (OrcProto.Stream stream : streams) {
@@ -1813,7 +1881,8 @@ class EncodedReaderImpl implements EncodedReader {
       if ((StreamName.getArea(streamKind) == StreamName.Area.INDEX)
           && ((sargColumns != null && sargColumns[colIx])
               || (included[colIx] && streamKind == Kind.ROW_INDEX))) {
-          colCtxs[colIx].addStream(offset, stream, -1);
+        trace.logAddStream(colIx, streamKind, offset, length, -1, true);
+        colCtxs[colIx].addStream(offset, stream, -1);
         if (isTracingEnabled) {
           LOG.trace("Adding stream for column " + colIx + ": "
               + streamKind + " at " + offset + ", " + length);
@@ -1851,12 +1920,19 @@ class EncodedReaderImpl implements EncodedReader {
             if (lastCached != null) {
               iter = lastCached;
             }
+            if (isTracingEnabled) {
+              traceLogBuffersUsedToParse(csd);
+            }
             CodedInputStream cis = CodedInputStream.newInstance(
                 new IndexStream(csd.getCacheBuffers(), sctx.length));
             cis.setSizeLimit(InStream.PROTOBUF_MESSAGE_MAX_LIMIT);
             switch (sctx.kind) {
               case ROW_INDEX:
-                index.getRowGroupIndex()[colIx] = OrcProto.RowIndex.parseFrom(cis);
+                OrcProto.RowIndex tmp = index.getRowGroupIndex()[colIx]
+                    = OrcProto.RowIndex.parseFrom(cis);
+                if (isTracingEnabled) {
+                  LOG.trace("Index is " + tmp.toString().replace('\n', ' '));
+                }
                 break;
               case BLOOM_FILTER:
               case BLOOM_FILTER_UTF8:
@@ -1895,6 +1971,17 @@ class EncodedReaderImpl implements EncodedReader {
         LOG.error("Error during the cleanup after another error; ignoring", t);
       }
     }
+  }
+
+  private void traceLogBuffersUsedToParse(ColumnStreamData csd) {
+    String s = "Buffers ";
+    if (csd.getCacheBuffers() != null) {
+      for (MemoryBuffer buf : csd.getCacheBuffers()) {
+        ByteBuffer bb = buf.getByteBufferDup();
+        s += "{" + buf + ", " + bb.remaining() + /* " => " + bb.hashCode() + */"}, ";
+      }
+    }
+    LOG.trace(s);
   }
 
 
