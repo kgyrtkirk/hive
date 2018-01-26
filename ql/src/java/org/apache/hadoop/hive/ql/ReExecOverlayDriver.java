@@ -65,4 +65,9 @@ public class ReExecOverlayDriver extends AbstractReExecDriver {
     handleExecutionException(hookContext.getException());
   }
 
+  @Override
+  public Context getContext() {
+    return coreDriver.getContext();
+  }
+
 }

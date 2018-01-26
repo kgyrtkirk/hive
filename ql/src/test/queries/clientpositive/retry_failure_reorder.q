@@ -37,7 +37,7 @@ select (${hiveconf:zzz} > sum(u*v*w)) from tu
 set hive.query.reexecution.strategy=reoptimize;
 set hive.query.reexecution.explain=true;
 set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecTezSummaryPrinter;
-
+set hive.optimize.ppd=false;
 
 select assert_true_oom(${hiveconf:zzz} > sum(u*v*w)) from tu
         join tv on (tu.id_uv=tv.id_uv)

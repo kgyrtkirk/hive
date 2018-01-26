@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -172,6 +173,9 @@ public class TestReOptimization {
         HiveFilter hf = hfs.get(0);
         FilterOperator fo = fos.get(0);
         OperatorStats os = oss.get(0);
+
+
+        Optional<OperatorStats> prevOs = driver.getContext().getRuntimeStatsSource().get().lookup(hf);
 
         long cntFilter = RelMetadataQuery.instance().getRowCount(hf).longValue();
         assertEquals(os.getOutputRecords(), fo.getStatistics().getNumRows());

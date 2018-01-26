@@ -18,23 +18,56 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 
+import com.google.common.base.Joiner;
+
+// represents the first filter above tablescan
 public class HiveFilterRef {
 
   public static final GroupTransformer MAPPER = new HiveFilterMapper();
 
+  private static final Comparator<? super RexNode> REXNODE_TOSTRING_CMD = new Comparator<RexNode>() {
+
+    @Override
+    public int compare(RexNode o1, RexNode o2) {
+      return o1.toString().compareTo(o2.toString());
+    }
+
+  };
+
   // this is just a rough plan/operator indepentent ref
   private String myKey;
 
+
   HiveFilterRef(HiveFilter filter) {
-    myKey = RelOptUtil.toString(filter);
+    RexNode cond = filter.getCondition();
+    SqlKind k = cond.getKind();
+    if (k == SqlKind.AND) {
+      List<RexNode> pL = new ArrayList<>();
+      List<RexNode> nL = new ArrayList<>();
+      RelOptUtil.decomposeConjunction(cond,pL,nL);
+
+      pL.sort(REXNODE_TOSTRING_CMD);
+      nL.sort(REXNODE_TOSTRING_CMD);
+
+
+      myKey += "__filter__ AND(" + Joiner.on(" && ").join(pL) + " &&&& " + Joiner.on(" && ").join(nL) + "\n";
+      myKey += RelOptUtil.toString(filter.getInput());
+    }
+    else {
+      myKey = RelOptUtil.toString(filter);
+    }
   }
 
   @Override
