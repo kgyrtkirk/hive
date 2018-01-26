@@ -16,26 +16,28 @@ insert overwrite table tw
 ;
 
 
-select assert_true_oom(${hiveconf:zzz} > sum(u*v*w)) from tu
+set hive.explain.user=true;
+
+set zzz=1;
+set reexec.overlay.zzz=2000;
+
+
+select (${hiveconf:zzz} > sum(u*v*w)) from tu
         join tv on (tu.id_uv=tv.id_uv)
         join tw on (tu.id_uw=tw.id_uw)
         where w>9 and u>1 and v>3;
 
 explain
-select assert_true_oom(${hiveconf:zzz} > sum(u*v*w)) from tu
+select (${hiveconf:zzz} > sum(u*v*w)) from tu
         join tv on (tu.id_uv=tv.id_uv)
         join tw on (tu.id_uw=tw.id_uw)
         where w>9 and u>1 and v>3;
 
 
-set hive.explain.user=true;
 set hive.query.reexecution.strategy=reoptimize;
 set hive.query.reexecution.explain=true;
 set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecTezSummaryPrinter;
 
-
-set zzz=1;
-set reexec.overlay.zzz=2000;
 
 select assert_true_oom(${hiveconf:zzz} > sum(u*v*w)) from tu
         join tv on (tu.id_uv=tv.id_uv)
