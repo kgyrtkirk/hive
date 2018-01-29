@@ -41,7 +41,11 @@ public class SimpleRuntimeStatsSource implements RuntimeStatsSource {
       OperatorRef ref = OperatorRef.of(tsop);
       // FIXME: change this back to lookup...find that bug
       List<OperatorStats> v = pm.lookupAll(OperatorStats.class, ref);
-      return Optional.of(v.get(0));
+      if (v.size() > 0) {
+        return Optional.of(v.get(0));
+      } else {
+        return  Optional.empty();
+      }
     } catch (NoSuchElementException | IllegalArgumentException iae) {
       return Optional.empty();
     }

@@ -10634,7 +10634,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Operator op = genTablePlan(alias, qb);
       aliasToOpInfo.put(alias, op);
       // FIXME: this getParent() call seems to be fishy
-      ctx.getPlanMapper().link(qb.getParseInfo().getSrcForAlias(alias).getParent(), op);
+      if (ctx != null) {
+        ctx.getPlanMapper().link(qb.getParseInfo().getSrcForAlias(alias).getParent(), op);
+      }
     }
 
     if (aliasToOpInfo.isEmpty()) {
