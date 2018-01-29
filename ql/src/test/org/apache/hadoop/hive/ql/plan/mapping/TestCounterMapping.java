@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.ql.plan.mapper.HiveFilterRef;
 import org.apache.hadoop.hive.ql.plan.mapper.HiveTableScanRef;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.SimpleRuntimeStatsSource;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hive.testutils.HiveTestEnvSetup;
@@ -174,11 +174,11 @@ public class TestCounterMapping {
 
     PlanMapper pm0 = getMapperForQuery(driver, "select sum(tu.id_uv),sum(u) from tu join tv on (tu.id_uv = tv.id_uv) where u>1 and v>1");
 
-    Iterator<EquivGroup> itG = pm0.iterateGroups();
+    Iterator<LinkGroup> itG = pm0.iterateGroups();
     int checkedOperators = 0;
     // FIXME: introduce the Operator trimmer mapper!
     while (itG.hasNext()) {
-      EquivGroup g = itG.next();
+      LinkGroup g = itG.next();
       List<HiveFilter> hfs = g.getAll(HiveFilter.class);
       List<OperatorStats> oss = g.getAll(OperatorStats.class);
       List<FilterOperator> fos = g.getAll(FilterOperator.class);

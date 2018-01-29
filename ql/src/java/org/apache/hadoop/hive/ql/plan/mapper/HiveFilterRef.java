@@ -28,7 +28,7 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
 
 import com.google.common.base.Joiner;
 
@@ -92,7 +92,7 @@ public class HiveFilterRef {
   private static class HiveFilterMapper implements GroupTransformer {
 
     @Override
-    public void map(EquivGroup group) {
+    public void map(LinkGroup group) {
       List<HiveFilter> filters = group.getAll(HiveFilter.class);
       if (filters.size() != 1) {
         return;

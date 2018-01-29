@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
 
 // FIXME: seems more like a visitor?
 public interface GroupTransformer {
-  void map(EquivGroup group);
+  void map(LinkGroup group);
 }

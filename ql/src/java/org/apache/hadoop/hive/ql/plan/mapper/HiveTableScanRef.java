@@ -23,7 +23,7 @@ import java.util.Objects;
 
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
 
 public class HiveTableScanRef {
 
@@ -58,7 +58,7 @@ public class HiveTableScanRef {
   private static class HiveTableScanMapper implements GroupTransformer {
 
     @Override
-    public void map(EquivGroup group) {
+    public void map(LinkGroup group) {
       List<HiveTableScan> filters = group.getAll(HiveTableScan.class);
       if (filters.size() != 1) {
         return;

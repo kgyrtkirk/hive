@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hive.testutils.HiveTestEnvSetup;
@@ -107,11 +107,11 @@ public class TestReOptimization {
     String query = "select assert_true_oom(${hiveconf:zzz} > sum(u*v)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
 
     PlanMapper pm = getMapperForQuery(driver, query);
-    Iterator<EquivGroup> itG = pm.iterateGroups();
+    Iterator<LinkGroup> itG = pm.iterateGroups();
     int checkedOperators = 0;
     // FIXME: introduce the Operator trimmer mapper!
     while (itG.hasNext()) {
-      EquivGroup g = itG.next();
+      LinkGroup g = itG.next();
       List<FilterOperator> fos = g.getAll(FilterOperator.class);
       List<OperatorStats> oss = g.getAll(OperatorStats.class);
       // FIXME: oss seems to contain duplicates
@@ -147,11 +147,11 @@ public class TestReOptimization {
     // @formatter:on
     PlanMapper pm = getMapperForQuery(driver, query);
 
-    Iterator<EquivGroup> itG = pm.iterateGroups();
+    Iterator<LinkGroup> itG = pm.iterateGroups();
     int checkedOperators = 0;
     // FIXME: introduce the Operator trimmer mapper!
     while (itG.hasNext()) {
-      EquivGroup g = itG.next();
+      LinkGroup g = itG.next();
       List<FilterOperator> fos = g.getAll(FilterOperator.class);
       List<OperatorStats> oss = g.getAll(OperatorStats.class);
       List<HiveFilter> hfs = g.getAll(HiveFilter.class);

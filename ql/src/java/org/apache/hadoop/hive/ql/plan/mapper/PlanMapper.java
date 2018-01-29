@@ -34,13 +34,13 @@ import com.google.common.annotations.VisibleForTesting;
 // FIXME: consider moving this to a different package
 public class PlanMapper {
 
-  Set<EquivGroup> groups = new HashSet<>();
+  Set<LinkGroup> groups = new HashSet<>();
 
-  private Map<Object, EquivGroup> objectMap = new HashMap<>();
+  private Map<Object, LinkGroup> objectMap = new HashMap<>();
 
   // FIXME: find a better name
   //  @Deprecated
-  public class EquivGroup {
+  public class LinkGroup {
     Set<Object> members = new HashSet<>();
 
     public void add(Object o) {
@@ -61,12 +61,12 @@ public class PlanMapper {
   }
 
   public void link(Object o1, Object o2) {
-    EquivGroup g1 = objectMap.get(o1);
-    EquivGroup g2 = objectMap.get(o2);
+    LinkGroup g1 = objectMap.get(o1);
+    LinkGroup g2 = objectMap.get(o2);
     if (g1 != null && g2 != null && g1 != g2) {
       throw new RuntimeException("equivalence mapping violation");
     }
-    EquivGroup targetGroup = (g1 != null) ? g1 : (g2 != null ? g2 : new EquivGroup());
+    LinkGroup targetGroup = (g1 != null) ? g1 : (g2 != null ? g2 : new LinkGroup());
     groups.add(targetGroup);
     targetGroup.add(o1);
     targetGroup.add(o2);
@@ -74,20 +74,20 @@ public class PlanMapper {
 
   public <T> List<T> getAll(Class<T> clazz) {
     List<T> ret = new ArrayList<>();
-    for (EquivGroup g : groups) {
+    for (LinkGroup g : groups) {
       ret.addAll(g.getAll(clazz));
     }
     return ret;
   }
 
   public void runMapper(GroupTransformer mapper) {
-    for (EquivGroup equivGroup : groups) {
+    for (LinkGroup equivGroup : groups) {
       mapper.map(equivGroup);
     }
   }
 
   public <T> List<T> lookupAll(Class<T> clazz, Object key) {
-    EquivGroup group = objectMap.get(key);
+    LinkGroup group = objectMap.get(key);
     if (group == null) {
       throw new NoSuchElementException(Objects.toString(key));
     }
@@ -105,7 +105,7 @@ public class PlanMapper {
 
   // FIXME: find a more natural way...
   @VisibleForTesting
-  public Iterator<EquivGroup> iterateGroups() {
+  public Iterator<LinkGroup> iterateGroups() {
     return groups.iterator();
 
   }

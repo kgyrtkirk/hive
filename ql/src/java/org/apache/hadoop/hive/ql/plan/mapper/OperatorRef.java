@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
 
 public class OperatorRef {
 
@@ -57,7 +57,7 @@ public class OperatorRef {
   private static class OperatorMapper implements GroupTransformer {
 
     @Override
-    public void map(EquivGroup group) {
+    public void map(LinkGroup group) {
       List<Operator> filters = group.getAll(Operator.class);
       for (Operator op : filters) {
         group.add(new OperatorRef(op));
