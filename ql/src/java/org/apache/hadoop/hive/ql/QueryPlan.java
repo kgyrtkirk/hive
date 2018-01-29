@@ -20,11 +20,8 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -834,16 +831,4 @@ public class QueryPlan implements Serializable {
     return autoCommitValue;
   }
 
-  // FIXME: probably remove these...
-  public static String getQueryMD5(String queryString) throws NoSuchAlgorithmException {
-    MessageDigest  md = MessageDigest.getInstance("MD5");
-    String query = normalizeQuery(queryString);
-    byte[] hash = md.digest(query.getBytes(StandardCharsets.UTF_8));
-    String hashStr = Base64.getEncoder().encodeToString(hash);
-    return hashStr;
-  }
-
-  public static String normalizeQuery(final String queryString) {
-    return queryString.replaceAll("\\s+", " ").replaceAll("`", "").trim().toLowerCase();
-  }
 }
