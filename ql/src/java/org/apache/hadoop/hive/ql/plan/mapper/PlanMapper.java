@@ -30,16 +30,11 @@ import java.util.Set;
 
 import com.google.common.annotations.VisibleForTesting;
 
-// FIXME: rename to EquivGroupMapper?
-// FIXME: consider moving this to a different package
 public class PlanMapper {
 
   Set<LinkGroup> groups = new HashSet<>();
-
   private Map<Object, LinkGroup> objectMap = new HashMap<>();
 
-  // FIXME: find a better name
-  //  @Deprecated
   public class LinkGroup {
     Set<Object> members = new HashSet<>();
 
