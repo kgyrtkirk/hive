@@ -55,11 +55,6 @@ public class ReOptimizeDriver extends AbstractReExecDriver {
   }
 
   @Override
-  @Deprecated
-  protected void finish0() {
-  }
-
-  @Override
   protected boolean shouldReExecute() {
     return retryPossible;
   }
@@ -80,6 +75,7 @@ public class ReOptimizeDriver extends AbstractReExecDriver {
   }
 
   // FIXME: this should be different; or at least interface driven?
+  @Override
   public Context getContext() {
     return coreDriver.getContext();
   }

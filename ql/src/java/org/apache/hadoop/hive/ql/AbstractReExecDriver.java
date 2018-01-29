@@ -199,7 +199,4 @@ public abstract class AbstractReExecDriver implements IDriver {
 
   abstract protected boolean shouldReExecute();
 
-  protected void finish0() {
-  }
-
 }
