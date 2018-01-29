@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -153,6 +153,9 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       numRows = 0;
       cntr = 1;
       logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
+
+      final String vertexName = hconf.get(Operator.CONTEXT_NAME_KEY, "");
+      statsMap.put(Utilities.getVertexCounterName(Counter.RECORDS_OUT_INTERMEDIATE.name(), vertexName), recordCounter);
 
       List<ExprNodeDesc> keys = conf.getKeyCols();
 
@@ -351,7 +354,10 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       // if TopNHashes are active, proceed if not already excluded (i.e order by limit)
       final int firstIndex =
           (reducerHash != null) ? reducerHash.tryStoreKey(firstKey, partKeyNull) : TopNHash.FORWARD;
-      if (firstIndex == TopNHash.EXCLUDE) return; // Nothing to do.
+      if (firstIndex == TopNHash.EXCLUDE)
+       {
+        return; // Nothing to do.
+      }
       // Compute value and hashcode - we'd either store or forward them.
       BytesWritable value = makeValueWritable(row);
 

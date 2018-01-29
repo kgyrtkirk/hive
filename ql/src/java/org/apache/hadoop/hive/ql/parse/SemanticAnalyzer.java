@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -245,6 +245,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.math.IntMath;
 
@@ -267,6 +268,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public static final String VALUES_TMP_TABLE_NAME_PREFIX = "Values__Tmp__Table__";
 
+  /** Marks the temporary table created for a serialized CTE. The table is scoped to the query. */
   static final String MATERIALIZATION_MARKER = "$MATERIALIZATION";
 
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
@@ -1229,12 +1231,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private String processLateralView(QB qb, ASTNode lateralView)
       throws SemanticException {
     int numChildren = lateralView.getChildCount();
-
     assert (numChildren == 2);
+
+    if (!isCBOSupportedLateralView(lateralView)) {
+      queryProperties.setCBOSupportedLateralViews(false);
+    }
+
     ASTNode next = (ASTNode) lateralView.getChild(1);
-
     String alias = null;
-
     switch (next.getToken().getType()) {
     case HiveParser.TOK_TABREF:
       alias = processTable(qb, next);
@@ -1254,6 +1258,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     qb.getParseInfo().addLateralViewForAlias(alias, lateralView);
     qb.addAlias(alias);
     return alias;
+  }
+
+  private String extractLateralViewAlias(ASTNode lateralView) {
+    // Lateral view AST has the following shape:
+    // ^(TOK_LATERAL_VIEW
+    //   ^(TOK_SELECT ^(TOK_SELEXPR ^(TOK_FUNCTION Identifier params) identifier* tableAlias)))
+    ASTNode selExpr = (ASTNode) lateralView.getChild(0).getChild(0);
+    ASTNode astTableAlias = (ASTNode) Iterables.getLast(selExpr.getChildren());
+    return astTableAlias.getChild(0).getText();
   }
 
   /**
@@ -9407,7 +9420,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
 
+  boolean isCBOSupportedLateralView(ASTNode lateralView) {
+    return false;
+  }
+
   boolean continueJoinMerge() {
+    return true;
+  }
+
+  boolean shouldMerge(final QBJoinTree node, final QBJoinTree target) {
+    boolean isNodeOuterJoin=false, isNodeSemiJoin=false, hasNodePostJoinFilters=false;
+    boolean isTargetOuterJoin=false, isTargetSemiJoin=false, hasTargetPostJoinFilters=false;
+
+    isNodeOuterJoin = !node.getNoOuterJoin();
+    isNodeSemiJoin= !node.getNoSemiJoin();
+    hasNodePostJoinFilters = node.getPostJoinFilters().size() !=0;
+
+    isTargetOuterJoin = !target.getNoOuterJoin();
+    isTargetSemiJoin= !target.getNoSemiJoin();
+    hasTargetPostJoinFilters = target.getPostJoinFilters().size() !=0;
+
+    if((hasNodePostJoinFilters && (isNodeOuterJoin || isNodeSemiJoin))
+        || (hasTargetPostJoinFilters && (isTargetOuterJoin || isTargetSemiJoin))) {
+      return false;
+    }
     return true;
   }
 
@@ -9447,8 +9483,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (prevType != null && prevType != currType) {
           break;
         }
-        if ((!node.getNoOuterJoin() && node.getPostJoinFilters().size() != 0) ||
-                (!target.getNoOuterJoin() && target.getPostJoinFilters().size() != 0)) {
+        if(!shouldMerge(node, target)) {
           // Outer joins with post-filtering conditions cannot be merged
           break;
         }
@@ -12032,7 +12067,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private Map<String, String> addDefaultProperties(
       Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat,
-      String qualifiedTableName, List<Order> sortCols) {
+      String qualifiedTableName, List<Order> sortCols, boolean isMaterialization) {
     Map<String, String> retValue;
     if (tblProp == null) {
       retValue = new HashMap<String, String>();
@@ -12056,15 +12091,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         HiveConf.getBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY) &&
         DbTxnManager.class.getCanonicalName().equals(HiveConf.getVar(conf, ConfVars.HIVE_TXN_MANAGER));
     if ((makeInsertOnly || makeAcid)
-        && !isExt && StringUtils.isBlank(storageFormat.getStorageHandler())
+        && !isExt  && !isMaterialization && StringUtils.isBlank(storageFormat.getStorageHandler())
         //don't overwrite user choice if transactional attribute is explicitly set
         && !retValue.containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)) {
-      if(makeInsertOnly) {
+      if (makeInsertOnly) {
         retValue.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
         retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
             TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
       }
-      if(makeAcid) {
+      if (makeAcid) {
         /*for CTAS, TransactionalValidationListener.makeAcid() runs to late to make table Acid
          so the initial write ends up running as non-acid...*/
         try {
@@ -12314,7 +12349,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     switch (command_type) {
 
     case CREATE_TABLE: // REGULAR CREATE TABLE DDL
-      tblProps = addDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols);
+      tblProps = addDefaultProperties(
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
 
       CreateTableDesc crtTblDesc = new CreateTableDesc(dbDotTab, isExt, isTemporary, cols, partCols,
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
@@ -12335,7 +12371,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
 
     case CTLT: // create table like <tbl_name>
-      tblProps = addDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols);
+      tblProps = addDefaultProperties(
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
 
       if (isTemporary) {
         Table likeTable = getTable(likeTableName, false);
@@ -12412,7 +12449,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
-      tblProps = addDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols);
+      tblProps = addDefaultProperties(
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
       tableDesc = new CreateTableDesc(qualifiedTabName[0], dbDotTab, isExt, isTemporary, cols,
           partCols, bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
           rowFormatParams.fieldEscape, rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim,

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -667,7 +667,8 @@ public class DagUtils {
             .setCustomInitializerDescriptor(descriptor).build();
       } else {
         // Not HiveInputFormat, or a custom VertexManager will take care of grouping splits
-        if (vertexHasCustomInput) {
+        if (vertexHasCustomInput && vertexType == VertexType.MULTI_INPUT_UNINITIALIZED_EDGES) {
+          // SMB Join.
           dataSource =
               MultiMRInput.createConfigBuilder(conf, inputFormatClass).groupSplits(false).build();
         } else {
@@ -953,8 +954,7 @@ public class DagUtils {
   }
 
   public static String[] getTempFilesFromConf(Configuration conf) {
-    if (conf == null)
-     {
+    if (conf == null) {
       return new String[0]; // In tests.
     }
     String addedFiles = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
@@ -1068,7 +1068,7 @@ public class DagUtils {
     // returns the location on disc of the jar of this class.
 
     URI uri = DagUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-    if (configuration.getBoolean(ConfVars.HIVE_IN_TEST.varname, false)) {
+    if (configuration.getBoolean(ConfVars.HIVE_IN_TEST_IDE.varname, false)) {
       if (new File(uri.getPath()).isDirectory()) {
         // IDE support for running tez jobs
         uri = createEmptyArchive();

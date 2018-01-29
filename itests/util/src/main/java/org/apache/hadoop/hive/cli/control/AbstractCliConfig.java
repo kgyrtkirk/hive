@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -210,7 +211,7 @@ public abstract class AbstractCliConfig {
     File queryDir = new File(queryDirectory);
 
     // dedup file list
-    Set<File> testFiles = new LinkedHashSet<>();
+    Set<File> testFiles = new TreeSet<>();
     if (queryFile != null && !queryFile.equals("")) {
       // The user may have passed a list of files - comma separated
       for (String qFile : TEST_SPLITTER.split(queryFile)) {

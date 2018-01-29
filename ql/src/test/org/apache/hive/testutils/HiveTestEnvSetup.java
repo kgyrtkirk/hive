@@ -35,6 +35,13 @@ import org.apache.hadoop.hive.ql.plan.mapping.MiniZooKeeperCluster;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.lockmgr.zookeeper.CuratorFrameworkSingleton;
+import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
@@ -57,18 +64,9 @@ import com.google.common.collect.Sets;
  *  <li>invocation order of before calls are "backward"
  *  </ul>
  *
- *  the above are almost entirely in sync with junit concept;
- *  with the addition that this way it easier to communicate with the other rules..
  *
- *  as a matter of fact with junit5 the above is almost entirely possible w/o workarounds...
- *  and TestExtensionContext can be also used to carry HiveTestEnvContext
- *
- *  we can't upgrade to junit5
- *    * unfortunately surefire 2.20.1 is not supported; https://github.com/junit-team/junit5/issues/809
- *    * using 2.19.1 would re-introduce the idea specific remote debug issue
- *  so we should live with this mid-term solution
+ * Later this should be migrated to junit5...when it will be possible; see HIVE-18495
  */
-//FIXME: move this to somewhere else?
 public class HiveTestEnvSetup extends ExternalResource {
 
   static interface IHiveTestRule {
@@ -157,6 +155,7 @@ public class HiveTestEnvSetup extends ExternalResource {
       // FIXME: hiveServer2SiteUrl is not settable?
 
       ctx.hiveConf = new HiveConf(IDriver.class);
+      ctx.hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST_IDE, true);
     }
 
     @Override
