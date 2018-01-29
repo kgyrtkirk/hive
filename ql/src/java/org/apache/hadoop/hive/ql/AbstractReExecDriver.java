@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 public abstract class AbstractReExecDriver implements IDriver {
 
 
-  private class ReExecutionInfoHook implements ExecuteWithHookContext {
+  private class ExecutionInfoHook implements ExecuteWithHookContext {
 
     @Override
     public void run(HookContext hookContext) throws Exception {
@@ -58,13 +58,13 @@ public abstract class AbstractReExecDriver implements IDriver {
       super(conf);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T extends Hook> List<T> getHooks(ConfVars hookConfVar, Class<?> clazz) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
       List<T> ret = Lists.newArrayList();
       ret.addAll(super.getHooks(hookConfVar, clazz));
       if (ExecuteWithHookContext.class.equals(clazz)) {
-        // FIXME: address this warning
-        ret.add((T) new ReExecutionInfoHook());
+        ret.add((T) new ExecutionInfoHook());
         ret.add((T) new StatsXXXHook());
       }
       return ret;
