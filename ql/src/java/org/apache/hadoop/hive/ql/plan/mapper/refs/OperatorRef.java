@@ -16,12 +16,13 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan.mapper;
+package org.apache.hadoop.hive.ql.plan.mapper.refs;
 
 import java.util.List;
 import java.util.Objects;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.plan.mapper.GroupTransformer;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
 
 public class OperatorRef {

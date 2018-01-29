@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import org.apache.hadoop.hive.ql.plan.mapper.refs.HiveFilterRef;
+import org.apache.hadoop.hive.ql.plan.mapper.refs.HiveTableScanRef;
+import org.apache.hadoop.hive.ql.plan.mapper.refs.OperatorRef;
+
 public class PlanMapperProcess {
 
   public static void runPostProcess(PlanMapper planMapper) {

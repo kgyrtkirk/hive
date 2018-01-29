@@ -16,24 +16,50 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan.mapper;
+package org.apache.hadoop.hive.ql.plan.mapper.refs;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlKind;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.plan.mapper.GroupTransformer;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
 
-public class HiveTableScanRef {
+import com.google.common.base.Joiner;
 
-  public static final GroupTransformer MAPPER = new HiveTableScanMapper();
+// represents the first filter above tablescan
+public class HiveFilterRef {
+
+  public static final GroupTransformer MAPPER = new HiveFilterMapper();
 
   // this is just a rough plan/operator indepentent ref
   private String myKey;
 
-  HiveTableScanRef(HiveTableScan scan) {
-    myKey = RelOptUtil.toString(scan);
+
+  HiveFilterRef(HiveFilter filter) {
+    RexNode cond = filter.getCondition();
+    SqlKind k = cond.getKind();
+    if (k == SqlKind.AND) {
+      List<RexNode> pL = new ArrayList<>();
+      List<RexNode> nL = new ArrayList<>();
+      RelOptUtil.decomposeConjunction(cond,pL,nL);
+
+      pL.sort(Comparator.comparing(Object::toString));
+      nL.sort(Comparator.comparing(Object::toString));
+
+
+      myKey += "__filter__ AND(" + Joiner.on(" && ").join(pL) + " &&&& " + Joiner.on(" && ").join(nL) + "\n";
+      myKey += RelOptUtil.toString(filter.getInput());
+    }
+    else {
+      myKey = RelOptUtil.toString(filter);
+    }
   }
 
   @Override
@@ -46,7 +72,7 @@ public class HiveTableScanRef {
     if (obj == null || getClass() != obj.getClass()) {
       return false;
     }
-    final HiveTableScanRef other = (HiveTableScanRef) obj;
+    final HiveFilterRef other = (HiveFilterRef) obj;
     return Objects.equals(myKey, other.myKey);
   }
 
@@ -55,16 +81,22 @@ public class HiveTableScanRef {
     return String.format("REF\n%s", myKey);
   }
 
-  private static class HiveTableScanMapper implements GroupTransformer {
+  private static class HiveFilterMapper implements GroupTransformer {
 
     @Override
     public void map(LinkGroup group) {
-      List<HiveTableScan> filters = group.getAll(HiveTableScan.class);
+      List<HiveFilter> filters = group.getAll(HiveFilter.class);
       if (filters.size() != 1) {
         return;
       }
-      HiveTableScan scan = filters.get(0);
-      group.add(new HiveTableScanRef(scan));
+      HiveFilter filter = filters.get(0);
+      if (filter.getChildExps().size() == 1 && filter.getInput() instanceof HiveTableScan) {
+        group.add(new HiveFilterRef(filter));
+      }
     }
+  }
+
+  public static HiveFilterRef of(HiveFilter filter) {
+    return new HiveFilterRef(filter);
   }
 }

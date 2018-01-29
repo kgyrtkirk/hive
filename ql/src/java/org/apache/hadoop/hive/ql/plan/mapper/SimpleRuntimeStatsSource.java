@@ -24,6 +24,8 @@ import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.plan.mapper.refs.HiveFilterRef;
+import org.apache.hadoop.hive.ql.plan.mapper.refs.OperatorRef;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 public class SimpleRuntimeStatsSource implements RuntimeStatsSource {
