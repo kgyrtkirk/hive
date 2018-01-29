@@ -60,22 +60,13 @@ public class TestReOptimization {
     dropTables(driver);
     String cmds[] = {
         // @formatter:off
-        "create table s (x int)",
-        "insert into s values (1),(2),(3),(4),(5),(6),(7),(8),(9),(10)",
         "create table tu(id_uv int,id_uw int,u int)",
         "create table tv(id_uv int,v int)",
         "create table tw(id_uw int,w int)",
 
-        "from s\n" +
-        "insert overwrite table tu\n" +
-        "        select x,x,x\n" +
-        "        where x<=6 or x=10\n" +
-        "insert overwrite table tv\n" +
-        "        select x,x\n" +
-        "        where x<=3 or x=10\n" +
-        "insert overwrite table tw\n" +
-        "        select x,x\n" +
-        "",
+        "insert into tu values (10,10,10),(1,1,1),(2,2,2),(3,3,3),(4,4,4),(5,5,5),(6,6,6)",
+        "insert into tv values (10,10),(1,1),(2,2),(3,3)",
+        "insert into tw values (10,10),(1,1),(2,2),(3,3),(4,4),(5,5),(6,6),(7,7),(8,8),(9,9)",
         // @formatter:on
     };
     for (String cmd : cmds) {
@@ -91,7 +82,7 @@ public class TestReOptimization {
   }
 
   public static void dropTables(IDriver driver) throws Exception {
-    String tables[] = { "s", "tu", "tv", "tw" };
+    String tables[] = { "tu", "tv", "tw" };
     for (String t : tables) {
       int ret = driver.run("drop table if exists " + t).getResponseCode();
       assertEquals("Checking command success", 0, ret);
