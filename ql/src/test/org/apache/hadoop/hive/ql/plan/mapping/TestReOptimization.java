@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
+import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -197,7 +198,7 @@ public class TestReOptimization {
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    HiveConf.setVar(conf, HiveConf.ConfVars.POSTEXECHOOKS, "org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook");
+    HiveConf.setVar(conf, HiveConf.ConfVars.POSTEXECHOOKS, OperatorStatsReaderHook.class.getName());
     SessionState.start(conf);
 
     IDriver driver = DriverFactory.newDriver(conf);
