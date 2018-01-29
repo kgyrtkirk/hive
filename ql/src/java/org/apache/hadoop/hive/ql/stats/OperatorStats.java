@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.stats;
 
-/**
- *
- */
 // FIXME: move this class
 public class OperatorStats {
   private String operatorId;

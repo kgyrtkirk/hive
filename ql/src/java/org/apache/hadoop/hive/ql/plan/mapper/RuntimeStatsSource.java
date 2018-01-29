@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.plan.mapper;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.plan.OperatorStats;
+import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 public interface RuntimeStatsSource extends StatsSource {
   @Deprecated
