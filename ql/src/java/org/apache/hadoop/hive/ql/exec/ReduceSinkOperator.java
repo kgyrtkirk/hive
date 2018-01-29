@@ -31,7 +31,6 @@ import java.util.Random;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -50,7 +49,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -153,9 +151,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       numRows = 0;
       cntr = 1;
       logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
-
-      final String vertexName = hconf.get(Operator.CONTEXT_NAME_KEY, "");
-      statsMap.put(Utilities.getVertexCounterName(Counter.RECORDS_OUT_INTERMEDIATE.name(), vertexName), recordCounter);
 
       List<ExprNodeDesc> keys = conf.getKeyCols();
 
