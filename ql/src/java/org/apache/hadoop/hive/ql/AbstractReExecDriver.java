@@ -128,7 +128,6 @@ public abstract class AbstractReExecDriver implements IDriver {
   public CommandProcessorResponse run() throws CommandNeedRetryException {
     String firstCommand = currentQuery;
     boolean forceRexec = false;
-    // FIXME: new var?
     if (coreDriver.getConf().getBoolean("hive.query.reexecution.explain", false)) {
       Pattern p = Pattern.compile("^[ ]*explain[ ]+(analyze[ ]+|)", Pattern.CASE_INSENSITIVE);
       Matcher m = p.matcher(currentQuery);
