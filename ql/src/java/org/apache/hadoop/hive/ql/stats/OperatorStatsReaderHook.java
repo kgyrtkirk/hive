@@ -16,10 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql;
+package org.apache.hadoop.hive.ql.stats;
 
 import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
@@ -34,9 +35,9 @@ import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StatsXXXHook implements ExecuteWithHookContext {
+public class OperatorStatsReaderHook implements ExecuteWithHookContext {
 
-  private static final Logger LOG = LoggerFactory.getLogger(StatsXXXHook.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OperatorStatsReaderHook.class);
 
   @Override
   public void run(HookContext hookContext) throws Exception {
@@ -70,7 +71,6 @@ public class StatsXXXHook implements ExecuteWithHookContext {
 
             if (operatorStats != null) {
               hookContext.getContext().getPlanMapper().link(op, operatorStats);
-              //              opStats.put(operatorId, operatorStats);
             } else {
               LOG.warn("Unable to get statistics for vertex: {} opId: {} groupName: {}", vertexName, operatorId, groupName);
             }

@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.hooks.Hook;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HooksLoader;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 
 public abstract class AbstractReExecDriver implements IDriver {
 
@@ -65,7 +66,7 @@ public abstract class AbstractReExecDriver implements IDriver {
       ret.addAll(super.getHooks(hookConfVar, clazz));
       if (ExecuteWithHookContext.class.equals(clazz)) {
         ret.add((T) new ExecutionInfoHook());
-        ret.add((T) new StatsXXXHook());
+        ret.add((T) new OperatorStatsReaderHook());
       }
       return ret;
     }
