@@ -28,7 +28,6 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -73,12 +72,11 @@ public class HookContext {
   private final boolean isHiveServerQuery;
   private final PerfLogger perfLogger;
   private final QueryInfo queryInfo;
-  private Context ctx;
 
   public HookContext(QueryPlan queryPlan, QueryState queryState,
       Map<String, ContentSummary> inputPathToContentSummary, String userName, String ipAddress,
       String hiveInstanceAddress, String operationId, String sessionId, String threadId,
-      boolean isHiveServerQuery, PerfLogger perfLogger, QueryInfo queryInfo, Context ctx) throws Exception {
+      boolean isHiveServerQuery, PerfLogger perfLogger, QueryInfo queryInfo) throws Exception {
     this.queryPlan = queryPlan;
     this.queryState = queryState;
     this.conf = queryState.getConf();
@@ -98,7 +96,6 @@ public class HookContext {
     this.isHiveServerQuery = isHiveServerQuery;
     this.perfLogger = perfLogger;
     this.queryInfo = queryInfo;
-    this.ctx = ctx;
   }
 
   public QueryPlan getQueryPlan() {
@@ -239,11 +236,5 @@ public class HookContext {
 
   public QueryInfo getQueryInfo() {
     return queryInfo;
-  }
-
-  // FIXME: hide this...we don't want to invite users to get access to this
-  @Deprecated
-  public Context getContext() {
-    return ctx;
   }
 }

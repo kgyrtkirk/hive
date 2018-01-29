@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
+import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.tez.common.counters.TezCounter;
@@ -69,7 +70,7 @@ public class OperatorStatsReaderHook implements ExecuteWithHookContext {
             }
 
             if (operatorStats != null) {
-              hookContext.getContext().getPlanMapper().link(op, operatorStats);
+              ((PrivateHookContext) hookContext).getContext().getPlanMapper().link(op, operatorStats);
             } else {
               LOG.warn("Unable to get statistics for vertex: {} opId: {} groupName: {}", vertexName, operatorId, groupName);
             }
