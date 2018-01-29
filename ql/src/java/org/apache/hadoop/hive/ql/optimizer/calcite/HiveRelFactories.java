@@ -141,22 +141,8 @@ public class HiveRelFactories {
           return newFilter;
         }
       }
-      //      RelNode scanCandidate = unboxed(child);
-      //      if(scanCandidate instanceof HiveTableScan) {
-      //        HiveTableScan hiveTableScan = (HiveTableScan) scanCandidate;
-      //        RelOptHiveTable tableScan = (RelOptHiveTable) hiveTableScan.getTable();
-      //        tableScan.getRowCount();
-      //      }
       return filter;
     }
-
-    //    private RelNode unboxed(RelNode child) {
-    //      if (HepRelVertex.class.isAssignableFrom(child.getClass())) {
-    //        HepRelVertex hep = (HepRelVertex) child;
-    //        return hep.getCurrentRel();
-    //      }
-    //      return child;
-    //    }
   }
 
   private static class HiveJoinFactoryImpl implements JoinFactory {
