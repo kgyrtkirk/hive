@@ -47,7 +47,6 @@ public class ExplainConfiguration {
   private boolean vectorization = false;
   private boolean vectorizationOnly = false;
   private VectorizationDetailLevel vectorizationDetailLevel = VectorizationDetailLevel.SUMMARY;
-  private String query;
 
   private Path explainRootPath;
   private Map<String, Long> opIdToRuntimeNumRows;
@@ -152,13 +151,5 @@ public class ExplainConfiguration {
 
   public void setOpIdToRuntimeNumRows(Map<String, Long> opIdToRuntimeNumRows) {
     this.opIdToRuntimeNumRows = opIdToRuntimeNumRows;
-  }
-
-  public String getQuery() {
-    return query;
-  }
-
-  public void setQuery(final String query) {
-    this.query = query;
   }
 }
