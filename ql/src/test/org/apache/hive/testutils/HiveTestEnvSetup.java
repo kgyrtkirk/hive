@@ -54,6 +54,7 @@ import com.google.common.collect.Sets;
 /**
  * Helps in setting up environments to run high level hive tests
  *
+ * For a sample testcase see {@link TestHiveTestEnvSetup}!
  * Because setting up such a complex environment is a bit more sophisticated than it should;
  * this class introduces some helper concepts beyond what juni4 has
  *

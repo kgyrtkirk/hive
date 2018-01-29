@@ -730,7 +730,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     statsMap.put(getCounterName(Counter.RECORDS_OUT_INTERMEDIATE, hconf), recordCounter);
     this.runTimeNumRows = 0;
 
-
     reporter = null;
 
     try {
