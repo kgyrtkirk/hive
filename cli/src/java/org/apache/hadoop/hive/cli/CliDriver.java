@@ -69,7 +69,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.tez.TezJobExecHelper;
@@ -279,10 +278,7 @@ public class CliDriver {
               ret = 1;
             }
 
-            int cret = qp.close();
-            if (ret == 0) {
-              ret = cret;
-            }
+            qp.close();
 
             if (out instanceof FetchConverter) {
               ((FetchConverter)out).fetchFinished();
@@ -398,7 +394,7 @@ public class CliDriver {
 
       // we can not use "split" function directly as ";" may be quoted
       List<String> commands = splitSemiColon(line);
-      
+
       String command = "";
       for (String oneCmd : commands) {
 
@@ -430,7 +426,7 @@ public class CliDriver {
       }
     }
   }
-  
+
   public static List<String> splitSemiColon(String line) {
     boolean insideSingleQuote = false;
     boolean insideDoubleQuote = false;
