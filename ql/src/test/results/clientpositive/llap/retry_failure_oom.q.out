@@ -8,12 +8,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tx
 PREHOOK: query: insert into tx values (1,'non_existent_file')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tx
 POSTHOOK: query: insert into tx values (1,'non_existent_file')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tx
-POSTHOOK: Lineage: tx.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: tx.f SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: tx.a SCRIPT []
+POSTHOOK: Lineage: tx.f SCRIPT []
 PREHOOK: query: select assert_true_oom(1 > a) from tx group by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tx
