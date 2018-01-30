@@ -2362,6 +2362,8 @@ public class StatsRulesProcFactory {
                 LOG.debug("[0] STATS-" + op.toString() + ": " + stats.extendedToString());
               }
             }
+            stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, op);
+
             op.getConf().setStatistics(stats);
           }
         }
