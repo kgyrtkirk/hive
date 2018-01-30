@@ -317,7 +317,7 @@ public class Statistics implements Serializable {
     if (numRows == 0) {
       return ret;
     }
-    // FIXME: using real scaling by new/old ration might yield better results?
+    // FIXME: using scaling by new/old ratio might yield better results?
     ret.numRows = newRowCount;
     ret.dataSize = StatsUtils.safeMult(getAvgRowSize(), newRowCount);
     return ret;
