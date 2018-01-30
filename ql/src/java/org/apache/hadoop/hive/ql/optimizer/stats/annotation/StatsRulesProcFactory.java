@@ -2498,6 +2498,7 @@ public class StatsRulesProcFactory {
 
     Statistics outStats = stats.clone();
     outStats = outStats.scaleToRowCount(os.get().getOutputRecords(), false);
+    outStats.setRuntimeStats(true);
     return outStats;
   }
 
