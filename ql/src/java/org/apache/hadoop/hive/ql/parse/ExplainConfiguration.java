@@ -152,5 +152,4 @@ public class ExplainConfiguration {
   public void setOpIdToRuntimeNumRows(Map<String, Long> opIdToRuntimeNumRows) {
     this.opIdToRuntimeNumRows = opIdToRuntimeNumRows;
   }
-
 }

@@ -126,8 +126,8 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     // step 1 (ANALYZE_STATE.RUNNING), run the query and collect the runtime #rows
     // step 2 (ANALYZE_STATE.ANALYZING), explain the query and provide the runtime #rows collected.
     if (config.getAnalyze() == AnalyzeState.RUNNING) {
-      String query = ctx.getTokenRewriteStream().toString(input.getTokenStartIndex(),
-          input.getTokenStopIndex());
+      // This is the actual query without the explain keyword + options
+      String query = ctx.getTokenRewriteStream().toString(input.getTokenStartIndex(), input.getTokenStopIndex());
       LOG.info("Explain analyze (running phase) for query " + query);
       Context runCtx = null;
       try {

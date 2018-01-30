@@ -22,6 +22,7 @@ import org.apache.calcite.plan.Context;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 
 import java.util.Set;
 
@@ -32,13 +33,15 @@ public class HivePlannerContext implements Context {
   private CalciteConnectionConfig calciteConfig;
   private SubqueryConf subqueryConfig;
   private HiveConfPlannerContext isCorrelatedColumns;
+  private StatsSource statsSource;
 
   public HivePlannerContext(HiveAlgorithmsConf algoConfig, HiveRulesRegistry registry,
       CalciteConnectionConfig calciteConfig, Set<RelNode> corrScalarRexSQWithAgg,
-      Set<RelNode> scalarAggNoGbyWindowing, HiveConfPlannerContext isCorrelatedColumns) {
+      Set<RelNode> scalarAggNoGbyWindowing, HiveConfPlannerContext isCorrelatedColumns, StatsSource statsSource) {
     this.algoConfig = algoConfig;
     this.registry = registry;
     this.calciteConfig = calciteConfig;
+    this.statsSource = statsSource;
     // this is to keep track if a subquery is correlated and contains aggregate
     // this is computed in CalcitePlanner while planning and is later required by subuery remove rule
     // hence this is passed using HivePlannerContext
@@ -46,6 +49,7 @@ public class HivePlannerContext implements Context {
     this.isCorrelatedColumns = isCorrelatedColumns;
   }
 
+  @Override
   public <T> T unwrap(Class<T> clazz) {
     if (clazz.isInstance(algoConfig)) {
       return clazz.cast(algoConfig);
@@ -63,5 +67,9 @@ public class HivePlannerContext implements Context {
       return clazz.cast(isCorrelatedColumns);
     }
     return null;
+  }
+
+  public StatsSource getStatsSource() {
+    return statsSource;
   }
 }

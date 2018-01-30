@@ -121,6 +121,7 @@ public final class OpProcFactory {
         removeOperator(operator);
       }
       owi.getCandidateFilterOps().remove(operator);
+      owi.getRepresentedFilterOps().add((FilterOperator) operator);
     }
     if (operator.getChildOperators() != null) {
       List<Operator<? extends OperatorDesc>> children =
@@ -135,6 +136,7 @@ public final class OpProcFactory {
     for (FilterOperator operator : owi.getCandidateFilterOps()) {
       removeOperator(operator);
     }
+    owi.getRepresentedFilterOps().addAll(owi.getCandidateFilterOps());
     owi.getCandidateFilterOps().clear();
   }
 
@@ -651,6 +653,7 @@ public final class OpProcFactory {
   }
 
   public static class ReduceSinkPPD extends DefaultPPD implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
       super.process(nd, stack, procCtx, nodeOutputs);
@@ -788,7 +791,9 @@ public final class OpProcFactory {
      * @param ewi
      */
     protected void logExpr(Node nd, ExprWalkerInfo ewi) {
-      if (!LOG.isDebugEnabled()) return;
+      if (!LOG.isDebugEnabled()) {
+        return;
+      }
       for (Entry<String, List<ExprNodeDesc>> e : ewi.getFinalCandidates().entrySet()) {
         StringBuilder sb = new StringBuilder("Pushdown predicates of ").append(nd.getName())
             .append(" for alias ").append(e.getKey()).append(": ");
@@ -925,6 +930,10 @@ public final class OpProcFactory {
     op.setChildOperators(null);
     Operator<FilterDesc> output = OperatorFactory.getAndMakeChild(
         new FilterDesc(condn, false), new RowSchema(inputRS.getSignature()), op);
+    if (preds.size() == 1 && owi.getRepresentedFilterOps().size() == 1) {
+      // in this case a single filter
+      owi.getParseContext().getContext().getPlanMapper().link(owi.getRepresentedFilterOps().get(0), output);
+    }
     output.setChildOperators(originalChilren);
     for (Operator<? extends OperatorDesc> ch : originalChilren) {
       List<Operator<? extends OperatorDesc>> parentOperators = ch

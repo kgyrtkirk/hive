@@ -69,7 +69,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.tez.TezJobExecHelper;
@@ -183,17 +182,22 @@ public class CliDriver {
       }
     }  else { // local mode
       try {
-        CommandProcessor proc = CommandProcessorFactory.get(tokens, (HiveConf) conf);
-        if (proc instanceof IDriver) {
-          // Let Driver strip comments using sql parser
-          ret = processLocalCmd(cmd, proc, ss);
-        } else {
-          ret = processLocalCmd(cmd_trimmed, proc, ss);
+
+        try (CommandProcessor proc = CommandProcessorFactory.get(tokens, (HiveConf) conf)) {
+          if (proc instanceof IDriver) {
+            // Let Driver strip comments using sql parser
+            ret = processLocalCmd(cmd, proc, ss);
+          } else {
+            ret = processLocalCmd(cmd_trimmed, proc, ss);
+          }
         }
       } catch (SQLException e) {
         console.printError("Failed processing command " + tokens[0] + " " + e.getLocalizedMessage(),
           org.apache.hadoop.util.StringUtils.stringifyException(e));
         ret = 1;
+      }
+      catch (Exception e) {
+        throw new RuntimeException(e);
       }
     }
 
@@ -279,10 +283,7 @@ public class CliDriver {
               ret = 1;
             }
 
-            int cret = qp.close();
-            if (ret == 0) {
-              ret = cret;
-            }
+            qp.close();
 
             if (out instanceof FetchConverter) {
               ((FetchConverter)out).fetchFinished();
@@ -398,7 +399,7 @@ public class CliDriver {
 
       // we can not use "split" function directly as ";" may be quoted
       List<String> commands = splitSemiColon(line);
-      
+
       String command = "";
       for (String oneCmd : commands) {
 
@@ -417,11 +418,9 @@ public class CliDriver {
         lastRet = ret;
         boolean ignoreErrors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS);
         if (ret != 0 && !ignoreErrors) {
-          CommandProcessorFactory.clean((HiveConf) conf);
           return ret;
         }
       }
-      CommandProcessorFactory.clean((HiveConf) conf);
       return lastRet;
     } finally {
       // Once we are done processing the line, restore the old handler
@@ -430,7 +429,7 @@ public class CliDriver {
       }
     }
   }
-  
+
   public static List<String> splitSemiColon(String line) {
     boolean insideSingleQuote = false;
     boolean insideDoubleQuote = false;

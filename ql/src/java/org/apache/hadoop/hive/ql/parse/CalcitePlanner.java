@@ -246,6 +246,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
@@ -264,7 +266,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.joda.time.Interval;
-
 import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
@@ -341,11 +342,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   public static RelOptPlanner createPlanner(HiveConf conf) {
-    return createPlanner(conf, new HashSet<RelNode>(), new HashSet<RelNode>());
+    return createPlanner(conf, new HashSet<RelNode>(), new HashSet<RelNode>(), new EmptyStatsSource());
   }
 
   private static RelOptPlanner createPlanner(
-      HiveConf conf, Set<RelNode> corrScalarRexSQWithAgg, Set<RelNode> scalarAggNoGbyNoWin) {
+      HiveConf conf, Set<RelNode> corrScalarRexSQWithAgg, Set<RelNode> scalarAggNoGbyNoWin,
+      StatsSource statsSource) {
     final Double maxSplitSize = (double) HiveConf.getLongVar(
             conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
     final Double maxMemory = (double) HiveConf.getLongVar(
@@ -362,7 +364,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     CalciteConnectionConfig calciteConfig = new CalciteConnectionConfigImpl(calciteConfigProperties);
     boolean isCorrelatedColumns = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_CORRELATED_MULTI_KEY_JOINS);
     HivePlannerContext confContext = new HivePlannerContext(algorithmsConf, registry, calciteConfig,
-               corrScalarRexSQWithAgg, scalarAggNoGbyNoWin, new HiveConfPlannerContext(isCorrelatedColumns));
+        corrScalarRexSQWithAgg, scalarAggNoGbyNoWin, new HiveConfPlannerContext(isCorrelatedColumns), statsSource);
     return HiveVolcanoPlanner.createPlanner(confContext);
   }
 
@@ -837,21 +839,28 @@ public class CalcitePlanner extends SemanticAnalyzer {
     // Not ok to run CBO, build error message.
     String msg = "";
     if (verbose) {
-      if (queryProperties.hasClusterBy())
+      if (queryProperties.hasClusterBy()) {
         msg += "has cluster by; ";
-      if (queryProperties.hasDistributeBy())
+      }
+      if (queryProperties.hasDistributeBy()) {
         msg += "has distribute by; ";
-      if (queryProperties.hasSortBy())
+      }
+      if (queryProperties.hasSortBy()) {
         msg += "has sort by; ";
-      if (queryProperties.hasPTF())
+      }
+      if (queryProperties.hasPTF()) {
         msg += "has PTF; ";
-      if (queryProperties.usesScript())
+      }
+      if (queryProperties.usesScript()) {
         msg += "uses scripts; ";
-      if (queryProperties.hasLateralViews())
+      }
+      if (queryProperties.hasLateralViews()) {
         msg += "has lateral views; ";
+      }
 
-      if (msg.isEmpty())
+      if (msg.isEmpty()) {
         msg += "has some unspecified limitations; ";
+      }
     }
     return msg;
   }
@@ -962,7 +971,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
     if (runCBO) {
       int lastDot = colName.lastIndexOf('.');
       if (lastDot < 0)
+       {
         return colName; // alias is not fully qualified
+      }
       String nqColumnName = colName.substring(lastDot + 1);
       STATIC_LOG.debug("Replacing " + colName + " (produced by CBO) by " + nqColumnName);
       return nqColumnName;
@@ -1109,16 +1120,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
           ASTNode next = searchQueue.poll();
           found = next.getType() == token;
           if (found) {
-            if (i == tokens.length - 1)
+            if (i == tokens.length - 1) {
               return next;
+            }
             searchQueue.clear();
           }
           for (int j = 0; j < next.getChildCount(); ++j) {
             searchQueue.add((ASTNode) next.getChild(j));
           }
         }
-        if (!found)
+        if (!found) {
           return null;
+        }
       }
       return null;
     }
@@ -1128,7 +1141,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       searchQueue.add(ast);
       while (!searchQueue.isEmpty()) {
         ASTNode next = searchQueue.poll();
-        if (next.getType() == token) return next;
+        if (next.getType() == token) {
+          return next;
+        }
         for (int j = 0; j < next.getChildCount(); ++j) {
           searchQueue.add((ASTNode) next.getChild(j));
         }
@@ -1142,7 +1157,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       while (!searchQueue.isEmpty()) {
         ASTNode next = searchQueue.poll();
         for (int i = 0; i < tokens.length; ++i) {
-          if (next.getType() == tokens[i]) return next;
+          if (next.getType() == tokens[i]) {
+            return next;
+          }
         }
         for (int i = 0; i < next.getChildCount(); ++i) {
           searchQueue.add((ASTNode) next.getChild(i));
@@ -1178,7 +1195,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
     calcitePlannerAction = new CalcitePlannerAction(
         prunedPartitions,
-        ctx.getOpContext().getColStatsCache(),
+        ctx.getStatsSource(),
         this.columnAccessInfo);
 
     try {
@@ -1200,7 +1217,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   ASTNode getOptimizedAST() throws SemanticException {
     RelNode optimizedOptiqPlan = logicalPlan();
     ASTNode optiqOptimizedAST = ASTConverter.convert(optimizedOptiqPlan, resultSchema,
-            HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COLUMN_ALIGNMENT));
+            HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COLUMN_ALIGNMENT),ctx.getPlanMapper());
     return optiqOptimizedAST;
   }
 
@@ -1218,7 +1235,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
     calcitePlannerAction = new CalcitePlannerAction(
         prunedPartitions,
-        ctx.getOpContext().getColStatsCache(),
+        ctx.getStatsSource(),
         this.columnAccessInfo);
 
     try {
@@ -1327,11 +1344,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     public static boolean resetCause(Throwable target, Throwable newCause) {
       try {
-        if (MESSAGE_FIELD == null)
+        if (MESSAGE_FIELD == null) {
           return false;
+        }
         Field field = (target instanceof InvocationTargetException) ? TARGET_FIELD : CAUSE_FIELD;
-        if (field == null)
+        if (field == null) {
           return false;
+        }
 
         Throwable oldCause = target.getCause();
         String oldMsg = target.getMessage();
@@ -1398,13 +1417,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
     // just last one.
     LinkedHashMap<RelNode, RowResolver>                   relToHiveRR                   = new LinkedHashMap<RelNode, RowResolver>();
     LinkedHashMap<RelNode, ImmutableMap<String, Integer>> relToHiveColNameCalcitePosMap = new LinkedHashMap<RelNode, ImmutableMap<String, Integer>>();
+    private final StatsSource statsSource;
 
     CalcitePlannerAction(
         Map<String, PrunedPartitionList> partitionCache,
-        Map<String, ColumnStatsList> colStatsCache,
+        StatsSource statsSource,
         ColumnAccessInfo columnAccessInfo) {
       this.partitionCache = partitionCache;
-      this.colStatsCache = colStatsCache;
+      this.statsSource = statsSource;
+      this.colStatsCache = ctx.getOpContext().getColStatsCache();
       this.columnAccessInfo = columnAccessInfo;
     }
 
@@ -1418,7 +1439,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       /*
        * recreate cluster, so that it picks up the additional traitDef
        */
-      RelOptPlanner planner = createPlanner(conf, corrScalarRexSQWithAgg, scalarAggNoGbyNoWin);
+      RelOptPlanner planner = createPlanner(conf, corrScalarRexSQWithAgg, scalarAggNoGbyNoWin, statsSource);
       final RexBuilder rexBuilder = cluster.getRexBuilder();
       final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
 
@@ -1935,8 +1956,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         programBuilder = programBuilder.addRuleCollection(ImmutableList.copyOf(rules));
       } else {
         // TODO: Should this be also TOP_DOWN?
-        for (RelOptRule r : rules)
+        for (RelOptRule r : rules) {
           programBuilder.addRuleInstance(r);
+        }
       }
 
       // Create planner and copy context
@@ -3161,10 +3183,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 3.2 Rank functions type is 'int'/'double'
       if (FunctionRegistry.isRankingFunction(aggName)) {
-        if (aggName.equalsIgnoreCase("percent_rank"))
+        if (aggName.equalsIgnoreCase("percent_rank")) {
           udafRetType = TypeInfoFactory.doubleTypeInfo;
-        else
+        } else {
           udafRetType = TypeInfoFactory.intTypeInfo;
+        }
       } else {
         // 3.3 Try obtaining UDAF evaluators to determine the ret type
         try {
@@ -3311,9 +3334,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ASTNode grpbyExpr = grpByAstExprs.get(i);
             Map<ASTNode, ExprNodeDesc> astToExprNDescMap = genAllExprNodeDesc(grpbyExpr, groupByInputRowResolver);
             ExprNodeDesc grpbyExprNDesc = astToExprNDescMap.get(grpbyExpr);
-            if (grpbyExprNDesc == null)
+            if (grpbyExprNDesc == null) {
               throw new CalciteSemanticException("Invalid Column Reference: " + grpbyExpr.dump(),
                   UnsupportedFeature.Invalid_column_reference);
+            }
 
             addToGBExpr(groupByOutputRowResolver, groupByInputRowResolver, grpbyExpr,
                 grpbyExprNDesc, gbExprNDescLst, outputColumnNames);
@@ -3452,7 +3476,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           ASTNode ref = (ASTNode) nullObASTExpr.getChild(0);
           Map<ASTNode, ExprNodeDesc> astToExprNDescMap = null;
           ExprNodeDesc obExprNDesc = null;
-          
+
           boolean isBothByPos = HiveConf.getBoolVar(conf, ConfVars.HIVE_GROUPBY_ORDERBY_POSITION_ALIAS);
           boolean isObyByPos = isBothByPos
               || HiveConf.getBoolVar(conf, ConfVars.HIVE_ORDERBY_POSITION_ALIAS);
@@ -3701,9 +3725,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RexNode amtLiteral = null;
         SqlCall sc = null;
 
-        if (amt != null)
+        if (amt != null) {
           amtLiteral = cluster.getRexBuilder().makeLiteral(new Integer(bs.getAmt()),
               cluster.getTypeFactory().createSqlType(SqlTypeName.INTEGER), true);
+        }
 
         switch (bs.getDirection()) {
         case PRECEDING:
@@ -3807,13 +3832,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
       getQBParseInfo(qb);
       WindowingSpec wSpec = (!qb.getAllWindowingSpecs().isEmpty()) ? qb.getAllWindowingSpecs()
           .values().iterator().next() : null;
-      if (wSpec == null)
+      if (wSpec == null) {
         return null;
+      }
       // 1. Get valid Window Function Spec
       wSpec.validateAndMakeEffective();
       List<WindowExpressionSpec> windowExpressions = wSpec.getWindowExpressions();
-      if (windowExpressions == null || windowExpressions.isEmpty())
+      if (windowExpressions == null || windowExpressions.isEmpty()) {
         return null;
+      }
 
       RowResolver inputRR = this.relToHiveRR.get(srcRel);
       // 2. Get RexNodes for original Projections from below
@@ -3925,7 +3952,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       String selClauseName = qbp.getClauseNames().iterator().next();
       Tree selExpr0 = qbp.getSelForClause(selClauseName).getChild(0);
 
-      if (selExpr0.getType() != HiveParser.QUERY_HINT) return;
+      if (selExpr0.getType() != HiveParser.QUERY_HINT) {
+        return;
+      }
       String hint = ctx.getTokenRewriteStream().toString(
           selExpr0.getTokenStartIndex(), selExpr0.getTokenStopIndex());
       LOG.debug("Handling query hints: " + hint);

@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
@@ -71,6 +70,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConvert
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,16 +92,19 @@ public class ASTConverter {
 
   private long             derivedTableCount;
 
-  ASTConverter(RelNode root, long dtCounterInitVal) {
+  private PlanMapper planMapper;
+
+  ASTConverter(RelNode root, long dtCounterInitVal, PlanMapper planMapper) {
     this.root = root;
     hiveAST = new HiveAST();
     this.derivedTableCount = dtCounterInitVal;
+    this.planMapper = planMapper;
   }
 
-  public static ASTNode convert(final RelNode relNode, List<FieldSchema> resultSchema, boolean alignColumns)
+  public static ASTNode convert(final RelNode relNode, List<FieldSchema> resultSchema, boolean alignColumns, PlanMapper planMapper)
       throws CalciteSemanticException {
     RelNode root = PlanModifierForASTConv.convertOpTree(relNode, resultSchema, alignColumns);
-    ASTConverter c = new ASTConverter(root, 0);
+    ASTConverter c = new ASTConverter(root, 0, planMapper);
     return c.convert();
   }
 
@@ -124,6 +127,7 @@ public class ASTConverter {
     if (where != null) {
       ASTNode cond = where.getCondition().accept(new RexVisitor(schema));
       hiveAST.where = ASTBuilder.where(cond);
+      planMapper.link(cond, where);
     }
 
     /*
@@ -296,8 +300,9 @@ public class ASTConverter {
           // 3 Convert OB expr (OB Expr is usually an input ref except for top
           // level OB; top level OB will have RexCall kept in a map.)
           obExpr = null;
-          if (obRefToCallMap != null)
+          if (obRefToCallMap != null) {
             obExpr = obRefToCallMap.get(c.getFieldIndex());
+          }
 
           if (obExpr != null) {
             astCol = obExpr.accept(new RexVisitor(schema));
@@ -344,6 +349,7 @@ public class ASTConverter {
       TableScan f = (TableScan) r;
       s = new Schema(f);
       ast = ASTBuilder.table(f);
+      planMapper.link(ast, f);
     } else if (r instanceof DruidQuery) {
       DruidQuery f = (DruidQuery) r;
       s = new Schema(f);
@@ -376,16 +382,16 @@ public class ASTConverter {
       }
     } else if (r instanceof Union) {
       Union u = ((Union) r);
-      ASTNode left = new ASTConverter(((Union) r).getInput(0), this.derivedTableCount).convert();
+      ASTNode left = new ASTConverter(((Union) r).getInput(0), this.derivedTableCount, planMapper).convert();
       for (int ind = 1; ind < u.getInputs().size(); ind++) {
         left = getUnionAllAST(left, new ASTConverter(((Union) r).getInput(ind),
-            this.derivedTableCount).convert());
+            this.derivedTableCount, planMapper).convert());
         String sqAlias = nextAlias();
         ast = ASTBuilder.subQuery(left, sqAlias);
         s = new Schema((Union) r, sqAlias);
       }
     } else {
-      ASTConverter src = new ASTConverter(r, this.derivedTableCount);
+      ASTConverter src = new ASTConverter(r, this.derivedTableCount, planMapper);
       ASTNode srcAST = src.convert();
       String sqAlias = nextAlias();
       s = src.getRowSchema(sqAlias);
@@ -487,8 +493,11 @@ public class ASTConverter {
             // of value/type
             @Override
             public int compare(RexLiteral o1, RexLiteral o2) {
-              if(o1 == o2) return 0;
-              else return 1;
+              if(o1 == o2) {
+                return 0;
+              } else {
+                return 1;
+              }
             }
           });
     }
@@ -506,10 +515,11 @@ public class ASTConverter {
         return (ASTNode) ParseDriver.adaptor.dupTree(cI.agg);
       }
 
-      if (cI.table == null || cI.table.isEmpty())
+      if (cI.table == null || cI.table.isEmpty()) {
         return ASTBuilder.unqualifiedName(cI.column);
-      else
+      } else {
         return ASTBuilder.qualifiedName(cI.table, cI.column);
+      }
 
     }
 
@@ -569,7 +579,7 @@ public class ASTConverter {
             }
           }
           ASTNode astCol = ok.left.accept(this);
-          
+
           nullDirectionAST.addChild(astCol);
           oByAst.addChild(directionAST);
         }
@@ -577,10 +587,12 @@ public class ASTConverter {
 
       if (dByAst != null || oByAst != null) {
         pSpecAst = ASTBuilder.createAST(HiveParser.TOK_PARTITIONINGSPEC, "TOK_PARTITIONINGSPEC");
-        if (dByAst != null)
+        if (dByAst != null) {
           pSpecAst.addChild(dByAst);
-        if (oByAst != null)
+        }
+        if (oByAst != null) {
           pSpecAst.addChild(oByAst);
+        }
       }
 
       return pSpecAst;
@@ -592,10 +604,11 @@ public class ASTConverter {
       if (wb.isCurrentRow()) {
         wbAST = ASTBuilder.createAST(HiveParser.KW_CURRENT, "CURRENT");
       } else {
-        if (wb.isPreceding())
+        if (wb.isPreceding()) {
           wbAST = ASTBuilder.createAST(HiveParser.KW_PRECEDING, "PRECEDING");
-        else
+        } else {
           wbAST = ASTBuilder.createAST(HiveParser.KW_FOLLOWING, "FOLLOWING");
+        }
         if (wb.isUnbounded()) {
           wbAST.addChild(ASTBuilder.createAST(HiveParser.KW_UNBOUNDED, "UNBOUNDED"));
         } else {
@@ -624,14 +637,17 @@ public class ASTConverter {
 
       if (startAST != null || endAST != null) {
         // NOTE: in Hive AST Rows->Range(Physical) & Range -> Values (logical)
-        if (window.isRows())
+        if (window.isRows()) {
           wRangeAst = ASTBuilder.createAST(HiveParser.TOK_WINDOWRANGE, "TOK_WINDOWRANGE");
-        else
+        } else {
           wRangeAst = ASTBuilder.createAST(HiveParser.TOK_WINDOWVALUES, "TOK_WINDOWVALUES");
-        if (startAST != null)
+        }
+        if (startAST != null) {
           wRangeAst.addChild(startAST);
-        if (endAST != null)
+        }
+        if (endAST != null) {
           wRangeAst.addChild(endAST);
+        }
       }
 
       return wRangeAst;
@@ -654,10 +670,12 @@ public class ASTConverter {
       final RexWindow window = over.getWindow();
       final ASTNode wPSpecAst = getPSpecAST(window);
       final ASTNode wRangeAst = getWindowRangeAST(window);
-      if (wPSpecAst != null)
+      if (wPSpecAst != null) {
         wSpec.addChild(wPSpecAst);
-      if (wRangeAst != null)
+      }
+      if (wRangeAst != null) {
         wSpec.addChild(wRangeAst);
+      }
 
       return wUDAFAst;
     }
@@ -674,8 +692,9 @@ public class ASTConverter {
         HiveToken ht = TypeConverter.hiveToken(call.getType());
         ASTBuilder astBldr = ASTBuilder.construct(ht.type, ht.text);
         if (ht.args != null) {
-          for (String castArg : ht.args)
+          for (String castArg : ht.args) {
             astBldr.add(HiveParser.Identifier, castArg);
+          }
         }
         astNodeLst.add(astBldr.node());
       }

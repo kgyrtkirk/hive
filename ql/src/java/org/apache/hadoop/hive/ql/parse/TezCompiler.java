@@ -266,7 +266,9 @@ public class TezCompiler extends TaskCompiler {
 
         SemiJoinBranchInfo sjInfo =
                 context.parseContext.getRsToSemiJoinBranchInfo().get(o);
-        if (sjInfo == null ) continue;
+        if (sjInfo == null ) {
+          continue;
+        }
         if (sjInfo.getIsHint()) {
           // Skipping because of hint. Mark this info,
           hasHint = true;
@@ -866,7 +868,9 @@ public class TezCompiler extends TaskCompiler {
 
         ReduceSinkOperator rs = ((ReduceSinkOperator) child);
         SemiJoinBranchInfo sjInfo = pCtx.getRsToSemiJoinBranchInfo().get(rs);
-        if (sjInfo == null) continue;
+        if (sjInfo == null) {
+          continue;
+        }
 
         TableScanOperator ts = sjInfo.getTsOp();
         // This is a semijoin branch. Find if this is creating a potential
@@ -925,7 +929,9 @@ public class TezCompiler extends TaskCompiler {
         GenericUDAFBloomFilterEvaluator udafBloomFilterEvaluator =
                 (GenericUDAFBloomFilterEvaluator) agg.getGenericUDAFEvaluator();
         if (udafBloomFilterEvaluator.hasHintEntries())
+         {
           return null; // Created using hint, skip it
+        }
 
         long expectedEntries = udafBloomFilterEvaluator.getExpectedEntries();
         if (expectedEntries == -1 || expectedEntries >
@@ -1052,7 +1058,9 @@ public class TezCompiler extends TaskCompiler {
 
           ReduceSinkOperator rs = (ReduceSinkOperator) child;
           SemiJoinBranchInfo sjInfo = parseContext.getRsToSemiJoinBranchInfo().get(rs);
-          if (sjInfo == null) continue;
+          if (sjInfo == null) {
+            continue;
+          }
 
           TableScanOperator ts = sjInfo.getTsOp();
           if (ts != bigTableTS) {

@@ -42,4 +42,8 @@ public class ReloadProcessor implements CommandProcessor{
     }
     return new CommandProcessorResponse(0);
   }
+
+  @Override
+  public void close() throws Exception {
+  }
 }

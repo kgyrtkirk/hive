@@ -3186,6 +3186,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new FilterDesc(filterCond, false), new RowSchema(
             inputRR.getColumnInfos()), input), inputRR);
 
+    ctx.getPlanMapper().link(condn, output);
+
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created Filter Plan for " + qb.getId() + " row schema: "
           + inputRR.toString());
@@ -7109,7 +7111,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         //INSERT [OVERWRITE] path
         String destTableFullName = dest_tab.getCompleteName().replace('@', '.');
         Map<String, ASTNode> iowMap = qb.getParseInfo().getInsertOverwriteTables();
-        if (iowMap.containsKey(destTableFullName) && 
+        if (iowMap.containsKey(destTableFullName) &&
           qb.getParseInfo().isDestToOpTypeInsertOverwrite(dest)) {
           isInsertOverwrite = true;
         }
@@ -7354,6 +7356,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     backwards incompatible.
     */
     conf.set(AcidUtils.CONF_ACID_KEY, "true");
+    SessionState.get().getConf().set(AcidUtils.CONF_ACID_KEY, "true");
   }
 
   /**
@@ -10665,6 +10668,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       Operator op = genTablePlan(alias, qb);
       aliasToOpInfo.put(alias, op);
+      if (ctx != null && qb.getParseInfo().getSrcForAlias(alias) != null) {
+        // FIXME: this getParent() call seems to be fishy
+        ctx.getPlanMapper().link(qb.getParseInfo().getSrcForAlias(alias).getParent(), op);
+      }
     }
 
     if (aliasToOpInfo.isEmpty()) {
