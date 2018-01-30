@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.hadoop.hbase.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -130,16 +128,10 @@ public abstract class AbstractReExecDriver implements IDriver {
     String firstCommand = currentQuery;
     boolean forceRexec = false;
     if (coreDriver.getConf().getBoolean("hive.query.reexecution.explain", false)) {
-      Pattern p = Pattern.compile("^[ ]*explain[ ]+(analyze[ ]+|)", Pattern.CASE_INSENSITIVE);
-      Matcher m = p.matcher(currentQuery);
-      if (m.find()) {
-        firstCommand = m.replaceAll("");
+      if (currentQuery.trim().toLowerCase().startsWith("explain")) {
+        firstCommand = currentQuery.trim().substring("explain".length());
         forceRexec = true;
       }
-      //      if (currentQuery.trim().toLowerCase().startsWith("explain")) {
-      //        firstCommand = currentQuery.trim().substring("explain".length());
-      //        forceRexec = true;
-      //      }
     }
     CommandProcessorResponse cpr;
     if (!forceRexec) {
