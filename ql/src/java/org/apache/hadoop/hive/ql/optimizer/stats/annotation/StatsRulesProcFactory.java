@@ -75,7 +75,6 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.RuntimeStatsSource;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
@@ -2488,7 +2487,6 @@ public class StatsRulesProcFactory {
       return stats;
     }
     RuntimeStatsSource rss = context.getRuntimeStatsSource().get();
-    PlanMapper pm = context.getPlanMapper();
 
     Optional<OperatorStats> os = rss.lookup(op);
 

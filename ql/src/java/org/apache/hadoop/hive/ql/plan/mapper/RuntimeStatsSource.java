@@ -24,8 +24,6 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 public interface RuntimeStatsSource extends StatsSource {
-  @Deprecated
-  // FIXME: return type is ok?
   public Optional<OperatorStats> lookup(Operator<?> tsop);
 
 }
