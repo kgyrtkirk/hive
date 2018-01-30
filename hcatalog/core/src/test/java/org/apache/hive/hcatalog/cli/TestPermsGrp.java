@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.TestCase;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -42,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -54,8 +57,6 @@ import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import junit.framework.TestCase;
 
 public class TestPermsGrp extends TestCase {
 
@@ -119,13 +120,12 @@ public class TestPermsGrp extends TestCase {
       // Next user did specify perms.
       try {
         callHCatCli(new String[]{"-e", "create table simptbl (name string) stored as RCFILE", "-p", "rwx-wx---"});
-        fail();
       } catch (Exception e) {
         assertTrue(e instanceof ExitException);
         assertEquals(((ExitException) e).getStatus(), 0);
       }
       dfsPath = clientWH.getDefaultTablePath(db, tblName);
-      assertEquals(FsPermission.valueOf("drwx-wx---"), dfsPath.getFileSystem(hcatConf).getFileStatus(dfsPath).getPermission());
+      assertTrue(dfsPath.getFileSystem(hcatConf).getFileStatus(dfsPath).getPermission().equals(FsPermission.valueOf("drwx-wx---")));
 
       cleanupTbl(dbName, tblName, typeName);
 
@@ -134,7 +134,7 @@ public class TestPermsGrp extends TestCase {
       // make sure create table fails.
       try {
         callHCatCli(new String[]{"-e", "create table simptbl (name string) stored as RCFILE", "-p", "rwx"});
-        fail();
+        assert false;
       } catch (Exception me) {
         assertTrue(me instanceof ExitException);
       }
@@ -142,7 +142,7 @@ public class TestPermsGrp extends TestCase {
       dfsPath = clientWH.getDefaultTablePath(db, tblName);
       try {
         dfsPath.getFileSystem(hcatConf).getFileStatus(dfsPath);
-        fail();
+        assert false;
       } catch (Exception fnfe) {
         assertTrue(fnfe instanceof FileNotFoundException);
       }
@@ -150,7 +150,7 @@ public class TestPermsGrp extends TestCase {
       // And no metadata gets created.
       try {
         msc.getTable(Warehouse.DEFAULT_DATABASE_NAME, tblName);
-        fail();
+        assert false;
       } catch (Exception e) {
         assertTrue(e instanceof NoSuchObjectException);
         assertEquals("default.simptbl table not found", e.getMessage());
@@ -163,7 +163,7 @@ public class TestPermsGrp extends TestCase {
       try {
         // create table must fail.
         callHCatCli(new String[]{"-e", "create table simptbl (name string) stored as RCFILE", "-p", "rw-rw-rw-", "-g", "THIS_CANNOT_BE_A_VALID_GRP_NAME_EVER"});
-        fail();
+        assert false;
       } catch (Exception me) {
         assertTrue(me instanceof SecurityException);
       }
@@ -171,7 +171,7 @@ public class TestPermsGrp extends TestCase {
       try {
         // no metadata should get created.
         msc.getTable(dbName, tblName);
-        fail();
+        assert false;
       } catch (Exception e) {
         assertTrue(e instanceof NoSuchObjectException);
         assertEquals("default.simptbl table not found", e.getMessage());
@@ -179,7 +179,7 @@ public class TestPermsGrp extends TestCase {
       try {
         // neither dir should get created.
         dfsPath.getFileSystem(hcatConf).getFileStatus(dfsPath);
-        fail();
+        assert false;
       } catch (Exception e) {
         assertTrue(e instanceof FileNotFoundException);
       }

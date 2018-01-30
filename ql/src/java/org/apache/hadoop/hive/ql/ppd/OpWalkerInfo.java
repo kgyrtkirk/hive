@@ -39,13 +39,11 @@ public class OpWalkerInfo implements NodeProcessorCtx {
     opToPushdownPredMap;
   private final ParseContext pGraphContext;
   private final List<FilterOperator> candidateFilterOps;
-  private final List<FilterOperator> representedFilterOps;
 
   public OpWalkerInfo(ParseContext pGraphContext) {
     this.pGraphContext = pGraphContext;
     opToPushdownPredMap = new HashMap<Operator<? extends OperatorDesc>, ExprWalkerInfo>();
     candidateFilterOps = new ArrayList<FilterOperator>();
-    representedFilterOps = new ArrayList<>();
   }
 
   public ExprWalkerInfo getPrunedPreds(Operator<? extends OperatorDesc> op) {
@@ -67,10 +65,6 @@ public class OpWalkerInfo implements NodeProcessorCtx {
 
   public void addCandidateFilterOp(FilterOperator fop) {
     candidateFilterOps.add(fop);
-  }
-
-  public List<FilterOperator> getRepresentedFilterOps() {
-    return representedFilterOps;
   }
 
 }

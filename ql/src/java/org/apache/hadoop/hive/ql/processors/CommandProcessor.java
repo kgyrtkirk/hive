@@ -20,6 +20,6 @@ package org.apache.hadoop.hive.ql.processors;
 
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 
-public interface CommandProcessor extends AutoCloseable {
+public interface CommandProcessor {
   CommandProcessorResponse run(String command) throws CommandNeedRetryException;
 }

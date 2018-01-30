@@ -90,7 +90,7 @@ public class TestHiveAuthorizerShowFilters {
         return filteredResults;
       }
     }
-
+    
     @Override
     public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
         HiveConf conf, HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) {
@@ -123,8 +123,7 @@ public class TestHiveAuthorizerShowFilters {
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     UtilsForTest.setNewDerbyDbLocation(conf, TestHiveAuthorizerShowFilters.class.getSimpleName());
 
-    SessionState ss = SessionState.start(conf);
-    ss.applyAuthorizationPolicy();
+    SessionState.start(conf);
     driver = DriverFactory.newDriver(conf);
     runCmd("create table " + tableName1
         + " (i int, j int, k string) partitioned by (city string, `date` string) ");

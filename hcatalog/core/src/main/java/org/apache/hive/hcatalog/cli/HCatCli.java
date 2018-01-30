@@ -145,6 +145,9 @@ public class HCatCli {
     // -D : process these first, so that we can instantiate SessionState appropriately.
     setConfProperties(conf, cmdLine.getOptionProperties("D"));
 
+    // Now that the properties are in, we can instantiate SessionState.
+    SessionState.start(ss);
+
     // -h
     if (cmdLine.hasOption('h')) {
       printUsage(options, ss.out);
@@ -173,9 +176,6 @@ public class HCatCli {
     if (grp != null) {
       conf.set(HCatConstants.HCAT_GROUP, grp);
     }
-
-    // Now that the properties are in, we can instantiate SessionState.
-    SessionState.start(ss);
 
     // all done parsing, let's run stuff!
 
@@ -222,9 +222,8 @@ public class HCatCli {
   }
 
   private static void setConfProperties(HiveConf conf, Properties props) {
-    for (java.util.Map.Entry<Object, Object> e : props.entrySet()) {
+    for (java.util.Map.Entry<Object, Object> e : props.entrySet())
       conf.set((String) e.getKey(), (String) e.getValue());
-    }
   }
 
   private static int processLine(String line) {
@@ -287,7 +286,7 @@ public class HCatCli {
       return new DfsProcessor(ss.getConf()).run(cmd.substring(firstToken.length()).trim()).getResponseCode();
     }
 
-    HCatDriver driver = new HCatDriver(ss.getConf());
+    HCatDriver driver = new HCatDriver();
 
     int ret = driver.run(cmd).getResponseCode();
 

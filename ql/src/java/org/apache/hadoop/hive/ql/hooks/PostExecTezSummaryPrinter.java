@@ -63,11 +63,6 @@ public class PostExecTezSummaryPrinter implements ExecuteWithHookContext {
       if (counters != null) {
         String hiveCountersGroup = HiveConf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP);
         for (CounterGroup group : counters) {
-          if(true){            console.printInfo(tezTask.getId() + " " + group.getName() + "  COUNTERS:", false);
-          for (TezCounter counter : group) {
-            console.printError("   " + counter.getDisplayName() + ": " + counter.getValue());
-            }
-          }else {
           if (hiveCountersGroup.equals(group.getDisplayName())) {
             console.printInfo(tezTask.getId() + " HIVE COUNTERS:", false);
             for (TezCounter counter : group) {
@@ -95,19 +90,7 @@ public class PostExecTezSummaryPrinter implements ExecuteWithHookContext {
                 console.printInfo("   " + counter.getDisplayName() + ": " + counter.getValue(), false);
               }
             }
-          } else if (group.getName().equals(org.apache.tez.common.counters.TaskCounter.class.getName())) {
-            console.printInfo(tezTask.getId() + " org.apache.tez.common.counters.TaskCounter COUNTERS:", false);
-            for (TezCounter counter : group) {
-                console.printError("   " + counter.getDisplayName() + ": " + counter.getValue());
-            }
-          } else {
-            console.printInfo(tezTask.getId() + " " + group.getName() + "  COUNTERS:", false);
-            for (TezCounter counter : group) {
-              console.printError("   " + counter.getDisplayName() + ": " + counter.getValue());
           }
-          }
-          }
-
         }
       }
     }

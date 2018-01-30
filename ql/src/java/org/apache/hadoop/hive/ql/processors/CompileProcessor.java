@@ -310,8 +310,4 @@ public class CompileProcessor implements CommandProcessor {
       super(s);
     }
   }
-
-  @Override
-  public void close() throws Exception {
-  }
 }

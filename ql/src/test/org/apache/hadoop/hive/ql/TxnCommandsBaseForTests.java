@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -91,9 +92,8 @@ public abstract class TxnCommandsBaseForTests {
     if (!(new File(getWarehouseDir()).mkdirs())) {
       throw new RuntimeException("Could not create " + getWarehouseDir());
     }
-    SessionState ss = SessionState.start(hiveConf);
-    ss.applyAuthorizationPolicy();
-    d = new Driver(new QueryState.Builder().withHiveConf(hiveConf).nonIsolated().build(), null);
+    SessionState.start(new SessionState(hiveConf));
+    d = new Driver(hiveConf);
     d.setMaxRows(10000);
     dropTables();
     runStatementOnDriver("create table " + Table.ACIDTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
@@ -136,7 +136,7 @@ public abstract class TxnCommandsBaseForTests {
   String makeValuesClause(int[][] rows) {
     return TestTxnCommands2.makeValuesClause(rows);
   }
-
+  
   void runWorker(HiveConf hiveConf) throws MetaException {
     TestTxnCommands2.runWorker(hiveConf);
   }

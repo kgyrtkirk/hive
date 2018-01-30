@@ -31,8 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.junit.Test;
-
-import com.google.common.collect.Sets;
+import org.spark_project.guava.collect.Sets;
 
 public class TestStatsUtils {
 

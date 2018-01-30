@@ -433,7 +433,4 @@ public class SetProcessor implements CommandProcessor {
     return sch;
   }
 
-  @Override
-  public void close() throws Exception {
-  }
 }

@@ -80,7 +80,6 @@ import static org.junit.Assume.assumeTrue;
 
 @RunWith(Parameterized.class)
 public class TestHCatLoaderEncryption {
-
   private static final AtomicInteger salt = new AtomicInteger(new Random().nextInt());
   private static final Logger LOG = LoggerFactory.getLogger(TestHCatLoaderEncryption.class);
   private final String TEST_DATA_DIR = HCatUtil.makePathASafeFileName(System.getProperty
@@ -174,16 +173,16 @@ public class TestHCatLoaderEncryption {
     String s = hiveConf.get("hdfs.minidfs.basedir");
     if(s == null || s.length() <= 0) {
       //return System.getProperty("test.build.data", "build/test/data") + "/dfs/";
-      hiveConf.set("hdfs.minidfs.basedir",
+      hiveConf.set("hdfs.minidfs.basedir", 
         System.getProperty("test.build.data", "build/test/data") + "_" + System.currentTimeMillis() +
           "_" + salt.getAndIncrement() + "/dfs/");
     }
 
+    driver = DriverFactory.newDriver(hiveConf);
+
     initEncryptionShim(hiveConf);
     String encryptedTablePath =  TEST_WAREHOUSE_DIR + "/encryptedTable";
     SessionState.start(new CliSessionState(hiveConf));
-
-    driver = DriverFactory.newDriver(hiveConf);
 
     SessionState.get().out = System.out;
 
@@ -243,9 +242,7 @@ public class TestHCatLoaderEncryption {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     enableTestOnlyCmd(SessionState.get().getConf());
     CommandProcessor crypto = getTestCommand("crypto");
-    if (crypto == null) {
-      return;
-    }
+    if (crypto == null) return;
     checkExecutionResponse(crypto.run("CREATE_KEY --keyName key_128 --bitLength 128"));
     checkExecutionResponse(crypto.run("CREATE_ZONE --keyName key_128 --path " + path));
   }

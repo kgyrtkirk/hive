@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -36,6 +35,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
@@ -60,8 +60,6 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TJSONProtocol;
 import org.apache.thrift.transport.TMemoryBuffer;
-
-import com.google.common.annotations.VisibleForTesting;
 
 /**
  * QueryPlan can be serialized to disk so that we can restart/resume the
@@ -112,8 +110,6 @@ public class QueryPlan implements Serializable {
   private final boolean acidResourcesInQuery;
   private final Set<FileSinkDesc> acidSinks; // Note: both full-ACID and insert-only sinks.
   private Boolean autoCommitValue;
-
-  private transient MessageDigest md;
 
   public QueryPlan() {
     this(null);
@@ -830,5 +826,4 @@ public class QueryPlan implements Serializable {
   public Boolean getAutoCommitValue() {
     return autoCommitValue;
   }
-
 }

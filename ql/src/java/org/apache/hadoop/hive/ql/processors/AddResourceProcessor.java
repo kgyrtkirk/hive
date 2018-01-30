@@ -75,8 +75,4 @@ public class AddResourceProcessor implements CommandProcessor {
     return new CommandProcessorResponse(0);
   }
 
-  @Override
-  public void close() throws Exception {
-  }
-
 }

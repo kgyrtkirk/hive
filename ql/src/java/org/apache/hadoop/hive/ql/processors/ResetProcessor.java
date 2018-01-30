@@ -157,8 +157,4 @@ public class ResetProcessor implements CommandProcessor {
     }
     return confVars;
   }
-
-  @Override
-  public void close() throws Exception {
-  }
 }
