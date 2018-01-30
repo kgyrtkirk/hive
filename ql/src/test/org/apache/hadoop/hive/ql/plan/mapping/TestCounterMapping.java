@@ -37,8 +37,6 @@ import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.SimpleRuntimeStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
-import org.apache.hadoop.hive.ql.plan.mapper.refs.HiveFilterRef;
-import org.apache.hadoop.hive.ql.plan.mapper.refs.HiveTableScanRef;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
@@ -46,7 +44,6 @@ import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -125,28 +122,6 @@ public class TestCounterMapping {
   }
 
   @Test
-  public void testTableScanHasRuntimeInfo() throws ParseException {
-    IDriver driver = createDriver();
-    String query="select sum(u) from tu where u>1";
-    PlanMapper pm = getMapperForQuery(driver, query);
-
-    HiveTableScanRef ref = pm.getAll(HiveTableScanRef.class).get(0);
-    OperatorStats stats = pm.lookup(OperatorStats.class, ref);
-    assertEquals(7, stats.getOutputRecords());
-  }
-
-  @Test
-  public void testFilterHasRuntimeInfo() throws ParseException {
-    IDriver driver = createDriver();
-    String query = "select sum(u) from tu where u>1";
-    PlanMapper pm = getMapperForQuery(driver, query);
-
-    HiveFilterRef ref = pm.getAll(HiveFilterRef.class).get(0);
-    OperatorStats stats = pm.lookup(OperatorStats.class, ref);
-    assertEquals(6, stats.getOutputRecords());
-  }
-
-  @Test
   public void testUsageOfRuntimeInfo() throws ParseException {
     IDriver driver = createDriver();
     String query = "select sum(u) from tu where u>1";
@@ -196,22 +171,6 @@ public class TestCounterMapping {
       }
     }
     assertEquals(2, checkedOperators);
-  }
-
-  @Test
-  @Ignore
-  public void testFilterNodesHasRuntimeInfoXXX() throws ParseException {
-    IDriver driver = createDriver();
-    // @formatter:off
-    String query="select sum(u*v*w) from tu\n" +
-    "        join tv on (tu.id_uv=tv.id_uv)\n" +
-    "        join tw on (tu.id_uw=tw.id_uw)\n" +
-    "        where w>9 and u>1 and v>3";
-    // @formatter:on
-    PlanMapper pm = getMapperForQuery(driver, query);
-
-    List<HiveFilterRef> nodes = pm.getAll(HiveFilterRef.class);
-
   }
 
   private static IDriver createDriver() {

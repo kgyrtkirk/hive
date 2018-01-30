@@ -24,7 +24,6 @@ import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
-import org.apache.hadoop.hive.ql.plan.mapper.refs.HiveFilterRef;
 import org.apache.hadoop.hive.ql.plan.mapper.refs.OperatorRef;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
@@ -62,17 +61,6 @@ public class SimpleRuntimeStatsSource implements RuntimeStatsSource {
       return true;
     }
     return false;
-  }
-
-  @Override
-  public Optional<OperatorStats> lookup(HiveFilter filter) {
-    try {
-      HiveFilterRef ref = HiveFilterRef.of(filter);
-      OperatorStats v = pm.lookup(OperatorStats.class, ref);
-      return Optional.of(v);
-    } catch (NoSuchElementException | IllegalArgumentException iae) {
-      return Optional.empty();
-    }
   }
 
 }
