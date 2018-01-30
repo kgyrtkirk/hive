@@ -2250,7 +2250,7 @@ public class StatsRulesProcFactory {
           // in the absence of column statistics, compute data size based on
           // based on average row size
           limit = StatsUtils.getMaxIfOverflow(limit);
-          Statistics wcStats = parentStats.scaleToRowCount(limit);
+          Statistics wcStats = parentStats.scaleToRowCount(limit, true);
           lop.setStatistics(wcStats);
           if (LOG.isDebugEnabled()) {
             LOG.debug("[1] STATS-" + lop.toString() + ": " + wcStats.extendedToString());
@@ -2497,7 +2497,7 @@ public class StatsRulesProcFactory {
     }
 
     Statistics outStats = stats.clone();
-    outStats = outStats.scaleToRowCount2(os.get().getOutputRecords());
+    outStats = outStats.scaleToRowCount(os.get().getOutputRecords(), false);
     return outStats;
   }
 
