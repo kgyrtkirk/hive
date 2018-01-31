@@ -1164,10 +1164,10 @@ public class GroupByOperator extends Operator<GroupByDesc> {
   }
 
   public static boolean shouldEmitSummaryRow(GroupByDesc desc) {
-    // exactly one reducer should emit the summary row
-    if (!firstReducer()) {
-      return false;
-    }
+    //    // exactly one reducer should emit the summary row
+    //    if (!firstReducer()) {
+    //      return false;
+    //    }
     // empty keyset is basically ()
     if (desc.getKeys().size() == 0) {
       return true;
