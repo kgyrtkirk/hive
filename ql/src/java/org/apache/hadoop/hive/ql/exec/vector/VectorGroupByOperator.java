@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
@@ -123,7 +124,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   private transient boolean groupingSetsPresent;
 
   // The field bits (i.e. which fields to include) or "id" for each grouping set.
-  private transient int[] groupingSets;
+  private transient long[] groupingSets;
 
   // The position in the column keys of the dummy grouping set id column.
   private transient int groupingSetsPosition;
@@ -777,7 +778,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
     private boolean first;
     private boolean isLastGroupBatch;
-    private boolean hasOutput;
 
     /**
      * The group vector key helper.
@@ -820,7 +820,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     @Override
     public void doProcessBatch(VectorizedRowBatch batch, boolean isFirstGroupingSet,
         boolean[] currentGroupingSetsOverrideIsNulls) throws HiveException {
-      hasOutput = true;
       if (first) {
         // Copy the group key to output batch now.  We'll copy in the aggregates at the end of the group.
         first = false;
@@ -849,12 +848,13 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       if (!aborted && !first && !isLastGroupBatch) {
         writeGroupRow(groupAggregators, buffer);
       }
-      if (!hasOutput && GroupByOperator.shouldEmitSummaryRow(conf)) {
+
+      if (GroupByOperator.shouldEmitSummaryRow(conf, getConfiguration())) {
         VectorHashKeyWrapper kw = keyWrappersBatch.getVectorHashKeyWrappers()[0];
         kw.setNull();
         int pos = conf.getGroupingSetPosition();
         if (pos >= 0) {
-          long val = (1 << pos) - 1;
+          long val = (1L << pos) - 1;
           keyWrappersBatch.setLongValue(kw, pos, val);
         }
         writeSingleRow(kw , groupAggregators);
@@ -933,13 +933,13 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       return;
     }
 
-    groupingSets = ArrayUtils.toPrimitive(conf.getListGroupingSets().toArray(new Integer[0]));
+    groupingSets = ArrayUtils.toPrimitive(conf.getListGroupingSets().toArray(new Long[0]));
     groupingSetsPosition = conf.getGroupingSetPosition();
 
     allGroupingSetsOverrideIsNulls = new boolean[groupingSets.length][];
 
     int pos = 0;
-    for (int groupingSet: groupingSets) {
+    for (long groupingSet: groupingSets) {
 
       // Create the mapping corresponding to the grouping set
 
@@ -1174,6 +1174,11 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     processingMode.close(aborted);
     if (!aborted && outputBatch.size > 0) {
       flushOutput();
+    }
+    // map-side cleanup when we see atleast 1 row
+    if ((vectorDesc.getProcessingMode().equals(VectorGroupByDesc.ProcessingMode.HASH) ||
+      vectorDesc.getProcessingMode().equals(VectorGroupByDesc.ProcessingMode.STREAMING)) && runTimeNumRows > 0) {
+      Utilities.cleanUpNoMapperPath(getConfiguration());
     }
   }
 
