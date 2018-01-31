@@ -447,6 +447,18 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       if (!aborted) {
         flush(true);
       }
+      if (GroupByOperator.shouldEmitSummaryRow(conf)) {
+        VectorHashKeyWrapper kw = keyWrappersBatch.getVectorHashKeyWrappers()[0];
+        kw.setNull();
+        int pos = conf.getGroupingSetPosition();
+        if (pos >= 0) {
+          long val = (1 << pos) - 1;
+          keyWrappersBatch.setLongValue(kw, pos, val);
+        }
+        VectorAggregationBufferRow groupAggregators = allocateAggregationBuffer();
+        writeSingleRow(kw, groupAggregators);
+      }
+
     }
 
     /**

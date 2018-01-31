@@ -3,6 +3,9 @@ set hive.vectorized.execution.enabled=false;
 drop table if exists tx2;
 
 set hive.vectorized.execution.enabled=true;
+
+set hive.optimize.null.scan=false;
+
 create table tx2 (a integer,b integer,c integer,d double,u string,bi binary) stored as orc;
 
 select  sum(c),

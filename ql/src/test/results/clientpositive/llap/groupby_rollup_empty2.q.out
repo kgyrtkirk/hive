@@ -32,6 +32,7 @@ group by a,b,d grouping sets ((), b, a, d)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx2
 #### A masked pattern was here ####
+NULL	NULL	asd	1	NULL,1
 PREHOOK: query: insert into tx2 values
 (1,2,3,1.1,'x','b'),
 (3,2,3,1.1,'y','b')
@@ -74,3 +75,4 @@ group by a,u,bi grouping sets ( u, (), bi)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx2
 #### A masked pattern was here ####
+NULL	NULL	NULL	asd	1	NULL,1

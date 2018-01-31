@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc.Mode;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
@@ -1172,6 +1173,11 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     if (desc.getKeys().size() == 0) {
       return true;
     }
+
+    if (desc.getMode() != Mode.HASH && desc.getMode() != Mode.COMPLETE && desc.getMode() != Mode.PARTIAL1) {
+      return false;
+    }
+
     int groupingSetPosition = desc.getGroupingSetPosition();
     List<Integer> listGroupingSets = desc.getListGroupingSets();
     // groupingSets are known at map/reducer side; but have to do real processing
