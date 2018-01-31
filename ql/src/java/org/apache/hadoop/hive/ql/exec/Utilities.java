@@ -668,6 +668,61 @@ public final class Utilities {
     return null;
   }
 
+  public static Path getNoMapperPath(Configuration conf) {
+    Path planPath = getPlanPath(conf);
+    if (planPath != null) {
+      Path scratchPath = planPath.getParent();
+      Path noMapperPath = new Path(scratchPath, GroupByOperator.NO_MAPPER_PATH_SUFFIX);
+      return noMapperPath;
+    }
+    return null;
+  }
+
+  public static void createNoMapperPath(Configuration conf) throws HiveException {
+    Path noMapperPath = getNoMapperPath(conf);
+    if (noMapperPath != null) {
+      try {
+        FileSystem fs = noMapperPath.getFileSystem(conf);
+        if (!fs.exists(noMapperPath)) {
+          fs.create(noMapperPath);
+          LOG.info("Created {}", noMapperPath);
+        }
+      } catch (IOException e) {
+        throw new HiveException("Unable to get FileSystem when creating " + noMapperPath + " path", e);
+      }
+    }
+  }
+
+  public static void cleanUpNoMapperPath(Configuration conf) throws HiveException {
+    Path noMapperPath = getNoMapperPath(conf);
+    if (noMapperPath != null) {
+      try {
+        FileSystem fs = noMapperPath.getFileSystem(conf);
+        if (fs.exists(noMapperPath)) {
+          fs.delete(noMapperPath, false);
+          LOG.info("Deleted {}.", noMapperPath, fs.exists(noMapperPath));
+        }
+      } catch (IOException e) {
+        throw new HiveException("Unable to get FileSystem when deleting " + noMapperPath + " path", e);
+      }
+    }
+  }
+
+  public static boolean isNoMapperPathExists(Configuration conf) throws HiveException {
+    Path noMapperPath = getNoMapperPath(conf);
+    if (noMapperPath != null) {
+      try {
+        FileSystem fs = noMapperPath.getFileSystem(conf);
+        if (fs.exists(noMapperPath)) {
+          return true;
+        }
+      } catch (IOException e) {
+        throw new HiveException("Unable to get FileSystem when checking for " + noMapperPath + " path", e);
+      }
+    }
+    return false;
+  }
+
   public static class CollectionPersistenceDelegate extends DefaultPersistenceDelegate {
     @Override
     protected Expression instantiate(Object oldInstance, Encoder out) {

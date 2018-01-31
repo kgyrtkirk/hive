@@ -65,7 +65,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
 import javolution.util.FastBitSet;
@@ -77,6 +77,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
 
   private static final long serialVersionUID = 1L;
   private static final int NUMROWSESTIMATESIZE = 1000;
+  public static final String NO_MAPPER_PATH_SUFFIX = "_NO_MAPPER";
 
   private transient ExprNodeEvaluator[] keyFields;
   private transient ObjectInspector[] keyObjectInspectors;
@@ -129,9 +130,9 @@ public class GroupByOperator extends Operator<GroupByDesc> {
 
   private transient boolean groupingSetsPresent;      // generates grouping set
   private transient int groupingSetsPosition;         // position of grouping set, generally the last of keys
-  private transient List<Integer> groupingSets;       // declared grouping set values
+  private transient List<Long> groupingSets;       // declared grouping set values
   private transient FastBitSet[] groupingSetsBitSet;  // bitsets acquired from grouping set values
-  private transient IntWritable[] newKeysGroupingSets;
+  private transient LongWritable[] newKeysGroupingSets;
 
   // for these positions, some variable primitive type (String) is used, so size
   // cannot be estimated. sample it at runtime.
@@ -179,7 +180,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
    * @param length
    * @return
    */
-  public static FastBitSet groupingSet2BitSet(int value, int length) {
+  public static FastBitSet groupingSet2BitSet(long value, int length) {
     FastBitSet bits = new FastBitSet();
     for (int index = length - 1; index >= 0; index--) {
       if (value % 2 != 0) {
@@ -230,13 +231,13 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     if (groupingSetsPresent) {
       groupingSets = conf.getListGroupingSets();
       groupingSetsPosition = conf.getGroupingSetPosition();
-      newKeysGroupingSets = new IntWritable[groupingSets.size()];
+      newKeysGroupingSets = new LongWritable[groupingSets.size()];
       groupingSetsBitSet = new FastBitSet[groupingSets.size()];
 
       int pos = 0;
-      for (Integer groupingSet: groupingSets) {
+      for (Long groupingSet: groupingSets) {
         // Create the mapping corresponding to the grouping set
-        newKeysGroupingSets[pos] = new IntWritable(groupingSet);
+        newKeysGroupingSets[pos] = new LongWritable(groupingSet);
         groupingSetsBitSet[pos] = groupingSet2BitSet(groupingSet, groupingSetsPosition);
         pos++;
       }
@@ -732,6 +733,10 @@ public class GroupByOperator extends Operator<GroupByDesc> {
 
   @Override
   public void process(Object row, int tag) throws HiveException {
+    // map-side cleanup when we see atleast 1 row
+    if (firstRow && getConf().getMode().equals(GroupByDesc.Mode.HASH)) {
+      Utilities.cleanUpNoMapperPath(getConfiguration());
+    }
     firstRow = false;
     ObjectInspector rowInspector = inputObjInspectors[tag];
     // Total number of input rows is needed for hash aggregation only
@@ -1095,13 +1100,13 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     if (!abort) {
       try {
         // If there is no grouping key and no row came to this operator
-        if (firstRow && GroupByOperator.shouldEmitSummaryRow(conf)) {
+        if (firstRow && GroupByOperator.shouldEmitSummaryRow(conf, getConfiguration())) {
           firstRow = false;
 
           Object[] keys=new Object[outputKeyLength];
           int pos = conf.getGroupingSetPosition();
           if (pos >= 0 && pos < outputKeyLength) {
-            keys[pos] = new IntWritable((1 << pos) - 1);
+            keys[pos] = new LongWritable((1L << pos) - 1);
           }
           forward(keys, aggregations);
         } else {
@@ -1163,7 +1168,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
         getConf().getMode() == GroupByDesc.Mode.COMPLETE;
   }
 
-  public static boolean shouldEmitSummaryRow(GroupByDesc desc) {
+  public static boolean shouldEmitSummaryRow(GroupByDesc desc, final Configuration conf) throws HiveException {
     // exactly one reducer should emit the summary row
     if (!firstReducer()) {
       return false;
@@ -1172,14 +1177,27 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     if (desc.getKeys().size() == 0) {
       return true;
     }
-    int groupingSetPosition = desc.getGroupingSetPosition();
-    List<Integer> listGroupingSets = desc.getListGroupingSets();
-    // groupingSets are known at map/reducer side; but have to do real processing
-    // hence grouppingSetsPresent is true only at map side
-    if (groupingSetPosition >= 0 && listGroupingSets != null) {
-      Integer emptyGrouping = (1 << groupingSetPosition) - 1;
-      if (listGroupingSets.contains(emptyGrouping)) {
-        return true;
+
+    // When there are no splits, tez does not launch mappers.
+    // _NO_MAPPER path is created by HiveSplitGenerator. If mappers are launched, close() of Hash and Streaming mode
+    // will cleanup the path. If no mappers are launched, then no rows are processed in which case we just need to
+    // emit one summary row (emitted by first reducer).
+    boolean isTez = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez");
+    boolean noMapperOutput = isTez ? Utilities.isNoMapperPathExists(conf) : true;
+    if (noMapperOutput) {
+      try {
+        int groupingSetPosition = desc.getGroupingSetPosition();
+        List<Long> listGroupingSets = desc.getListGroupingSets();
+        // groupingSets are known at map/reducer side; but have to do real processing
+        // hence grouppingSetsPresent is true only at map side
+        if (groupingSetPosition >= 0 && listGroupingSets != null) {
+          Long emptyGrouping = (1L << groupingSetPosition) - 1;
+          if (listGroupingSets.contains(emptyGrouping)) {
+            return true;
+          }
+        }
+      } finally {
+        Utilities.cleanUpNoMapperPath(conf);
       }
     }
     return false;
