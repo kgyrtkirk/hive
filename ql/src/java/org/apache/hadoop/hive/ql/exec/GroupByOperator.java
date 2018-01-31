@@ -65,7 +65,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
 import javolution.util.FastBitSet;
@@ -130,9 +130,9 @@ public class GroupByOperator extends Operator<GroupByDesc> {
 
   private transient boolean groupingSetsPresent;      // generates grouping set
   private transient int groupingSetsPosition;         // position of grouping set, generally the last of keys
-  private transient List<Long> groupingSets;       // declared grouping set values
+  private transient List<Integer> groupingSets;       // declared grouping set values
   private transient FastBitSet[] groupingSetsBitSet;  // bitsets acquired from grouping set values
-  private transient LongWritable[] newKeysGroupingSets;
+  private transient IntWritable[] newKeysGroupingSets;
 
   // for these positions, some variable primitive type (String) is used, so size
   // cannot be estimated. sample it at runtime.
@@ -180,7 +180,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
    * @param length
    * @return
    */
-  public static FastBitSet groupingSet2BitSet(long value, int length) {
+  public static FastBitSet groupingSet2BitSet(int value, int length) {
     FastBitSet bits = new FastBitSet();
     for (int index = length - 1; index >= 0; index--) {
       if (value % 2 != 0) {
@@ -231,13 +231,13 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     if (groupingSetsPresent) {
       groupingSets = conf.getListGroupingSets();
       groupingSetsPosition = conf.getGroupingSetPosition();
-      newKeysGroupingSets = new LongWritable[groupingSets.size()];
+      newKeysGroupingSets = new IntWritable[groupingSets.size()];
       groupingSetsBitSet = new FastBitSet[groupingSets.size()];
 
       int pos = 0;
-      for (Long groupingSet: groupingSets) {
+      for (Integer groupingSet: groupingSets) {
         // Create the mapping corresponding to the grouping set
-        newKeysGroupingSets[pos] = new LongWritable(groupingSet);
+        newKeysGroupingSets[pos] = new IntWritable(groupingSet);
         groupingSetsBitSet[pos] = groupingSet2BitSet(groupingSet, groupingSetsPosition);
         pos++;
       }
@@ -1106,7 +1106,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
           Object[] keys=new Object[outputKeyLength];
           int pos = conf.getGroupingSetPosition();
           if (pos >= 0 && pos < outputKeyLength) {
-            keys[pos] = new LongWritable((1L << pos) - 1);
+            keys[pos] = new IntWritable((1 << pos) - 1);
           }
           forward(keys, aggregations);
         } else {
@@ -1187,11 +1187,11 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     if (noMapperOutput) {
       try {
         int groupingSetPosition = desc.getGroupingSetPosition();
-        List<Long> listGroupingSets = desc.getListGroupingSets();
+        List<Integer> listGroupingSets = desc.getListGroupingSets();
         // groupingSets are known at map/reducer side; but have to do real processing
         // hence grouppingSetsPresent is true only at map side
         if (groupingSetPosition >= 0 && listGroupingSets != null) {
-          Long emptyGrouping = (1L << groupingSetPosition) - 1;
+          Integer emptyGrouping = (1 << groupingSetPosition) - 1;
           if (listGroupingSets.contains(emptyGrouping)) {
             return true;
           }
