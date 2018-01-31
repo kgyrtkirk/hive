@@ -78,3 +78,10 @@ select  sum(a),
 from    tx2
 where	a=2
 group by a,u,bi grouping sets ( u, (), bi);
+
+
+create table tx3 (a integer,b integer,c integer);
+
+select '2 rows expected',sum(c) from tx3 group by rollup (a)
+union all
+select '2 rows expected',sum(c) from tx3 group by rollup (a);
