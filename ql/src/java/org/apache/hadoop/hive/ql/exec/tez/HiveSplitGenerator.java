@@ -146,6 +146,7 @@ public class HiveSplitGenerator extends InputInitializer {
     // Setup the map work for this thread. Pruning modified the work instance to potentially remove
     // partitions. The same work instance must be used when generating splits.
     Utilities.setMapWork(jobConf, work);
+    Utilities.createNoMapperPath(jobConf);
     try {
       boolean sendSerializedEvents =
           conf.getBoolean("mapreduce.tez.input.initializer.serialize.event.payload", true);
