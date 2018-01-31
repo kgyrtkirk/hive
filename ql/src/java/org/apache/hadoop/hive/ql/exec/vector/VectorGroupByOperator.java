@@ -447,7 +447,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       if (!aborted) {
         flush(true);
       }
-      if (GroupByOperator.shouldEmitSummaryRow(conf)) {
+      if (!aborted && GroupByOperator.shouldEmitSummaryRow(conf)) {
         VectorHashKeyWrapper kw = keyWrappersBatch.getVectorHashKeyWrappers()[0];
         kw.setNull();
         int pos = conf.getGroupingSetPosition();
@@ -789,7 +789,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
     private boolean first;
     private boolean isLastGroupBatch;
-    private boolean hasOutput;
 
     /**
      * The group vector key helper.
@@ -832,7 +831,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     @Override
     public void doProcessBatch(VectorizedRowBatch batch, boolean isFirstGroupingSet,
         boolean[] currentGroupingSetsOverrideIsNulls) throws HiveException {
-      hasOutput = true;
       if (first) {
         // Copy the group key to output batch now.  We'll copy in the aggregates at the end of the group.
         first = false;
@@ -860,16 +858,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     public void close(boolean aborted) throws HiveException {
       if (!aborted && !first && !isLastGroupBatch) {
         writeGroupRow(groupAggregators, buffer);
-      }
-      if (!hasOutput && GroupByOperator.shouldEmitSummaryRow(conf)) {
-        VectorHashKeyWrapper kw = keyWrappersBatch.getVectorHashKeyWrappers()[0];
-        kw.setNull();
-        int pos = conf.getGroupingSetPosition();
-        if (pos >= 0) {
-          long val = (1 << pos) - 1;
-          keyWrappersBatch.setLongValue(kw, pos, val);
-        }
-        writeSingleRow(kw , groupAggregators);
       }
     }
   }
