@@ -1,5 +1,4 @@
 set hive.vectorized.execution.enabled=false;
-set hive.optimize.null.scan=false;
 
 drop table if exists tx1;
 drop table if exists tx2;

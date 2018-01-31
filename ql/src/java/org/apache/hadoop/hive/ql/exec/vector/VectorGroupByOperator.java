@@ -447,7 +447,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       if (!aborted) {
         flush(true);
       }
-      if (!aborted && sumBatchSize > 0 && GroupByOperator.shouldEmitSummaryRow(conf)) {
+      if (!aborted && sumBatchSize == 0 && GroupByOperator.shouldEmitSummaryRow(conf)) {
         VectorHashKeyWrapper kw = keyWrappersBatch.getVectorHashKeyWrappers()[0];
         kw.setNull();
         int pos = conf.getGroupingSetPosition();
