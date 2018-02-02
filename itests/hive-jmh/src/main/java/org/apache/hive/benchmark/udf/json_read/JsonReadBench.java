@@ -40,7 +40,7 @@ public class JsonReadBench {
   public static class MyState {
 
     public final String json;
-    public String type;
+    public final String type;
 
     public MyState() {
       try {
@@ -63,11 +63,12 @@ public class JsonReadBench {
 
   @Benchmark
   public void benchmarkMethod(MyState state) throws Exception {
-    GenericUDFJsonRead udf = new GenericUDFJsonRead();
-    ObjectInspector[] arguments = buildArguments(state.type);
-    udf.initialize(arguments);
+    try (GenericUDFJsonRead udf = new GenericUDFJsonRead()) {
+      ObjectInspector[] arguments = buildArguments(state.type);
+      udf.initialize(arguments);
 
-    udf.evaluate(evalArgs(state.json));
+      udf.evaluate(evalArgs(state.json));
+    }
   }
 
   private DeferredObject[] evalArgs(String string) {
