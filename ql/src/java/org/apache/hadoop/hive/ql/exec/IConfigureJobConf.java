@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.mapred.JobConf;
 
+/**
+ * Enables an operator to be able to make changes to the jobconf
+ */
 public interface IConfigureJobConf {
   public void configureJobConf(JobConf job);
-
 }
