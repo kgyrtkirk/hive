@@ -4062,7 +4062,6 @@ public final class Utilities {
 
   private static final String MANIFEST_EXTENSION = ".manifest";
 
-
   private static void tryDelete(FileSystem fs, Path path) {
     try {
       fs.delete(path, true);
