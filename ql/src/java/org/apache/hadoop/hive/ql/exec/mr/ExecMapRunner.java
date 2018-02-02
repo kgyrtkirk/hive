@@ -32,7 +32,7 @@ public class ExecMapRunner<K1, V1, K2, V2> extends MapRunner<K1, V1, K2, V2> {
     Mapper<K1, V1, K2, V2> mapper = getMapper();
     if (mapper instanceof ExecMapper) {
       ExecMapper execMapper = (ExecMapper) mapper;
-      execMapper.ensireOutputInited(output, reporter);
+      execMapper.ensureOutputInitialize(output, reporter);
     }
     super.run(input, output, reporter);
   }

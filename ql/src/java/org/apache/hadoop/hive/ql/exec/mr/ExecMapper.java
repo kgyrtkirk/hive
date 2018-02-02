@@ -141,7 +141,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   @Override
   public void map(Object key, Object value, OutputCollector output,
       Reporter reporter) throws IOException {
-    ensireOutputInited(output, reporter);
+    ensureOutputInitialize(output, reporter);
     // reset the execContext for each new row
     execContext.resetRow();
 
@@ -165,7 +165,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     }
   }
 
-  public void ensireOutputInited(OutputCollector output, Reporter reporter) {
+  public void ensureOutputInitialize(OutputCollector output, Reporter reporter) {
     if (oc == null) {
       oc = output;
       rp = reporter;
