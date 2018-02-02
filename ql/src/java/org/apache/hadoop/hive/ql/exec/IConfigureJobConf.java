@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.hadoop.mapred.JobConf;
 
 /**
- * Enables an operator to be able to make changes to the jobconf
+ * Enables an operator to be able to make changes to the {@link JobConf}.
  */
 public interface IConfigureJobConf {
-  public void configureJobConf(JobConf job);
+  void configureJobConf(JobConf job);
 }
