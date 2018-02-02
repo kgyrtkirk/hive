@@ -577,7 +577,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     // clear work from ThreadLocal after splits generated in case of thread is reused in pool.
     Utilities.clearWorkMapForConf(job);
 
-    if (result.isEmpty() && paths.length > 0) {
+    if (result.isEmpty() && paths.length > 0 && job.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false)) {
       result.add(
           new HiveInputSplit(new NullRowsInputFormat.DummyInputSplit(paths[0]), ZeroRowsInputFormat.class.getName()));
     }

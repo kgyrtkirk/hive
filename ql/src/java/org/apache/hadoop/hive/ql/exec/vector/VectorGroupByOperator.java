@@ -35,8 +35,10 @@ import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.IConfigureJobConf;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
@@ -55,6 +57,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.DataOutputBuffer;
+import org.apache.hadoop.mapred.JobConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +72,7 @@ import com.google.common.base.Preconditions;
  *
  */
 public class VectorGroupByOperator extends Operator<GroupByDesc>
-    implements VectorizationOperator, VectorizationContextRegion {
+    implements VectorizationOperator, VectorizationContextRegion, IConfigureJobConf {
 
   private static final Logger LOG = LoggerFactory.getLogger(
       VectorGroupByOperator.class.getName());
@@ -1216,4 +1219,13 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   public VectorDesc getVectorDesc() {
     return vectorDesc;
   }
+
+  @Override
+  public void configureJobConf(JobConf job) {
+    // only needed when grouping sets are present
+    if (conf.getGroupingSetPosition() > 0 && GroupByOperator.shouldEmitSummaryRow(conf)) {
+      job.setBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, true);
+    }
+  }
+
 }
