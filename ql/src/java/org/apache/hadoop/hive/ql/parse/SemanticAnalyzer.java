@@ -268,6 +268,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public static final String VALUES_TMP_TABLE_NAME_PREFIX = "Values__Tmp__Table__";
 
+  /** Marks the temporary table created for a serialized CTE. The table is scoped to the query. */
   static final String MATERIALIZATION_MARKER = "$MATERIALIZATION";
 
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
@@ -6994,6 +6995,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       tableDesc.setWriter(fileSinkDesc);
     }
 
+    if (fileSinkDesc.getInsertOverwrite()) {
+      if (ltd != null) {
+        ltd.setInsertOverwrite(true);
+      }
+    }
+
     if (SessionState.get().isHiveServerQuery() &&
       null != table_desc &&
       table_desc.getSerdeClassName().equalsIgnoreCase(ThriftJDBCBinarySerDe.class.getName()) &&
@@ -11943,6 +11950,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   @Override
   public void validate() throws SemanticException {
     LOG.debug("validation start");
+    boolean wasAcidChecked = false;
     // Validate inputs and outputs have right protectmode to execute the query
     for (ReadEntity readEntity : getInputs()) {
       ReadEntity.Type type = readEntity.getType();
@@ -11962,7 +11970,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       if (tbl != null && AcidUtils.isTransactionalTable(tbl)) {
         transactionalInQuery = true;
-        checkAcidTxnManager(tbl);
+        if (!wasAcidChecked) {
+          checkAcidTxnManager(tbl);
+        }
+        wasAcidChecked = true;
       }
     }
 
@@ -11975,6 +11986,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         try {
           Partition usedp = writeEntity.getPartition();
           Table tbl = usedp.getTable();
+          if (AcidUtils.isTransactionalTable(tbl)) {
+            transactionalInQuery = true;
+            if (!wasAcidChecked) {
+              checkAcidTxnManager(tbl);
+            }
+            wasAcidChecked = true;
+          }
 
           LOG.debug("validated " + usedp.getName());
           LOG.debug(usedp.getTable().getTableName());
@@ -11988,44 +12006,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               conflictingArchive);
           throw new SemanticException(message);
         }
+      } else if (type == WriteEntity.Type.TABLE) {
+        Table tbl = writeEntity.getTable();
+        if (AcidUtils.isTransactionalTable(tbl)) {
+          transactionalInQuery = true;
+          if (!wasAcidChecked) {
+            checkAcidTxnManager(tbl);
+          }
+          wasAcidChecked = true;
+        }
       }
 
       if (type != WriteEntity.Type.TABLE &&
           type != WriteEntity.Type.PARTITION) {
         LOG.debug("not validating writeEntity, because entity is neither table nor partition");
         continue;
-      }
-
-      Table tbl;
-      Partition p;
-
-
-      if (type == WriteEntity.Type.PARTITION) {
-        Partition inputPartition = writeEntity.getPartition();
-
-        // If it is a partition, Partition's metastore is not fetched. We
-        // need to fetch it.
-        try {
-          p = Hive.get().getPartition(
-              inputPartition.getTable(), inputPartition.getSpec(), false);
-          if (p != null) {
-            tbl = p.getTable();
-          } else {
-            // if p is null, we assume that we insert to a new partition
-            tbl = inputPartition.getTable();
-          }
-        } catch (HiveException e) {
-          throw new SemanticException(e);
-        }
-      }
-      else {
-        LOG.debug("Not a partition.");
-        tbl = writeEntity.getTable();
-      }
-
-      if (tbl != null && AcidUtils.isTransactionalTable(tbl)) {
-        transactionalInQuery = true;
-        checkAcidTxnManager(tbl);
       }
     }
 
@@ -12059,7 +12054,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private Map<String, String> addDefaultProperties(
       Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat,
-      String qualifiedTableName, List<Order> sortCols) {
+      String qualifiedTableName, List<Order> sortCols, boolean isMaterialization) {
     Map<String, String> retValue;
     if (tblProp == null) {
       retValue = new HashMap<String, String>();
@@ -12083,15 +12078,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         HiveConf.getBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY) &&
         DbTxnManager.class.getCanonicalName().equals(HiveConf.getVar(conf, ConfVars.HIVE_TXN_MANAGER));
     if ((makeInsertOnly || makeAcid)
-        && !isExt && StringUtils.isBlank(storageFormat.getStorageHandler())
+        && !isExt  && !isMaterialization && StringUtils.isBlank(storageFormat.getStorageHandler())
         //don't overwrite user choice if transactional attribute is explicitly set
         && !retValue.containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)) {
-      if(makeInsertOnly) {
+      if (makeInsertOnly) {
         retValue.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
         retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
             TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
       }
-      if(makeAcid) {
+      if (makeAcid) {
         /*for CTAS, TransactionalValidationListener.makeAcid() runs to late to make table Acid
          so the initial write ends up running as non-acid...*/
         try {
@@ -12341,7 +12336,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     switch (command_type) {
 
     case CREATE_TABLE: // REGULAR CREATE TABLE DDL
-      tblProps = addDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols);
+      tblProps = addDefaultProperties(
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
 
       CreateTableDesc crtTblDesc = new CreateTableDesc(dbDotTab, isExt, isTemporary, cols, partCols,
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
@@ -12362,7 +12358,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
 
     case CTLT: // create table like <tbl_name>
-      tblProps = addDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols);
+      tblProps = addDefaultProperties(
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
 
       if (isTemporary) {
         Table likeTable = getTable(likeTableName, false);
@@ -12439,7 +12436,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
-      tblProps = addDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols);
+      tblProps = addDefaultProperties(
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
       tableDesc = new CreateTableDesc(qualifiedTabName[0], dbDotTab, isExt, isTemporary, cols,
           partCols, bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
           rowFormatParams.fieldEscape, rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim,
