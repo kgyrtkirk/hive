@@ -502,7 +502,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     for (InputSplit is : iss) {
       result.add(new HiveInputSplit(is, inputFormatClass.getName()));
     }
-    if (iss.length == 0) {
+    if (iss.length == 0 && finalDirs.length > 0 && conf.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false)) {
       result.add(new HiveInputSplit(new NullRowsInputFormat.DummyInputSplit(finalDirs[0].toString()),
           ZeroRowsInputFormat.class.getName()));
     }
