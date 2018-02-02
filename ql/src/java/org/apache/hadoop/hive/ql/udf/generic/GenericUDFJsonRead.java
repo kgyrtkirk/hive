@@ -45,7 +45,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
-@Description(name = "json_read", value = "_FUNC_(json,type) - parses the given json according to the given complex type specification", extended = ""
+/**
+ * Parses a json string representation into a Hive struct.
+ */
+@Description(name = "json_read", value = "_FUNC_(json,type) - "
+    + "Parses the given json according to the given complex type specification", extended = ""
     + "Parsed as null: if the json is null, it is the empty string or if it contains only whitespaces\n"
     + "Example:\n" + "select _FUNC_('[]','array<struct<a:string>>' ")
 public class GenericUDFJsonRead extends GenericUDF {
@@ -140,7 +144,7 @@ public class GenericUDFJsonRead extends GenericUDF {
       throw new HiveException("struct expected");
     }
 
-    if(!(oi.getMapKeyObjectInspector() instanceof PrimitiveObjectInspector ) ) {
+    if (!(oi.getMapKeyObjectInspector() instanceof PrimitiveObjectInspector)) {
       throw new HiveException("map key must be a primitive");
     }
     PrimitiveObjectInspector keyOI = (PrimitiveObjectInspector) oi.getMapKeyObjectInspector();
@@ -169,7 +173,7 @@ public class GenericUDFJsonRead extends GenericUDF {
   private static Object parseStruct(JsonParser parser, StructObjectInspector oi)
       throws JsonParseException, IOException, HiveException {
 
-    Object ret[] = new Object[oi.getAllStructFieldRefs().size()];
+    Object[] ret = new Object[oi.getAllStructFieldRefs().size()];
 
     if (parser.getCurrentToken() == JsonToken.VALUE_NULL) {
       parser.nextToken();
@@ -220,11 +224,11 @@ public class GenericUDFJsonRead extends GenericUDF {
     }
     JsonToken currentToken = parser.nextToken();
     try {
-    while (currentToken != null && currentToken != JsonToken.END_ARRAY) {
-      ObjectInspector eOI = oi.getListElementObjectInspector();
-      ret.add(parseDispatcher(parser, eOI));
-      currentToken = parser.getCurrentToken();
-    }
+      while (currentToken != null && currentToken != JsonToken.END_ARRAY) {
+        ObjectInspector eOI = oi.getListElementObjectInspector();
+        ret.add(parseDispatcher(parser, eOI));
+        currentToken = parser.getCurrentToken();
+      }
     } catch (Exception e) {
       throw new HiveException("array: " + e.getMessage(), e);
     }
