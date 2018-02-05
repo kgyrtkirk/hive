@@ -2302,15 +2302,6 @@ public class HiveConf extends Configuration {
     HIVE_REWORK_MAPREDWORK("hive.rework.mapredwork", false,
         "should rework the mapred work or not.\n" +
         "This is first introduced by SymlinkTextInputFormat to replace symlink files with real paths at compile time."),
-    @CRAP0
-    @Deprecated
-
-    HIVE_CONCATENATE_CHECK_INDEX ("hive.exec.concatenate.check.index", true,
-        "If this is set to true, Hive will throw error when doing\n" +
-        "'alter table tbl_name [partSpec] concatenate' on a table/partition\n" +
-        "that has indexes on it. The reason the user want to set this to true\n" +
-        "is because it can help user to avoid handling all index drop, recreation,\n" +
-        "rebuild work. This is very helpful for tables with thousands of partitions."),
     HIVE_IO_EXCEPTION_HANDLERS("hive.io.exception.handlers", "",
         "A list of io exception handler class names. This is used\n" +
         "to construct a list exception handlers to handle exceptions thrown\n" +
@@ -4609,7 +4600,6 @@ public class HiveConf extends Configuration {
     ConfVars.HIVE_CHECK_CROSS_PRODUCT.varname,
     ConfVars.HIVE_CLI_TEZ_SESSION_ASYNC.varname,
     ConfVars.HIVE_COMPAT.varname,
-    ConfVars.HIVE_CONCATENATE_CHECK_INDEX.varname,
     ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY.varname,
     ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION.varname,
     ConfVars.HIVE_EXECUTION_ENGINE.varname,
