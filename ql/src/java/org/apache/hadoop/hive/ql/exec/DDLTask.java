@@ -146,7 +146,6 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreChecker;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -159,7 +158,6 @@ import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.metadata.formatting.TextMetaDataTable;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.PreInsertTableDesc;
@@ -180,7 +178,6 @@ import org.apache.hadoop.hive.ql.plan.AlterWMTriggerDesc;
 import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.CreateOrAlterWMMappingDesc;
 import org.apache.hadoop.hive.ql.plan.CreateOrAlterWMPoolDesc;
 import org.apache.hadoop.hive.ql.plan.CreateOrDropTriggerToPoolMappingDesc;
@@ -387,11 +384,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       CreateTableDesc crtTbl = work.getCreateTblDesc();
       if (crtTbl != null) {
         return createTable(db, crtTbl);
-      }
-
-      CreateIndexDesc crtIndex = work.getCreateIndexDesc();
-      if (crtIndex != null) {
-        return createIndex(db, crtIndex);
       }
 
       CreateTableLikeDesc crtTblLike = work.getCreateTblLikeDesc();
@@ -1239,35 +1231,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  private int createIndex(Hive db, CreateIndexDesc crtIndex) throws HiveException {
-
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-      throw new UnsupportedOperationException("Indexes unsupported for Tez execution engine");
-    }
-
-    if( crtIndex.getSerde() != null) {
-      validateSerDe(crtIndex.getSerde());
-    }
-
-    String indexTableName = crtIndex.getIndexTableName();
-    // If location is specified - ensure that it is a full qualified name
-    makeLocationQualified(crtIndex, indexTableName);
-
-    db
-    .createIndex(
-        crtIndex.getTableName(), crtIndex.getIndexName(), crtIndex.getIndexTypeHandlerClass(),
-        crtIndex.getIndexedCols(), crtIndex.getIndexTableName(), crtIndex.getDeferredRebuild(),
-        crtIndex.getInputFormat(), crtIndex.getOutputFormat(), crtIndex.getSerde(),
-        crtIndex.getStorageHandler(), crtIndex.getLocation(), crtIndex.getIdxProps(), crtIndex.getTblProps(),
-        crtIndex.getSerdeProps(), crtIndex.getCollItemDelim(), crtIndex.getFieldDelim(), crtIndex.getFieldEscape(),
-        crtIndex.getLineDelim(), crtIndex.getMapKeyDelim(), crtIndex.getIndexComment()
-        );
-    if (HiveUtils.getIndexHandler(conf, crtIndex.getIndexTypeHandlerClass()).usesIndexTable()) {
-          Table indexTable = db.getTable(indexTableName);
-          addIfAbsentByName(new WriteEntity(indexTable, WriteEntity.WriteType.DDL_NO_LOCK));
-    }
-    return 0;
-  }
 
   /**
    * Alters a materialized view.
@@ -5173,40 +5136,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (path != null)
     {
       sd.setLocation(Utilities.getQualifiedPath(conf, path));
-    }
-  }
-
-   /**
-   * Make qualified location for an index .
-   *
-   * @param crtIndex
-   *          Create index descriptor.
-   * @param name
-   *          Object name.
-   */
-  @CRAP
-  @Deprecated
-
-  private void makeLocationQualified(CreateIndexDesc crtIndex, String name) throws HiveException
-  {
-    Path path = null;
-    if (crtIndex.getLocation() == null) {
-      // Location is not set, leave it as-is if index doesn't belong to default DB
-      // Currently all indexes are created in current DB only
-      if (Utilities.getDatabaseName(name).equalsIgnoreCase(Warehouse.DEFAULT_DATABASE_NAME)) {
-        // Default database name path is always ignored, use METASTOREWAREHOUSE and object name
-        // instead
-        String warehouse = HiveConf.getVar(conf, ConfVars.METASTOREWAREHOUSE);
-        String tableName = Utilities.getTableName(name);
-        path = new Path(warehouse, tableName.toLowerCase());
-      }
-    }
-    else {
-      path = new Path(crtIndex.getLocation());
-    }
-
-    if (path != null) {
-      crtIndex.setLocation(Utilities.getQualifiedPath(conf, path));
     }
   }
 
