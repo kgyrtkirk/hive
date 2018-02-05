@@ -39,6 +39,8 @@ import org.apache.hadoop.hive.ql.session.LineageState;
  * to Hive.
  */
 @CRAP
+@Deprecated
+
 public interface HiveIndexHandler extends Configurable {
   /**
    * Determines whether this handler implements indexes by creating an index
