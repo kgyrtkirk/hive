@@ -656,6 +656,7 @@ public class Hive {
     }
   }
 
+  @CRAP
   public void alterIndex(String baseTableName, String indexName, Index newIdx)
       throws InvalidOperationException, HiveException {
     String[] names = Utilities.getDbTableName(baseTableName);
@@ -673,6 +674,7 @@ public class Hive {
    *           if the changes in metadata is not acceptable
    * @throws TException
    */
+  @CRAP
   public void alterIndex(String dbName, String baseTblName, String idxName, Index newIdx)
       throws InvalidOperationException, HiveException {
     try {
@@ -955,6 +957,7 @@ public class Hive {
    * @param mapKeyDelim
    * @throws HiveException
    */
+  @CRAP
   public void createIndex(String tableName, String indexName, String indexHandlerClass,
       List<String> indexedCols, String indexTblName, boolean deferredRebuild,
       String inputFormat, String outputFormat, String serde,
@@ -1124,6 +1127,7 @@ public class Hive {
     }
   }
 
+  @CRAP
   public Index getIndex(String baseTableName, String indexName) throws HiveException {
     String[] names = Utilities.getDbTableName(baseTableName);
     return this.getIndex(names[0], names[1], indexName);
@@ -1139,12 +1143,14 @@ public class Hive {
     }
   }
 
+  @CRAP
   public boolean dropIndex(String baseTableName, String index_name,
       boolean throwException, boolean deleteData) throws HiveException {
     String[] names = Utilities.getDbTableName(baseTableName);
     return dropIndex(names[0], names[1], index_name, throwException, deleteData);
   }
 
+  @CRAP
   public boolean dropIndex(String db_name, String tbl_name, String index_name,
       boolean throwException, boolean deleteData) throws HiveException {
     try {
@@ -4324,6 +4330,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  @CRAP
   public List<Index> getIndexes(String dbName, String tblName, short max) throws HiveException {
     List<Index> indexes = null;
     try {
