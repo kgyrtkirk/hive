@@ -48,12 +48,10 @@ import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
-import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hive.common.util.HiveStringUtils;
 
@@ -670,15 +668,6 @@ public final class MetaDataFormatUtils {
       showColStats = true;
     }
     return DescTableDesc.getSchema(showColStats).split("#")[0].split(",");
-  }
-
-  @CRAP
-  @Deprecated
-
-  public static String getIndexColumnsHeader() {
-    StringBuilder indexCols = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
-    formatOutput(ShowIndexesDesc.getSchema().split("#")[0].split(","), indexCols);
-    return indexCols.toString();
   }
 
   public static MetaDataFormatter getFormatter(HiveConf conf) {

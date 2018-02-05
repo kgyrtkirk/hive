@@ -26,10 +26,8 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezContext;
-import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
@@ -418,25 +416,6 @@ public final class HiveUtils {
       throw new HiveException(e);
     }
     return ret;
-  }
-
-
-  /**
-   * Convert FieldSchemas to columnNames with backticks around them.
-   */
-  @CRAP
-  @Deprecated
-
-  public static String getUnparsedColumnNamesFromFieldSchema(
-      List<FieldSchema> fieldSchemas) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < fieldSchemas.size(); i++) {
-      if (i > 0) {
-        sb.append(",");
-      }
-      sb.append(HiveUtils.unparseIdentifier(fieldSchemas.get(i).getName()));
-    }
-    return sb.toString();
   }
 
   public static String getLocalDirList(Configuration conf) {
