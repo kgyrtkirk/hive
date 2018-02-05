@@ -19,11 +19,6 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
-import static org.apache.hadoop.hive.serde.serdeConstants.COLLECTION_DELIM;
-import static org.apache.hadoop.hive.serde.serdeConstants.ESCAPE_CHAR;
-import static org.apache.hadoop.hive.serde.serdeConstants.FIELD_DELIM;
-import static org.apache.hadoop.hive.serde.serdeConstants.LINE_DELIM;
-import static org.apache.hadoop.hive.serde.serdeConstants.MAPKEY_DELIM;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
@@ -103,7 +98,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
@@ -114,11 +108,9 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
@@ -137,7 +129,6 @@ import org.apache.hadoop.hive.ql.exec.FunctionTask;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -893,213 +884,9 @@ public class Hive {
     return schema;
   }
 
-  /**
-   *
-   * @param tableName
-   *          table name
-   * @param indexName
-   *          index name
-   * @param indexHandlerClass
-   *          index handler class
-   * @param indexedCols
-   *          index columns
-   * @param indexTblName
-   *          index table's name
-   * @param deferredRebuild
-   *          referred build index table's data
-   * @param inputFormat
-   *          input format
-   * @param outputFormat
-   *          output format
-   * @param serde
-   * @param storageHandler
-   *          index table's storage handler
-   * @param location
-   *          location
-   * @param idxProps
-   *          idx
-   * @param serdeProps
-   *          serde properties
-   * @param collItemDelim
-   * @param fieldDelim
-   * @param fieldEscape
-   * @param lineDelim
-   * @param mapKeyDelim
-   * @throws HiveException
-   */
-  @CRAP
-  public void createIndex(String tableName, String indexName, String indexHandlerClass,
-      List<String> indexedCols, String indexTblName, boolean deferredRebuild,
-      String inputFormat, String outputFormat, String serde,
-      String storageHandler, String location,
-      Map<String, String> idxProps, Map<String, String> tblProps, Map<String, String> serdeProps,
-      String collItemDelim, String fieldDelim, String fieldEscape,
-      String lineDelim, String mapKeyDelim, String indexComment)
-      throws HiveException {
-
-    try {
-      String tdname = Utilities.getDatabaseName(tableName);
-      String idname = Utilities.getDatabaseName(indexTblName);
-      if (!idname.equals(tdname)) {
-        throw new HiveException("Index on different database (" + idname
-          + ") from base table (" + tdname + ") is not supported.");
-      }
-
-      Index old_index = null;
-      try {
-        old_index = getIndex(tableName, indexName);
-      } catch (Exception e) {
-      }
-      if (old_index != null) {
-        throw new HiveException("Index " + indexName + " already exists on table " + tableName);
-      }
-
-      org.apache.hadoop.hive.metastore.api.Table baseTbl = getTable(tableName).getTTable();
-      if (TableType.VIRTUAL_VIEW.toString().equals(baseTbl.getTableType())) {
-        throw new HiveException("tableName="+ tableName +" is a VIRTUAL VIEW. Index on VIRTUAL VIEW is not supported.");
-      }
-      if (baseTbl.isTemporary()) {
-        throw new HiveException("tableName=" + tableName
-            + " is a TEMPORARY TABLE. Index on TEMPORARY TABLE is not supported.");
-      }
-
-      org.apache.hadoop.hive.metastore.api.Table temp = null;
-      try {
-        temp = getTable(indexTblName).getTTable();
-      } catch (Exception e) {
-      }
-      if (temp != null) {
-        throw new HiveException("Table name " + indexTblName + " already exists. Choose another name.");
-      }
-
-      SerDeInfo serdeInfo = new SerDeInfo();
-      serdeInfo.setName(indexTblName);
-
-      if(serde != null) {
-        serdeInfo.setSerializationLib(serde);
-      } else {
-        if (storageHandler == null) {
-          serdeInfo.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
-        } else {
-          HiveStorageHandler sh = HiveUtils.getStorageHandler(getConf(), storageHandler);
-          String serDeClassName = sh.getSerDeClass().getName();
-          serdeInfo.setSerializationLib(serDeClassName);
-        }
-      }
-
-      serdeInfo.setParameters(new HashMap<String, String>());
-      if (fieldDelim != null) {
-        serdeInfo.getParameters().put(FIELD_DELIM, fieldDelim);
-        serdeInfo.getParameters().put(SERIALIZATION_FORMAT, fieldDelim);
-      }
-      if (fieldEscape != null) {
-        serdeInfo.getParameters().put(ESCAPE_CHAR, fieldEscape);
-      }
-      if (collItemDelim != null) {
-        serdeInfo.getParameters().put(COLLECTION_DELIM, collItemDelim);
-      }
-      if (mapKeyDelim != null) {
-        serdeInfo.getParameters().put(MAPKEY_DELIM, mapKeyDelim);
-      }
-      if (lineDelim != null) {
-        serdeInfo.getParameters().put(LINE_DELIM, lineDelim);
-      }
-
-      if (serdeProps != null) {
-        Iterator<Entry<String, String>> iter = serdeProps.entrySet()
-          .iterator();
-        while (iter.hasNext()) {
-          Entry<String, String> m = iter.next();
-          serdeInfo.getParameters().put(m.getKey(), m.getValue());
-        }
-      }
-
-      List<FieldSchema> indexTblCols = new ArrayList<FieldSchema>();
-      List<Order> sortCols = new ArrayList<Order>();
-      int k = 0;
-      Table metaBaseTbl = new Table(baseTbl);
-      // Even though we are storing these in metastore, get regular columns. Indexes on lengthy
-      // types from e.g. Avro schema will just fail to create the index table (by design).
-      List<FieldSchema> cols = metaBaseTbl.getCols();
-      for (int i = 0; i < cols.size(); i++) {
-        FieldSchema col = cols.get(i);
-        if (indexedCols.contains(col.getName())) {
-          indexTblCols.add(col);
-          sortCols.add(new Order(col.getName(), 1));
-          k++;
-        }
-      }
-      if (k != indexedCols.size()) {
-        throw new RuntimeException(
-            "Check the index columns, they should appear in the table being indexed.");
-      }
-
-      int time = (int) (System.currentTimeMillis() / 1000);
-      org.apache.hadoop.hive.metastore.api.Table tt = null;
-      HiveIndexHandler indexHandler = HiveUtils.getIndexHandler(this.getConf(), indexHandlerClass);
-
-      String itname = Utilities.getTableName(indexTblName);
-      if (indexHandler.usesIndexTable()) {
-        tt = new org.apache.hadoop.hive.ql.metadata.Table(idname, itname).getTTable();
-        List<FieldSchema> partKeys = baseTbl.getPartitionKeys();
-        tt.setPartitionKeys(partKeys);
-        tt.setTableType(TableType.INDEX_TABLE.toString());
-        if (tblProps != null) {
-          for (Entry<String, String> prop : tblProps.entrySet()) {
-            tt.putToParameters(prop.getKey(), prop.getValue());
-          }
-        }
-        SessionState ss = SessionState.get();
-        CreateTableAutomaticGrant grants;
-        if (ss != null && ((grants = ss.getCreateTableGrants()) != null)) {
-            PrincipalPrivilegeSet principalPrivs = new PrincipalPrivilegeSet();
-            principalPrivs.setUserPrivileges(grants.getUserGrants());
-            principalPrivs.setGroupPrivileges(grants.getGroupGrants());
-            principalPrivs.setRolePrivileges(grants.getRoleGrants());
-            tt.setPrivileges(principalPrivs);
-          }
-      }
-
-      if(!deferredRebuild) {
-        throw new RuntimeException("Please specify deferred rebuild using \" WITH DEFERRED REBUILD \".");
-      }
-
-      StorageDescriptor indexSd = new StorageDescriptor(
-          indexTblCols,
-          location,
-          inputFormat,
-          outputFormat,
-          false/*compressed - not used*/,
-          -1/*numBuckets - default is -1 when the table has no buckets*/,
-          serdeInfo,
-          null/*bucketCols*/,
-          sortCols,
-          null/*parameters*/);
-
-      String ttname = Utilities.getTableName(tableName);
-      Index indexDesc = new Index(indexName, indexHandlerClass, tdname, ttname, time, time, itname,
-          indexSd, new HashMap<String,String>(), deferredRebuild);
-      if (indexComment != null) {
-        indexDesc.getParameters().put("comment", indexComment);
-      }
-
-      if (idxProps != null)
-      {
-        indexDesc.getParameters().putAll(idxProps);
-      }
-
-      indexHandler.analyzeIndexDefinition(baseTbl, indexDesc, tt);
-
-      this.getMSC().createIndex(indexDesc, tt);
-
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
-  }
 
   @CRAP
   @Deprecated
-
   public Index getIndex(String baseTableName, String indexName) throws HiveException {
     String[] names = Utilities.getDbTableName(baseTableName);
     return this.getIndex(names[0], names[1], indexName);

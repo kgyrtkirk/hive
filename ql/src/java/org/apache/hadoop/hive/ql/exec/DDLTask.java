@@ -159,6 +159,7 @@ import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.metadata.formatting.TextMetaDataTable;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.PreInsertTableDesc;
@@ -5183,6 +5184,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @param name
    *          Object name.
    */
+  @CRAP
+  @Deprecated
+
   private void makeLocationQualified(CreateIndexDesc crtIndex, String name) throws HiveException
   {
     Path path = null;

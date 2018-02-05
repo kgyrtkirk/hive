@@ -317,6 +317,7 @@ public final class HiveUtils {
   }
 
   @CRAP
+  @Deprecated
   public static HiveIndexHandler getIndexHandler(HiveConf conf,
       String indexHandlerClass) throws HiveException {
 
