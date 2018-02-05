@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
@@ -135,6 +136,9 @@ public final class MetaDataFormatUtils {
     }
     return null;
   }
+
+  @CRAP
+  @Deprecated
 
   public static String getIndexInformation(Index index, boolean isOutputPadded) {
     StringBuilder indexInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
@@ -713,6 +717,9 @@ public final class MetaDataFormatUtils {
     return DescTableDesc.getSchema(showColStats).split("#")[0].split(",");
   }
 
+  @CRAP
+  @Deprecated
+
   public static String getIndexColumnsHeader() {
     StringBuilder indexCols = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
     formatOutput(ShowIndexesDesc.getSchema().split("#")[0].split(","), indexCols);
@@ -802,7 +809,9 @@ public final class MetaDataFormatUtils {
         if (p2.pool == null) {
           return (p1.pool == null) ? 0 : -1;
         }
-        if (p1.pool == null) return 1;
+        if (p1.pool == null) {
+          return 1;
+        }
         return Double.compare(p2.pool.getAllocFraction(), p1.pool.getAllocFraction());
       });
       for (PoolTreeNode child : children) {

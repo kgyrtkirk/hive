@@ -90,7 +90,6 @@ import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Materialization;
@@ -134,7 +133,6 @@ import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
-import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -4047,18 +4045,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException("Error in getting fields from serde."
           + e.getMessage(), e);
     }
-  }
-
-  @CRAP
-  public List<Index> getIndexes(String dbName, String tblName, short max) throws HiveException {
-    List<Index> indexes = null;
-    try {
-      indexes = getMSC().listIndexes(dbName, tblName, max);
-    } catch (Exception e) {
-      LOG.error(StringUtils.stringifyException(e));
-      throw new HiveException(e);
-    }
-    return indexes;
   }
 
   public boolean setPartitionColumnStatistics(SetPartitionsStatsRequest request) throws HiveException {
