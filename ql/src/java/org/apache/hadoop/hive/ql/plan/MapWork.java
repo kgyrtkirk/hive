@@ -298,22 +298,18 @@ public class MapWork extends BaseWork {
   private static String deriveLlapIoDescString(boolean isLlapOn, boolean canWrapAny,
       boolean hasPathToPartInfo, boolean hasLlap, boolean hasNonLlap, boolean hasAcid,
       boolean hasCacheOnly) {
-    if (!isLlapOn)
-     {
+    if (!isLlapOn) {
       return null; // LLAP IO is off, don't output.
     }
-    if (!canWrapAny && !hasCacheOnly)
-     {
+    if (!canWrapAny && !hasCacheOnly) {
       return "no inputs"; // Cannot use with input formats.
     }
-    if (!hasPathToPartInfo)
-     {
+    if (!hasPathToPartInfo) {
       return "unknown"; // No information to judge.
     }
     int varieties = (hasAcid ? 1 : 0) + (hasLlap ? 1 : 0)
         + (hasCacheOnly ? 1 : 0) + (hasNonLlap ? 1 : 0);
-    if (varieties > 1)
-     {
+    if (varieties > 1) {
       return "some inputs"; // Will probably never actually happen.
     }
     if (hasAcid) {
