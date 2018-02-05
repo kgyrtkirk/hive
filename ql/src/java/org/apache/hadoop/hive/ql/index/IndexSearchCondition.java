@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.index;
 
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -26,6 +27,9 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
  * found by {@link IndexPredicateAnalyzer}.
  *
  */
+@CRAP
+@Deprecated
+
 public class IndexSearchCondition
 {
   private ExprNodeColumnDesc columnDesc;
@@ -56,7 +60,7 @@ public class IndexSearchCondition
    * @param constantDesc constant value to search for
    *
    * @param indexExpr the comparison expression for the index
-   * 
+   *
    * @param originalExpr the original comparison expression
    */
   public IndexSearchCondition(

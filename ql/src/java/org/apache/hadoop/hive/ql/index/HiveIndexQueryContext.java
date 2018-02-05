@@ -25,6 +25,7 @@ import java.util.Set;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
 /**
@@ -32,6 +33,9 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
  * IndexHandler during query processing
  *
  */
+@CRAP
+@Deprecated
+
 public class HiveIndexQueryContext {
 
   private Set<ReadEntity> additionalSemanticInputs; // additional inputs to add to the parse context when
