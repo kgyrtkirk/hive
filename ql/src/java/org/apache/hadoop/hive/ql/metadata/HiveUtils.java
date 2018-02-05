@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezContext;
-import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
@@ -314,26 +313,6 @@ public final class HiveUtils {
 
   private HiveUtils() {
     // prevent instantiation
-  }
-
-  @CRAP
-  @Deprecated
-  public static HiveIndexHandler getIndexHandler(HiveConf conf,
-      String indexHandlerClass) throws HiveException {
-
-    if (indexHandlerClass == null) {
-      return null;
-    }
-    try {
-      Class<? extends HiveIndexHandler> handlerClass =
-        (Class<? extends HiveIndexHandler>)
-        Class.forName(indexHandlerClass, true, Utilities.getSessionSpecifiedClassLoader());
-      HiveIndexHandler indexHandler = ReflectionUtils.newInstance(handlerClass, conf);
-      return indexHandler;
-    } catch (ClassNotFoundException e) {
-      throw new HiveException("Error in loading index handler."
-          + e.getMessage(), e);
-    }
   }
 
   @SuppressWarnings("unchecked")
