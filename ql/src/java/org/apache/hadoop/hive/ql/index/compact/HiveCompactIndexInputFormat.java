@@ -21,6 +21,10 @@ package org.apache.hadoop.hive.ql.index.compact;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.index.HiveIndexedInputFormat;
+import org.apache.hadoop.hive.ql.parse.CRAP;
+
+@CRAP
+@Deprecated
 
 public class HiveCompactIndexInputFormat extends HiveIndexedInputFormat {
 
