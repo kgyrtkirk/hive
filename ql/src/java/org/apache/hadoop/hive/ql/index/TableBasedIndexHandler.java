@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -43,6 +44,9 @@ import org.apache.hadoop.hive.ql.session.LineageState;
 /**
  * Index handler for indexes that use tables to store indexes.
  */
+@CRAP
+@Deprecated
+
 public abstract class TableBasedIndexHandler extends AbstractIndexHandler {
   protected Configuration configuration;
 

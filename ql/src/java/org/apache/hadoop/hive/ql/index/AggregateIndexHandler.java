@@ -43,6 +43,9 @@ import org.apache.hadoop.hive.ql.session.LineageState;
  * Index handler for indexes that have aggregate functions on indexed columns.
  *
  */
+@CRAP
+@Deprecated
+
 public class AggregateIndexHandler extends CompactIndexHandler {
 
     @Override

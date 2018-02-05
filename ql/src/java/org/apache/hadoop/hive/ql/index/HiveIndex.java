@@ -32,6 +32,9 @@ public class HiveIndex {
   public static final Logger l4j = LoggerFactory.getLogger("HiveIndex");
   public static final String INDEX_TABLE_CREATETIME = "hive.index.basetbl.dfs.lastModifiedTime";
 
+  @CRAP
+  @Deprecated
+
   public static enum IndexType {
     AGGREGATE_TABLE("aggregate",  AggregateIndexHandler.class.getName()),
     COMPACT_SUMMARY_TABLE("compact", CompactIndexHandler.class.getName()),
