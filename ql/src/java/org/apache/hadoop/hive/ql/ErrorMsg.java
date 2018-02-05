@@ -63,8 +63,6 @@ public enum ErrorMsg {
   //========================== 10000 range starts here ========================//
   INVALID_TABLE(10001, "Table not found", "42S02"),
   INVALID_COLUMN(10002, "Invalid column reference"),
-  @CRAP
-  INVALID_INDEX(10003, "Invalid index"),
   INVALID_TABLE_OR_COLUMN(10004, "Invalid table alias or column reference"),
   AMBIGUOUS_TABLE_OR_COLUMN(10005, "Ambiguous table alias or column reference"),
   INVALID_PARTITION(10006, "Partition not found"),

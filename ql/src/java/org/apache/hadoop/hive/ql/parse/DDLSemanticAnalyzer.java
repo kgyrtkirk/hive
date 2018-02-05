@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -125,7 +124,6 @@ import org.apache.hadoop.hive.ql.plan.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DropResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.DropWMMappingDesc;
@@ -1609,40 +1607,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     return true;
   }
 
-
-  @CRAP
-
-  private void analyzeDropIndex(ASTNode ast) throws SemanticException {
-    String indexName = unescapeIdentifier(ast.getChild(0).getText());
-    String tableName = getUnescapedName((ASTNode) ast.getChild(1));
-    boolean ifExists = (ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
-    // we want to signal an error if the index doesn't exist and we're
-    // configured not to ignore this
-    boolean throwException =
-        !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
-    Table tbl = getTable(tableName, false);
-    if (throwException && tbl == null) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
-    }
-    try {
-      Index idx = db.getIndex(tableName, indexName);
-    } catch (HiveException e) {
-      if (!(e.getCause() instanceof NoSuchObjectException)) {
-        throw new SemanticException(ErrorMsg.CANNOT_DROP_INDEX.getMsg("dropping index"), e);
-      }
-      if (throwException) {
-        throw new SemanticException(ErrorMsg.INVALID_INDEX.getMsg(indexName));
-      }
-    }
-    if (tbl != null) {
-      inputs.add(new ReadEntity(tbl));
-    }
-
-    DropIndexDesc dropIdxDesc = new DropIndexDesc(indexName, tableName, throwException);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        dropIdxDesc), conf));
-  }
-
   @CRAP
   @Deprecated
   private List<Task<?>> getIndexBuilderMapRed(String[] names, String indexName,
@@ -2719,7 +2683,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         showTblPropertiesDesc), conf));
     setFetchTask(createFetchTask(showTblPropertiesDesc.getSchema()));
   }
-
 
   /**
    * Add the task according to the parsed command tree. This is used for the CLI

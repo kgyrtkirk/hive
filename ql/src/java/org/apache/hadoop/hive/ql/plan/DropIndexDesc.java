@@ -17,20 +17,23 @@
  */
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.ql.parse.CRAP;
+
 public class DropIndexDesc {
-  
+
   private static final long serialVersionUID = 1L;
-  
+
   private String indexName;
-  
+
   private String tableName;
 
   private boolean throwException;
-  
+
   /**
    * @param indexName
    * @param tableName
    */
+  @CRAP
   public DropIndexDesc(String indexName, String tableName, boolean throwException) {
     this.indexName = indexName;
     this.tableName = tableName;
