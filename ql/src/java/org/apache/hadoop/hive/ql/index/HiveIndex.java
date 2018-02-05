@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
  * Holds index related constants
  */
 @CRAP
+@Deprecated
 
 public class HiveIndex {
   public static final Logger l4j = LoggerFactory.getLogger("HiveIndex");

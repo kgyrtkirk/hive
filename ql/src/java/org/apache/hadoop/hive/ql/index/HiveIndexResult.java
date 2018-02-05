@@ -34,6 +34,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.io.Text;
@@ -45,6 +46,9 @@ import org.apache.hadoop.mapred.LineRecordReader.LineReader;
  * HiveIndexResult parses the input stream from an index query
  * to generate a list of file splits to query.
  */
+@CRAP
+@Deprecated
+
 public class HiveIndexResult implements IndexResult {
 
   public static final Logger l4j =

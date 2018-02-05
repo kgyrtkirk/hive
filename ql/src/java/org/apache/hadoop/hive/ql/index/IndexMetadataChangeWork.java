@@ -21,6 +21,11 @@ package org.apache.hadoop.hive.ql.index;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import org.apache.hadoop.hive.ql.parse.CRAP;
+
+@CRAP
+@Deprecated
+
 public class IndexMetadataChangeWork implements Serializable {
 
   private static final long serialVersionUID = 1L;

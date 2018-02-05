@@ -28,7 +28,11 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+
+@CRAP
+@Deprecated
 
 public class IndexMetadataChangeTask extends Task<IndexMetadataChangeWork>{
 
