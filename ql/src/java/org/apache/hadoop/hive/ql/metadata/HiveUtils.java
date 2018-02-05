@@ -444,6 +444,9 @@ public final class HiveUtils {
   /**
    * Convert FieldSchemas to columnNames with backticks around them.
    */
+  @CRAP
+  @Deprecated
+
   public static String getUnparsedColumnNamesFromFieldSchema(
       List<FieldSchema> fieldSchemas) {
     StringBuilder sb = new StringBuilder();
