@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
@@ -47,6 +48,9 @@ import org.apache.hadoop.mapred.JobConf;
  * Input format for doing queries that use indexes.
  * Uses a blockfilter file to specify the blocks to query.
  */
+@CRAP
+@Deprecated
+
 public class HiveIndexedInputFormat extends HiveInputFormat {
   public static final Logger l4j = LoggerFactory.getLogger("HiveIndexInputFormat");
   private final String indexFile;

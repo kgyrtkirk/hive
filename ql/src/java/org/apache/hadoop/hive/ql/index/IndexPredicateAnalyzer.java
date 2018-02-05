@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -62,6 +63,9 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
  * comparing a column reference with a constant value.  It is assumed
  * that all column aliases encountered refer to the same table.
  */
+@CRAP
+@Deprecated
+
 public class IndexPredicateAnalyzer {
 
   private final Set<String> udfNames;

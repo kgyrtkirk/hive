@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.ColumnPrunerProcFactory;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
@@ -154,6 +155,9 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
    * scanning over the original table.
    *
    */
+  @CRAP
+  @Deprecated
+
   private void replaceTableScanProcess(TableScanOperator scanOperator) throws SemanticException {
     RewriteQueryUsingAggregateIndexCtx rewriteQueryCtx = this;
     String alias = rewriteQueryCtx.getAlias();

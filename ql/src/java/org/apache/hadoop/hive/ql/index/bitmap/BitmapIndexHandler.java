@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.IndexUtils;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -62,6 +63,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
  * Index handler for the bitmap index. Bitmap index uses an EWAH-compressed
  * bitmap to represent the values in a table.
  */
+@CRAP
+@Deprecated
 public class BitmapIndexHandler extends TableBasedIndexHandler {
 
   private Configuration configuration;
