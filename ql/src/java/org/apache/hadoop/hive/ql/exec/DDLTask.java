@@ -193,7 +193,6 @@ import org.apache.hadoop.hive.ql.plan.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DropResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.DropWMMappingDesc;
@@ -392,11 +391,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       CreateIndexDesc crtIndex = work.getCreateIndexDesc();
       if (crtIndex != null) {
         return createIndex(db, crtIndex);
-      }
-
-      DropIndexDesc dropIdx = work.getDropIdxDesc();
-      if (dropIdx != null) {
-        return dropIndex(db, dropIdx);
       }
 
       CreateTableLikeDesc crtTblLike = work.getCreateTblLikeDesc();
@@ -1241,16 +1235,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     db.alterDatabase(database.getName(), database);
-    return 0;
-  }
-
-  private int dropIndex(Hive db, DropIndexDesc dropIdx) throws HiveException {
-
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-      throw new UnsupportedOperationException("Indexes unsupported for Tez execution engine");
-    }
-
-    db.dropIndex(dropIdx.getTableName(), dropIdx.getIndexName(), dropIdx.isThrowException(), true);
     return 0;
   }
 

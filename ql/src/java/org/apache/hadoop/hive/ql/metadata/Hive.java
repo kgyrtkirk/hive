@@ -1098,6 +1098,8 @@ public class Hive {
   }
 
   @CRAP
+  @Deprecated
+
   public Index getIndex(String baseTableName, String indexName) throws HiveException {
     String[] names = Utilities.getDbTableName(baseTableName);
     return this.getIndex(names[0], names[1], indexName);
@@ -1110,28 +1112,6 @@ public class Hive {
       return this.getMSC().getIndex(dbName, baseTableName, indexName);
     } catch (Exception e) {
       throw new HiveException(e);
-    }
-  }
-
-  @CRAP
-  public boolean dropIndex(String baseTableName, String index_name,
-      boolean throwException, boolean deleteData) throws HiveException {
-    String[] names = Utilities.getDbTableName(baseTableName);
-    return dropIndex(names[0], names[1], index_name, throwException, deleteData);
-  }
-
-  @CRAP
-  public boolean dropIndex(String db_name, String tbl_name, String index_name,
-      boolean throwException, boolean deleteData) throws HiveException {
-    try {
-      return getMSC().dropIndex(db_name, tbl_name, index_name, deleteData);
-    } catch (NoSuchObjectException e) {
-      if (throwException) {
-        throw new HiveException("Index " + index_name + " doesn't exist. ", e);
-      }
-      return false;
-    } catch (Exception e) {
-      throw new HiveException(e.getMessage(), e);
     }
   }
 

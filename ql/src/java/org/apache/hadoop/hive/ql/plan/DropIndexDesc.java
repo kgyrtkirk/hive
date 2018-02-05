@@ -19,6 +19,9 @@ package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.ql.parse.CRAP;
 
+@CRAP
+@Deprecated
+
 public class DropIndexDesc {
 
   private static final long serialVersionUID = 1L;

@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.parse.CRAP;
  * create index descriptor
  */
 @CRAP
+@Deprecated
 
 public class CreateIndexDesc extends DDLDesc implements Serializable {
 
