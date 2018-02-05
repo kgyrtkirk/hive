@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.security.authorization;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 
 /**
@@ -34,8 +33,6 @@ public enum PrivilegeType {
   ALTER_METADATA(HiveParser.TOK_PRIV_ALTER_METADATA, "Alter"),
   CREATE(HiveParser.TOK_PRIV_CREATE, "Create"),
   DROP(HiveParser.TOK_PRIV_DROP, "Drop"),
-  @CRAP
-  INDEX(-111, "Index"),
   LOCK(HiveParser.TOK_PRIV_LOCK, "Lock"),
   SELECT(HiveParser.TOK_PRIV_SELECT, "Select"),
   SHOW_DATABASE(HiveParser.TOK_PRIV_SHOW_DATABASE, "Show_Database"),
