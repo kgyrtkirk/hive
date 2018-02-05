@@ -1457,11 +1457,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       try {
         columnNames = getColumnNames((ASTNode)ast.getChild(1));
 
-        // Throw an error if the table is indexed
-        List<Index> indexes = db.getIndexes(table.getDbName(), tableName, (short)1);
-        if (indexes != null && indexes.size() > 0) {
-          throw new SemanticException(ErrorMsg.TRUNCATE_COLUMN_INDEXED_TABLE.getMsg());
-        }
         // It would be possible to support this, but this is such a pointless command.
         if (AcidUtils.isInsertOnlyTable(table.getParameters())) {
           throw new SemanticException("Truncating MM table columns not presently supported");
@@ -2473,6 +2468,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         showCreateDbDesc), conf));
     setFetchTask(createFetchTask(showCreateDbDesc.getSchema()));
   }
+
 
   private void analyzeShowCreateTable(ASTNode ast) throws SemanticException {
     ShowCreateTableDesc showCreateTblDesc;

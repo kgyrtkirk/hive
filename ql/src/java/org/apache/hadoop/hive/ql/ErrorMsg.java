@@ -32,7 +32,6 @@ import org.apache.hadoop.hdfs.protocol.UnresolvedPathException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
-import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.security.AccessControlException;
 
@@ -239,7 +238,6 @@ public enum ErrorMsg {
 
   INVALID_JDO_FILTER_EXPRESSION(10143, "Invalid expression for JDO filter"),
 
-  @CRAP
   SHOW_CREATETABLE_INDEX(10144, "SHOW CREATE TABLE does not support tables of type INDEX_TABLE."),
   ALTER_BUCKETNUM_NONBUCKETIZED_TBL(10145, "Table is not bucketized."),
 
@@ -327,8 +325,6 @@ public enum ErrorMsg {
   TABLES_INCOMPATIBLE_SCHEMAS(10235, "Tables have incompatible schemas and their partitions " +
             " cannot be exchanged."),
 
-  @CRAP
-  TRUNCATE_COLUMN_INDEXED_TABLE(10236, "Can not truncate columns from table with indexes"),
   TRUNCATE_COLUMN_NOT_RC(10237, "Only RCFileFormat supports column truncation."),
   TRUNCATE_COLUMN_ARCHIVED(10238, "Column truncation cannot be performed on archived partitions."),
   TRUNCATE_BUCKETED_COLUMN(10239,
