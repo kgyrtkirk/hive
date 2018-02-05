@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -42,6 +43,9 @@ import java.util.Stack;
  * to determine if the rewrite optimization can be applied to the input query.
  *
  */
+@CRAP
+@Deprecated
+
 public final class RewriteCanApplyProcFactory {
   public static CheckTableScanProc canApplyOnTableScanOperator(TableScanOperator topOp) {
     return new CheckTableScanProc();
@@ -51,6 +55,7 @@ public final class RewriteCanApplyProcFactory {
     public CheckTableScanProc() {
     }
 
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       RewriteCanApplyCtx canApplyCtx = (RewriteCanApplyCtx) ctx;

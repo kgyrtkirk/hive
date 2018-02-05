@@ -121,6 +121,7 @@ public final class RewriteCanApplyCtx implements NodeProcessorCtx {
     return aggFunction;
   }
 
+
   public void setSelClauseColsFetchException(boolean selClauseColsFetchException) {
     this.selClauseColsFetchException = selClauseColsFetchException;
   }
