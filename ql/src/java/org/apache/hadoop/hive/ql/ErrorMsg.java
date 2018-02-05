@@ -428,8 +428,6 @@ public enum ErrorMsg {
       "Grouping sets aggregations (with rollups or cubes) are not allowed when " +
       "HIVEMULTIGROUPBYSINGLEREDUCER is turned on. Set hive.multigroupby.singlereducer=false if you want to use grouping sets"),
   CANNOT_RETRIEVE_TABLE_METADATA(10316, "Error while retrieving table metadata"),
-  @CRAP
-  CANNOT_DROP_INDEX(10317, "Error while dropping index"),
   INVALID_AST_TREE(10318, "Internal error : Invalid AST"),
   ERROR_SERIALIZE_METASTORE(10319, "Error while serializing the metastore objects"),
   IO_ERROR(10320, "Error while performing IO operation "),

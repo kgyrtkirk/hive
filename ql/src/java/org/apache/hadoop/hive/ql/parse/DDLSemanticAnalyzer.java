@@ -1605,46 +1605,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     return true;
   }
 
-  @CRAP
-  private List<Partition> preparePartitions(
-      org.apache.hadoop.hive.ql.metadata.Table baseTbl,
-      HashMap<String, String> partSpec,
-      org.apache.hadoop.hive.ql.metadata.Table indexTbl, Hive db,
-      List<Partition> indexTblPartitions)
-      throws HiveException, MetaException {
-    List<Partition> baseTblPartitions = new ArrayList<Partition>();
-    if (partSpec != null) {
-      // if partspec is specified, then only producing index for that
-      // partition
-      Partition part = db.getPartition(baseTbl, partSpec, false);
-      if (part == null) {
-        throw new HiveException("Partition "
-            + Warehouse.makePartName(partSpec, false)
-            + " does not exist in table "
-            + baseTbl.getTableName());
-      }
-      baseTblPartitions.add(part);
-      Partition indexPart = db.getPartition(indexTbl, partSpec, false);
-      if (indexPart == null) {
-        indexPart = db.createPartition(indexTbl, partSpec);
-      }
-      indexTblPartitions.add(indexPart);
-    } else if (baseTbl.isPartitioned()) {
-      // if no partition is specified, create indexes for all partitions one
-      // by one.
-      baseTblPartitions = db.getPartitions(baseTbl);
-      for (Partition basePart : baseTblPartitions) {
-        HashMap<String, String> pSpec = basePart.getSpec();
-        Partition indexPart = db.getPartition(indexTbl, pSpec, false);
-        if (indexPart == null) {
-          indexPart = db.createPartition(indexTbl, pSpec);
-        }
-        indexTblPartitions.add(indexPart);
-      }
-    }
-    return baseTblPartitions;
-  }
-
   private void validateAlterTableType(Table tbl, AlterTableTypes op) throws SemanticException {
     validateAlterTableType(tbl, op, false);
   }
