@@ -63,6 +63,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  * used to rewrite operator plan with index table instead of base table.
  */
 
+@CRAP
+@Deprecated
+
 public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorCtx {
   private static final Logger LOG = LoggerFactory.getLogger(RewriteQueryUsingAggregateIndexCtx.class.getName());
   private RewriteQueryUsingAggregateIndexCtx(ParseContext parseContext, Hive hiveDb,
