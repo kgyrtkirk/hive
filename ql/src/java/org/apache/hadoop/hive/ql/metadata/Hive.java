@@ -884,24 +884,6 @@ public class Hive {
     return schema;
   }
 
-
-  @CRAP
-  @Deprecated
-  public Index getIndex(String baseTableName, String indexName) throws HiveException {
-    String[] names = Utilities.getDbTableName(baseTableName);
-    return this.getIndex(names[0], names[1], indexName);
-  }
-
-  @CRAP
-  public Index getIndex(String dbName, String baseTableName,
-      String indexName) throws HiveException {
-    try {
-      return this.getMSC().getIndex(dbName, baseTableName, indexName);
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
-  }
-
   /**
    * Drops table along with the data in it. If the table doesn't exist then it
    * is a no-op. If ifPurge option is specified it is passed to the
