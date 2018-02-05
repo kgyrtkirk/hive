@@ -22,9 +22,13 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.parse.CRAP;
+
 /**
  * create index descriptor
  */
+@CRAP
+
 public class CreateIndexDesc extends DDLDesc implements Serializable {
 
   private static final long serialVersionUID = 1L;

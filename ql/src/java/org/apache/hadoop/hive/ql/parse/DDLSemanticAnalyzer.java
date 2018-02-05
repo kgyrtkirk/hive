@@ -43,7 +43,6 @@ import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -65,7 +64,6 @@ import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMNullablePool;
 import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -83,8 +81,6 @@ import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
-import org.apache.hadoop.hive.ql.index.HiveIndex;
-import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
@@ -106,8 +102,6 @@ import org.apache.hadoop.hive.ql.plan.AbortTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc.OnePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
-import org.apache.hadoop.hive.ql.plan.AlterIndexDesc.AlterIndexTypes;
 import org.apache.hadoop.hive.ql.plan.AlterMaterializedViewDesc;
 import org.apache.hadoop.hive.ql.plan.AlterMaterializedViewDesc.AlterMaterializedViewTypes;
 import org.apache.hadoop.hive.ql.plan.AlterResourcePlanDesc;
@@ -121,7 +115,6 @@ import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.CreateOrAlterWMMappingDesc;
 import org.apache.hadoop.hive.ql.plan.CreateOrAlterWMPoolDesc;
 import org.apache.hadoop.hive.ql.plan.CreateOrDropTriggerToPoolMappingDesc;
@@ -373,12 +366,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_TRUNCATETABLE:
       analyzeTruncateTable(ast);
       break;
-    case HiveParser.TOK_CREATEINDEX:
-      analyzeCreateIndex(ast);
-      break;
-    case HiveParser.TOK_DROPINDEX:
-      analyzeDropIndex(ast);
-      break;
     case HiveParser.TOK_DESCTABLE:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeDescribeTable(ast);
@@ -485,12 +472,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       break;
     }
-    case HiveParser.TOK_ALTERINDEX_REBUILD:
-      analyzeAlterIndexRebuild(ast);
-      break;
-    case HiveParser.TOK_ALTERINDEX_PROPERTIES:
-      analyzeAlterIndexProps(ast);
-      break;
     case HiveParser.TOK_SHOWPARTITIONS:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowPartitions(ast);
@@ -502,10 +483,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_SHOW_CREATETABLE:
       ctx.setResFile(ctx.getLocalTmpPath());
       analyzeShowCreateTable(ast);
-      break;
-    case HiveParser.TOK_SHOWINDEXES:
-      ctx.setResFile(ctx.getLocalTmpPath());
-      analyzeShowIndexes(ast);
       break;
     case HiveParser.TOK_LOCKTABLE:
       analyzeLockTable(ast);
@@ -1633,93 +1610,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     return true;
   }
 
-  private void analyzeCreateIndex(ASTNode ast) throws SemanticException {
-    String indexName = unescapeIdentifier(ast.getChild(0).getText());
-    String typeName = unescapeSQLString(ast.getChild(1).getText());
-    String[] qTabName = getQualifiedTableName((ASTNode) ast.getChild(2));
-    List<String> indexedCols = getColumnNames((ASTNode) ast.getChild(3));
 
-    IndexType indexType = HiveIndex.getIndexType(typeName);
-    if (indexType != null) {
-      typeName = indexType.getHandlerClsName();
-    } else {
-      try {
-        JavaUtils.loadClass(typeName);
-      } catch (Exception e) {
-        throw new SemanticException("class name provided for index handler not found.", e);
-      }
-    }
-
-    String indexTableName = null;
-    boolean deferredRebuild = false;
-    String location = null;
-    Map<String, String> tblProps = null;
-    Map<String, String> idxProps = null;
-    String indexComment = null;
-
-    RowFormatParams rowFormatParams = new RowFormatParams();
-    StorageFormat storageFormat = new StorageFormat(conf);
-
-    for (int idx = 4; idx < ast.getChildCount(); idx++) {
-      ASTNode child = (ASTNode) ast.getChild(idx);
-      if (storageFormat.fillStorageFormat(child)) {
-        continue;
-      }
-      switch (child.getToken().getType()) {
-      case HiveParser.TOK_TABLEROWFORMAT:
-        rowFormatParams.analyzeRowFormat(child);
-        break;
-      case HiveParser.TOK_CREATEINDEX_INDEXTBLNAME:
-        ASTNode ch = (ASTNode) child.getChild(0);
-        indexTableName = getUnescapedName(ch);
-        break;
-      case HiveParser.TOK_DEFERRED_REBUILDINDEX:
-        deferredRebuild = true;
-        break;
-      case HiveParser.TOK_TABLELOCATION:
-        location = unescapeSQLString(child.getChild(0).getText());
-        addLocationToOutputs(location);
-        break;
-      case HiveParser.TOK_TABLEPROPERTIES:
-        tblProps = DDLSemanticAnalyzer.getProps((ASTNode) child.getChild(0));
-        break;
-      case HiveParser.TOK_INDEXPROPERTIES:
-        idxProps = DDLSemanticAnalyzer.getProps((ASTNode) child.getChild(0));
-        break;
-      case HiveParser.TOK_TABLESERIALIZER:
-        child = (ASTNode) child.getChild(0);
-        storageFormat.setSerde(unescapeSQLString(child.getChild(0).getText()));
-        if (child.getChildCount() == 2) {
-          readProps((ASTNode) (child.getChild(1).getChild(0)),
-              storageFormat.getSerdeProps());
-        }
-        break;
-      case HiveParser.TOK_INDEXCOMMENT:
-        child = (ASTNode) child.getChild(0);
-        indexComment = unescapeSQLString(child.getText());
-      }
-    }
-
-    storageFormat.fillDefaultStorageFormat(false, false);
-    if (indexTableName == null) {
-      indexTableName = MetaStoreUtils.getIndexTableName(qTabName[0], qTabName[1], indexName);
-      indexTableName = qTabName[0] + "." + indexTableName; // on same database with base table
-    } else {
-      indexTableName = getDotName(Utilities.getDbTableName(indexTableName));
-    }
-    inputs.add(new ReadEntity(getTable(qTabName)));
-
-    CreateIndexDesc crtIndexDesc = new CreateIndexDesc(getDotName(qTabName), indexName,
-        indexedCols, indexTableName, deferredRebuild, storageFormat.getInputFormat(),
-        storageFormat.getOutputFormat(),
-        storageFormat.getStorageHandler(), typeName, location, idxProps, tblProps,
-        storageFormat.getSerde(), storageFormat.getSerdeProps(), rowFormatParams.collItemDelim,
-        rowFormatParams.fieldDelim, rowFormatParams.fieldEscape,
-        rowFormatParams.lineDelim, rowFormatParams.mapKeyDelim, indexComment);
-    Task<?> createIndex =
-        TaskFactory.get(new DDLWork(getInputs(), getOutputs(), crtIndexDesc), conf);
-    rootTasks.add(createIndex);
-  }
+  @CRAP
 
   private void analyzeDropIndex(ASTNode ast) throws SemanticException {
     String indexName = unescapeIdentifier(ast.getChild(0).getText());
@@ -1750,47 +1642,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     DropIndexDesc dropIdxDesc = new DropIndexDesc(indexName, tableName, throwException);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         dropIdxDesc), conf));
-  }
-
-  @CRAP
-  private void analyzeAlterIndexRebuild(ASTNode ast) throws SemanticException {
-    String[] qualified = getQualifiedTableName((ASTNode) ast.getChild(0));
-    String indexName = unescapeIdentifier(ast.getChild(1).getText());
-    HashMap<String, String> partSpec = null;
-    Tree part = ast.getChild(2);
-    if (part != null) {
-      partSpec = getValidatedPartSpec(getTable(qualified), (ASTNode)part, conf, false);
-    }
-    List<Task<?>> indexBuilder = getIndexBuilderMapRed(qualified, indexName, partSpec);
-    rootTasks.addAll(indexBuilder);
-
-    // Handle updating index timestamps
-    AlterIndexDesc alterIdxDesc = new AlterIndexDesc(AlterIndexTypes.UPDATETIMESTAMP);
-    alterIdxDesc.setIndexName(indexName);
-    alterIdxDesc.setBaseTableName(getDotName(qualified));
-    alterIdxDesc.setSpec(partSpec);
-
-    Task<?> tsTask = TaskFactory.get(new DDLWork(alterIdxDesc), conf);
-    for (Task<?> t : indexBuilder) {
-      t.addDependentTask(tsTask);
-    }
-  }
-
-  @CRAP
-  private void analyzeAlterIndexProps(ASTNode ast)
-      throws SemanticException {
-
-    String[] qualified = getQualifiedTableName((ASTNode) ast.getChild(0));
-    String indexName = unescapeIdentifier(ast.getChild(1).getText());
-    HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(2))
-        .getChild(0));
-
-    AlterIndexDesc alterIdxDesc = new AlterIndexDesc(AlterIndexTypes.ADDPROPS);
-    alterIdxDesc.setProps(mapProp);
-    alterIdxDesc.setIndexName(indexName);
-    alterIdxDesc.setBaseTableName(getDotName(qualified));
-
-    rootTasks.add(TaskFactory.get(new DDLWork(alterIdxDesc), conf));
   }
 
   @CRAP
@@ -2869,6 +2720,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         showTblPropertiesDesc), conf));
     setFetchTask(createFetchTask(showTblPropertiesDesc.getSchema()));
   }
+
+  @CRAP
 
   private void analyzeShowIndexes(ASTNode ast) throws SemanticException {
     ShowIndexesDesc showIndexesDesc;

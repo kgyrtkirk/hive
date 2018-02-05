@@ -143,6 +143,7 @@ import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -1128,6 +1129,7 @@ public class Hive {
     return this.getIndex(names[0], names[1], indexName);
   }
 
+  @CRAP
   public Index getIndex(String dbName, String baseTableName,
       String indexName) throws HiveException {
     try {
@@ -1509,8 +1511,9 @@ public class Hive {
    */
   public List<String> getTablesByType(String dbName, String pattern, TableType type)
       throws HiveException {
-    if (dbName == null)
+    if (dbName == null) {
       dbName = SessionState.get().getCurrentDatabase();
+    }
 
     try {
       if (type != null) {
@@ -2764,13 +2767,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
       addInsertNonDirectoryInformation(p, fileSystem, insertData);
     }
-    if (directories == null) return;
+    if (directories == null) {
+      return;
+    }
     // We don't expect any nesting in most cases, or a lot of it if it is present; union and LB
     // are some examples where we would have 1, or few, levels respectively.
     while (!directories.isEmpty()) {
       Path dir = directories.poll();
       FileStatus[] contents = fileSystem.listStatus(dir);
-      if (contents == null) continue;
+      if (contents == null) {
+        continue;
+      }
       for (FileStatus status : contents) {
         if (status.isDirectory()) {
           directories.add(status.getPath());
@@ -3744,13 +3751,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     ErrorMsg errorMsg = ErrorMsg.getErrorMsg(e);
 
-    if (logMsg != null)
+    if (logMsg != null) {
       LOG.info(String.format(logMsg, e.getMessage()));
+    }
 
-    if (errorMsg != ErrorMsg.UNRESOLVED_RT_EXCEPTION)
+    if (errorMsg != ErrorMsg.UNRESOLVED_RT_EXCEPTION) {
       return new HiveException(e, e.getMessage(), errorMsg, hiveErrMsg);
-    else
+    } else {
       return new HiveException(msg, e);
+    }
   }
 
   /**
@@ -3948,7 +3957,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
               bucketDest.toUri().toString());
           try {
             fs.rename(bucketSrc, bucketDest);
-            if (newFiles != null) newFiles.add(bucketDest);
+            if (newFiles != null) {
+              newFiles.add(bucketDest);
+            }
           } catch (Exception e) {
             throw getHiveException(e, msg);
           }
@@ -4087,7 +4098,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       recycleDirToCmPath(path, purge);
     }
     FileStatus[] statuses = fs.listStatus(path, pathFilter);
-    if (statuses == null || statuses.length == 0) return;
+    if (statuses == null || statuses.length == 0) {
+      return;
+    }
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       String s = "Deleting files under " + path + " for replace: ";
       for (FileStatus file : statuses) {
@@ -4409,6 +4422,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   /**
    * @deprecated use {@link #compact2(String, String, String, String, Map)}
    */
+  @Deprecated
   public void compact(String dbname, String tableName, String partName, String compactType,
                       Map<String, String> tblproperties) throws HiveException {
     compact2(dbname, tableName, partName, compactType, tblproperties);
@@ -4430,9 +4444,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throws HiveException {
     try {
       CompactionType cr = null;
-      if ("major".equals(compactType)) cr = CompactionType.MAJOR;
-      else if ("minor".equals(compactType)) cr = CompactionType.MINOR;
-      else throw new RuntimeException("Unknown compaction type " + compactType);
+      if ("major".equals(compactType)) {
+        cr = CompactionType.MAJOR;
+      } else if ("minor".equals(compactType)) {
+        cr = CompactionType.MINOR;
+      } else {
+        throw new RuntimeException("Unknown compaction type " + compactType);
+      }
       return getMSC().compact2(dbname, tableName, partName, cr, tblproperties);
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));

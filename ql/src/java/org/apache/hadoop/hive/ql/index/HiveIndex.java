@@ -19,12 +19,15 @@ package org.apache.hadoop.hive.ql.index;
 
 import org.apache.hadoop.hive.ql.index.bitmap.BitmapIndexHandler;
 import org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Holds index related constants
  */
+@CRAP
+
 public class HiveIndex {
   public static final Logger l4j = LoggerFactory.getLogger("HiveIndex");
   public static final String INDEX_TABLE_CREATETIME = "hive.index.basetbl.dfs.lastModifiedTime";
