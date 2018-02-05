@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.metastore.cache.CacheUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -46,6 +45,7 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.IndexUtils;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
@@ -59,6 +59,9 @@ import org.apache.hive.common.util.HiveStringUtils;
  * subquery task to the task tree.
  *
  */
+@CRAP
+@Deprecated
+
 public class IndexWhereTaskDispatcher implements Dispatcher {
 
   private final PhysicalContext physicalContext;
@@ -71,7 +74,6 @@ public class IndexWhereTaskDispatcher implements Dispatcher {
     physicalContext = context;
     indexMap = Maps.newHashMap();
     supportedIndexes = new ArrayList<String>();
-    supportedIndexes.add(CompactIndexHandler.class.getName());
   }
 
   @Override

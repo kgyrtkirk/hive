@@ -382,10 +382,6 @@ public final class FunctionRegistry {
     system.registerGenericUDF("between", GenericUDFBetween.class);
     system.registerGenericUDF("in_bloom_filter", GenericUDFInBloomFilter.class);
 
-    system.registerGenericUDF("ewah_bitmap_and", GenericUDFEWAHBitmapAnd.class);
-    system.registerGenericUDF("ewah_bitmap_or", GenericUDFEWAHBitmapOr.class);
-    system.registerGenericUDF("ewah_bitmap_empty", GenericUDFEWAHBitmapEmpty.class);
-
     // Utility UDFs
     system.registerUDF("version", UDFVersion.class, false);
 
@@ -445,8 +441,6 @@ public final class FunctionRegistry {
 
     system.registerGenericUDAF("ngrams", new GenericUDAFnGrams());
     system.registerGenericUDAF("context_ngrams", new GenericUDAFContextNGrams());
-
-    system.registerGenericUDAF("ewah_bitmap", new GenericUDAFEWAHBitmap());
 
     system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
@@ -1660,7 +1654,9 @@ public final class FunctionRegistry {
 
   public static boolean isPermanentFunction(ExprNodeGenericFuncDesc fnExpr) {
     GenericUDF udf = fnExpr.getGenericUDF();
-    if (udf == null) return false;
+    if (udf == null) {
+      return false;
+    }
 
     Class<?> clazz = udf.getClass();
     if (udf instanceof GenericUDFBridge) {
@@ -1786,7 +1782,9 @@ public final class FunctionRegistry {
    */
   public static boolean isBuiltInFuncExpr(ExprNodeGenericFuncDesc fnExpr) {
     GenericUDF udf = fnExpr.getGenericUDF();
-    if (udf == null) return false;
+    if (udf == null) {
+      return false;
+    }
 
     Class clazz = udf.getClass();
     if (udf instanceof GenericUDFBridge) {
