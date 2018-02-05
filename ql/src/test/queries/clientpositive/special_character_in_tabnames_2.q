@@ -24,7 +24,6 @@ SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 
 -- manual indexing
 INSERT OVERWRITE DIRECTORY "${system:test.tmp.dir}/index_where" SELECT `_bucketname` ,  `_offsets` FROM `default__s/c_src_index__` WHERE key > 80 AND key < 100;
-SET hive.index.compact.file=${system:test.tmp.dir}/index_where;
 SET hive.optimize.index.filter=false;
 SET hive.input.format=org.apache.hadoop.hive.ql.index.compact.HiveCompactIndexInputFormat;
 

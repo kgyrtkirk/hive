@@ -25,7 +25,6 @@ alter table alltypes_orc set fileformat orc;
 load data local inpath '../../data/files/alltypes2.txt' overwrite into table alltypes;
 
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-SET hive.optimize.index.filter=true;
 set hive.merge.orcfile.stripe.level=false;
 set hive.merge.tezfiles=false;
 set hive.merge.mapfiles=false;
