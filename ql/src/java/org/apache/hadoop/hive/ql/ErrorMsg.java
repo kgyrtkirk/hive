@@ -32,6 +32,7 @@ import org.apache.hadoop.hdfs.protocol.UnresolvedPathException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.security.AccessControlException;
 
@@ -62,6 +63,7 @@ public enum ErrorMsg {
   //========================== 10000 range starts here ========================//
   INVALID_TABLE(10001, "Table not found", "42S02"),
   INVALID_COLUMN(10002, "Invalid column reference"),
+  @CRAP
   INVALID_INDEX(10003, "Invalid index"),
   INVALID_TABLE_OR_COLUMN(10004, "Invalid table alias or column reference"),
   AMBIGUOUS_TABLE_OR_COLUMN(10005, "Ambiguous table alias or column reference"),
@@ -239,6 +241,7 @@ public enum ErrorMsg {
 
   INVALID_JDO_FILTER_EXPRESSION(10143, "Invalid expression for JDO filter"),
 
+  @CRAP
   SHOW_CREATETABLE_INDEX(10144, "SHOW CREATE TABLE does not support tables of type INDEX_TABLE."),
   ALTER_BUCKETNUM_NONBUCKETIZED_TBL(10145, "Table is not bucketized."),
 
@@ -326,6 +329,7 @@ public enum ErrorMsg {
   TABLES_INCOMPATIBLE_SCHEMAS(10235, "Tables have incompatible schemas and their partitions " +
             " cannot be exchanged."),
 
+  @CRAP
   TRUNCATE_COLUMN_INDEXED_TABLE(10236, "Can not truncate columns from table with indexes"),
   TRUNCATE_COLUMN_NOT_RC(10237, "Only RCFileFormat supports column truncation."),
   TRUNCATE_COLUMN_ARCHIVED(10238, "Column truncation cannot be performed on archived partitions."),
@@ -426,6 +430,7 @@ public enum ErrorMsg {
       "Grouping sets aggregations (with rollups or cubes) are not allowed when " +
       "HIVEMULTIGROUPBYSINGLEREDUCER is turned on. Set hive.multigroupby.singlereducer=false if you want to use grouping sets"),
   CANNOT_RETRIEVE_TABLE_METADATA(10316, "Error while retrieving table metadata"),
+  @CRAP
   CANNOT_DROP_INDEX(10317, "Error while dropping index"),
   INVALID_AST_TREE(10318, "Internal error : Invalid AST"),
   ERROR_SERIALIZE_METASTORE(10319, "Error while serializing the metastore objects"),
