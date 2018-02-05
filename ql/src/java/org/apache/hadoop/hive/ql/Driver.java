@@ -40,6 +40,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
@@ -549,6 +550,9 @@ public class Driver implements IDriver {
         queryTxnMgr = initTxnMgr;
       } else {
         queryTxnMgr = SessionState.get().initTxnMgr(conf);
+      }
+      if (queryTxnMgr instanceof Configurable) {
+        ((Configurable) queryTxnMgr).setConf(conf);
       }
       queryState.setTxnManager(queryTxnMgr);
 
