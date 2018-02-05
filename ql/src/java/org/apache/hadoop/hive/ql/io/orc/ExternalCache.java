@@ -97,8 +97,7 @@ public class ExternalCache implements FooterCache {
   public void configure(HiveConf queryConfig) {
     this.conf = queryConfig;
     this.sarg = ConvertAstToSearchArg.createFromConf(conf);
-    this.isPpdEnabled = HiveConf.getBoolVar(conf, ConfVars.HIVEOPTINDEXFILTER)
-        && HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_MS_FOOTER_CACHE_PPD);
+    this.isPpdEnabled = HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_MS_FOOTER_CACHE_PPD);
     this.isInTest = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
     this.sargIsOriginal = this.sargNotIsOriginal = null;
   }
@@ -161,7 +160,9 @@ public class ExternalCache implements FooterCache {
 
   private boolean processBbResult(
       ByteBuffer bb, int ix, HdfsFileStatusWithId file, OrcTail[] result) throws IOException {
-    if (bb == null) return true;
+    if (bb == null) {
+      return true;
+    }
     result[ix] = createOrcTailFromMs(file, bb);
     if (result[ix] == null) {
       return false;
@@ -173,7 +174,10 @@ public class ExternalCache implements FooterCache {
 
   private void processPpdResult(MetadataPpdResult mpr, HdfsFileStatusWithId file,
       int ix, OrcTail[] result, ByteBuffer[] ppdResult) throws IOException {
-    if (mpr == null) return; // This file is unknown to metastore.
+    if (mpr == null)
+     {
+      return; // This file is unknown to metastore.
+    }
 
     ppdResult[ix] = mpr.isSetIncludeBitset() ? mpr.bufferForIncludeBitset() : NO_SPLIT_AFTER_PPD;
     if (mpr.isSetMetadata()) {
@@ -187,7 +191,9 @@ public class ExternalCache implements FooterCache {
   private List<Long> determineFileIdsToQuery(
       List<HdfsFileStatusWithId> files, OrcTail[] result, HashMap<Long, Integer> posMap) {
     for (int i = 0; i < result.length; ++i) {
-      if (result[i] != null) continue;
+      if (result[i] != null) {
+        continue;
+      }
       HdfsFileStatusWithId file = files.get(i);
       final FileStatus fs = file.getFileStatus();
       Long fileId = file.getFileId();
@@ -224,9 +230,13 @@ public class ExternalCache implements FooterCache {
   }
 
   private ByteBuffer getSerializedSargForMetastore(boolean isOriginal) {
-    if (sarg == null) return null;
+    if (sarg == null) {
+      return null;
+    }
     ByteBuffer serializedSarg = isOriginal ? sargIsOriginal : sargNotIsOriginal;
-    if (serializedSarg != null) return serializedSarg;
+    if (serializedSarg != null) {
+      return serializedSarg;
+    }
     SearchArgument sarg2 = sarg;
     Kryo kryo = SerializationUtilities.borrowKryo();
     try {
@@ -292,7 +302,9 @@ public class ExternalCache implements FooterCache {
 
   private static OrcTail createOrcTailFromMs(
       HdfsFileStatusWithId file, ByteBuffer bb) throws IOException {
-    if (bb == null) return null;
+    if (bb == null) {
+      return null;
+    }
     FileStatus fs = file.getFileStatus();
     ByteBuffer copy = bb.duplicate();
     try {

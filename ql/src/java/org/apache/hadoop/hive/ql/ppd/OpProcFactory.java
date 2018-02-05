@@ -651,6 +651,7 @@ public final class OpProcFactory {
   }
 
   public static class ReduceSinkPPD extends DefaultPPD implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
       super.process(nd, stack, procCtx, nodeOutputs);
@@ -788,7 +789,9 @@ public final class OpProcFactory {
      * @param ewi
      */
     protected void logExpr(Node nd, ExprWalkerInfo ewi) {
-      if (!LOG.isDebugEnabled()) return;
+      if (!LOG.isDebugEnabled()) {
+        return;
+      }
       for (Entry<String, List<ExprNodeDesc>> e : ewi.getFinalCandidates().entrySet()) {
         StringBuilder sb = new StringBuilder("Pushdown predicates of ").append(nd.getName())
             .append(" for alias ").append(e.getKey()).append(": ");
@@ -974,12 +977,7 @@ public final class OpProcFactory {
 
     TableScanDesc tableScanDesc = tableScanOp.getConf();
     Table tbl = tableScanDesc.getTableMetadata();
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTINDEXFILTER)) {
-      // attach the original predicate to the table scan operator for index
-      // optimizations that require the pushed predicate before pcr & later
-      // optimizations are applied
-      tableScanDesc.setFilterExpr(originalPredicate);
-    }
+    tableScanDesc.setFilterExpr(originalPredicate);
     if (!tbl.isNonNative()) {
       return originalPredicate;
     }

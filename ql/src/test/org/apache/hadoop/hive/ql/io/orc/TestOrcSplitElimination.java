@@ -449,7 +449,9 @@ public class TestOrcSplitElimination {
       for (int i = 0; i < metadatas.length; ++i) {
         long fileId = fileIds.get(i);
         ByteBuffer metadata = metadatas[i];
-        if (metadata == null) continue;
+        if (metadata == null) {
+          continue;
+        }
         getHitByExprCount.incrementAndGet();
         metadata = eliminated[i] ? null : metadata;
         MetadataPpdResult mpr = new MetadataPpdResult();
@@ -475,7 +477,9 @@ public class TestOrcSplitElimination {
       HashMap<Long, ByteBuffer> result = new HashMap<>();
       for (Long id : fileIds) {
         MockItem mi = cache.get(id);
-        if (mi == null) continue;
+        if (mi == null) {
+          continue;
+        }
         getHitCount.incrementAndGet();
         result.put(id, mi.data);
       }
@@ -556,7 +560,9 @@ public class TestOrcSplitElimination {
     }
     @Override
     public int hashCode() {
-      if (fs == null) return 0;
+      if (fs == null) {
+        return 0;
+      }
       final int prime = 31;
       int result = prime * 1 + fs.getPath().hashCode();
       result = prime * result + Long.valueOf(fs.getStart()).hashCode();
@@ -565,11 +571,19 @@ public class TestOrcSplitElimination {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj) return true;
-      if (!(obj instanceof FsWithHash)) return false;
+      if (this == obj) {
+        return true;
+      }
+      if (!(obj instanceof FsWithHash)) {
+        return false;
+      }
       FsWithHash other = (FsWithHash)obj;
-      if ((fs == null) != (other.fs == null)) return false;
-      if (fs == null && other.fs == null) return true;
+      if ((fs == null) != (other.fs == null)) {
+        return false;
+      }
+      if (fs == null && other.fs == null) {
+        return true;
+      }
       return fs.getStart() == other.fs.getStart() && fs.getLength() == other.fs.getLength()
           && fs.getPath().equals(other.fs.getPath());
     }
@@ -699,7 +713,6 @@ public class TestOrcSplitElimination {
     conf.setLong(HiveConf.ConfVars.MAPREDMINSPLITSIZE.varname, 1000);
     conf.setLong(HiveConf.ConfVars.MAPREDMAXSPLITSIZE.varname, 5000);
     conf.setBoolean(ConfVars.HIVE_ORC_MS_FOOTER_CACHE_PPD.varname, isPpd);
-    conf.setBoolean(ConfVars.HIVEOPTINDEXFILTER.varname, isPpd);
   }
 
   private ObjectInspector createIO() {

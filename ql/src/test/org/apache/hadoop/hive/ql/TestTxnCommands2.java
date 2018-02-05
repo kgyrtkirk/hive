@@ -190,8 +190,6 @@ public class TestTxnCommands2 {
    * @throws Exception
    */
   private void testOrcPPD(boolean enablePPD) throws Exception {
-    boolean originalPpd = hiveConf.getBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER, enablePPD);//enables ORC PPD
     //create delta_0001_0001_0000 (should push predicate here)
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(new int[][]{{1, 2}, {3, 4}}));
     List<String> explain;
@@ -256,7 +254,6 @@ public class TestTxnCommands2 {
     List<String> rs1 = runStatementOnDriver(query);
     int [][] resultData = new int[][] {{3, 5}, {5, 6}, {9, 10}};
     Assert.assertEquals("Update failed", stringifyValues(resultData), rs1);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER, originalPpd);
   }
 
   static void assertExplainHasString(String string, List<String> queryPlan, String errMsg) {
@@ -1414,7 +1411,6 @@ public class TestTxnCommands2 {
   @Test
   public void testETLSplitStrategyForACID() throws Exception {
     hiveConf.setVar(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY, "ETL");
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER, true);
     runStatementOnDriver("insert into " + Table.ACIDTBL + " values(1,2)");
     runStatementOnDriver("alter table " + Table.ACIDTBL + " compact 'MAJOR'");
     runWorker(hiveConf);

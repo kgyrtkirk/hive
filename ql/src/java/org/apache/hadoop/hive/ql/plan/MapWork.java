@@ -36,7 +36,6 @@ import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.CRAP0;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -98,8 +97,6 @@ public class MapWork extends BaseWork {
   private Path tmpPathForPartitionPruning;
 
   private String inputformat;
-
-  private String indexIntermediateFile;
 
   private Integer numMapTasks;
   private Long maxSplitSize;
@@ -565,13 +562,6 @@ public class MapWork extends BaseWork {
     return this.mapperCannotSpanPartns;
   }
 
-  @CRAP0
-  @Deprecated
-
-  public String getIndexIntermediateFile() {
-    return indexIntermediateFile;
-  }
-
   public ArrayList<String> getAliases() {
     return new ArrayList<String>(aliasToWork.keySet());
   }
@@ -620,17 +610,6 @@ public class MapWork extends BaseWork {
   @Explain(displayName = "Path -> Sorted Columns", explainLevels = { Level.EXTENDED })
   public Map<String, List<SortCol>> getSortedColsByDirectory() {
     return sortedColsByDirectory;
-  }
-
-  @CRAP0
-  @Deprecated
-
-  public void addIndexIntermediateFile(String fileName) {
-    if (this.indexIntermediateFile == null) {
-      this.indexIntermediateFile = fileName;
-    } else {
-      this.indexIntermediateFile += "," + fileName;
-    }
   }
 
   public int getSamplingType() {
