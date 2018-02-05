@@ -36,7 +36,6 @@ public class HiveIndex {
   @Deprecated
 
   public static enum IndexType {
-    AGGREGATE_TABLE("aggregate",  AggregateIndexHandler.class.getName()),
     COMPACT_SUMMARY_TABLE("compact", CompactIndexHandler.class.getName()),
     BITMAP_TABLE("bitmap", BitmapIndexHandler.class.getName());
 

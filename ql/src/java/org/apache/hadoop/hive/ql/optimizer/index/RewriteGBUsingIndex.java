@@ -34,13 +34,13 @@ import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.index.AggregateIndexHandler;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.IndexUtils;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
@@ -86,6 +86,8 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  *  @see RewriteQueryUsingAggregateIndex
  *  For test cases, @see ql_rewrite_gbtoidx.q
  */
+@CRAP
+@Deprecated
 
 public class RewriteGBUsingIndex extends Transform {
   private ParseContext parseContext;
@@ -224,9 +226,11 @@ public class RewriteGBUsingIndex extends Transform {
    * @return
    * @throws SemanticException
    */
+  @CRAP
+  @Deprecated
+
   private Map<Table, List<Index>> getIndexesForRewrite() throws SemanticException{
     List<String> supportedIndexes = new ArrayList<String>();
-    supportedIndexes.add(AggregateIndexHandler.class.getName());
 
     // query the metastore to know what columns we have indexed
     Collection<TableScanOperator> topTables = parseContext.getTopOps().values();
@@ -252,6 +256,9 @@ public class RewriteGBUsingIndex extends Transform {
    * @return
    * @throws SemanticException
    */
+  @CRAP
+  @Deprecated
+
   private boolean checkIfIndexBuiltOnAllTablePartitions(TableScanOperator tableScan,
       List<Index> indexes) throws SemanticException {
     // check if we have indexes on all partitions in this table scan

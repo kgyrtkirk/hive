@@ -26,7 +26,6 @@ public class TestIndexType extends TestCase {
 
     @Test
     public void testIndexTypeHandlers(){
-        assertEquals(HiveIndex.IndexType.AGGREGATE_TABLE.getHandlerClsName(), AggregateIndexHandler.class.getName());
         assertEquals(HiveIndex.IndexType.BITMAP_TABLE.getHandlerClsName(), BitmapIndexHandler.class.getName());
         assertEquals(HiveIndex.IndexType.COMPACT_SUMMARY_TABLE.getHandlerClsName(), CompactIndexHandler.class.getName());
     }
