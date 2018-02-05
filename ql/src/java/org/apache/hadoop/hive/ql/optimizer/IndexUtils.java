@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -30,17 +29,9 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.index.IndexMetadataChangeTask;
-import org.apache.hadoop.hive.ql.index.IndexMetadataChangeWork;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -50,8 +41,6 @@ import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.session.LineageState;
 
 /**
  * Utility class for index support.
@@ -217,36 +206,6 @@ public final class IndexUtils {
   public static List<Index> getAllIndexes(Table table, short max) throws HiveException {
     Hive hive = Hive.get();
     return hive.getIndexes(table.getTTable().getDbName(), table.getTTable().getTableName(), max);
-  }
-
-  public static Task<?> createRootTask(
-      HiveConf builderConf,
-      Set<ReadEntity> inputs,
-      Set<WriteEntity> outputs,
-      StringBuilder command,
-      LinkedHashMap<String, String> partSpec,
-      String indexTableName,
-      String dbName,
-      LineageState lineageState){
-    // Don't try to index optimize the query to build the index
-    HiveConf.setBoolVar(builderConf, HiveConf.ConfVars.HIVEOPTINDEXFILTER, false);
-    Driver driver = new Driver(builderConf, SessionState.get().getUserName(), lineageState);
-    driver.compile(command.toString(), false);
-
-    Task<?> rootTask = driver.getPlan().getRootTasks().get(0);
-    inputs.addAll(driver.getPlan().getInputs());
-    outputs.addAll(driver.getPlan().getOutputs());
-
-    IndexMetadataChangeWork indexMetaChange = new IndexMetadataChangeWork(partSpec,
-        indexTableName, dbName);
-    IndexMetadataChangeTask indexMetaChangeTsk =
-        (IndexMetadataChangeTask) TaskFactory.get(indexMetaChange, builderConf);
-    indexMetaChangeTsk.setWork(indexMetaChange);
-    rootTask.addDependentTask(indexMetaChangeTsk);
-
-    driver.destroy();
-
-    return rootTask;
   }
 
 
