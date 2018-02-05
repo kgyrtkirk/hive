@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 
 public enum HiveOperation {
@@ -72,7 +71,6 @@ public enum HiveOperation {
   SHOW_CREATEDATABASE("SHOW_CREATEDATABASE", new Privilege[]{Privilege.SELECT}, null),
   SHOW_CREATETABLE("SHOW_CREATETABLE", new Privilege[]{Privilege.SELECT}, null),
   SHOWFUNCTIONS("SHOWFUNCTIONS", null, null, true, false),
-  SHOWINDEXES("SHOWINDEXES", null, null, true, false),
   SHOWPARTITIONS("SHOWPARTITIONS", null, null),
   SHOWLOCKS("SHOWLOCKS", null, null, true, false),
   SHOWCONF("SHOWCONF", null, null),
@@ -90,14 +88,6 @@ public enum HiveOperation {
   DROP_MATERIALIZED_VIEW("DROP_MATERIALIZED_VIEW", null, new Privilege[]{Privilege.DROP}),
   ALTER_MATERIALIZED_VIEW_REWRITE("ALTER_MATERIALIZED_VIEW_REWRITE",
       new Privilege[]{Privilege.ALTER_METADATA}, null),
-  @CRAP
-  CREATEINDEX("CREATEINDEX", null, null),
-  @CRAP
-
-  DROPINDEX("DROPINDEX", null, null),
-  @CRAP
-
-  ALTERINDEX_REBUILD("ALTERINDEX_REBUILD", null, null),
   ALTERVIEW_PROPERTIES("ALTERVIEW_PROPERTIES", null, null),
   DROPVIEW_PROPERTIES("DROPVIEW_PROPERTIES", null, null),
   LOCKTABLE("LOCKTABLE",  new Privilege[]{Privilege.LOCK}, null),
@@ -120,9 +110,6 @@ public enum HiveOperation {
   TRUNCATETABLE("TRUNCATETABLE", null, new Privilege[]{Privilege.DROP}),
   CREATETABLE_AS_SELECT("CREATETABLE_AS_SELECT", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.CREATE}),
   QUERY("QUERY", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.ALTER_DATA, Privilege.CREATE}, true, false),
-  @CRAP
-
-  ALTERINDEX_PROPS("ALTERINDEX_PROPS",null, null),
   ALTERDATABASE("ALTERDATABASE", null, null),
   ALTERDATABASE_OWNER("ALTERDATABASE_OWNER", null, null),
   ALTERDATABASE_LOCATION("ALTERDATABASE_LOCATION", new Privilege[]{Privilege.ALTER_DATA}, null),
