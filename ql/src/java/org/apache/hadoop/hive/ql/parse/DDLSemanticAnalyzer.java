@@ -80,7 +80,6 @@ import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
-import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
@@ -166,7 +165,6 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
-import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -1605,40 +1603,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return true;
-  }
-
-  @CRAP
-  @Deprecated
-  private List<Task<?>> getIndexBuilderMapRed(String[] names, String indexName,
-      HashMap<String, String> partSpec) throws SemanticException {
-    try {
-      Index index = db.getIndex(names[0], names[1], indexName);
-      Table indexTbl = null;
-      String indexTableName = index.getIndexTableName();
-      if (indexTableName != null) {
-        indexTbl = getTable(Utilities.getDbTableName(index.getDbName(), indexTableName));
-      }
-      Table baseTbl = getTable(new String[] {index.getDbName(), index.getOrigTableName()});
-
-      String handlerCls = index.getIndexHandlerClass();
-      HiveIndexHandler handler = HiveUtils.getIndexHandler(conf, handlerCls);
-
-      List<Partition> indexTblPartitions = null;
-      List<Partition> baseTblPartitions = null;
-      if (indexTbl != null) {
-        indexTblPartitions = new ArrayList<Partition>();
-        baseTblPartitions = preparePartitions(baseTbl, partSpec,
-            indexTbl, db, indexTblPartitions);
-      }
-
-      LineageState lineageState = queryState.getLineageState();
-      List<Task<?>> ret = handler.generateIndexBuildTaskList(baseTbl,
-          index, indexTblPartitions, baseTblPartitions, indexTbl, getInputs(), getOutputs(),
-          lineageState);
-      return ret;
-    } catch (Exception e) {
-      throw new SemanticException(e);
-    }
   }
 
   @CRAP

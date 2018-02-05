@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.session.LineageState;
  * HiveIndexHandler defines a pluggable interface for adding new index handlers
  * to Hive.
  */
+@CRAP
 public interface HiveIndexHandler extends Configurable {
   /**
    * Determines whether this handler implements indexes by creating an index
@@ -109,7 +110,6 @@ public interface HiveIndexHandler extends Configurable {
    * @throws HiveException if plan generation fails
    */
   @CRAP
-
   List<Task<?>> generateIndexBuildTaskList(
       org.apache.hadoop.hive.ql.metadata.Table baseTbl,
       org.apache.hadoop.hive.metastore.api.Index index,
