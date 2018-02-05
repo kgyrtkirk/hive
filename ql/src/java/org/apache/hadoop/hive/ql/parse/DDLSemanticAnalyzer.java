@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -1897,17 +1896,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       List<String> bucketCols = null;
       Class<? extends InputFormat> inputFormatClass = null;
       boolean isArchived = false;
-      boolean checkIndex = HiveConf.getBoolVar(conf,
-          HiveConf.ConfVars.HIVE_CONCATENATE_CHECK_INDEX);
-      if (checkIndex) {
-        List<Index> indexes = db.getIndexes(tblObj.getDbName(), tblObj.getTableName(),
-            Short.MAX_VALUE);
-        if (indexes != null && indexes.size() > 0) {
-          throw new SemanticException("can not do merge because source table "
-              + tableName + " is indexed.");
-        }
-      }
-
       if (tblObj.isPartitioned()) {
         if (partSpec == null) {
           throw new SemanticException("source table " + tableName

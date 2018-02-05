@@ -2302,6 +2302,9 @@ public class HiveConf extends Configuration {
     HIVE_REWORK_MAPREDWORK("hive.rework.mapredwork", false,
         "should rework the mapred work or not.\n" +
         "This is first introduced by SymlinkTextInputFormat to replace symlink files with real paths at compile time."),
+    @CRAP0
+    @Deprecated
+
     HIVE_CONCATENATE_CHECK_INDEX ("hive.exec.concatenate.check.index", true,
         "If this is set to true, Hive will throw error when doing\n" +
         "'alter table tbl_name [partSpec] concatenate' on a table/partition\n" +

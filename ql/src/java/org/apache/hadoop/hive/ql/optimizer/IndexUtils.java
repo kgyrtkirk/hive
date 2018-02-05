@@ -204,9 +204,9 @@ public final class IndexUtils {
    * @throws HiveException
    **/
   public static List<Index> getAllIndexes(Table table, short max) throws HiveException {
-    Hive hive = Hive.get();
-    return hive.getIndexes(table.getTTable().getDbName(), table.getTTable().getTableName(), max);
+    //    Hive hive = Hive.get();
+    return new ArrayList<>();
+    //    return hive.getIndexes(table.getTTable().getDbName(), table.getTTable().getTableName(), max);
   }
-
 
 }

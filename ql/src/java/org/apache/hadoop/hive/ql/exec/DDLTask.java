@@ -82,7 +82,6 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -224,7 +223,6 @@ import org.apache.hadoop.hive.ql.plan.ShowCreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
-import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowResourcePlanDesc;
@@ -564,11 +562,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       GrantRevokeRoleDDL grantOrRevokeRoleDDL = work.getGrantRevokeRoleDDL();
       if (grantOrRevokeRoleDDL != null) {
         return grantOrRevokeRole(db, grantOrRevokeRoleDDL);
-      }
-
-      ShowIndexesDesc showIndexes = work.getShowIndexesDesc();
-      if (showIndexes != null) {
-        return showIndexes(db, showIndexes);
       }
 
       AlterTablePartMergeFilesDesc mergeFilesDesc = work.getMergeFilesDesc();
@@ -2635,57 +2628,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return builder;
   }
 
-  /**
-   * Write a list of indexes to a file.
-   *
-   * @param db
-   *          The database in question.
-   * @param showIndexes
-   *          These are the indexes we're interested in.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int showIndexes(Hive db, ShowIndexesDesc showIndexes) throws HiveException {
-    // get the indexes for the table and populate the output
-    String tableName = showIndexes.getTableName();
-    Table tbl = null;
-    List<Index> indexes = null;
-
-    tbl = db.getTable(tableName);
-
-    indexes = db.getIndexes(tbl.getDbName(), tbl.getTableName(), (short) -1);
-
-    // In case the query is served by HiveServer2, don't pad it with spaces,
-    // as HiveServer2 output is consumed by JDBC/ODBC clients.
-    boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
-
-    // write the results in the file
-    DataOutputStream outStream = getOutputStream(showIndexes.getResFile());
-    try {
-      if (showIndexes.isFormatted()) {
-        // column headers
-        outStream.write(MetaDataFormatUtils.getIndexColumnsHeader().getBytes(StandardCharsets.UTF_8));
-      }
-
-      for (Index index : indexes)
-      {
-        outStream.write(MetaDataFormatUtils.getIndexInformation(index, isOutputPadded).getBytes(StandardCharsets.UTF_8));
-      }
-    } catch (FileNotFoundException e) {
-      LOG.info("show indexes: ", e);
-      throw new HiveException(e.toString());
-    } catch (IOException e) {
-      LOG.info("show indexes: ", e);
-      throw new HiveException(e.toString());
-    } catch (Exception e) {
-      throw new HiveException(e.toString());
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-
-    return 0;
-  }
 
   /**
    * Write a list of the available databases to a file.
