@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
@@ -42,8 +41,6 @@ import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.ql.index.HiveIndex;
-import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -135,48 +132,6 @@ public final class MetaDataFormatUtils {
       }
     }
     return null;
-  }
-
-  @CRAP
-  @Deprecated
-
-  public static String getIndexInformation(Index index, boolean isOutputPadded) {
-    StringBuilder indexInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
-
-    List<String> indexColumns = new ArrayList<String>();
-
-    indexColumns.add(index.getIndexName());
-    indexColumns.add(index.getOrigTableName());
-
-    // index key names
-    List<FieldSchema> indexKeys = index.getSd().getCols();
-    StringBuilder keyString = new StringBuilder();
-    boolean first = true;
-    for (FieldSchema key : indexKeys)
-    {
-      if (!first)
-      {
-        keyString.append(", ");
-      }
-      keyString.append(key.getName());
-      first = false;
-    }
-
-    indexColumns.add(keyString.toString());
-
-    indexColumns.add(index.getIndexTableName());
-
-    // index type
-    String indexHandlerClass = index.getIndexHandlerClass();
-    IndexType indexType = HiveIndex.getIndexTypeByClassName(indexHandlerClass);
-    indexColumns.add(indexType.getName());
-
-    String comment = HiveStringUtils.escapeJava(index.getParameters().get("comment"));
-    indexColumns.add(comment);
-
-    formatOutput(indexColumns.toArray(new String[0]), indexInfo, isOutputPadded, true);
-
-    return indexInfo.toString();
   }
 
   public static String getConstraintsInformation(PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
