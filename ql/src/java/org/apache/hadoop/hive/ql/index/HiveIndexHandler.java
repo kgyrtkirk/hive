@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.session.LineageState;
@@ -107,6 +108,8 @@ public interface HiveIndexHandler extends Configurable {
    *
    * @throws HiveException if plan generation fails
    */
+  @CRAP
+
   List<Task<?>> generateIndexBuildTaskList(
       org.apache.hadoop.hive.ql.metadata.Table baseTbl,
       org.apache.hadoop.hive.metastore.api.Index index,

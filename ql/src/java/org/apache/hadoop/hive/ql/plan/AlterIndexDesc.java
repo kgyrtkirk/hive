@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
@@ -28,6 +29,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  *
  */
 @Explain(displayName = "Alter Index", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+@Deprecated
 public class AlterIndexDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private String indexName;
@@ -48,6 +50,7 @@ public class AlterIndexDesc extends DDLDesc implements Serializable {
   public AlterIndexDesc() {
   }
 
+  @CRAP
   public AlterIndexDesc(AlterIndexTypes type) {
     this.op = type;
   }

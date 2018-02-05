@@ -1752,6 +1752,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         dropIdxDesc), conf));
   }
 
+  @CRAP
   private void analyzeAlterIndexRebuild(ASTNode ast) throws SemanticException {
     String[] qualified = getQualifiedTableName((ASTNode) ast.getChild(0));
     String indexName = unescapeIdentifier(ast.getChild(1).getText());
@@ -1775,6 +1776,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  @CRAP
   private void analyzeAlterIndexProps(ASTNode ast)
       throws SemanticException {
 
@@ -1791,6 +1793,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(alterIdxDesc), conf));
   }
 
+  @CRAP
+  @Deprecated
   private List<Task<?>> getIndexBuilderMapRed(String[] names, String indexName,
       HashMap<String, String> partSpec) throws SemanticException {
     try {
@@ -1823,6 +1827,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  @CRAP
   private List<Partition> preparePartitions(
       org.apache.hadoop.hive.ql.metadata.Table baseTbl,
       HashMap<String, String> partSpec,
