@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.physical.index.IndexWhereProcessor;
 import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
@@ -52,7 +51,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 public final class IndexUtils {
 
-  private static final Logger LOG = LoggerFactory.getLogger(IndexWhereProcessor.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(IndexUtils.class.getName());
 
   private IndexUtils(){
   }
