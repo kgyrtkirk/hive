@@ -28,9 +28,7 @@ import java.util.Stack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.CRAP0;
-import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -41,7 +39,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.PreOrderOnceWalker;
 import org.apache.hadoop.hive.ql.lib.Rule;
-import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
@@ -174,13 +171,6 @@ public final class RewriteCanApplyCtx implements NodeProcessorCtx {
     throws SemanticException{
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     //^TS%[(SEL%)|(FIL%)]*GRY%[(FIL%)]*RS%[(FIL%)]*GRY%
-    opRules.put(
-        new RuleRegExp("R1", TableScanOperator.getOperatorName() + "%[("
-            + SelectOperator.getOperatorName() + "%)|(" + FilterOperator.getOperatorName() + "%)]*"
-            + GroupByOperator.getOperatorName() + "%[" + FilterOperator.getOperatorName() + "%]*"
-            + ReduceSinkOperator.getOperatorName() + "%[" + FilterOperator.getOperatorName()
-            + "%]*" + GroupByOperator.getOperatorName() + "%"),
-        RewriteCanApplyProcFactory.canApplyOnTableScanOperator(topOp));
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
