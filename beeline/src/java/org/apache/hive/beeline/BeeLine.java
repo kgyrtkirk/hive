@@ -741,7 +741,7 @@ public class BeeLine implements Closeable {
 
     dbName = commandLine.getOptionValue("database");
     getOpts().setVerbose(Boolean.parseBoolean(commandLine.getOptionValue("verbose")));
-    getOpts().setSilent(Boolean.parseBoolean(commandLine.getOptionValue("slient")));
+    getOpts().setSilent(Boolean.parseBoolean(commandLine.getOptionValue("silent")));
 
     int code = 0;
     if (commandLine.getOptionValues("e") != null) {
@@ -1003,6 +1003,7 @@ public class BeeLine implements Closeable {
   public void updateOptsForCli() {
     getOpts().updateBeeLineOptsFromConf();
     getOpts().setShowHeader(false);
+    getOpts().setEscapeCRLF(false);
     getOpts().setOutputFormat("dsv");
     getOpts().setDelimiterForDSV(' ');
     getOpts().setNullEmptyString(true);
