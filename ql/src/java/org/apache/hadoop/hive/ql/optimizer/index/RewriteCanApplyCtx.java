@@ -27,6 +27,7 @@ import java.util.Stack;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.conf.CRAP0;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -49,8 +50,11 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * to determine if any index can be used and if the input query
  * meets all the criteria for rewrite optimization.
  */
-public final class RewriteCanApplyCtx implements NodeProcessorCtx {
 
+@CRAP0
+@Deprecated
+
+public final class RewriteCanApplyCtx implements NodeProcessorCtx {
   private static final Logger LOG = LoggerFactory.getLogger(RewriteCanApplyCtx.class.getName());
 
   private RewriteCanApplyCtx(ParseContext parseContext) {
