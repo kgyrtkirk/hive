@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -207,6 +208,9 @@ public class OperatorUtils {
    * the stream, the last operator otherwise
    */
   @SuppressWarnings("unchecked")
+  @CRAP
+  @Deprecated
+
   public static <T> T findLastOperatorUpstream(Operator<?> op, Class<T> clazz) {
     Operator<?> currentOp = op;
     T lastOp = null;
