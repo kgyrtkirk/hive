@@ -1611,6 +1611,9 @@ public class HiveConf extends Configuration {
         "Whether to provide the row offset virtual column"),
 
     // Optimizer
+    @CRAP0
+    @Deprecated
+
     HIVEOPTINDEXFILTER("hive.optimize.index.filter", false,
         "Whether to enable automatic use of indexes"),
     HIVEINDEXAUTOUPDATE("hive.optimize.index.autoupdate", false,
@@ -1753,14 +1756,25 @@ public class HiveConf extends Configuration {
         "before executing the main query block. -1 will disable this feature."),
 
     // Indexes
+    @CRAP0
+    @Deprecated
+
     HIVEOPTINDEXFILTER_COMPACT_MINSIZE("hive.optimize.index.filter.compact.minsize", (long) 5 * 1024 * 1024 * 1024,
         "Minimum size (in bytes) of the inputs on which a compact index is automatically used."), // 5G
+    @CRAP0
+    @Deprecated
     HIVEOPTINDEXFILTER_COMPACT_MAXSIZE("hive.optimize.index.filter.compact.maxsize", (long) -1,
         "Maximum size (in bytes) of the inputs on which a compact index is automatically used.  A negative number is equivalent to infinity."), // infinity
+    @CRAP0
+    @Deprecated
     HIVE_INDEX_COMPACT_QUERY_MAX_ENTRIES("hive.index.compact.query.max.entries", (long) 10000000,
         "The maximum number of index entries to read during a query that uses the compact index. Negative value is equivalent to infinity."), // 10M
+    @CRAP0
+    @Deprecated
     HIVE_INDEX_COMPACT_QUERY_MAX_SIZE("hive.index.compact.query.max.size", (long) 10 * 1024 * 1024 * 1024,
         "The maximum number of bytes that a query using the compact index can read. Negative value is equivalent to infinity."), // 10G
+    @CRAP0
+    @Deprecated
     HIVE_INDEX_COMPACT_BINARY_SEARCH("hive.index.compact.binary.search", true,
         "Whether or not to use a binary search to find the entries in an index table that match the filter, where possible"),
 
@@ -2131,6 +2145,8 @@ public class HiveConf extends Configuration {
     // For har files
     HIVEARCHIVEENABLED("hive.archive.enabled", false, "Whether archiving operations are permitted"),
 
+    @CRAP0
+    @Deprecated
     HIVEOPTGBYUSINGINDEX("hive.optimize.index.groupby", false,
         "Whether to enable optimization of group-by queries using Aggregate indexes."),
 
@@ -2257,8 +2273,15 @@ public class HiveConf extends Configuration {
     HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false,
         "Whether to throw an exception if dynamic partition insert generates empty results."),
 
+    @CRAP0
+    @Deprecated
+
     HIVE_INDEX_COMPACT_FILE("hive.index.compact.file", "", "internal variable"),
+    @CRAP0
+    @Deprecated
     HIVE_INDEX_BLOCKFILTER_FILE("hive.index.blockfilter.file", "", "internal variable"),
+    @CRAP0
+    @Deprecated
     HIVE_INDEX_IGNORE_HDFS_LOC("hive.index.compact.file.ignore.hdfs", false,
         "When true the HDFS location stored in the index file will be ignored at runtime.\n" +
         "If the data got moved or the name of the cluster got changed, the index data should still be usable."),
@@ -3065,7 +3088,7 @@ public class HiveConf extends Configuration {
         "hive.tez.bucket.pruning", false,
          "When pruning is enabled, filters on bucket columns will be processed by \n" +
          "filtering the splits against a bitset of included buckets. This needs predicates \n"+
-         "produced by hive.optimize.ppd and hive.optimize.index.filters."),
+            "produced by hive.optimize.ppd."),
     TEZ_OPTIMIZE_BUCKET_PRUNING_COMPAT(
         "hive.tez.bucket.pruning.compat", true,
         "When pruning is enabled, handle possibly broken inserts due to negative hashcodes.\n" +

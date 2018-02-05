@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.common.StringInternUtils;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 
 import java.util.ArrayList;
@@ -27,18 +26,17 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.CRAP0;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -54,9 +52,6 @@ import org.apache.hadoop.hive.ql.optimizer.physical.VectorizerReason;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
-import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.JobConf;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -184,7 +179,7 @@ public class MapWork extends BaseWork {
   public void addPathToAlias(Path path, ArrayList<String> aliases){
     pathToAliases.put(path, aliases);
   }
-  
+
   public void addPathToAlias(Path path, String newAlias){
     ArrayList<String> aliases = pathToAliases.get(path);
     if (aliases == null) {
@@ -194,11 +189,11 @@ public class MapWork extends BaseWork {
     aliases.add(newAlias.intern());
   }
 
-  
+
   public void removePathToAlias(Path path){
     pathToAliases.remove(path);
   }
-  
+
   /**
    * This is used to display and verify output of "Path -> Alias" in test framework.
    *
@@ -244,7 +239,7 @@ public class MapWork extends BaseWork {
   public void removePathToPartitionInfo(Path path) {
     pathToPartitionInfo.remove(path);
   }
-  
+
   /**
    * Derive additional attributes to be rendered by EXPLAIN.
    * TODO: this method is relied upon by custom input formats to set jobconf properties.
@@ -303,15 +298,33 @@ public class MapWork extends BaseWork {
   private static String deriveLlapIoDescString(boolean isLlapOn, boolean canWrapAny,
       boolean hasPathToPartInfo, boolean hasLlap, boolean hasNonLlap, boolean hasAcid,
       boolean hasCacheOnly) {
-    if (!isLlapOn) return null; // LLAP IO is off, don't output.
-    if (!canWrapAny && !hasCacheOnly) return "no inputs"; // Cannot use with input formats.
-    if (!hasPathToPartInfo) return "unknown"; // No information to judge.
+    if (!isLlapOn)
+     {
+      return null; // LLAP IO is off, don't output.
+    }
+    if (!canWrapAny && !hasCacheOnly)
+     {
+      return "no inputs"; // Cannot use with input formats.
+    }
+    if (!hasPathToPartInfo)
+     {
+      return "unknown"; // No information to judge.
+    }
     int varieties = (hasAcid ? 1 : 0) + (hasLlap ? 1 : 0)
         + (hasCacheOnly ? 1 : 0) + (hasNonLlap ? 1 : 0);
-    if (varieties > 1) return "some inputs"; // Will probably never actually happen.
-    if (hasAcid) return "may be used (ACID table)";
-    if (hasLlap) return "all inputs";
-    if (hasCacheOnly) return "all inputs (cache only)";
+    if (varieties > 1)
+     {
+      return "some inputs"; // Will probably never actually happen.
+    }
+    if (hasAcid) {
+      return "may be used (ACID table)";
+    }
+    if (hasLlap) {
+      return "all inputs";
+    }
+    if (hasCacheOnly) {
+      return "all inputs (cache only)";
+    }
     return "no inputs";
   }
 
@@ -556,6 +569,9 @@ public class MapWork extends BaseWork {
     return this.mapperCannotSpanPartns;
   }
 
+  @CRAP0
+  @Deprecated
+
   public String getIndexIntermediateFile() {
     return indexIntermediateFile;
   }
@@ -609,6 +625,9 @@ public class MapWork extends BaseWork {
   public Map<String, List<SortCol>> getSortedColsByDirectory() {
     return sortedColsByDirectory;
   }
+
+  @CRAP0
+  @Deprecated
 
   public void addIndexIntermediateFile(String fileName) {
     if (this.indexIntermediateFile == null) {

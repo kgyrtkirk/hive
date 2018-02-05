@@ -22,9 +22,13 @@ import java.io.Serializable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.conf.CRAP0;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+
+@CRAP0
+@Deprecated
 
 public class IndexWhereProcCtx implements NodeProcessorCtx {
 

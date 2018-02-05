@@ -110,9 +110,9 @@ public class Optimizer {
     }
 
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION) &&
-            !pctx.getContext().isCboSucceeded()) {    
-      // We run constant propagation twice because after predicate pushdown, filter expressions   
-      // are combined and may become eligible for reduction (like is not null filter).    
+            !pctx.getContext().isCboSucceeded()) {
+      // We run constant propagation twice because after predicate pushdown, filter expressions
+      // are combined and may become eligible for reduction (like is not null filter).
       transformations.add(new ConstantPropagate());
     }
 
@@ -194,7 +194,7 @@ public class Optimizer {
     if (HiveConf.getBoolVar(hiveConf,
         HiveConf.ConfVars.TEZ_OPTIMIZE_BUCKET_PRUNING)
         && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)
-        && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTINDEXFILTER)) {
+    ) {
       final boolean compatMode =
           HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.TEZ_OPTIMIZE_BUCKET_PRUNING_COMPAT);
       transformations.add(new FixedBucketPruningOptimizer(compatMode));
