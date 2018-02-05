@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
@@ -29,6 +30,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * Returns table index information per SQL syntax.
  */
 @Explain(displayName = "Show Indexes", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+@Deprecated
 public class ShowIndexesDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   String tableName;
@@ -68,6 +70,8 @@ public class ShowIndexesDesc extends DDLDesc implements Serializable {
    * @param resFile
    *          File to store the results in.
    */
+  @CRAP
+
   public ShowIndexesDesc(String tableName, Path resFile) {
     this.tableName = tableName;
     this.resFile = resFile.toString();

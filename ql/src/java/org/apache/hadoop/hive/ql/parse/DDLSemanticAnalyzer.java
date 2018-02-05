@@ -155,7 +155,6 @@ import org.apache.hadoop.hive.ql.plan.ShowCreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
-import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowResourcePlanDesc;
@@ -2721,22 +2720,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     setFetchTask(createFetchTask(showTblPropertiesDesc.getSchema()));
   }
 
-  @CRAP
-
-  private void analyzeShowIndexes(ASTNode ast) throws SemanticException {
-    ShowIndexesDesc showIndexesDesc;
-    String tableName = getUnescapedName((ASTNode) ast.getChild(0));
-    showIndexesDesc = new ShowIndexesDesc(tableName, ctx.getResFile());
-
-    if (ast.getChildCount() == 2) {
-      int descOptions = ast.getChild(1).getType();
-      showIndexesDesc.setFormatted(descOptions == HiveParser.KW_FORMATTED);
-    }
-
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        showIndexesDesc), conf));
-    setFetchTask(createFetchTask(showIndexesDesc.getSchema()));
-  }
 
   /**
    * Add the task according to the parsed command tree. This is used for the CLI
