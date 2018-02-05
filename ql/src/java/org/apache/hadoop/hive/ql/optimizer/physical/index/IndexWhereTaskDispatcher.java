@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.metastore.cache.CacheUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.index.bitmap.BitmapIndexHandler;
 import org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -73,7 +72,6 @@ public class IndexWhereTaskDispatcher implements Dispatcher {
     indexMap = Maps.newHashMap();
     supportedIndexes = new ArrayList<String>();
     supportedIndexes.add(CompactIndexHandler.class.getName());
-    supportedIndexes.add(BitmapIndexHandler.class.getName());
   }
 
   @Override

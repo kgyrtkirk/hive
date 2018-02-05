@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.index;
 
 import junit.framework.TestCase;
-import org.apache.hadoop.hive.ql.index.bitmap.BitmapIndexHandler;
 import org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler;
 import org.junit.Test;
 
@@ -26,7 +25,6 @@ public class TestIndexType extends TestCase {
 
     @Test
     public void testIndexTypeHandlers(){
-        assertEquals(HiveIndex.IndexType.BITMAP_TABLE.getHandlerClsName(), BitmapIndexHandler.class.getName());
         assertEquals(HiveIndex.IndexType.COMPACT_SUMMARY_TABLE.getHandlerClsName(), CompactIndexHandler.class.getName());
     }
 
