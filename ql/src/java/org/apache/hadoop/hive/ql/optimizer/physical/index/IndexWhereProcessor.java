@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.optimizer.IndexUtils;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -60,6 +61,9 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 * on which we have an index.  Creates an index subquery Task for these
 * WHERE queries to use the index automatically.
 */
+@CRAP
+@Deprecated
+
 public class IndexWhereProcessor implements NodeProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(IndexWhereProcessor.class.getName());

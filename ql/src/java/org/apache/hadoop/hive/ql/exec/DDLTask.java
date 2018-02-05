@@ -51,7 +51,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 
 import com.google.common.collect.ImmutableSet;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -61,7 +60,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.Constants;
@@ -76,7 +74,6 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
@@ -108,7 +105,6 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
@@ -163,6 +159,7 @@ import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.metadata.formatting.TextMetaDataTable;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.CRAP;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.PreInsertTableDesc;
@@ -743,8 +740,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (!mustHaveAppliedChange && !desc.isReplace()) {
       return 0; // The modification cannot affect an active plan.
     }
-    if (appliedRp == null && !mustHaveAppliedChange) return 0; // Replacing an inactive plan.
-    if (wm == null && isInTest) return 0; // Skip for tests if WM is not present.
+    if (appliedRp == null && !mustHaveAppliedChange) {
+      return 0; // Replacing an inactive plan.
+    }
+    if (wm == null && isInTest) {
+      return 0; // Skip for tests if WM is not present.
+    }
 
     if ((appliedRp == null) != desc.isForceDeactivate()) {
       throw new HiveException("Cannot get a resource plan to apply; or non-null plan on disable");
@@ -1286,95 +1287,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (HiveUtils.getIndexHandler(conf, crtIndex.getIndexTypeHandlerClass()).usesIndexTable()) {
           Table indexTable = db.getTable(indexTableName);
           addIfAbsentByName(new WriteEntity(indexTable, WriteEntity.WriteType.DDL_NO_LOCK));
-    }
-    return 0;
-  }
-
-  private int alterIndex(Hive db, AlterIndexDesc alterIndex) throws HiveException {
-
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-      throw new UnsupportedOperationException("Indexes unsupported for Tez execution engine");
-    }
-
-    String baseTableName = alterIndex.getBaseTableName();
-    String indexName = alterIndex.getIndexName();
-    Index idx = db.getIndex(baseTableName, indexName);
-
-    switch(alterIndex.getOp()) {
-    case ADDPROPS:
-      idx.getParameters().putAll(alterIndex.getProps());
-      break;
-    case UPDATETIMESTAMP:
-      try {
-        Map<String, String> props = new HashMap<String, String>();
-        Map<Map<String, String>, Long> basePartTs = new HashMap<Map<String, String>, Long>();
-
-        Table baseTbl = db.getTable(baseTableName);
-
-        if (baseTbl.isPartitioned()) {
-          List<Partition> baseParts;
-          if (alterIndex.getSpec() != null) {
-            baseParts = db.getPartitions(baseTbl, alterIndex.getSpec());
-          } else {
-            baseParts = db.getPartitions(baseTbl);
-          }
-          if (baseParts != null) {
-            for (Partition p : baseParts) {
-              Path dataLocation = p.getDataLocation();
-              FileSystem fs = dataLocation.getFileSystem(db.getConf());
-              FileStatus fss = fs.getFileStatus(dataLocation);
-              long lastModificationTime = fss.getModificationTime();
-
-              FileStatus[] parts = fs.listStatus(dataLocation, FileUtils.HIDDEN_FILES_PATH_FILTER);
-              if (parts != null && parts.length > 0) {
-                for (FileStatus status : parts) {
-                  if (status.getModificationTime() > lastModificationTime) {
-                    lastModificationTime = status.getModificationTime();
-                  }
-                }
-              }
-              basePartTs.put(p.getSpec(), lastModificationTime);
-            }
-          }
-        } else {
-          FileSystem fs = baseTbl.getPath().getFileSystem(db.getConf());
-          FileStatus fss = fs.getFileStatus(baseTbl.getPath());
-          basePartTs.put(null, fss.getModificationTime());
-        }
-        for (Map<String, String> spec : basePartTs.keySet()) {
-          if (spec != null) {
-            props.put(spec.toString(), basePartTs.get(spec).toString());
-          } else {
-            props.put("base_timestamp", basePartTs.get(null).toString());
-          }
-        }
-        idx.getParameters().putAll(props);
-      } catch (HiveException e) {
-        throw new HiveException("ERROR: Failed to update index timestamps");
-      } catch (IOException e) {
-        throw new HiveException("ERROR: Failed to look up timestamps on filesystem");
-      }
-
-      break;
-    default:
-      console.printError("Unsupported Alter command");
-      return 1;
-    }
-
-    // set last modified by properties
-    if (!updateModifiedParameters(idx.getParameters(), conf)) {
-      return 1;
-    }
-
-    try {
-      db.alterIndex(baseTableName, indexName, idx);
-    } catch (InvalidOperationException e) {
-      console.printError("Invalid alter operation: " + e.getMessage());
-      LOG.info("alter index: ", e);
-      return 1;
-    } catch (HiveException e) {
-      console.printError("Invalid alter operation: " + e.getMessage());
-      return 1;
     }
     return 0;
   }
