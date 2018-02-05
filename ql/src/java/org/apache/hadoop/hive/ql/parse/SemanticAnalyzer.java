@@ -2053,8 +2053,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 }
               }
               try {
-                fname = ctx.getExtTmpPathRelTo(
-                    FileUtils.makeQualified(location, conf)).toString();
+                CreateTableDesc tblDesc = qb.getTableDesc();
+                if (tblDesc != null
+                    && tblDesc.isTemporary()
+                    && AcidUtils.isInsertOnlyTable(tblDesc.getTblProps(), true)) {
+                  fname = FileUtils.makeQualified(location, conf).toString();
+                } else {
+                  fname = ctx.getExtTmpPathRelTo(
+                      FileUtils.makeQualified(location, conf)).toString();
+                }
               } catch (Exception e) {
                 throw new SemanticException(generateErrorMessage(ast,
                     "Error creating temporary folder on: " + location.toString()), e);
@@ -6842,7 +6849,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         field_schemas = new ArrayList<FieldSchema>();
         destTableIsTemporary = tblDesc.isTemporary();
         destTableIsMaterialization = tblDesc.isMaterialization();
-        if (!destTableIsTemporary && AcidUtils.isInsertOnlyTable(tblDesc.getTblProps(), true)) {
+        if (AcidUtils.isInsertOnlyTable(tblDesc.getTblProps(), true)) {
           isMmTable = isMmCtas = true;
           txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
           tblDesc.setInitialMmWriteId(txnId);
@@ -6993,6 +7000,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (isMmCtas) {
       // Add FSD so that the LoadTask compilation could fix up its path to avoid the move.
       tableDesc.setWriter(fileSinkDesc);
+    }
+
+    if (fileSinkDesc.getInsertOverwrite()) {
+      if (ltd != null) {
+        ltd.setInsertOverwrite(true);
+      }
     }
 
     if (SessionState.get().isHiveServerQuery() &&
@@ -11714,8 +11727,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     createVwDesc.setViewExpandedText(expandedText);
   }
 
-  private List<String> getTablesUsed(ParseContext parseCtx) throws SemanticException {
-    List<String> tablesUsed = new ArrayList<>();
+  private Set<String> getTablesUsed(ParseContext parseCtx) throws SemanticException {
+    Set<String> tablesUsed = new HashSet<>();
     for (TableScanOperator topOp : parseCtx.getTopOps().values()) {
       Table table = topOp.getConf().getTableMetadata();
       if (!table.isMaterializedTable() && !table.isView()) {
@@ -11945,6 +11958,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   @Override
   public void validate() throws SemanticException {
     LOG.debug("validation start");
+    boolean wasAcidChecked = false;
     // Validate inputs and outputs have right protectmode to execute the query
     for (ReadEntity readEntity : getInputs()) {
       ReadEntity.Type type = readEntity.getType();
@@ -11964,7 +11978,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       if (tbl != null && AcidUtils.isTransactionalTable(tbl)) {
         transactionalInQuery = true;
-        checkAcidTxnManager(tbl);
+        if (!wasAcidChecked) {
+          checkAcidTxnManager(tbl);
+        }
+        wasAcidChecked = true;
       }
     }
 
@@ -11977,6 +11994,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         try {
           Partition usedp = writeEntity.getPartition();
           Table tbl = usedp.getTable();
+          if (AcidUtils.isTransactionalTable(tbl)) {
+            transactionalInQuery = true;
+            if (!wasAcidChecked) {
+              checkAcidTxnManager(tbl);
+            }
+            wasAcidChecked = true;
+          }
 
           LOG.debug("validated " + usedp.getName());
           LOG.debug(usedp.getTable().getTableName());
@@ -11990,44 +12014,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               conflictingArchive);
           throw new SemanticException(message);
         }
+      } else if (type == WriteEntity.Type.TABLE) {
+        Table tbl = writeEntity.getTable();
+        if (AcidUtils.isTransactionalTable(tbl)) {
+          transactionalInQuery = true;
+          if (!wasAcidChecked) {
+            checkAcidTxnManager(tbl);
+          }
+          wasAcidChecked = true;
+        }
       }
 
       if (type != WriteEntity.Type.TABLE &&
           type != WriteEntity.Type.PARTITION) {
         LOG.debug("not validating writeEntity, because entity is neither table nor partition");
         continue;
-      }
-
-      Table tbl;
-      Partition p;
-
-
-      if (type == WriteEntity.Type.PARTITION) {
-        Partition inputPartition = writeEntity.getPartition();
-
-        // If it is a partition, Partition's metastore is not fetched. We
-        // need to fetch it.
-        try {
-          p = Hive.get().getPartition(
-              inputPartition.getTable(), inputPartition.getSpec(), false);
-          if (p != null) {
-            tbl = p.getTable();
-          } else {
-            // if p is null, we assume that we insert to a new partition
-            tbl = inputPartition.getTable();
-          }
-        } catch (HiveException e) {
-          throw new SemanticException(e);
-        }
-      }
-      else {
-        LOG.debug("Not a partition.");
-        tbl = writeEntity.getTable();
-      }
-
-      if (tbl != null && AcidUtils.isTransactionalTable(tbl)) {
-        transactionalInQuery = true;
-        checkAcidTxnManager(tbl);
       }
     }
 
