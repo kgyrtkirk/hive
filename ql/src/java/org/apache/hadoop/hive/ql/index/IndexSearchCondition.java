@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 
 /**
  * IndexSearchCondition represents an individual search condition
- * found by {@link IndexPredicateAnalyzer}.
  *
  */
 @CRAP
