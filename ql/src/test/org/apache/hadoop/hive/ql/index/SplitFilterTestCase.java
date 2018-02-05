@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat.HiveInputSplit;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat.HiveInputSplitComparator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -62,8 +63,7 @@ public final class SplitFilterTestCase {
 
   private void assertSplits(Collection<HiveInputSplit> expectedSplits,
       Collection<HiveInputSplit> actualSplits) {
-    SplitFilter.HiveInputSplitComparator hiveInputSplitComparator =
-        new SplitFilter.HiveInputSplitComparator();
+    HiveInputSplitComparator hiveInputSplitComparator = new HiveInputSplitComparator();
 
     List<HiveInputSplit> sortedExpectedSplits = new ArrayList<>(expectedSplits);
     Collections.sort(sortedExpectedSplits, hiveInputSplitComparator);

@@ -17,15 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.index;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat.HiveInputSplit;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.SequenceFile;
@@ -48,7 +47,7 @@ public final class SplitFilter {
     long sumSplitLengths = 0;
     List<HiveInputSplit> newSplits = new ArrayList<>();
 
-    Arrays.sort(splits, new HiveInputSplitComparator());
+    Arrays.sort(splits, new HiveInputFormat.HiveInputSplitComparator());
 
     for (HiveInputSplit split : splits) {
       LOG.info("split start : " + split.getStart());
@@ -105,21 +104,5 @@ public final class SplitFilter {
     return new HiveInputSplit(new FileSplit(split.getPath(), adjustedStart,
         split.getStart() - adjustedStart + split.getLength(), split.getLocations()),
         split.inputFormatClassName());
-  }
-
-  @VisibleForTesting
-  static final class HiveInputSplitComparator implements Comparator<HiveInputSplit> {
-    @Override
-    public int compare(HiveInputSplit o1, HiveInputSplit o2) {
-      int pathCompare = comparePath(o1.getPath(), o2.getPath());
-      if (pathCompare != 0) {
-        return pathCompare;
-      }
-      return Long.compare(o1.getStart(), o2.getStart());
-    }
-
-    private int comparePath(Path p1, Path p2) {
-      return p1.compareTo(p2);
-    }
   }
 }
