@@ -367,10 +367,6 @@ public class Driver implements IDriver {
     this.maxRows = maxRows;
   }
 
-  public Driver() {
-    this(getNewQueryState((SessionState.get() != null) ? SessionState.get().getConf() : new HiveConf()), null);
-  }
-
   public Driver(HiveConf conf) {
     this(getNewQueryState(conf), null);
   }
