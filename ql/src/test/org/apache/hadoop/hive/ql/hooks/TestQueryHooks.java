@@ -136,7 +136,8 @@ public class TestQueryHooks {
             Lists.newArrayList(mockHook));
 
     SessionState.start(conf);
-    Driver driver = new Driver(conf, mockLoader);
+
+    Driver driver = new Driver(Driver.getNewQueryState(conf), null, mockLoader, null, null);
     return driver;
   }
 

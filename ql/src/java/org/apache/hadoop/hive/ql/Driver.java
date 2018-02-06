@@ -398,10 +398,6 @@ public class Driver implements IDriver {
     this(queryState, userName, new HooksLoader(queryState.getConf()), null, null);
   }
 
-  public Driver(HiveConf conf, HooksLoader hooksLoader) {
-    this(getNewQueryState(conf), null, hooksLoader, null, null);
-  }
-
   public Driver(QueryState queryState, String userName, QueryInfo queryInfo) {
      this(queryState, userName, new HooksLoader(queryState.getConf()), queryInfo, null);
   }
@@ -430,7 +426,9 @@ public class Driver implements IDriver {
   // move to driverFactory ; with those constructors...
   // HIVE-18238: try to remove before submitting
   @Deprecated
-  private static QueryState getNewQueryState(HiveConf conf) {
+  public static QueryState
+
+  getNewQueryState(HiveConf conf) {
     return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
   }
 
