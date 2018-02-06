@@ -578,6 +578,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     Utilities.clearWorkMapForConf(job);
 
     if (result.isEmpty() && paths.length > 0 && job.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false)) {
+      // If there are no inputs; the Execution engine skips the operator tree.
+      // To prevent it from happening; an opaque  ZeroRows input is added here - when needed.
       result.add(
           new HiveInputSplit(new NullRowsInputFormat.DummyInputSplit(paths[0]), ZeroRowsInputFormat.class.getName()));
     }

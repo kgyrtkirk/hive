@@ -451,6 +451,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
         flush(true);
       }
       if (!aborted && sumBatchSize == 0 && GroupByOperator.shouldEmitSummaryRow(conf)) {
+        // in case the empty grouping set is preset; but no output has done
+        // the "summary row" still needs to be emitted
         VectorHashKeyWrapper kw = keyWrappersBatch.getVectorHashKeyWrappers()[0];
         kw.setNull();
         int pos = conf.getGroupingSetPosition();
