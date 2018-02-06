@@ -384,10 +384,6 @@ public class Driver implements IDriver {
     this.ctx = ctx;
   }
 
-  public Driver(HiveConf conf, String userName) {
-    this(getNewQueryState(conf), userName, null);
-  }
-
   // Pass lineageState when a driver instantiates another Driver to run
   // or compile another query
   public Driver(HiveConf conf, String userName, LineageState lineageState) {
