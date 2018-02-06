@@ -110,9 +110,6 @@ public class QueryState {
    */
   public static class Builder {
     private Map<String, String> confOverlay = null;
-    // HIVE-18238: remove before submitting
-    @Deprecated
-    private boolean runAsync = false;
     private boolean isolated = true;
     private boolean generateNewQueryId = false;
     private HiveConf hiveConf = null;
@@ -122,17 +119,6 @@ public class QueryState {
      * Default constructor - use this builder to create a QueryState object.
      */
     public Builder() {
-    }
-
-    /**
-     * Set this to true if the configuration should be detached from the original config. If not
-     * set the default value is false.
-     * @param runAsync If the configuration should be detached
-     * @return The builder
-     */
-    public Builder withRunAsync(boolean runAsync) {
-      this.runAsync = runAsync;
-      return this;
     }
 
     /**
