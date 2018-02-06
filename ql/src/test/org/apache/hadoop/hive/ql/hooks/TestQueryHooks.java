@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.junit.BeforeClass;
@@ -137,7 +138,7 @@ public class TestQueryHooks {
 
     SessionState.start(conf);
 
-    Driver driver = new Driver(Driver.getNewQueryState(conf), null, mockLoader, null, null);
+    Driver driver = new Driver(new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build(), null, mockLoader, null, null);
     return driver;
   }
 

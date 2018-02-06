@@ -368,11 +368,12 @@ public class Driver implements IDriver {
   }
 
   public Driver(HiveConf conf) {
-    this(getNewQueryState(conf), null);
+    this(new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build(), null);
   }
 
   // Pass lineageState when a driver instantiates another Driver to run
   // or compile another query
+  // NOTE: only used from index related classes
   public Driver(HiveConf conf, LineageState lineageState) {
     this(getNewQueryState(conf, lineageState), null);
   }
@@ -412,20 +413,6 @@ public class Driver implements IDriver {
     this.queryLifeTimeHookRunner = new QueryLifeTimeHookRunner(conf, hooksLoader, console);
     this.queryInfo = queryInfo;
     this.initTxnMgr = txnMgr;
-  }
-
-  /**
-   * Generating the new QueryState object. Making sure, that the new queryId is generated.
-   * @param conf The HiveConf which should be used
-   * @return The new QueryState object
-   */
-  // move to driverFactory ; with those constructors...
-  // HIVE-18238: try to remove before submitting
-  @Deprecated
-  public static QueryState
-
-  getNewQueryState(HiveConf conf) {
-    return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
   }
 
   /**
