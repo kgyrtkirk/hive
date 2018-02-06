@@ -2053,8 +2053,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 }
               }
               try {
-                fname = ctx.getExtTmpPathRelTo(
-                    FileUtils.makeQualified(location, conf)).toString();
+                CreateTableDesc tblDesc = qb.getTableDesc();
+                if (tblDesc != null
+                    && tblDesc.isTemporary()
+                    && AcidUtils.isInsertOnlyTable(tblDesc.getTblProps(), true)) {
+                  fname = FileUtils.makeQualified(location, conf).toString();
+                } else {
+                  fname = ctx.getExtTmpPathRelTo(
+                      FileUtils.makeQualified(location, conf)).toString();
+                }
               } catch (Exception e) {
                 throw new SemanticException(generateErrorMessage(ast,
                     "Error creating temporary folder on: " + location.toString()), e);
@@ -6842,7 +6849,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         field_schemas = new ArrayList<FieldSchema>();
         destTableIsTemporary = tblDesc.isTemporary();
         destTableIsMaterialization = tblDesc.isMaterialization();
-        if (!destTableIsTemporary && AcidUtils.isInsertOnlyTable(tblDesc.getTblProps(), true)) {
+        if (AcidUtils.isInsertOnlyTable(tblDesc.getTblProps(), true)) {
           isMmTable = isMmCtas = true;
           txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
           tblDesc.setInitialMmWriteId(txnId);
@@ -11719,8 +11726,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     createVwDesc.setViewExpandedText(expandedText);
   }
 
-  private List<String> getTablesUsed(ParseContext parseCtx) throws SemanticException {
-    List<String> tablesUsed = new ArrayList<>();
+  private Set<String> getTablesUsed(ParseContext parseCtx) throws SemanticException {
+    Set<String> tablesUsed = new HashSet<>();
     for (TableScanOperator topOp : parseCtx.getTopOps().values()) {
       Table table = topOp.getConf().getTableMetadata();
       if (!table.isMaterializedTable() && !table.isView()) {
