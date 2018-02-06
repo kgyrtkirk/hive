@@ -243,9 +243,7 @@ public class HiveSplitGenerator extends InputInitializer {
         Multimap<Integer, InputSplit> groupedSplits =
             splitGrouper.generateGroupedSplits(jobConf, conf, splits, waves, availableSlots, splitLocationProvider);
         // And finally return them in a flat array
-        List<InputSplit> values = new ArrayList();
-        values.addAll(groupedSplits.values());
-        InputSplit[] flatSplits = values.toArray(new InputSplit[0]);
+        InputSplit[] flatSplits = groupedSplits.values().toArray(new InputSplit[0]);
         LOG.info("Number of split groups: " + flatSplits.length);
         if (inputInitializerContext != null) {
           counterName = Utilities.getVertexCounterName(HiveInputCounters.GROUPED_INPUT_SPLITS.name(), vertexName);

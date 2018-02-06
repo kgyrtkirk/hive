@@ -22,6 +22,8 @@ import org.apache.hadoop.mapred.JobConf;
 
 /**
  * Enables an operator to be able to make changes to the {@link JobConf}.
+ *
+ * Invoked during compilation phase only.
  */
 public interface IConfigureJobConf {
   void configureJobConf(JobConf job);
