@@ -162,7 +162,6 @@ public class Driver implements IDriver {
 
   // A limit on the number of threads that can be launched
   private int maxthreads;
-  private int tryCount = Integer.MAX_VALUE;
 
   private String userName;
 
@@ -592,7 +591,6 @@ public class Driver implements IDriver {
       }
 
       ctx.setRuntimeStatsSource(runtimeStatsSource);
-      ctx.setTryCount(getTryCount());
       ctx.setCmd(command);
       ctx.setHDFSCleanup(true);
 
@@ -1398,19 +1396,16 @@ public class Driver implements IDriver {
 
   @Override
 
-  public CommandProcessorResponse run(String command)
-      throws CommandNeedRetryException {
+  public CommandProcessorResponse run(String command) {
     return run(command, false);
   }
 
   @Override
-  public CommandProcessorResponse run()
-      throws CommandNeedRetryException {
+  public CommandProcessorResponse run() {
     return run(null, true);
   }
 
-  public CommandProcessorResponse run(String command, boolean alreadyCompiled)
-        throws CommandNeedRetryException {
+  public CommandProcessorResponse run(String command, boolean alreadyCompiled) {
 
     try {
       runInternal(command, alreadyCompiled);
@@ -1600,8 +1595,7 @@ public class Driver implements IDriver {
     return compileLock;
   }
 
-  private void runInternal(String command, boolean alreadyCompiled)
-      throws CommandNeedRetryException, CommandProcessorResponse {
+  private void runInternal(String command, boolean alreadyCompiled) throws CommandProcessorResponse {
     errorMessage = null;
     SQLState = null;
     downstreamError = null;
@@ -1815,7 +1809,7 @@ public class Driver implements IDriver {
     return new CommandProcessorResponse(ret, errorMessage, SQLState, downstreamError);
   }
 
-  private void execute() throws CommandNeedRetryException, CommandProcessorResponse {
+  private void execute() throws CommandProcessorResponse {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
 
@@ -1970,13 +1964,6 @@ public class Driver implements IDriver {
         checkInterrupted("when checking the execution result.", hookContext, perfLogger);
 
         if (exitVal != 0) {
-          if (tsk.ifRetryCmdWhenFail()) {
-            driverCxt.shutdown();
-            // in case we decided to run everything in local mode, restore the
-            // the jobtracker setting to its initial value
-            ctx.restoreOriginalTracker();
-            throw new CommandNeedRetryException();
-          }
           Task<? extends Serializable> backupTask = tsk.getAndInitBackupTask();
           if (backupTask != null) {
             setErrorMsgAndDetail(exitVal, result.getTaskError(), tsk);
@@ -2078,9 +2065,6 @@ public class Driver implements IDriver {
         SessionState.get().getHiveHistory().printRowCount(queryId);
       }
       releasePlan(plan);
-    } catch (CommandNeedRetryException e) {
-      executionError = true;
-      throw e;
     } catch (CommandProcessorResponse cpr) {
       executionError = true;
       throw cpr;
@@ -2297,7 +2281,7 @@ public class Driver implements IDriver {
 
   @SuppressWarnings("unchecked")
   @Override
-  public boolean getResults(List res) throws IOException, CommandNeedRetryException {
+  public boolean getResults(List res) throws IOException {
     if (lDrvState.driverState == DriverState.DESTROYED || lDrvState.driverState == DriverState.CLOSED) {
       throw new IOException("FAILED: query has been cancelled, closed, or destroyed.");
     }
@@ -2378,15 +2362,6 @@ public class Driver implements IDriver {
       ctx.resetStream();
       resStream = null;
     }
-  }
-
-  public int getTryCount() {
-    return tryCount;
-  }
-
-  @Override
-  public void setTryCount(int tryCount) {
-    this.tryCount = tryCount;
   }
 
   // DriverContext could be released in the query and close processes at same
