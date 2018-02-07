@@ -239,4 +239,28 @@ class QueryLifeTimeHookRunner {
     }
 
   }
+
+  public void runPreDriverHooks(HiveDriverRunHookContext hookContext) throws HiveException {
+    List<HiveDriverRunHook> driverRunHooks;
+    try {
+      driverRunHooks = hooksLoader.getHooks(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, console, HiveDriverRunHook.class);
+      for (HiveDriverRunHook driverRunHook : driverRunHooks) {
+        driverRunHook.preDriverRun(hookContext);
+      }
+    } catch (Exception e) {
+      throw new HiveException("Error while invoking PreAnalyzeHooks:" + e.getMessage(), e);
+    }
+  }
+
+  public void runPostDriverHooks(HiveDriverRunHookContext hookContext) throws HiveException {
+    List<HiveDriverRunHook> driverRunHooks;
+    try {
+      driverRunHooks = hooksLoader.getHooks(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, console, HiveDriverRunHook.class);
+      for (HiveDriverRunHook driverRunHook : driverRunHooks) {
+        driverRunHook.postDriverRun(hookContext);
+      }
+    } catch (Exception e) {
+      throw new HiveException("Error while invoking PreAnalyzeHooks:" + e.getMessage(), e);
+    }
+  }
 }

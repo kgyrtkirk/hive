@@ -1624,12 +1624,8 @@ public class Driver implements IDriver {
       HiveDriverRunHookContext hookContext = new HiveDriverRunHookContextImpl(conf,
           alreadyCompiled ? ctx.getCmd() : command);
       // Get all the driver run hooks and pre-execute them.
-      List<HiveDriverRunHook> driverRunHooks;
       try {
-        driverRunHooks = hooksLoader.getHooks(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, console, HiveDriverRunHook.class);
-        for (HiveDriverRunHook driverRunHook : driverRunHooks) {
-            driverRunHook.preDriverRun(hookContext);
-        }
+        queryLifeTimeHookRunner.runPreDriverHooks(hookContext);
       } catch (Exception e) {
         errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
         SQLState = ErrorMsg.findSQLState(e.getMessage());
@@ -1691,9 +1687,7 @@ public class Driver implements IDriver {
 
       // Take all the driver run hooks and post-execute them.
       try {
-        for (HiveDriverRunHook driverRunHook : driverRunHooks) {
-            driverRunHook.postDriverRun(hookContext);
-        }
+        queryLifeTimeHookRunner.runPostDriverHooks(hookContext);
       } catch (Exception e) {
         errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
         SQLState = ErrorMsg.findSQLState(e.getMessage());
