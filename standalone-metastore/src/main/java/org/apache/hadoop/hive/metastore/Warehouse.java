@@ -181,7 +181,11 @@ public class Warehouse {
   }
 
   public static String getQualifiedName(Table table) {
-    return table.getDbName() + "." + table.getTableName();
+    return getQualifiedName(table.getDbName(), table.getTableName());
+  }
+
+  public static String getQualifiedName(String dbName, String tableName) {
+    return dbName + "." + tableName;
   }
 
   public static String getQualifiedName(Partition partition) {
@@ -224,7 +228,14 @@ public class Warehouse {
   }
 
   public boolean deleteDir(Path f, boolean recursive, boolean ifPurge) throws MetaException {
-    cm.recycle(f, RecycleType.MOVE, ifPurge);
+    return deleteDir(f, recursive, ifPurge, true);
+  }
+
+  public boolean deleteDir(Path f, boolean recursive, boolean ifPurge, boolean needCmRecycle) throws MetaException {
+    // no need to create the CM recycle file for temporary tables
+    if (needCmRecycle) {
+      cm.recycle(f, RecycleType.MOVE, ifPurge);
+    }
     FileSystem fs = getFs(f);
     return fsHandler.deleteDir(fs, f, recursive, ifPurge, conf);
   }

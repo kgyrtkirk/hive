@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -40,8 +40,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -100,8 +100,6 @@ public class Context {
   protected String cboInfo;
   protected boolean cboSucceeded;
   protected String cmd = "";
-  // number of previous attempts
-  protected int tryCount = 0;
   private TokenRewriteStream tokenRewriteStream;
   // Holds the qualified name to tokenRewriteStream for the views
   // referenced by the query. This is used to rewrite the view AST
@@ -141,6 +139,9 @@ public class Context {
   // Identify whether the query involves an UPDATE, DELETE or MERGE
   private boolean isUpdateDeleteMerge;
 
+  // Whether the analyzer has been instantiated to read and load materialized view plans
+  private boolean isLoadingMaterializedView;
+
   /**
    * This determines the prefix of the
    * {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.Phase1Ctx#dest}
@@ -175,6 +176,7 @@ public class Context {
     DestClausePrefix(String prefix) {
       this.prefix = prefix;
     }
+    @Override
     public String toString() {
       return prefix;
     }
@@ -938,14 +940,6 @@ public class Context {
     this.needLockMgr = needLockMgr;
   }
 
-  public int getTryCount() {
-    return tryCount;
-  }
-
-  public void setTryCount(int tryCount) {
-    this.tryCount = tryCount;
-  }
-
   public String getCboInfo() {
     return cboInfo;
   }
@@ -1027,6 +1021,15 @@ public class Context {
   public void setIsUpdateDeleteMerge(boolean isUpdate) {
     this.isUpdateDeleteMerge = isUpdate;
   }
+
+  public boolean isLoadingMaterializedView() {
+    return isLoadingMaterializedView;
+  }
+
+  public void setIsLoadingMaterializedView(boolean isLoadingMaterializedView) {
+    this.isLoadingMaterializedView = isLoadingMaterializedView;
+  }
+
   public String getExecutionId() {
     return executionId;
   }

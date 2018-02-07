@@ -370,6 +370,7 @@ KW_WORKLOAD: 'WORKLOAD';
 KW_MANAGEMENT: 'MANAGEMENT';
 KW_ACTIVE: 'ACTIVE';
 KW_UNMANAGED: 'UNMANAGED';
+KW_APPLICATION: 'APPLICATION';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.
@@ -466,6 +467,21 @@ NumberLiteral
 ByteLengthLiteral
     :
     (Digit)+ ('b' | 'B' | 'k' | 'K' | 'm' | 'M' | 'g' | 'G')
+    ;
+
+TimeFullLiteral
+    :
+    (Digit)+ ('NS' | 'NSEC' | 'NSECS' | 'NANOSECOND' | 'NANOSECONDS' |
+          'US' | 'USEC' | 'USECS' | 'MICROSECOND' | 'MICROSECONDS' |
+          'MS' | 'MSEC' | 'MSECS' | 'MILLISECOND' | 'MILLISECONDS' |
+          'SEC' | 'SECS' | 'SECOND' | 'SECONDS' |
+          'MIN' | 'MINS' | 'MINUTE' | 'MINUTES' |
+          'HOUR' | 'HOURS' | 'DAY' | 'DAYS')
+    ;
+
+ByteLengthFullLiteral
+    :
+    (Digit)+ ('KB' | 'MB' | 'GB' | 'TB' | 'PB')
     ;
 
 Number

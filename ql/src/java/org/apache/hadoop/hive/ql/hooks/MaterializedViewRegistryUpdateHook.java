@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,8 +26,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
-import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
-import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
@@ -69,21 +67,25 @@ public class MaterializedViewRegistryUpdateHook implements QueryLifeTimeHook {
           DDLTask ddlTask = (DDLTask) task;
           DDLWork work = ddlTask.getWork();
           String tableName = null;
+          boolean isRewriteEnabled = false;
           if (work.getCreateViewDesc() != null && work.getCreateViewDesc().isMaterialized()) {
             tableName = work.getCreateViewDesc().toTable(hiveConf).getFullyQualifiedName();
-          }
-          if (work.getAlterMaterializedViewDesc() != null) {
+            isRewriteEnabled = work.getCreateViewDesc().isRewriteEnabled();
+          } else if (work.getAlterMaterializedViewDesc() != null) {
             tableName = work.getAlterMaterializedViewDesc().getMaterializedViewName();
-          }
-          if (tableName == null) {
+            isRewriteEnabled = work.getAlterMaterializedViewDesc().isRewriteEnable();
+          } else {
             continue;
           }
-          Table mvTable = Hive.get().getTable(tableName);
 
-          if (mvTable.isRewriteEnabled()) {
-            HiveMaterializedViewsRegistry.get().addMaterializedView(mvTable);
-          } else {
-            HiveMaterializedViewsRegistry.get().dropMaterializedView(mvTable);
+          if (isRewriteEnabled) {
+            Hive db = Hive.get();
+            Table mvTable = db.getTable(tableName);
+            HiveMaterializedViewsRegistry.get().createMaterializedView(db.getConf(), mvTable);
+          } else if (work.getAlterMaterializedViewDesc() != null) {
+            // Disabling rewriting, removing from cache
+            String[] names =  tableName.split("\\.");
+            HiveMaterializedViewsRegistry.get().dropMaterializedView(names[0], names[1]);
           }
         }
       }
@@ -92,7 +94,7 @@ public class MaterializedViewRegistryUpdateHook implements QueryLifeTimeHook {
         String message = "Error updating materialized view cache; consider disabling: " + ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING.varname;
         LOG.error(message, e);
         throw new RuntimeException(message, e);
-      }else {
+      } else {
         LOG.debug("Exception during materialized view cache update", e);
       }
     }

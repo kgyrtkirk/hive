@@ -570,6 +570,23 @@ CREATE TABLE IF NOT EXISTS `TABLE_PARAMS` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `MV_CREATION_METADATA`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `MV_CREATION_METADATA` (
+  `MV_CREATION_METADATA_ID` bigint(20) NOT NULL,
+  `DB_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
+  `TBL_NAME` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
+  `TXN_LIST` TEXT DEFAULT NULL,
+  PRIMARY KEY (`MV_CREATION_METADATA_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+CREATE INDEX MV_UNIQUE_TABLE ON MV_CREATION_METADATA (TBL_NAME, DB_NAME) USING BTREE;
+
+--
 -- Table structure for table `TBLS`
 --
 
@@ -594,6 +611,20 @@ CREATE TABLE IF NOT EXISTS `TBLS` (
   KEY `TBLS_N49` (`DB_ID`),
   CONSTRAINT `TBLS_FK1` FOREIGN KEY (`SD_ID`) REFERENCES `SDS` (`SD_ID`),
   CONSTRAINT `TBLS_FK2` FOREIGN KEY (`DB_ID`) REFERENCES `DBS` (`DB_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `MV_TABLES_USED`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `MV_TABLES_USED` (
+  `MV_CREATION_METADATA_ID` bigint(20) NOT NULL,
+  `TBL_ID` bigint(20) NOT NULL,
+  CONSTRAINT `MV_TABLES_USED_FK1` FOREIGN KEY (`MV_CREATION_METADATA_ID`) REFERENCES `MV_CREATION_METADATA` (`MV_CREATION_METADATA_ID`),
+  CONSTRAINT `MV_TABLES_USED_FK2` FOREIGN KEY (`TBL_ID`) REFERENCES `TBLS` (`TBL_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -900,7 +931,7 @@ CREATE TABLE IF NOT EXISTS WM_MAPPING
 (
     `MAPPING_ID` bigint(20) NOT NULL,
     `RP_ID` bigint(20) NOT NULL,
-    `ENTITY_TYPE` varchar(10) NOT NULL,
+    `ENTITY_TYPE` varchar(128) NOT NULL,
     `ENTITY_NAME` varchar(128) NOT NULL,
     `POOL_ID` bigint(20),
     `ORDERING` int,

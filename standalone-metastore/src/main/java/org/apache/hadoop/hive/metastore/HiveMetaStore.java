@@ -652,7 +652,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ms;
     }
 
-    private TxnStore getTxnHandler() {
+    @Override
+    public TxnStore getTxnHandler() {
       TxnStore txn = threadLocalTxn.get();
       if (txn == null) {
         txn = TxnUtils.getTxnStore(conf);
@@ -1499,6 +1500,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             tbl.getParameters().get(hive_metastoreConstants.DDL_TIME) == null) {
           tbl.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
         }
+
         if (primaryKeys == null && foreignKeys == null
                 && uniqueConstraints == null && notNullConstraints == null) {
           ms.createTable(tbl);
@@ -2509,6 +2511,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("get_multi_table", tables != null, ex, join(tableNames, ","));
       }
       return tables;
+    }
+
+    @Override
+    public Map<String, Materialization> get_materialization_invalidation_info(final String dbName, final List<String> tableNames) {
+      return MaterializationsInvalidationCache.get().getMaterializationInvalidationInfo(dbName, tableNames);
     }
 
     private void assertClientHasCapability(ClientCapabilities client,
@@ -4446,6 +4453,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       } finally {
         endFunction("get_tables_by_type", ret != null, ex);
+      }
+      return ret;
+    }
+
+    @Override
+    public List<String> get_materialized_views_for_rewriting(final String dbname)
+        throws MetaException {
+      startFunction("get_materialized_views_for_rewriting", ": db=" + dbname);
+
+      List<String> ret = null;
+      Exception ex = null;
+      try {
+        ret = getMS().getMaterializedViewsForRewriting(dbname);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("get_materialized_views_for_rewriting", ret != null, ex);
       }
       return ret;
     }
@@ -7293,9 +7322,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
       int defaultPoolSize = MetastoreConf.getIntVar(
           conf, MetastoreConf.ConfVars.WM_DEFAULT_POOL_SIZE);
+      WMResourcePlan plan = request.getResourcePlan();
+      if (defaultPoolSize > 0 && plan.isSetQueryParallelism()) {
+        // If the default pool is not disabled, override the size with the specified parallelism.
+        defaultPoolSize = plan.getQueryParallelism();
+      }
       try {
-        getMS().createResourcePlan(
-            request.getResourcePlan(), request.getCopyFrom(), defaultPoolSize);
+        getMS().createResourcePlan(plan, request.getCopyFrom(), defaultPoolSize);
         return new WMCreateResourcePlanResponse();
       } catch (MetaException e) {
         LOG.error("Exception while trying to persist resource plan", e);
@@ -7371,10 +7404,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public WMValidateResourcePlanResponse validate_resource_plan(WMValidateResourcePlanRequest request)
         throws NoSuchObjectException, MetaException, TException {
       try {
-        List<String> errors = getMS().validateResourcePlan(request.getResourcePlanName());
-        WMValidateResourcePlanResponse resp = new WMValidateResourcePlanResponse();
-        resp.setErrors(errors);
-        return resp;
+        return getMS().validateResourcePlan(request.getResourcePlanName());
       } catch (MetaException e) {
         LOG.error("Exception while trying to validate resource plan", e);
         throw e;
@@ -7803,6 +7833,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       HMSHandler baseHandler = new HiveMetaStore.HMSHandler("new db based metaserver", conf,
           false);
       IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
+
+      // Initialize materializations invalidation cache
+      MaterializationsInvalidationCache.get().init(handler.getMS(), handler.getTxnHandler());
+
       TServerSocket serverSocket;
 
       if (useSasl) {

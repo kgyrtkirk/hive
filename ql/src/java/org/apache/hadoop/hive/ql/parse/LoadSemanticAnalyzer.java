@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -158,14 +158,6 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (oneSrc.isDir()) {
           throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast,
               "source contains directory: " + oneSrc.getPath().toString()));
-        }
-        if(AcidUtils.isAcidTable(table)) {
-          if(!AcidUtils.originalBucketFilter.accept(oneSrc.getPath())) {
-            //acid files (e.g. bucket_0000) have ROW_ID embedded in them and so can't be simply
-            //copied to a table so only allow non-acid files for now
-            throw new SemanticException(ErrorMsg.ACID_LOAD_DATA_INVALID_FILE_NAME,
-              oneSrc.getPath().getName(), table.getFullyQualifiedName());
-          }
         }
       }
     } catch (IOException e) {

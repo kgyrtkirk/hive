@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,6 +35,7 @@ public class MTable {
   private String viewOriginalText;
   private String viewExpandedText;
   private boolean rewriteEnabled;
+  private MCreationMetadata creationMetadata;
   private String tableType;
 
   public MTable() {}
@@ -55,8 +56,9 @@ public class MTable {
    */
   public MTable(String tableName, MDatabase database, MStorageDescriptor sd, String owner,
       int createTime, int lastAccessTime, int retention, List<MFieldSchema> partitionKeys,
-      Map<String, String> parameters,
-      String viewOriginalText, String viewExpandedText, boolean rewriteEnabled, String tableType) {
+      Map<String, String> parameters, String viewOriginalText, String viewExpandedText,
+      boolean rewriteEnabled, MCreationMetadata creationMetadata,
+      String tableType) {
     this.tableName = tableName;
     this.database = database;
     this.sd = sd;
@@ -69,6 +71,7 @@ public class MTable {
     this.viewOriginalText = viewOriginalText;
     this.viewExpandedText = viewExpandedText;
     this.rewriteEnabled = rewriteEnabled;
+    this.creationMetadata = creationMetadata;
     this.tableType = tableType;
   }
 
@@ -168,6 +171,20 @@ public class MTable {
    */
   public void setRewriteEnabled(boolean rewriteEnabled) {
     this.rewriteEnabled = rewriteEnabled;
+  }
+
+  /**
+   * @return the metadata information related to a materialized view creation
+   */
+  public MCreationMetadata getCreationMetadata() {
+    return creationMetadata;
+  }
+
+  /**
+   * @param creationMetadata the metadata information to set
+   */
+  public void setCreationMetadata(MCreationMetadata creationMetadata) {
+    this.creationMetadata = creationMetadata;
   }
 
   /**

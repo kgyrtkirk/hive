@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -124,6 +124,15 @@ public class Utils {
     static final String FETCH_SIZE = "fetchSize";
     static final String INIT_FILE = "initFile";
     static final String WM_POOL = "wmPool";
+    // Cookie prefix
+    static final String HTTP_COOKIE_PREFIX = "http.cookie.";
+
+    // We support ways to specify application name modeled after some existing DBs, since
+    // there's no standard approach.
+    // MSSQL: applicationName https://docs.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url
+    // Postgres 9~: ApplicationName https://jdbc.postgresql.org/documentation/91/connect.html
+    // Note: various ODBC names used include "Application Name", "APP", etc. Add those?
+    static final String[] APPLICATION = new String[] { "applicationName", "ApplicationName" };
 
     // --------------- Begin 2 way ssl options -------------------------
     // Use two way ssl. This param will take effect only when ssl=true
@@ -157,7 +166,7 @@ public class Utils {
 
     public JdbcConnectionParams() {
     }
-    
+
     public JdbcConnectionParams(JdbcConnectionParams params) {
       this.host = params.host;
       this.port = params.port;
@@ -397,7 +406,7 @@ public class Utils {
         connParams.getHiveVars().put(varMatcher.group(1), varMatcher.group(2));
       }
     }
-    
+
     // Apply configs supplied in the JDBC connection properties object
     for (Map.Entry<Object, Object> kv : info.entrySet()) {
       if ((kv.getKey() instanceof String)) {

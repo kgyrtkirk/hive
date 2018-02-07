@@ -31,7 +31,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -56,8 +55,11 @@ import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.WMNullablePool;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -73,6 +75,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
 import org.apache.thrift.TException;
 
 /**
@@ -245,6 +248,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public List<String> getTables(String dbName, String pattern, TableType tableType) throws MetaException {
     return objectStore.getTables(dbName, pattern, tableType);
+  }
+
+  @Override
+  public List<String> getMaterializedViewsForRewriting(String dbName)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getMaterializedViewsForRewriting(dbName);
   }
 
   @Override
@@ -931,13 +940,6 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
-      String tableName) throws MetaException, NoSuchObjectException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   public String getMetastoreDbUuid() throws MetaException {
     throw new MetaException("Get metastore uuid is not implemented");
   }
@@ -959,7 +961,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan resourcePlan,
+  public WMFullResourcePlan alterResourcePlan(String name, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
           MetaException {
@@ -973,7 +975,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> validateResourcePlan(String name)
+  public WMValidateResourcePlanResponse validateResourcePlan(String name)
       throws NoSuchObjectException, InvalidObjectException, MetaException {
     return objectStore.validateResourcePlan(name);
   }
@@ -1015,7 +1017,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void alterPool(WMPool pool, String poolPath) throws AlreadyExistsException,
+  public void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
       NoSuchObjectException, InvalidOperationException, MetaException {
     objectStore.alterPool(pool, poolPath);
   }
@@ -1050,5 +1052,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public void dropWMTriggerToPoolMapping(String resourcePlanName, String triggerName,
       String poolPath) throws NoSuchObjectException, InvalidOperationException, MetaException {
     objectStore.dropWMTriggerToPoolMapping(resourcePlanName, triggerName, poolPath);
+  }
+
+  @Override
+  public List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String dbName)
+      throws MetaException, NoSuchObjectException {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

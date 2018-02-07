@@ -30,6 +30,7 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,23 +45,21 @@ import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.security.PrivilegedExceptionAction;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
@@ -159,6 +158,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       // instantiate the metastore server handler directly instead of connecting
       // through the network
       client = HiveMetaStore.newRetryingHMSHandler("hive client", this.conf, true);
+      // Initialize materializations invalidation cache (only for local metastore)
+      MaterializationsInvalidationCache.get().init(((IHMSHandler) client).getMS(), ((IHMSHandler) client).getTxnHandler());
       isConnected = true;
       snapshotActiveConf();
       return;
@@ -194,9 +195,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
         }
         // make metastore URIS random
-        List<?> uriList = Arrays.asList(metastoreUris);
-        Collections.shuffle(uriList);
-        metastoreUris = (URI[]) uriList.toArray();
+        if (MetastoreConf.getVar(conf, ConfVars.THRIFT_URI_SELECTION).equalsIgnoreCase("RANDOM")) {
+          List uriList = Arrays.asList(metastoreUris);
+          Collections.shuffle(uriList);
+          metastoreUris = (URI[]) uriList.toArray();
+        }
       } catch (IllegalArgumentException e) {
         throw (e);
       } catch (Exception e) {
@@ -321,10 +324,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           " at the client level.");
     } else {
       close();
-      // Swap the first element of the metastoreUris[] with a random element from the rest
-      // of the array. Rationale being that this method will generally be called when the default
-      // connection has died and the default connection is likely to be the first array element.
-      promoteRandomMetaStoreURI();
+      if (MetastoreConf.getVar(conf, ConfVars.THRIFT_URI_SELECTION).equalsIgnoreCase("RANDOM")) {
+        // Swap the first element of the metastoreUris[] with a random element from the rest
+        // of the array. Rationale being that this method will generally be called when the default
+        // connection has died and the default connection is likely to be the first array element.
+        promoteRandomMetaStoreURI();
+      }
       open();
     }
   }
@@ -1398,6 +1403,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   /** {@inheritDoc} */
   @Override
+  public Map<String, Materialization> getMaterializationsInvalidationInfo(String dbName, List<String> viewNames)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException {
+    return client.get_materialization_invalidation_info(
+        dbName, filterHook.filterTableNames(dbName, viewNames));
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public List<String> listTableNamesByFilter(String dbName, String filter, short maxTables)
       throws MetaException, TException, InvalidOperationException, UnknownDBException {
     return filterHook.filterTableNames(dbName,
@@ -1431,7 +1444,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<String> getTables(String dbname, String tablePattern, TableType tableType) throws MetaException {
     try {
-      return filterHook.filterTableNames(dbname, client.get_tables_by_type(dbname, tablePattern, tableType.toString()));
+      return filterHook.filterTableNames(dbname,
+          client.get_tables_by_type(dbname, tablePattern, tableType.toString()));
+    } catch (Exception e) {
+      MetaStoreUtils.logAndThrowMetaException(e);
+    }
+    return null;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<String> getMaterializedViewsForRewriting(String dbname) throws MetaException {
+    try {
+      return filterHook.filterTableNames(dbname, client.get_materialized_views_for_rewriting(dbname));
     } catch (Exception e) {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
@@ -2636,7 +2661,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMResourcePlan resourcePlan,
+  public WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
     WMAlterResourcePlanRequest request = new WMAlterResourcePlanRequest();
@@ -2655,11 +2680,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public List<String> validateResourcePlan(String resourcePlanName)
+  public WMValidateResourcePlanResponse validateResourcePlan(String resourcePlanName)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
     WMValidateResourcePlanRequest request = new WMValidateResourcePlanRequest();
     request.setResourcePlanName(resourcePlanName);
-    return client.validate_resource_plan(request).getErrors();
+    return client.validate_resource_plan(request);
   }
 
   @Override
@@ -2704,7 +2729,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void alterWMPool(WMPool pool, String poolPath)
+  public void alterWMPool(WMNullablePool pool, String poolPath)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
     WMAlterPoolRequest request = new WMAlterPoolRequest();
     request.setPool(pool);
@@ -2749,4 +2774,5 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     request.setDrop(shouldDrop);
     client.create_or_drop_wm_trigger_to_pool_mapping(request);
   }
+
 }

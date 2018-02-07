@@ -327,6 +327,7 @@ struct Table {
   13: optional PrincipalPrivilegeSet privileges,
   14: optional bool temporary=false,
   15: optional bool rewriteEnabled,     // rewrite enabled or not
+  16: optional CreationMetadata creationMetadata   // only for MVs, it stores table names used and txn list at MV creation
 }
 
 struct Partition {
@@ -855,6 +856,22 @@ struct AddDynamicPartitions {
     5: optional DataOperationType operationType = DataOperationType.UNSET
 }
 
+struct BasicTxnInfo {
+    1: required bool isnull,
+    2: optional i64 time,
+    3: optional i64 txnid,
+    4: optional string dbname,
+    5: optional string tablename,
+    6: optional string partitionname
+}
+
+struct CreationMetadata {
+    1: required string dbName,
+    2: required string tblName,
+    3: required set<string> tablesUsed,
+    4: optional string validTxnList
+}
+
 struct NotificationEventRequest {
     1: required i64 lastEvent,
     2: optional i32 maxEvents,
@@ -1031,6 +1048,12 @@ struct TableMeta {
   4: optional string comments;
 }
 
+struct Materialization {
+  1: required Table materializationTable;
+  2: required set<string> tablesUsed;
+  3: required i64 invalidationTime;
+}
+
 // Data types for workload management.
 
 enum WMResourcePlanStatus {
@@ -1051,12 +1074,31 @@ struct WMResourcePlan {
   4: optional string defaultPoolPath;
 }
 
+struct WMNullableResourcePlan {
+  1: required string name;
+  2: optional WMResourcePlanStatus status;
+  4: optional i32 queryParallelism;
+  5: optional bool isSetQueryParallelism;
+  6: optional string defaultPoolPath;
+  7: optional bool isSetDefaultPoolPath;
+}
+
 struct WMPool {
   1: required string resourcePlanName;
   2: required string poolPath;
   3: optional double allocFraction;
   4: optional i32 queryParallelism;
   5: optional string schedulingPolicy;
+}
+
+
+struct WMNullablePool {
+  1: required string resourcePlanName;
+  2: required string poolPath;
+  3: optional double allocFraction;
+  4: optional i32 queryParallelism;
+  5: optional string schedulingPolicy;
+  6: optional bool isSetSchedulingPolicy;
 }
 
 struct WMTrigger {
@@ -1122,7 +1164,7 @@ struct WMGetAllResourcePlanResponse {
 
 struct WMAlterResourcePlanRequest {
   1: optional string resourcePlanName;
-  2: optional WMResourcePlan resourcePlan;
+  2: optional WMNullableResourcePlan resourcePlan;
   3: optional bool isEnableAndActivate;
   4: optional bool isForceDeactivate;
   5: optional bool isReplace;
@@ -1138,6 +1180,7 @@ struct WMValidateResourcePlanRequest {
 
 struct WMValidateResourcePlanResponse {
   1: optional list<string> errors;
+  2: optional list<string> warnings;
 }
 
 struct WMDropResourcePlanRequest {
@@ -1185,7 +1228,7 @@ struct WMCreatePoolResponse {
 }
 
 struct WMAlterPoolRequest {
-  1: optional WMPool pool;
+  1: optional WMNullablePool pool;
   2: optional string poolPath;
 }
 
@@ -1364,6 +1407,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
                           throws(1:MetaException o1)
   list<string> get_tables(1: string db_name, 2: string pattern) throws (1: MetaException o1)
   list<string> get_tables_by_type(1: string db_name, 2: string pattern, 3: string tableType) throws (1: MetaException o1)
+  list<string> get_materialized_views_for_rewriting(1: string db_name) throws (1: MetaException o1)
   list<TableMeta> get_table_meta(1: string db_patterns, 2: string tbl_patterns, 3: list<string> tbl_types)
                        throws (1: MetaException o1)
   list<string> get_all_tables(1: string db_name) throws (1: MetaException o1)
@@ -1373,6 +1417,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   list<Table> get_table_objects_by_name(1:string dbname, 2:list<string> tbl_names)
   GetTableResult get_table_req(1:GetTableRequest req) throws (1:MetaException o1, 2:NoSuchObjectException o2)
   GetTablesResult get_table_objects_by_name_req(1:GetTablesRequest req)
+				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
+  map<string, Materialization> get_materialization_invalidation_info(1:string dbname, 2:list<string> tbl_names)
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
 
   // Get a list of table names that match a filter.
@@ -1774,7 +1820,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // Notification logging calls
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
   CurrentNotificationEventId get_current_notificationEventId()
-  NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)
+  NotificationEventsCountResponse get_notification_events_count(1:NotificationEventsCountRequest rqst)
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()
 
