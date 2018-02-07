@@ -270,10 +270,7 @@ public class CliDriver {
           ret = 1;
         }
 
-        int cret = qp.close();
-        if (ret == 0) {
-          ret = cret;
-        }
+        qp.close();
 
         if (out instanceof FetchConverter) {
           ((FetchConverter) out).fetchFinished();
