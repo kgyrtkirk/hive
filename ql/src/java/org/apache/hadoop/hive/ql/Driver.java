@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.JavaUtils;
@@ -130,7 +131,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 
@@ -614,8 +617,6 @@ public class Driver implements IDriver {
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
-      List<HiveSemanticAnalyzerHook> saHooks =
-          hooksLoader.getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console, HiveSemanticAnalyzerHook.class);
 
       // Flush the metastore cache.  This assures that we don't pick up objects from a previous
       // query running in this same thread.  This has to be done after we get our semantic
@@ -632,6 +633,9 @@ public class Driver implements IDriver {
           long txnid = queryTxnMgr.openTxn(ctx, userFromUGI);
         }
       }
+      @Deprecated
+      List<HiveSemanticAnalyzerHook> saHooks =
+          hooksLoader.getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console, HiveSemanticAnalyzerHook.class);
       // Do semantic analysis and plan generation
       if (saHooks != null && !saHooks.isEmpty()) {
         HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
@@ -640,9 +644,12 @@ public class Driver implements IDriver {
         hookCtx.setIpAddress(SessionState.get().getUserIpAddress());
         hookCtx.setCommand(command);
         hookCtx.setHiveOperation(queryState.getHiveOperation());
+        
+        tree =  queryLifeTimeHookRunner.runPreAnalyzeHooks(hookCtx, tree);
         for (HiveSemanticAnalyzerHook hook : saHooks) {
           tree = hook.preAnalyze(hookCtx, tree);
         }
+        
         sem.analyze(tree, ctx);
         hookCtx.update(sem);
         for (HiveSemanticAnalyzerHook hook : saHooks) {
@@ -2533,5 +2540,17 @@ public class Driver implements IDriver {
 
   public void setRuntimeStatsSource(RuntimeStatsSource runtimeStatsSource) {
     this.runtimeStatsSource = runtimeStatsSource;
+  }
+
+  public <T extends Hook> void addHook(Class<T> clazz, T hook) {
+    Multimap<Class<? extends Hook>, Hook> hookMap = ArrayListMultimap.create();
+    hookMap.put(clazz, hook);
+    hookMap.get(clazz);
+
+    //    MultiMap mhm = new MultiValueMap();
+    //    mhm.put(key, "A");
+    //    mhm.put(key, "B");
+    //    mhm.put(key, "C");
+    //    // Collection coll = (Collection) mhm.get(key);</pre>
   }
 }

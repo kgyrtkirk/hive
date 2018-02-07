@@ -32,7 +32,11 @@ import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContextImpl;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookWithParseHooks;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
+import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
 
 /**
@@ -45,6 +49,9 @@ class QueryLifeTimeHookRunner {
 
   private final HiveConf conf;
   private final List<QueryLifeTimeHook> queryHooks;
+  private LogHelper console;
+  @Deprecated
+  private HooksLoader hooksLoader;
 
   /**
    * Constructs a {@link QueryLifeTimeHookRunner} that loads all hooks to be run via a {@link HooksLoader}.
@@ -55,6 +62,8 @@ class QueryLifeTimeHookRunner {
    */
   QueryLifeTimeHookRunner(HiveConf conf, HooksLoader hooksLoader, SessionState.LogHelper console) {
     this.conf = conf;
+    this.hooksLoader = hooksLoader;
+    this.console = console;
     this.queryHooks = new ArrayList<>();
 
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
@@ -185,5 +194,14 @@ class QueryLifeTimeHookRunner {
 
   private boolean containsHooks() {
     return queryHooks != null && !queryHooks.isEmpty();
+  }
+
+  public ASTNode runPreAnalyzeHooks(HiveSemanticAnalyzerHookContext hookCtx, ASTNode tree) {
+    List<HiveSemanticAnalyzerHook> saHooks =
+        hooksLoader.getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console, HiveSemanticAnalyzerHook.class);
+
+    for (HiveSemanticAnalyzerHook hook : saHooks) {
+      tree = hook.preAnalyze(hookCtx, tree);
+    }
   }
 }
