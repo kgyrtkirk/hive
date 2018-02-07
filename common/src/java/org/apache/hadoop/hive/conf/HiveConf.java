@@ -5074,8 +5074,10 @@ public class HiveConf extends Configuration {
 
   public Map<String, String> subtree(String string) {
     Map<String, String> ret = new HashMap<>();
-    for (Entry<String, String> entry : getPropsWithPrefix(string).entrySet()) {
-      ret.put(entry.getKey().substring(string.length() + 1), entry.getValue());
+    for (Entry<Object, Object> entry : getProps().entrySet()) {
+      String key = (String) entry.getKey();
+      String value = (String) entry.getValue();
+      ret.put(key.substring(string.length() + 1), value);
     }
     return ret;
   }
