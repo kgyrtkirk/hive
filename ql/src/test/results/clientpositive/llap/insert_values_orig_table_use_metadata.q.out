@@ -205,9 +205,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-                  Statistics: Num rows: 1 Data size: 2953990 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 295399 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1 Data size: 2953990 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 295399 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -408,9 +408,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-                  Statistics: Num rows: 1 Data size: 15540 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 1554 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1 Data size: 15540 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 1554 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -540,9 +540,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-                  Statistics: Num rows: 1 Data size: 31090 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 3109 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1 Data size: 31090 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 3109 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -670,9 +670,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-                  Statistics: Num rows: 1 Data size: 2985080 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 298508 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1 Data size: 2985080 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 298508 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -903,9 +903,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sp
-                  Statistics: Num rows: 1 Data size: 58128 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 5820 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1 Data size: 58128 Basic stats: PARTIAL Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 5820 Basic stats: PARTIAL Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
