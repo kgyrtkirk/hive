@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql;
 
-import javax.annotation.Nonnull;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
@@ -38,16 +36,16 @@ public class DriverFactory {
     abstract IDriver build(QueryState queryState, String userName, QueryInfo queryInfo);
   }
 
-  public static IDriver newDriver(@Nonnull HiveConf conf) {
+  public static IDriver newDriver(HiveConf conf) {
     return newDriver(getNewQueryState(conf), null, null);
   }
 
-  public static IDriver newDriver(@Nonnull QueryState queryState, String userName, QueryInfo queryInfo) {
+  public static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
     ExecutionStrategy strategy = ExecutionStrategy.none;
     return strategy.build(queryState, userName, queryInfo);
   }
 
-  private static QueryState getNewQueryState(@Nonnull HiveConf conf) {
+  private static QueryState getNewQueryState(HiveConf conf) {
     return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
   }
 }
