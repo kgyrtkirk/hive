@@ -119,12 +119,7 @@ public abstract class AbstractReExecDriver implements IDriver {
   }
 
   @Override
-  public void setTryCount(int maxValue) {
-    coreDriver.setTryCount(maxValue);
-  }
-
-  @Override
-  public CommandProcessorResponse run() throws CommandNeedRetryException {
+  public CommandProcessorResponse run() {
     String firstCommand = currentQuery;
     boolean forceRexec = false;
     if (coreDriver.getConf().getBoolean("hive.query.reexecution.explain", false)) {
@@ -147,7 +142,7 @@ public abstract class AbstractReExecDriver implements IDriver {
   }
 
   @Override
-  public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
+  public CommandProcessorResponse run(String command) {
     CommandProcessorResponse r0 = compileAndRespond(command);
     if (r0.getResponseCode() != 0) {
       return r0;
@@ -158,7 +153,7 @@ public abstract class AbstractReExecDriver implements IDriver {
   protected abstract void prepareToReExecute();
 
   @Override
-  public boolean getResults(List res) throws IOException, CommandNeedRetryException {
+  public boolean getResults(List res) throws IOException {
     return coreDriver.getResults(res);
   }
 

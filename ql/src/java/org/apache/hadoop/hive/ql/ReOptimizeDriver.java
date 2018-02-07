@@ -70,7 +70,7 @@ public class ReOptimizeDriver extends AbstractReExecDriver {
 
 
   @Override
-  public CommandProcessorResponse run() throws CommandNeedRetryException {
+  public CommandProcessorResponse run() {
     return super.run();
   }
 

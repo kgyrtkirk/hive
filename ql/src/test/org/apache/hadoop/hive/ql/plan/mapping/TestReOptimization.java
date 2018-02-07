@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.ReOptimizeDriver;
@@ -87,12 +86,7 @@ public class TestReOptimization {
   }
 
   private PlanMapper getMapperForQuery(IDriver driver, String query) {
-    int ret;
-    try {
-      ret = driver.run(query).getResponseCode();
-    } catch (CommandNeedRetryException e) {
-      throw new RuntimeException("remove this exception");
-    }
+    int ret = driver.run(query).getResponseCode();
     assertEquals("Checking command success", 0, ret);
     PlanMapper pm0 = ((ReOptimizeDriver) driver).getContext().getPlanMapper();
     return pm0;

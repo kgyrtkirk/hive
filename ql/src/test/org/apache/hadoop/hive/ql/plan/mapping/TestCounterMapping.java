@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -111,11 +110,7 @@ public class TestCounterMapping {
 
   private PlanMapper getMapperForQuery(IDriver driver, String query) {
     int ret;
-    try {
-      ret = driver.run(query).getResponseCode();
-    } catch (CommandNeedRetryException e) {
-      throw new RuntimeException("remove this exception");
-    }
+    ret = driver.run(query).getResponseCode();
     assertEquals("Checking command success", 0, ret);
     PlanMapper pm0 = ((Driver) driver).getContext().getPlanMapper();
     return pm0;
