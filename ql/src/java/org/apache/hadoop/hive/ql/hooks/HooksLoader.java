@@ -58,6 +58,7 @@ public class HooksLoader {
    * @throws IllegalAccessException if the specified class names could not be accessed
    * @throws InstantiationException if the specified class names could not be instantiated
    */
+  // FIXME: does this method has to really throw these crappy exceptions?
   public final <T extends Hook> List<T> getHooks(HiveConf.ConfVars hookConfVar, SessionState.LogHelper console, Class<?> clazz)
       throws IllegalAccessException, InstantiationException, ClassNotFoundException {
     try {

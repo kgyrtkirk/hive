@@ -18,12 +18,14 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.Iterables;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HooksLoader;
 import org.apache.hadoop.hive.ql.hooks.MaterializedViewRegistryUpdateHook;
@@ -32,12 +34,12 @@ import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContextImpl;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookWithParseHooks;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-
 
 /**
  * A runner class for {@link QueryLifeTimeHook}s and {@link QueryLifeTimeHookWithParseHooks}. The class has run methods
@@ -73,8 +75,8 @@ class QueryLifeTimeHookRunner {
 
     List<QueryLifeTimeHook> propertyDefinedHoooks;
     try {
-      propertyDefinedHoooks = hooksLoader.getHooks(
-          HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, console, QueryLifeTimeHook.class);
+      propertyDefinedHoooks =
+          hooksLoader.getHooks(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, console, QueryLifeTimeHook.class);
     } catch (IllegalAccessException | InstantiationException | ClassNotFoundException e) {
       throw new IllegalArgumentException(e);
     }
@@ -92,8 +94,8 @@ class QueryLifeTimeHookRunner {
    */
   void runBeforeParseHook(String command) {
     if (containsHooks()) {
-      QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(
-              command).build();
+      QueryLifeTimeHookContext qhc =
+          new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command).build();
 
       for (QueryLifeTimeHook hook : queryHooks) {
         if (hook instanceof QueryLifeTimeHookWithParseHooks) {
@@ -113,8 +115,8 @@ class QueryLifeTimeHookRunner {
    */
   void runAfterParseHook(String command, boolean parseError) {
     if (containsHooks()) {
-      QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(
-              command).build();
+      QueryLifeTimeHookContext qhc =
+          new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command).build();
 
       for (QueryLifeTimeHook hook : queryHooks) {
         if (hook instanceof QueryLifeTimeHookWithParseHooks) {
@@ -131,8 +133,8 @@ class QueryLifeTimeHookRunner {
    */
   void runBeforeCompileHook(String command) {
     if (containsHooks()) {
-      QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(
-              command).build();
+      QueryLifeTimeHookContext qhc =
+          new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command).build();
 
       for (QueryLifeTimeHook hook : queryHooks) {
         hook.beforeCompile(qhc);
@@ -140,16 +142,16 @@ class QueryLifeTimeHookRunner {
     }
   }
 
-   /**
-   * Invoke the {@link QueryLifeTimeHook#afterCompile(QueryLifeTimeHookContext, boolean)} method for each {@link QueryLifeTimeHook}
-   *
-   * @param command the Hive command that is being run
-   * @param compileError true if there was an error while compiling the command, false otherwise
-   */
+  /**
+  * Invoke the {@link QueryLifeTimeHook#afterCompile(QueryLifeTimeHookContext, boolean)} method for each {@link QueryLifeTimeHook}
+  *
+  * @param command the Hive command that is being run
+  * @param compileError true if there was an error while compiling the command, false otherwise
+  */
   void runAfterCompilationHook(String command, boolean compileError) {
     if (containsHooks()) {
-      QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(
-              command).build();
+      QueryLifeTimeHookContext qhc =
+          new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command).build();
 
       for (QueryLifeTimeHook hook : queryHooks) {
         hook.afterCompile(qhc, compileError);
@@ -165,8 +167,8 @@ class QueryLifeTimeHookRunner {
    */
   void runBeforeExecutionHook(String command, HookContext hookContext) {
     if (containsHooks()) {
-      QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(
-              command).withHookContext(hookContext).build();
+      QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command)
+          .withHookContext(hookContext).build();
 
       for (QueryLifeTimeHook hook : queryHooks) {
         hook.beforeExecution(qhc);
@@ -183,8 +185,8 @@ class QueryLifeTimeHookRunner {
    */
   void runAfterExecutionHook(String command, HookContext hookContext, boolean executionError) {
     if (containsHooks()) {
-      QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(
-              command).withHookContext(hookContext).build();
+      QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command)
+          .withHookContext(hookContext).build();
 
       for (QueryLifeTimeHook hook : queryHooks) {
         hook.afterExecution(qhc, executionError);
@@ -196,12 +198,45 @@ class QueryLifeTimeHookRunner {
     return queryHooks != null && !queryHooks.isEmpty();
   }
 
-  public ASTNode runPreAnalyzeHooks(HiveSemanticAnalyzerHookContext hookCtx, ASTNode tree) {
-    List<HiveSemanticAnalyzerHook> saHooks =
-        hooksLoader.getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console, HiveSemanticAnalyzerHook.class);
-
-    for (HiveSemanticAnalyzerHook hook : saHooks) {
-      tree = hook.preAnalyze(hookCtx, tree);
+  public ASTNode runPreAnalyzeHooks(HiveSemanticAnalyzerHookContext hookCtx, ASTNode tree) throws HiveException {
+    List<HiveSemanticAnalyzerHook> saHooks;
+    try {
+      saHooks = hooksLoader.getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console, HiveSemanticAnalyzerHook.class);
+      for (HiveSemanticAnalyzerHook hook : saHooks) {
+        try {
+        tree = hook.preAnalyze(hookCtx, tree);
+        } catch (Exception e) {
+          throw new HiveException("Error while invoking hook " + hook.getClass().getSimpleName() + ":" + e.getMessage(),
+              e);
+        }
+      }
+      return tree;
+    } catch (Exception e) {
+      throw new HiveException("Error while invoking PreAnalyzeHooks:" + e.getMessage(), e);
     }
+  }
+
+  public boolean hasPreAnalyzeHooks() throws HiveException {
+    List<HiveSemanticAnalyzerHook> saHooks;
+    try {
+      saHooks = hooksLoader.getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console, HiveSemanticAnalyzerHook.class);
+      return !saHooks.isEmpty();
+    } catch (Exception e) {
+      throw new HiveException("Error while Parsing hoks?:" + e.getMessage(), e);
+    }
+  }
+
+  public void runPostAnalyzeHooks(HiveSemanticAnalyzerHookContext hookCtx,
+      List<Task<? extends Serializable>> allRootTasks) throws HiveException {
+    List<HiveSemanticAnalyzerHook> saHooks;
+    try {
+      saHooks = hooksLoader.getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console, HiveSemanticAnalyzerHook.class);
+    for (HiveSemanticAnalyzerHook hook : saHooks) {
+        hook.postAnalyze(hookCtx, allRootTasks);
+    }
+    } catch (Exception e) {
+      throw new HiveException("Error while invoking PreAnalyzeHooks:" + e.getMessage(), e);
+    }
+
   }
 }

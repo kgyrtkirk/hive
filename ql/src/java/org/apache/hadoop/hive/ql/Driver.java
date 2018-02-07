@@ -93,7 +93,6 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
-import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContextImpl;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
@@ -633,28 +632,21 @@ public class Driver implements IDriver {
           long txnid = queryTxnMgr.openTxn(ctx, userFromUGI);
         }
       }
-      @Deprecated
-      List<HiveSemanticAnalyzerHook> saHooks =
-          hooksLoader.getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console, HiveSemanticAnalyzerHook.class);
       // Do semantic analysis and plan generation
-      if (saHooks != null && !saHooks.isEmpty()) {
+      if (queryLifeTimeHookRunner.hasPreAnalyzeHooks()) {
         HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
         hookCtx.setConf(conf);
         hookCtx.setUserName(userName);
         hookCtx.setIpAddress(SessionState.get().getUserIpAddress());
         hookCtx.setCommand(command);
         hookCtx.setHiveOperation(queryState.getHiveOperation());
-        
+
         tree =  queryLifeTimeHookRunner.runPreAnalyzeHooks(hookCtx, tree);
-        for (HiveSemanticAnalyzerHook hook : saHooks) {
-          tree = hook.preAnalyze(hookCtx, tree);
-        }
-        
+
         sem.analyze(tree, ctx);
         hookCtx.update(sem);
-        for (HiveSemanticAnalyzerHook hook : saHooks) {
-          hook.postAnalyze(hookCtx, sem.getAllRootTasks());
-        }
+
+        queryLifeTimeHookRunner.runPostAnalyzeHooks(hookCtx, sem.getAllRootTasks());
       } else {
         sem.analyze(tree, ctx);
       }
