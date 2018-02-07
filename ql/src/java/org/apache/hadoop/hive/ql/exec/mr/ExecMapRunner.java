@@ -16,25 +16,25 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql;
+package org.apache.hadoop.hive.ql.exec.mr;
 
-public class CommandNeedRetryException extends Exception {
+import java.io.IOException;
 
-  private static final long serialVersionUID = 1L;
+import org.apache.hadoop.mapred.MapRunner;
+import org.apache.hadoop.mapred.Mapper;
+import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
 
-  public CommandNeedRetryException() {
-    super();
+public class ExecMapRunner<K1, V1, K2, V2> extends MapRunner<K1, V1, K2, V2> {
+  @Override
+  public void run(RecordReader<K1, V1> input, OutputCollector<K2, V2> output, Reporter reporter) throws IOException {
+    Mapper<K1, V1, K2, V2> mapper = getMapper();
+    if (mapper instanceof ExecMapper) {
+      ExecMapper execMapper = (ExecMapper) mapper;
+      execMapper.ensureOutputInitialize(output, reporter);
+    }
+    super.run(input, output, reporter);
   }
 
-  public CommandNeedRetryException(String message) {
-    super(message);
-  }
-
-  public CommandNeedRetryException(Throwable cause) {
-    super(cause);
-  }
-
-  public CommandNeedRetryException(String message, Throwable cause) {
-    super(message, cause);
-  }
 }

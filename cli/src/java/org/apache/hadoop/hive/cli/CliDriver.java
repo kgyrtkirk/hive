@@ -67,7 +67,6 @@ import org.apache.hadoop.hive.conf.Validator;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
@@ -225,98 +224,85 @@ public class CliDriver {
   }
 
   int processLocalCmd(String cmd, CommandProcessor proc, CliSessionState ss) {
-    int tryCount = 0;
-    boolean needRetry;
     boolean escapeCRLF = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_ESCAPE_CRLF);
     int ret = 0;
 
-    do {
-      try {
-        needRetry = false;
-        if (proc != null) {
-          if (proc instanceof IDriver) {
-            IDriver qp = (IDriver) proc;
-            PrintStream out = ss.out;
-            long start = System.currentTimeMillis();
-            if (ss.getIsVerbose()) {
-              out.println(cmd);
-            }
+    if (proc != null) {
+      if (proc instanceof IDriver) {
+        IDriver qp = (IDriver) proc;
+        PrintStream out = ss.out;
+        long start = System.currentTimeMillis();
+        if (ss.getIsVerbose()) {
+          out.println(cmd);
+        }
 
-            qp.setTryCount(tryCount);
-            ret = qp.run(cmd).getResponseCode();
-            if (ret != 0) {
-              qp.close();
-              return ret;
-            }
+        ret = qp.run(cmd).getResponseCode();
+        if (ret != 0) {
+          qp.close();
+          return ret;
+        }
 
-            // query has run capture the time
-            long end = System.currentTimeMillis();
-            double timeTaken = (end - start) / 1000.0;
+        // query has run capture the time
+        long end = System.currentTimeMillis();
+        double timeTaken = (end - start) / 1000.0;
 
-            ArrayList<String> res = new ArrayList<String>();
+        ArrayList<String> res = new ArrayList<String>();
 
-            printHeader(qp, out);
+        printHeader(qp, out);
 
-            // print the results
-            int counter = 0;
-            try {
-              if (out instanceof FetchConverter) {
-                ((FetchConverter)out).fetchStarted();
-              }
-              while (qp.getResults(res)) {
-                for (String r : res) {
+        // print the results
+        int counter = 0;
+        try {
+          if (out instanceof FetchConverter) {
+            ((FetchConverter) out).fetchStarted();
+          }
+          while (qp.getResults(res)) {
+            for (String r : res) {
                   if (escapeCRLF) {
                     r = EscapeCRLFHelper.escapeCRLF(r);
                   }
-                  out.println(r);
-                }
-                counter += res.size();
-                res.clear();
-                if (out.checkError()) {
-                  break;
-                }
-              }
-            } catch (IOException e) {
-              console.printError("Failed with exception " + e.getClass().getName() + ":"
-                  + e.getMessage(), "\n"
-                  + org.apache.hadoop.util.StringUtils.stringifyException(e));
-              ret = 1;
+              out.println(r);
             }
+            counter += res.size();
+            res.clear();
+            if (out.checkError()) {
+              break;
+            }
+          }
+        } catch (IOException e) {
+          console.printError("Failed with exception " + e.getClass().getName() + ":" + e.getMessage(),
+              "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+          ret = 1;
+        }
 
-            qp.close();
+        qp.close();
 
-            if (out instanceof FetchConverter) {
-              ((FetchConverter)out).fetchFinished();
-            }
+        if (out instanceof FetchConverter) {
+          ((FetchConverter) out).fetchFinished();
+        }
 
-            console.printInfo("Time taken: " + timeTaken + " seconds" +
-                (counter == 0 ? "" : ", Fetched: " + counter + " row(s)"));
-          } else {
-            String firstToken = tokenizeCmd(cmd.trim())[0];
-            String cmd_1 = getFirstCmd(cmd.trim(), firstToken.length());
+        console.printInfo(
+            "Time taken: " + timeTaken + " seconds" + (counter == 0 ? "" : ", Fetched: " + counter + " row(s)"));
+      } else {
+        String firstToken = tokenizeCmd(cmd.trim())[0];
+        String cmd_1 = getFirstCmd(cmd.trim(), firstToken.length());
 
-            if (ss.getIsVerbose()) {
-              ss.out.println(firstToken + " " + cmd_1);
-            }
-            CommandProcessorResponse res = proc.run(cmd_1);
-            if (res.getResponseCode() != 0) {
-              ss.out.println("Query returned non-zero code: " + res.getResponseCode() +
-                  ", cause: " + res.getErrorMessage());
-            }
-            if (res.getConsoleMessages() != null) {
-              for (String consoleMsg : res.getConsoleMessages()) {
-                console.printInfo(consoleMsg);
-              }
-            }
-            ret = res.getResponseCode();
+        if (ss.getIsVerbose()) {
+          ss.out.println(firstToken + " " + cmd_1);
+        }
+        CommandProcessorResponse res = proc.run(cmd_1);
+        if (res.getResponseCode() != 0) {
+          ss.out
+              .println("Query returned non-zero code: " + res.getResponseCode() + ", cause: " + res.getErrorMessage());
+        }
+        if (res.getConsoleMessages() != null) {
+          for (String consoleMsg : res.getConsoleMessages()) {
+            console.printInfo(consoleMsg);
           }
         }
-      } catch (CommandNeedRetryException e) {
-        console.printInfo("Retry query with a different approach...");
-        tryCount++;
-        needRetry = true;
+        ret = res.getResponseCode();
       }
-    } while (needRetry);
+    }
 
     return ret;
   }
