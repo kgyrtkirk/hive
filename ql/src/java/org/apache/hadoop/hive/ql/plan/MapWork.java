@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.IConfigureJobConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport.Support;
@@ -304,8 +305,7 @@ public class MapWork extends BaseWork {
     if (!hasPathToPartInfo) {
       return "unknown"; // No information to judge.
     }
-    int varieties = (hasAcid ? 1 : 0) + (hasLlap ? 1 : 0)
-        + (hasCacheOnly ? 1 : 0) + (hasNonLlap ? 1 : 0);
+    int varieties = (hasAcid ? 1 : 0) + (hasLlap ? 1 : 0) + (hasCacheOnly ? 1 : 0) + (hasNonLlap ? 1 : 0);
     if (varieties > 1) {
       return "some inputs"; // Will probably never actually happen.
     }
@@ -634,6 +634,9 @@ public class MapWork extends BaseWork {
     Collection<Operator<?>> mappers = aliasToWork.values();
     for (FileSinkOperator fs : OperatorUtils.findOperators(mappers, FileSinkOperator.class)) {
       PlanUtils.configureJobConf(fs.getConf().getTableInfo(), job);
+    }
+    for (IConfigureJobConf icjc : OperatorUtils.findOperators(mappers, IConfigureJobConf.class)) {
+      icjc.configureJobConf(job);
     }
   }
 

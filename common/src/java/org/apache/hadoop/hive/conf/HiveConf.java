@@ -649,7 +649,8 @@ public class HiveConf extends Configuration {
         "Number of threads to be allocated for metastore handler for fs operations."),
     METASTORE_HBASE_FILE_METADATA_THREADS("hive.metastore.hbase.file.metadata.threads", 1,
         "Number of threads to use to read file metadata in background to cache it."),
-
+    METASTORE_URI_RESOLVER("hive.metastore.uri.resolver", "",
+            "If set, fully qualified class name of resolver for hive metastore uri's"),
     METASTORETHRIFTCONNECTIONRETRIES("hive.metastore.connect.retries", 3,
         "Number of retries while opening a connection to metastore"),
     METASTORETHRIFTFAILURERETRIES("hive.metastore.failure.retries", 1,
@@ -1578,6 +1579,9 @@ public class HiveConf extends Configuration {
         "should the query fail or not ? For example, if the buckets in the tables being joined are\n" +
         "not a multiple of each other, bucketed map-side join cannot be performed, and the\n" +
         "query will fail if hive.enforce.bucketmapjoin is set to true."),
+
+    HIVE_ENFORCE_NOT_NULL_CONSTRAINT("hive.constraint.notnull.enforce", true,
+        "Should \"IS NOT NULL \" constraint be enforced?"),
 
     HIVE_AUTO_SORTMERGE_JOIN("hive.auto.convert.sortmerge.join", false,
         "Will the join be automatically converted to a sort-merge join, if the joined tables pass the criteria for sort-merge join."),
@@ -3089,6 +3093,8 @@ public class HiveConf extends Configuration {
         true,
         "Allows hive server 2 to send progress bar update information. This is currently available"
             + " only if the execution engine is tez."),
+    TEZ_DAG_STATUS_CHECK_INTERVAL("hive.tez.dag.status.check.interval", "500ms",
+      new TimeValidator(TimeUnit.MILLISECONDS), "Interval between subsequent DAG status invocation."),
     SPARK_EXEC_INPLACE_PROGRESS("hive.spark.exec.inplace.progress", true,
         "Updates spark job execution progress in-place in the terminal."),
     TEZ_CONTAINER_MAX_JAVA_HEAP_FRACTION("hive.tez.container.max.java.heap.fraction", 0.8f,
@@ -3501,7 +3507,7 @@ public class HiveConf extends Configuration {
             Constants.LLAP_LOGGER_NAME_CONSOLE),
         "logger used for llap-daemons."),
 
-    HIVE_TRIGGER_VALIDATION_INTERVAL_MS("hive.trigger.validation.interval.ms", "500ms",
+    HIVE_TRIGGER_VALIDATION_INTERVAL("hive.trigger.validation.interval", "500ms",
       new TimeValidator(TimeUnit.MILLISECONDS),
       "Interval for validating triggers during execution of a query. Triggers defined in resource plan will get\n" +
         "validated for all SQL operations after every defined interval (default: 500ms) and corresponding action\n" +
@@ -3669,6 +3675,27 @@ public class HiveConf extends Configuration {
 
     HIVE_EXEC_INPUT_LISTING_MAX_THREADS("hive.exec.input.listing.max.threads", 0, new  SizeValidator(0L, true, 1024L, true),
         "Maximum number of threads that Hive uses to list file information from file systems (recommended > 1 for blobstore)."),
+
+    HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
+        "If the query results cache is enabled. This will keep results of previously executed queries " +
+        "to be reused if the same query is executed again."),
+
+    HIVE_QUERY_RESULTS_CACHE_DIRECTORY("hive.query.results.cache.directory",
+        "/tmp/hive/_resultscache_",
+        "Location of the query results cache directory. Temporary results from queries " +
+        "will be moved to this location."),
+
+    HIVE_QUERY_RESULTS_CACHE_MAX_ENTRY_LIFETIME("hive.query.results.cache.max.entry.lifetime", "3600s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Maximum lifetime in seconds for an entry in the query results cache. A nonpositive value means infinite."),
+
+    HIVE_QUERY_RESULTS_CACHE_MAX_SIZE("hive.query.results.cache.max.size",
+        (long) 2 * 1024 * 1024 * 1024,
+        "Maximum total size in bytes that the query results cache directory is allowed to use on the filesystem."),
+
+    HIVE_QUERY_RESULTS_CACHE_MAX_ENTRY_SIZE("hive.query.results.cache.max.entry.size",
+        (long) 10 * 1024 * 1024,
+        "Maximum size in bytes that a single query result is allowed to use in the results cache directory"),
 
     /* BLOBSTORE section */
 

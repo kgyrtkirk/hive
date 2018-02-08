@@ -47,8 +47,6 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
-import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
@@ -346,14 +344,6 @@ public abstract class TaskCompiler {
     if (globalLimitCtx.isEnable() && globalLimitCtx.getLastReduceLimitDesc() != null) {
       LOG.info("set least row check for LimitDesc: " + globalLimitCtx.getGlobalLimit());
       globalLimitCtx.getLastReduceLimitDesc().setLeastRows(globalLimitCtx.getGlobalLimit());
-      List<ExecDriver> mrTasks = Utilities.getMRTasks(rootTasks);
-      for (ExecDriver tsk : mrTasks) {
-        tsk.setRetryCmdWhenFail(true);
-      }
-      List<SparkTask> sparkTasks = Utilities.getSparkTasks(rootTasks);
-      for (SparkTask sparkTask : sparkTasks) {
-        sparkTask.setRetryCmdWhenFail(true);
-      }
     }
 
     Interner<TableDesc> interner = Interners.newStrongInterner();

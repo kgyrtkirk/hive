@@ -1124,6 +1124,11 @@ public class ObjectStore implements RawStore, Configurable {
       MTable mtbl = convertToMTable(tbl);
       pm.makePersistent(mtbl);
 
+      if (tbl.getCreationMetadata() != null) {
+        MCreationMetadata mcm = convertToMCreationMetadata(tbl.getCreationMetadata());
+        pm.makePersistent(mcm);
+      }
+
       PrincipalPrivilegeSet principalPrivs = tbl.getPrivileges();
       List<Object> toPersistPrivObjs = new ArrayList<>();
       if (principalPrivs != null) {
@@ -1234,11 +1239,9 @@ public class ObjectStore implements RawStore, Configurable {
 
         preDropStorageDescriptor(tbl.getSd());
 
-        if (tbl.getCreationMetadata() != null) {
-          // Remove creation metadata
-          MCreationMetadata mcm = tbl.getCreationMetadata();
-          tbl.setCreationMetadata(null);
-          pm.deletePersistent(mcm);
+        if (materializedView) {
+          dropCreationMetadata(
+              tbl.getDatabase().getName(), tbl.getTableName());
         }
 
         // then remove the table
@@ -1252,6 +1255,25 @@ public class ObjectStore implements RawStore, Configurable {
         if (materializedView) {
           MaterializationsInvalidationCache.get().dropMaterializedView(dbName, tableName);
         }
+      }
+    }
+    return success;
+  }
+
+  private boolean dropCreationMetadata(String dbName, String tableName) throws MetaException,
+      NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    boolean success = false;
+    try {
+      openTransaction();
+      MCreationMetadata mcm = getCreationMetadata(dbName, tableName);
+      pm.retrieve(mcm);
+      if (mcm != null) {
+        pm.deletePersistentAll(mcm);
+      }
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
       }
     }
     return success;
@@ -1309,6 +1331,11 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       tbl = convertToTable(getMTable(dbName, tableName));
+      // Retrieve creation metadata if needed
+      if (tbl != null && TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType())) {
+        tbl.setCreationMetadata(
+            convertToCreationMetadata(getCreationMetadata(dbName, tableName)));
+      }
       commited = commitTransaction();
     } finally {
       if (!commited) {
@@ -1557,11 +1584,6 @@ public class ObjectStore implements RawStore, Configurable {
         pm.retrieveAll(mtbl.getSd().getCD());
         nmtbl.mcd = mtbl.getSd().getCD();
       }
-      // Retrieve creation metadata if needed
-      if (mtbl != null &&
-          TableType.MATERIALIZED_VIEW.toString().equals(mtbl.getTableType())) {
-        mtbl.setCreationMetadata(getCreationMetadata(db, table));
-      }
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, query);
@@ -1665,8 +1687,9 @@ public class ObjectStore implements RawStore, Configurable {
         .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
         convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
         mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
-    t.setCreationMetadata(convertToCreationMetadata(mtbl.getCreationMetadata()));
     t.setRewriteEnabled(mtbl.isRewriteEnabled());
+    t.setBucketingVersion(mtbl.getBucketingVersion());
+    t.setLoadInBucketedTable(mtbl.isLoadInBucketedTable());
     return t;
   }
 
@@ -1705,7 +1728,8 @@ public class ObjectStore implements RawStore, Configurable {
         .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(), tbl.isRewriteEnabled(),
-        convertToMCreationMetadata(tbl.getCreationMetadata()), tableType);
+        tableType,
+            tbl.getBucketingVersion(), tbl.isLoadInBucketedTable());
   }
 
   private List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {
@@ -2741,6 +2765,9 @@ public class ObjectStore implements RawStore, Configurable {
 
   private List<String> getPartitionNamesNoTxn(String dbName, String tableName, short max) {
     List<String> pns = new ArrayList<>();
+    if (max == 0) {
+      return pns;
+    }
     dbName = normalizeIdentifier(dbName);
     tableName = normalizeIdentifier(tableName);
     Query query =
@@ -2749,6 +2776,7 @@ public class ObjectStore implements RawStore, Configurable {
             + "order by partitionName asc");
     query.declareParameters("java.lang.String t1, java.lang.String t2");
     query.setResult("partitionName");
+
     if (max > 0) {
       query.setRange(0, max);
     }
@@ -3713,10 +3741,14 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setViewOriginalText(newt.getViewOriginalText());
       oldt.setViewExpandedText(newt.getViewExpandedText());
       oldt.setRewriteEnabled(newt.isRewriteEnabled());
-      registerCreationSignature = newt.getCreationMetadata() != null;
+      registerCreationSignature = newTable.getCreationMetadata() != null;
       if (registerCreationSignature) {
-        oldt.getCreationMetadata().setTables(newt.getCreationMetadata().getTables());
-        oldt.getCreationMetadata().setTxnList(newt.getCreationMetadata().getTxnList());
+        // Update creation metadata
+        MCreationMetadata newMcm = convertToMCreationMetadata(
+            newTable.getCreationMetadata());
+        MCreationMetadata mcm = getCreationMetadata(dbname, name);
+        mcm.setTables(newMcm.getTables());
+        mcm.setTxnList(newMcm.getTxnList());
       }
 
       // commit the changes

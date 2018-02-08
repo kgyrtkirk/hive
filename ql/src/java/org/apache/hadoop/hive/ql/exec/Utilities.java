@@ -243,6 +243,7 @@ public final class Utilities {
   public static final String USE_VECTORIZED_INPUT_FILE_FORMAT = "USE_VECTORIZED_INPUT_FILE_FORMAT";
   public static final String MAPNAME = "Map ";
   public static final String REDUCENAME = "Reducer ";
+  public static final String ENSURE_OPERATORS_EXECUTED = "ENSURE_OPERATORS_EXECUTED";
 
   @Deprecated
   protected static final String DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX = "mapred.dfsclient.parallelism.max";
@@ -360,7 +361,7 @@ public final class Utilities {
   }
 
   public static BaseWork getMergeWork(Configuration jconf) {
-    String currentMergePrefix = jconf.get(DagUtils.TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX); 
+    String currentMergePrefix = jconf.get(DagUtils.TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX);
     if (StringUtils.isEmpty(currentMergePrefix)) {
       return null;
     }
@@ -2625,6 +2626,10 @@ public final class Utilities {
     return getTasks(tasks, new TaskFilterFunction<>(ExecDriver.class));
   }
 
+  public static int getNumClusterJobs(List<Task<? extends Serializable>> tasks) {
+    return getMRTasks(tasks).size() + getTezTasks(tasks).size() + getSparkTasks(tasks).size();
+  }
+
   static class TaskFilterFunction<T> implements DAGTraversal.Function {
     private Set<Task<? extends Serializable>> visited = new HashSet<>();
     private Class<T> requiredType;
@@ -4438,5 +4443,34 @@ public final class Utilities {
   public static boolean isHiveManagedFile(Path path) {
     return AcidUtils.ORIGINAL_PATTERN.matcher(path.getName()).matches() ||
       AcidUtils.ORIGINAL_PATTERN_COPY.matcher(path.getName()).matches();
+  }
+
+  /**
+   * Checks if path passed in exists and has writable permissions.
+   * The path will be created if it does not exist.
+   * @param rootHDFSDirPath
+   * @param conf
+   */
+  public static void ensurePathIsWritable(Path rootHDFSDirPath, HiveConf conf) throws IOException {
+    FsPermission writableHDFSDirPermission = new FsPermission((short)00733);
+    FileSystem fs = rootHDFSDirPath.getFileSystem(conf);
+    if (!fs.exists(rootHDFSDirPath)) {
+      Utilities.createDirsWithPermission(conf, rootHDFSDirPath, writableHDFSDirPermission, true);
+    }
+    FsPermission currentHDFSDirPermission = fs.getFileStatus(rootHDFSDirPath).getPermission();
+    if (rootHDFSDirPath != null && rootHDFSDirPath.toUri() != null) {
+      String schema = rootHDFSDirPath.toUri().getScheme();
+      LOG.debug("HDFS dir: " + rootHDFSDirPath + " with schema " + schema + ", permission: " +
+          currentHDFSDirPermission);
+    } else {
+      LOG.debug(
+        "HDFS dir: " + rootHDFSDirPath + ", permission: " + currentHDFSDirPermission);
+    }
+    // If the root HDFS scratch dir already exists, make sure it is writeable.
+    if (!((currentHDFSDirPermission.toShort() & writableHDFSDirPermission
+        .toShort()) == writableHDFSDirPermission.toShort())) {
+      throw new RuntimeException("The dir: " + rootHDFSDirPath
+          + " on HDFS should be writable. Current permissions are: " + currentHDFSDirPermission);
+    }
   }
 }
