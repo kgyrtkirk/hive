@@ -239,7 +239,6 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
     return table;
   }
 
-  private void createIndexAndCheck(Table table, String indexName, String indexLocation) throws Exception {
   private void createDatabaseAndCheck(String databaseName, String databaseLocation) throws Exception {
     executeQuery("CREATE DATABASE " + databaseName + buildLocationClause(databaseLocation));
     Database database = db.getDatabase(databaseName);
