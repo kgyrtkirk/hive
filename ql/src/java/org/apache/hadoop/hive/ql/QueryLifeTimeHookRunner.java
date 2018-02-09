@@ -283,4 +283,36 @@ class QueryLifeTimeHookRunner {
       throw new HiveException("Error while invoking XXXXeAnalyzeHooks:" + e.getMessage(), e);
     }
   }
+
+  public void runPostExecHooks(HookContext hookContext) throws HiveException {
+    try {
+      PerfLogger perfLogger = SessionState.getPerfLogger();
+      // Get all the post execution hooks and execute them.
+      for (Hook peh : hooksLoader.getHooks(HiveConf.ConfVars.POSTEXECHOOKS, console, ExecuteWithHookContext.class)) {
+        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.POST_HOOK + peh.getClass().getName());
+
+        ((ExecuteWithHookContext) peh).run(hookContext);
+
+        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.POST_HOOK + peh.getClass().getName());
+      }
+    } catch (Exception e) {
+      throw new HiveException("Error while invoking XXXXeAnalyzeHooks:" + e.getMessage(), e);
+    }
+
+  }
+
+  public void runFailureHooks(HookContext hookContext) throws HiveException {
+    try {
+      PerfLogger perfLogger = SessionState.getPerfLogger();
+      for (Hook ofh : hooksLoader.getHooks(HiveConf.ConfVars.ONFAILUREHOOKS, console, ExecuteWithHookContext.class)) {
+        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
+
+        ((ExecuteWithHookContext) ofh).run(hookContext);
+
+        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
+      }
+    } catch (Exception e) {
+      throw new HiveException("Error while invoking XXXXeAnalyzeHooks:" + e.getMessage(), e);
+    }
+  }
 }
