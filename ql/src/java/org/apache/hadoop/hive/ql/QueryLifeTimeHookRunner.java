@@ -26,6 +26,8 @@ import com.google.common.collect.Iterables;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
+import org.apache.hadoop.hive.ql.hooks.Hook;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HooksLoader;
 import org.apache.hadoop.hive.ql.hooks.MaterializedViewRegistryUpdateHook;
@@ -34,6 +36,7 @@ import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContextImpl;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookWithParseHooks;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
@@ -49,6 +52,7 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
  */
 class QueryLifeTimeHookRunner {
 
+  private static final String CLASS_NAME = Driver.class.getName();
   private final HiveConf conf;
   private final List<QueryLifeTimeHook> queryHooks;
   private LogHelper console;
@@ -261,6 +265,22 @@ class QueryLifeTimeHookRunner {
       }
     } catch (Exception e) {
       throw new HiveException("Error while invoking PreAnalyzeHooks:" + e.getMessage(), e);
+    }
+  }
+
+  public void runPreHooks(HookContext hookContext) throws HiveException {
+    try {
+      PerfLogger perfLogger = SessionState.getPerfLogger();
+
+      for (Hook peh : hooksLoader.getHooks(HiveConf.ConfVars.PREEXECHOOKS, console, ExecuteWithHookContext.class)) {
+        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
+
+        ((ExecuteWithHookContext) peh).run(hookContext);
+
+        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
+      }
+    } catch (Exception e) {
+      throw new HiveException("Error while invoking XXXXeAnalyzeHooks:" + e.getMessage(), e);
     }
   }
 }

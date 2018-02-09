@@ -1860,13 +1860,7 @@ public class Driver implements IDriver {
           ss.getSessionId(), Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger, queryInfo, ctx);
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
-      for (Hook peh : hooksLoader.getHooks(HiveConf.ConfVars.PREEXECHOOKS, console, ExecuteWithHookContext.class)) {
-        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
-
-        ((ExecuteWithHookContext) peh).run(hookContext);
-
-        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
-      }
+      queryLifeTimeHookRunner.runPreHooks(hookContext);
 
       // Trigger query hooks before query execution.
       queryLifeTimeHookRunner.runBeforeExecutionHook(queryStr, hookContext);
