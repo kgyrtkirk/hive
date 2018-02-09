@@ -55,8 +55,8 @@ class HookRunner {
   private LogHelper console;
   @Deprecated
   private HooksLoader hooksLoader;
-  final List<HiveSemanticAnalyzerHook> saHooks;
-  private List<HiveDriverRunHook> driverRunHooks;
+  final private List<HiveSemanticAnalyzerHook> saHooks;
+  final private List<HiveDriverRunHook> driverRunHooks;
 
 
   /**
@@ -259,9 +259,7 @@ class HookRunner {
   }
 
   public void runPostDriverHooks(HiveDriverRunHookContext hookContext) throws HiveException {
-    List<HiveDriverRunHook> driverRunHooks;
     try {
-      driverRunHooks = hooksLoader.getHooks(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, console, HiveDriverRunHook.class);
       for (HiveDriverRunHook driverRunHook : driverRunHooks) {
         driverRunHook.postDriverRun(hookContext);
       }
