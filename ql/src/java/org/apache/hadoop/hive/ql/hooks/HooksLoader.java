@@ -20,10 +20,7 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
-
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 
@@ -88,29 +85,6 @@ public class HooksLoader {
    */
   public <T extends Hook> List<T> getHooks(HiveConf.ConfVars hookConfVar, Class<?> clazz)
           throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-    return readHooksFromConf(conf, hookConfVar);
-  }
-
-  public static <T extends Hook> List<T> readHooksFromConf(HiveConf conf, HiveConf.ConfVars hookConfVar)
-      throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-    String csHooks = conf.getVar(hookConfVar);
-    ImmutableList.Builder<T> hooks = ImmutableList.builder();
-    if (csHooks == null) {
-      return ImmutableList.of();
-    }
-
-    csHooks = csHooks.trim();
-    if (csHooks.isEmpty()) {
-      return ImmutableList.of();
-    }
-
-    String[] hookClasses = csHooks.split(",");
-    for (String hookClass : hookClasses) {
-      T hook = (T) Class.forName(hookClass.trim(), true,
-              Utilities.getSessionSpecifiedClassLoader()).newInstance();
-      hooks.add(hook);
-    }
-
-    return hooks.build();
+    return HookUtils.readHooksFromConf(conf, hookConfVar);
   }
 }
