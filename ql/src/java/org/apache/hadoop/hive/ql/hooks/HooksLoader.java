@@ -88,6 +88,11 @@ public class HooksLoader {
    */
   public <T extends Hook> List<T> getHooks(HiveConf.ConfVars hookConfVar, Class<?> clazz)
           throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    return readHooksFromConf(conf, hookConfVar);
+  }
+
+  public static <T extends Hook> List<T> readHooksFromConf(HiveConf conf, HiveConf.ConfVars hookConfVar)
+      throws InstantiationException, IllegalAccessException, ClassNotFoundException {
     String csHooks = conf.getVar(hookConfVar);
     ImmutableList.Builder<T> hooks = ImmutableList.builder();
     if (csHooks == null) {
