@@ -52,8 +52,6 @@ class HookRunner {
   private final HiveConf conf;
   private final List<QueryLifeTimeHook> queryHooks;
   private LogHelper console;
-  @Deprecated
-  private HooksLoader hooksLoader;
   private final List<HiveSemanticAnalyzerHook> saHooks;
   private final List<HiveDriverRunHook> driverRunHooks;
   private final List<ExecuteWithHookContext> preExecHooks;
@@ -70,7 +68,6 @@ class HookRunner {
    */
   HookRunner(HiveConf conf, HooksLoader hooksLoader, SessionState.LogHelper console) {
     this.conf = conf;
-    this.hooksLoader = hooksLoader;
     this.console = console;
     this.queryHooks = new ArrayList<>();
 
