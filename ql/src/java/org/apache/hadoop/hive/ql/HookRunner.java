@@ -45,12 +45,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
 /**
- * A runner class for {@link QueryLifeTimeHook}s and {@link QueryLifeTimeHookWithParseHooks}. The class has run methods
- * for each phase of a {@link QueryLifeTimeHook} and {@link QueryLifeTimeHookWithParseHooks}. Each run method checks if
- * a list of hooks has be specified, and if so invokes the appropriate callback method of each hook. Each method
- * constructs a {@link QueryLifeTimeHookContext} object and pass it to the callback functions.
+ * Handles hook executions for {@link Driver}.
  */
-class QueryLifeTimeHookRunner {
+class HookRunner {
 
   private static final String CLASS_NAME = Driver.class.getName();
   private final HiveConf conf;
@@ -60,13 +57,13 @@ class QueryLifeTimeHookRunner {
   private HooksLoader hooksLoader;
 
   /**
-   * Constructs a {@link QueryLifeTimeHookRunner} that loads all hooks to be run via a {@link HooksLoader}.
+   * Constructs a {@link HookRunner} that loads all hooks to be run via a {@link HooksLoader}.
    *
    * @param conf the {@link HiveConf} to use when creating {@link QueryLifeTimeHookContext} objects
    * @param hooksLoader the {@link HooksLoader} to use when loading all hooks to be run
    * @param console the {@link SessionState.LogHelper} to use when running {@link HooksLoader#getHooks(HiveConf.ConfVars)}
    */
-  QueryLifeTimeHookRunner(HiveConf conf, HooksLoader hooksLoader, SessionState.LogHelper console) {
+  HookRunner(HiveConf conf, HooksLoader hooksLoader, SessionState.LogHelper console) {
     this.conf = conf;
     this.hooksLoader = hooksLoader;
     this.console = console;

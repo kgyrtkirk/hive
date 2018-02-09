@@ -177,7 +177,7 @@ public class Driver implements IDriver {
   private final QueryState queryState;
 
   // Query hooks that execute before compilation and after execution
-  private QueryLifeTimeHookRunner hookRunner;
+  private HookRunner hookRunner;
 
   // Transaction manager the Driver has been initialized with (can be null).
   // If this is set then this Transaction manager will be used during query
@@ -433,7 +433,7 @@ public class Driver implements IDriver {
     isParallelEnabled = (conf != null)
         && HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_PARALLEL_COMPILATION);
     this.userName = userName;
-    this.hookRunner = new QueryLifeTimeHookRunner(conf, hooksLoader, console);
+    this.hookRunner = new HookRunner(conf, hooksLoader, console);
     this.queryInfo = queryInfo;
     this.initTxnMgr = txnMgr;
   }
