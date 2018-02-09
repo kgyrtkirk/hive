@@ -55,6 +55,9 @@ class HookRunner {
   private LogHelper console;
   @Deprecated
   private HooksLoader hooksLoader;
+  final List<HiveSemanticAnalyzerHook> saHooks;
+  private List<HiveDriverRunHook> driverRunHooks;
+
 
   /**
    * Constructs a {@link HookRunner} that loads all hooks to be run via a {@link HooksLoader}.
@@ -84,6 +87,14 @@ class HookRunner {
     if (propertyDefinedHoooks != null) {
       Iterables.addAll(queryHooks, propertyDefinedHoooks);
     }
+
+    try {
+      saHooks = hooksLoader.getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console, HiveSemanticAnalyzerHook.class);
+      driverRunHooks = hooksLoader.getHooks(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, console, HiveDriverRunHook.class);
+    } catch (IllegalAccessException | InstantiationException | ClassNotFoundException e) {
+      throw new RuntimeException("Error loading hooks: " + e.getMessage(), e);
+    }
+
   }
 
   /**
@@ -202,9 +213,7 @@ class HookRunner {
   }
 
   public ASTNode runPreAnalyzeHooks(HiveSemanticAnalyzerHookContext hookCtx, ASTNode tree) throws HiveException {
-    List<HiveSemanticAnalyzerHook> saHooks;
     try {
-      saHooks = hooksLoader.getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console, HiveSemanticAnalyzerHook.class);
       for (HiveSemanticAnalyzerHook hook : saHooks) {
         try {
         tree = hook.preAnalyze(hookCtx, tree);
@@ -220,9 +229,7 @@ class HookRunner {
   }
 
   public boolean hasPreAnalyzeHooks() throws HiveException {
-    List<HiveSemanticAnalyzerHook> saHooks;
     try {
-      saHooks = hooksLoader.getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console, HiveSemanticAnalyzerHook.class);
       return !saHooks.isEmpty();
     } catch (Exception e) {
       throw new HiveException("Error while Parsing hoks?:" + e.getMessage(), e);
@@ -231,12 +238,10 @@ class HookRunner {
 
   public void runPostAnalyzeHooks(HiveSemanticAnalyzerHookContext hookCtx,
       List<Task<? extends Serializable>> allRootTasks) throws HiveException {
-    List<HiveSemanticAnalyzerHook> saHooks;
     try {
-      saHooks = hooksLoader.getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console, HiveSemanticAnalyzerHook.class);
-    for (HiveSemanticAnalyzerHook hook : saHooks) {
+      for (HiveSemanticAnalyzerHook hook : saHooks) {
         hook.postAnalyze(hookCtx, allRootTasks);
-    }
+      }
     } catch (Exception e) {
       throw new HiveException("Error while invoking PreAnalyzeHooks:" + e.getMessage(), e);
     }
@@ -244,9 +249,7 @@ class HookRunner {
   }
 
   public void runPreDriverHooks(HiveDriverRunHookContext hookContext) throws HiveException {
-    List<HiveDriverRunHook> driverRunHooks;
     try {
-      driverRunHooks = hooksLoader.getHooks(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, console, HiveDriverRunHook.class);
       for (HiveDriverRunHook driverRunHook : driverRunHooks) {
         driverRunHook.preDriverRun(hookContext);
       }
