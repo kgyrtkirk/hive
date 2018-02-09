@@ -27,7 +27,6 @@ import com.google.common.collect.Iterables;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
-import org.apache.hadoop.hive.ql.hooks.Hook;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HooksLoader;
 import org.apache.hadoop.hive.ql.hooks.MaterializedViewRegistryUpdateHook;
@@ -55,8 +54,11 @@ class HookRunner {
   private LogHelper console;
   @Deprecated
   private HooksLoader hooksLoader;
-  final private List<HiveSemanticAnalyzerHook> saHooks;
-  final private List<HiveDriverRunHook> driverRunHooks;
+  private final List<HiveSemanticAnalyzerHook> saHooks;
+  private final List<HiveDriverRunHook> driverRunHooks;
+  private final List<ExecuteWithHookContext> preExecHooks;
+  private final List<ExecuteWithHookContext> postExecHooks;
+  private final List<ExecuteWithHookContext> onFailureHooks;
 
 
   /**
@@ -91,6 +93,9 @@ class HookRunner {
     try {
       saHooks = hooksLoader.getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console, HiveSemanticAnalyzerHook.class);
       driverRunHooks = hooksLoader.getHooks(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, console, HiveDriverRunHook.class);
+      preExecHooks = hooksLoader.getHooks(HiveConf.ConfVars.PREEXECHOOKS, console, ExecuteWithHookContext.class);
+      postExecHooks = hooksLoader.getHooks(HiveConf.ConfVars.POSTEXECHOOKS, console, ExecuteWithHookContext.class);
+      onFailureHooks = hooksLoader.getHooks(HiveConf.ConfVars.ONFAILUREHOOKS, console, ExecuteWithHookContext.class);
     } catch (IllegalAccessException | InstantiationException | ClassNotFoundException e) {
       throw new RuntimeException("Error loading hooks: " + e.getMessage(), e);
     }
@@ -272,10 +277,10 @@ class HookRunner {
     try {
       PerfLogger perfLogger = SessionState.getPerfLogger();
 
-      for (Hook peh : hooksLoader.getHooks(HiveConf.ConfVars.PREEXECHOOKS, console, ExecuteWithHookContext.class)) {
+      for (ExecuteWithHookContext peh : preExecHooks) {
         perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
 
-        ((ExecuteWithHookContext) peh).run(hookContext);
+        peh.run(hookContext);
 
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
       }
@@ -288,10 +293,10 @@ class HookRunner {
     try {
       PerfLogger perfLogger = SessionState.getPerfLogger();
       // Get all the post execution hooks and execute them.
-      for (Hook peh : hooksLoader.getHooks(HiveConf.ConfVars.POSTEXECHOOKS, console, ExecuteWithHookContext.class)) {
+      for (ExecuteWithHookContext peh : postExecHooks) {
         perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.POST_HOOK + peh.getClass().getName());
 
-        ((ExecuteWithHookContext) peh).run(hookContext);
+        peh.run(hookContext);
 
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.POST_HOOK + peh.getClass().getName());
       }
@@ -304,10 +309,10 @@ class HookRunner {
   public void runFailureHooks(HookContext hookContext) throws HiveException {
     try {
       PerfLogger perfLogger = SessionState.getPerfLogger();
-      for (Hook ofh : hooksLoader.getHooks(HiveConf.ConfVars.ONFAILUREHOOKS, console, ExecuteWithHookContext.class)) {
+      for (ExecuteWithHookContext ofh : onFailureHooks) {
         perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
 
-        ((ExecuteWithHookContext) ofh).run(hookContext);
+        ofh.run(hookContext);
 
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
       }
