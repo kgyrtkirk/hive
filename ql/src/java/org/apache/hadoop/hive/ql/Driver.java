@@ -177,7 +177,7 @@ public class Driver implements IDriver {
   private final QueryState queryState;
 
   // Query hooks that execute before compilation and after execution
-  private QueryLifeTimeHookRunner queryLifeTimeHookRunner;
+  private QueryLifeTimeHookRunner hookRunner;
 
   // Transaction manager the Driver has been initialized with (can be null).
   // If this is set then this Transaction manager will be used during query
@@ -433,7 +433,7 @@ public class Driver implements IDriver {
     isParallelEnabled = (conf != null)
         && HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_PARALLEL_COMPILATION);
     this.userName = userName;
-    this.queryLifeTimeHookRunner = new QueryLifeTimeHookRunner(conf, hooksLoader, console);
+    this.hookRunner = new QueryLifeTimeHookRunner(conf, hooksLoader, console);
     this.queryInfo = queryInfo;
     this.initTxnMgr = txnMgr;
   }
@@ -596,7 +596,7 @@ public class Driver implements IDriver {
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARSE);
 
       // Trigger query hook before compilation
-      queryLifeTimeHookRunner.runBeforeParseHook(command);
+      hookRunner.runBeforeParseHook(command);
 
       ASTNode tree;
       try {
@@ -605,11 +605,11 @@ public class Driver implements IDriver {
         parseError = true;
         throw e;
       } finally {
-        queryLifeTimeHookRunner.runAfterParseHook(command, parseError);
+        hookRunner.runAfterParseHook(command, parseError);
       }
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
 
-      queryLifeTimeHookRunner.runBeforeCompileHook(command);
+      hookRunner.runBeforeCompileHook(command);
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
@@ -630,7 +630,7 @@ public class Driver implements IDriver {
         }
       }
       // Do semantic analysis and plan generation
-      if (queryLifeTimeHookRunner.hasPreAnalyzeHooks()) {
+      if (hookRunner.hasPreAnalyzeHooks()) {
         HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
         hookCtx.setConf(conf);
         hookCtx.setUserName(userName);
@@ -638,12 +638,12 @@ public class Driver implements IDriver {
         hookCtx.setCommand(command);
         hookCtx.setHiveOperation(queryState.getHiveOperation());
 
-        tree =  queryLifeTimeHookRunner.runPreAnalyzeHooks(hookCtx, tree);
+        tree =  hookRunner.runPreAnalyzeHooks(hookCtx, tree);
 
         sem.analyze(tree, ctx);
         hookCtx.update(sem);
 
-        queryLifeTimeHookRunner.runPostAnalyzeHooks(hookCtx, sem.getAllRootTasks());
+        hookRunner.runPostAnalyzeHooks(hookCtx, sem.getAllRootTasks());
       } else {
         sem.analyze(tree, ctx);
       }
@@ -732,7 +732,7 @@ public class Driver implements IDriver {
       // before/after execution hook will never be executed.
       if (!parseError) {
         try {
-          queryLifeTimeHookRunner.runAfterCompilationHook(command, compileError);
+          hookRunner.runAfterCompilationHook(command, compileError);
         } catch (Exception e) {
           LOG.warn("Failed when invoking query after-compilation hook.", e);
         }
@@ -1622,7 +1622,7 @@ public class Driver implements IDriver {
           alreadyCompiled ? ctx.getCmd() : command);
       // Get all the driver run hooks and pre-execute them.
       try {
-        queryLifeTimeHookRunner.runPreDriverHooks(hookContext);
+        hookRunner.runPreDriverHooks(hookContext);
       } catch (Exception e) {
         errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
         SQLState = ErrorMsg.findSQLState(e.getMessage());
@@ -1684,7 +1684,7 @@ public class Driver implements IDriver {
 
       // Take all the driver run hooks and post-execute them.
       try {
-        queryLifeTimeHookRunner.runPostDriverHooks(hookContext);
+        hookRunner.runPostDriverHooks(hookContext);
       } catch (Exception e) {
         errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
         SQLState = ErrorMsg.findSQLState(e.getMessage());
@@ -1857,10 +1857,10 @@ public class Driver implements IDriver {
           ss.getSessionId(), Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger, queryInfo, ctx);
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
-      queryLifeTimeHookRunner.runPreHooks(hookContext);
+      hookRunner.runPreHooks(hookContext);
 
       // Trigger query hooks before query execution.
-      queryLifeTimeHookRunner.runBeforeExecutionHook(queryStr, hookContext);
+      hookRunner.runBeforeExecutionHook(queryStr, hookContext);
 
       setQueryDisplays(plan.getRootTasks());
       int mrJobs = Utilities.getMRTasks(plan.getRootTasks()).size();
@@ -2036,7 +2036,7 @@ public class Driver implements IDriver {
 
       hookContext.setHookType(HookContext.HookType.POST_EXEC_HOOK);
 
-      queryLifeTimeHookRunner.runPostExecHooks(hookContext);
+      hookRunner.runPostExecHooks(hookContext);
 
       if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().setQueryProperty(queryId, Keys.QUERY_RET_CODE,
@@ -2074,7 +2074,7 @@ public class Driver implements IDriver {
     } finally {
       // Trigger query hooks after query completes its execution.
       try {
-        queryLifeTimeHookRunner.runAfterExecutionHook(queryStr, hookContext, executionError);
+        hookRunner.runAfterExecutionHook(queryStr, hookContext, executionError);
       } catch (Exception e) {
         LOG.warn("Failed when invoking query after execution hook", e);
       }
@@ -2194,7 +2194,7 @@ public class Driver implements IDriver {
     hookContext.setErrorMessage(errorMessage);
     hookContext.setException(exception);
     // Get all the failure execution hooks and execute them.
-    queryLifeTimeHookRunner.runFailureHooks(hookContext);
+    hookRunner.runFailureHooks(hookContext);
   }
 
   /**
