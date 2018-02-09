@@ -195,6 +195,8 @@ class HookRunner {
     }
   }
 
+  // FIXME: make queryhooks not support null and inline this crap!
+  @Deprecated
   private boolean containsHooks() {
     return queryHooks != null && !queryHooks.isEmpty();
   }
