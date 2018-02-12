@@ -276,19 +276,7 @@ class HookRunner {
   }
 
   public void runPreHooks(HookContext hookContext) throws HiveException {
-    try {
-      PerfLogger perfLogger = SessionState.getPerfLogger();
-
-      for (ExecuteWithHookContext peh : preExecHooks) {
-        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
-
-        peh.run(hookContext);
-
-        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
-      }
-    } catch (Exception e) {
-      throw new HiveException("Error while invoking XXXXeAnalyzeHooks:" + e.getMessage(), e);
-    }
+    invokeGeneralHook(preExecHooks, PerfLogger.PRE_HOOK, hookContext);
   }
 
   public void runPostExecHooks(HookContext hookContext) throws HiveException {
