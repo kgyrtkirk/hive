@@ -21,15 +21,11 @@ package org.apache.hadoop.hive.ql;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.hadoop.hbase.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
-import org.apache.hadoop.hive.ql.hooks.Hook;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
-import org.apache.hadoop.hive.ql.hooks.HooksLoader;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 
@@ -53,25 +49,6 @@ public abstract class AbstractReExecDriver implements IDriver {
     }
   }
 
-  private class ReExecHooksLoader extends HooksLoader {
-
-    public ReExecHooksLoader(HiveConf conf) {
-      super(conf);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends Hook> List<T> getHooks(ConfVars hookConfVar, Class<?> clazz) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-      List<T> ret = Lists.newArrayList();
-      ret.addAll(super.getHooks(hookConfVar, clazz));
-      if (ExecuteWithHookContext.class.equals(clazz)) {
-        ret.add((T) new ExecutionInfoHook());
-        ret.add((T) new OperatorStatsReaderHook());
-      }
-      return ret;
-    }
-  }
-
   protected Driver coreDriver;
   private QueryState queryState;
   private String currentQuery;
@@ -87,7 +64,15 @@ public abstract class AbstractReExecDriver implements IDriver {
 
   public AbstractReExecDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
     this.queryState = queryState;
-    coreDriver = new Driver(queryState, userName, new ReExecHooksLoader(queryState.getConf()), queryInfo, null);
+    coreDriver = new Driver(queryState, userName, queryInfo, null);
+    hookup(new ExecutionInfoHook());
+    hookup(new OperatorStatsReaderHook());
+  }
+
+  private void hookup(ExecuteWithHookContext operatorStatsReaderHook) {
+    coreDriver.getHookRunner().addPreHook(operatorStatsReaderHook);
+    coreDriver.getHookRunner().addPostHook(operatorStatsReaderHook);
+    coreDriver.getHookRunner().addOnFailureHook(operatorStatsReaderHook);
   }
 
   abstract protected void handleExecutionException(Throwable exception);
