@@ -88,6 +88,7 @@ public abstract class AbstractReExecDriver implements IDriver {
   public AbstractReExecDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
     this.queryState = queryState;
     coreDriver = new Driver(queryState, userName, new ReExecHooksLoader(queryState.getConf()), queryInfo, null);
+    //    coreDriver.addHook(ExecuteWithHookContext.class, new ExecutionInfoHook());
   }
 
   abstract protected void handleExecutionException(Throwable exception);
