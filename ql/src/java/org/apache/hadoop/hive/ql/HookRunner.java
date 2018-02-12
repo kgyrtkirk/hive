@@ -210,6 +210,8 @@ public class HookRunner {
         }
       }
       return tree;
+    } catch (HiveException e) {
+      throw e;
     } catch (Exception e) {
       throw new HiveException("Error while invoking PreAnalyzeHooks:" + e.getMessage(), e);
     }
@@ -225,6 +227,8 @@ public class HookRunner {
       for (HiveSemanticAnalyzerHook hook : saHooks) {
         hook.postAnalyze(hookCtx, allRootTasks);
       }
+    } catch (HiveException e) {
+      throw e;
     } catch (Exception e) {
       throw new HiveException("Error while invoking PostAnalyzeHooks:" + e.getMessage(), e);
     }
@@ -236,6 +240,8 @@ public class HookRunner {
       for (HiveDriverRunHook driverRunHook : driverRunHooks) {
         driverRunHook.preDriverRun(hookContext);
       }
+    } catch (HiveException e) {
+      throw e;
     } catch (Exception e) {
       throw new HiveException("Error while invoking PreDriverHooks:" + e.getMessage(), e);
     }
@@ -246,6 +252,8 @@ public class HookRunner {
       for (HiveDriverRunHook driverRunHook : driverRunHooks) {
         driverRunHook.postDriverRun(hookContext);
       }
+    } catch (HiveException e) {
+      throw e;
     } catch (Exception e) {
       throw new HiveException("Error while invoking PostDriverHooks:" + e.getMessage(), e);
     }
@@ -276,6 +284,8 @@ public class HookRunner {
         hook.run(hookContext);
         perfLogger.PerfLogEnd(CLASS_NAME, prefix + hook.getClass().getName());
       }
+    } catch (HiveException e) {
+      throw e;
     } catch (Exception e) {
       throw new HiveException("Error while invoking " + prefix + " hooks: " + e.getMessage(), e);
     }
