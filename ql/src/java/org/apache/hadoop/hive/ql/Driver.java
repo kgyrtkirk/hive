@@ -402,10 +402,6 @@ public class Driver implements IDriver {
     this(queryState, userName, new HooksLoader(queryState.getConf()), null, null);
   }
 
-  public Driver(HiveConf conf, HooksLoader hooksLoader) {
-    this(getNewQueryState(conf), null, hooksLoader, null, null);
-  }
-
   public Driver(QueryState queryState, String userName, QueryInfo queryInfo) {
      this(queryState, userName, new HooksLoader(queryState.getConf()), queryInfo, null);
   }
