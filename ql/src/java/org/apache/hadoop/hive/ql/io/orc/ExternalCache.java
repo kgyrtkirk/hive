@@ -97,7 +97,8 @@ public class ExternalCache implements FooterCache {
   public void configure(HiveConf queryConfig) {
     this.conf = queryConfig;
     this.sarg = ConvertAstToSearchArg.createFromConf(conf);
-    this.isPpdEnabled = HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_MS_FOOTER_CACHE_PPD);
+    this.isPpdEnabled = HiveConf.getBoolVar(conf, ConfVars.HIVEOPTINDEXFILTER)
+        && HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_MS_FOOTER_CACHE_PPD);
     this.isInTest = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
     this.sargIsOriginal = this.sargNotIsOriginal = null;
   }
