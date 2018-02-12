@@ -118,7 +118,7 @@ class HookRunner {
    * @param command the Hive command that is being run
    */
   void runBeforeParseHook(String command) {
-    if (containsHooks()) {
+    if (!queryHooks.isEmpty()) {
       QueryLifeTimeHookContext qhc =
           new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command).build();
 
@@ -139,7 +139,7 @@ class HookRunner {
    * @param parseError true if there was an error while parsing the command, false otherwise
    */
   void runAfterParseHook(String command, boolean parseError) {
-    if (containsHooks()) {
+    if (!queryHooks.isEmpty()) {
       QueryLifeTimeHookContext qhc =
           new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command).build();
 
@@ -157,7 +157,7 @@ class HookRunner {
    * @param command the Hive command that is being run
    */
   void runBeforeCompileHook(String command) {
-    if (containsHooks()) {
+    if (!queryHooks.isEmpty()) {
       QueryLifeTimeHookContext qhc =
           new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command).build();
 
@@ -174,7 +174,7 @@ class HookRunner {
   * @param compileError true if there was an error while compiling the command, false otherwise
   */
   void runAfterCompilationHook(String command, boolean compileError) {
-    if (containsHooks()) {
+    if (!queryHooks.isEmpty()) {
       QueryLifeTimeHookContext qhc =
           new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command).build();
 
@@ -191,7 +191,7 @@ class HookRunner {
    * @param hookContext the {@link HookContext} of the command being run
    */
   void runBeforeExecutionHook(String command, HookContext hookContext) {
-    if (containsHooks()) {
+    if (!queryHooks.isEmpty()) {
       QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command)
           .withHookContext(hookContext).build();
 
@@ -209,7 +209,7 @@ class HookRunner {
    * @param executionError true if there was an error while executing the command, false otherwise
    */
   void runAfterExecutionHook(String command, HookContext hookContext, boolean executionError) {
-    if (containsHooks()) {
+    if (!queryHooks.isEmpty()) {
       QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command)
           .withHookContext(hookContext).build();
 
@@ -217,12 +217,6 @@ class HookRunner {
         hook.afterExecution(qhc, executionError);
       }
     }
-  }
-
-  // FIXME: make queryhooks not support null and inline this crap!
-  @Deprecated
-  private boolean containsHooks() {
-    return !queryHooks.isEmpty();
   }
 
   public ASTNode runPreAnalyzeHooks(HiveSemanticAnalyzerHookContext hookCtx, ASTNode tree) throws HiveException {
