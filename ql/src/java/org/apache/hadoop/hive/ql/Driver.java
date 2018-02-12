@@ -2480,12 +2480,21 @@ public class Driver implements IDriver {
     this.operationId = opId;
   }
 
-  public QueryState getQueryState() {
-    return queryState;
+  /**
+   * Resets QueryState to get new queryId on Driver reuse.
+   */
+
+  @Override
+  public void resetQueryState() {
+    // Note: Driver cleanup for reuse at this point is not very clear. The assumption here is that
+    // repeated compile/execute calls create new contexts, plan, etc., so we don't need to worry
+    // propagating queryState into those existing fields, or resetting them.
+    releaseResources();
+    this.queryState = getNewQueryState(queryState.getConf());
   }
 
-  public void setRuntimeStatsSource(RuntimeStatsSource runtimeStatsSource) {
-    this.runtimeStatsSource = runtimeStatsSource;
+  public QueryState getQueryState() {
+    return queryState;
   }
 
   public <T extends Hook> void addHook(Class<T> clazz, T hook) {
