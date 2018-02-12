@@ -25,9 +25,12 @@ import java.util.List;
 import com.google.common.collect.Iterables;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
+import org.apache.hadoop.hive.ql.hooks.Hook;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
+import org.apache.hadoop.hive.ql.hooks.HookUtils;
 import org.apache.hadoop.hive.ql.hooks.HooksLoader;
 import org.apache.hadoop.hive.ql.hooks.MaterializedViewRegistryUpdateHook;
 import org.apache.hadoop.hive.ql.hooks.MetricsQueryLifeTimeHook;
@@ -50,8 +53,8 @@ class HookRunner {
 
   private static final String CLASS_NAME = Driver.class.getName();
   private final HiveConf conf;
-  private final List<QueryLifeTimeHook> queryHooks;
   private LogHelper console;
+  private final List<QueryLifeTimeHook> queryHooks;
   private final List<HiveSemanticAnalyzerHook> saHooks;
   private final List<HiveDriverRunHook> driverRunHooks;
   private final List<ExecuteWithHookContext> preExecHooks;
@@ -97,6 +100,14 @@ class HookRunner {
       throw new RuntimeException("Error loading hooks: " + e.getMessage(), e);
     }
 
+  }
+
+  private List<Hook> hooksLoadergetHooks(ConfVars hookConfVar) {
+    try {
+      return HookUtils.readHooksFromConf(conf, hookConfVar);
+    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+      throw new RuntimeException("Error loading hooks(" + hookConfVar + "): " + e.getMessage(), e);
+    }
   }
 
   /**
@@ -211,7 +222,7 @@ class HookRunner {
   // FIXME: make queryhooks not support null and inline this crap!
   @Deprecated
   private boolean containsHooks() {
-    return queryHooks != null && !queryHooks.isEmpty();
+    return !queryHooks.isEmpty();
   }
 
   public ASTNode runPreAnalyzeHooks(HiveSemanticAnalyzerHookContext hookCtx, ASTNode tree) throws HiveException {

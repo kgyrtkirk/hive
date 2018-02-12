@@ -23,7 +23,6 @@ import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
-
 /**
  * A loader class for {@link Hook}s. The class provides a way to create and instantiate {@link Hook} objects. The
  * methodology for how hooks are loaded is left up to the individual methods.
@@ -56,8 +55,8 @@ public class HooksLoader {
    * @throws InstantiationException if the specified class names could not be instantiated
    */
   // FIXME: does this method has to really throw these crappy exceptions?
-  public final <T extends Hook> List<T> getHooks(HiveConf.ConfVars hookConfVar, SessionState.LogHelper console, Class<?> clazz)
-      throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+  public final <T extends Hook> List<T> getHooks(HiveConf.ConfVars hookConfVar, SessionState.LogHelper console,
+      Class<?> clazz) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
     try {
       return getHooks(hookConfVar, clazz);
     } catch (ClassNotFoundException e) {
@@ -84,7 +83,7 @@ public class HooksLoader {
    * @throws InstantiationException if the specified class names could not be instantiated
    */
   public <T extends Hook> List<T> getHooks(HiveConf.ConfVars hookConfVar, Class<?> clazz)
-          throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+      throws InstantiationException, IllegalAccessException, ClassNotFoundException {
     return HookUtils.readHooksFromConf(conf, hookConfVar);
   }
 }
