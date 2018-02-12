@@ -22,10 +22,6 @@ import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.logging.log4j.util.Strings;
-
-import com.google.common.collect.ImmutableList;
 
 
 public class HookUtils {
@@ -36,31 +32,12 @@ public class HookUtils {
     String redactedString = logString;
 
     if (conf != null && logString != null) {
-      List<Redactor> queryRedactors = readHooksFromConf(conf, ConfVars.QUERYREDACTORHOOKS);
+      List<Redactor> queryRedactors = new HooksLoader(conf).getHooks(ConfVars.QUERYREDACTORHOOKS, Redactor.class);
       for (Redactor redactor : queryRedactors) {
         redactor.setConf(conf);
         redactedString = redactor.redactQuery(redactedString);
       }
     }
     return redactedString;
-  }
-
-  public static <T extends Hook> List<T> readHooksFromConf(HiveConf conf, HiveConf.ConfVars hookConfVar)
-      throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-    String csHooks = conf.getVar(hookConfVar);
-    ImmutableList.Builder<T> hooks = ImmutableList.builder();
-
-    if (Strings.isBlank(csHooks)) {
-      return ImmutableList.of();
-    }
-
-    String[] hookClasses = csHooks.split(",");
-    for (String hookClass : hookClasses) {
-      T hook = (T) Class.forName(hookClass.trim(), true,
-              Utilities.getSessionSpecifiedClassLoader()).newInstance();
-      hooks.add(hook);
-    }
-
-    return hooks.build();
   }
 }
