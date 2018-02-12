@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.AbstractReExecDriver.ExecutionInfoHook;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.Hook;
@@ -283,5 +284,17 @@ public class HookRunner {
 
   public void addLifeTimeHook(QueryLifeTimeHook hook) {
     queryHooks.add(hook);
+  }
+
+  public void addPreHook(ExecuteWithHookContext hook) {
+    preExecHooks.add(hook);
+  }
+
+  public void addPostHook(ExecuteWithHookContext hook) {
+    postExecHooks.add(hook);
+  }
+
+  public void addOnFailureHook(ExecuteWithHookContext hook) {
+    onFailureHooks.add(hook);
   }
 }
