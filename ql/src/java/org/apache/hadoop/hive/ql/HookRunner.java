@@ -61,7 +61,6 @@ class HookRunner {
   private final List<ExecuteWithHookContext> postExecHooks;
   private final List<ExecuteWithHookContext> onFailureHooks;
 
-
   /**
    * Constructs a {@link HookRunner} that loads all hooks to be run via a {@link HooksLoader}.
    *
@@ -80,24 +79,19 @@ class HookRunner {
     queryHooks.add(new MaterializedViewRegistryUpdateHook());
 
     List<QueryLifeTimeHook> propertyDefinedHoooks;
-    propertyDefinedHoooks = hooksLoadergetHooks(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class);
+    propertyDefinedHoooks = loadHooksFromConf(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class);
     if (propertyDefinedHoooks != null) {
       Iterables.addAll(queryHooks, propertyDefinedHoooks);
     }
 
-      saHooks = hooksLoadergetHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console, HiveSemanticAnalyzerHook.class);
-      driverRunHooks = hooksLoadergetHooks(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, console, HiveDriverRunHook.class);
-      preExecHooks = hooksLoadergetHooks(HiveConf.ConfVars.PREEXECHOOKS, console, ExecuteWithHookContext.class);
-      postExecHooks = hooksLoadergetHooks(HiveConf.ConfVars.POSTEXECHOOKS, console, ExecuteWithHookContext.class);
-      onFailureHooks = hooksLoadergetHooks(HiveConf.ConfVars.ONFAILUREHOOKS, console, ExecuteWithHookContext.class);
+    saHooks = loadHooksFromConf(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, HiveSemanticAnalyzerHook.class);
+    driverRunHooks = loadHooksFromConf(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, HiveDriverRunHook.class);
+    preExecHooks = loadHooksFromConf(HiveConf.ConfVars.PREEXECHOOKS, ExecuteWithHookContext.class);
+    postExecHooks = loadHooksFromConf(HiveConf.ConfVars.POSTEXECHOOKS, ExecuteWithHookContext.class);
+    onFailureHooks = loadHooksFromConf(HiveConf.ConfVars.ONFAILUREHOOKS, ExecuteWithHookContext.class);
   }
 
-  private <T extends Hook> List<T> hooksLoadergetHooks(ConfVars hookConfVar, Object a, Class<T> clazz) {
-    return hooksLoadergetHooks(hookConfVar, clazz);
-
-  }
-
-  private <T extends Hook> List<T> hooksLoadergetHooks(ConfVars hookConfVar, Class<T> clazz) {
+  private <T extends Hook> List<T> loadHooksFromConf(ConfVars hookConfVar, Class<T> clazz) {
     try {
       return HookUtils.readHooksFromConf(conf, hookConfVar);
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
@@ -218,7 +212,7 @@ class HookRunner {
     try {
       for (HiveSemanticAnalyzerHook hook : saHooks) {
         try {
-        tree = hook.preAnalyze(hookCtx, tree);
+          tree = hook.preAnalyze(hookCtx, tree);
         } catch (Exception e) {
           throw new HiveException("Error while invoking hook " + hook.getClass().getSimpleName() + ":" + e.getMessage(),
               e);
