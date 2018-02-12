@@ -18,14 +18,13 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.logging.log4j.util.Strings;
-
-import com.google.common.collect.ImmutableList;
 
 
 public class HookUtils {
@@ -48,19 +47,15 @@ public class HookUtils {
   public static <T extends Hook> List<T> readHooksFromConf(HiveConf conf, HiveConf.ConfVars hookConfVar)
       throws InstantiationException, IllegalAccessException, ClassNotFoundException {
     String csHooks = conf.getVar(hookConfVar);
-    ImmutableList.Builder<T> hooks = ImmutableList.builder();
-
+    List<T> hooks = new ArrayList<>();
     if (Strings.isBlank(csHooks)) {
-      return ImmutableList.of();
+      return hooks;
     }
-
     String[] hookClasses = csHooks.split(",");
     for (String hookClass : hookClasses) {
-      T hook = (T) Class.forName(hookClass.trim(), true,
-              Utilities.getSessionSpecifiedClassLoader()).newInstance();
+      T hook = (T) Class.forName(hookClass.trim(), true, Utilities.getSessionSpecifiedClassLoader()).newInstance();
       hooks.add(hook);
     }
-
-    return hooks.build();
+    return hooks;
   }
 }

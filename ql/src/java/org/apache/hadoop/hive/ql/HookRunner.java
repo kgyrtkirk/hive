@@ -19,10 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
-
-import com.google.common.collect.Iterables;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -70,24 +67,19 @@ public class HookRunner {
   HookRunner(HiveConf conf, SessionState.LogHelper console) {
     this.conf = conf;
     this.console = console;
-    this.queryHooks = new ArrayList<>();
+
+    queryHooks = loadHooksFromConf(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class);
+    saHooks = loadHooksFromConf(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, HiveSemanticAnalyzerHook.class);
+    driverRunHooks = loadHooksFromConf(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, HiveDriverRunHook.class);
+    preExecHooks = loadHooksFromConf(HiveConf.ConfVars.PREEXECHOOKS, ExecuteWithHookContext.class);
+    postExecHooks = loadHooksFromConf(HiveConf.ConfVars.POSTEXECHOOKS, ExecuteWithHookContext.class);
+    onFailureHooks = loadHooksFromConf(HiveConf.ConfVars.ONFAILUREHOOKS, ExecuteWithHookContext.class);
 
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
       queryHooks.add(new MetricsQueryLifeTimeHook());
     }
     queryHooks.add(new MaterializedViewRegistryUpdateHook());
 
-    List<QueryLifeTimeHook> propertyDefinedHoooks;
-    propertyDefinedHoooks = loadHooksFromConf(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class);
-    if (propertyDefinedHoooks != null) {
-      Iterables.addAll(queryHooks, propertyDefinedHoooks);
-    }
-
-    saHooks = loadHooksFromConf(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, HiveSemanticAnalyzerHook.class);
-    driverRunHooks = loadHooksFromConf(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, HiveDriverRunHook.class);
-    preExecHooks = loadHooksFromConf(HiveConf.ConfVars.PREEXECHOOKS, ExecuteWithHookContext.class);
-    postExecHooks = loadHooksFromConf(HiveConf.ConfVars.POSTEXECHOOKS, ExecuteWithHookContext.class);
-    onFailureHooks = loadHooksFromConf(HiveConf.ConfVars.ONFAILUREHOOKS, ExecuteWithHookContext.class);
   }
 
   private <T extends Hook> List<T> loadHooksFromConf(ConfVars hookConfVar, Class<T> clazz) {
