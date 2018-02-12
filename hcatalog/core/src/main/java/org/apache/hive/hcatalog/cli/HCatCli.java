@@ -286,7 +286,7 @@ public class HCatCli {
       return new DfsProcessor(ss.getConf()).run(cmd.substring(firstToken.length()).trim()).getResponseCode();
     }
 
-    HCatDriver driver = new HCatDriver();
+    HCatDriver driver = new HCatDriver(ss.getConf());
 
     int ret = driver.run(cmd).getResponseCode();
 

@@ -18,17 +18,15 @@
 
 package org.apache.hadoop.hive.ql;
 
+import javax.annotation.Nonnull;
+
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 /**
  * Constructs a driver for ql clients
  */
 public class DriverFactory {
-
-  public static IDriver newDriver(HiveConf conf) {
-    return newDriver(getNewQueryState(conf), null, null);
-  }
 
   enum ExecutionStrategy {
     none {
@@ -36,27 +34,33 @@ public class DriverFactory {
       IDriver build(QueryState queryState, String userName, QueryInfo queryInfo) {
         return new Driver(queryState, userName, queryInfo);
       }
+    },
+    overlay() {
+      @Override
+      IDriver build(QueryState queryState, String userName, QueryInfo queryInfo) {
+        return new ReExecOverlayDriver(queryState, userName, queryInfo);
+      }
+    },
+    reoptimize() {
+      @Override
+      IDriver build(QueryState queryState, String userName, QueryInfo queryInfo) {
+        return new ReOptimizeDriver(queryState, userName, queryInfo);
+      }
     };
 
     abstract IDriver build(QueryState queryState, String userName, QueryInfo queryInfo);
   }
 
-  public static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
-    ExecutionStrategy strategy = ExecutionStrategy.none;
+  public static IDriver newDriver(@Nonnull HiveConf conf) {
+    return newDriver(getNewQueryState(conf), null, null);
+  }
+
+  public static IDriver newDriver(@Nonnull QueryState queryState, String userName, QueryInfo queryInfo) {
+    ExecutionStrategy strategy = ExecutionStrategy.valueOf(queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGY));
     return strategy.build(queryState, userName, queryInfo);
   }
 
-  private static QueryState getNewQueryState(HiveConf conf) {
-    // FIXME: isolate hiveConf used for a single query
+  private static QueryState getNewQueryState(@Nonnull HiveConf conf) {
     return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
   }
-
-  // FIXME: remove this method ; and use the conf at the callsite...
-  @Deprecated
-  public static IDriver newDriver() {
-    // only CLIDriver enter at this point
-    HiveConf conf = (SessionState.get() != null) ? SessionState.get().getConf() : new HiveConf();
-    return newDriver(conf);
-  }
-
 }
