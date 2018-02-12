@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.Hook;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
-import org.apache.hadoop.hive.ql.hooks.HooksLoader;
 import org.apache.hadoop.hive.ql.hooks.MaterializedViewRegistryUpdateHook;
 import org.apache.hadoop.hive.ql.hooks.MetricsQueryLifeTimeHook;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
@@ -68,7 +67,7 @@ public class HookRunner {
    * @param hooksLoader the {@link HooksLoader} to use when loading all hooks to be run
    * @param console the {@link SessionState.LogHelper} to use when running {@link HooksLoader#getHooks(HiveConf.ConfVars)}
    */
-  HookRunner(HiveConf conf, HooksLoader hooksLoader, SessionState.LogHelper console) {
+  HookRunner(HiveConf conf, SessionState.LogHelper console) {
     this.conf = conf;
     this.console = console;
     this.queryHooks = new ArrayList<>();

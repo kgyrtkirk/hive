@@ -70,7 +70,6 @@ import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
-import org.apache.hadoop.hive.ql.hooks.HooksLoader;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
@@ -399,24 +398,20 @@ public class Driver implements IDriver {
   }
 
   public Driver(QueryState queryState, String userName) {
-    this(queryState, userName, new HooksLoader(queryState.getConf()), null, null);
+    this(queryState, userName, null, null);
   }
 
   public Driver(QueryState queryState, String userName, QueryInfo queryInfo) {
-     this(queryState, userName, new HooksLoader(queryState.getConf()), queryInfo, null);
+    this(queryState, userName, queryInfo, null);
   }
 
   public Driver(QueryState queryState, String userName, QueryInfo queryInfo, HiveTxnManager txnMgr) {
-    this(queryState, userName, new HooksLoader(queryState.getConf()), queryInfo, txnMgr);
-  }
-
-  public Driver(QueryState queryState, String userName, HooksLoader hooksLoader, QueryInfo queryInfo, HiveTxnManager txnMgr) {
     this.queryState = queryState;
     this.conf = queryState.getConf();
     isParallelEnabled = (conf != null)
         && HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_PARALLEL_COMPILATION);
     this.userName = userName;
-    this.hookRunner = new HookRunner(conf, hooksLoader, console);
+    this.hookRunner = new HookRunner(conf, console);
     this.queryInfo = queryInfo;
     this.initTxnMgr = txnMgr;
   }
