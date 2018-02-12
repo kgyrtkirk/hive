@@ -542,7 +542,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
         ArrayListMultimap.create();
 
     boolean fallback = false;
-    List<Integer> bucketIds = new ArrayList<>();
+    Map<Integer, Integer> bucketIds = new HashMap<>();
     for (Map.Entry<String, Set<FileSplit>> entry : pathFileSplitsMap.entrySet()) {
       // Extract the buckedID from pathFilesMap, this is more accurate method,
       // however. it may not work in certain cases where buckets are named
@@ -559,7 +559,9 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
         bucketIds.clear();
         break;
       }
-      bucketIds.add(bucketId);
+      // Make sure the bucketId is at max the numBuckets
+      bucketId = bucketId % numBuckets;
+      bucketIds.put(bucketId, bucketId);
       for (FileSplit fsplit : entry.getValue()) {
         bucketToInitialSplitMap.put(bucketId, fsplit);
       }
@@ -570,8 +572,9 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
       // This is the old logic which assumes that the filenames are sorted in
       // alphanumeric order and mapped to appropriate bucket number.
       for (Map.Entry<String, Set<FileSplit>> entry : pathFileSplitsMap.entrySet()) {
+        int bucketId = bucketNum % numBuckets;
         for (FileSplit fsplit : entry.getValue()) {
-          bucketToInitialSplitMap.put(bucketNum, fsplit);
+          bucketToInitialSplitMap.put(bucketId, fsplit);
         }
         bucketNum++;
       }
@@ -582,23 +585,30 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     // data from the right buckets to the big table side. For e.g. Big table has 8 buckets and small
     // table has 4 buckets, bucket 0 of small table needs to be sent to bucket 4 of the big table as
     // well.
-    if (numInputsAffectingRootInputSpecUpdate != 1 &&
-            inputName.compareTo(mainWorkName) != 0) {
+    if (numInputsAffectingRootInputSpecUpdate != 1) {
       // small table
-      int inputNumBuckets = inputToBucketMap.get(inputName);
-      if (fallback && bucketNum != inputNumBuckets) {
-        // The fallback mechanism kicked in which only works correctly if
-        // there exists a file for each bucket, else it may result in wrong
-        // result. Throw an error
-
-      }
-      if (inputNumBuckets < numBuckets) {
-        // Need to send the splits to multiple buckets
-        for (int i = 1; i < numBuckets/inputNumBuckets; i++) {
-          int bucketIdBase = i * inputNumBuckets;
-          for (Integer bucketId : bucketIds) {
-            for (InputSplit fsplit : bucketToInitialSplitMap.get(bucketId)) {
-              bucketToInitialSplitMap.put(bucketIdBase + bucketId, fsplit);
+      if (fallback && bucketNum < numBuckets) {
+        // Old logic.
+        int loopedBucketId = 0;
+        for (; bucketNum < numBuckets; bucketNum++) {
+          for (InputSplit fsplit : bucketToInitialSplitMap.get(loopedBucketId)) {
+            bucketToInitialSplitMap.put(bucketNum, fsplit);
+          }
+          loopedBucketId++;
+        }
+      } else {
+        // new logic.
+        if (inputToBucketMap.containsKey(inputName)) {
+          int inputNumBuckets = inputToBucketMap.get(inputName);
+          if (inputNumBuckets < numBuckets) {
+            // Need to send the splits to multiple buckets
+            for (int i = 1; i < numBuckets / inputNumBuckets; i++) {
+              int bucketIdBase = i * inputNumBuckets;
+              for (Integer bucketId : bucketIds.keySet()) {
+                for (InputSplit fsplit : bucketToInitialSplitMap.get(bucketId)) {
+                  bucketToInitialSplitMap.put(bucketIdBase + bucketId, fsplit);
+                }
+              }
             }
           }
         }
