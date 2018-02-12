@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.logging.log4j.util.Strings;
 
-
 public class HookUtils {
 
   public static String redactLogString(HiveConf conf, String logString)
