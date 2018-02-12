@@ -80,29 +80,24 @@ class HookRunner {
     queryHooks.add(new MaterializedViewRegistryUpdateHook());
 
     List<QueryLifeTimeHook> propertyDefinedHoooks;
-    try {
-      propertyDefinedHoooks =
-          hooksLoader.getHooks(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, console, QueryLifeTimeHook.class);
-    } catch (IllegalAccessException | InstantiationException | ClassNotFoundException e) {
-      throw new IllegalArgumentException(e);
-    }
+    propertyDefinedHoooks = hooksLoadergetHooks(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class);
     if (propertyDefinedHoooks != null) {
       Iterables.addAll(queryHooks, propertyDefinedHoooks);
     }
 
-    try {
-      saHooks = hooksLoader.getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console, HiveSemanticAnalyzerHook.class);
-      driverRunHooks = hooksLoader.getHooks(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, console, HiveDriverRunHook.class);
-      preExecHooks = hooksLoader.getHooks(HiveConf.ConfVars.PREEXECHOOKS, console, ExecuteWithHookContext.class);
-      postExecHooks = hooksLoader.getHooks(HiveConf.ConfVars.POSTEXECHOOKS, console, ExecuteWithHookContext.class);
-      onFailureHooks = hooksLoader.getHooks(HiveConf.ConfVars.ONFAILUREHOOKS, console, ExecuteWithHookContext.class);
-    } catch (IllegalAccessException | InstantiationException | ClassNotFoundException e) {
-      throw new RuntimeException("Error loading hooks: " + e.getMessage(), e);
-    }
+      saHooks = hooksLoadergetHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console, HiveSemanticAnalyzerHook.class);
+      driverRunHooks = hooksLoadergetHooks(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, console, HiveDriverRunHook.class);
+      preExecHooks = hooksLoadergetHooks(HiveConf.ConfVars.PREEXECHOOKS, console, ExecuteWithHookContext.class);
+      postExecHooks = hooksLoadergetHooks(HiveConf.ConfVars.POSTEXECHOOKS, console, ExecuteWithHookContext.class);
+      onFailureHooks = hooksLoadergetHooks(HiveConf.ConfVars.ONFAILUREHOOKS, console, ExecuteWithHookContext.class);
+  }
+
+  private <T extends Hook> List<T> hooksLoadergetHooks(ConfVars hookConfVar, Object a, Class<T> clazz) {
+    return hooksLoadergetHooks(hookConfVar, clazz);
 
   }
 
-  private List<Hook> hooksLoadergetHooks(ConfVars hookConfVar) {
+  private <T extends Hook> List<T> hooksLoadergetHooks(ConfVars hookConfVar, Class<T> clazz) {
     try {
       return HookUtils.readHooksFromConf(conf, hookConfVar);
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
