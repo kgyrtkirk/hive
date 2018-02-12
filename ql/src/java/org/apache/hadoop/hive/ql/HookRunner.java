@@ -49,7 +49,7 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 /**
  * Handles hook executions for {@link Driver}.
  */
-class HookRunner {
+public class HookRunner {
 
   private static final String CLASS_NAME = Driver.class.getName();
   private final HiveConf conf;
@@ -288,5 +288,9 @@ class HookRunner {
     } catch (Exception e) {
       throw new HiveException("Error while invoking " + prefix + " hooks: " + e.getMessage(), e);
     }
+  }
+
+  public void addLifeTimeHook(QueryLifeTimeHook hook) {
+    queryHooks.add(hook);
   }
 }

@@ -68,7 +68,6 @@ import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.Entity;
-import org.apache.hadoop.hive.ql.hooks.Hook;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
 import org.apache.hadoop.hive.ql.hooks.HooksLoader;
@@ -125,9 +124,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 
@@ -2497,15 +2494,7 @@ public class Driver implements IDriver {
     return queryState;
   }
 
-  public <T extends Hook> void addHook(Class<T> clazz, T hook) {
-    Multimap<Class<? extends Hook>, Hook> hookMap = ArrayListMultimap.create();
-    hookMap.put(clazz, hook);
-    hookMap.get(clazz);
-
-    //    MultiMap mhm = new MultiValueMap();
-    //    mhm.put(key, "A");
-    //    mhm.put(key, "B");
-    //    mhm.put(key, "C");
-    //    // Collection coll = (Collection) mhm.get(key);</pre>
+  public HookRunner getHookRunner() {
+    return hookRunner;
   }
 }
