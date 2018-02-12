@@ -25,7 +25,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -40,8 +39,8 @@ public class HCatDriver {
 
   private IDriver driver;
 
-  public HCatDriver(HiveConf hiveConf) {
-    driver = DriverFactory.newDriver(hiveConf);
+  public HCatDriver() {
+    driver = DriverFactory.newDriver();
   }
 
   public CommandProcessorResponse run(String command) {
@@ -146,8 +145,7 @@ public class HCatDriver {
   }
 
   public int close() {
-    driver.close();
-    return 0;
+    return driver.close();
   }
 
   public boolean getResults(ArrayList<String> res) throws IOException {

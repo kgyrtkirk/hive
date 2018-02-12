@@ -84,8 +84,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected final AtomicBoolean abortOp;
   private transient ExecMapperContext execContext;
   private transient boolean rootInitializeCalled = false;
-  protected transient long numRows = 0;
-  protected transient long runTimeNumRows = 0;
+  protected transient long runTimeNumRows;
   protected int indexForTezUnion = -1;
   private transient Configuration hconf;
   protected final transient Collection<Future<?>> asyncInitOperations = new HashSet<>();
@@ -107,14 +106,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     // to children. Note: close() being called and its state being CLOSE is
     // difference since close() could be called but state is not CLOSE if
     // one of its parent is not in state CLOSE..
-  }
-
-  /**
-   * Counters.
-   */
-  public enum Counter {
-    RECORDS_OUT_OPERATOR,
-    RECORDS_OUT_INTERMEDIATE
   }
 
   protected transient State state = State.UNINIT;
@@ -233,6 +224,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   @SuppressWarnings("rawtypes")
   protected transient OutputCollector out;
   protected transient final Logger LOG = LoggerFactory.getLogger(getClass().getName());
+  protected transient final Logger PLOG = LoggerFactory.getLogger(Operator.class.getName()); // for simple disabling logs from all operators
   protected transient String alias;
   protected transient Reporter reporter;
   protected String id;
@@ -498,14 +490,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     rootInitializeCalled = true;
   }
 
-  public String getCounterName(Counter counter, Configuration hconf) {
-    String context = hconf.get(Operator.CONTEXT_NAME_KEY, "");
-    if (context != null && !context.isEmpty()) {
-      context = "_" + context.replace(" ", "_");
-    }
-    return counter + context;
-  }
-
   /**
    * Calls initialize on each of the children with outputObjetInspector as the
    * output row format.
@@ -724,10 +708,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     if (conf != null && conf.getRuntimeStatsTmpDir() != null) {
       publishRunTimeStats();
     }
-    LongWritable runTimeRowsWritable = new LongWritable(runTimeNumRows);
-    LongWritable recordCounter = new LongWritable(numRows);
-    statsMap.put(Counter.RECORDS_OUT_OPERATOR.name() + "_" + getOperatorId(), runTimeRowsWritable);
-    statsMap.put(getCounterName(Counter.RECORDS_OUT_INTERMEDIATE, hconf), recordCounter);
     this.runTimeNumRows = 0;
 
     reporter = null;
@@ -987,6 +967,12 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     // if all children are done, this operator is also done
     if (childrenDone != 0 && childrenDone == childOperatorsArray.length) {
       setDone(true);
+    }
+  }
+
+  public void resetStats() {
+    for (String e : statsMap.keySet()) {
+      statsMap.get(e).set(0L);
     }
   }
 

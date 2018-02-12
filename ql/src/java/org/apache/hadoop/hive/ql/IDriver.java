@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
@@ -61,13 +60,8 @@ public interface IDriver extends CommandProcessor {
   void resetFetch() throws IOException;
 
   // close&destroy is used in seq coupling most of the time - the difference is either not clear; or not relevant - remove?
-  void close();
+  int close();
   void destroy();
 
-  // FIXME: remove after moving hcat fsperms to a hook
-  HiveConf getConf();
-
-  // FIXME: probably remove
-  Context getContext();
-
+  void resetQueryState();
 }

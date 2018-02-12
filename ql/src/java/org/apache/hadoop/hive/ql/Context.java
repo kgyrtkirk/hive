@@ -58,18 +58,12 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
-import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.RuntimeStatsSource;
-import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Optional;
 
 /**
  * Context for Semantic Analyzers. Usage: not reusable - construct a new one for
@@ -159,10 +153,6 @@ public class Context {
   private Operation operation = Operation.OTHER;
   private WmContext wmContext;
 
-  private boolean isExplainPlan = false;
-  private PlanMapper planMapper = new PlanMapper();
-  private RuntimeStatsSource runtimeStatsSource;
-
   public void setOperation(Operation operation) {
     this.operation = operation;
   }
@@ -239,7 +229,7 @@ public class Context {
       }
       if(!thisIsInASubquery) {
         throw new IllegalStateException("Expected '" + getMatchedText(curNode) + "' to be in sub-query or set operation.");
-      }
+      } 
       return DestClausePrefix.INSERT;
     }
     switch (operation) {
@@ -262,7 +252,7 @@ public class Context {
         assert insert != null && insert.getType() == HiveParser.TOK_INSERT;
         ASTNode query = (ASTNode) insert.getParent();
         assert query != null && query.getType() == HiveParser.TOK_QUERY;
-
+        
         for(int childIdx = 1; childIdx < query.getChildCount(); childIdx++) {//1st child is TOK_FROM
           assert query.getChild(childIdx).getType() == HiveParser.TOK_INSERT;
           if(insert == query.getChild(childIdx)) {
@@ -1007,7 +997,7 @@ public class Context {
   public ExplainConfiguration getExplainConfig() {
     return explainConfig;
   }
-
+  private boolean isExplainPlan = false;
   public boolean isExplainPlan() {
     return isExplainPlan;
   }
@@ -1042,26 +1032,5 @@ public class Context {
 
   public String getExecutionId() {
     return executionId;
-  }
-
-  public PlanMapper getPlanMapper() {
-    return planMapper;
-  }
-
-  public void setRuntimeStatsSource(RuntimeStatsSource runtimeStatsSource) {
-    this.runtimeStatsSource = runtimeStatsSource;
-  }
-
-  public Optional<RuntimeStatsSource> getRuntimeStatsSource() {
-    return Optional.fromNullable(runtimeStatsSource);
-  }
-
-  public StatsSource getStatsSource() {
-    if (runtimeStatsSource != null) {
-      return runtimeStatsSource;
-    } else {
-      // hierarchical; add def stats also here
-      return new EmptyStatsSource();
-    }
   }
 }

@@ -126,9 +126,10 @@ public final class CommandProcessorFactory {
       IDriver drv = mapDrivers.get(conf);
       if (drv == null) {
         // FIXME: why this method didn't use the conf constructor?
-        drv = DriverFactory.newDriver(conf);
+        drv = DriverFactory.newDriver();
         mapDrivers.put(conf, drv);
       } else {
+        drv.resetQueryState();
       }
       return drv;
     }

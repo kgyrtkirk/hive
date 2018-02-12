@@ -72,7 +72,6 @@ import org.apache.hadoop.hive.ql.hooks.Hook;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
 import org.apache.hadoop.hive.ql.hooks.HooksLoader;
-import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
@@ -104,9 +103,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapperProcess;
-import org.apache.hadoop.hive.ql.plan.mapper.RuntimeStatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -174,7 +170,7 @@ public class Driver implements IDriver {
   private LockedDriverState lDrvState = new LockedDriverState();
 
   // Query specific info
-  private final QueryState queryState;
+  private QueryState queryState;
 
   // Query hooks that execute before compilation and after execution
   private HookRunner hookRunner;
@@ -191,7 +187,6 @@ public class Driver implements IDriver {
   // Transaction manager used for the query. This will be set at compile time based on
   // either initTxnMgr or from the SessionState, in that order.
   private HiveTxnManager queryTxnMgr;
-  private RuntimeStatsSource runtimeStatsSource;
 
   private enum DriverState {
     INITIALIZED,
@@ -278,16 +273,6 @@ public class Driver implements IDriver {
   @Override
   public Schema getSchema() {
     return schema;
-  }
-
-  // FIXME: consider not adding this method..
-  @Override
-  public Context getContext() {
-    return ctx;
-  }
-
-  public PlanMapper getPlanMapper() {
-    return ctx.getPlanMapper();
   }
 
   /**
@@ -381,7 +366,8 @@ public class Driver implements IDriver {
   }
 
   public Driver() {
-    this(getNewQueryState((SessionState.get() != null) ? SessionState.get().getConf() : new HiveConf()), null);
+    this(getNewQueryState((SessionState.get() != null) ?
+        SessionState.get().getConf() : new HiveConf()), null);
   }
 
   public Driver(HiveConf conf) {
@@ -392,6 +378,10 @@ public class Driver implements IDriver {
   // or compile another query
   public Driver(HiveConf conf, LineageState lineageState) {
     this(getNewQueryState(conf, lineageState), null);
+  }
+
+  public Driver(HiveConf conf, HiveTxnManager txnMgr) {
+    this(getNewQueryState(conf), null, null, txnMgr);
   }
 
   // Pass lineageState when a driver instantiates another Driver to run
@@ -444,7 +434,6 @@ public class Driver implements IDriver {
    * @return The new QueryState object
    */
   // move to driverFactory ; with those constructors...
-  // HIVE-18238: try to remove before submitting
   @Deprecated
   private static QueryState getNewQueryState(HiveConf conf) {
     return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
@@ -546,9 +535,6 @@ public class Driver implements IDriver {
 
     LOG.info("Compiling command(queryId=" + queryId + "): " + queryStr);
 
-    conf.setQueryString(queryStr);
-    // FIXME: sideeffect will leave the last query set at the session level
-    SessionState.get().getConf().setQueryString(queryStr);
     SessionState.get().setupQueryCurrentTimestamp();
 
     // Whether any error occurred during query compilation. Used for query lifetime hook.
@@ -589,7 +575,6 @@ public class Driver implements IDriver {
         setTriggerContext(queryId);
       }
 
-      ctx.setRuntimeStatsSource(runtimeStatsSource);
       ctx.setCmd(command);
       ctx.setHDFSCleanup(true);
 
@@ -660,6 +645,7 @@ public class Driver implements IDriver {
       plan = new QueryPlan(queryStr, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN), queryId,
         queryState.getHiveOperation(), schema);
 
+      conf.setQueryString(queryStr);
 
       conf.set("mapreduce.workflow.id", "hive_" + queryId);
       conf.set("mapreduce.workflow.name", queryStr);
@@ -668,8 +654,6 @@ public class Driver implements IDriver {
       if (plan.getFetchTask() != null) {
         plan.getFetchTask().initialize(queryState, plan, null, ctx.getOpContext());
       }
-
-      PlanMapperProcess.runPostProcess(ctx.getPlanMapper());
 
       //do the authorization check
       if (!sem.skipAuthorization() &&
@@ -1204,11 +1188,6 @@ public class Driver implements IDriver {
     return HiveOperationType.valueOf(op.name());
   }
 
-  @Override
-  public HiveConf getConf() {
-    return conf;
-  }
-
   /**
    * @return The current query plan associated with this Driver, if any.
    */
@@ -1385,7 +1364,7 @@ public class Driver implements IDriver {
    * Release some resources after a query is executed
    * while keeping the result around.
    */
-  public void releaseResources() {
+  private void releaseResources() {
     releasePlan();
     releaseDriverContext();
   }
@@ -1852,9 +1831,9 @@ public class Driver implements IDriver {
 
       SessionState ss = SessionState.get();
 
-      hookContext = new PrivateHookContext(plan, queryState, ctx.getPathToCS(), SessionState.get().getUserName(),
+      hookContext = new HookContext(plan, queryState, ctx.getPathToCS(), SessionState.get().getUserName(),
           ss.getUserIpAddress(), InetAddress.getLocalHost().getHostAddress(), operationId,
-          ss.getSessionId(), Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger, queryInfo, ctx);
+          ss.getSessionId(), Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger, queryInfo);
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
       hookRunner.runPreHooks(hookContext);
@@ -2429,13 +2408,14 @@ public class Driver implements IDriver {
 
   // is called to stop the query if it is running, clean query results, and release resources.
   @Override
-  public void close() {
+  public int close() {
     lDrvState.stateLock.lock();
     try {
       releaseDriverContext();
       if (lDrvState.driverState == DriverState.COMPILING ||
           lDrvState.driverState == DriverState.EXECUTING) {
         lDrvState.abort();
+        return 0;
       }
       releasePlan();
       releaseFetchTask();
@@ -2446,7 +2426,7 @@ public class Driver implements IDriver {
       lDrvState.stateLock.unlock();
       LockedDriverState.removeLockedDriverState();
     }
-    destroy();
+    return 0;
   }
 
   // is usually called after close() to commit or rollback a query and end the driver life cycle.
