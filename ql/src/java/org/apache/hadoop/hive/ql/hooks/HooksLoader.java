@@ -20,8 +20,12 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
 
 /**
  * A loader class for {@link Hook}s. The class provides a way to create and instantiate {@link Hook} objects. The
@@ -54,9 +58,8 @@ public class HooksLoader {
    * @throws IllegalAccessException if the specified class names could not be accessed
    * @throws InstantiationException if the specified class names could not be instantiated
    */
-  // FIXME: does this method has to really throw these crappy exceptions?
-  public final <T extends Hook> List<T> getHooks(HiveConf.ConfVars hookConfVar, SessionState.LogHelper console,
-      Class<?> clazz) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+  public final <T extends Hook> List<T> getHooks(HiveConf.ConfVars hookConfVar, SessionState.LogHelper console, Class<?> clazz)
+      throws IllegalAccessException, InstantiationException, ClassNotFoundException {
     try {
       return getHooks(hookConfVar, clazz);
     } catch (ClassNotFoundException e) {
@@ -83,7 +86,25 @@ public class HooksLoader {
    * @throws InstantiationException if the specified class names could not be instantiated
    */
   public <T extends Hook> List<T> getHooks(HiveConf.ConfVars hookConfVar, Class<?> clazz)
-      throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-    return HookUtils.readHooksFromConf(conf, hookConfVar);
+          throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    String csHooks = conf.getVar(hookConfVar);
+    ImmutableList.Builder<T> hooks = ImmutableList.builder();
+    if (csHooks == null) {
+      return ImmutableList.of();
+    }
+
+    csHooks = csHooks.trim();
+    if (csHooks.isEmpty()) {
+      return ImmutableList.of();
+    }
+
+    String[] hookClasses = csHooks.split(",");
+    for (String hookClass : hookClasses) {
+      T hook = (T) Class.forName(hookClass.trim(), true,
+              Utilities.getSessionSpecifiedClassLoader()).newInstance();
+      hooks.add(hook);
+    }
+
+    return hooks.build();
   }
 }
