@@ -292,34 +292,25 @@ class HookRunner {
   }
 
   public void runPostExecHooks(HookContext hookContext) throws HiveException {
-    try {
-      PerfLogger perfLogger = SessionState.getPerfLogger();
-      // Get all the post execution hooks and execute them.
-      for (ExecuteWithHookContext peh : postExecHooks) {
-        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.POST_HOOK + peh.getClass().getName());
-
-        peh.run(hookContext);
-
-        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.POST_HOOK + peh.getClass().getName());
-      }
-    } catch (Exception e) {
-      throw new HiveException("Error while invoking XXXXeAnalyzeHooks:" + e.getMessage(), e);
-    }
-
+    invokeGeneralHook(postExecHooks, PerfLogger.POST_HOOK, hookContext);
   }
 
   public void runFailureHooks(HookContext hookContext) throws HiveException {
+    invokeGeneralHook(onFailureHooks, PerfLogger.FAILURE_HOOK, hookContext);
+  }
+
+  private static void invokeGeneralHook(List<ExecuteWithHookContext> hooks, String prefix, HookContext hookContext)
+      throws HiveException {
     try {
       PerfLogger perfLogger = SessionState.getPerfLogger();
-      for (ExecuteWithHookContext ofh : onFailureHooks) {
-        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
 
-        ofh.run(hookContext);
-
-        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
+      for (ExecuteWithHookContext hook : hooks) {
+        perfLogger.PerfLogBegin(CLASS_NAME, prefix + hook.getClass().getName());
+        hook.run(hookContext);
+        perfLogger.PerfLogEnd(CLASS_NAME, prefix + hook.getClass().getName());
       }
     } catch (Exception e) {
-      throw new HiveException("Error while invoking XXXXeAnalyzeHooks:" + e.getMessage(), e);
+      throw new HiveException("Error while invoking " + prefix + " hooks: " + e.getMessage(), e);
     }
   }
 }
