@@ -36,7 +36,7 @@ public class HookUtils {
     String redactedString = logString;
 
     if (conf != null && logString != null) {
-      List<Redactor> queryRedactors = new HooksLoader(conf).getHooks(ConfVars.QUERYREDACTORHOOKS, Redactor.class);
+      List<Redactor> queryRedactors = readHooksFromConf(conf, ConfVars.QUERYREDACTORHOOKS);
       for (Redactor redactor : queryRedactors) {
         redactor.setConf(conf);
         redactedString = redactor.redactQuery(redactedString);
