@@ -235,12 +235,8 @@ class HookRunner {
     }
   }
 
-  public boolean hasPreAnalyzeHooks() throws HiveException {
-    try {
-      return !saHooks.isEmpty();
-    } catch (Exception e) {
-      throw new HiveException("Error while Parsing hoks?:" + e.getMessage(), e);
-    }
+  public boolean hasPreAnalyzeHooks() {
+    return !saHooks.isEmpty();
   }
 
   public void runPostAnalyzeHooks(HiveSemanticAnalyzerHookContext hookCtx,
@@ -250,7 +246,7 @@ class HookRunner {
         hook.postAnalyze(hookCtx, allRootTasks);
       }
     } catch (Exception e) {
-      throw new HiveException("Error while invoking PreAnalyzeHooks:" + e.getMessage(), e);
+      throw new HiveException("Error while invoking PostAnalyzeHooks:" + e.getMessage(), e);
     }
 
   }
@@ -261,7 +257,7 @@ class HookRunner {
         driverRunHook.preDriverRun(hookContext);
       }
     } catch (Exception e) {
-      throw new HiveException("Error while invoking PreAnalyzeHooks:" + e.getMessage(), e);
+      throw new HiveException("Error while invoking PreDriverHooks:" + e.getMessage(), e);
     }
   }
 
@@ -271,7 +267,7 @@ class HookRunner {
         driverRunHook.postDriverRun(hookContext);
       }
     } catch (Exception e) {
-      throw new HiveException("Error while invoking PreAnalyzeHooks:" + e.getMessage(), e);
+      throw new HiveException("Error while invoking PostDriverHooks:" + e.getMessage(), e);
     }
   }
 
@@ -289,6 +285,9 @@ class HookRunner {
 
   private static void invokeGeneralHook(List<ExecuteWithHookContext> hooks, String prefix, HookContext hookContext)
       throws HiveException {
+    if (hooks.isEmpty()) {
+      return;
+    }
     try {
       PerfLogger perfLogger = SessionState.getPerfLogger();
 
