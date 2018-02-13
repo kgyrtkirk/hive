@@ -1263,6 +1263,7 @@ public class StatsRulesProcFactory {
         }
       }
 
+      stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, gop);
       gop.setStatistics(stats);
 
       if (LOG.isDebugEnabled() && stats != null) {
@@ -1590,6 +1591,7 @@ public class StatsRulesProcFactory {
           }
         }
 
+        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, jop);
         jop.setStatistics(stats);
 
         if (LOG.isDebugEnabled()) {
@@ -1679,6 +1681,7 @@ public class StatsRulesProcFactory {
           }
         }
 
+        wcStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), wcStats, jop);
         jop.setStatistics(wcStats);
 
         if (LOG.isDebugEnabled()) {
