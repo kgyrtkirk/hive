@@ -62,10 +62,6 @@ public class HookRunner {
 
   /**
    * Constructs a {@link HookRunner} that loads all hooks to be run via a {@link HooksLoader}.
-   *
-   * @param conf the {@link HiveConf} to use when creating {@link QueryLifeTimeHookContext} objects
-   * @param hooksLoader the {@link HooksLoader} to use when loading all hooks to be run
-   * @param console the {@link SessionState.LogHelper} to use when running {@link HooksLoader#getHooks(HiveConf.ConfVars)}
    */
   HookRunner(HiveConf conf, SessionState.LogHelper console) {
     this.conf = conf;
@@ -95,8 +91,8 @@ public class HookRunner {
     try {
       return HookUtils.readHooksFromConf(conf, hookConfVar);
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      throw new RuntimeException("Error loading hooks(" + hookConfVar + "): " + HiveStringUtils.stringifyException(e),
-          e);
+      String message = "Error loading hooks(" + hookConfVar + "): " + HiveStringUtils.stringifyException(e);
+      throw new RuntimeException(message, e);
     }
   }
 
@@ -144,7 +140,7 @@ public class HookRunner {
   }
 
   /**
-   * Invoke the {@link QueryLifeTimeHook#beforeCompile(QueryLifeTimeHookContext)} method for each {@link QueryLifeTimeHook}
+   * Dispatches {@link QueryLifeTimeHook#beforeCompile(QueryLifeTimeHookContext)}.
    *
    * @param command the Hive command that is being run
    */
@@ -161,7 +157,7 @@ public class HookRunner {
   }
 
   /**
-  * Invoke the {@link QueryLifeTimeHook#afterCompile(QueryLifeTimeHookContext, boolean)} method for each {@link QueryLifeTimeHook}
+  * Dispatches {@link QueryLifeTimeHook#afterCompile(QueryLifeTimeHookContext, boolean)}.
   *
   * @param command the Hive command that is being run
   * @param compileError true if there was an error while compiling the command, false otherwise
@@ -179,7 +175,7 @@ public class HookRunner {
   }
 
   /**
-   * Invoke the {@link QueryLifeTimeHook#beforeExecution(QueryLifeTimeHookContext)} method for each {@link QueryLifeTimeHook}
+   * Dispatches {@link QueryLifeTimeHook#beforeExecution(QueryLifeTimeHookContext)}.
    *
    * @param command the Hive command that is being run
    * @param hookContext the {@link HookContext} of the command being run
@@ -197,7 +193,7 @@ public class HookRunner {
   }
 
   /**
-   * Invoke the {@link QueryLifeTimeHook#afterExecution(QueryLifeTimeHookContext, boolean)} method for each {@link QueryLifeTimeHook}
+   * Dispatches {@link QueryLifeTimeHook#afterExecution(QueryLifeTimeHookContext, boolean)}.
    *
    * @param command the Hive command that is being run
    * @param hookContext the {@link HookContext} of the command being run
