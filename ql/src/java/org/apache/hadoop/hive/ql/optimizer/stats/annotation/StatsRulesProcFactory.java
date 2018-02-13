@@ -499,7 +499,7 @@ public class StatsRulesProcFactory {
         factor *= columnFactor > 1d ? 1d : columnFactor;
       }
       float inFactor = HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_IN_CLAUSE_FACTOR);
-      return Math.round( (double) numRows * factor * inFactor);
+      return Math.round( numRows * factor * inFactor);
     }
 
     private long evaluateBetweenExpr(Statistics stats, ExprNodeDesc pred, long currNumRows, AnnotateStatsProcCtx aspCtx,
@@ -1324,6 +1324,11 @@ public class StatsRulesProcFactory {
           // each evaluator has constant java object overhead
           avgValSize += gop.javaObjectOverHead;
           GenericUDAFEvaluator.AggregationBuffer agg = null;
+          int evaluatorEstimate = aggregationEvaluators[i].estimate();
+          if (evaluatorEstimate > 0) {
+            avgValSize += evaluatorEstimate;
+            continue;
+          }
           try {
             agg = aggregationEvaluators[i].getNewAggregationBuffer();
           } catch (HiveException e) {

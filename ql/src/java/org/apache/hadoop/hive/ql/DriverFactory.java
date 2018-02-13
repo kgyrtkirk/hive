@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql;
 import javax.annotation.Nonnull;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 /**
@@ -53,6 +54,8 @@ public class DriverFactory {
 
   public static IDriver newDriver(@Nonnull HiveConf conf) {
     return newDriver(getNewQueryState(conf), null, null);
+  }
+
   }
 
   public static IDriver newDriver(@Nonnull QueryState queryState, String userName, QueryInfo queryInfo) {

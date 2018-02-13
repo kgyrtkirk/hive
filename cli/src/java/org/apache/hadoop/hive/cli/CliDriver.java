@@ -181,17 +181,22 @@ public class CliDriver {
       }
     }  else { // local mode
       try {
-        CommandProcessor proc = CommandProcessorFactory.get(tokens, (HiveConf) conf);
-        if (proc instanceof IDriver) {
-          // Let Driver strip comments using sql parser
-          ret = processLocalCmd(cmd, proc, ss);
-        } else {
-          ret = processLocalCmd(cmd_trimmed, proc, ss);
+
+        try (CommandProcessor proc = CommandProcessorFactory.get(tokens, (HiveConf) conf)) {
+          if (proc instanceof IDriver) {
+            // Let Driver strip comments using sql parser
+            ret = processLocalCmd(cmd, proc, ss);
+          } else {
+            ret = processLocalCmd(cmd_trimmed, proc, ss);
+          }
         }
       } catch (SQLException e) {
         console.printError("Failed processing command " + tokens[0] + " " + e.getLocalizedMessage(),
           org.apache.hadoop.util.StringUtils.stringifyException(e));
         ret = 1;
+      }
+      catch (Exception e) {
+        throw new RuntimeException(e);
       }
     }
 
@@ -399,11 +404,9 @@ public class CliDriver {
         lastRet = ret;
         boolean ignoreErrors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS);
         if (ret != 0 && !ignoreErrors) {
-          CommandProcessorFactory.clean((HiveConf) conf);
           return ret;
         }
       }
-      CommandProcessorFactory.clean((HiveConf) conf);
       return lastRet;
     } finally {
       // Once we are done processing the line, restore the old handler
