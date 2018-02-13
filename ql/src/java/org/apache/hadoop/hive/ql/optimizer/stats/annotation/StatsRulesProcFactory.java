@@ -137,7 +137,6 @@ public class StatsRulesProcFactory {
         Statistics stats = StatsUtils.collectStatistics(aspCtx.getConf(), partList, colStatsCached, table, tsop);
 
         stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, tsop);
-
         tsop.setStatistics(stats);
 
         if (LOG.isDebugEnabled()) {
@@ -197,7 +196,6 @@ public class StatsRulesProcFactory {
           stats.setDataSize(dataSize);
         }
         stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, sop);
-
         sop.setStatistics(stats);
 
         if (LOG.isDebugEnabled()) {
@@ -311,7 +309,6 @@ public class StatsRulesProcFactory {
         }
 
         st = applyRuntimeStats(aspCtx.getParseContext().getContext(), st, fop);
-
         fop.setStatistics(st);
 
         aspCtx.setAndExprStats(null);
@@ -2232,6 +2229,7 @@ public class StatsRulesProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
+      AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
       LimitOperator lop = (LimitOperator) nd;
       Operator<? extends OperatorDesc> parent = lop.getParentOperators().get(0);
       Statistics parentStats = parent.getStatistics();
@@ -2249,6 +2247,7 @@ public class StatsRulesProcFactory {
         if (limit <= parentStats.getNumRows()) {
           updateStats(stats, limit, true, lop);
         }
+        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, lop);
         lop.setStatistics(stats);
 
         if (LOG.isDebugEnabled()) {
@@ -2261,6 +2260,7 @@ public class StatsRulesProcFactory {
           // based on average row size
           limit = StatsUtils.getMaxIfOverflow(limit);
           Statistics wcStats = parentStats.scaleToRowCount(limit, true);
+          wcStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), wcStats, lop);
           lop.setStatistics(wcStats);
           if (LOG.isDebugEnabled()) {
             LOG.debug("[1] STATS-" + lop.toString() + ": " + wcStats.extendedToString());
@@ -2323,7 +2323,6 @@ public class StatsRulesProcFactory {
         }
 
         outStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), outStats, rop);
-
         rop.setStatistics(outStats);
         if (LOG.isDebugEnabled()) {
           LOG.debug("[0] STATS-" + rop.toString() + ": " + outStats.extendedToString());
@@ -2373,7 +2372,6 @@ public class StatsRulesProcFactory {
               }
             }
             stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, op);
-
             op.getConf().setStatistics(stats);
           }
         }
