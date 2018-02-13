@@ -5104,7 +5104,9 @@ public class HiveConf extends Configuration {
     for (Entry<Object, Object> entry : getProps().entrySet()) {
       String key = (String) entry.getKey();
       String value = (String) entry.getValue();
-      ret.put(key.substring(string.length() + 1), value);
+      if (key.startsWith(string)) {
+        ret.put(key.substring(string.length() + 1), value);
+      }
     }
     return ret;
   }
