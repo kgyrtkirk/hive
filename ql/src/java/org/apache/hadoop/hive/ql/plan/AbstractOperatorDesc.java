@@ -22,10 +22,8 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.PTFUtils;
+import org.apache.hadoop.hive.ql.exec.Operator.D;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 
 public class AbstractOperatorDesc implements OperatorDesc {
 
@@ -125,10 +123,12 @@ public class AbstractOperatorDesc implements OperatorDesc {
     this.memAvailable = memoryAvailble;
   }
 
+  @Override
   public String getRuntimeStatsTmpDir() {
     return runtimeStatsTmpDir;
   }
 
+  @Override
   public void setRuntimeStatsTmpDir(String runtimeStatsTmpDir) {
     this.runtimeStatsTmpDir = runtimeStatsTmpDir;
   }
@@ -159,6 +159,11 @@ public class AbstractOperatorDesc implements OperatorDesc {
   @Override
   public void setColumnExprMap(Map<String, ExprNodeDesc> colExprMap) {
     this.colExprMap = colExprMap;
+  }
+
+  @Override
+  public void signature(Map<D, Object> ret) {
+    ret.put(D.OPERATOR_CONFIG, ret);
   }
 
 }

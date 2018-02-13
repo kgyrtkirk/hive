@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,6 +61,8 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jersey.repackaged.com.google.common.base.Objects;
 
 /**
  * Base operator implementation.
@@ -1558,8 +1561,27 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * This can be used to merge same operators and avoid repeated computation.
    */
   public boolean logicalEquals(Operator other) {
-    return getClass().getName().equals(other.getClass().getName()) &&
-        (conf == other.getConf() || (conf != null && other.getConf() != null &&
-            conf.isSame(other.getConf())));
+    Map<D, Object> s1 = getSignature();
+    Map<D, Object> s2 = other.getSignature();
+    return Objects.equal(s1, s2);
   }
+
+  public static enum D {
+    OPERATOR_CLASS, OPERATOR_CONFIG
+
+  }
+
+  public final Map<D, Object> getSignature() {
+    Map<D, Object> ret = new LinkedHashMap<>();
+    fillSignature(ret);
+    return ret;
+  }
+
+  protected void fillSignature(Map<D, Object> ret) {
+    ret.put(D.OPERATOR_CLASS, getClass().getName());
+    if (conf != null) {
+      conf.signature(ret);
+    }
+  }
+
 }
