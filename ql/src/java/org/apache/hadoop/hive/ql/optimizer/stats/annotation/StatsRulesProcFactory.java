@@ -188,14 +188,16 @@ public class StatsRulesProcFactory {
       if (satisfyPrecondition(parentStats)) {
         // this will take care of mapping between input column names and output column names. The
         // returned column stats will have the output column names.
-        List<ColStatistics> colStats = StatsUtils.getColStatisticsFromExprMap(conf, parentStats,
-            sop.getColumnExprMap(), sop.getSchema());
+        List<ColStatistics> colStats =
+            StatsUtils.getColStatisticsFromExprMap(conf, parentStats, sop.getColumnExprMap(), sop.getSchema());
         stats.setColumnStats(colStats);
         // in case of select(*) the data size does not change
         if (!sop.getConf().isSelectStar() && !sop.getConf().isSelStarNoCompute()) {
           long dataSize = StatsUtils.getDataSizeFromColumnStats(stats.getNumRows(), colStats);
           stats.setDataSize(dataSize);
         }
+        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, sop);
+
         sop.setStatistics(stats);
 
         if (LOG.isDebugEnabled()) {
@@ -203,7 +205,8 @@ public class StatsRulesProcFactory {
         }
       } else {
         if (parentStats != null) {
-          sop.setStatistics(parentStats.clone());
+          stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, sop);
+          sop.setStatistics(stats);
 
           if (LOG.isDebugEnabled()) {
             LOG.debug("[1] STATS-" + sop.toString() + ": " + parentStats.extendedToString());
