@@ -139,6 +139,7 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
    */
   @Override
   public boolean isSame(OperatorDesc other) {
+
     return equals(other);
   }
 
@@ -162,8 +163,8 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
   }
 
   @Override
-  public void fillSignature(Map<D, Object> ret) {
-    ret.put(D.FULL_DESC, this);
+  public void fillSignature(Map<String, Object> ret) {
+    ret.put("opague_desc", this);
   }
 
 }

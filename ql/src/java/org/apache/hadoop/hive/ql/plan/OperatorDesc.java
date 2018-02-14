@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.exec.Operator;
-
 public interface OperatorDesc extends Serializable, Cloneable {
   public Object clone() throws CloneNotSupportedException;
   public Statistics getStatistics();
@@ -41,5 +39,5 @@ public interface OperatorDesc extends Serializable, Cloneable {
   public Map<String, ExprNodeDesc> getColumnExprMap();
   public void setColumnExprMap(Map<String, ExprNodeDesc> colExprMap);
 
-  public void fillSignature(Map<Operator.D, Object> ret);
+  void fillSignature(Map<String, Object> ret);
 }

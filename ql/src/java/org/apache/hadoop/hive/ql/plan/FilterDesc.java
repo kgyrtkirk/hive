@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
+import org.apache.hadoop.hive.ql.exec.Operator.D;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
@@ -233,5 +235,13 @@ public class FilterDesc extends AbstractOperatorDesc {
           getIsSamplingPred() == otherDesc.getIsSamplingPred();
     }
     return false;
+  }
+
+  @Override
+  public void fillSignature(Map<D, Object> ret) {
+    ret.put(D.DESC_CLASS, getClass().getName());
+    ret.put(D.getPredicateString, getPredicateString());
+    ret.put(D.getSampleDescExpr, getSampleDescExpr());
+    ret.put(D.getIsSamplingPred, getIsSamplingPred());
   }
 }

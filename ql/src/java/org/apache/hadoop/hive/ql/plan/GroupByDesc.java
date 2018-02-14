@@ -21,20 +21,17 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Operator.D;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hive.common.util.AnnotationUtils;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 
 /**
@@ -424,4 +421,16 @@ public class GroupByDesc extends AbstractOperatorDesc {
     return false;
   }
 
+  @Override
+  public void fillSignature(Map<D, Object> ret) {
+    ret.put(D.DESC_CLASS, getClass().getName());
+    ret.put(D.ModeString, getModeString());
+    ret.put(D.getKeyString, getKeyString());
+    ret.put(D.getOutputColumnNames, getOutputColumnNames());
+    ret.put(D.pruneGroupingSetId, pruneGroupingSetId());
+    ret.put(D.getAggregatorStrings, getAggregatorStrings());
+    ret.put(D.getBucketGroup, getBucketGroup());
+
+
+  }
 }

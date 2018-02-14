@@ -20,9 +20,11 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.Operator.D;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -580,4 +582,20 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     return false;
   }
 
+  @Override
+  public void fillSignature(Map<D, Object> ret) {
+    ret.put(D.DESC_CLASS, getClass().getName());
+    ret.put(D.DIRNAME, getDirName());
+    ret.put(D.getTableInfo, getTableInfo());
+    ret.put(D.getCompressed, getCompressed());
+    ret.put(D.getDestTableId, getDestTableId());
+    ret.put(D.isMultiFileSpray, isMultiFileSpray());
+
+    ret.put(D.getTotalFiles, getTotalFiles());
+    ret.put(D.getNumFiles, getNumFiles());
+    ret.put(D.getStaticSpec, getStaticSpec());
+    ret.put(D.isGatherStats, isGatherStats());
+    // FIXME: this almost certenly differ even if the operator is doing the same
+    ret.put(D.getStatsAggPrefix, getStatsAggPrefix());
+  }
 }

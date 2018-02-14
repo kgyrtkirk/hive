@@ -1567,7 +1567,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public static enum D {
-    OPERATOR_CLASS, DESC_CLASS, INPUT, VERTEX_NAME, TABLE, FULL_DESC, TARGET_COLNAME, TARGET_COLTYPE, PARTKEY
+    OPERATOR_CLASS, DESC_CLASS, INPUT, VERTEX_NAME, TABLE, FULL_DESC, TARGET_COLNAME, TARGET_COLTYPE, PARTKEY, DIRNAME, getTableInfo, getCompressed, getDestTableId, isMultiFileSpray, getTotalFiles, getNumFiles, getStaticSpec, isGatherStats, getStatsAggPrefix, getPredicateString, getSampleDescExpr, getIsSamplingPred, ModeString, getKeyString, getOutputColumnNames, pruneGroupingSetId, getAggregatorStrings, getBucketGroup
 
   }
 
