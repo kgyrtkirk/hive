@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.SignatureUtils1;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
@@ -1561,8 +1562,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * This can be used to merge same operators and avoid repeated computation.
    */
   public boolean logicalEquals(Operator other) {
-    Map<D, Object> s1 = getSignature();
-    Map<D, Object> s2 = other.getSignature();
+    Map<String, Object> s1 = getSignature();
+    Map<String, Object> s2 = other.getSignature();
     return Objects.equal(s1, s2);
   }
 
@@ -1571,17 +1572,15 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   }
 
-  public final Map<D, Object> getSignature() {
-    Map<D, Object> ret = new LinkedHashMap<>();
+  public final Map<String, Object> getSignature() {
+    Map<String, Object> ret = new LinkedHashMap<>();
     fillSignature(ret);
     return ret;
   }
 
-  protected void fillSignature(Map<D, Object> ret) {
-    ret.put(D.OPERATOR_CLASS, getClass().getName());
-    if (conf != null) {
-      conf.fillSignature(ret);
-    }
+  protected void fillSignature(Map<String, Object> ret) {
+    SignatureUtils1.write(ret, this);
+    SignatureUtils1.write(ret, conf);
   }
 
 }

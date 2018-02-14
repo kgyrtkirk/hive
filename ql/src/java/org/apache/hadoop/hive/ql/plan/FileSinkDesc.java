@@ -20,11 +20,9 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.Operator.D;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -193,6 +191,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   }
 
   @Explain(displayName = "directory", explainLevels = { Level.EXTENDED })
+  @Signature
   public Path getDirName() {
     return dirName;
   }
@@ -216,6 +215,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   }
 
   @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Signature
   public TableDesc getTableInfo() {
     return tableInfo;
   }
@@ -225,6 +225,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   }
 
   @Explain(displayName = "compressed")
+  @Signature
   public boolean getCompressed() {
     return compressed;
   }
@@ -234,6 +235,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   }
 
   @Explain(displayName = "GlobalTableId", explainLevels = { Level.EXTENDED })
+  @Signature
+
   public int getDestTableId() {
     return destTableId;
   }
@@ -262,6 +265,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
    * @return the multiFileSpray
    */
   @Explain(displayName = "MultiFileSpray", explainLevels = { Level.EXTENDED })
+  @Signature
+
   public boolean isMultiFileSpray() {
     return multiFileSpray;
   }
@@ -313,6 +318,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
    * @return the totalFiles
    */
   @Explain(displayName = "TotalFiles", explainLevels = { Level.EXTENDED })
+  @Signature
+
   public int getTotalFiles() {
     return totalFiles;
   }
@@ -342,6 +349,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
    * @return the numFiles
    */
   @Explain(displayName = "NumFilesPerFileSink", explainLevels = { Level.EXTENDED })
+  @Signature
+
   public int getNumFiles() {
     return numFiles;
   }
@@ -366,6 +375,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   }
 
   @Explain(displayName = "Static Partition Specification", explainLevels = { Level.EXTENDED })
+  @Signature
   public String getStaticSpec() {
     return staticSpec;
   }
@@ -376,6 +386,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   @Override
   @Explain(displayName = "GatherStats", explainLevels = { Level.EXTENDED })
+  @Signature
+
   public boolean isGatherStats() {
     return gatherStats;
   }
@@ -393,6 +405,9 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
    */
   @Override
   @Explain(displayName = "Stats Publishing Key Prefix", explainLevels = { Level.EXTENDED })
+  // FIXME: including this in the signature will almost certenly differ even if the operator is doing the same
+  // there might be conflicting usages of logicalCompare?
+  @Signature
   public String getStatsAggPrefix() {
     // dirName uniquely identifies destination directory of a FileSinkOperator.
     // If more than one FileSinkOperator write to the same partition, this dirName
@@ -582,20 +597,4 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     return false;
   }
 
-  @Override
-  public void fillSignature(Map<D, Object> ret) {
-    ret.put(D.DESC_CLASS, getClass().getName());
-    ret.put(D.DIRNAME, getDirName());
-    ret.put(D.getTableInfo, getTableInfo());
-    ret.put(D.getCompressed, getCompressed());
-    ret.put(D.getDestTableId, getDestTableId());
-    ret.put(D.isMultiFileSpray, isMultiFileSpray());
-
-    ret.put(D.getTotalFiles, getTotalFiles());
-    ret.put(D.getNumFiles, getNumFiles());
-    ret.put(D.getStaticSpec, getStaticSpec());
-    ret.put(D.isGatherStats, isGatherStats());
-    // FIXME: this almost certenly differ even if the operator is doing the same
-    ret.put(D.getStatsAggPrefix, getStatsAggPrefix());
-  }
 }

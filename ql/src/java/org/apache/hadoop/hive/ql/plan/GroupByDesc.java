@@ -21,11 +21,9 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Operator.D;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
@@ -126,6 +124,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "mode")
+  @Signature
   public String getModeString() {
     switch (mode) {
     case COMPLETE:
@@ -152,6 +151,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "keys")
+  @Signature
   public String getKeyString() {
     return PlanUtils.getExprListString(keys);
   }
@@ -170,6 +170,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "outputColumnNames")
+  @Signature
   public ArrayList<java.lang.String> getOutputColumnNames() {
     return outputColumnNames;
   }
@@ -180,6 +181,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "pruneGroupingSetId", displayOnlyOnTrue = true)
+  @Signature
   public boolean pruneGroupingSetId() {
     return groupingSetPosition >= 0 &&
         outputColumnNames.size() != keys.size() + aggregators.size();
@@ -207,6 +209,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "aggregations", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Signature
   public List<String> getAggregatorStrings() {
     List<String> res = new ArrayList<String>();
     for (AggregationDesc agg: aggregators) {
@@ -232,6 +235,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "bucketGroup", displayOnlyOnTrue = true)
+  @Signature
   public boolean getBucketGroup() {
     return bucketGroup;
   }
@@ -421,16 +425,4 @@ public class GroupByDesc extends AbstractOperatorDesc {
     return false;
   }
 
-  @Override
-  public void fillSignature(Map<D, Object> ret) {
-    ret.put(D.DESC_CLASS, getClass().getName());
-    ret.put(D.ModeString, getModeString());
-    ret.put(D.getKeyString, getKeyString());
-    ret.put(D.getOutputColumnNames, getOutputColumnNames());
-    ret.put(D.pruneGroupingSetId, pruneGroupingSetId());
-    ret.put(D.getAggregatorStrings, getAggregatorStrings());
-    ret.put(D.getBucketGroup, getBucketGroup());
-
-
-  }
 }

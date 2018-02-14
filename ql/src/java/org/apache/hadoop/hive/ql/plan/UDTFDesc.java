@@ -54,6 +54,7 @@ public class UDTFDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "function name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Signature
   public String getUDTFName() {
     return genericUDTF.toString();
   }
@@ -67,6 +68,7 @@ public class UDTFDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "outer lateral view")
+  @Signature
   public String isOuterLateralView() {
     return outerLV ? "true" : null;
   }

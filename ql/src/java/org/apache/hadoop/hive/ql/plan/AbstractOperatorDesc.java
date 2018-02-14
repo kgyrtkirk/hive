@@ -22,7 +22,6 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.exec.Operator.D;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 public abstract class AbstractOperatorDesc implements OperatorDesc {
@@ -164,7 +163,7 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
 
   @Override
   public void fillSignature(Map<String, Object> ret) {
-    ret.put("opague_desc", this);
+    SignatureUtils1.write(ret, this);
   }
 
 }

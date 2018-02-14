@@ -30,10 +30,8 @@ import java.util.Objects;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.Operator.D;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-import org.jets3t.service.utils.SignatureUtils;
 
 
 /**
@@ -749,16 +747,4 @@ public class JoinDesc extends AbstractOperatorDesc {
     return false;
   }
 
-  @Override
-  public void fillSignature(Map<String, Object> ret) {
-    SignatureUtils1.write(ret, this);
-//          getClass().getName()
-//            getKeysString()
-//                getFiltersStringMap()
-//                getOutputColumnNames()
-//                getCondsList()
-//            getHandleSkewJoin()
-//                getNullSafeString()
-
-}
 }
