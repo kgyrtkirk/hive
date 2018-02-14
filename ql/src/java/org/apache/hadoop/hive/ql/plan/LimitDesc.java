@@ -58,6 +58,7 @@ public class LimitDesc extends AbstractOperatorDesc {
     this.offset = offset;
   }
 
+  @Signature
   @Explain(displayName = "Number of rows", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public int getLimit() {
     return limit;
@@ -90,14 +91,5 @@ public class LimitDesc extends AbstractOperatorDesc {
       return null;
     }
     return new LimitOperatorExplainVectorization(this, vectorLimitDesc);
-  }
-
-  @Override
-  public boolean isSame(OperatorDesc other) {
-    if (getClass().getName().equals(other.getClass().getName())) {
-      LimitDesc otherDesc = (LimitDesc) other;
-      return getLimit() == otherDesc.getLimit();
-    }
-    return false;
   }
 }

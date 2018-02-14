@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -97,7 +96,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   private float topNMemoryUsage = -1;
   private boolean mapGroupBy;  // for group-by, values with same key on top-K should be forwarded
   //flag used to control how TopN handled for PTF/Windowing partitions.
-  private boolean isPTFReduceSink = false; 
+  private boolean isPTFReduceSink = false;
   private boolean skipTag; // Skip writing tags when feeding into mapjoin hashtable
   private boolean forwarding; // Whether this RS can forward records directly instead of shuffling/sorting
 
@@ -206,6 +205,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return PlanUtils.getExprListString(keyCols);
   }
 
+  @Signature
   public java.util.ArrayList<ExprNodeDesc> getKeyCols() {
     return keyCols;
   }
@@ -227,6 +227,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return PlanUtils.getExprListString(valueCols);
   }
 
+  @Signature
   public java.util.ArrayList<ExprNodeDesc> getValueCols() {
     return valueCols;
   }
@@ -245,6 +246,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return PlanUtils.getExprListString(partitionCols, true);
   }
 
+  @Signature
   public java.util.ArrayList<ExprNodeDesc> getPartitionCols() {
     return partitionCols;
   }
@@ -261,6 +263,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return false;
   }
 
+  @Signature
   @Explain(displayName = "tag", explainLevels = { Level.EXTENDED })
   public int getTag() {
     return tag;
@@ -270,6 +273,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.tag = tag;
   }
 
+  @Signature
   public int getTopN() {
     return topN;
   }
@@ -349,6 +353,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
    *         of the same length as key columns, that consists of only "+"
    *         (ascending order) and "-" (descending order).
    */
+  @Signature
   @Explain(displayName = "sort order")
   public String getOrder() {
     return keySerializeInfo.getProperties().getProperty(
@@ -437,6 +442,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return forwarding;
   }
 
+  @Signature
   @Explain(displayName = "auto parallelism", explainLevels = { Level.EXTENDED })
   public final boolean isAutoParallel() {
     return (this.reduceTraits.contains(ReducerTraits.AUTOPARALLEL));
@@ -462,7 +468,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     // reducers or hash function.
 
     boolean wasUnset = this.reduceTraits.remove(ReducerTraits.UNSET);
-    
+
     if (this.reduceTraits.contains(ReducerTraits.FIXED)) {
       return;
     } else if (traits.contains(ReducerTraits.FIXED)) {
@@ -645,20 +651,5 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       return null;
     }
     return new ReduceSinkOperatorExplainVectorization(this, vectorReduceSinkDesc);
-  }
-
-  @Override
-  public boolean isSame(OperatorDesc other) {
-    if (getClass().getName().equals(other.getClass().getName())) {
-      ReduceSinkDesc otherDesc = (ReduceSinkDesc) other;
-      return ExprNodeDescUtils.isSame(getKeyCols(), otherDesc.getKeyCols()) &&
-          ExprNodeDescUtils.isSame(getValueCols(), otherDesc.getValueCols()) &&
-          ExprNodeDescUtils.isSame(getPartitionCols(), otherDesc.getPartitionCols()) &&
-          getTag() == otherDesc.getTag() &&
-          Objects.equals(getOrder(), otherDesc.getOrder()) &&
-          getTopN() == otherDesc.getTopN() &&
-          isAutoParallel() == otherDesc.isAutoParallel();
-    }
-    return false;
   }
 }

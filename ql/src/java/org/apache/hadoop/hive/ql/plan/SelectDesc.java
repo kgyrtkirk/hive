@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
@@ -72,6 +70,7 @@ public class SelectDesc extends AbstractOperatorDesc {
     return ret;
   }
 
+  @Signature
   @Explain(displayName = "expressions")
   public String getColListString() {
     return PlanUtils.getExprListString(colList);
@@ -86,6 +85,7 @@ public class SelectDesc extends AbstractOperatorDesc {
     this.colList = colList;
   }
 
+  @Signature
   @Explain(displayName = "outputColumnNames")
   public List<java.lang.String> getOutputColumnNames() {
     return outputColumnNames;
@@ -101,6 +101,7 @@ public class SelectDesc extends AbstractOperatorDesc {
     this.outputColumnNames = outputColumnNames;
   }
 
+  @Signature
   @Explain(displayName = "SELECT * ")
   public String explainNoCompute() {
     if (isSelStarNoCompute()) {
@@ -172,16 +173,5 @@ public class SelectDesc extends AbstractOperatorDesc {
       return null;
     }
     return new SelectOperatorExplainVectorization(this, vectorSelectDesc);
-  }
-
-  @Override
-  public boolean isSame(OperatorDesc other) {
-    if (getClass().getName().equals(other.getClass().getName())) {
-      SelectDesc otherDesc = (SelectDesc) other;
-      return Objects.equals(getColListString(), otherDesc.getColListString()) &&
-          Objects.equals(getOutputColumnNames(), otherDesc.getOutputColumnNames()) &&
-          Objects.equals(explainNoCompute(), otherDesc.explainNoCompute());
-    }
-    return false;
   }
 }
