@@ -24,8 +24,6 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -148,6 +146,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   }
 
   @Explain(displayName = "alias")
+  @Signature
   public String getAlias() {
     return alias;
   }
@@ -211,6 +210,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     return PlanUtils.getExprListString(Arrays.asList(filterExpr));
   }
 
+  // XXX  @Signature
   public ExprNodeGenericFuncDesc getFilterExpr() {
     return filterExpr;
   }
@@ -288,6 +288,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   @Override
   @Explain(displayName = "GatherStats", explainLevels = { Level.EXTENDED })
+  @Signature
   public boolean isGatherStats() {
     return gatherStats;
   }
@@ -339,6 +340,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     this.rowLimit = rowLimit;
   }
 
+  @Signature
   public int getRowLimit() {
     return rowLimit;
   }
@@ -507,18 +509,6 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   public boolean isVectorized() {
     return vectorized;
-  }
-
-  @Override
-  public boolean isSame(OperatorDesc other) {
-    if (getClass().getName().equals(other.getClass().getName())) {
-      TableScanDesc otherDesc = (TableScanDesc) other;
-      return Objects.equals(getAlias(), otherDesc.getAlias()) &&
-          ExprNodeDescUtils.isSame(getFilterExpr(), otherDesc.getFilterExpr()) &&
-          getRowLimit() == otherDesc.getRowLimit() &&
-          isGatherStats() == otherDesc.isGatherStats();
-    }
-    return false;
   }
 
   public boolean isFullAcidTable() {
