@@ -19,9 +19,10 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
+import org.apache.hadoop.hive.ql.exec.Operator.D;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -98,4 +99,12 @@ public class AppMasterEventDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
+  @Override
+  public void fillSignature(Map<D, Object> ret) {
+    ret.put(D.DESC_CLASS, getClass().getName());
+    ret.put(D.INPUT, getInputName());
+    ret.put(D.TABLE, getTable());
+  }
+
 }

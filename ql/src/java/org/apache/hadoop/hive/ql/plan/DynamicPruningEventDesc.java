@@ -19,10 +19,12 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
 
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.Operator.D;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -111,5 +113,13 @@ public class DynamicPruningEventDesc extends AppMasterEventDesc {
           Objects.equals(getPartKeyString(), otherDesc.getPartKeyString());
     }
     return false;
+  }
+
+  @Override
+  public void fillSignature(Map<D, Object> ret) {
+    super.fillSignature(ret);
+    ret.put(D.TARGET_COLNAME, getTargetColumnName());
+    ret.put(D.TARGET_COLTYPE, getTargetColumnType());
+    ret.put(D.PARTKEY, getPartKeyString());
   }
 }

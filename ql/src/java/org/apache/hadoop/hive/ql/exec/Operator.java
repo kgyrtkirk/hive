@@ -1567,7 +1567,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public static enum D {
-    OPERATOR_CLASS, OPERATOR_CONFIG
+    OPERATOR_CLASS, DESC_CLASS, INPUT, VERTEX_NAME, TABLE, FULL_DESC, TARGET_COLNAME, TARGET_COLTYPE, PARTKEY
 
   }
 
@@ -1580,7 +1580,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected void fillSignature(Map<D, Object> ret) {
     ret.put(D.OPERATOR_CLASS, getClass().getName());
     if (conf != null) {
-      conf.signature(ret);
+      conf.fillSignature(ret);
     }
   }
 

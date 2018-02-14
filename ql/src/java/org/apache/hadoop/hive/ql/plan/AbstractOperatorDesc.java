@@ -25,7 +25,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.ql.exec.Operator.D;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-public class AbstractOperatorDesc implements OperatorDesc {
+public abstract class AbstractOperatorDesc implements OperatorDesc {
 
   protected boolean vectorMode = false;
 
@@ -162,8 +162,8 @@ public class AbstractOperatorDesc implements OperatorDesc {
   }
 
   @Override
-  public void signature(Map<D, Object> ret) {
-    ret.put(D.OPERATOR_CONFIG, ret);
+  public void fillSignature(Map<D, Object> ret) {
+    ret.put(D.FULL_DESC, this);
   }
 
 }

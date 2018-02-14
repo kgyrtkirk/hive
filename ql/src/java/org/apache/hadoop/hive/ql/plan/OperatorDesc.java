@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.Operator.D;
 
 public interface OperatorDesc extends Serializable, Cloneable {
   public Object clone() throws CloneNotSupportedException;
@@ -37,9 +36,10 @@ public interface OperatorDesc extends Serializable, Cloneable {
   public void setMaxMemoryAvailable(long memoryAvailble);
   public String getRuntimeStatsTmpDir();
   public void setRuntimeStatsTmpDir(String runtimeStatsTmpDir);
+
   boolean isSame(OperatorDesc other);
   public Map<String, ExprNodeDesc> getColumnExprMap();
   public void setColumnExprMap(Map<String, ExprNodeDesc> colExprMap);
 
-  public void signature(Map<Operator.D, Object> ret);
+  public void fillSignature(Map<Operator.D, Object> ret);
 }
