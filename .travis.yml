@@ -44,7 +44,7 @@ before_install:
 install: true
 
 script:
-  - mvn $M_OPTS -am
+  - mvn $M_OPTS -am -DskipTests
   - mvn $M_OPTS -Dtest=TestCliDriver -Dqfile=authorization_update_own_table.q
   - mvn $M_OPTS -Dtest=TestCliDriver -Dqfile=row__id.q
   - mvn $M_OPTS -Dtest=TestCliDriver -Dqfile=authorization_update_own_table.q,row__id.q
