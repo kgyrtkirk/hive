@@ -34,6 +34,7 @@ cache:
 env:
   MAVEN_SKIP_RC=true
   MAVEN_OPTS="-Xmx2g"
+  M_OPTS="install -Pitests -DskipSparkTests -pl itests/qtest -q -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 
 # workaround added: https://github.com/travis-ci/travis-ci/issues/4629
 before_install:
@@ -42,4 +43,8 @@ before_install:
 
 install: true
 
-script: mvn clean install -DskipTests -q -Pitests
+script:
+  - mvn $M_OPTS -am
+  - mvn $M_OPTS -Dtest=TestCliDriver -Dqfile=authorization_update_own_table.q
+  - mvn $M_OPTS -Dtest=TestCliDriver -Dqfile=row__id.q
+  - mvn $M_OPTS -Dtest=TestCliDriver -Dqfile=authorization_update_own_table.q,row__id.q
