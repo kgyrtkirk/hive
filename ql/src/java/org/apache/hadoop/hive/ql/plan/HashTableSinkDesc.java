@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -289,6 +287,7 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
 
   @Override
   @Explain(displayName = "filter mappings", explainLevels = { Level.EXTENDED })
+  @Signature
   public Map<Integer, String> getFilterMapString() {
     return toCompactString(filterMap);
   }
@@ -304,6 +303,7 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
   /**
    * @return the keys in string form
    */
+  @Override
   @Explain(displayName = "keys")
   public Map<Byte, String> getKeysString() {
     Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
@@ -313,6 +313,7 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
     return keyMap;
   }
 
+  @Override
   @Explain(displayName = "keys", explainLevels = { Level.USER })
   public Map<Byte, String> getUserLevelExplainKeysString() {
     Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
@@ -391,12 +392,4 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
     this.bucketMapjoinContext = bucketMapjoinContext;
   }
 
-  @Override
-  public boolean isSame(OperatorDesc other) {
-    if (super.isSame(other)) {
-      HashTableSinkDesc otherDesc = (HashTableSinkDesc) other;
-      return Objects.equals(getFilterMapString(), otherDesc.getFilterMapString());
-    }
-    return false;
-  }
 }
