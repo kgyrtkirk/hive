@@ -124,13 +124,9 @@ public class ExprNodeFieldDesc extends ExprNodeDesc implements Serializable {
   }
 
   @Override
-  public int hashCode() {
-    int superHashCode = super.hashCode();
-    HashCodeBuilder builder = new HashCodeBuilder();
-    builder.appendSuper(superHashCode);
+  protected void hashCode0(HashCodeBuilder builder) {
     builder.append(desc);
     builder.append(fieldName);
     builder.append(isList);
-    return builder.toHashCode();
   }
 }
