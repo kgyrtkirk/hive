@@ -38,6 +38,7 @@ public class CommonMergeJoinDesc extends MapJoinDesc implements Serializable {
     this.mapJoinConversionPos = mapJoinConversionPos;
   }
 
+  @Signature
   public int getNumBuckets() {
     return numBuckets;
   }
@@ -50,12 +51,4 @@ public class CommonMergeJoinDesc extends MapJoinDesc implements Serializable {
     mapJoinConversionPos = pos;
   }
 
-  @Override
-  public boolean isSame(OperatorDesc other) {
-    if (super.isSame(other)) {
-      CommonMergeJoinDesc otherDesc = (CommonMergeJoinDesc) other;
-      return getNumBuckets() == otherDesc.getNumBuckets();
-    }
-    return false;
-  }
 }
