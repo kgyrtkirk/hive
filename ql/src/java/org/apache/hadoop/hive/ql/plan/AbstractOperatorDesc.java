@@ -138,7 +138,6 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
    */
   @Override
   public boolean isSame(OperatorDesc other) {
-
     return equals(other);
   }
 

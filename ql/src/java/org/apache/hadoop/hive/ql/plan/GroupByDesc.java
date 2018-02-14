@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
 import org.apache.hadoop.hive.ql.udf.UDFType;
@@ -409,20 +407,6 @@ public class GroupByDesc extends AbstractOperatorDesc {
         " AND " +
         HiveConf.ConfVars.HIVE_VECTORIZATION_GROUPBY_COMPLEX_TYPES_ENABLED.varname + " " + isVectorizationGroupByComplexTypesEnabled +
         ") IS " + enabled;
-  }
-
-  @Override
-  public boolean isSame(OperatorDesc other) {
-    if (getClass().getName().equals(other.getClass().getName())) {
-      GroupByDesc otherDesc = (GroupByDesc) other;
-      return Objects.equals(getModeString(), otherDesc.getModeString()) &&
-          Objects.equals(getKeyString(), otherDesc.getKeyString()) &&
-          Objects.equals(getOutputColumnNames(), otherDesc.getOutputColumnNames()) &&
-          pruneGroupingSetId() == otherDesc.pruneGroupingSetId() &&
-          Objects.equals(getAggregatorStrings(), otherDesc.getAggregatorStrings()) &&
-          getBucketGroup() == otherDesc.getBucketGroup();
-    }
-    return false;
   }
 
 }
