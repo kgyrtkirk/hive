@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -58,6 +59,16 @@ public class XXXJsonHiveStructReader {
   public Object parseStruct(String text) throws JsonParseException, IOException, HiveException {
     JsonParser parser = factory.createParser(text);
 
+    return parseInternal(parser);
+  }
+
+  // XXX: one method?
+  public Object parseStruct(InputStream is) throws JsonParseException, IOException, HiveException {
+    JsonParser parser = factory.createJsonParser(is);
+    return parseInternal(parser);
+  }
+
+  private Object parseInternal(JsonParser parser) throws HiveException {
     try {
       parser.nextToken();
       Object res = parseDispatcher(parser, outputOI);
@@ -239,5 +250,6 @@ public class XXXJsonHiveStructReader {
 
     }
   }
+
 
 }

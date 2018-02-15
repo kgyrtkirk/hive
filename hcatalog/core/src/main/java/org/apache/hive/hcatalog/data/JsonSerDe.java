@@ -38,6 +38,8 @@ import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.udf.generic.XXXJsonHiveStructReader;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -102,6 +104,7 @@ public class JsonSerDe extends AbstractSerDe {
   private HCatRecordObjectInspector cachedObjectInspector;
   private TimestampParser tsParser;
   private ObjectInspector outputOI;
+  private XXXJsonHiveStructReader xxx;
 
   @Override
   public void initialize(Configuration conf, Properties tbl)
@@ -138,6 +141,7 @@ public class JsonSerDe extends AbstractSerDe {
     rowTypeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
 
     outputOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(rowTypeInfo);
+    xxx = new XXXJsonHiveStructReader(rowTypeInfo);
 
     cachedObjectInspector = HCatRecordObjectInspectorFactory.getHCatRecordObjectInspector(rowTypeInfo);
     try {
@@ -167,6 +171,14 @@ public class JsonSerDe extends AbstractSerDe {
     JsonParser p;
     List<Object> r = new ArrayList<Object>(Collections.nCopies(columnNames.size(), null));
     try {
+      if (false) {
+        try {
+          xxx.parseStruct(new ByteArrayInputStream((t.getBytes())));
+        } catch (HiveException e) {
+          throw new SerDeException(e);
+        }
+      }
+
       p = jsonFactory.createJsonParser(new ByteArrayInputStream((t.getBytes())));
       if (p.nextToken() != JsonToken.START_OBJECT) {
         throw new IOException("Start token not found where expected");
