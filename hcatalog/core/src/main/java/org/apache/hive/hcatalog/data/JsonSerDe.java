@@ -110,9 +110,8 @@ public class JsonSerDe extends AbstractSerDe {
 
     LOG.debug("Initializing JsonSerDe: {}", tbl.entrySet());
 
-    // Get column names and types
+    // Get column names
     String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
         .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
     // all table column names
@@ -123,6 +122,7 @@ public class JsonSerDe extends AbstractSerDe {
     }
 
     // all column types
+    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     if (columnTypeProperty.isEmpty()) {
       columnTypes = Collections.emptyList();
     } else {
