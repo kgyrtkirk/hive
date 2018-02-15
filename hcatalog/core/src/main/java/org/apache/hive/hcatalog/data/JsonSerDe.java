@@ -101,6 +101,7 @@ public class JsonSerDe extends AbstractSerDe {
 
   private HCatRecordObjectInspector cachedObjectInspector;
   private TimestampParser tsParser;
+  private ObjectInspector outputOI;
 
   @Override
   public void initialize(Configuration conf, Properties tbl)
@@ -135,6 +136,8 @@ public class JsonSerDe extends AbstractSerDe {
     assert (columnNames.size() == columnTypes.size());
 
     rowTypeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
+
+    outputOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(rowTypeInfo);
 
     cachedObjectInspector = HCatRecordObjectInspectorFactory.getHCatRecordObjectInspector(rowTypeInfo);
     try {
