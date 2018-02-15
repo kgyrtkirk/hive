@@ -251,7 +251,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     allocationManager.start();
 
     final long triggerValidationIntervalMs = HiveConf.getTimeVar(conf,
-      HiveConf.ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL_MS, TimeUnit.MILLISECONDS);
+      HiveConf.ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL, TimeUnit.MILLISECONDS);
     TriggerActionHandler<?> triggerActionHandler = new KillMoveTriggerActionHandler(this);
     triggerValidatorRunnable = new PerPoolTriggerValidatorRunnable(perPoolProviders, triggerActionHandler,
       triggerValidationIntervalMs);
@@ -2127,7 +2127,13 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       PoolState poolState = pools.get(poolName);
       if (poolState != null) {
         poolState.getSessions().remove(toKill);
-        poolState.getInitializingSessions().remove(toKill);
+        Iterator<SessionInitContext> iter = poolState.getInitializingSessions().iterator();
+        while (iter.hasNext()) {
+          if (iter.next().session == toKill) {
+            iter.remove();
+            break;
+          }
+        }
       }
     }
 

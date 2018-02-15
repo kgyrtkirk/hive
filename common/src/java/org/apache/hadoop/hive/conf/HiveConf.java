@@ -216,6 +216,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTOREWAREHOUSE,
       HiveConf.ConfVars.REPLDIR,
       HiveConf.ConfVars.METASTOREURIS,
+      HiveConf.ConfVars.METASTORESELECTION,
       HiveConf.ConfVars.METASTORE_SERVER_PORT,
       HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES,
       HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES,
@@ -596,7 +597,7 @@ public class HiveConf extends Configuration {
         "When hive.exec.mode.local.auto is true, the number of tasks should less than this for local mode."),
 
     DROPIGNORESNONEXISTENT("hive.exec.drop.ignorenonexistent", true,
-        "Do not report an error if DROP TABLE/VIEW/Index/Function specifies a non-existent table/view/index/function"),
+        "Do not report an error if DROP TABLE/VIEW/Index/Function specifies a non-existent table/view/function"),
 
     HIVEIGNOREMAPJOINHINT("hive.ignore.mapjoin.hint", true, "Ignore the mapjoin hint"),
 
@@ -632,7 +633,12 @@ public class HiveConf extends Configuration {
         "location of default database for the warehouse"),
     METASTOREURIS("hive.metastore.uris", "",
         "Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore."),
-
+    METASTORESELECTION("hive.metastore.uri.selection", "RANDOM",
+        new StringSet("SEQUENTIAL", "RANDOM"),
+        "Determines the selection mechanism used by metastore client to connect to remote " +
+            "metastore.  SEQUENTIAL implies that the first valid metastore from the URIs specified " +
+            "as part of hive.metastore.uris will be picked.  RANDOM implies that the metastore " +
+            "will be picked randomly"),
     METASTORE_CAPABILITY_CHECK("hive.metastore.client.capability.check", true,
         "Whether to check client capabilities for potentially breaking API usage."),
     METASTORE_FASTPATH("hive.metastore.fastpath", false,
@@ -643,7 +649,8 @@ public class HiveConf extends Configuration {
         "Number of threads to be allocated for metastore handler for fs operations."),
     METASTORE_HBASE_FILE_METADATA_THREADS("hive.metastore.hbase.file.metadata.threads", 1,
         "Number of threads to use to read file metadata in background to cache it."),
-
+    METASTORE_URI_RESOLVER("hive.metastore.uri.resolver", "",
+            "If set, fully qualified class name of resolver for hive metastore uri's"),
     METASTORETHRIFTCONNECTIONRETRIES("hive.metastore.connect.retries", 3,
         "Number of retries while opening a connection to metastore"),
     METASTORETHRIFTFAILURERETRIES("hive.metastore.failure.retries", 1,
@@ -1090,11 +1097,14 @@ public class HiveConf extends Configuration {
         "hive.txn.valid.txns,hive.script.operator.env.blacklist",
         "Comma separated list of keys from the configuration file not to convert to environment " +
         "variables when invoking the script operator"),
-    HIVE_STRICT_CHECKS_LARGE_QUERY("hive.strict.checks.large.query", false,
+    HIVE_STRICT_CHECKS_ORDERBY_NO_LIMIT("hive.strict.checks.orderby.no.limit", false,
         "Enabling strict large query checks disallows the following:\n" +
         "  Orderby without limit.\n" +
+        "Note that this check currently does not consider data size, only the query pattern."),
+    HIVE_STRICT_CHECKS_NO_PARTITION_FILTER("hive.strict.checks.no.partition.filter", false,
+        "Enabling strict large query checks disallows the following:\n" +
         "  No partition being picked up for a query against partitioned table.\n" +
-        "Note that these checks currently do not consider data size, only the query pattern."),
+        "Note that this check currently does not consider data size, only the query pattern."),
     HIVE_STRICT_CHECKS_TYPE_SAFETY("hive.strict.checks.type.safety", true,
         "Enabling strict type safety checks disallows the following:\n" +
         "  Comparing bigints and strings.\n" +
@@ -1327,8 +1337,9 @@ public class HiveConf extends Configuration {
     HIVE_SCHEMA_EVOLUTION("hive.exec.schema.evolution", true,
         "Use schema evolution to convert self-describing file format's data to the schema desired by the reader."),
 
-    HIVE_ACID_TABLE_SCAN("hive.acid.table.scan", false,
-        "internal usage only -- do transaction (ACID) table scan.", true),
+    /** Don't use this directly - use AcidUtils! */
+    HIVE_TRANSACTIONAL_TABLE_SCAN("hive.transactional.table.scan", false,
+        "internal usage only -- do transaction (ACID or insert-only) table scan.", true),
 
     HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY("hive.transactional.events.mem", 10000000,
         "Vectorized ACID readers can often load all the delete events from all the delete deltas\n"
@@ -1570,6 +1581,9 @@ public class HiveConf extends Configuration {
         "not a multiple of each other, bucketed map-side join cannot be performed, and the\n" +
         "query will fail if hive.enforce.bucketmapjoin is set to true."),
 
+    HIVE_ENFORCE_NOT_NULL_CONSTRAINT("hive.constraint.notnull.enforce", true,
+        "Should \"IS NOT NULL \" constraint be enforced?"),
+
     HIVE_AUTO_SORTMERGE_JOIN("hive.auto.convert.sortmerge.join", false,
         "Will the join be automatically converted to a sort-merge join, if the joined tables pass the criteria for sort-merge join."),
     HIVE_AUTO_SORTMERGE_JOIN_REDUCE("hive.auto.convert.sortmerge.join.reduce.side", true,
@@ -1602,10 +1616,8 @@ public class HiveConf extends Configuration {
         "Whether to provide the row offset virtual column"),
 
     // Optimizer
-    HIVEOPTINDEXFILTER("hive.optimize.index.filter", false,
-        "Whether to enable automatic use of indexes"),
-    HIVEINDEXAUTOUPDATE("hive.optimize.index.autoupdate", false,
-        "Whether to update stale indexes automatically"),
+    HIVEOPTINDEXFILTER("hive.optimize.index.filter", false, "Whether to enable automatic use of indexes"),
+
     HIVEOPTPPD("hive.optimize.ppd", true,
         "Whether to enable predicate pushdown"),
     HIVEOPTPPD_WINDOWING("hive.optimize.ppd.windowing", true,
@@ -1742,18 +1754,6 @@ public class HiveConf extends Configuration {
     HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", -1,
         "If the number of references to a CTE clause exceeds this threshold, Hive will materialize it\n" +
         "before executing the main query block. -1 will disable this feature."),
-
-    // Indexes
-    HIVEOPTINDEXFILTER_COMPACT_MINSIZE("hive.optimize.index.filter.compact.minsize", (long) 5 * 1024 * 1024 * 1024,
-        "Minimum size (in bytes) of the inputs on which a compact index is automatically used."), // 5G
-    HIVEOPTINDEXFILTER_COMPACT_MAXSIZE("hive.optimize.index.filter.compact.maxsize", (long) -1,
-        "Maximum size (in bytes) of the inputs on which a compact index is automatically used.  A negative number is equivalent to infinity."), // infinity
-    HIVE_INDEX_COMPACT_QUERY_MAX_ENTRIES("hive.index.compact.query.max.entries", (long) 10000000,
-        "The maximum number of index entries to read during a query that uses the compact index. Negative value is equivalent to infinity."), // 10M
-    HIVE_INDEX_COMPACT_QUERY_MAX_SIZE("hive.index.compact.query.max.size", (long) 10 * 1024 * 1024 * 1024,
-        "The maximum number of bytes that a query using the compact index can read. Negative value is equivalent to infinity."), // 10G
-    HIVE_INDEX_COMPACT_BINARY_SEARCH("hive.index.compact.binary.search", true,
-        "Whether or not to use a binary search to find the entries in an index table that match the filter, where possible"),
 
     // Statistics
     HIVE_STATS_ESTIMATE_STATS("hive.stats.estimate", true,
@@ -2109,6 +2109,9 @@ public class HiveConf extends Configuration {
             "Wait time in ms default to 30 seconds."
     ),
     HIVE_DRUID_BITMAP_FACTORY_TYPE("hive.druid.bitmap.type", "roaring", new PatternSet("roaring", "concise"), "Coding algorithm use to encode the bitmaps"),
+    HIVE_DRUID_APPROX_RESULT("hive.druid.approx.result", false,
+        "Whether to allow approximate results from druid. \n" +
+        "When set to true decimals will be stored as double and druid is allowed to return approximate results for decimal columns."),
     // For HBase storage handler
     HIVE_HBASE_WAL_ENABLED("hive.hbase.wal.enabled", true,
         "Whether writes to HBase should be forced to the write-ahead log. \n" +
@@ -2121,9 +2124,6 @@ public class HiveConf extends Configuration {
 
     // For har files
     HIVEARCHIVEENABLED("hive.archive.enabled", false, "Whether archiving operations are permitted"),
-
-    HIVEOPTGBYUSINGINDEX("hive.optimize.index.groupby", false,
-        "Whether to enable optimization of group-by queries using Aggregate indexes."),
 
     HIVEFETCHTASKCONVERSION("hive.fetch.task.conversion", "more", new StringSet("none", "minimal", "more"),
         "Some select queries can be converted to single FETCH task minimizing latency.\n" +
@@ -2248,12 +2248,6 @@ public class HiveConf extends Configuration {
     HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false,
         "Whether to throw an exception if dynamic partition insert generates empty results."),
 
-    HIVE_INDEX_COMPACT_FILE("hive.index.compact.file", "", "internal variable"),
-    HIVE_INDEX_BLOCKFILTER_FILE("hive.index.blockfilter.file", "", "internal variable"),
-    HIVE_INDEX_IGNORE_HDFS_LOC("hive.index.compact.file.ignore.hdfs", false,
-        "When true the HDFS location stored in the index file will be ignored at runtime.\n" +
-        "If the data got moved or the name of the cluster got changed, the index data should still be usable."),
-
     HIVE_EXIM_URI_SCHEME_WL("hive.exim.uri.scheme.whitelist", "hdfs,pfile,file,s3,s3a",
         "A comma separated list of acceptable URI schemes for import and export."),
     // temporary variable for testing. This is added just to turn off this feature in case of a bug in
@@ -2272,12 +2266,6 @@ public class HiveConf extends Configuration {
     HIVE_REWORK_MAPREDWORK("hive.rework.mapredwork", false,
         "should rework the mapred work or not.\n" +
         "This is first introduced by SymlinkTextInputFormat to replace symlink files with real paths at compile time."),
-    HIVE_CONCATENATE_CHECK_INDEX ("hive.exec.concatenate.check.index", true,
-        "If this is set to true, Hive will throw error when doing\n" +
-        "'alter table tbl_name [partSpec] concatenate' on a table/partition\n" +
-        "that has indexes on it. The reason the user want to set this to true\n" +
-        "is because it can help user to avoid handling all index drop, recreation,\n" +
-        "rebuild work. This is very helpful for tables with thousands of partitions."),
     HIVE_IO_EXCEPTION_HANDLERS("hive.io.exception.handlers", "",
         "A list of io exception handler class names. This is used\n" +
         "to construct a list exception handlers to handle exceptions thrown\n" +
@@ -3056,7 +3044,7 @@ public class HiveConf extends Configuration {
         "hive.tez.bucket.pruning", false,
          "When pruning is enabled, filters on bucket columns will be processed by \n" +
          "filtering the splits against a bitset of included buckets. This needs predicates \n"+
-         "produced by hive.optimize.ppd and hive.optimize.index.filters."),
+            "produced by hive.optimize.ppd and hive.optimize.index.filters."),
     TEZ_OPTIMIZE_BUCKET_PRUNING_COMPAT(
         "hive.tez.bucket.pruning.compat", true,
         "When pruning is enabled, handle possibly broken inserts due to negative hashcodes.\n" +
@@ -3111,6 +3099,8 @@ public class HiveConf extends Configuration {
         true,
         "Allows hive server 2 to send progress bar update information. This is currently available"
             + " only if the execution engine is tez."),
+    TEZ_DAG_STATUS_CHECK_INTERVAL("hive.tez.dag.status.check.interval", "500ms",
+      new TimeValidator(TimeUnit.MILLISECONDS), "Interval between subsequent DAG status invocation."),
     SPARK_EXEC_INPLACE_PROGRESS("hive.spark.exec.inplace.progress", true,
         "Updates spark job execution progress in-place in the terminal."),
     TEZ_CONTAINER_MAX_JAVA_HEAP_FRACTION("hive.tez.container.max.java.heap.fraction", 0.8f,
@@ -3523,7 +3513,7 @@ public class HiveConf extends Configuration {
             Constants.LLAP_LOGGER_NAME_CONSOLE),
         "logger used for llap-daemons."),
 
-    HIVE_TRIGGER_VALIDATION_INTERVAL_MS("hive.trigger.validation.interval.ms", "500ms",
+    HIVE_TRIGGER_VALIDATION_INTERVAL("hive.trigger.validation.interval", "500ms",
       new TimeValidator(TimeUnit.MILLISECONDS),
       "Interval for validating triggers during execution of a query. Triggers defined in resource plan will get\n" +
         "validated for all SQL operations after every defined interval (default: 500ms) and corresponding action\n" +
@@ -3691,6 +3681,27 @@ public class HiveConf extends Configuration {
 
     HIVE_EXEC_INPUT_LISTING_MAX_THREADS("hive.exec.input.listing.max.threads", 0, new  SizeValidator(0L, true, 1024L, true),
         "Maximum number of threads that Hive uses to list file information from file systems (recommended > 1 for blobstore)."),
+
+    HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
+        "If the query results cache is enabled. This will keep results of previously executed queries " +
+        "to be reused if the same query is executed again."),
+
+    HIVE_QUERY_RESULTS_CACHE_DIRECTORY("hive.query.results.cache.directory",
+        "/tmp/hive/_resultscache_",
+        "Location of the query results cache directory. Temporary results from queries " +
+        "will be moved to this location."),
+
+    HIVE_QUERY_RESULTS_CACHE_MAX_ENTRY_LIFETIME("hive.query.results.cache.max.entry.lifetime", "3600s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Maximum lifetime in seconds for an entry in the query results cache. A nonpositive value means infinite."),
+
+    HIVE_QUERY_RESULTS_CACHE_MAX_SIZE("hive.query.results.cache.max.size",
+        (long) 2 * 1024 * 1024 * 1024,
+        "Maximum total size in bytes that the query results cache directory is allowed to use on the filesystem."),
+
+    HIVE_QUERY_RESULTS_CACHE_MAX_ENTRY_SIZE("hive.query.results.cache.max.entry.size",
+        (long) 10 * 1024 * 1024,
+        "Maximum size in bytes that a single query result is allowed to use in the results cache directory"),
 
     /* BLOBSTORE section */
 
@@ -4576,7 +4587,6 @@ public class HiveConf extends Configuration {
     ConfVars.HIVE_CHECK_CROSS_PRODUCT.varname,
     ConfVars.HIVE_CLI_TEZ_SESSION_ASYNC.varname,
     ConfVars.HIVE_COMPAT.varname,
-    ConfVars.HIVE_CONCATENATE_CHECK_INDEX.varname,
     ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY.varname,
     ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION.varname,
     ConfVars.HIVE_EXECUTION_ENGINE.varname,
@@ -4965,10 +4975,10 @@ public class HiveConf extends Configuration {
   public static class StrictChecks {
 
     private static final String NO_LIMIT_MSG = makeMessage(
-        "Order by-s without limit", ConfVars.HIVE_STRICT_CHECKS_LARGE_QUERY);
+        "Order by-s without limit", ConfVars.HIVE_STRICT_CHECKS_ORDERBY_NO_LIMIT);
     public static final String NO_PARTITIONLESS_MSG = makeMessage(
         "Queries against partitioned tables without a partition filter",
-        ConfVars.HIVE_STRICT_CHECKS_LARGE_QUERY);
+        ConfVars.HIVE_STRICT_CHECKS_NO_PARTITION_FILTER);
     private static final String NO_COMPARES_MSG = makeMessage(
         "Unsafe compares between different types", ConfVars.HIVE_STRICT_CHECKS_TYPE_SAFETY);
     private static final String NO_CARTESIAN_MSG = makeMessage(
@@ -4978,17 +4988,17 @@ public class HiveConf extends Configuration {
 
     private static String makeMessage(String what, ConfVars setting) {
       return what + " are disabled for safety reasons. If you know what you are doing, please set "
-          + setting.varname + " to false and that " + ConfVars.HIVEMAPREDMODE.varname + " is not"
-          + " set to 'strict' to proceed. Note that if you may get errors or incorrect results if"
-          + " you make a mistake while using some of the unsafe features.";
+          + setting.varname + " to false and make sure that " + ConfVars.HIVEMAPREDMODE.varname +
+              " is not set to 'strict' to proceed. Note that you may get errors or incorrect " +
+              "results if you make a mistake while using some of the unsafe features.";
     }
 
     public static String checkNoLimit(Configuration conf) {
-      return isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_LARGE_QUERY) ? null : NO_LIMIT_MSG;
+      return isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_ORDERBY_NO_LIMIT) ? null : NO_LIMIT_MSG;
     }
 
     public static String checkNoPartitionFilter(Configuration conf) {
-      return isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_LARGE_QUERY)
+      return isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_NO_PARTITION_FILTER)
           ? null : NO_PARTITIONLESS_MSG;
     }
 

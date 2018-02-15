@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
@@ -41,15 +42,13 @@ public interface IDriver extends CommandProcessor {
 
   void setOperationId(String guid64);
 
-  void setTryCount(int maxValue);
-
-  CommandProcessorResponse run() throws CommandNeedRetryException;
+  CommandProcessorResponse run();
   @Override
-  CommandProcessorResponse run(String command) throws CommandNeedRetryException;
+  CommandProcessorResponse run(String command);
 
 
   // create some "cover" to the result?
-  boolean getResults(List res) throws IOException, CommandNeedRetryException;
+  boolean getResults(List res) throws IOException;
 
   void setMaxRows(int maxRows);
 
@@ -62,8 +61,9 @@ public interface IDriver extends CommandProcessor {
   void resetFetch() throws IOException;
 
   // close&destroy is used in seq coupling most of the time - the difference is either not clear; or not relevant - remove?
-  int close();
+  @Override
+  void close();
   void destroy();
 
-  void resetQueryState();
+  HiveConf getConf();
 }

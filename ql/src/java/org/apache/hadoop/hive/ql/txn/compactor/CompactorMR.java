@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.AcidOperationalProperties;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
@@ -146,7 +147,7 @@ public class CompactorMR {
     job.setBoolean("mapreduce.map.speculative", false);
 
     // Set appropriate Acid readers/writers based on the table properties.
-    AcidUtils.setAcidOperationalProperties(job,
+    AcidUtils.setAcidOperationalProperties(job, true,
             AcidUtils.getAcidOperationalProperties(t.getParameters()));
 
     return job;
@@ -356,6 +357,7 @@ public class CompactorMR {
    * to use.
    * @param job the job to update
    * @param cols the columns of the table
+   * @param map 
    */
   private void setColumnTypes(JobConf job, List<FieldSchema> cols) {
     StringBuilder colNames = new StringBuilder();
@@ -373,7 +375,6 @@ public class CompactorMR {
     }
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, colNames.toString());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, colTypes.toString());
-    HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_ACID_TABLE_SCAN, true);
     HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
   }
 
@@ -933,16 +934,25 @@ public class CompactorMR {
         LOG.info(context.getJobID() + ": " + tmpLocation +
             " not found.  Assuming 0 splits.  Creating " + newDeltaDir);
         fs.mkdirs(newDeltaDir);
+        createCompactorMarker(conf, newDeltaDir, fs);
         return;
       }
       FileStatus[] contents = fs.listStatus(tmpLocation);//expect 1 base or delta dir in this list
       //we have MIN_TXN, MAX_TXN and IS_MAJOR in JobConf so we could figure out exactly what the dir
       //name is that we want to rename; leave it for another day
       for (FileStatus fileStatus : contents) {
+        //newPath is the base/delta dir
         Path newPath = new Path(finalLocation, fileStatus.getPath().getName());
         fs.rename(fileStatus.getPath(), newPath);
+        createCompactorMarker(conf, newPath, fs);
       }
       fs.delete(tmpLocation, true);
+    }
+    private void createCompactorMarker(JobConf conf, Path finalLocation, FileSystem fs)
+        throws IOException {
+      if(conf.getBoolean(IS_MAJOR, false)) {
+        AcidUtils.MetaDataFile.createCompactorMarker(finalLocation, fs);
+      }
     }
 
     @Override

@@ -1067,12 +1067,20 @@ public class AcidUtils {
    * snapshot for this reader.
    * Note that such base is NOT obsolete.  Obsolete files are those that are "covered" by other
    * files within the snapshot.
+   * A base produced by Insert Overwrite is different.  Logically it's a delta file but one that
+   * causes anything written previously is ignored (hence the overwrite).  In this case, base_x
+   * is visible if txnid:x is committed for current reader.
    */
-  private static boolean isValidBase(long baseTxnId, ValidTxnList txnList) {
+  private static boolean isValidBase(long baseTxnId, ValidTxnList txnList, Path baseDir,
+      FileSystem fs) throws IOException {
     if(baseTxnId == Long.MIN_VALUE) {
       //such base is created by 1st compaction in case of non-acid to acid table conversion
       //By definition there are no open txns with id < 1.
       return true;
+    }
+    if(!MetaDataFile.isCompacted(baseDir, fs)) {
+      //this is the IOW case
+      return txnList.isTxnValid(baseTxnId);
     }
     return txnList.isValidBase(baseTxnId);
   }
@@ -1091,12 +1099,12 @@ public class AcidUtils {
         bestBase.oldestBaseTxnId = txn;
       }
       if (bestBase.status == null) {
-        if(isValidBase(txn, txnList)) {
+        if(isValidBase(txn, txnList, p, fs)) {
           bestBase.status = child;
           bestBase.txn = txn;
         }
       } else if (bestBase.txn < txn) {
-        if(isValidBase(txn, txnList)) {
+        if(isValidBase(txn, txnList, p, fs)) {
           obsolete.add(bestBase.status);
           bestBase.status = child;
           bestBase.txn = txn;
@@ -1224,19 +1232,8 @@ public class AcidUtils {
     }
     return resultStr != null && resultStr.equalsIgnoreCase("true");
   }
-  /**
-   * Means it's a full acid table
-   */
-  public static void setAcidTableScan(Map<String, String> parameters, boolean isAcidTable) {
-    parameters.put(ConfVars.HIVE_ACID_TABLE_SCAN.varname, Boolean.toString(isAcidTable));
-  }
 
-  /**
-   * Means it's a full acid table
-   */
-  public static void setAcidTableScan(Configuration conf, boolean isFullAcidTable) {
-    HiveConf.setBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, isFullAcidTable);
-  }
+
   /**
    * @param p - not null
    */
@@ -1244,21 +1241,6 @@ public class AcidUtils {
     return p.getName().startsWith(DELETE_DELTA_PREFIX);
   }
 
-  /**
-   * Should produce the same result as
-   * {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#isTransactionalTable(org.apache.hadoop.hive.metastore.api.Table)}
-   */
-  public static boolean isTransactionalTable(Table table) {
-    if (table == null) {
-      return false;
-    }
-    String tableIsTransactional = table.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    if (tableIsTransactional == null) {
-      tableIsTransactional = table.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
-    }
-
-    return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
-  }
   public static boolean isTransactionalTable(CreateTableDesc table) {
     if (table == null || table.getTblProps() == null) {
       return false;
@@ -1274,20 +1256,29 @@ public class AcidUtils {
    * Should produce the same result as
    * {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#isAcidTable(org.apache.hadoop.hive.metastore.api.Table)}
    */
-  public static boolean isAcidTable(Table table) {
-    return isAcidTable(table == null ? null : table.getTTable());
+  public static boolean isFullAcidTable(Table table) {
+    return isFullAcidTable(table == null ? null : table.getTTable());
   }
+
+  public static boolean isTransactionalTable(Table table) {
+    return isTransactionalTable(table == null ? null : table.getTTable());
+  }
+
   /**
    * Should produce the same result as
    * {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#isAcidTable(org.apache.hadoop.hive.metastore.api.Table)}
    */
-  public static boolean isAcidTable(org.apache.hadoop.hive.metastore.api.Table table) {
-    return table != null && table.getParameters() != null &&
-        isTablePropertyTransactional(table.getParameters()) &&
+  public static boolean isFullAcidTable(org.apache.hadoop.hive.metastore.api.Table table) {
+    return isTransactionalTable(table) &&
         !isInsertOnlyTable(table.getParameters());
   }
 
-  public static boolean isAcidTable(CreateTableDesc td) {
+  public static boolean isTransactionalTable(org.apache.hadoop.hive.metastore.api.Table table) {
+    return table != null && table.getParameters() != null &&
+        isTablePropertyTransactional(table.getParameters());
+  }
+
+  public static boolean isFullAcidTable(CreateTableDesc td) {
     if (td == null || td.getTblProps() == null) {
       return false;
     }
@@ -1298,17 +1289,31 @@ public class AcidUtils {
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true") &&
       !AcidUtils.isInsertOnlyTable(td.getTblProps());
   }
-  
+
+  public static boolean isFullAcidScan(Configuration conf) {
+    if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN)) return false;
+    int propInt = conf.getInt(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname, -1);
+    if (propInt == -1) return true;
+    AcidOperationalProperties props = AcidOperationalProperties.parseInt(propInt);
+    return !props.isInsertOnly();
+  }
 
   /**
    * Sets the acidOperationalProperties in the configuration object argument.
    * @param conf Mutable configuration object
-   * @param properties An acidOperationalProperties object to initialize from.
+   * @param properties An acidOperationalProperties object to initialize from. If this is null,
+   *                   we assume this is a full transactional table.
    */
-  public static void setAcidOperationalProperties(Configuration conf,
-          AcidOperationalProperties properties) {
-    if (properties != null) {
-      HiveConf.setIntVar(conf, ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES, properties.toInt());
+  public static void setAcidOperationalProperties(
+      Configuration conf, boolean isTxnTable, AcidOperationalProperties properties) {
+    if (isTxnTable) {
+      HiveConf.setBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, isTxnTable);
+      if (properties != null) {
+        HiveConf.setIntVar(conf, ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES, properties.toInt());
+      }
+    } else {
+      conf.unset(ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN.varname);
+      conf.unset(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname);
     }
   }
 
@@ -1317,8 +1322,9 @@ public class AcidUtils {
    * @param parameters Mutable map object
    * @param properties An acidOperationalProperties object to initialize from.
    */
-  public static void setAcidOperationalProperties(
-          Map<String, String> parameters, AcidOperationalProperties properties) {
+  public static void setAcidOperationalProperties(Map<String, String> parameters,
+      boolean isTxnTable, AcidOperationalProperties properties) {
+    parameters.put(ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN.varname, Boolean.toString(isTxnTable));
     if (properties != null) {
       parameters.put(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname, properties.toString());
     }
@@ -1484,6 +1490,8 @@ public class AcidUtils {
   }
 
   /**
+   * General facility to place a metadta file into a dir created by acid/compactor write.
+   *
    * Load Data commands against Acid tables write {@link AcidBaseFileType#ORIGINAL_BASE} type files
    * into delta_x_x/ (or base_x in case there is Overwrite clause).  {@link MetaDataFile} is a
    * small JSON file in this directory that indicates that these files don't have Acid metadata
@@ -1499,17 +1507,14 @@ public class AcidUtils {
       String DATA_FORMAT = "dataFormat";
     }
     private interface Value {
-      //plain ORC file
-      String RAW = "raw";
-      //result of acid write, i.e. decorated with ROW__ID info
-      String NATIVE = "native";
+      //written by Major compaction
+      String COMPACTED = "compacted";
     }
 
     /**
      * @param baseOrDeltaDir detla or base dir, must exist
      */
-    public static void createMetaFile(Path baseOrDeltaDir, FileSystem fs, boolean isRawFormat)
-      throws IOException {
+    public static void createCompactorMarker(Path baseOrDeltaDir, FileSystem fs) throws IOException {
       /**
        * create _meta_data json file in baseOrDeltaDir
        * write thisFileVersion, dataFormat
@@ -1519,7 +1524,7 @@ public class AcidUtils {
       Path formatFile = new Path(baseOrDeltaDir, METADATA_FILE);
       Map<String, String> metaData = new HashMap<>();
       metaData.put(Field.VERSION, CURRENT_VERSION);
-      metaData.put(Field.DATA_FORMAT, isRawFormat ? Value.RAW : Value.NATIVE);
+      metaData.put(Field.DATA_FORMAT, Value.COMPACTED);
       try (FSDataOutputStream strm = fs.create(formatFile, false)) {
         new ObjectMapper().writeValue(strm, metaData);
       } catch (IOException ioe) {
@@ -1529,8 +1534,7 @@ public class AcidUtils {
         throw ioe;
       }
     }
-    //should be useful for import/export
-    public static boolean isImport(Path baseOrDeltaDir, FileSystem fs) throws IOException {
+    static boolean isCompacted(Path baseOrDeltaDir, FileSystem fs) throws IOException {
       Path formatFile = new Path(baseOrDeltaDir, METADATA_FILE);
       if(!fs.exists(formatFile)) {
         return false;
@@ -1543,9 +1547,7 @@ public class AcidUtils {
         }
         String dataFormat = metaData.getOrDefault(Field.DATA_FORMAT, "null");
         switch (dataFormat) {
-          case Value.NATIVE:
-            return false;
-          case Value.RAW:
+          case Value.COMPACTED:
             return true;
           default:
             throw new IllegalArgumentException("Unexpected value for " + Field.DATA_FORMAT

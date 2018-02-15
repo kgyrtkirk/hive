@@ -30,8 +30,8 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
@@ -238,7 +238,7 @@ public class Worker extends CompactorThread {
     private final HiveConf conf;
     private final String userName;
     private final CompactionInfo ci;
-      
+
     private StatsUpdater(CompactionInfo ci, List<String> columnListForStats,
                          HiveConf conf, String userName) {
       this.conf = conf;
@@ -288,7 +288,7 @@ public class Worker extends CompactorThread {
       }
       sb.setLength(sb.length() - 1); //remove trailing ,
       LOG.info("running '" + sb.toString() + "'");
-      Driver d = new Driver(conf, userName);
+      Driver d = new Driver(new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build(), userName);
       SessionState localSession = null;
       if(SessionState.get() == null) {
          localSession = SessionState.start(new SessionState(conf));
@@ -299,10 +299,6 @@ public class Worker extends CompactorThread {
           throw new IOException("Could not update stats for table " + ci.getFullTableName() +
             (ci.partName == null ? "" : "/" + ci.partName) + " due to: " + cpr);
         }
-      }
-      catch(CommandNeedRetryException cnre) {
-        throw new IOException("Could not update stats for table " + ci.getFullTableName() +
-          (ci.partName == null ? "" : "/" + ci.partName) + " due to: " + cnre.getMessage());
       }
       finally {
         if(localSession != null) {

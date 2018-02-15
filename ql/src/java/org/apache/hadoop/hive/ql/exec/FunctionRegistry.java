@@ -215,6 +215,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("abs", GenericUDFAbs.class);
     system.registerGenericUDF("json_read", GenericUDFJsonRead.class);
     system.registerGenericUDF("sq_count_check", GenericUDFSQCountCheck.class);
+    system.registerGenericUDF("enforce_constraint", GenericUDFEnforceNotNullConstraint.class);
     system.registerGenericUDF("pmod", GenericUDFPosMod.class);
 
     system.registerUDF("ln", UDFLn.class, false);
@@ -383,10 +384,6 @@ public final class FunctionRegistry {
     system.registerGenericUDF("between", GenericUDFBetween.class);
     system.registerGenericUDF("in_bloom_filter", GenericUDFInBloomFilter.class);
 
-    system.registerGenericUDF("ewah_bitmap_and", GenericUDFEWAHBitmapAnd.class);
-    system.registerGenericUDF("ewah_bitmap_or", GenericUDFEWAHBitmapOr.class);
-    system.registerGenericUDF("ewah_bitmap_empty", GenericUDFEWAHBitmapEmpty.class);
-
     // Utility UDFs
     system.registerUDF("version", UDFVersion.class, false);
 
@@ -446,8 +443,6 @@ public final class FunctionRegistry {
 
     system.registerGenericUDAF("ngrams", new GenericUDAFnGrams());
     system.registerGenericUDAF("context_ngrams", new GenericUDAFContextNGrams());
-
-    system.registerGenericUDAF("ewah_bitmap", new GenericUDAFEWAHBitmap());
 
     system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());

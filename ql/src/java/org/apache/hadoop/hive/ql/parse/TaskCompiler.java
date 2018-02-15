@@ -47,8 +47,6 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
-import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
@@ -72,7 +70,6 @@ import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -223,21 +220,6 @@ public abstract class TaskCompiler {
             .get(new MoveWork(null, null, ltd, null, false),
                 conf);
         mvTask.add(tsk);
-        // Check to see if we are stale'ing any indexes and auto-update them if we want
-        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEINDEXAUTOUPDATE)) {
-          IndexUpdater indexUpdater = new IndexUpdater(loadTableWork, inputs, conf,
-              queryState.getLineageState());
-          try {
-            List<Task<? extends Serializable>> indexUpdateTasks = indexUpdater
-                .generateUpdateTasks();
-            for (Task<? extends Serializable> updateTask : indexUpdateTasks) {
-              tsk.addDependentTask(updateTask);
-            }
-          } catch (HiveException e) {
-            console
-                .printInfo("WARNING: could not auto-update stale indexes, which are not in sync");
-          }
-        }
       }
 
       boolean oneLoadFileForCtas = true;
@@ -362,14 +344,6 @@ public abstract class TaskCompiler {
     if (globalLimitCtx.isEnable() && globalLimitCtx.getLastReduceLimitDesc() != null) {
       LOG.info("set least row check for LimitDesc: " + globalLimitCtx.getGlobalLimit());
       globalLimitCtx.getLastReduceLimitDesc().setLeastRows(globalLimitCtx.getGlobalLimit());
-      List<ExecDriver> mrTasks = Utilities.getMRTasks(rootTasks);
-      for (ExecDriver tsk : mrTasks) {
-        tsk.setRetryCmdWhenFail(true);
-      }
-      List<SparkTask> sparkTasks = Utilities.getSparkTasks(rootTasks);
-      for (SparkTask sparkTask : sparkTasks) {
-        sparkTask.setRetryCmdWhenFail(true);
-      }
     }
 
     Interner<TableDesc> interner = Interners.newStrongInterner();

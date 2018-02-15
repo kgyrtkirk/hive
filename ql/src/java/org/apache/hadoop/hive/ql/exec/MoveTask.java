@@ -294,8 +294,13 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             //'sourcePath' result of 'select ...' part of CTAS statement
             assert lfd.getIsDfsDir();
             FileSystem srcFs = sourcePath.getFileSystem(conf);
-            List<Path> newFiles = new ArrayList<>();
-            Hive.moveAcidFiles(srcFs, srcFs.globStatus(sourcePath), targetPath, newFiles);
+            FileStatus[] srcs = srcFs.globStatus(sourcePath);
+            if(srcs != null) {
+              List<Path> newFiles = new ArrayList<>();
+              Hive.moveAcidFiles(srcFs, srcs, targetPath, newFiles);
+            } else {
+              LOG.debug("No files found to move from " + sourcePath + " to " + targetPath);
+            }
           }
           else {
             moveFile(sourcePath, targetPath, lfd.getIsDfsDir());
@@ -346,22 +351,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       // Next we do this for tables and partitions
       LoadTableDesc tbd = work.getLoadTableWork();
       if (tbd != null) {
-        StringBuilder mesg = new StringBuilder("Loading data to table ")
-            .append( tbd.getTable().getTableName());
-        if (tbd.getPartitionSpec().size() > 0) {
-          mesg.append(" partition (");
-          Map<String, String> partSpec = tbd.getPartitionSpec();
-          for (String key: partSpec.keySet()) {
-            mesg.append(key).append('=').append(partSpec.get(key)).append(", ");
-          }
-          mesg.setLength(mesg.length()-2);
-          mesg.append(')');
-        }
-        String mesg_detail = " from " + tbd.getSourcePath();
-        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-          Utilities.FILE_OP_LOGGER.trace(mesg.toString() + " " + mesg_detail);
-        }
-        console.printInfo(mesg.toString(), mesg_detail);
+        logMessage(tbd);
         Table table = db.getTable(tbd.getTable().getTableName());
 
         checkFileFormats(db, tbd, table);
@@ -445,6 +435,25 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       setException(e);
       return (1);
     }
+  }
+
+  public void logMessage(LoadTableDesc tbd) {
+    StringBuilder mesg = new StringBuilder("Loading data to table ")
+        .append( tbd.getTable().getTableName());
+    if (tbd.getPartitionSpec().size() > 0) {
+      mesg.append(" partition (");
+      Map<String, String> partSpec = tbd.getPartitionSpec();
+      for (String key: partSpec.keySet()) {
+        mesg.append(key).append('=').append(partSpec.get(key)).append(", ");
+      }
+      mesg.setLength(mesg.length()-2);
+      mesg.append(')');
+    }
+    String mesg_detail = " from " + tbd.getSourcePath();
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace(mesg.toString() + " " + mesg_detail);
+    }
+    console.printInfo(mesg.toString(), mesg_detail);
   }
 
   private DataContainer handleStaticParts(Hive db, Table table, LoadTableDesc tbd,
