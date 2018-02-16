@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.collections.Bag;
+import org.apache.commons.collections.bag.TreeBag;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -244,16 +246,12 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
       if ((oiTypeInfo0.equals(TypeInfoFactory.stringTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) ||
           (oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.stringTypeInfo))) {
         String error = StrictChecks.checkTypeSafety(conf);
-        if (error != null) {
-          throw new UDFArgumentException(error);
-        }
+        if (error != null) throw new UDFArgumentException(error);
         console.printError("WARNING: Comparing a bigint and a string may result in a loss of precision.");
       } else if ((oiTypeInfo0.equals(TypeInfoFactory.doubleTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) ||
           (oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.doubleTypeInfo))) {
         String error = StrictChecks.checkTypeSafety(conf);
-        if (error != null) {
-          throw new UDFArgumentException(error);
-        }
+        if (error != null) throw new UDFArgumentException(error);
         console.printError("WARNING: Comparing a bigint and a double may result in a loss of precision.");
       }
     }
@@ -337,8 +335,12 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
   }
 
   @Override
-  protected void hashCode0(HashCodeBuilder builder) {
+  public int hashCode() {
+    int superHashCode = super.hashCode();
+    HashCodeBuilder builder = new HashCodeBuilder();
+    builder.appendSuper(superHashCode);
     builder.append(chidren);
+    return builder.toHashCode();
   }
 
   public boolean isSortedExpr() {

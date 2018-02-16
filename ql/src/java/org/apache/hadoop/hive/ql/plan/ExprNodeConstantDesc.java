@@ -146,9 +146,8 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
     return new ExprNodeConstantDesc(typeInfo, value);
   }
 
-
   @Override
-  protected boolean equals0(Object o) {
+  public boolean isSame(Object o) {
     if (!(o instanceof ExprNodeConstantDesc)) {
       return false;
     }
@@ -163,11 +162,16 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
     } else if (!value.equals(dest.getValue())) {
       return false;
     }
+
     return true;
   }
 
   @Override
-  protected void hashCode0(HashCodeBuilder builder) {
+  public int hashCode() {
+    int superHashCode = super.hashCode();
+    HashCodeBuilder builder = new HashCodeBuilder();
+    builder.appendSuper(superHashCode);
     builder.append(value);
+    return builder.toHashCode();
   }
 }

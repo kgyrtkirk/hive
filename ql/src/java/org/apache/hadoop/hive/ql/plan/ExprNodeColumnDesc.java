@@ -200,8 +200,12 @@ public class ExprNodeColumnDesc extends ExprNodeDesc implements Serializable {
   }
 
   @Override
-  protected void hashCode0(HashCodeBuilder builder) {
+  public int hashCode() {
+    int superHashCode = super.hashCode();
+    HashCodeBuilder builder = new HashCodeBuilder();
+    builder.appendSuper(superHashCode);
     builder.append(column);
     builder.append(tabAlias);
+    return builder.toHashCode();
   }
 }

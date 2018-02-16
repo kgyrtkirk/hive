@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -57,25 +56,17 @@ public abstract class ExprNodeDesc implements Serializable, Node {
   public abstract boolean isSame(Object o);
 
   @Override
-  public final int hashCode() {
-    HashCodeBuilder hb = new HashCodeBuilder();
-    hb.append(typeInfo);
-    hashCode0(hb);
-    return hb.toHashCode();
+  public int hashCode() {
+    return typeInfo.hashCode();
   }
-
-  /**
-   * Make it mandatory to implement hashcode.
-   * @param hb
-   */
-  protected abstract void hashCode0(HashCodeBuilder builder);
 
   @Override
   public final boolean equals(Object o) {
-    return (o != null) && ((o == this) || equals0(o));
+    // prevent equals from being overridden in sub-classes
+    // always use ExprNodeDescEqualityWrapper
+    // if you need any other equality than Object.equals()
+    return (o == this);
   }
-
-  protected abstract boolean equals0(Object o);
 
   public TypeInfo getTypeInfo() {
     return typeInfo;
@@ -127,7 +118,7 @@ public abstract class ExprNodeDesc implements Serializable, Node {
   public final static class ExprNodeDescEqualityWrapper {
     private final ExprNodeDesc exprNodeDesc;
     // beware of any implementation whose hashcode is mutable by reference
-    // inserting into a Map and then changing the hashcode can make it
+    // inserting into a Map and then changing the hashcode can make it 
     // disappear out of the Map during lookups
     private final int hashcode;
 
