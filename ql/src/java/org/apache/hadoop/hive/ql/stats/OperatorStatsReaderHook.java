@@ -53,7 +53,7 @@ public class OperatorStatsReaderHook implements ExecuteWithHookContext {
       List<BaseWork> baseWorks = tezTask.getWork().getAllWork();
       for (BaseWork baseWork : baseWorks) {
         String vertexName = baseWork.getName();
-        LOG.info("Reading runtime statistics for tez vertex task: {}", vertexName);
+        LOG.debug("Reading runtime statistics for tez vertex task: {}", vertexName);
         TezCounters counters = tezTask.getTezCounters();
         if (counters != null) {
           String groupName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP);
@@ -72,7 +72,8 @@ public class OperatorStatsReaderHook implements ExecuteWithHookContext {
             if (operatorStats != null) {
               ((PrivateHookContext) hookContext).getContext().getPlanMapper().link(op, operatorStats);
             } else {
-              LOG.warn("Unable to get statistics for vertex: {} opId: {} groupName: {}", vertexName, operatorId, groupName);
+              LOG.debug("Unable to get statistics for vertex: {} opId: {} groupName: {}", vertexName, operatorId,
+                  groupName);
             }
           }
         }
