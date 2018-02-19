@@ -56,8 +56,6 @@ public abstract class AbstractReExecDriver implements IDriver {
     }
   }
 
-  public static boolean D1 = true;
-
   private boolean explainReOptimization;
 
   private class HandleReOptimizationExplain implements HiveSemanticAnalyzerHook {
@@ -75,12 +73,10 @@ public abstract class AbstractReExecDriver implements IDriver {
           }
         }
         if (explainReOptimization && firstExecution()) {
-          if (AbstractReExecDriver.D1) {
-            Tree execTree = ast.getChild(0);
-            execTree.setParent(ast.getParent());
-            ast.getParent().setChild(0, execTree);
-            return (ASTNode) execTree;
-          }
+          Tree execTree = ast.getChild(0);
+          execTree.setParent(ast.getParent());
+          ast.getParent().setChild(0, execTree);
+          return (ASTNode) execTree;
         }
       }
       return ast;
