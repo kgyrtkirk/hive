@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -69,7 +70,6 @@ import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
 
 /**
  * Context for Semantic Analyzers. Usage: not reusable - construct a new one for
@@ -1053,7 +1053,7 @@ public class Context {
   }
 
   public Optional<RuntimeStatsSource> getRuntimeStatsSource() {
-    return Optional.fromNullable(runtimeStatsSource);
+    return Optional.ofNullable(runtimeStatsSource);
   }
 
   public StatsSource getStatsSource() {
