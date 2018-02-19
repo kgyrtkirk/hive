@@ -42,6 +42,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import jdk.nashorn.internal.ir.annotations.Ignore;
+
 public class TestReOptimization {
 
   @ClassRule
@@ -125,6 +127,27 @@ public class TestReOptimization {
   }
 
   @Test
+  public void testReExecutedIfMapJoinError() throws ParseException {
+
+    IDriver driver = createDriver();
+    String query =
+        "select assert_true_oom(${hiveconf:zzz}>sum(1)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
+    PlanMapper pm = getMapperForQuery(driver, query);
+
+  }
+
+  @Test
+  public void testNotReExecutedIfAssertionError() throws ParseException {
+
+    IDriver driver = createDriver();
+    String query =
+        "select assert_true(0>sum(1)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
+    PlanMapper pm = getMapperForQuery(driver, query);
+
+  }
+
+  @Test
+  @Ignore
   public void testExplainSupport() throws ParseException {
     env_setup.getTestCtx().hiveConf.set("hive.query.reexecution.explain", "true");
 
