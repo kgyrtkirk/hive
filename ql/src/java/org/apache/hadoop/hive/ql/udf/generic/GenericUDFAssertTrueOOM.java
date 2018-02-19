@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.UDFType;
@@ -61,7 +62,7 @@ public class GenericUDFAssertTrueOOM extends GenericUDF {
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     BooleanWritable condition = (BooleanWritable) conditionConverter.convert(arguments[0].get());
     if (condition == null || !condition.get()) {
-      throw new OutOfMemoryError("assert_true_oom: assertation failed; Simulated OOM");
+      throw new MapJoinMemoryExhaustionError("assert_true_oom: assertation failed; Simulated OOM");
     }
     return null;
   }
