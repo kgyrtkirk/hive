@@ -89,20 +89,20 @@ Stage-0
     Stage-1
       Reducer 3 llap
       File Output Operator [FS_15]
-        Group By Operator [GBY_13] (rows=1 width=8)
+        Group By Operator [GBY_13] (runtime: rows=1 width=8)
           Output:["_col0"],aggregations:["sum(VALUE._col0)"]
         <-Reducer 2 [CUSTOM_SIMPLE_EDGE] llap
           PARTITION_ONLY_SHUFFLE [RS_12]
-            Group By Operator [GBY_11] (rows=1 width=8)
+            Group By Operator [GBY_11] (runtime: rows=1 width=8)
               Output:["_col0"],aggregations:["sum(_col0)"]
-              Select Operator [SEL_9] (rows=15 width=8)
+              Select Operator [SEL_9] (runtime: rows=3 width=8)
                 Output:["_col0"]
                 Merge Join Operator [MERGEJOIN_20] (rows=15 width=8)
                   Conds:RS_6._col0=RS_7._col0(Inner),Output:["_col0","_col1"]
                 <-Map 1 [SIMPLE_EDGE] llap
                   SHUFFLE [RS_6]
                     PartitionCols:_col0
-                    Select Operator [SEL_2] (rows=5 width=4)
+                    Select Operator [SEL_2] (runtime: rows=5 width=4)
                       Output:["_col0"]
                       Filter Operator [FIL_18] (runtime: rows=5 width=4)
                         predicate:((u < 10) and (u > 2))
@@ -111,7 +111,7 @@ Stage-0
                 <-Map 4 [SIMPLE_EDGE] llap
                   SHUFFLE [RS_7]
                     PartitionCols:_col0
-                    Select Operator [SEL_5] (rows=3 width=4)
+                    Select Operator [SEL_5] (runtime: rows=3 width=4)
                       Output:["_col0"]
                       Filter Operator [FIL_19] (runtime: rows=3 width=4)
                         predicate:((p < 10) and (p > 2))
@@ -199,7 +199,8 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_4: 1
    RAW_INPUT_SPLITS_Map_1: 1
    RAW_INPUT_SPLITS_Map_4: 1
-PREHOOK: query: select sum(u*p) from tx join px on (u=p) where u<10 and p>2
+PREHOOK: query: explain analyze
+select sum(u*p) from tx join px on (u=p) where u<10 and p>2
 PREHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -319,7 +320,8 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_3: 1
    RAW_INPUT_SPLITS_Map_1: 1
    RAW_INPUT_SPLITS_Map_3: 1
-PREHOOK: query: select sum(u*p) from tx join px on (u=p) where u<10 and p>2
+PREHOOK: query: explain analyze
+select sum(u*p) from tx join px on (u=p) where u<10 and p>2
 PREHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -365,23 +367,23 @@ PREHOOK: Input: default@px
 PREHOOK: Input: default@tx
 #### A masked pattern was here ####
 Status: Failed
-Vertex failed, vertexName=Reducer 3, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_11_02_000000_0:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
+Vertex failed, vertexName=Reducer 3, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_14_02_000000_0:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
 #### A masked pattern was here ####
-], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_11_02_000000_1:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_14_02_000000_1:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
 #### A masked pattern was here ####
-], TaskAttempt 2 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_11_02_000000_2:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
+], TaskAttempt 2 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_14_02_000000_2:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
 #### A masked pattern was here ####
-], TaskAttempt 3 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_11_02_000000_3:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
+], TaskAttempt 3 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_14_02_000000_3:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
 #### A masked pattern was here ####
 ]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 3] killed/failed due to:OWN_TASK_FAILURE]
 DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
-FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 3, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_11_02_000000_0:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 3, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_14_02_000000_0:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
 #### A masked pattern was here ####
-], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_11_02_000000_1:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_14_02_000000_1:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
 #### A masked pattern was here ####
-], TaskAttempt 2 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_11_02_000000_2:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
+], TaskAttempt 2 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_14_02_000000_2:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
 #### A masked pattern was here ####
-], TaskAttempt 3 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_11_02_000000_3:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
+], TaskAttempt 3 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_14_02_000000_3:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
 #### A masked pattern was here ####
 ]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 3] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
 PREHOOK: query: explain
@@ -405,28 +407,53 @@ Stage-0
             Output:["_col0"],aggregations:["sum(VALUE._col0)"]
           <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
             PARTITION_ONLY_SHUFFLE [RS_12]
-              Group By Operator [GBY_11] (rows=1 width=8)
+              Group By Operator [GBY_11] (runtime: rows=1 width=8)
                 Output:["_col0"],aggregations:["sum(_col0)"]
-                Select Operator [SEL_9] (rows=5 width=8)
+                Select Operator [SEL_9] (runtime: rows=3 width=8)
                   Output:["_col0"]
                   Map Join Operator [MAPJOIN_20] (rows=5 width=8)
                     Conds:SEL_2._col0=RS_7._col0(Inner),Output:["_col1","_col3"]
                   <-Map 3 [BROADCAST_EDGE] llap
                     BROADCAST [RS_7]
                       PartitionCols:_col0
-                      Select Operator [SEL_5] (rows=4 width=8)
+                      Select Operator [SEL_5] (runtime: rows=4 width=8)
                         Output:["_col0","_col1"]
                         Filter Operator [FIL_19] (runtime: rows=4 width=8)
                           predicate:((p > 2) and a is not null)
                           TableScan [TS_3] (runtime: rows=5 width=8)
                             default@px,px,Tbl:COMPLETE,Col:COMPLETE,Output:["a","p"]
-                  <-Select Operator [SEL_2] (rows=7 width=8)
+                  <-Select Operator [SEL_2] (runtime: rows=7 width=8)
                       Output:["_col0","_col1"]
                       Filter Operator [FIL_18] (runtime: rows=7 width=8)
                         predicate:((u < 10) and a is not null)
                         TableScan [TS_0] (runtime: rows=8 width=8)
                           default@tx,tx,Tbl:COMPLETE,Col:COMPLETE,Output:["a","u"]
 
+PREHOOK: query: select assert_true_oom(1 > sum(u*p)) from tx join px on (tx.a=px.a) where u<10 and p>2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@px
+PREHOOK: Input: default@tx
+#### A masked pattern was here ####
+Status: Failed
+Vertex failed, vertexName=Reducer 3, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_15_02_000000_0:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_15_02_000000_1:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
+#### A masked pattern was here ####
+], TaskAttempt 2 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_15_02_000000_2:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
+#### A masked pattern was here ####
+], TaskAttempt 3 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_15_02_000000_3:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 3] killed/failed due to:OWN_TASK_FAILURE]
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 3, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_15_02_000000_0:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_15_02_000000_1:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
+#### A masked pattern was here ####
+], TaskAttempt 2 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_15_02_000000_2:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
+#### A masked pattern was here ####
+], TaskAttempt 3 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#_0001_15_02_000000_3:java.lang.RuntimeException: java.lang.OutOfMemoryError: assert_true_oom: assertation failed; Simulated OOM
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 3] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
 PREHOOK: query: select assert_true_oom(2000 > sum(u*p)) from tx join px on (tx.a=px.a) where u<10 and p>2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@px
@@ -437,11 +464,11 @@ Stage-1 HIVE COUNTERS:
    CREATED_FILES: 1
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 8
-   RECORDS_IN_Map_2: 5
+   RECORDS_IN_Map_3: 5
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 7
-   RECORDS_OUT_INTERMEDIATE_Map_2: 1
-   RECORDS_OUT_INTERMEDIATE_Reducer_3: 0
+   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_3: 4
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
    RECORDS_OUT_OPERATOR_FIL_18: 7
    RECORDS_OUT_OPERATOR_FIL_19: 4
    RECORDS_OUT_OPERATOR_FS_15: 1
@@ -450,7 +477,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_MAPJOIN_20: 3
    RECORDS_OUT_OPERATOR_MAP_0: 0
    RECORDS_OUT_OPERATOR_RS_12: 1
-   RECORDS_OUT_OPERATOR_RS_6: 7
+   RECORDS_OUT_OPERATOR_RS_7: 4
    RECORDS_OUT_OPERATOR_SEL_14: 1
    RECORDS_OUT_OPERATOR_SEL_2: 7
    RECORDS_OUT_OPERATOR_SEL_5: 4
@@ -459,11 +486,11 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_TS_3: 5
 Stage-1 INPUT COUNTERS:
    GROUPED_INPUT_SPLITS_Map_1: 1
-   GROUPED_INPUT_SPLITS_Map_2: 1
+   GROUPED_INPUT_SPLITS_Map_3: 1
    INPUT_DIRECTORIES_Map_1: 1
-   INPUT_DIRECTORIES_Map_2: 1
+   INPUT_DIRECTORIES_Map_3: 1
    INPUT_FILES_Map_1: 1
-   INPUT_FILES_Map_2: 1
+   INPUT_FILES_Map_3: 1
    RAW_INPUT_SPLITS_Map_1: 1
-   RAW_INPUT_SPLITS_Map_2: 1
+   RAW_INPUT_SPLITS_Map_3: 1
 NULL
