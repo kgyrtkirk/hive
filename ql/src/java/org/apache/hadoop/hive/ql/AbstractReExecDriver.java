@@ -19,18 +19,23 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
+import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 
 public abstract class AbstractReExecDriver implements IDriver {
-
 
   private class ExecutionInfoHook implements ExecuteWithHookContext {
 
@@ -46,6 +51,19 @@ public abstract class AbstractReExecDriver implements IDriver {
         onExecutionFailure(hookContext);
         break;
       }
+    }
+  }
+
+  private static class HandleReOptimizationExplain implements HiveSemanticAnalyzerHook {
+
+    @Override
+    public ASTNode preAnalyze(HiveSemanticAnalyzerHookContext context, ASTNode ast) throws SemanticException {
+      return ast;
+    }
+
+    @Override
+    public void postAnalyze(HiveSemanticAnalyzerHookContext context, List<Task<? extends Serializable>> rootTasks)
+        throws SemanticException {
     }
   }
 
@@ -67,6 +85,7 @@ public abstract class AbstractReExecDriver implements IDriver {
     coreDriver = new Driver(queryState, userName, queryInfo, null);
     hookup(new ExecutionInfoHook());
     hookup(new OperatorStatsReaderHook());
+    coreDriver.getHookRunner().addSemanticAnalyzerHook(new HandleReOptimizationExplain());
   }
 
   private void hookup(ExecuteWithHookContext operatorStatsReaderHook) {
