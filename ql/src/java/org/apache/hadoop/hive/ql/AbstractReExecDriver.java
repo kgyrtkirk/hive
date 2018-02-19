@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
+import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -29,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -54,10 +56,25 @@ public abstract class AbstractReExecDriver implements IDriver {
     }
   }
 
-  private static class HandleReOptimizationExplain implements HiveSemanticAnalyzerHook {
+  private boolean explainReOptimization;
+
+  private class HandleReOptimizationExplain implements HiveSemanticAnalyzerHook {
+
 
     @Override
     public ASTNode preAnalyze(HiveSemanticAnalyzerHookContext context, ASTNode ast) throws SemanticException {
+      if (ast.getType() == HiveParser.TOK_EXPLAIN) {
+        int childCount = ast.getChildCount();
+        for (int i = 1; i < childCount; i++) {
+          if (ast.getChild(i).getType() == HiveParser.KW_REOPTIMIZATION) {
+            explainReOptimization = true;
+          }
+        }
+        if (explainReOptimization && firstExecution()) {
+          Tree execTree = ast.getChild(0);
+          return (ASTNode) execTree;
+        }
+      }
       return ast;
     }
 
@@ -70,10 +87,15 @@ public abstract class AbstractReExecDriver implements IDriver {
   protected Driver coreDriver;
   private QueryState queryState;
   private String currentQuery;
+  private int executionIndex;
 
   @Override
   public HiveConf getConf() {
     return queryState.getConf();
+  }
+
+  public boolean firstExecution() {
+    return executionIndex == 0;
   }
 
   protected abstract void onExecutionSuccess(HookContext hookContext);
@@ -124,23 +146,12 @@ public abstract class AbstractReExecDriver implements IDriver {
 
   @Override
   public CommandProcessorResponse run() {
-    String firstCommand = currentQuery;
-    boolean forceRexec = false;
-    if (coreDriver.getConf().getBoolean("hive.query.reexecution.explain", false)) {
-      if (currentQuery.trim().toLowerCase().startsWith("explain")) {
-        firstCommand = currentQuery.trim().substring("explain".length());
-        forceRexec = true;
-      }
+    CommandProcessorResponse cpr = coreDriver.run();
+
+    if (!explainReOptimization && cpr.getResponseCode() == 0 || !shouldReExecute()) {
+      return cpr;
     }
-    CommandProcessorResponse cpr;
-    if (!forceRexec) {
-      cpr = coreDriver.run();
-      if (cpr.getResponseCode() == 0 || !shouldReExecute()) {
-        return cpr;
-      }
-    } else {
-      coreDriver.run(firstCommand);
-    }
+    executionIndex++;
     prepareToReExecute();
     return coreDriver.run(currentQuery);
   }
