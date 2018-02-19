@@ -139,11 +139,18 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
    * overridden by sub classes.
    */
   @Override
-  public boolean isSame(OperatorDesc other) {
+  public final boolean isSame(OperatorDesc other) {
     Map<String, Object> s1 = getSignature();
     Map<String, Object> s2 = getSignature();
+    boolean res = Objects.equal(s1, s2);
+    if (!res) {
+      return res;
+    }
+    return sameCompareInternal(other);
+  }
 
-    return Objects.equal(s1, s2);
+  protected boolean sameCompareInternal(OperatorDesc other) {
+    return true;
   }
 
   @Explain(displayName = "columnExprMap", jsonOnly = true)

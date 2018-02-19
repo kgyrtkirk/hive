@@ -22,6 +22,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 public class SignatureUtils1 {
 
@@ -34,6 +37,8 @@ public class SignatureUtils1 {
 
   static class SignatureMapper {
 
+    static final Set<String> acceptedSignatureTypes = Sets.newHashSet();
+
     private List<Method> sigMethods;
 
     public SignatureMapper(Class<?> o) {
@@ -41,6 +46,11 @@ public class SignatureUtils1 {
       sigMethods = new ArrayList<>();
       for (Method method : f) {
         if (method.isAnnotationPresent(Signature.class)) {
+          Class<?> rType = method.getReturnType();
+          String rTypeName = rType.getName();
+          if (!rType.isPrimitive() && acceptedSignatureTypes.contains(rTypeName)) {
+            throw new RuntimeException("unxepected type (" + rTypeName + ") used in signature");
+          }
           sigMethods.add(method);
         }
       }
@@ -48,14 +58,15 @@ public class SignatureUtils1 {
 
     public void write(Map<String, Object> ret, Object o) {
       if (sigMethods.isEmpty()) {
-        // by supplying "this" we start relying on equals/hashcode
+        // by supplying using "o" this enforces identity/equls matching
         // which will most probably make the signature very unique
-        ret.put(o.getClass().getName(), this);
+        ret.put(o.getClass().getName(), o);
       } else {
         ret.put(o.getClass().getName(), "1");
         for (Method method : sigMethods) {
           try {
-            ret.put(method.getName(), method.invoke(o));
+            Object res = method.invoke(o);
+            ret.put(method.getName(), res);
           } catch (Exception e) {
             throw new RuntimeException("Error invoking signature method", e);
           }
