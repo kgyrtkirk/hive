@@ -592,7 +592,6 @@ public class Driver implements IDriver {
       hookRunner.runBeforeCompileHook(command);
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
-      BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
 
       // Flush the metastore cache.  This assures that we don't pick up objects from a previous
       // query running in this same thread.  This has to be done after we get our semantic
@@ -609,6 +608,7 @@ public class Driver implements IDriver {
           long txnid = queryTxnMgr.openTxn(ctx, userFromUGI);
         }
       }
+      BaseSemanticAnalyzer sem;
       // Do semantic analysis and plan generation
       if (hookRunner.hasPreAnalyzeHooks()) {
         HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
@@ -619,12 +619,13 @@ public class Driver implements IDriver {
         hookCtx.setHiveOperation(queryState.getHiveOperation());
 
         tree =  hookRunner.runPreAnalyzeHooks(hookCtx, tree);
-
+        sem = SemanticAnalyzerFactory.get(queryState, tree);
         sem.analyze(tree, ctx);
         hookCtx.update(sem);
 
         hookRunner.runPostAnalyzeHooks(hookCtx, sem.getAllRootTasks());
       } else {
+        sem = SemanticAnalyzerFactory.get(queryState, tree);
         sem.analyze(tree, ctx);
       }
       LOG.info("Semantic Analysis Completed");

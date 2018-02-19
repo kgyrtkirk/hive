@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
+import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -55,6 +56,8 @@ public abstract class AbstractReExecDriver implements IDriver {
     }
   }
 
+  public static boolean D1 = true;
+
   private boolean explainReOptimization;
 
   private class HandleReOptimizationExplain implements HiveSemanticAnalyzerHook {
@@ -67,11 +70,17 @@ public abstract class AbstractReExecDriver implements IDriver {
         for (int i = 1; i < childCount; i++) {
           if (ast.getChild(i).getType() == HiveParser.KW_REOPTIMIZATION) {
             explainReOptimization = true;
+            ast.deleteChild(i);
+            break;
           }
         }
         if (explainReOptimization && firstExecution()) {
-          //          Tree execTree = ast.getChild(0);
-          //          return (ASTNode) execTree;
+          if (AbstractReExecDriver.D1) {
+            Tree execTree = ast.getChild(0);
+            execTree.setParent(ast.getParent());
+            ast.getParent().setChild(0, execTree);
+            return (ASTNode) execTree;
+          }
         }
       }
       return ast;
@@ -147,7 +156,10 @@ public abstract class AbstractReExecDriver implements IDriver {
   public CommandProcessorResponse run() {
     CommandProcessorResponse cpr = coreDriver.run();
 
-    if (!explainReOptimization && cpr.getResponseCode() == 0 || !shouldReExecute()) {
+    boolean shouldReExecute = explainReOptimization;
+    shouldReExecute |= cpr.getResponseCode() != 0 && shouldReExecute();
+
+    if (!shouldReExecute) {
       return cpr;
     }
     executionIndex++;
