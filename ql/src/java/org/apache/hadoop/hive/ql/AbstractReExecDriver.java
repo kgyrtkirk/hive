@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -150,17 +151,31 @@ public abstract class AbstractReExecDriver implements IDriver {
 
   @Override
   public CommandProcessorResponse run() {
-    CommandProcessorResponse cpr = coreDriver.run();
+    executionIndex = 0;
+    int maxExecutuions = coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
 
-    boolean shouldReExecute = explainReOptimization;
-    shouldReExecute |= cpr.getResponseCode() != 0 && shouldReExecute();
+    while (true) {
+      executionIndex++;
+      CommandProcessorResponse cpr = coreDriver.run();
 
-    if (!shouldReExecute) {
-      return cpr;
+      boolean shouldReExecute = explainReOptimization;
+      shouldReExecute |= cpr.getResponseCode() != 0 && shouldReExecute();
+
+      if (executionIndex >= maxExecutuions || !shouldReExecute) {
+        return cpr;
+      }
+      prepareToReExecute();
+      coreDriver.compileAndRespond(currentQuery);
+      if (!planDidChange()) {
+        // FIXME: retain old error?
+        return cpr;
+      }
     }
-    executionIndex++;
-    prepareToReExecute();
-    return coreDriver.run(currentQuery);
+  }
+
+  private boolean planDidChange() {
+    // FIXME: write this
+    return true;
   }
 
   @Override

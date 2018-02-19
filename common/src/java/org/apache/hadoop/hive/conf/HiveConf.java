@@ -3685,6 +3685,10 @@ public class HiveConf extends Configuration {
     HIVE_QUERY_REEXECUTION_EXPLAIN("hive.query.reexecution.explain", "false", new StringSet("false", "true"),
         ""),
 
+    // FIXME: better name&description
+    HIVE_QUERY_MAX_REEXECUTION_COUNT("hive.query.max.reexecution.count", 1,
+        "maximum number of re-executions for a single query"),
+
     HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
         "If the query results cache is enabled. This will keep results of previously executed queries " +
         "to be reused if the same query is executed again."),

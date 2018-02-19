@@ -136,7 +136,7 @@ public class TestReOptimization {
 
   }
 
-  @Test
+  @Test(expected = Exception.class)
   public void testNotReExecutedIfAssertionError() throws ParseException {
 
     IDriver driver = createDriver();
