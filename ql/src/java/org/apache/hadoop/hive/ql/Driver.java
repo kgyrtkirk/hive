@@ -783,7 +783,6 @@ public class Driver implements IDriver {
       case SHOWTABLES:
       case SHOWCOLUMNS:
       case SHOWFUNCTIONS:
-      case SHOWINDEXES:
       case SHOWPARTITIONS:
       case SHOWLOCKS:
       case SHOWVIEWS:
@@ -2542,10 +2541,12 @@ public class Driver implements IDriver {
     return queryState;
   }
 
-  public void setRuntimeStatsSource(RuntimeStatsSource runtimeStatsSource) {
-    this.runtimeStatsSource = runtimeStatsSource;
-    }
   public HookRunner getHookRunner() {
     return hookRunner;
   }
+
+  public void setRuntimeStatsSource(RuntimeStatsSource runtimeStatsSource) {
+    this.runtimeStatsSource = runtimeStatsSource;
+  }
+
 }
