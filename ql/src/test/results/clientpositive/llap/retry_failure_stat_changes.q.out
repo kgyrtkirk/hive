@@ -34,10 +34,10 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@px
 POSTHOOK: Lineage: px.a SCRIPT []
 POSTHOOK: Lineage: px.p SCRIPT []
-PREHOOK: query: explain REOPTIMIZATION
+PREHOOK: query: explain REOPTIMIZATION 
 select sum(u*p) from tx join px on (u=p) where u<10 and p>2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain REOPTIMIZATION
+POSTHOOK: query: explain REOPTIMIZATION 
 select sum(u*p) from tx join px on (u=p) where u<10 and p>2
 POSTHOOK: type: QUERY
 Plan optimized by CBO.

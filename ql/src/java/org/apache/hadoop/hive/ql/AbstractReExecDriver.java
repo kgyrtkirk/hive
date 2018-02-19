@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
-import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -71,8 +70,8 @@ public abstract class AbstractReExecDriver implements IDriver {
           }
         }
         if (explainReOptimization && firstExecution()) {
-          Tree execTree = ast.getChild(0);
-          return (ASTNode) execTree;
+          //          Tree execTree = ast.getChild(0);
+          //          return (ASTNode) execTree;
         }
       }
       return ast;
