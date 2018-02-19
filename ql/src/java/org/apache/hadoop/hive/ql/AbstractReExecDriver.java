@@ -37,8 +37,12 @@ import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractReExecDriver implements IDriver {
+
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractReExecDriver.class);
 
   private class ExecutionInfoHook implements ExecuteWithHookContext {
 
@@ -152,10 +156,11 @@ public abstract class AbstractReExecDriver implements IDriver {
   @Override
   public CommandProcessorResponse run() {
     executionIndex = 0;
-    int maxExecutuions = coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
+    int maxExecutuions = coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT) + 1;
 
     while (true) {
       executionIndex++;
+      LOG.info("Execution #{} of query", executionIndex);
       CommandProcessorResponse cpr = coreDriver.run();
 
       boolean shouldReExecute = explainReOptimization;
@@ -164,9 +169,10 @@ public abstract class AbstractReExecDriver implements IDriver {
       if (executionIndex >= maxExecutuions || !shouldReExecute) {
         return cpr;
       }
+      LOG.info("Preparing to re-execute query");
       prepareToReExecute();
-      coreDriver.compileAndRespond(currentQuery);
-      if (!planDidChange()) {
+      cpr = coreDriver.run(currentQuery);
+      if (true || !planDidChange()) {
         // FIXME: retain old error?
         return cpr;
       }
