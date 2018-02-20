@@ -1582,12 +1582,12 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     if(!logicalEquals(o)) {
       return false;
     }
-    if(o.getNumChild() != getNumChild()){
+    if (o.getNumParent() != getNumParent()) {
       return false;
     }
-    for (int i = 0; i < childOperators.size(); i++) {
-      Operator<? extends OperatorDesc> copL = childOperators.get(i);
-      Operator<? extends OperatorDesc> copR = o.childOperators.get(i);
+    for (int i = 0; i < getNumParent(); i++) {
+      Operator<? extends OperatorDesc> copL = parentOperators.get(i);
+      Operator<? extends OperatorDesc> copR = o.parentOperators.get(i);
       if (!copL.logicalEquals(copR)) {
         return false;
       }

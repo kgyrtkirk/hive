@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.ReOptimizeDriver;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
@@ -117,21 +118,45 @@ public class TestOperatorCmp {
     assertEquals(1, fos1.size());
 
     assertFalse("logicalEquals", compareOperators(fos0.get(0), fos1.get(0)));
+  }
+
+  @Test
+  public void testDifferentFiltersAreNotMatched1() throws ParseException {
+    IDriver driver = createDriver();
+    PlanMapper pm0 = getMapperForQuery(driver, "select u from tu where id_uv = 1 group by u");
+    PlanMapper pm1 = getMapperForQuery(driver, "select u from tu where id_uv = 2 group by u");
+
+    assertHelper(AssertHelperOp.SAME, pm0, pm1, TableScanOperator.class);
+    assertHelper(AssertHelperOp.NOT_SAME, pm0, pm1, FilterOperator.class);
 
   }
 
   @Test
-  public void testSameFiltersMatched1() throws ParseException {
+  public void testSameFiltersMatched1() throws ParseException, Exception {
     IDriver driver = createDriver();
     PlanMapper pm0 = getMapperForQuery(driver, "select u from tu where id_uv = 1 group by u");
     PlanMapper pm1 = getMapperForQuery(driver, "select u from tu where id_uv = 1 group by u");
-    List<FilterOperator> fos0 = pm0.getAll(FilterOperator.class);
-    List<FilterOperator> fos1 = pm1.getAll(FilterOperator.class);
+
+    assertHelper(AssertHelperOp.SAME, pm0, pm1, FilterOperator.class);
+    assertHelper(AssertHelperOp.SAME, pm0, pm1, TableScanOperator.class);
+  }
+
+
+  enum AssertHelperOp {
+    SAME, NOT_SAME
+  };
+
+  private <T extends Operator<?>> void assertHelper(AssertHelperOp same,PlanMapper pm0, PlanMapper pm1, Class<T> clazz) {
+    List<T> fos0 = pm0.getAll(clazz);
+    List<T> fos1 = pm1.getAll(clazz);
     assertEquals(1, fos0.size());
     assertEquals(1, fos1.size());
 
-    assertTrue("logicalEquals", compareOperators(fos0.get(0), fos1.get(0)));
-
+    if (same == AssertHelperOp.SAME) {
+      assertTrue(clazz + " " + same, compareOperators(fos0.get(0), fos1.get(0)));
+    } else {
+      assertFalse(clazz + " " + same, compareOperators(fos0.get(0), fos1.get(0)));
+    }
   }
 
   private boolean compareOperators(Operator<?> opL, Operator<?> opR) {
