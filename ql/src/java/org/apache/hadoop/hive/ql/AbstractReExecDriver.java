@@ -40,6 +40,12 @@ import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Enables to write re-execution logics.
+ *
+ * Covers most of the IDriver interface by forwarding them to the delegate driver.
+ * Handles query re-execution; and asks clear questions from the underlying re-execution logic.
+ */
 public abstract class AbstractReExecDriver implements IDriver {
 
   private static final Logger LOG = LoggerFactory.getLogger(AbstractReExecDriver.class);
@@ -64,7 +70,6 @@ public abstract class AbstractReExecDriver implements IDriver {
   private boolean explainReOptimization;
 
   private class HandleReOptimizationExplain implements HiveSemanticAnalyzerHook {
-
 
     @Override
     public ASTNode preAnalyze(HiveSemanticAnalyzerHookContext context, ASTNode ast) throws SemanticException {
