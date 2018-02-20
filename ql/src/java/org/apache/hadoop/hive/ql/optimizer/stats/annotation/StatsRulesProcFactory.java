@@ -2503,6 +2503,7 @@ public class StatsRulesProcFactory {
       return stats;
     }
 
+    LOG.debug("using runtime stats for {}; {}", op, os.get());
     Statistics outStats = stats.clone();
     outStats = outStats.scaleToRowCount(os.get().getOutputRecords(), false);
     outStats.setRuntimeStats(true);
