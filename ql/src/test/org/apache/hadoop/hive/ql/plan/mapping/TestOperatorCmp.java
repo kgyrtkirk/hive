@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.plan.mapping;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.ReOptimizeDriver;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
@@ -91,7 +93,7 @@ public class TestOperatorCmp {
   }
 
   @Test
-  public void testOperatorsEquals() throws ParseException {
+  public void testUnrelatedFiltersAreNotMatched0() throws ParseException {
     IDriver driver = createDriver();
     String query = "select u from tu where id_uv = 1 union all select v from tv where id_uv = 1";
 
@@ -100,8 +102,40 @@ public class TestOperatorCmp {
     List<FilterOperator> fos = pm.getAll(FilterOperator.class);
     assertEquals(2, fos.size());
 
-    assertFalse("logicalEquals", fos.get(0).logicalEquals(fos.get(1)));
+    assertFalse("logicalEquals", compareOperators(fos.get(0), fos.get(1)));
 
+  }
+
+  @Test
+  public void testUnrelatedFiltersAreNotMatched1() throws ParseException {
+    IDriver driver = createDriver();
+    PlanMapper pm0 = getMapperForQuery(driver, "select u from tu where id_uv = 1 group by u");
+    PlanMapper pm1 = getMapperForQuery(driver, "select v from tv where id_uv = 1 group by v");
+    List<FilterOperator> fos0 = pm0.getAll(FilterOperator.class);
+    List<FilterOperator> fos1 = pm1.getAll(FilterOperator.class);
+    assertEquals(1, fos0.size());
+    assertEquals(1, fos1.size());
+
+    assertFalse("logicalEquals", compareOperators(fos0.get(0), fos1.get(0)));
+
+  }
+
+  @Test
+  public void testSameFiltersMatched1() throws ParseException {
+    IDriver driver = createDriver();
+    PlanMapper pm0 = getMapperForQuery(driver, "select u from tu where id_uv = 1 group by u");
+    PlanMapper pm1 = getMapperForQuery(driver, "select u from tu where id_uv = 1 group by u");
+    List<FilterOperator> fos0 = pm0.getAll(FilterOperator.class);
+    List<FilterOperator> fos1 = pm1.getAll(FilterOperator.class);
+    assertEquals(1, fos0.size());
+    assertEquals(1, fos1.size());
+
+    assertTrue("logicalEquals", compareOperators(fos0.get(0), fos1.get(0)));
+
+  }
+
+  private boolean compareOperators(Operator<?> opL, Operator<?> opR) {
+    return opL.logicalEqualsTree(opR);
   }
 
   private static IDriver createDriver() {

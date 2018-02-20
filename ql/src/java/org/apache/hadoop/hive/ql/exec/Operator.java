@@ -1576,4 +1576,23 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
         (conf == other.getConf() || (conf != null && other.getConf() != null &&
             conf.isSame(other.getConf())));
   }
+
+  // XXX: this could easy become a hot-spot
+  public final boolean logicalEqualsTree(Operator<?> o) {
+    if(!logicalEquals(o)) {
+      return false;
+    }
+    if(o.getNumChild() != getNumChild()){
+      return false;
+    }
+    for (int i = 0; i < childOperators.size(); i++) {
+      Operator<? extends OperatorDesc> copL = childOperators.get(i);
+      Operator<? extends OperatorDesc> copR = o.childOperators.get(i);
+      if (!copL.logicalEquals(copR)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
 }
