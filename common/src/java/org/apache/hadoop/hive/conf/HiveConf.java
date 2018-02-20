@@ -3685,7 +3685,7 @@ public class HiveConf extends Configuration {
     HIVE_QUERY_REEXECUTION_EXPLAIN("hive.query.reexecution.explain", "false", new StringSet("false", "true"),
         ""),
 
-    // FIXME: better name&description
+    // FIXME: better name&description?
     HIVE_QUERY_MAX_REEXECUTION_COUNT("hive.query.max.reexecution.count", 1,
         "maximum number of re-executions for a single query"),
 

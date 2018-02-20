@@ -156,7 +156,7 @@ public abstract class AbstractReExecDriver implements IDriver {
   @Override
   public CommandProcessorResponse run() {
     executionIndex = 0;
-    int maxExecutuions = coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT) + 1;
+    int maxExecutuions = 1 + coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
 
     while (true) {
       executionIndex++;
@@ -171,9 +171,13 @@ public abstract class AbstractReExecDriver implements IDriver {
       }
       LOG.info("Preparing to re-execute query");
       prepareToReExecute();
-      cpr = coreDriver.run(currentQuery);
-      if (true || !planDidChange()) {
-        // FIXME: retain old error?
+      CommandProcessorResponse compile_resp = coreDriver.compileAndRespond(currentQuery);
+      if (compile_resp.failed()) {
+        // FIXME: somehow place pointers that re-execution compilation have failed; the query have been successfully compiled before?
+        return compile_resp;
+      }
+      if (!planDidChange()) {
+        // FIXME: retain old error; or create a new one?
         return cpr;
       }
     }
