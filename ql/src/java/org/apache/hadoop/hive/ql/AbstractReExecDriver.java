@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
-
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -35,6 +34,7 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.slf4j.Logger;
@@ -174,6 +174,8 @@ public abstract class AbstractReExecDriver implements IDriver {
       if (executionIndex >= maxExecutuions || !shouldReExecute) {
         return cpr;
       }
+      PlanMapper oldPlanMapper = coreDriver.getPlanMapper();
+
       LOG.info("Preparing to re-execute query");
       prepareToReExecute();
       CommandProcessorResponse compile_resp = coreDriver.compileAndRespond(currentQuery);
@@ -181,15 +183,24 @@ public abstract class AbstractReExecDriver implements IDriver {
         // FIXME: somehow place pointers that re-execution compilation have failed; the query have been successfully compiled before?
         return compile_resp;
       }
-      if (!planDidChange()) {
+      PlanMapper newPlanMapper = coreDriver.getPlanMapper();
+      if (!planDidChange(oldPlanMapper, newPlanMapper)) {
         // FIXME: retain old error; or create a new one?
         return cpr;
       }
     }
   }
 
-  private boolean planDidChange() {
-    // FIXME: write this
+  private boolean planDidChange(PlanMapper pmL, PlanMapper pmR) {
+    //    List<Operator> rL =
+    //        pmL.getAll(Operator.class).stream().filter((a) -> a.getNumParent() == 0).collect(Collectors.toList());
+    //    List<Operator> rR =
+    //        pmR.getAll(Operator.class).stream().filter((a) -> a.getNumParent() == 0).collect(Collectors.toList());
+    //
+    //    if (rL.size() != rR.size()) {
+    //      return true;
+    //    }
+
     return true;
   }
 
