@@ -104,16 +104,6 @@ public class TestOperatorCmp {
 
   }
 
-  @Test
-  public void testExplainSupport() throws ParseException {
-    env_setup.getTestCtx().hiveConf.set("hive.query.reexecution.explain", "true");
-
-    IDriver driver = createDriver();
-    String query = "explain select 1 from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
-    PlanMapper pm = getMapperForQuery(driver, query);
-
-  }
-
   private static IDriver createDriver() {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
