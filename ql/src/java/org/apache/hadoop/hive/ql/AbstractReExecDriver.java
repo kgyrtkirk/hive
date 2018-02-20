@@ -192,15 +192,6 @@ public abstract class AbstractReExecDriver implements IDriver {
   }
 
   private boolean planDidChange(PlanMapper pmL, PlanMapper pmR) {
-    //    List<Operator> rL =
-    //        pmL.getAll(Operator.class).stream().filter((a) -> a.getNumParent() == 0).collect(Collectors.toList());
-    //    List<Operator> rR =
-    //        pmR.getAll(Operator.class).stream().filter((a) -> a.getNumParent() == 0).collect(Collectors.toList());
-    //
-    //    if (rL.size() != rR.size()) {
-    //      return true;
-    //    }
-
     return true;
   }
 
