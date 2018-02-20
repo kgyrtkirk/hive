@@ -36,12 +36,12 @@ public class SimpleRuntimeStatsSource implements RuntimeStatsSource {
   }
 
   @Override
-  public Optional<OperatorStats> lookup(Operator<?> tsop) {
+  public Optional<OperatorStats> lookup(Operator<?> op) {
     try {
       // XXX: exhaustive search
-      List<? extends Operator> candidates = pm.getAll(tsop.getClass());
+      List<? extends Operator> candidates = pm.getAll(op.getClass());
       for (Operator candidate : candidates) {
-        if (tsop.logicalEqualsTree(candidate)) {
+        if (op.logicalEqualsTree(candidate)) {
           // FIXME: change this back to lookup...find that bug
           List<OperatorStats> v = pm.lookupAll(OperatorStats.class, candidate);
           if (v.size() > 0) {
