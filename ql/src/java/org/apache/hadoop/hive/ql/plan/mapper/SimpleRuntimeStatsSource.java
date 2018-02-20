@@ -24,7 +24,6 @@ import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
-import org.apache.hadoop.hive.ql.plan.mapper.refs.OperatorRef;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 public class SimpleRuntimeStatsSource implements RuntimeStatsSource {
@@ -39,14 +38,18 @@ public class SimpleRuntimeStatsSource implements RuntimeStatsSource {
   @Override
   public Optional<OperatorStats> lookup(Operator<?> tsop) {
     try {
-      OperatorRef ref = OperatorRef.of(tsop);
-      // FIXME: change this back to lookup...find that bug
-      List<OperatorStats> v = pm.lookupAll(OperatorStats.class, ref);
-      if (v.size() > 0) {
-        return Optional.of(v.get(0));
-      } else {
-        return  Optional.empty();
+      // XXX: exhaustive search
+      List<? extends Operator> candidates = pm.getAll(tsop.getClass());
+      for (Operator candidate : candidates) {
+        if (tsop.logicalEqualsTree(candidate)) {
+          // FIXME: change this back to lookup...find that bug
+          List<OperatorStats> v = pm.lookupAll(OperatorStats.class, candidate);
+          if (v.size() > 0) {
+            return Optional.of(v.get(0));
+          }
+        }
       }
+      return Optional.empty();
     } catch (NoSuchElementException | IllegalArgumentException iae) {
       return Optional.empty();
     }
