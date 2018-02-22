@@ -419,7 +419,9 @@ public class Warehouse {
       }
       partSpec.put(key, kvs.get(i - 1)[1]);
     }
-    if (requiredKeys == null || requiredKeys.isEmpty()) return true;
+    if (requiredKeys == null || requiredKeys.isEmpty()) {
+      return true;
+    }
     LOG.warn("Cannot create partition spec from " + currPath + "; missing keys " + requiredKeys);
     return false;
   }
@@ -543,6 +545,8 @@ public class Warehouse {
    * @return array of FileStatus objects corresponding to the files
    * making up the passed storage description
    */
+  @Deprecated
+  // FIXME: move to ql?
   public FileStatus[] getFileStatusesForSD(StorageDescriptor desc)
       throws MetaException {
     return getFileStatusesForLocation(desc.getLocation());
@@ -553,6 +557,8 @@ public class Warehouse {
    * @return array of FileStatus objects corresponding to the files
    * making up the passed storage description
    */
+  @Deprecated
+  // FIXME: move to ql?
   public FileStatus[] getFileStatusesForLocation(String location)
       throws MetaException {
     try {
@@ -571,6 +577,8 @@ public class Warehouse {
    * @return array of FileStatus objects corresponding to the files making up the passed
    * unpartitioned table
    */
+  @Deprecated
+  // FIXME: unused subtree?
   public FileStatus[] getFileStatusesForUnpartitionedTable(Database db, Table table)
       throws MetaException {
     Path tablePath = getDnsPath(new Path(table.getSd().getLocation()));
