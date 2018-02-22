@@ -34,6 +34,7 @@ cache:
 env:
   MAVEN_SKIP_RC=true
   MAVEN_OPTS="-Xmx2g"
+  M_OPTS="install -Pitests -DskipSparkTests -pl itests/qtest-accumulo -Dtest=TestAccumuloCliDriver#*[accumulo_queries] -q -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 
 # workaround added: https://github.com/travis-ci/travis-ci/issues/4629
 before_install:
@@ -42,4 +43,9 @@ before_install:
 
 install: true
 
-script: mvn clean install -DskipTests -q -Pitests
+script:
+  - git revert df5c56bd66c64200f675ce61058a0813f6b1f66f
+  - mvn $M_OPTS -Dtest=TestCliDriver -Dqfile=authorization_update_own_table.q
+  - git clean -dfx
+  - git revert HEAD
+  - mvn $M_OPTS -Dtest=TestCliDriver -Dqfile=authorization_update_own_table.q
