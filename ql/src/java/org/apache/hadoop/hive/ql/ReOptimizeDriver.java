@@ -65,7 +65,12 @@ public class ReOptimizeDriver extends AbstractReExecDriver {
 
   @Override
   protected void onExecutionFailure(HookContext hookContext) {
-    handleExecutionException(hookContext.getException());
+    Throwable exception = hookContext.getException();
+    if (exception == null) {
+      LOG.info("Failure Exception not available");
+      return;
+    }
+    handleExecutionException(exception);
   }
 
 
