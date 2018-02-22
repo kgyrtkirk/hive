@@ -1434,7 +1434,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     Table tbl = db.getTable(touchDesc.getTableName());
     EnvironmentContext environmentContext = new EnvironmentContext();
-    environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
 
     if (touchDesc.getPartSpec() == null) {
       db.alterTable(tbl, environmentContext);
@@ -4194,7 +4193,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       }
 
-      environmentContext.getProperties().remove(StatsSetupConst.DO_NOT_UPDATE_STATS);
+      collectTheDamnFsStats(tbl, part, conf);
     } else if (alterTbl.getOp() == AlterTableTypes.ALTERBUCKETNUM) {
       if (part != null) {
         if (part.getBucketCount() == alterTbl.getNumberBuckets()) {
