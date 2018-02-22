@@ -4794,9 +4794,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public static void collectFsStats(Table tbl, Partition part, HiveConf conf) throws HiveException {
     Partish p;
     if (tbl.isPartitioned()) {
-      p = Partish.buildFor(tbl);
-    } else {
       p = Partish.buildFor(tbl, part);
+    } else {
+      p = Partish.buildFor(tbl);
     }
     Partish partish = p;
 
