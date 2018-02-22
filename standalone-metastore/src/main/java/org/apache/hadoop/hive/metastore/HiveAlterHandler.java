@@ -447,14 +447,6 @@ public class HiveAlterHandler implements AlterHandler {
       try {
         msdb.openTransaction();
         oldPart = msdb.getPartition(dbname, name, new_part.getValues());
-        if (MetaStoreUtils.requireCalStats(oldPart, new_part, tbl, environmentContext)) {
-          // if stats are same, no need to update
-          if (MetaStoreUtils.isFastStatsSame(oldPart, new_part)) {
-            MetaStoreUtils.updateBasicState(environmentContext, new_part.getParameters());
-          } else {
-            MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true, environmentContext);
-          }
-        }
 
         // PartitionView does not have SD. We do not need update its column stats
         if (oldPart.getSd() != null) {
