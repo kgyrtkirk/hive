@@ -695,6 +695,8 @@ public class MetastoreConf {
         "Metastore SSL certificate truststore location."),
     SSL_TRUSTSTORE_PASSWORD("metastore.truststore.password", "hive.metastore.truststore.password", "",
         "Metastore SSL certificate truststore password."),
+    @Deprecated
+    // FIXME: looks unused right now
     STATS_AUTO_GATHER("metastore.stats.autogather", "hive.stats.autogather", true,
         "A flag to gather statistics (only basic) automatically during the INSERT OVERWRITE command."),
     STATS_FETCH_BITVECTOR("metastore.stats.fetch.bitvector", "hive.stats.fetch.bitvector", false,
