@@ -3904,11 +3904,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       environmentContext = new EnvironmentContext();
       alterTbl.setEnvironmentContext(environmentContext);
     }
-    // do not need update stats in alter table/partition operations
-    if (environmentContext.getProperties() == null ||
-        environmentContext.getProperties().get(StatsSetupConst.DO_NOT_UPDATE_STATS) == null) {
-      environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
-    }
 
     if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAME) {
       tbl.setDbName(Utilities.getDatabaseName(alterTbl.getNewName()));
@@ -4219,12 +4214,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private List<Task<?>> alterTableDropProps(AlterTableDesc alterTbl, Table tbl,
       Partition part, EnvironmentContext environmentContext) throws HiveException {
-    if (StatsSetupConst.USER.equals(environmentContext.getProperties()
-        .get(StatsSetupConst.STATS_GENERATED))) {
-      // drop a stats parameter, which triggers recompute stats update automatically
-      environmentContext.getProperties().remove(StatsSetupConst.DO_NOT_UPDATE_STATS);
-    }
-
     List<Task<?>> result = null;
     if (part == null) {
       Set<String> removedSet = alterTbl.getProps().keySet();
