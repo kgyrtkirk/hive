@@ -355,7 +355,9 @@ public class MetaStoreUtils {
       for (FieldSchema fs : sd.getCols()) {
         md.update(fs.getName().getBytes(ENCODING));
         md.update(fs.getType().getBytes(ENCODING));
-        if (fs.getComment() != null) md.update(fs.getComment().getBytes(ENCODING));
+        if (fs.getComment() != null) {
+          md.update(fs.getComment().getBytes(ENCODING));
+        }
       }
     }
     if (sd.getInputFormat() != null) {
@@ -384,7 +386,9 @@ public class MetaStoreUtils {
     }
     if (sd.getBucketCols() != null) {
       List<String> bucketCols = new ArrayList<>(sd.getBucketCols());
-      for (String bucket : bucketCols) md.update(bucket.getBytes(ENCODING));
+      for (String bucket : bucketCols) {
+        md.update(bucket.getBytes(ENCODING));
+      }
     }
     if (sd.getSortCols() != null) {
       SortedSet<Order> orders = new TreeSet<>(sd.getSortCols());
@@ -397,7 +401,9 @@ public class MetaStoreUtils {
       SkewedInfo skewed = sd.getSkewedInfo();
       if (skewed.getSkewedColNames() != null) {
         SortedSet<String> colnames = new TreeSet<>(skewed.getSkewedColNames());
-        for (String colname : colnames) md.update(colname.getBytes(ENCODING));
+        for (String colname : colnames) {
+          md.update(colname.getBytes(ENCODING));
+        }
       }
       if (skewed.getSkewedColValues() != null) {
         SortedSet<String> sortedOuterList = new TreeSet<>();
@@ -405,7 +411,9 @@ public class MetaStoreUtils {
           SortedSet<String> sortedInnerList = new TreeSet<>(innerList);
           sortedOuterList.add(org.apache.commons.lang.StringUtils.join(sortedInnerList, "."));
         }
-        for (String colval : sortedOuterList) md.update(colval.getBytes(ENCODING));
+        for (String colval : sortedOuterList) {
+          md.update(colval.getBytes(ENCODING));
+        }
       }
       if (skewed.getSkewedColValueLocationMaps() != null) {
         SortedMap<String, String> sortedMap = new TreeMap<>();
@@ -485,7 +493,9 @@ public class MetaStoreUtils {
   }
 
   private static String validateColumnType(String type) {
-    if (type.equals(TYPE_FROM_DESERIALIZER)) return null;
+    if (type.equals(TYPE_FROM_DESERIALIZER)) {
+      return null;
+    }
     int last = 0;
     boolean lastAlphaDigit = isValidTypeChar(type.charAt(last));
     for (int i = 1; i <= type.length(); i++) {
@@ -611,8 +621,9 @@ public class MetaStoreUtils {
                                              boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
 
     Map<String,String> params = tbl.getParameters();
-    if(true)
+    if(true) {
       return false;
+    }
 
     if ((params!=null) && params.containsKey(StatsSetupConst.DO_NOT_UPDATE_STATS)){
       boolean doNotUpdateStats = Boolean.valueOf(params.get(StatsSetupConst.DO_NOT_UPDATE_STATS));
@@ -1573,9 +1584,13 @@ public class MetaStoreUtils {
   }
 
   public static WMPoolSchedulingPolicy parseSchedulingPolicy(String schedulingPolicy) {
-    if (schedulingPolicy == null) return WMPoolSchedulingPolicy.FAIR;
+    if (schedulingPolicy == null) {
+      return WMPoolSchedulingPolicy.FAIR;
+    }
     schedulingPolicy = schedulingPolicy.trim().toUpperCase();
-    if ("DEFAULT".equals(schedulingPolicy)) return WMPoolSchedulingPolicy.FAIR;
+    if ("DEFAULT".equals(schedulingPolicy)) {
+      return WMPoolSchedulingPolicy.FAIR;
+    }
     return Enum.valueOf(WMPoolSchedulingPolicy.class, schedulingPolicy);
   }
 
