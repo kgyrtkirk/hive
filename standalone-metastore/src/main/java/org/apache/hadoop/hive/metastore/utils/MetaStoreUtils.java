@@ -526,6 +526,8 @@ public class MetaStoreUtils {
   }
 
   // check if stats need to be (re)calculated
+  // FIXME: remove
+  @Deprecated
   public static boolean requireCalStats(Partition oldPart,
                                         Partition newPart, Table tbl,
                                         EnvironmentContext environmentContext) {

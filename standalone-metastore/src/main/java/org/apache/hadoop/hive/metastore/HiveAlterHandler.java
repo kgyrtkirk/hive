@@ -292,13 +292,6 @@ public class HiveAlterHandler implements AlterHandler {
           alterTableUpdateTableColumnStats(msdb, oldt, newt);
         }
       } else {
-        // operations other than table rename
-        if (MetaStoreUtils.requireCalStats(null, null, newt, environmentContext) &&
-            !isPartitionedTable) {
-          Database db = msdb.getDatabase(newDbName);
-          // Update table stats. For partitioned table, we update stats in alterPartition()
-          MetaStoreUtils.updateTableStatsFast(db, newt, wh, false, true, environmentContext);
-        }
 
         if (isPartitionedTable) {
           //Currently only column related changes can be cascaded in alter table
