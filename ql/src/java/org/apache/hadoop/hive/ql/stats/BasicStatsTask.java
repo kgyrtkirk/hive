@@ -217,9 +217,9 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     StatsAggregator statsAggregator = null;
     int ret = 0;
     StatsCollectionContext scc = null;
+    // FIXME: this envContext is probably not needed anymore
     EnvironmentContext environmentContext = null;
     environmentContext = new EnvironmentContext();
-    environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
 
     try {
       // Stats setup:
