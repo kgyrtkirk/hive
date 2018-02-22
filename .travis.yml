@@ -38,7 +38,7 @@ env:
   MAVEN_SKIP_RC=true
   MAVEN_OPTS="-Xmx2g"
   HASH=b98fb1f1aa47210aa240b1c22b32525828b47df1
-  TEST_OPTS="TestDbNotificationListener#alterIndex -pl itests/hcatalog-unit"
+  TEST_OPTS="-Dtest=TestDbNotificationListener#alterIndex -pl itests/hcatalog-unit"
   M_OPTS="install -Pitests -DskipSparkTests -am -q -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO $TEST_OPTS"
 
 # workaround added: https://github.com/travis-ci/travis-ci/issues/4629
