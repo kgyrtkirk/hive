@@ -581,6 +581,8 @@ public class MetaStoreUtils {
     return updateTableStatsFast(db, tbl, wh, madeDir, false, environmentContext);
   }
 
+  //FIXME unused method subtree
+  @Deprecated
   public static boolean updateTableStatsFast(Database db, Table tbl, Warehouse wh,
                                              boolean madeDir, boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
     if (tbl.getPartitionKeysSize() == 0) {
