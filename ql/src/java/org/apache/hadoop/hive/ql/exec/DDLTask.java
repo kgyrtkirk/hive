@@ -250,7 +250,6 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRoleGrant;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveV1Authorizer;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -4145,7 +4144,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         throw new HiveException(e);
       }
 
-      collectTheDamnFsStats(tbl, part, conf);
+      Hive.collectTheDamnFsStats(tbl, part, conf);
 
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSKEWEDBY) {
       // Validation's been done at compile time. no validation is needed here.
@@ -4193,7 +4192,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       }
 
-      collectTheDamnFsStats(tbl, part, conf);
+      Hive.collectTheDamnFsStats(tbl, part, conf);
     } else if (alterTbl.getOp() == AlterTableTypes.ALTERBUCKETNUM) {
       if (part != null) {
         if (part.getBucketCount() == alterTbl.getNumberBuckets()) {
@@ -4211,27 +4210,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     return null;
-  }
-
-  private void collectTheDamnFsStats(Table tbl, Partition part, HiveConf conf) throws HiveException {
-    Partish p;
-    if (tbl.isPartitioned()) {
-      p = Partish.buildFor(tbl);
-    } else {
-      p = Partish.buildFor(tbl, part);
-    }
-    Partish partish = p;
-
-    try {
-      // FIXME: move this wh creation somewhere else?
-      Warehouse wh = new Warehouse(conf);
-      FileStatus[] partfileStatus = wh.getFileStatusesForSD(partish.getPartSd());
-      MetaStoreUtils.populateQuickStats(partfileStatus, p.getPartParameters());
-    } catch (MetaException e) {
-      throw new HiveException(e);
-    }
-
-
   }
 
   private List<Task<?>> alterTableDropProps(AlterTableDesc alterTbl, Table tbl,

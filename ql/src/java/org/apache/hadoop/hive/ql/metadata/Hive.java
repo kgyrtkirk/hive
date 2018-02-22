@@ -153,6 +153,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.session.CreateTableAutomaticGrant;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -2205,6 +2206,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     EnvironmentContext environmentContext = null;
     if (!hasFollowingStatsTask) {
+
       // FIXME: fix/remove this
       throw new RuntimeException("why don't I've a following statsTask?");
     }
@@ -4788,5 +4790,27 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (Exception e) {
       throw new HiveException(e);
     }
+  }
+
+
+  public static void collectTheDamnFsStats(Table tbl, Partition part, HiveConf conf) throws HiveException {
+    Partish p;
+    if (tbl.isPartitioned()) {
+      p = Partish.buildFor(tbl);
+    } else {
+      p = Partish.buildFor(tbl, part);
+    }
+    Partish partish = p;
+  
+    try {
+      // FIXME: move this wh creation somewhere else?
+      Warehouse wh = new Warehouse(conf);
+      FileStatus[] partfileStatus = wh.getFileStatusesForSD(partish.getPartSd());
+      MetaStoreUtils.populateQuickStats(partfileStatus, p.getPartParameters());
+    } catch (MetaException e) {
+      throw new HiveException(e);
+    }
+  
+  
   }
 };
