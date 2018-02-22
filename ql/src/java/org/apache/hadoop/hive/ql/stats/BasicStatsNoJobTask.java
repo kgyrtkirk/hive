@@ -311,8 +311,8 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       }
     }
 
+    // FIXME this envCtx is probably not needed anymore
     EnvironmentContext environmentContext = new EnvironmentContext();
-    environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
 
     ImmutableListMultimap<String, FooterStatCollector> collectorsByTable = Multimaps.index(validColectors, FooterStatCollector.SIMPLE_NAME_FUNCTION);
 

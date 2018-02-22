@@ -1798,10 +1798,7 @@ public class Hive {
   private void setStatsPropAndAlterPartition(boolean hasFollowingStatsTask, Table tbl,
       Partition newTPart) throws MetaException, TException {
     EnvironmentContext environmentContext = null;
-    if (hasFollowingStatsTask) {
-      environmentContext = new EnvironmentContext();
-      environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
-    }
+    // FIXME: propagate hasFollowingStatsTask removal
     LOG.debug("Altering existing partition " + newTPart.getSpec());
     getSynchronizedMSC().alter_partition(tbl.getDbName(), tbl.getTableName(),
       newTPart.getTPartition(), environmentContext);
