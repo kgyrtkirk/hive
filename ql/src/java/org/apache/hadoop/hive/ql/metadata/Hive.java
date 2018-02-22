@@ -2206,9 +2206,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     EnvironmentContext environmentContext = null;
     if (!hasFollowingStatsTask) {
-
-      // FIXME: fix/remove this
-      throw new RuntimeException("why don't I've a following statsTask?");
+      collectTheDamnFsStats(tbl, null, conf);
     }
 
     alterTable(tbl, environmentContext);
@@ -4801,7 +4799,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       p = Partish.buildFor(tbl, part);
     }
     Partish partish = p;
-  
+
     try {
       // FIXME: move this wh creation somewhere else?
       Warehouse wh = new Warehouse(conf);
@@ -4810,7 +4808,5 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (MetaException e) {
       throw new HiveException(e);
     }
-  
-  
   }
 };
