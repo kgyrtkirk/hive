@@ -1243,8 +1243,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // It can be fully qualified name or use default database
     Table oldMV = db.getTable(mvName);
     Table mv = oldMV.copy(); // Do not mess with Table instance
+    // FIXME: this envContext is probably not needed anymore
     EnvironmentContext environmentContext = new EnvironmentContext();
-    environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
 
     switch (alterMVDesc.getOp()) {
     case UPDATE_REWRITE_FLAG:
