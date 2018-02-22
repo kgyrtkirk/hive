@@ -721,6 +721,9 @@ public class MetaStoreUtils {
    * these parameters set
    * @return true if the stats were updated, false otherwise
    */
+  @Deprecated
+  // FIXME: method only used from a test unused method (related)
+
   public static boolean updatePartitionStatsFast(Partition part, Warehouse wh,
                                                  boolean madeDir, boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
     return updatePartitionStatsFast(new PartitionSpecProxy.SimplePartitionWrapperIterator(part),
@@ -736,6 +739,8 @@ public class MetaStoreUtils {
    * these parameters set
    * @return true if the stats were updated, false otherwise
    */
+  @Deprecated
+  // FIXME: method only used from a test unused method (related)
   public static boolean updatePartitionStatsFast(PartitionSpecProxy.PartitionIterator part, Warehouse wh,
                                                  boolean madeDir, boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
     Map<String,String> params = part.getParameters();
