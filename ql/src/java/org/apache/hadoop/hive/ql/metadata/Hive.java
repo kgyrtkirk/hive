@@ -2206,7 +2206,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     EnvironmentContext environmentContext = null;
     if (!hasFollowingStatsTask) {
-      collectTheDamnFsStats(tbl, null, conf);
+      collectFsStats(tbl, null, conf);
     }
 
     alterTable(tbl, environmentContext);
@@ -4791,7 +4791,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
 
-  public static void collectTheDamnFsStats(Table tbl, Partition part, HiveConf conf) throws HiveException {
+  public static void collectFsStats(Table tbl, Partition part, HiveConf conf) throws HiveException {
     Partish p;
     if (tbl.isPartitioned()) {
       p = Partish.buildFor(tbl);

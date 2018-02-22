@@ -4144,7 +4144,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         throw new HiveException(e);
       }
 
-      Hive.collectTheDamnFsStats(tbl, part, conf);
+      Hive.collectFsStats(tbl, part, conf);
 
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSKEWEDBY) {
       // Validation's been done at compile time. no validation is needed here.
@@ -4192,7 +4192,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       }
 
-      Hive.collectTheDamnFsStats(tbl, part, conf);
+      Hive.collectFsStats(tbl, part, conf);
     } else if (alterTbl.getOp() == AlterTableTypes.ALTERBUCKETNUM) {
       if (part != null) {
         if (part.getBucketCount() == alterTbl.getNumberBuckets()) {
