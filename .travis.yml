@@ -37,7 +37,9 @@ cache:
 env:
   MAVEN_SKIP_RC=true
   MAVEN_OPTS="-Xmx2g"
-  M_OPTS="install -Pitests -DskipSparkTests -pl itests/qtest-accumulo -am -Dtest=TestAccumuloCliDriver#*[accumulo_queries] -q -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
+  HASH=b98fb1f1aa47210aa240b1c22b32525828b47df1
+  TEST_OPTS="TestDbNotificationListener#alterIndex -pl itests/hcatalog-unit"
+  M_OPTS="install -Pitests -DskipSparkTests -am -q -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO $TEST_OPTS"
 
 # workaround added: https://github.com/travis-ci/travis-ci/issues/4629
 before_install:
@@ -47,8 +49,8 @@ before_install:
 install: true
 
 script:
-  - git checkout df5c56bd66c64200f675ce61058a0813f6b1f66f^
+  - git checkout $HASH^
   - mvn $M_OPTS
   - git clean -dfx
-  - git checkout df5c56bd66c64200f675ce61058a0813f6b1f66f
+  - git checkout $HASH
   - mvn $M_OPTS
