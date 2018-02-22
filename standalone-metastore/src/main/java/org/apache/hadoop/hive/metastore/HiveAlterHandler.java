@@ -565,10 +565,6 @@ public class HiveAlterHandler implements AlterHandler {
         new_part.getSd().setLocation(oldPart.getSd().getLocation());
       }
 
-      if (MetaStoreUtils.requireCalStats(oldPart, new_part, tbl, environmentContext)) {
-        MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true, environmentContext);
-      }
-
       String newPartName = Warehouse.makePartName(tbl.getPartitionKeys(), new_part.getValues());
       ColumnStatistics cs = updateOrGetPartitionColumnStats(msdb, dbname, name, oldPart.getValues(),
           oldPart.getSd().getCols(), tbl, new_part, null);
@@ -656,15 +652,6 @@ public class HiveAlterHandler implements AlterHandler {
         Partition oldTmpPart = msdb.getPartition(dbname, name, tmpPart.getValues());
         oldParts.add(oldTmpPart);
         partValsList.add(tmpPart.getValues());
-
-        if (MetaStoreUtils.requireCalStats(oldTmpPart, tmpPart, tbl, environmentContext)) {
-          // Check if stats are same, no need to update
-          if (MetaStoreUtils.isFastStatsSame(oldTmpPart, tmpPart)) {
-            MetaStoreUtils.updateBasicState(environmentContext, tmpPart.getParameters());
-          } else {
-            MetaStoreUtils.updatePartitionStatsFast(tmpPart, wh, false, true, environmentContext);
-          }
-        }
 
         // PartitionView does not have SD and we do not need to update its column stats
         if (oldTmpPart.getSd() != null) {

@@ -696,11 +696,16 @@ public class MetaStoreUtils {
     }
   }
 
+  @Deprecated
+  // FIXME: method only used from a test unused method
+
   public static boolean updatePartitionStatsFast(Partition part, Warehouse wh, EnvironmentContext environmentContext)
       throws MetaException {
     return updatePartitionStatsFast(part, wh, false, false, environmentContext);
   }
 
+  @Deprecated
+  // FIXME: unused method
   public static boolean updatePartitionStatsFast(Partition part, Warehouse wh, boolean madeDir, EnvironmentContext environmentContext)
       throws MetaException {
     return updatePartitionStatsFast(part, wh, madeDir, false, environmentContext);
