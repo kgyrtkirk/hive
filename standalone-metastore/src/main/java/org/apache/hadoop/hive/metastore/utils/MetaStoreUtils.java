@@ -574,6 +574,8 @@ public class MetaStoreUtils {
     return false;
   }
 
+  //FIXME unused method subtree
+  @Deprecated
   public static boolean updateTableStatsFast(Database db, Table tbl, Warehouse wh,
                                              boolean madeDir, EnvironmentContext environmentContext) throws MetaException {
     return updateTableStatsFast(db, tbl, wh, madeDir, false, environmentContext);
@@ -600,6 +602,9 @@ public class MetaStoreUtils {
    * these parameters set
    * @return true if the stats were updated, false otherwise
    */
+  //FIXME unused method subtree
+  @Deprecated
+
   public static boolean updateTableStatsFast(Table tbl, FileStatus[] fileStatus, boolean newDir,
                                              boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
 
