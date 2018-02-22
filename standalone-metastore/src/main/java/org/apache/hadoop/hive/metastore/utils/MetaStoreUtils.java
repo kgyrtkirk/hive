@@ -651,6 +651,7 @@ public class MetaStoreUtils {
     return updated;
   }
 
+  //FIXME move this method to ql?
   public static void populateQuickStats(FileStatus[] fileStatus, Map<String, String> params) {
     int numFiles = 0;
     long tableSize = 0L;
