@@ -47,8 +47,8 @@ before_install:
 install: true
 
 script:
-  - git revert -m x df5c56bd66c64200f675ce61058a0813f6b1f66f
-  - mvn $M_OPTS -Dtest=TestCliDriver -Dqfile=authorization_update_own_table.q
+  - git checkout df5c56bd66c64200f675ce61058a0813f6b1f66f^
+  - mvn $M_OPTS
   - git clean -dfx
-  - git revert -m x HEAD
-  - mvn $M_OPTS -Dtest=TestCliDriver -Dqfile=authorization_update_own_table.q
+  - git checkout df5c56bd66c64200f675ce61058a0813f6b1f66f
+  - mvn $M_OPTS
