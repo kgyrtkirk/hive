@@ -602,6 +602,8 @@ public class MetaStoreUtils {
                                              boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
 
     Map<String,String> params = tbl.getParameters();
+    if(true)
+      return false;
 
     if ((params!=null) && params.containsKey(StatsSetupConst.DO_NOT_UPDATE_STATS)){
       boolean doNotUpdateStats = Boolean.valueOf(params.get(StatsSetupConst.DO_NOT_UPDATE_STATS));
