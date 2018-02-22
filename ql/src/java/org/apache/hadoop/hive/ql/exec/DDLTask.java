@@ -4359,10 +4359,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private List<Task<?>> alterTableAddProps(AlterTableDesc alterTbl, Table tbl,
       Partition part, EnvironmentContext environmentContext) throws HiveException {
-    if (StatsSetupConst.USER.equals(environmentContext.getProperties()
-        .get(StatsSetupConst.STATS_GENERATED))) {
-      environmentContext.getProperties().remove(StatsSetupConst.DO_NOT_UPDATE_STATS);
-    }
     List<Task<?>> result = null;
     if (part != null) {
       part.getTPartition().getParameters().putAll(alterTbl.getProps());
