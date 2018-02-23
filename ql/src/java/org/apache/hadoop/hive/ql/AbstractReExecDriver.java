@@ -58,10 +58,10 @@ public abstract class AbstractReExecDriver implements IDriver {
       case PRE_EXEC_HOOK:
         break;
       case POST_EXEC_HOOK:
-        onExecutionSuccess1(hookContext);
+        onExecutionSuccess(hookContext);
         break;
       case ON_FAILURE_HOOK:
-        onExecutionFailure1(hookContext);
+        onExecutionFailure(hookContext);
         break;
       }
     }
@@ -110,14 +110,6 @@ public abstract class AbstractReExecDriver implements IDriver {
 
   public boolean firstExecution() {
     return executionIndex == 0;
-  }
-
-  protected final void onExecutionSuccess1(HookContext hookContext) {
-    onExecutionSuccess(hookContext);
-  }
-
-  protected final void onExecutionFailure1(HookContext hookContext) {
-    onExecutionFailure(hookContext);
   }
 
   protected abstract void onExecutionSuccess(HookContext hookContext);
