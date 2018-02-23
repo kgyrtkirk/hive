@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
@@ -195,11 +194,11 @@ public abstract class AbstractReExecDriver implements IDriver {
   }
 
   private boolean planDidChange(PlanMapper pmL, PlanMapper pmR) {
-    List<Operator<OperatorDesc>> opsL = getRootOps(pmL);
-    List<Operator<OperatorDesc>> opsR = getRootOps(pmR);
-    for (Iterator<Operator<OperatorDesc>> itL = opsL.iterator(); itL.hasNext();) {
+    List<Operator> opsL = getRootOps(pmL);
+    List<Operator> opsR = getRootOps(pmR);
+    for (Iterator<Operator> itL = opsL.iterator(); itL.hasNext();) {
       Operator<?> opL = itL.next();
-      for (Iterator<Operator<OperatorDesc>> itR = opsR.iterator(); itR.hasNext();) {
+      for (Iterator<Operator> itR = opsR.iterator(); itR.hasNext();) {
         Operator<?> opR = itR.next();
         if (opL.logicalEqualsTree(opR)) {
           itL.remove();
@@ -211,11 +210,11 @@ public abstract class AbstractReExecDriver implements IDriver {
     return opsL.isEmpty() && opsR.isEmpty();
   }
 
-  private <T extends Operator<? extends OperatorDesc>> List<T> getRootOps(PlanMapper pmL) {
-    List<T> ops = (List<T>) pmL.getAll(Operator.class);
-    for (Iterator<T> iterator = ops.iterator(); iterator.hasNext();) {
-      T t = iterator.next();
-      if (t.getNumChild() != 0) {
+  private List<Operator> getRootOps(PlanMapper pmL) {
+    List<Operator> ops = pmL.getAll(Operator.class);
+    for (Iterator<Operator> iterator = ops.iterator(); iterator.hasNext();) {
+      Operator o = iterator.next();
+      if (o.getNumChild() != 0) {
         iterator.remove();
       }
     }
