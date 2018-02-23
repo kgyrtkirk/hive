@@ -43,7 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Enables to write re-execution logics.
+ * Enables to use re-execution logics.
  *
  * Covers most of the IDriver interface by forwarding them to the delegate driver.
  * Handles query re-execution; and asks clear questions from the underlying re-execution logic.
