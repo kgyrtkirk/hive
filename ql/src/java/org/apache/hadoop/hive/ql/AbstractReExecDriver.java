@@ -20,12 +20,14 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.List;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
@@ -34,6 +36,7 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
@@ -192,7 +195,31 @@ public abstract class AbstractReExecDriver implements IDriver {
   }
 
   private boolean planDidChange(PlanMapper pmL, PlanMapper pmR) {
-    return true;
+    List<Operator<OperatorDesc>> opsL = getRootOps(pmL);
+    List<Operator<OperatorDesc>> opsR = getRootOps(pmR);
+    for (Iterator<Operator<OperatorDesc>> itL = opsL.iterator(); itL.hasNext();) {
+      Operator<?> opL = itL.next();
+      for (Iterator<Operator<OperatorDesc>> itR = opsR.iterator(); itR.hasNext();) {
+        Operator<?> opR = itR.next();
+        if (opL.logicalEqualsTree(opR)) {
+          itL.remove();
+          itR.remove();
+          break;
+        }
+      }
+    }
+    return opsL.isEmpty() && opsR.isEmpty();
+  }
+
+  private <T extends Operator<? extends OperatorDesc>> List<T> getRootOps(PlanMapper pmL) {
+    List<T> ops = (List<T>) pmL.getAll(Operator.class);
+    for (Iterator<T> iterator = ops.iterator(); iterator.hasNext();) {
+      T t = iterator.next();
+      if (t.getNumChild() != 0) {
+        iterator.remove();
+      }
+    }
+    return ops;
   }
 
   @Override
