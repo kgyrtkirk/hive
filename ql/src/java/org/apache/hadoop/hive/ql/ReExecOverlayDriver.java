@@ -22,6 +22,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 
+/**
+ * Re-Executes a query only adding an extra overlay
+ */
 public class ReExecOverlayDriver extends AbstractReExecDriver {
 
   private boolean retryPossible;
