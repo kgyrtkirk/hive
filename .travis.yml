@@ -52,7 +52,10 @@ script:
   - echo "HASH=$HASH"
   - echo "TEST_OPTS=$TEST_OPTS"
   - git checkout $HASH^
+  - sed -i 's/0.9.1-SNAPSHOT/0.9.1/' pom.xml
   - mvn $M_OPTS
+  - git reset --hard
   - git clean -dfx
   - git checkout $HASH
+  - sed -i 's/0.9.1-SNAPSHOT/0.9.1/' pom.xml
   - mvn $M_OPTS
