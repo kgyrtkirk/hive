@@ -1578,7 +1578,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
             conf.isSame(other.getConf())));
   }
 
-  // XXX: this could easy become a hot-spot
+  // XXX: this could easily become a hot-spot
   public final boolean logicalEqualsTree(Operator<?> o) {
     if(!logicalEquals(o)) {
       return false;
