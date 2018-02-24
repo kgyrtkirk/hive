@@ -49,6 +49,8 @@ before_install:
 install: true
 
 script:
+  - echo "HASH=$HASH"
+  - echo "TEST_OPTS=$TEST_OPTS"
   - git checkout $HASH^
   - mvn $M_OPTS
   - git clean -dfx
