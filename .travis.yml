@@ -37,8 +37,8 @@ cache:
 env:
   MAVEN_SKIP_RC=true
   MAVEN_OPTS="-Xmx2g"
-  HASH=025ced9bc1a116d726459d5bba1907c0e4c9e560
-  TEST_OPTS="-Dtest=TestSSL"
+  HASH=cbb9233a3b39ab8489d777fc76f0758c49b69bef
+  TEST_OPTS="-Dtest=TestCliDriver#testCliDriver[mm_exchangepartition]"
   M_OPTS="install -Pitests -DskipSparkTests -am -q -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO $TEST_OPTS"
 
 # workaround added: https://github.com/travis-ci/travis-ci/issues/4629
