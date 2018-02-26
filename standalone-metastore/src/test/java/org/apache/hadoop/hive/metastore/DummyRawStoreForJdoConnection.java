@@ -340,25 +340,6 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     return false;
   }
 
-  @Deprecated
-  @DMX
-  @Override
-  public List<Index> getIndexes(String dbName, String origTableName, int max)
-      throws MetaException {
-
-    return null;
-  }
-
-  @Deprecated
-  @DMX
-  @Override
-  public List<String> listIndexNames(String dbName, String origTableName, short max)
-      throws MetaException {
-
-    return Collections.emptyList();
-  }
-
-
   @Override
   public List<Partition> getPartitionsByFilter(String dbName, String tblName, String filter,
       short maxParts) throws MetaException, NoSuchObjectException {

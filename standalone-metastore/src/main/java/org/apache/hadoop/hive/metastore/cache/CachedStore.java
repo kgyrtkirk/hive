@@ -1456,20 +1456,6 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.dropIndex(dbName, origTableName, indexName);
   }
 
-  @DMX
-  @Override
-  public List<Index> getIndexes(String dbName, String origTableName, int max)
-      throws MetaException {
-    return rawStore.getIndexes(dbName, origTableName, max);
-  }
-
-  @DMX
-  @Override
-  public List<String> listIndexNames(String dbName, String origTableName,
-      short max) throws MetaException {
-    return rawStore.listIndexNames(dbName, origTableName, max);
-  }
-
   private boolean getPartitionNamesPrunedByExprNoTxn(Table table, byte[] expr,
       String defaultPartName, short maxParts, List<String> result, SharedCache sharedCache)
           throws MetaException, NoSuchObjectException {

@@ -243,16 +243,6 @@ public interface RawStore extends Configurable {
   @Deprecated
   boolean dropIndex(String dbName, String origTableName, String indexName) throws MetaException;
 
-  @DMX
-  @Deprecated
-  List<Index> getIndexes(String dbName,
-      String origTableName, int max) throws MetaException;
-
-  @DMX
-  @Deprecated
-  List<String> listIndexNames(String dbName,
-      String origTableName, short max) throws MetaException;
-
   List<Partition> getPartitionsByFilter(
       String dbName, String tblName, String filter, short maxParts)
       throws MetaException, NoSuchObjectException;

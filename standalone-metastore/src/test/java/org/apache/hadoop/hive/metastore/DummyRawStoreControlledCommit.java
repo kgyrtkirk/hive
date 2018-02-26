@@ -329,19 +329,6 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<Index> getIndexes(String dbName, String origTableName, int max)
-      throws MetaException {
-    return objectStore.getIndexes(dbName, origTableName, max);
-  }
-
-  @Override
-  public List<String> listIndexNames(String dbName, String origTableName, short max)
-      throws MetaException {
-    return objectStore.listIndexNames(dbName, origTableName, max);
-  }
-
-
-  @Override
   public List<Partition> getPartitionsByFilter(String dbName, String tblName,
       String filter, short maxParts) throws MetaException, NoSuchObjectException {
     return objectStore.getPartitionsByFilter(dbName, tblName, filter, maxParts);
