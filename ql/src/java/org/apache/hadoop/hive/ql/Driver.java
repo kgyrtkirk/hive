@@ -429,7 +429,6 @@ public class Driver implements IDriver {
   /**
    * Generating the new QueryState object. Making sure, that the new queryId is generated.
    * @param conf The HiveConf which should be used
-  // HIVE-18238: try to remove before submitting
    * @param lineageState a LineageState to be set in the new QueryState object
    * @return The new QueryState object
    */
