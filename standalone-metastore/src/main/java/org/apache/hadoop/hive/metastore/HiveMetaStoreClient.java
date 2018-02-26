@@ -1723,9 +1723,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    * @throws TException
    */
   @Override
+  @Deprecated
+  @DMX
+
   public List<Index> listIndexes(String dbName, String tblName, short max)
       throws NoSuchObjectException, MetaException, TException {
-    return filterHook.filterIndexes(client.get_indexes(dbName, tblName, max));
+    return null;
   }
 
   @Override

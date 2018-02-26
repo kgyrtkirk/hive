@@ -142,22 +142,6 @@ public class TestFilterHooks {
       return super.filterIndex(index);
     }
 
-    @Override
-    public List<String> filterIndexNames(String dbName, String tblName,
-        List<String> indexList) throws MetaException {
-      if (blockResults) {
-        return new ArrayList<>();
-      }
-      return super.filterIndexNames(dbName, tblName, indexList);
-    }
-
-    @Override
-    public List<Index> filterIndexes(List<Index> indexeList) throws MetaException {
-      if (blockResults) {
-        return new ArrayList<>();
-      }
-      return super.filterIndexes(indexeList);
-    }
   }
 
   private static final String DBNAME1 = "testdb1";

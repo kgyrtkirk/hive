@@ -95,8 +95,4 @@ public class DefaultMetaStoreFilterHookImpl implements MetaStoreFilterHook {
     return indexList;
   }
 
-  @Override
-  public List<Index> filterIndexes(List<Index> indexeList) throws MetaException {
-    return indexeList;
-  }
 }

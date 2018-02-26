@@ -128,14 +128,5 @@ public interface MetaStoreFilterHook {
   public List<String> filterIndexNames(String dbName, String tblName,
       List<String> indexList) throws MetaException;
 
-  /**
-   * Filter given list of index objects
-   * @param indexeList
-   * @return
-   */
-  @Deprecated
-  @DMX
-
-  public List<Index> filterIndexes(List<Index> indexeList) throws MetaException;
 }
 
