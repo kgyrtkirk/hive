@@ -5207,7 +5207,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @DMX
-    @Override
+
     public List<String> get_index_names(final String dbName, final String tblName,
         final short maxIndexes) throws TException {
       startTableFunction("get_index_names", dbName, tblName);
