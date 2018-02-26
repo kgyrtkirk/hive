@@ -20,6 +20,7 @@
 package org.apache.hadoop.hive.metastore.messaging;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.DMX;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -55,8 +56,15 @@ public abstract class MessageFactory {
   public static final String INSERT_EVENT = "INSERT";
   public static final String CREATE_FUNCTION_EVENT = "CREATE_FUNCTION";
   public static final String DROP_FUNCTION_EVENT = "DROP_FUNCTION";
+  @Deprecated
+  @DMX
+
   public static final String CREATE_INDEX_EVENT = "CREATE_INDEX";
+  @Deprecated
+  @DMX
   public static final String DROP_INDEX_EVENT = "DROP_INDEX";
+  @Deprecated
+  @DMX
   public static final String ALTER_INDEX_EVENT = "ALTER_INDEX";
   public static final String ADD_PRIMARYKEY_EVENT = "ADD_PRIMARYKEY";
   public static final String ADD_FOREIGNKEY_EVENT = "ADD_FOREIGNKEY";
