@@ -110,6 +110,9 @@ public interface MetaStoreFilterHook {
   public List<String> filterPartitionNames(String dbName, String tblName,
       List<String> partitionNames) throws MetaException;
 
+  @Deprecated
+  @DMX
+
   public Index filterIndex(Index index) throws MetaException, NoSuchObjectException;
 
   /**

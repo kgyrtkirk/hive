@@ -1690,7 +1690,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   public void alter_index(String dbname, String base_tbl_name, String idx_name, Index new_idx)
       throws InvalidOperationException, MetaException, TException {
-    client.alter_index(dbname, base_tbl_name, idx_name, new_idx);
   }
 
   /**
