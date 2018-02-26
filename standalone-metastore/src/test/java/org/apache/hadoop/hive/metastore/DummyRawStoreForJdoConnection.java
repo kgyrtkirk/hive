@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -310,25 +309,11 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public void alterPartition(String db_name, String tbl_name, List<String> part_vals,
       Partition new_part) throws InvalidObjectException, MetaException {
-
-
   }
 
   @Override
   public void alterPartitions(String db_name, String tbl_name, List<List<String>> part_vals_list,
       List<Partition> new_parts) throws InvalidObjectException, MetaException {
-
-
-  }
-
-  @Deprecated
-  @DMX
-
-  @Override
-  public Index getIndex(String dbName, String origTableName, String indexName)
-      throws MetaException {
-
-    return null;
   }
 
   @Deprecated

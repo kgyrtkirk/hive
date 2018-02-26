@@ -4559,15 +4559,6 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  @DMX
-  @Deprecated
-  public Index getIndex(String dbName, String origTableName, String indexName)
-      throws MetaException {
-    return null;
-  }
-
-
-  @Override
   public boolean addRole(String roleName, String ownerName)
       throws InvalidObjectException, MetaException, NoSuchObjectException {
     boolean success = false;

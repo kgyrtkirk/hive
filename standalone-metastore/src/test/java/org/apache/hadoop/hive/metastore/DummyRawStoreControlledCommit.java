@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -317,12 +316,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public Index getIndex(String dbName, String origTableName, String indexName)
-      throws MetaException {
-    return objectStore.getIndex(dbName, origTableName, indexName);
-  }
+  @Deprecated
+  @DMX
 
-  @Override
   public boolean dropIndex(String dbName, String origTableName, String indexName)
       throws MetaException {
     return objectStore.dropIndex(dbName, origTableName, indexName);
