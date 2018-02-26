@@ -1672,8 +1672,6 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   void alter_index(1:string dbname, 2:string base_tbl_name, 3:string idx_name, 4:Index new_idx)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
-  Index get_index_by_name(1:string db_name 2:string tbl_name, 3:string index_name)
-                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   //primary keys and foreign keys
   PrimaryKeysResponse get_primary_keys(1:PrimaryKeysRequest request)

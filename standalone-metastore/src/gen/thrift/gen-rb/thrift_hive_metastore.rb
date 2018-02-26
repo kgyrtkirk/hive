@@ -1487,23 +1487,6 @@ module ThriftHiveMetastore
       return
     end
 
-    def get_index_by_name(db_name, tbl_name, index_name)
-      send_get_index_by_name(db_name, tbl_name, index_name)
-      return recv_get_index_by_name()
-    end
-
-    def send_get_index_by_name(db_name, tbl_name, index_name)
-      send_message('get_index_by_name', Get_index_by_name_args, :db_name => db_name, :tbl_name => tbl_name, :index_name => index_name)
-    end
-
-    def recv_get_index_by_name()
-      result = receive_message(Get_index_by_name_result)
-      return result.success unless result.success.nil?
-      raise result.o1 unless result.o1.nil?
-      raise result.o2 unless result.o2.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_index_by_name failed: unknown result')
-    end
-
     def get_primary_keys(request)
       send_get_primary_keys(request)
       return recv_get_primary_keys()
@@ -4209,19 +4192,6 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'alter_index', seqid)
-    end
-
-    def process_get_index_by_name(seqid, iprot, oprot)
-      args = read_args(iprot, Get_index_by_name_args)
-      result = Get_index_by_name_result.new()
-      begin
-        result.success = @handler.get_index_by_name(args.db_name, args.tbl_name, args.index_name)
-      rescue ::MetaException => o1
-        result.o1 = o1
-      rescue ::NoSuchObjectException => o2
-        result.o2 = o2
-      end
-      write_result(result, oprot, 'get_index_by_name', seqid)
     end
 
     def process_get_primary_keys(seqid, iprot, oprot)
@@ -8708,46 +8678,6 @@ module ThriftHiveMetastore
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidOperationException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Get_index_by_name_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    DB_NAME = 1
-    TBL_NAME = 2
-    INDEX_NAME = 3
-
-    FIELDS = {
-      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
-      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
-      INDEX_NAME => {:type => ::Thrift::Types::STRING, :name => 'index_name'}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Get_index_by_name_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    SUCCESS = 0
-    O1 = 1
-    O2 = 2
-
-    FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Index},
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
     }
 
     def struct_fields; FIELDS; end
