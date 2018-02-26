@@ -79,7 +79,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.Lists;
 
-import junit.framework.TestCase;
 import org.junit.experimental.categories.Category;
 
 /**
@@ -282,7 +281,7 @@ public class TestMetaStoreEventListener {
     listSize += 2;  // creates index table internally
     assertEquals(notifyList.size(), listSize);
 
-    AddIndexEvent addIndexEvent = (AddIndexEvent)notifyList.get(listSize - 1);
+    AddIndexEvent addIndexEvent = (AddIndexEvent) notifyList.get(listSize - 1);
     Assert.assertTrue(addIndexEvent.getStatus());
     PreAddIndexEvent preAddIndexEvent = (PreAddIndexEvent)(preNotifyList.get(preNotifyList.size() - 2));
 

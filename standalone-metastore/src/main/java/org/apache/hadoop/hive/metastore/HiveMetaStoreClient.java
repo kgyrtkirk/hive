@@ -1685,6 +1685,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    *      java.lang.String, java.lang.String, org.apache.hadoop.hive.metastore.api.Index)
    */
   @Override
+  @DMX
+  @Deprecated
+
   public void alter_index(String dbname, String base_tbl_name, String idx_name, Index new_idx)
       throws InvalidOperationException, MetaException, TException {
     client.alter_index(dbname, base_tbl_name, idx_name, new_idx);
@@ -1701,6 +1704,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    * @throws TException
    */
   @Override
+  @DMX
+  @Deprecated
+
   public Index getIndex(String dbName, String tblName, String indexName)
       throws MetaException, UnknownTableException, NoSuchObjectException,
       TException {
@@ -1718,6 +1724,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    * @throws TException
    */
   @Override
+  @DMX
+  @Deprecated
+
   public List<String> listIndexNames(String dbName, String tblName, short max)
       throws MetaException, TException {
     return filterHook.filterIndexNames(dbName, tblName, client.get_index_names(dbName, tblName, max));
@@ -2349,10 +2358,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void compact(String dbname, String tableName, String partitionName,  CompactionType type)
       throws TException {
     CompactionRequest cr = new CompactionRequest();
-    if (dbname == null) cr.setDbname(DEFAULT_DATABASE_NAME);
-    else cr.setDbname(dbname);
+    if (dbname == null) {
+      cr.setDbname(DEFAULT_DATABASE_NAME);
+    } else {
+      cr.setDbname(dbname);
+    }
     cr.setTablename(tableName);
-    if (partitionName != null) cr.setPartitionname(partitionName);
+    if (partitionName != null) {
+      cr.setPartitionname(partitionName);
+    }
     cr.setType(type);
     client.compact(cr);
   }
@@ -2367,10 +2381,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public CompactionResponse compact2(String dbname, String tableName, String partitionName, CompactionType type,
                       Map<String, String> tblproperties) throws TException {
     CompactionRequest cr = new CompactionRequest();
-    if (dbname == null) cr.setDbname(DEFAULT_DATABASE_NAME);
-    else cr.setDbname(dbname);
+    if (dbname == null) {
+      cr.setDbname(DEFAULT_DATABASE_NAME);
+    } else {
+      cr.setDbname(dbname);
+    }
     cr.setTablename(tableName);
-    if (partitionName != null) cr.setPartitionname(partitionName);
+    if (partitionName != null) {
+      cr.setPartitionname(partitionName);
+    }
     cr.setType(type);
     cr.setProperties(tblproperties);
     return client.compact2(cr);
@@ -2427,7 +2446,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       NotificationEventResponse filtered = new NotificationEventResponse();
       if (rsp != null && rsp.getEvents() != null) {
         for (NotificationEvent e : rsp.getEvents()) {
-          if (filter.accept(e)) filtered.addToEvents(e);
+          if (filter.accept(e)) {
+            filtered.addToEvents(e);
+          }
         }
       }
       return filtered;
@@ -2577,14 +2598,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       private int listIndex = 0;
       @Override
       protected Map<Long, ByteBuffer> fetchNextBatch() throws TException {
-        if (listIndex == fileIds.size()) return null;
+        if (listIndex == fileIds.size()) {
+          return null;
+        }
         int endIndex = Math.min(listIndex + fileMetadataBatchSize, fileIds.size());
         List<Long> subList = fileIds.subList(listIndex, endIndex);
         GetFileMetadataResult resp = sendGetFileMetadataReq(subList);
         // TODO: we could remember if it's unsupported and stop sending calls; although, it might
         //       be a bad idea for HS2+standalone metastore that could be updated with support.
         //       Maybe we should just remember this for some time.
-        if (!resp.isIsSupported()) return null;
+        if (!resp.isIsSupported()) {
+          return null;
+        }
         listIndex = endIndex;
         return resp.getMetadata();
       }
@@ -2603,12 +2628,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       private int listIndex = 0;
       @Override
       protected Map<Long, MetadataPpdResult> fetchNextBatch() throws TException {
-        if (listIndex == fileIds.size()) return null;
+        if (listIndex == fileIds.size()) {
+          return null;
+        }
         int endIndex = Math.min(listIndex + fileMetadataBatchSize, fileIds.size());
         List<Long> subList = fileIds.subList(listIndex, endIndex);
         GetFileMetadataByExprResult resp = sendGetFileMetadataBySargReq(
             sarg, subList, doGetFooters);
-        if (!resp.isIsSupported()) return null;
+        if (!resp.isIsSupported()) {
+          return null;
+        }
         listIndex = endIndex;
         return resp.getMetadata();
       }
@@ -2640,7 +2669,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
 
     private void ensureCurrentBatch() {
-      if (currentIter != null && currentIter.hasNext()) return;
+      if (currentIter != null && currentIter.hasNext()) {
+        return;
+      }
       currentIter = null;
       Map<K, V> currentBatch;
       do {
@@ -2649,7 +2680,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         } catch (TException ex) {
           throw new RuntimeException(ex);
         }
-        if (currentBatch == null) return; // No more data.
+        if (currentBatch == null)
+         {
+          return; // No more data.
+        }
       } while (currentBatch.isEmpty());
       currentIter = currentBatch.entrySet().iterator();
     }
@@ -2657,7 +2691,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     @Override
     public Entry<K, V> next() {
       ensureCurrentBatch();
-      if (currentIter == null) throw new NoSuchElementException();
+      if (currentIter == null) {
+        throw new NoSuchElementException();
+      }
       return currentIter.next();
     }
 

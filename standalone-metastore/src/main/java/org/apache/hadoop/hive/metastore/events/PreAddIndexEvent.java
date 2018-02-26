@@ -20,11 +20,15 @@ package org.apache.hadoop.hive.metastore.events;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.hive.metastore.DMX;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.Index;
 
 @InterfaceAudience.Public
 @InterfaceStability.Stable
+@DMX
+@Deprecated
+
 public class PreAddIndexEvent extends PreEventContext {
 
 private final Index table;
