@@ -74,7 +74,6 @@ import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
@@ -95,7 +94,6 @@ import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
-import org.apache.hadoop.hive.metastore.events.PreAddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterIndexEvent;
@@ -4994,83 +4992,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @DMX
     @Deprecated
-
     private Index add_index_core(final RawStore ms, final Index index, final Table indexTable)
         throws InvalidObjectException, AlreadyExistsException, MetaException {
-      boolean success = false, indexTableCreated = false;
-      String[] qualified = null;
-      Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-      try {
-        ms.openTransaction();
-        firePreEvent(new PreAddIndexEvent(index, this));
-        Index old_index = null;
-        try {
-          old_index = get_index_by_name(index.getDbName(), index
-              .getOrigTableName(), index.getIndexName());
-        } catch (Exception e) {
-        }
-        if (old_index != null) {
-          throw new AlreadyExistsException("Index already exists:" + index);
-        }
-        Table origTbl = ms.getTable(index.getDbName(), index.getOrigTableName());
-        if (origTbl == null) {
-          throw new InvalidObjectException(
-              "Unable to add index because database or the original table do not exist");
-        }
-
-        // set create time
-        long time = System.currentTimeMillis() / 1000;
-        Table indexTbl = indexTable;
-        if (indexTbl != null) {
-          if (!TableType.INDEX_TABLE.name().equals(indexTbl.getTableType())){
-            throw new InvalidObjectException(
-                    "The table " + indexTbl.getTableName()+ " provided as index table must have "
-                            + TableType.INDEX_TABLE + " table type");
-          }
-          try {
-            indexTbl = ms.getTable(qualified[0], qualified[1]);
-          } catch (Exception e) {
-          }
-          if (indexTbl != null) {
-            throw new InvalidObjectException(
-                "Unable to add index because index table already exists");
-          }
-          this.create_table(indexTable);
-          indexTableCreated = true;
-        }
-
-        index.setCreateTime((int) time);
-        index.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
-        if (ms.addIndex(index)) {
-          if (!transactionalListeners.isEmpty()) {
-            transactionalListenerResponses =
-                MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                                                      EventType.CREATE_INDEX,
-                                                      new AddIndexEvent(index, true, this));
-          }
-        }
-
-        success = ms.commitTransaction();
-        return index;
-      } finally {
-        if (!success) {
-          if (indexTableCreated) {
-            try {
-              drop_table(qualified[0], qualified[1], false);
-            } catch (Exception e) {
-            }
-          }
-          ms.rollbackTransaction();
-        }
-
-        if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-                                                EventType.CREATE_INDEX,
-                                                new AddIndexEvent(index, success, this),
-                                                null,
-                                                transactionalListenerResponses, ms);
-        }
-      }
+      return index;
     }
 
     @DMX
@@ -5079,25 +5003,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public boolean drop_index_by_name(final String dbName, final String tblName,
         final String indexName, final boolean deleteData) throws TException {
-      startFunction("drop_index_by_name", ": db=" + dbName + " tbl="
-          + tblName + " index=" + indexName);
-
-      boolean ret = false;
-      Exception ex = null;
-      try {
-        ret = drop_index_by_name_core(getMS(), dbName, tblName,
-            indexName, deleteData);
-      } catch (IOException e) {
-        ex = e;
-        throw new MetaException(e.getMessage());
-      } catch (Exception e) {
-        ex = e;
-        rethrowException(e);
-      } finally {
-        endFunction("drop_index_by_name", ret, ex, tblName);
-      }
-
-      return ret;
+      return deleteData;
     }
 
     @DMX
@@ -5134,21 +5040,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             }
           }
 
-          // Drop the partitions and get a list of partition locations which need to be deleted
-          partPaths = dropPartitionsAndGetLocations(ms, qualified[0], qualified[1], tblPath,
-              tbl.getPartitionKeys(), deleteData);
-          if (!ms.dropTable(qualified[0], qualified[1])) {
-            throw new MetaException("Unable to drop underlying data table "
-                + qualified[0] + "." + qualified[1] + " for index " + indexName);
-          }
         }
 
-        if (!transactionalListeners.isEmpty()) {
-          transactionalListenerResponses =
-              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                                                    EventType.DROP_INDEX,
-                                                    new DropIndexEvent(index, true, this));
-        }
 
         success = ms.commitTransaction();
       } finally {
