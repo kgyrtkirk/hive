@@ -1714,25 +1714,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   /**
-   * list indexes of the give base table
-   * @param dbName
-   * @param tblName
-   * @param max
-   * @return the list of indexes
-   * @throws NoSuchObjectException
-   * @throws MetaException
-   * @throws TException
-   */
-  @Override
-  @DMX
-  @Deprecated
-
-  public List<String> listIndexNames(String dbName, String tblName, short max)
-      throws MetaException, TException {
-    return filterHook.filterIndexNames(dbName, tblName, client.get_index_names(dbName, tblName, max));
-  }
-
-  /**
    * list all the index names of the give base table.
    *
    * @param dbName

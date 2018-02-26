@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.CmRecycleRequest;
 import org.apache.hadoop.hive.metastore.api.CmRecycleResponse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -926,7 +925,7 @@ public interface IMetaStoreClient {
    *          table name of the old partition
    * @param newParts
    *          list of partitions
-   * @param environmentContext 
+   * @param environmentContext
    * @throws InvalidOperationException
    *           if the old partition does not exist
    * @throws MetaException
@@ -1029,9 +1028,13 @@ public interface IMetaStoreClient {
    * @throws TException
    * @throws AlreadyExistsException
    */
+  @DMX
+  @Deprecated
   void createIndex(Index index, Table indexTable) throws InvalidObjectException,
       MetaException, NoSuchObjectException, TException, AlreadyExistsException;
 
+  @DMX
+  @Deprecated
   void alter_index(String dbName, String tblName, String indexName,
       Index index) throws InvalidOperationException, MetaException, TException;
 
@@ -1046,6 +1049,8 @@ public interface IMetaStoreClient {
    * @throws NoSuchObjectException
    * @throws TException
    */
+  @DMX
+  @Deprecated
   Index getIndex(String dbName, String tblName, String indexName)
       throws MetaException, UnknownTableException, NoSuchObjectException,
       TException;
@@ -1061,6 +1066,8 @@ public interface IMetaStoreClient {
    * @throws MetaException
    * @throws TException
    */
+  @DMX
+  @Deprecated
   List<Index> listIndexes(String db_name, String tbl_name,
       short max) throws NoSuchObjectException, MetaException, TException;
 
@@ -1074,6 +1081,8 @@ public interface IMetaStoreClient {
    * @throws MetaException
    * @throws TException
    */
+  @DMX
+  @Deprecated
   List<String> listIndexNames(String db_name, String tbl_name,
       short max) throws MetaException, TException;
 
@@ -1087,6 +1096,8 @@ public interface IMetaStoreClient {
    * @throws MetaException
    * @throws TException
    */
+  @DMX
+  @Deprecated
   boolean dropIndex(String db_name, String tbl_name,
       String name, boolean deleteData) throws NoSuchObjectException,
       MetaException, TException;

@@ -5207,29 +5207,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @DMX
-
-    public List<String> get_index_names(final String dbName, final String tblName,
-        final short maxIndexes) throws TException {
-      startTableFunction("get_index_names", dbName, tblName);
-
-      List<String> ret = null;
-      Exception ex = null;
-      try {
-        ret = getMS().listIndexNames(dbName, tblName, maxIndexes);
-      } catch (Exception e) {
-        ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else {
-          throw newMetaException(e);
-        }
-      } finally {
-        endFunction("get_index_names", ret != null, ex, tblName);
-      }
-      return ret;
-    }
-
-    @DMX
     @Deprecated
 
     @Override

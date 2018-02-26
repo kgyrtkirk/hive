@@ -119,6 +119,9 @@ public interface MetaStoreFilterHook {
    * @param indexList
    * @return
    */
+  @DMX
+  @Deprecated
+
   public List<String> filterIndexNames(String dbName, String tblName,
       List<String> indexList) throws MetaException;
 
