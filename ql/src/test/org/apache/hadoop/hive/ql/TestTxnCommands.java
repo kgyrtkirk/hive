@@ -577,12 +577,14 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       "WHEN MATCHED AND s.a > 8 THEN DELETE " +
       "WHEN MATCHED THEN UPDATE SET b = 7 " +
       "WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b) ";
-
+    d.destroy();
     HiveConf hc = new HiveConf(hiveConf);
     hc.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
     hc.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
+    d = new Driver(hc);
+    d.setMaxRows(10000);
 
-    List<String> explain = runStatementOnDriver(hc, "explain " + query);
+    List<String> explain = runStatementOnDriver("explain " + query);
     StringBuilder sb = new StringBuilder();
     for(String s : explain) {
       sb.append(s).append('\n');
@@ -618,20 +620,23 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   }
   @Test
   public void testMergeUpdateDeleteNoCardCheck() throws Exception {
+    d.destroy();
     HiveConf hc = new HiveConf(hiveConf);
     hc.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, false);
+    d = new Driver(hc);
+    d.setMaxRows(10000);
 
     int[][] baseValsOdd = {{2,2},{4,44},{5,5},{11,11}};
-    runStatementOnDriver(hc, "insert into " + Table.NONACIDORCTBL + " " + makeValuesClause(baseValsOdd));
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + " " + makeValuesClause(baseValsOdd));
     int[][] vals = {{2,1},{4,3},{5,6},{7,8}};
-    runStatementOnDriver(hc, "insert into " + Table.ACIDTBL + " " + makeValuesClause(vals));
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(vals));
     String query = "merge into " + Table.ACIDTBL +
       " as t using " + Table.NONACIDORCTBL + " s ON t.a = s.a " +
       "WHEN MATCHED AND s.a < 3 THEN update set b = 0 " +
       "WHEN MATCHED and t.a > 3 and t.a < 5 THEN DELETE ";
-    runStatementOnDriver(hc, query);
+    runStatementOnDriver(query);
 
-    List<String> r = runStatementOnDriver(hc, "select a,b from " + Table.ACIDTBL + " order by a,b");
+    List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
     int[][] rExpected = {{2,0},{5,6},{7,8}};
     Assert.assertEquals(stringifyValues(rExpected), r);
   }
@@ -788,15 +793,18 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   public void testMoreBucketsThanReducers() throws Exception {
     //see bucket_num_reducers.q bucket_num_reducers2.q
     // todo: try using set VerifyNumReducersHook.num.reducers=10;
+    d.destroy();
     HiveConf hc = new HiveConf(hiveConf);
     hc.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 1);
     //this is used in multiple places, SemanticAnalyzer.getBucketingSortingDest() among others
     hc.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 1);
     hc.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
-    runStatementOnDriver(hc, "insert into " + Table.ACIDTBL + " values(1,1)");//txn X write to bucket1
-    runStatementOnDriver(hc, "insert into " + Table.ACIDTBL + " values(0,0),(3,3)");// txn X + 1 write to bucket0 + bucket1
-    runStatementOnDriver(hc, "update " + Table.ACIDTBL + " set b = -1");
-    List<String> r = runStatementOnDriver(hc, "select * from " + Table.ACIDTBL + " order by a, b");
+    d = new Driver(hc);
+    d.setMaxRows(10000);
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " values(1,1)");//txn X write to bucket1
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " values(0,0),(3,3)");// txn X + 1 write to bucket0 + bucket1
+    runStatementOnDriver("update " + Table.ACIDTBL + " set b = -1");
+    List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBL + " order by a, b");
     int[][] expected = {{0, -1}, {1, -1}, {3, -1}};
     Assert.assertEquals(stringifyValues(expected), r);
   }
@@ -805,22 +813,24 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   public void testMoreBucketsThanReducers2() throws Exception {
     //todo: try using set VerifyNumReducersHook.num.reducers=10;
     //see bucket_num_reducers.q bucket_num_reducers2.q
+    d.destroy();
     HiveConf hc = new HiveConf(hiveConf);
     hc.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 2);
     //this is used in multiple places, SemanticAnalyzer.getBucketingSortingDest() among others
     hc.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 2);
-    runStatementOnDriver(hc,
-        "create table fourbuckets (a int, b int) clustered by (a) into 4 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    d = new Driver(hc);
+    d.setMaxRows(10000);
+    runStatementOnDriver("create table fourbuckets (a int, b int) clustered by (a) into 4 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     //below value for a is bucket id, for b - txn id (logically)
-    runStatementOnDriver(hc, "insert into fourbuckets values(0,1),(1,1)");//txn X write to b0 + b1
-    runStatementOnDriver(hc, "insert into fourbuckets values(2,2),(3,2)");// txn X + 1 write to b2 + b3
-    runStatementOnDriver(hc, "insert into fourbuckets values(0,3),(1,3)");//txn X + 2 write to b0 + b1
-    runStatementOnDriver(hc, "insert into fourbuckets values(2,4),(3,4)");//txn X + 3 write to b2 + b3
+    runStatementOnDriver("insert into fourbuckets values(0,1),(1,1)");//txn X write to b0 + b1
+    runStatementOnDriver("insert into fourbuckets values(2,2),(3,2)");// txn X + 1 write to b2 + b3
+    runStatementOnDriver("insert into fourbuckets values(0,3),(1,3)");//txn X + 2 write to b0 + b1
+    runStatementOnDriver("insert into fourbuckets values(2,4),(3,4)");//txn X + 3 write to b2 + b3
     //so with 2 FileSinks and 4 buckets, FS1 should see (0,1),(2,2),(0,3)(2,4) since data is sorted by ROW__ID where tnxid is the first component
     //FS2 should see (1,1),(3,2),(1,3),(3,4)
 
-    runStatementOnDriver(hc, "update fourbuckets set b = -1");
-    List<String> r = runStatementOnDriver(hc, "select * from fourbuckets order by a, b");
+    runStatementOnDriver("update fourbuckets set b = -1");
+    List<String> r = runStatementOnDriver("select * from fourbuckets order by a, b");
     int[][] expected = {{0, -1},{0, -1}, {1, -1}, {1, -1}, {2, -1}, {2, -1}, {3, -1}, {3, -1}};
     Assert.assertEquals(stringifyValues(expected), r);
   }

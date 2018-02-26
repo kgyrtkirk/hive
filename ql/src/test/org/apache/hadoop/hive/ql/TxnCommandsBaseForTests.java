@@ -48,6 +48,7 @@ public abstract class TxnCommandsBaseForTests {
   @Rule
   public TestName testName = new TestName();
   HiveConf hiveConf;
+  Driver d;
   enum Table {
     ACIDTBL("acidTbl"),
     ACIDTBLPART("acidTblPart"),
@@ -92,6 +93,8 @@ public abstract class TxnCommandsBaseForTests {
     }
     SessionState ss = SessionState.start(hiveConf);
     ss.applyAuthorizationPolicy();
+    d = new Driver(new QueryState.Builder().withHiveConf(hiveConf).nonIsolated().build(), null);
+    d.setMaxRows(10000);
     dropTables();
     runStatementOnDriver("create table " + Table.ACIDTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     runStatementOnDriver("create table " + Table.ACIDTBLPART + "(a int, b int) partitioned by (p string) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
@@ -107,9 +110,17 @@ public abstract class TxnCommandsBaseForTests {
   }
   @After
   public void tearDown() throws Exception {
-    dropTables();
-    TxnDbUtil.cleanDb(hiveConf);
-    FileUtils.deleteDirectory(new File(getTestDataDir()));
+    try {
+      if (d != null) {
+        dropTables();
+        d.close();
+        d.destroy();
+        d = null;
+      }
+    } finally {
+      TxnDbUtil.cleanDb(hiveConf);
+      FileUtils.deleteDirectory(new File(getTestDataDir()));
+    }
   }
   String getWarehouseDir() {
     return getTestDataDir() + "/warehouse";
@@ -135,14 +146,8 @@ public abstract class TxnCommandsBaseForTests {
   }
 
   List<String> runStatementOnDriver(String stmt) throws Exception {
-    return runStatementOnDriver(hiveConf, stmt);
-  }
-
-  List<String> runStatementOnDriver(HiveConf conf, String stmt) throws Exception {
-    IDriver d = DriverFactory.newDriver(conf);
-
     CommandProcessorResponse cpr = d.run(stmt);
-    if (cpr.getResponseCode() != 0) {
+    if(cpr.getResponseCode() != 0) {
       throw new RuntimeException(stmt + " failed: " + cpr);
     }
     List<String> rs = new ArrayList<String>();
@@ -150,19 +155,11 @@ public abstract class TxnCommandsBaseForTests {
     return rs;
   }
   CommandProcessorResponse runStatementOnDriverNegative(String stmt) throws Exception {
-    return runStatementOnDriverNegative(hiveConf, stmt);
-  }
-
-  CommandProcessorResponse runStatementOnDriverNegative(HiveConf conf, String stmt) throws Exception {
-    try (IDriver d = DriverFactory.newDriver(conf)) {
-      d.setMaxRows(10000);
-
-      CommandProcessorResponse cpr = d.run(stmt);
-      if (cpr.getResponseCode() != 0) {
-        return cpr;
-      }
-      throw new RuntimeException("Didn't get expected failure!");
+    CommandProcessorResponse cpr = d.run(stmt);
+    if(cpr.getResponseCode() != 0) {
+      return cpr;
     }
+    throw new RuntimeException("Didn't get expected failure!");
   }
 
   /**

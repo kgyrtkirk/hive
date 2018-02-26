@@ -27,10 +27,13 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -236,9 +239,10 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
    */
   @Test
   public void testInsertToAcidWithUnionRemove() throws Exception {
-
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_UNION_REMOVE, true);
     hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+    d.close();
+    d = new Driver(hiveConf);
     int[][] values = {{1,2},{3,4},{5,6},{7,8},{9,10}};
     runStatementOnDriver("insert into " + TxnCommandsBaseForTests.Table.ACIDTBL + makeValuesClause(values));//HIVE-17138: this creates 1 delta_0000013_0000013_0000/bucket_00001
     runStatementOnDriver("drop table if exists T");
@@ -280,11 +284,12 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
    */
   @Test
   public void testToAcidConversionMultiBucket() throws Exception {
-    // FIXME: separate class level from testmethod level
     //need to disable these so that automatic merge doesn't merge the files
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEMERGEMAPFILES, false);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES, false);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEMERGETEZFILES, false);
+    d.close();
+    d = new Driver(hiveConf);
 
     int[][] values = {{1,2},{2,4},{5,6},{6,8},{9,10}};
     runStatementOnDriver("insert into " + Table.ACIDTBL + makeValuesClause(values));
@@ -311,6 +316,8 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     //now do Insert from Union here to create data files in sub dirs
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_UNION_REMOVE, true);
     hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+    d.close();
+    d = new Driver(hiveConf);
     runStatementOnDriver("insert into T(a,b) select a * 10, b * 10 from " + Table.ACIDTBL +
         " where a between 1 and 3 group by a, b union all select a * 10, b * 10 from " + Table.ACIDTBL +
         " where a between 5 and 7");
