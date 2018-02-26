@@ -1666,8 +1666,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    * @throws AlreadyExistsException
    */
   @Override
+  @Deprecated
+  @DMX
   public void createIndex(Index index, Table indexTable) throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException {
-    client.add_index(index, indexTable);
   }
 
   /**
