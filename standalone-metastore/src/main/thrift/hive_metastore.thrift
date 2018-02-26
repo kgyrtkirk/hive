@@ -367,19 +367,6 @@ struct PartitionSpec {
   5: optional PartitionListComposingSpec partitionList
 }
 
-struct Index {
-  1: string       indexName, // unique with in the whole database namespace
-  2: string       indexHandlerClass, // reserved
-  3: string       dbName,
-  4: string       origTableName,
-  5: i32          createTime,
-  6: i32          lastAccessTime,
-  7: string       indexTableName,
-  8: StorageDescriptor   sd,
-  9: map<string, string> parameters,
-  10: bool         deferredRebuild
-}
-
 // column statistics
 struct BooleanColumnStatsData {
 1: required i64 numTrues,

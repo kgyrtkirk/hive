@@ -346,14 +346,14 @@ import org.slf4j.LoggerFactory;
           case 1: // RESOURCE_PLANS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list826 = iprot.readListBegin();
-                struct.resourcePlans = new ArrayList<WMResourcePlan>(_list826.size);
-                WMResourcePlan _elem827;
-                for (int _i828 = 0; _i828 < _list826.size; ++_i828)
+                org.apache.thrift.protocol.TList _list816 = iprot.readListBegin();
+                struct.resourcePlans = new ArrayList<WMResourcePlan>(_list816.size);
+                WMResourcePlan _elem817;
+                for (int _i818 = 0; _i818 < _list816.size; ++_i818)
                 {
-                  _elem827 = new WMResourcePlan();
-                  _elem827.read(iprot);
-                  struct.resourcePlans.add(_elem827);
+                  _elem817 = new WMResourcePlan();
+                  _elem817.read(iprot);
+                  struct.resourcePlans.add(_elem817);
                 }
                 iprot.readListEnd();
               }
@@ -380,9 +380,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(RESOURCE_PLANS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.resourcePlans.size()));
-            for (WMResourcePlan _iter829 : struct.resourcePlans)
+            for (WMResourcePlan _iter819 : struct.resourcePlans)
             {
-              _iter829.write(oprot);
+              _iter819.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -414,9 +414,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetResourcePlans()) {
         {
           oprot.writeI32(struct.resourcePlans.size());
-          for (WMResourcePlan _iter830 : struct.resourcePlans)
+          for (WMResourcePlan _iter820 : struct.resourcePlans)
           {
-            _iter830.write(oprot);
+            _iter820.write(oprot);
           }
         }
       }
@@ -428,14 +428,14 @@ import org.slf4j.LoggerFactory;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list831 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.resourcePlans = new ArrayList<WMResourcePlan>(_list831.size);
-          WMResourcePlan _elem832;
-          for (int _i833 = 0; _i833 < _list831.size; ++_i833)
+          org.apache.thrift.protocol.TList _list821 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.resourcePlans = new ArrayList<WMResourcePlan>(_list821.size);
+          WMResourcePlan _elem822;
+          for (int _i823 = 0; _i823 < _list821.size; ++_i823)
           {
-            _elem832 = new WMResourcePlan();
-            _elem832.read(iprot);
-            struct.resourcePlans.add(_elem832);
+            _elem822 = new WMResourcePlan();
+            _elem822.read(iprot);
+            struct.resourcePlans.add(_elem822);
           }
         }
         struct.setResourcePlansIsSet(true);
