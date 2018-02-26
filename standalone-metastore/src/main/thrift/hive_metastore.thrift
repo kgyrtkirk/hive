@@ -1667,10 +1667,6 @@ service ThriftHiveMetastore extends fb303.FacebookService
                   3: UnknownDBException o3, 4: UnknownTableException o4, 5: UnknownPartitionException o5,
                   6: InvalidPartitionException o6)
 
-  //index
-  Index add_index(1:Index new_index, 2: Table index_table)
-                       throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
-
   //primary keys and foreign keys
   PrimaryKeysResponse get_primary_keys(1:PrimaryKeysRequest request)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)

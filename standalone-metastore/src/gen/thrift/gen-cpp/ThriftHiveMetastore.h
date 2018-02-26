@@ -107,7 +107,6 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void partition_name_to_spec(std::map<std::string, std::string> & _return, const std::string& part_name) = 0;
   virtual void markPartitionForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType) = 0;
   virtual bool isPartitionMarkedForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType) = 0;
-  virtual void add_index(Index& _return, const Index& new_index, const Table& index_table) = 0;
   virtual void get_primary_keys(PrimaryKeysResponse& _return, const PrimaryKeysRequest& request) = 0;
   virtual void get_foreign_keys(ForeignKeysResponse& _return, const ForeignKeysRequest& request) = 0;
   virtual void get_unique_constraints(UniqueConstraintsResponse& _return, const UniqueConstraintsRequest& request) = 0;
@@ -495,9 +494,6 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   bool isPartitionMarkedForEvent(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::map<std::string, std::string> & /* part_vals */, const PartitionEventType::type /* eventType */) {
     bool _return = false;
     return _return;
-  }
-  void add_index(Index& /* _return */, const Index& /* new_index */, const Table& /* index_table */) {
-    return;
   }
   void get_primary_keys(PrimaryKeysResponse& /* _return */, const PrimaryKeysRequest& /* request */) {
     return;
@@ -11897,141 +11893,6 @@ class ThriftHiveMetastore_isPartitionMarkedForEvent_presult {
 
 };
 
-typedef struct _ThriftHiveMetastore_add_index_args__isset {
-  _ThriftHiveMetastore_add_index_args__isset() : new_index(false), index_table(false) {}
-  bool new_index :1;
-  bool index_table :1;
-} _ThriftHiveMetastore_add_index_args__isset;
-
-class ThriftHiveMetastore_add_index_args {
- public:
-
-  ThriftHiveMetastore_add_index_args(const ThriftHiveMetastore_add_index_args&);
-  ThriftHiveMetastore_add_index_args& operator=(const ThriftHiveMetastore_add_index_args&);
-  ThriftHiveMetastore_add_index_args() {
-  }
-
-  virtual ~ThriftHiveMetastore_add_index_args() throw();
-  Index new_index;
-  Table index_table;
-
-  _ThriftHiveMetastore_add_index_args__isset __isset;
-
-  void __set_new_index(const Index& val);
-
-  void __set_index_table(const Table& val);
-
-  bool operator == (const ThriftHiveMetastore_add_index_args & rhs) const
-  {
-    if (!(new_index == rhs.new_index))
-      return false;
-    if (!(index_table == rhs.index_table))
-      return false;
-    return true;
-  }
-  bool operator != (const ThriftHiveMetastore_add_index_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ThriftHiveMetastore_add_index_args & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-
-class ThriftHiveMetastore_add_index_pargs {
- public:
-
-
-  virtual ~ThriftHiveMetastore_add_index_pargs() throw();
-  const Index* new_index;
-  const Table* index_table;
-
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _ThriftHiveMetastore_add_index_result__isset {
-  _ThriftHiveMetastore_add_index_result__isset() : success(false), o1(false), o2(false), o3(false) {}
-  bool success :1;
-  bool o1 :1;
-  bool o2 :1;
-  bool o3 :1;
-} _ThriftHiveMetastore_add_index_result__isset;
-
-class ThriftHiveMetastore_add_index_result {
- public:
-
-  ThriftHiveMetastore_add_index_result(const ThriftHiveMetastore_add_index_result&);
-  ThriftHiveMetastore_add_index_result& operator=(const ThriftHiveMetastore_add_index_result&);
-  ThriftHiveMetastore_add_index_result() {
-  }
-
-  virtual ~ThriftHiveMetastore_add_index_result() throw();
-  Index success;
-  InvalidObjectException o1;
-  AlreadyExistsException o2;
-  MetaException o3;
-
-  _ThriftHiveMetastore_add_index_result__isset __isset;
-
-  void __set_success(const Index& val);
-
-  void __set_o1(const InvalidObjectException& val);
-
-  void __set_o2(const AlreadyExistsException& val);
-
-  void __set_o3(const MetaException& val);
-
-  bool operator == (const ThriftHiveMetastore_add_index_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    if (!(o1 == rhs.o1))
-      return false;
-    if (!(o2 == rhs.o2))
-      return false;
-    if (!(o3 == rhs.o3))
-      return false;
-    return true;
-  }
-  bool operator != (const ThriftHiveMetastore_add_index_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ThriftHiveMetastore_add_index_result & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _ThriftHiveMetastore_add_index_presult__isset {
-  _ThriftHiveMetastore_add_index_presult__isset() : success(false), o1(false), o2(false), o3(false) {}
-  bool success :1;
-  bool o1 :1;
-  bool o2 :1;
-  bool o3 :1;
-} _ThriftHiveMetastore_add_index_presult__isset;
-
-class ThriftHiveMetastore_add_index_presult {
- public:
-
-
-  virtual ~ThriftHiveMetastore_add_index_presult() throw();
-  Index* success;
-  InvalidObjectException o1;
-  AlreadyExistsException o2;
-  MetaException o3;
-
-  _ThriftHiveMetastore_add_index_presult__isset __isset;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-
-};
-
 typedef struct _ThriftHiveMetastore_get_primary_keys_args__isset {
   _ThriftHiveMetastore_get_primary_keys_args__isset() : request(false) {}
   bool request :1;
@@ -23131,9 +22992,6 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   bool isPartitionMarkedForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType);
   void send_isPartitionMarkedForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType);
   bool recv_isPartitionMarkedForEvent();
-  void add_index(Index& _return, const Index& new_index, const Table& index_table);
-  void send_add_index(const Index& new_index, const Table& index_table);
-  void recv_add_index(Index& _return);
   void get_primary_keys(PrimaryKeysResponse& _return, const PrimaryKeysRequest& request);
   void send_get_primary_keys(const PrimaryKeysRequest& request);
   void recv_get_primary_keys(PrimaryKeysResponse& _return);
@@ -23508,7 +23366,6 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_partition_name_to_spec(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_markPartitionForEvent(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_isPartitionMarkedForEvent(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_add_index(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_primary_keys(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_foreign_keys(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_unique_constraints(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -23691,7 +23548,6 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["partition_name_to_spec"] = &ThriftHiveMetastoreProcessor::process_partition_name_to_spec;
     processMap_["markPartitionForEvent"] = &ThriftHiveMetastoreProcessor::process_markPartitionForEvent;
     processMap_["isPartitionMarkedForEvent"] = &ThriftHiveMetastoreProcessor::process_isPartitionMarkedForEvent;
-    processMap_["add_index"] = &ThriftHiveMetastoreProcessor::process_add_index;
     processMap_["get_primary_keys"] = &ThriftHiveMetastoreProcessor::process_get_primary_keys;
     processMap_["get_foreign_keys"] = &ThriftHiveMetastoreProcessor::process_get_foreign_keys;
     processMap_["get_unique_constraints"] = &ThriftHiveMetastoreProcessor::process_get_unique_constraints;
@@ -24630,16 +24486,6 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->isPartitionMarkedForEvent(db_name, tbl_name, part_vals, eventType);
     }
     return ifaces_[i]->isPartitionMarkedForEvent(db_name, tbl_name, part_vals, eventType);
-  }
-
-  void add_index(Index& _return, const Index& new_index, const Table& index_table) {
-    size_t sz = ifaces_.size();
-    size_t i = 0;
-    for (; i < (sz - 1); ++i) {
-      ifaces_[i]->add_index(_return, new_index, index_table);
-    }
-    ifaces_[i]->add_index(_return, new_index, index_table);
-    return;
   }
 
   void get_primary_keys(PrimaryKeysResponse& _return, const PrimaryKeysRequest& request) {
@@ -25814,9 +25660,6 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   bool isPartitionMarkedForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType);
   int32_t send_isPartitionMarkedForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType);
   bool recv_isPartitionMarkedForEvent(const int32_t seqid);
-  void add_index(Index& _return, const Index& new_index, const Table& index_table);
-  int32_t send_add_index(const Index& new_index, const Table& index_table);
-  void recv_add_index(Index& _return, const int32_t seqid);
   void get_primary_keys(PrimaryKeysResponse& _return, const PrimaryKeysRequest& request);
   int32_t send_get_primary_keys(const PrimaryKeysRequest& request);
   void recv_get_primary_keys(PrimaryKeysResponse& _return, const int32_t seqid);

@@ -447,11 +447,6 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("isPartitionMarkedForEvent\n");
   }
 
-  void add_index(Index& _return, const Index& new_index, const Table& index_table) {
-    // Your implementation goes here
-    printf("add_index\n");
-  }
-
   void get_primary_keys(PrimaryKeysResponse& _return, const PrimaryKeysRequest& request) {
     // Your implementation goes here
     printf("get_primary_keys\n");

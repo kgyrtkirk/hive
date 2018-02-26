@@ -1453,24 +1453,6 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'isPartitionMarkedForEvent failed: unknown result')
     end
 
-    def add_index(new_index, index_table)
-      send_add_index(new_index, index_table)
-      return recv_add_index()
-    end
-
-    def send_add_index(new_index, index_table)
-      send_message('add_index', Add_index_args, :new_index => new_index, :index_table => index_table)
-    end
-
-    def recv_add_index()
-      result = receive_message(Add_index_result)
-      return result.success unless result.success.nil?
-      raise result.o1 unless result.o1.nil?
-      raise result.o2 unless result.o2.nil?
-      raise result.o3 unless result.o3.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_index failed: unknown result')
-    end
-
     def get_primary_keys(request)
       send_get_primary_keys(request)
       return recv_get_primary_keys()
@@ -4148,21 +4130,6 @@ module ThriftHiveMetastore
         result.o6 = o6
       end
       write_result(result, oprot, 'isPartitionMarkedForEvent', seqid)
-    end
-
-    def process_add_index(seqid, iprot, oprot)
-      args = read_args(iprot, Add_index_args)
-      result = Add_index_result.new()
-      begin
-        result.success = @handler.add_index(args.new_index, args.index_table)
-      rescue ::InvalidObjectException => o1
-        result.o1 = o1
-      rescue ::AlreadyExistsException => o2
-        result.o2 = o2
-      rescue ::MetaException => o3
-        result.o3 = o3
-      end
-      write_result(result, oprot, 'add_index', seqid)
     end
 
     def process_get_primary_keys(seqid, iprot, oprot)
@@ -8569,46 +8536,6 @@ module ThriftHiveMetastore
       O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::UnknownTableException},
       O5 => {:type => ::Thrift::Types::STRUCT, :name => 'o5', :class => ::UnknownPartitionException},
       O6 => {:type => ::Thrift::Types::STRUCT, :name => 'o6', :class => ::InvalidPartitionException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Add_index_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    NEW_INDEX = 1
-    INDEX_TABLE = 2
-
-    FIELDS = {
-      NEW_INDEX => {:type => ::Thrift::Types::STRUCT, :name => 'new_index', :class => ::Index},
-      INDEX_TABLE => {:type => ::Thrift::Types::STRUCT, :name => 'index_table', :class => ::Table}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Add_index_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    SUCCESS = 0
-    O1 = 1
-    O2 = 2
-    O3 = 3
-
-    FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Index},
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidObjectException},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::AlreadyExistsException},
-      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

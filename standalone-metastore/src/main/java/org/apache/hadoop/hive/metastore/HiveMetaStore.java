@@ -4883,34 +4883,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return Warehouse.makeSpecFromName(part_name);
     }
 
-    @Override
-    @DMX
-    @Deprecated
-
-    public Index add_index(final Index newIndex, final Table indexTable) throws TException {
-      String tableName = indexTable != null ? indexTable.getTableName() : "";
-      startFunction("add_index", ": " + newIndex.toString() + " " + tableName);
-      Index ret = null;
-      Exception ex = null;
-      try {
-        ret = add_index_core(getMS(), newIndex, indexTable);
-      } catch (Exception e) {
-        ex = e;
-        if (e instanceof InvalidObjectException) {
-          throw (InvalidObjectException) e;
-        } else if (e instanceof AlreadyExistsException) {
-          throw (AlreadyExistsException) e;
-        } else if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else {
-          throw newMetaException(e);
-        }
-      } finally {
-        endFunction("add_index", ret != null, ex, tableName);
-      }
-      return ret;
-    }
-
     @DMX
     @Deprecated
     private Index add_index_core(final RawStore ms, final Index index, final Table indexTable)

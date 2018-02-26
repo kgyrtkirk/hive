@@ -749,14 +749,6 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
-  def add_index(self, new_index, index_table):
-    """
-    Parameters:
-     - new_index
-     - index_table
-    """
-    pass
-
   def get_primary_keys(self, request):
     """
     Parameters:
@@ -4643,45 +4635,6 @@ class Client(fb303.FacebookService.Client, Iface):
       raise result.o6
     raise TApplicationException(TApplicationException.MISSING_RESULT, "isPartitionMarkedForEvent failed: unknown result")
 
-  def add_index(self, new_index, index_table):
-    """
-    Parameters:
-     - new_index
-     - index_table
-    """
-    self.send_add_index(new_index, index_table)
-    return self.recv_add_index()
-
-  def send_add_index(self, new_index, index_table):
-    self._oprot.writeMessageBegin('add_index', TMessageType.CALL, self._seqid)
-    args = add_index_args()
-    args.new_index = new_index
-    args.index_table = index_table
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
-
-  def recv_add_index(self):
-    iprot = self._iprot
-    (fname, mtype, rseqid) = iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      raise x
-    result = add_index_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    if result.o1 is not None:
-      raise result.o1
-    if result.o2 is not None:
-      raise result.o2
-    if result.o3 is not None:
-      raise result.o3
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "add_index failed: unknown result")
-
   def get_primary_keys(self, request):
     """
     Parameters:
@@ -7939,7 +7892,6 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     self._processMap["partition_name_to_spec"] = Processor.process_partition_name_to_spec
     self._processMap["markPartitionForEvent"] = Processor.process_markPartitionForEvent
     self._processMap["isPartitionMarkedForEvent"] = Processor.process_isPartitionMarkedForEvent
-    self._processMap["add_index"] = Processor.process_add_index
     self._processMap["get_primary_keys"] = Processor.process_get_primary_keys
     self._processMap["get_foreign_keys"] = Processor.process_get_foreign_keys
     self._processMap["get_unique_constraints"] = Processor.process_get_unique_constraints
@@ -10233,34 +10185,6 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
       logging.exception(ex)
       result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
     oprot.writeMessageBegin("isPartitionMarkedForEvent", msg_type, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def process_add_index(self, seqid, iprot, oprot):
-    args = add_index_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = add_index_result()
-    try:
-      result.success = self._handler.add_index(args.new_index, args.index_table)
-      msg_type = TMessageType.REPLY
-    except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
-      raise
-    except InvalidObjectException as o1:
-      msg_type = TMessageType.REPLY
-      result.o1 = o1
-    except AlreadyExistsException as o2:
-      msg_type = TMessageType.REPLY
-      result.o2 = o2
-    except MetaException as o3:
-      msg_type = TMessageType.REPLY
-      result.o3 = o3
-    except Exception as ex:
-      msg_type = TMessageType.EXCEPTION
-      logging.exception(ex)
-      result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-    oprot.writeMessageBegin("add_index", msg_type, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -28106,193 +28030,6 @@ class isPartitionMarkedForEvent_result:
     value = (value * 31) ^ hash(self.o4)
     value = (value * 31) ^ hash(self.o5)
     value = (value * 31) ^ hash(self.o6)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class add_index_args:
-  """
-  Attributes:
-   - new_index
-   - index_table
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'new_index', (Index, Index.thrift_spec), None, ), # 1
-    (2, TType.STRUCT, 'index_table', (Table, Table.thrift_spec), None, ), # 2
-  )
-
-  def __init__(self, new_index=None, index_table=None,):
-    self.new_index = new_index
-    self.index_table = index_table
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.new_index = Index()
-          self.new_index.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRUCT:
-          self.index_table = Table()
-          self.index_table.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('add_index_args')
-    if self.new_index is not None:
-      oprot.writeFieldBegin('new_index', TType.STRUCT, 1)
-      self.new_index.write(oprot)
-      oprot.writeFieldEnd()
-    if self.index_table is not None:
-      oprot.writeFieldBegin('index_table', TType.STRUCT, 2)
-      self.index_table.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.new_index)
-    value = (value * 31) ^ hash(self.index_table)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class add_index_result:
-  """
-  Attributes:
-   - success
-   - o1
-   - o2
-   - o3
-  """
-
-  thrift_spec = (
-    (0, TType.STRUCT, 'success', (Index, Index.thrift_spec), None, ), # 0
-    (1, TType.STRUCT, 'o1', (InvalidObjectException, InvalidObjectException.thrift_spec), None, ), # 1
-    (2, TType.STRUCT, 'o2', (AlreadyExistsException, AlreadyExistsException.thrift_spec), None, ), # 2
-    (3, TType.STRUCT, 'o3', (MetaException, MetaException.thrift_spec), None, ), # 3
-  )
-
-  def __init__(self, success=None, o1=None, o2=None, o3=None,):
-    self.success = success
-    self.o1 = o1
-    self.o2 = o2
-    self.o3 = o3
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.STRUCT:
-          self.success = Index()
-          self.success.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 1:
-        if ftype == TType.STRUCT:
-          self.o1 = InvalidObjectException()
-          self.o1.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRUCT:
-          self.o2 = AlreadyExistsException()
-          self.o2.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.STRUCT:
-          self.o3 = MetaException()
-          self.o3.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('add_index_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRUCT, 0)
-      self.success.write(oprot)
-      oprot.writeFieldEnd()
-    if self.o1 is not None:
-      oprot.writeFieldBegin('o1', TType.STRUCT, 1)
-      self.o1.write(oprot)
-      oprot.writeFieldEnd()
-    if self.o2 is not None:
-      oprot.writeFieldBegin('o2', TType.STRUCT, 2)
-      self.o2.write(oprot)
-      oprot.writeFieldEnd()
-    if self.o3 is not None:
-      oprot.writeFieldBegin('o3', TType.STRUCT, 3)
-      self.o3.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.success)
-    value = (value * 31) ^ hash(self.o1)
-    value = (value * 31) ^ hash(self.o2)
-    value = (value * 31) ^ hash(self.o3)
     return value
 
   def __repr__(self):
