@@ -1655,26 +1655,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return fastpath ? fields : deepCopyFieldSchemas(fields);
   }
 
-  /**
-   * @param dbName
-   * @param tblName
-   * @param indexName
-   * @return the index
-   * @throws MetaException
-   * @throws UnknownTableException
-   * @throws NoSuchObjectException
-   * @throws TException
-   */
-  @Override
-  @DMX
-  @Deprecated
-
-  public Index getIndex(String dbName, String tblName, String indexName)
-      throws MetaException, UnknownTableException, NoSuchObjectException,
-      TException {
-    return null;
-  }
-
   @Override
   public List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest req)
     throws MetaException, NoSuchObjectException, TException {

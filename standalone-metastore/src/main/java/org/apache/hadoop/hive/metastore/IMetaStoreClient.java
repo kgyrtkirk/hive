@@ -61,7 +61,6 @@ import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -1018,25 +1017,6 @@ public interface IMetaStoreClient {
    */
   Map<String, String> partitionNameToSpec(String name)
       throws MetaException, TException;
-
-
-  /**
-   *
-   * @param dbName
-   * @param tblName
-   * @param indexName
-   * @return the index
-   * @throws MetaException
-   * @throws UnknownTableException
-   * @throws NoSuchObjectException
-   * @throws TException
-   */
-  @DMX
-  @Deprecated
-  Index getIndex(String dbName, String tblName, String indexName)
-      throws MetaException, UnknownTableException, NoSuchObjectException,
-      TException;
-
 
   /**
    * Write table level column statistics to persistent store

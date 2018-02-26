@@ -222,8 +222,6 @@ public class TestFilterHooks {
 
     assertNotNull(msc.getPartition(DBNAME1, TAB2, "name=value1"));
     assertEquals(1, msc.getPartitionsByNames(DBNAME1, TAB2, Lists.newArrayList("name=value1")).size());
-
-    assertNotNull(msc.getIndex(DBNAME1, TAB1, INDEX1));
   }
 
   @Test
@@ -265,17 +263,6 @@ public class TestFilterHooks {
     }
     assertEquals(0, msc.getPartitionsByNames(DBNAME1, TAB2,
         Lists.newArrayList("name=value1")).size());
-  }
-
-  @Test
-  public void testDummyFilterForIndex() throws Exception {
-    DummyMetaStoreFilterHookImpl.blockResults = true;
-    try {
-      assertNotNull(msc.getIndex(DBNAME1, TAB1, INDEX1));
-      fail("getPartition() should fail with blocking mode");
-    } catch (NoSuchObjectException e) {
-      // Excepted
-    }
   }
 
 }
