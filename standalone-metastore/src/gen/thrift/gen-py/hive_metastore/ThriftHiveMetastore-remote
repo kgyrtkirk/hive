@@ -114,7 +114,6 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  bool drop_index_by_name(string db_name, string tbl_name, string index_name, bool deleteData)')
   print('  Index get_index_by_name(string db_name, string tbl_name, string index_name)')
   print('   get_indexes(string db_name, string tbl_name, i16 max_indexes)')
-  print('   get_index_names(string db_name, string tbl_name, i16 max_indexes)')
   print('  PrimaryKeysResponse get_primary_keys(PrimaryKeysRequest request)')
   print('  ForeignKeysResponse get_foreign_keys(ForeignKeysRequest request)')
   print('  UniqueConstraintsResponse get_unique_constraints(UniqueConstraintsRequest request)')
@@ -816,12 +815,6 @@ elif cmd == 'get_indexes':
     print('get_indexes requires 3 args')
     sys.exit(1)
   pp.pprint(client.get_indexes(args[0],args[1],eval(args[2]),))
-
-elif cmd == 'get_index_names':
-  if len(args) != 3:
-    print('get_index_names requires 3 args')
-    sys.exit(1)
-  pp.pprint(client.get_index_names(args[0],args[1],eval(args[2]),))
 
 elif cmd == 'get_primary_keys':
   if len(args) != 1:

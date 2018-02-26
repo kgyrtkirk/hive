@@ -472,11 +472,6 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_indexes\n");
   }
 
-  void get_index_names(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) {
-    // Your implementation goes here
-    printf("get_index_names\n");
-  }
-
   void get_primary_keys(PrimaryKeysResponse& _return, const PrimaryKeysRequest& request) {
     // Your implementation goes here
     printf("get_primary_keys\n");

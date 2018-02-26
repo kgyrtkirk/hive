@@ -112,7 +112,6 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual bool drop_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name, const bool deleteData) = 0;
   virtual void get_index_by_name(Index& _return, const std::string& db_name, const std::string& tbl_name, const std::string& index_name) = 0;
   virtual void get_indexes(std::vector<Index> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) = 0;
-  virtual void get_index_names(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) = 0;
   virtual void get_primary_keys(PrimaryKeysResponse& _return, const PrimaryKeysRequest& request) = 0;
   virtual void get_foreign_keys(ForeignKeysResponse& _return, const ForeignKeysRequest& request) = 0;
   virtual void get_unique_constraints(UniqueConstraintsResponse& _return, const UniqueConstraintsRequest& request) = 0;
@@ -515,9 +514,6 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_indexes(std::vector<Index> & /* _return */, const std::string& /* db_name */, const std::string& /* tbl_name */, const int16_t /* max_indexes */) {
-    return;
-  }
-  void get_index_names(std::vector<std::string> & /* _return */, const std::string& /* db_name */, const std::string& /* tbl_name */, const int16_t /* max_indexes */) {
     return;
   }
   void get_primary_keys(PrimaryKeysResponse& /* _return */, const PrimaryKeysRequest& /* request */) {
@@ -12595,132 +12591,6 @@ class ThriftHiveMetastore_get_indexes_presult {
 
 };
 
-typedef struct _ThriftHiveMetastore_get_index_names_args__isset {
-  _ThriftHiveMetastore_get_index_names_args__isset() : db_name(false), tbl_name(false), max_indexes(true) {}
-  bool db_name :1;
-  bool tbl_name :1;
-  bool max_indexes :1;
-} _ThriftHiveMetastore_get_index_names_args__isset;
-
-class ThriftHiveMetastore_get_index_names_args {
- public:
-
-  ThriftHiveMetastore_get_index_names_args(const ThriftHiveMetastore_get_index_names_args&);
-  ThriftHiveMetastore_get_index_names_args& operator=(const ThriftHiveMetastore_get_index_names_args&);
-  ThriftHiveMetastore_get_index_names_args() : db_name(), tbl_name(), max_indexes(-1) {
-  }
-
-  virtual ~ThriftHiveMetastore_get_index_names_args() throw();
-  std::string db_name;
-  std::string tbl_name;
-  int16_t max_indexes;
-
-  _ThriftHiveMetastore_get_index_names_args__isset __isset;
-
-  void __set_db_name(const std::string& val);
-
-  void __set_tbl_name(const std::string& val);
-
-  void __set_max_indexes(const int16_t val);
-
-  bool operator == (const ThriftHiveMetastore_get_index_names_args & rhs) const
-  {
-    if (!(db_name == rhs.db_name))
-      return false;
-    if (!(tbl_name == rhs.tbl_name))
-      return false;
-    if (!(max_indexes == rhs.max_indexes))
-      return false;
-    return true;
-  }
-  bool operator != (const ThriftHiveMetastore_get_index_names_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ThriftHiveMetastore_get_index_names_args & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-
-class ThriftHiveMetastore_get_index_names_pargs {
- public:
-
-
-  virtual ~ThriftHiveMetastore_get_index_names_pargs() throw();
-  const std::string* db_name;
-  const std::string* tbl_name;
-  const int16_t* max_indexes;
-
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _ThriftHiveMetastore_get_index_names_result__isset {
-  _ThriftHiveMetastore_get_index_names_result__isset() : success(false), o2(false) {}
-  bool success :1;
-  bool o2 :1;
-} _ThriftHiveMetastore_get_index_names_result__isset;
-
-class ThriftHiveMetastore_get_index_names_result {
- public:
-
-  ThriftHiveMetastore_get_index_names_result(const ThriftHiveMetastore_get_index_names_result&);
-  ThriftHiveMetastore_get_index_names_result& operator=(const ThriftHiveMetastore_get_index_names_result&);
-  ThriftHiveMetastore_get_index_names_result() {
-  }
-
-  virtual ~ThriftHiveMetastore_get_index_names_result() throw();
-  std::vector<std::string>  success;
-  MetaException o2;
-
-  _ThriftHiveMetastore_get_index_names_result__isset __isset;
-
-  void __set_success(const std::vector<std::string> & val);
-
-  void __set_o2(const MetaException& val);
-
-  bool operator == (const ThriftHiveMetastore_get_index_names_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    if (!(o2 == rhs.o2))
-      return false;
-    return true;
-  }
-  bool operator != (const ThriftHiveMetastore_get_index_names_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ThriftHiveMetastore_get_index_names_result & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _ThriftHiveMetastore_get_index_names_presult__isset {
-  _ThriftHiveMetastore_get_index_names_presult__isset() : success(false), o2(false) {}
-  bool success :1;
-  bool o2 :1;
-} _ThriftHiveMetastore_get_index_names_presult__isset;
-
-class ThriftHiveMetastore_get_index_names_presult {
- public:
-
-
-  virtual ~ThriftHiveMetastore_get_index_names_presult() throw();
-  std::vector<std::string> * success;
-  MetaException o2;
-
-  _ThriftHiveMetastore_get_index_names_presult__isset __isset;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-
-};
-
 typedef struct _ThriftHiveMetastore_get_primary_keys_args__isset {
   _ThriftHiveMetastore_get_primary_keys_args__isset() : request(false) {}
   bool request :1;
@@ -23835,9 +23705,6 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_indexes(std::vector<Index> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes);
   void send_get_indexes(const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes);
   void recv_get_indexes(std::vector<Index> & _return);
-  void get_index_names(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes);
-  void send_get_index_names(const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes);
-  void recv_get_index_names(std::vector<std::string> & _return);
   void get_primary_keys(PrimaryKeysResponse& _return, const PrimaryKeysRequest& request);
   void send_get_primary_keys(const PrimaryKeysRequest& request);
   void recv_get_primary_keys(PrimaryKeysResponse& _return);
@@ -24217,7 +24084,6 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_drop_index_by_name(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_index_by_name(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_indexes(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_get_index_names(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_primary_keys(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_foreign_keys(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_unique_constraints(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -24405,7 +24271,6 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["drop_index_by_name"] = &ThriftHiveMetastoreProcessor::process_drop_index_by_name;
     processMap_["get_index_by_name"] = &ThriftHiveMetastoreProcessor::process_get_index_by_name;
     processMap_["get_indexes"] = &ThriftHiveMetastoreProcessor::process_get_indexes;
-    processMap_["get_index_names"] = &ThriftHiveMetastoreProcessor::process_get_index_names;
     processMap_["get_primary_keys"] = &ThriftHiveMetastoreProcessor::process_get_primary_keys;
     processMap_["get_foreign_keys"] = &ThriftHiveMetastoreProcessor::process_get_foreign_keys;
     processMap_["get_unique_constraints"] = &ThriftHiveMetastoreProcessor::process_get_unique_constraints;
@@ -25391,16 +25256,6 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->get_indexes(_return, db_name, tbl_name, max_indexes);
     }
     ifaces_[i]->get_indexes(_return, db_name, tbl_name, max_indexes);
-    return;
-  }
-
-  void get_index_names(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) {
-    size_t sz = ifaces_.size();
-    size_t i = 0;
-    for (; i < (sz - 1); ++i) {
-      ifaces_[i]->get_index_names(_return, db_name, tbl_name, max_indexes);
-    }
-    ifaces_[i]->get_index_names(_return, db_name, tbl_name, max_indexes);
     return;
   }
 
@@ -26591,9 +26446,6 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_indexes(std::vector<Index> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes);
   int32_t send_get_indexes(const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes);
   void recv_get_indexes(std::vector<Index> & _return, const int32_t seqid);
-  void get_index_names(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes);
-  int32_t send_get_index_names(const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes);
-  void recv_get_index_names(std::vector<std::string> & _return, const int32_t seqid);
   void get_primary_keys(PrimaryKeysResponse& _return, const PrimaryKeysRequest& request);
   int32_t send_get_primary_keys(const PrimaryKeysRequest& request);
   void recv_get_primary_keys(PrimaryKeysResponse& _return, const int32_t seqid);

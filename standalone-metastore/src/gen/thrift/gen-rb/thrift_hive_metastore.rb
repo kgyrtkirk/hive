@@ -1538,22 +1538,6 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_indexes failed: unknown result')
     end
 
-    def get_index_names(db_name, tbl_name, max_indexes)
-      send_get_index_names(db_name, tbl_name, max_indexes)
-      return recv_get_index_names()
-    end
-
-    def send_get_index_names(db_name, tbl_name, max_indexes)
-      send_message('get_index_names', Get_index_names_args, :db_name => db_name, :tbl_name => tbl_name, :max_indexes => max_indexes)
-    end
-
-    def recv_get_index_names()
-      result = receive_message(Get_index_names_result)
-      return result.success unless result.success.nil?
-      raise result.o2 unless result.o2.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_index_names failed: unknown result')
-    end
-
     def get_primary_keys(request)
       send_get_primary_keys(request)
       return recv_get_primary_keys()
@@ -4298,17 +4282,6 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_indexes', seqid)
-    end
-
-    def process_get_index_names(seqid, iprot, oprot)
-      args = read_args(iprot, Get_index_names_args)
-      result = Get_index_names_result.new()
-      begin
-        result.success = @handler.get_index_names(args.db_name, args.tbl_name, args.max_indexes)
-      rescue ::MetaException => o2
-        result.o2 = o2
-      end
-      write_result(result, oprot, 'get_index_names', seqid)
     end
 
     def process_get_primary_keys(seqid, iprot, oprot)
@@ -8916,44 +8889,6 @@ module ThriftHiveMetastore
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Index}},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Get_index_names_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    DB_NAME = 1
-    TBL_NAME = 2
-    MAX_INDEXES = 3
-
-    FIELDS = {
-      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
-      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
-      MAX_INDEXES => {:type => ::Thrift::Types::I16, :name => 'max_indexes', :default => -1}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Get_index_names_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    SUCCESS = 0
-    O2 = 1
-
-    FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }
 
