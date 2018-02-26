@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.client.builder;
 
+import org.apache.hadoop.hive.metastore.DMX;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -29,11 +30,16 @@ import java.util.Map;
  * name for the index, and whatever StorageDescriptorBuilder requires.  All other fields will be
  * given reasonable defaults.
  */
+@Deprecated
+@DMX
 public class IndexBuilder extends StorageDescriptorBuilder<IndexBuilder> {
   private String dbName, tableName, indexName, indexTableName, handlerClass;
   private int createTime, lastAccessTime;
   private Map<String, String> indexParams;
   private boolean deferredRebuild;
+
+  @Deprecated
+  @DMX
 
   public IndexBuilder() {
     // Set some reasonable defaults
@@ -102,7 +108,9 @@ public class IndexBuilder extends StorageDescriptorBuilder<IndexBuilder> {
     if (dbName == null || tableName == null || indexName == null) {
       throw new MetaException("You must provide database name, table name, and index name");
     }
-    if (indexTableName == null) indexTableName = tableName + "_" + indexName + "_table";
+    if (indexTableName == null) {
+      indexTableName = tableName + "_" + indexName + "_table";
+    }
     return new Index(indexName, handlerClass, dbName, tableName, createTime, lastAccessTime,
         indexTableName, buildSd(), indexParams, deferredRebuild);
   }
