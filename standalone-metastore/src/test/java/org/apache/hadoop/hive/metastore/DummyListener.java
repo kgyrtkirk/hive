@@ -114,16 +114,22 @@ public class DummyListener extends MetaStoreEventListener{
   }
 
   @Override
+  @Deprecated
+  @DMX
   public void onAddIndex(AddIndexEvent indexEvent) throws MetaException {
     addEvent(indexEvent);
   }
 
   @Override
+  @Deprecated
+  @DMX
   public void onDropIndex(DropIndexEvent indexEvent) throws MetaException {
     addEvent(indexEvent);
   }
 
   @Override
+  @Deprecated
+  @DMX
   public void onAlterIndex(AlterIndexEvent indexEvent) throws MetaException {
     addEvent(indexEvent);
   }
