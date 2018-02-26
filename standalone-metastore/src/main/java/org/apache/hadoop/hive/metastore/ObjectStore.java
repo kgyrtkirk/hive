@@ -4633,62 +4633,18 @@ public class ObjectStore implements RawStore, Configurable {
 
   }
 
+  @DMX
+  @Deprecated
   @Override
   public List<Index> getIndexes(String dbName, String origTableName, int max)
       throws MetaException {
-    boolean success = false;
-    Query query = null;
-    try {
-      LOG.debug("Executing getIndexes");
-      openTransaction();
-
-      dbName = normalizeIdentifier(dbName);
-      origTableName = normalizeIdentifier(origTableName);
-      query =
-          pm.newQuery(MIndex.class, "origTable.tableName == t1 && origTable.database.name == t2");
-      query.declareParameters("java.lang.String t1, java.lang.String t2");
-      List<MIndex> mIndexes = (List<MIndex>) query.execute(origTableName, dbName);
-      pm.retrieveAll(mIndexes);
-
-      List<Index> indexes = new ArrayList<>(mIndexes.size());
-      for (MIndex mIdx : mIndexes) {
-        indexes.add(this.convertToIndex(mIdx));
-      }
-      success = commitTransaction();
-      LOG.debug("Done retrieving all objects for getIndexes");
-
-      return indexes;
-    } finally {
-      rollbackAndCleanup(success, query);
-    }
+    return null;
   }
 
   @Override
   public List<String> listIndexNames(String dbName, String origTableName, short max)
       throws MetaException {
-    List<String> pns = new ArrayList<>();
-    boolean success = false;
-    Query query = null;
-    try {
-      openTransaction();
-      LOG.debug("Executing listIndexNames");
-      dbName = normalizeIdentifier(dbName);
-      origTableName = normalizeIdentifier(origTableName);
-      query =
-          pm.newQuery("select indexName from org.apache.hadoop.hive.metastore.model.MIndex "
-              + "where origTable.database.name == t1 && origTable.tableName == t2 "
-              + "order by indexName asc");
-      query.declareParameters("java.lang.String t1, java.lang.String t2");
-      query.setResult("indexName");
-      Collection names = (Collection) query.execute(dbName, origTableName);
-      for (Iterator i = names.iterator(); i.hasNext();) {
-        pns.add((String) i.next());
-      }
-      success = commitTransaction();
-    } finally {
-      rollbackAndCleanup(success, query);
-    }
-    return pns;
+    return null;
   }
 
   @Override
