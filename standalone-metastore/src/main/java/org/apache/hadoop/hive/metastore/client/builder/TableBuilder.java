@@ -17,11 +17,9 @@
  */
 package org.apache.hadoop.hive.metastore.client.builder;
 
-import org.apache.hadoop.hive.metastore.DMX;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -138,17 +136,6 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
 
   public TableBuilder setTemporary(boolean temporary) {
     this.temporary = temporary;
-    return this;
-  }
-
-  @Deprecated
-  @DMX
-
-  public TableBuilder fromIndex(Index index) {
-    dbName = index.getDbName();
-    tableName = index.getIndexTableName();
-    setCols(index.getSd().getCols());
-    setType(TableType.INDEX_TABLE.name());
     return this;
   }
 
