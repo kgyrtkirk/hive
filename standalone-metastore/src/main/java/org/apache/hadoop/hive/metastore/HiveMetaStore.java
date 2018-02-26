@@ -4883,30 +4883,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return Warehouse.makeSpecFromName(part_name);
     }
 
-    @DMX
-    @Deprecated
-    private Index add_index_core(final RawStore ms, final Index index, final Table indexTable)
-        throws InvalidObjectException, AlreadyExistsException, MetaException {
-      return index;
-    }
-
-    @DMX
-    @Deprecated
-
-    private boolean drop_index_by_name_core(final RawStore ms,
-        final String dbName, final String tblName,
-        final String indexName, final boolean deleteData) throws TException, IOException {
-      return deleteData;
-    }
-
-
-    @Deprecated
-    @DMX
-
-    private Index get_index_by_name_core(final RawStore ms, final String db_name,
-        final String tbl_name, final String index_name) throws TException {
-      return null;
-    }
 
     private String lowerCaseConvertPartName(String partName) throws MetaException {
       boolean isFirst = true;
