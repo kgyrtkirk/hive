@@ -3781,32 +3781,6 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public void alterIndex(String dbname, String baseTblName, String name, Index newIndex)
       throws InvalidObjectException, MetaException {
-    boolean success = false;
-    try {
-      openTransaction();
-      name = normalizeIdentifier(name);
-      baseTblName = normalizeIdentifier(baseTblName);
-      dbname = normalizeIdentifier(dbname);
-      MIndex newi = convertToMIndex(newIndex);
-      if (newi == null) {
-        throw new InvalidObjectException("new index is invalid");
-      }
-
-      MIndex oldi = getMIndex(dbname, baseTblName, name);
-      if (oldi == null) {
-        throw new MetaException("index " + name + " doesn't exist");
-      }
-
-      // For now only alter parameters are allowed
-      oldi.setParameters(newi.getParameters());
-
-      // commit the changes
-      success = commitTransaction();
-    } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
-    }
   }
 
   /**
@@ -4557,25 +4531,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public boolean addIndex(Index index) throws InvalidObjectException,
       MetaException {
-    boolean commited = false;
-    try {
-      openTransaction();
-      MIndex idx = convertToMIndex(index);
-      pm.makePersistent(idx);
-      commited = commitTransaction();
-      return true;
-    } finally {
-      if (!commited) {
-        rollbackTransaction();
         return false;
-      }
-    }
-  }
-
-  @DMX
-  @Deprecated
-  private MIndex convertToMIndex(Index index) throws InvalidObjectException, MetaException {
-    return null;
   }
 
   @Override
@@ -4583,7 +4539,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Deprecated
   public boolean dropIndex(String dbName, String origTableName, String indexName)
       throws MetaException {
-    return isInitialized;
+    return false;
   }
 
   @Deprecated
