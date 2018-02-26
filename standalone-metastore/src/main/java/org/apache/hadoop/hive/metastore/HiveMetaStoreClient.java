@@ -1710,25 +1710,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return null;
   }
 
-  /**
-   * list all the index names of the give base table.
-   *
-   * @param dbName
-   * @param tblName
-   * @param max
-   * @return list of indexes
-   * @throws MetaException
-   * @throws TException
-   */
-  @Override
-  @Deprecated
-  @DMX
-
-  public List<Index> listIndexes(String dbName, String tblName, short max)
-      throws NoSuchObjectException, MetaException, TException {
-    return null;
-  }
-
   @Override
   public List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest req)
     throws MetaException, NoSuchObjectException, TException {

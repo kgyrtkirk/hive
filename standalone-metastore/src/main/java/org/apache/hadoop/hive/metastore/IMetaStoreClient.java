@@ -1057,21 +1057,6 @@ public interface IMetaStoreClient {
 
 
   /**
-   * list indexes of the give base table
-   * @param db_name
-   * @param tbl_name
-   * @param max
-   * @return the list of indexes
-   * @throws NoSuchObjectException
-   * @throws MetaException
-   * @throws TException
-   */
-  @DMX
-  @Deprecated
-  List<Index> listIndexes(String db_name, String tbl_name,
-      short max) throws NoSuchObjectException, MetaException, TException;
-
-  /**
    * @param db_name
    * @param tbl_name
    * @param name index name
