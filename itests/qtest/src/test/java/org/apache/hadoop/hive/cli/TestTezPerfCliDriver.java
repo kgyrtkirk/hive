@@ -66,7 +66,7 @@ public class TestTezPerfCliDriver {
     this.qfile = qfile;
   }
 
-  @Test
+  @Test(timeout = CliConfigs.QTEST_TIMEOUT_MS)
   public void testCliDriver() throws Exception {
     adapter.runTest(name, qfile);
   }

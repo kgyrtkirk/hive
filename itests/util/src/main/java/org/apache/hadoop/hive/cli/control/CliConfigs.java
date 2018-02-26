@@ -27,6 +27,9 @@ import org.apache.hadoop.hive.ql.parse.CoreParseNegative;
 
 public class CliConfigs {
 
+  // used in every cli method to set an upperbound to execution time
+  public static final long QTEST_TIMEOUT_MS = 10 * 60 * 1000;
+
   private static URL testConfigProps = getTestPropsURL();
 
   private static URL getTestPropsURL() {

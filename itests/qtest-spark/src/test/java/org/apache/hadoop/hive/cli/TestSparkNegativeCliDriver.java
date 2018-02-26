@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.apache.hadoop.hive.cli;
 
 import java.io.File;
@@ -55,7 +55,7 @@ public class TestSparkNegativeCliDriver {
     this.qfile = qfile;
   }
 
-  @Test
+  @Test(timeout = CliConfigs.QTEST_TIMEOUT_MS)
   public void testCliDriver() throws Exception {
     adapter.runTest(name, qfile);
   }
