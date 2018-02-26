@@ -598,15 +598,6 @@ public class Driver implements IDriver {
       // because at that point we need access to the objects.
       Hive.get().getMSC().flushCache();
 
-      if(checkConcurrency() && startImplicitTxn(queryTxnMgr)) {
-        String userFromUGI = getUserFromUGI();
-        if (!queryTxnMgr.isTxnOpen()) {
-          if(userFromUGI == null) {
-            throw createProcessorResponse(10);
-          }
-          long txnid = queryTxnMgr.openTxn(ctx, userFromUGI);
-        }
-      }
       BaseSemanticAnalyzer sem;
       // Do semantic analysis and plan generation
       if (hookRunner.hasPreAnalyzeHooks()) {
@@ -619,12 +610,14 @@ public class Driver implements IDriver {
 
         tree =  hookRunner.runPreAnalyzeHooks(hookCtx, tree);
         sem = SemanticAnalyzerFactory.get(queryState, tree);
+        openTransaction();
         sem.analyze(tree, ctx);
         hookCtx.update(sem);
 
         hookRunner.runPostAnalyzeHooks(hookCtx, sem.getAllRootTasks());
       } else {
         sem = SemanticAnalyzerFactory.get(queryState, tree);
+        openTransaction();
         sem.analyze(tree, ctx);
       }
       LOG.info("Semantic Analysis Completed");
@@ -762,6 +755,18 @@ public class Driver implements IDriver {
     }
     WmContext wmContext = new WmContext(queryStartTime, queryId);
     ctx.setWmContext(wmContext);
+  }
+
+  private void openTransaction() throws LockException, CommandProcessorResponse {
+    if (checkConcurrency() && startImplicitTxn(queryTxnMgr)) {
+      String userFromUGI = getUserFromUGI();
+      if (!queryTxnMgr.isTxnOpen()) {
+        if (userFromUGI == null) {
+          throw createProcessorResponse(10);
+        }
+        long txnid = queryTxnMgr.openTxn(ctx, userFromUGI);
+      }
+    }
   }
 
   private boolean startImplicitTxn(HiveTxnManager txnManager) throws LockException {
