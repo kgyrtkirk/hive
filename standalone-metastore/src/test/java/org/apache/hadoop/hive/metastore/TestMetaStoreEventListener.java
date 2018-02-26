@@ -201,6 +201,9 @@ public class TestMetaStoreEventListener {
     assertEquals(expectedDb, actualDb);
   }
 
+  @Deprecated
+  @DMX
+
   private void validateIndex(Index expectedIndex, Index actualIndex) {
     assertEquals(expectedIndex.getDbName(), actualIndex.getDbName());
     assertEquals(expectedIndex.getIndexName(), actualIndex.getIndexName());
@@ -210,9 +213,15 @@ public class TestMetaStoreEventListener {
     assertEquals(expectedIndex.getSd().getLocation(), actualIndex.getSd().getLocation());
   }
 
+  @Deprecated
+  @DMX
+
   private void validateAddIndex(Index expectedIndex, Index actualIndex) {
     validateIndex(expectedIndex, actualIndex);
   }
+
+  @Deprecated
+  @DMX
 
   private void validateAlterIndex(Index expectedOldIndex, Index actualOldIndex,
       Index expectedNewIndex, Index actualNewIndex) {
@@ -220,6 +229,8 @@ public class TestMetaStoreEventListener {
     validateIndex(expectedNewIndex, actualNewIndex);
   }
 
+  @Deprecated
+  @DMX
   private void validateDropIndex(Index expectedIndex, Index actualIndex) {
     validateIndex(expectedIndex, actualIndex);
   }
@@ -308,7 +319,6 @@ public class TestMetaStoreEventListener {
     validateAlterIndex(oldIndex, preAlterIndexEvent.getOldIndex(),
         newIndex, preAlterIndexEvent.getNewIndex());
 
-    msc.dropIndex(dbName, tblName, indexName, true);
     listSize++;
     assertEquals(notifyList.size(), listSize);
 

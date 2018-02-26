@@ -1057,22 +1057,6 @@ public interface IMetaStoreClient {
 
 
   /**
-   * @param db_name
-   * @param tbl_name
-   * @param name index name
-   * @param deleteData
-   * @return true on success
-   * @throws NoSuchObjectException
-   * @throws MetaException
-   * @throws TException
-   */
-  @DMX
-  @Deprecated
-  boolean dropIndex(String db_name, String tbl_name,
-      String name, boolean deleteData) throws NoSuchObjectException,
-      MetaException, TException;
-
-  /**
    * Write table level column statistics to persistent store
    * @param statsObj
    * @return boolean indicating the status of the operation

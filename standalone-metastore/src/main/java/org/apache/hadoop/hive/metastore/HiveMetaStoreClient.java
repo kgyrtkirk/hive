@@ -1999,13 +1999,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public boolean dropIndex(String dbName, String tblName, String name,
-      boolean deleteData) throws NoSuchObjectException, MetaException,
-      TException {
-    return deleteData;
-  }
-
-  @Override
   public boolean grant_role(String roleName, String userName,
       PrincipalType principalType, String grantor, PrincipalType grantorType,
       boolean grantOption) throws MetaException, TException {

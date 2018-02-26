@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore.client;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.DMX;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
@@ -383,6 +384,8 @@ public class TestDatabases extends MetaStoreClientTest {
    * @param databaseName The database name in which the index should be creatd
    * @throws TException If there is an error during the index creation
    */
+  @Deprecated
+  @DMX
   private void createIndex(String databaseName) throws TException {
     Table testTable =
         new TableBuilder()
@@ -409,40 +412,6 @@ public class TestDatabases extends MetaStoreClientTest {
     // Drop database with index
     client.createTable(testTable);
     client.createIndex(testIndex, testIndexTable);
-  }
-
-  @Test
-  public void testDropDatabaseWithIndex() throws Exception {
-    Database database = testDatabases[0];
-    createIndex(database.getName());
-
-    // TODO: Known error, should be fixed
-    // client.dropDatabase(database.getName(), true, true, true);
-    // Need to drop index to clean up the mess
-    try {
-      // Without cascade
-      client.dropDatabase(database.getName(), true, true, false);
-      Assert.fail("Expected an InvalidOperationException to be thrown");
-    } catch (InvalidOperationException exception) {
-      // Expected exception
-    }
-    client.dropIndex(database.getName(), "test_table", "test_index", true);
-    // TODO: End index hack
-  }
-
-  @Test
-  public void testDropDatabaseWithIndexCascade() throws Exception {
-    Database database = testDatabases[0];
-    createIndex(database.getName());
-
-    // With cascade
-    // TODO: Known error, should be fixed
-    // client.dropDatabase(database.getName(), true, true, true);
-    // Need to drop index to clean up the mess
-    client.dropIndex(database.getName(), "test_table", "test_index", true);
-    client.dropDatabase(database.getName(), true, true, true);
-    Assert.assertFalse("The directory should be removed",
-        metaStore.isPathExists(new Path(database.getLocationUri())));
   }
 
   @Test
