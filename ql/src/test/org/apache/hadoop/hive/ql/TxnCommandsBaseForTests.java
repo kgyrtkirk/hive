@@ -139,16 +139,15 @@ public abstract class TxnCommandsBaseForTests {
   }
 
   List<String> runStatementOnDriver(HiveConf conf, String stmt) throws Exception {
-    try (IDriver d = DriverFactory.newDriver(conf)) {
+    IDriver d = DriverFactory.newDriver(conf);
 
-      CommandProcessorResponse cpr = d.run(stmt);
-      if (cpr.getResponseCode() != 0) {
-        throw new RuntimeException(stmt + " failed: " + cpr);
-      }
-      List<String> rs = new ArrayList<String>();
-      d.getResults(rs);
-      return rs;
+    CommandProcessorResponse cpr = d.run(stmt);
+    if (cpr.getResponseCode() != 0) {
+      throw new RuntimeException(stmt + " failed: " + cpr);
     }
+    List<String> rs = new ArrayList<String>();
+    d.getResults(rs);
+    return rs;
   }
   CommandProcessorResponse runStatementOnDriverNegative(String stmt) throws Exception {
     return runStatementOnDriverNegative(hiveConf, stmt);
