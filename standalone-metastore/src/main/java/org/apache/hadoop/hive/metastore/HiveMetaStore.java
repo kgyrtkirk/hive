@@ -284,7 +284,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     static final Logger auditLog = LoggerFactory.getLogger(
         HiveMetaStore.class.getName() + ".audit");
-    
+
     private static void logAuditEvent(String cmd) {
       if (cmd == null) {
         return;
@@ -834,7 +834,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         timerContexts.get().put(function, timer.time());
       }
       Counter counter = Metrics.getOrCreateCounter(MetricsConstants.ACTIVE_CALLS + function);
-      if (counter != null) counter.inc();
+      if (counter != null) {
+        counter.inc();
+      }
       return function;
     }
 
@@ -875,7 +877,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         timerContext.close();
       }
       Counter counter = Metrics.getOrCreateCounter(MetricsConstants.ACTIVE_CALLS + function);
-      if (counter != null) counter.dec();
+      if (counter != null) {
+        counter.dec();
+      }
 
       for (MetaStoreEndFunctionListener listener : endFunctionListeners) {
         listener.onEndFunction(function, context);
@@ -2536,7 +2540,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private boolean doesClientHaveCapability(ClientCapabilities client, ClientCapability value) {
-      if (!MetastoreConf.getBoolVar(getConf(), ConfVars.CAPABILITY_CHECK)) return true;
+      if (!MetastoreConf.getBoolVar(getConf(), ConfVars.CAPABILITY_CHECK)) {
+        return true;
+      }
       return (client != null && client.isSetValues() && client.getValues().contains(value));
     }
 
@@ -2731,11 +2737,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       @Override
       public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || !(obj instanceof PartValEqWrapper)) return false;
+        if (this == obj) {
+          return true;
+        }
+        if (obj == null || !(obj instanceof PartValEqWrapper)) {
+          return false;
+        }
         Partition p1 = this.partition, p2 = ((PartValEqWrapper)obj).partition;
-        if (!p1.isSetValues() || !p2.isSetValues()) return p1.isSetValues() == p2.isSetValues();
-        if (p1.getValues().size() != p2.getValues().size()) return false;
+        if (!p1.isSetValues() || !p2.isSetValues()) {
+          return p1.isSetValues() == p2.isSetValues();
+        }
+        if (p1.getValues().size() != p2.getValues().size()) {
+          return false;
+        }
         for (int i = 0; i < p1.getValues().size(); ++i) {
           String v1 = p1.getValues().get(i);
           String v2 = p2.getValues().get(i);
@@ -2776,11 +2790,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         List<String> lhsValues = this.values;
         List<String> rhsValues = ((PartValEqWrapperLite)obj).values;
 
-        if (lhsValues == null || rhsValues == null)
+        if (lhsValues == null || rhsValues == null) {
           return lhsValues == rhsValues;
+        }
 
-        if (lhsValues.size() != rhsValues.size())
+        if (lhsValues.size() != rhsValues.size()) {
           return false;
+        }
 
         for (int i=0; i<lhsValues.size(); ++i) {
           String lhsValue = lhsValues.get(i);
@@ -3965,11 +3981,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       @Override
       public boolean equals(Object rhs) {
-        if (rhs == this)
+        if (rhs == this) {
           return true;
+        }
 
-        if (!(rhs instanceof StorageDescriptorKey))
+        if (!(rhs instanceof StorageDescriptorKey)) {
           return false;
+        }
 
         return (hashCodeKey().equals(((StorageDescriptorKey) rhs).hashCodeKey()));
       }
@@ -4256,6 +4274,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("alter_partition", oldParts != null, ex, tbl_name);
       }
     }
+
+    @DMX
+    @Deprecated
 
     @Override
     public void alter_index(final String dbname, final String base_table_name,
@@ -4689,7 +4710,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         String toReturn = defaultValue;
         try {
           toReturn = MetastoreConf.get(conf, name);
-          if (toReturn == null) toReturn = defaultValue;
+          if (toReturn == null) {
+            toReturn = defaultValue;
+          }
         } catch (RuntimeException e) {
           LOG.error(threadLocalId.get().toString() + ": "
               + "RuntimeException thrown in get_config_value - msg: "
@@ -4942,6 +4965,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    @DMX
+    @Deprecated
+
     public Index add_index(final Index newIndex, final Table indexTable) throws TException {
       String tableName = indexTable != null ? indexTable.getTableName() : "";
       startFunction("add_index", ": " + newIndex.toString() + " " + tableName);
@@ -4965,6 +4991,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       return ret;
     }
+
+    @DMX
+    @Deprecated
 
     private Index add_index_core(final RawStore ms, final Index index, final Table indexTable)
         throws InvalidObjectException, AlreadyExistsException, MetaException {
@@ -5045,6 +5074,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @DMX
+    @Deprecated
+
     @Override
     public boolean drop_index_by_name(final String dbName, final String tblName,
         final String indexName, final boolean deleteData) throws TException {
@@ -5068,6 +5100,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       return ret;
     }
+
+    @DMX
+    @Deprecated
 
     private boolean drop_index_by_name_core(final RawStore ms,
         final String dbName, final String tblName,
@@ -5137,6 +5172,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return success;
     }
 
+    @DMX
+    @Deprecated
+
     @Override
     public Index get_index_by_name(final String dbName, final String tblName,
         final String indexName) throws TException {
@@ -5168,6 +5206,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return index;
     }
 
+    @DMX
     @Override
     public List<String> get_index_names(final String dbName, final String tblName,
         final short maxIndexes) throws TException {
@@ -5189,6 +5228,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       return ret;
     }
+
+    @DMX
+    @Deprecated
 
     @Override
     public List<Index> get_indexes(final String dbName, final String tblName,
@@ -5283,7 +5325,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         List<ColumnStatistics> list = getMS().getPartitionColumnStatistics(dbName, tableName,
             Lists.newArrayList(convertedPartName), Lists.newArrayList(colName));
-        if (list.isEmpty()) return null;
+        if (list.isEmpty()) {
+          return null;
+        }
         if (list.size() != 1) {
           throw new MetaException(list.size() + " statistics for single column and partition");
         }
@@ -5545,6 +5589,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @Override
     public int get_num_partitions_by_filter(final String dbName,
                                             final String tblName, final String filter)
             throws TException {
@@ -6885,7 +6930,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           newStatsMap.put(partName, csNew);
         }
-        
+
         Map<String, ColumnStatistics> oldStatsMap = new HashMap<>();
         Map<String, Partition> mapToPart = new HashMap<>();
         if (request.isSetNeedMerge() && request.isNeedMerge()) {
@@ -7050,7 +7095,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       getMS().getFileMetadataByExpr(fileIds, type, req.getExpr(), metadatas, ppdResults, eliminated);
       for (int i = 0; i < fileIds.size(); ++i) {
-        if (!eliminated[i] && ppdResults[i] == null) continue; // No metadata => no ppd.
+        if (!eliminated[i] && ppdResults[i] == null)
+         {
+          continue; // No metadata => no ppd.
+        }
         MetadataPpdResult mpr = new MetadataPpdResult();
         ByteBuffer ppdResult = eliminated[i] ? null : handleReadOnlyBufferForThrift(ppdResults[i]);
         mpr.setIncludeBitset(ppdResult);
@@ -7084,7 +7132,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       assert metadatas.length == fileIds.size();
       for (int i = 0; i < metadatas.length; ++i) {
         ByteBuffer bb = metadatas[i];
-        if (bb == null) continue;
+        if (bb == null) {
+          continue;
+        }
         bb = handleReadOnlyBufferForThrift(bb);
         result.putToMetadata(fileIds.get(i), bb);
       }
@@ -7095,7 +7145,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private ByteBuffer handleReadOnlyBufferForThrift(ByteBuffer bb) {
-      if (!bb.isReadOnly()) return bb;
+      if (!bb.isReadOnly()) {
+        return bb;
+      }
       // Thrift cannot write read-only buffers... oh well.
       // TODO: actually thrift never writes to the buffer, so we could use reflection to
       //       unset the unnecessary read-only flag if allocation/copy perf becomes a problem.
@@ -8059,7 +8111,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         try {
           // Per the javadocs on Condition, do not depend on the condition alone as a start gate
           // since spurious wake ups are possible.
-          while (!startedServing.get()) startCondition.await();
+          while (!startedServing.get()) {
+            startCondition.await();
+          }
           startCompactorInitiator(conf);
           startCompactorWorkers(conf);
           startCompactorCleaner(conf);

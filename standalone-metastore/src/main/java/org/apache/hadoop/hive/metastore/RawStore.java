@@ -235,19 +235,25 @@ public interface RawStore extends Configurable {
       List<List<String>> part_vals_list, List<Partition> new_parts)
       throws InvalidObjectException, MetaException;
 
+  @DMX
   boolean addIndex(Index index)
       throws InvalidObjectException, MetaException;
 
+  @DMX
   Index getIndex(String dbName, String origTableName, String indexName) throws MetaException;
 
+  @DMX
   boolean dropIndex(String dbName, String origTableName, String indexName) throws MetaException;
 
+  @DMX
   List<Index> getIndexes(String dbName,
       String origTableName, int max) throws MetaException;
 
+  @DMX
   List<String> listIndexNames(String dbName,
       String origTableName, short max) throws MetaException;
 
+  @DMX
   void alterIndex(String dbname, String baseTblName, String name, Index newIndex)
       throws InvalidObjectException, MetaException;
 

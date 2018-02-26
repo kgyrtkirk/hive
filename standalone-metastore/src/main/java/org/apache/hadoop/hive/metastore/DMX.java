@@ -16,29 +16,9 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore.events;
+package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.classification.InterfaceAudience;
-import org.apache.hadoop.classification.InterfaceStability;
-import org.apache.hadoop.hive.metastore.DMX;
-import org.apache.hadoop.hive.metastore.IHMSHandler;
-import org.apache.hadoop.hive.metastore.api.Index;
-
-@InterfaceAudience.Public
-@InterfaceStability.Stable
-@DMX
 @Deprecated
+public @interface DMX {
 
-public class AddIndexEvent extends ListenerEvent {
-
-  private final Index index;
-
-  public AddIndexEvent(Index index, boolean status, IHMSHandler handler) {
-    super(status, handler);
-    this.index = index;
-  }
-
-  public Index getIndex() {
-    return index;
-  }
 }

@@ -3775,6 +3775,9 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @DMX
+  @Deprecated
+
   @Override
   public void alterIndex(String dbname, String baseTblName, String name, Index newIndex)
       throws InvalidObjectException, MetaException {
@@ -4549,6 +4552,8 @@ public class ObjectStore implements RawStore, Configurable {
     return nnNames;
   }
 
+  @DMX
+  @Deprecated
   @Override
   public boolean addIndex(Index index) throws InvalidObjectException,
       MetaException {
@@ -4567,6 +4572,8 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @DMX
+  @Deprecated
   private MIndex convertToMIndex(Index index) throws InvalidObjectException,
       MetaException {
 
@@ -4595,6 +4602,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
+  @DMX
+  @Deprecated
   public boolean dropIndex(String dbName, String origTableName, String indexName)
       throws MetaException {
     boolean success = false;
@@ -9964,7 +9973,7 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         result = handleSimpleAlter(name, changes, canActivateDisabled, canDeactivate);
       }
- 
+
       commited = commitTransaction();
       return result;
     } catch (Exception e) {
@@ -10057,7 +10066,9 @@ public class ObjectStore implements RawStore, Configurable {
     String copyName = generateOldPlanName(newName, i);
     while (true) {
       MWMResourcePlan dup = getMWMResourcePlan(copyName, false, false);
-      if (dup == null) break;
+      if (dup == null) {
+        break;
+      }
       // Note: this can still conflict with parallel transactions. We do not currently handle
       //       parallel changes from two admins (by design :().
       copyName = generateOldPlanName(newName, ++i);

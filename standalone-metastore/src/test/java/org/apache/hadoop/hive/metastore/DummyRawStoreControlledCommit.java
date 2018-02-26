@@ -345,6 +345,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return objectStore.listIndexNames(dbName, origTableName, max);
   }
 
+  @DMX
+  @Deprecated
+
   @Override
   public void alterIndex(String dbName, String baseTblName, String name, Index newIndex)
       throws InvalidObjectException, MetaException {
