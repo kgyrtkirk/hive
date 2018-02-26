@@ -5005,15 +5005,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return null;
     }
 
-    @DMX
-    @Deprecated
-
-    @Override
-    public List<Index> get_indexes(final String dbName, final String tblName,
-        final short maxIndexes) throws TException {
-      return null;
-    }
-
     private String lowerCaseConvertPartName(String partName) throws MetaException {
       boolean isFirst = true;
       Map<String, String> partSpec = Warehouse.makeEscSpecFromName(partName);

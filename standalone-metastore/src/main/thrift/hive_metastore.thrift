@@ -1679,9 +1679,6 @@ service ThriftHiveMetastore extends fb303.FacebookService
   Index get_index_by_name(1:string db_name 2:string tbl_name, 3:string index_name)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
-  list<Index> get_indexes(1:string db_name, 2:string tbl_name, 3:i16 max_indexes=-1)
-                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
-
   //primary keys and foreign keys
   PrimaryKeysResponse get_primary_keys(1:PrimaryKeysRequest request)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
