@@ -1863,14 +1863,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return copy;
   }
 
-  private Index deepCopy(Index index) {
-    Index copy = null;
-    if (index != null) {
-      copy = new Index(index);
-    }
-    return copy;
-  }
-
   private Type deepCopy(Type type) {
     Type copy = null;
     if (type != null) {

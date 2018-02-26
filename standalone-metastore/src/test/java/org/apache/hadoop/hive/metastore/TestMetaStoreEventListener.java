@@ -30,7 +30,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -192,40 +191,6 @@ public class TestMetaStoreEventListener {
 
   private void validateDropDb(Database expectedDb, Database actualDb) {
     assertEquals(expectedDb, actualDb);
-  }
-
-  @Deprecated
-  @DMX
-
-  private void validateIndex(Index expectedIndex, Index actualIndex) {
-    assertEquals(expectedIndex.getDbName(), actualIndex.getDbName());
-    assertEquals(expectedIndex.getIndexName(), actualIndex.getIndexName());
-    assertEquals(expectedIndex.getIndexHandlerClass(), actualIndex.getIndexHandlerClass());
-    assertEquals(expectedIndex.getOrigTableName(), actualIndex.getOrigTableName());
-    assertEquals(expectedIndex.getIndexTableName(), actualIndex.getIndexTableName());
-    assertEquals(expectedIndex.getSd().getLocation(), actualIndex.getSd().getLocation());
-  }
-
-  @Deprecated
-  @DMX
-
-  private void validateAddIndex(Index expectedIndex, Index actualIndex) {
-    validateIndex(expectedIndex, actualIndex);
-  }
-
-  @Deprecated
-  @DMX
-
-  private void validateAlterIndex(Index expectedOldIndex, Index actualOldIndex,
-      Index expectedNewIndex, Index actualNewIndex) {
-    validateIndex(expectedOldIndex, actualOldIndex);
-    validateIndex(expectedNewIndex, actualNewIndex);
-  }
-
-  @Deprecated
-  @DMX
-  private void validateDropIndex(Index expectedIndex, Index actualIndex) {
-    validateIndex(expectedIndex, actualIndex);
   }
 
   @Test

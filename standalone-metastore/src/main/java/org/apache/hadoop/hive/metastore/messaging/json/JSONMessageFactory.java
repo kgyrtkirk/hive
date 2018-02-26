@@ -30,7 +30,6 @@ import com.google.common.collect.Iterables;
 
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -252,11 +251,6 @@ public class JSONMessageFactory extends MessageFactory {
   static String createFunctionObjJson(Function functionObj) throws TException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     return serializer.toString(functionObj, "UTF-8");
-  }
-
-  static String createIndexObjJson(Index indexObj) throws TException {
-    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    return serializer.toString(indexObj, "UTF-8");
   }
 
   public static ObjectNode getJsonTree(NotificationEvent event) throws Exception {
