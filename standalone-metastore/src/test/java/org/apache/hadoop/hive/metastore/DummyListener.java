@@ -23,9 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
-import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
@@ -34,7 +32,6 @@ import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
-import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
@@ -111,27 +108,6 @@ public class DummyListener extends MetaStoreEventListener{
   @Override
   public void onLoadPartitionDone(LoadPartitionDoneEvent partEvent) throws MetaException {
     addEvent(partEvent);
-  }
-
-  @Override
-  @Deprecated
-  @DMX
-  public void onAddIndex(AddIndexEvent indexEvent) throws MetaException {
-    addEvent(indexEvent);
-  }
-
-  @Override
-  @Deprecated
-  @DMX
-  public void onDropIndex(DropIndexEvent indexEvent) throws MetaException {
-    addEvent(indexEvent);
-  }
-
-  @Override
-  @Deprecated
-  @DMX
-  public void onAlterIndex(AlterIndexEvent indexEvent) throws MetaException {
-    addEvent(indexEvent);
   }
 
   @Override
