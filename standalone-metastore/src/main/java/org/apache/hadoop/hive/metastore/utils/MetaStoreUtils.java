@@ -32,7 +32,6 @@ import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.ColumnType;
-import org.apache.hadoop.hive.metastore.DMX;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -872,15 +871,6 @@ public class MetaStoreUtils {
       return false;
     }
     return (table.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE) != null);
-  }
-
-  @Deprecated
-  @DMX
-  public static boolean isIndexTable(Table table) {
-    if (table == null) {
-      return false;
-    }
-    return TableType.INDEX_TABLE.toString().equals(table.getTableType());
   }
 
   /**
