@@ -4252,15 +4252,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    @DMX
-    @Deprecated
-
-    @Override
-    public void alter_index(final String dbname, final String base_table_name,
-        final String index_name, final Index newIndex)
-        throws InvalidOperationException, MetaException {
-    }
-
     @Override
     public String getVersion() throws TException {
       endFunction(startFunction("getVersion"), true, null);
