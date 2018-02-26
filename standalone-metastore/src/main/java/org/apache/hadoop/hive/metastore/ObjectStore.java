@@ -4526,14 +4526,6 @@ public class ObjectStore implements RawStore, Configurable {
     return nnNames;
   }
 
-  @DMX
-  @Deprecated
-  @Override
-  public boolean addIndex(Index index) throws InvalidObjectException,
-      MetaException {
-        return false;
-  }
-
   @Override
   @DMX
   @Deprecated

@@ -1444,13 +1444,6 @@ public class CachedStore implements RawStore, Configurable {
 
   @DMX
   @Override
-  public boolean addIndex(Index index)
-      throws InvalidObjectException, MetaException {
-    return rawStore.addIndex(index);
-  }
-
-  @DMX
-  @Override
   public Index getIndex(String dbName, String origTableName, String indexName)
       throws MetaException {
     return rawStore.getIndex(dbName, origTableName, indexName);

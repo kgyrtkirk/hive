@@ -237,11 +237,6 @@ public interface RawStore extends Configurable {
 
   @DMX
   @Deprecated
-  boolean addIndex(Index index)
-      throws InvalidObjectException, MetaException;
-
-  @DMX
-  @Deprecated
   Index getIndex(String dbName, String origTableName, String indexName) throws MetaException;
 
   @DMX

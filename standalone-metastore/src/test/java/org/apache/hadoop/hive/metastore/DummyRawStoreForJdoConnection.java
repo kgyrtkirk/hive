@@ -321,13 +321,6 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   }
 
-
-  @Override
-  public boolean addIndex(Index index) throws InvalidObjectException, MetaException {
-
-    return false;
-  }
-
   @Override
   public Index getIndex(String dbName, String origTableName, String indexName)
       throws MetaException {
@@ -841,6 +834,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     return null;
   }
 
+  @Override
   public void flushCache() {
 
   }
@@ -944,6 +938,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     return null;
   }
 
+  @Override
   public List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks)
     throws InvalidObjectException, MetaException {
     // TODO Auto-generated method stub

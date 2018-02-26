@@ -317,11 +317,6 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public boolean addIndex(Index index) throws InvalidObjectException, MetaException {
-    return objectStore.addIndex(index);
-  }
-
-  @Override
   public Index getIndex(String dbName, String origTableName, String indexName)
       throws MetaException {
     return objectStore.getIndex(dbName, origTableName, indexName);
