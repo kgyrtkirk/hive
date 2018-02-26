@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -82,17 +81,6 @@ public class DefaultMetaStoreFilterHookImpl implements MetaStoreFilterHook {
   public List<String> filterPartitionNames(String dbName, String tblName,
       List<String> partitionNames) throws MetaException {
     return partitionNames;
-  }
-
-  @Override
-  public Index filterIndex(Index index)  throws NoSuchObjectException {
-    return index;
-  }
-
-  @Override
-  public List<String> filterIndexNames(String dbName, String tblName,
-      List<String> indexList) throws MetaException {
-    return indexList;
   }
 
 }

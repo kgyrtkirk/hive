@@ -27,7 +27,6 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -133,21 +132,12 @@ public class TestFilterHooks {
       return super.filterPartitionNames(dbName, tblName, partitionNames);
     }
 
-    @Override
-    public Index filterIndex(Index index) throws NoSuchObjectException {
-      if (blockResults) {
-        throw new NoSuchObjectException("Blocked access");
-      }
-      return super.filterIndex(index);
-    }
-
   }
 
   private static final String DBNAME1 = "testdb1";
   private static final String DBNAME2 = "testdb2";
   private static final String TAB1 = "tab1";
   private static final String TAB2 = "tab2";
-  private static final String INDEX1 = "idx1";
   private static Configuration conf;
   private static HiveMetaStoreClient msc;
 
