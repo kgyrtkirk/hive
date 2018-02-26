@@ -133,6 +133,9 @@ public interface MetaStoreFilterHook {
    * @param indexeList
    * @return
    */
+  @Deprecated
+  @DMX
+
   public List<Index> filterIndexes(List<Index> indexeList) throws MetaException;
 }
 
