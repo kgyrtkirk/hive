@@ -2320,12 +2320,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return MetaStoreUtils.isExternalTable(table);
     }
 
-    @Deprecated
-    @DMX
-    private boolean isIndexTable(Table table) {
-      return MetaStoreUtils.isIndexTable(table);
-    }
-
     @Override
     @Deprecated
     public Table get_table(final String dbname, final String name) throws MetaException,
