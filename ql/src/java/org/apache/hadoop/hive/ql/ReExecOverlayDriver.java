@@ -34,11 +34,10 @@ public class ReExecOverlayDriver extends AbstractReExecDriver {
 
   @Override
   public void handleExecutionException(Throwable exception) {
-    // FIXME: more resiliant failure cause detection :D
     if (exception == null) {
-      System.out.println("???? NULL?!!");
       return;
     }
+    // FIXME: more resiliant failure cause detection
     if (exception.getMessage().contains("Vertex failed,")) {
       //    if (exception instanceof TezException) {
       retryPossible = true;

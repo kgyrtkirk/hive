@@ -39,7 +39,7 @@ public class ReOptimizeDriver extends AbstractReExecDriver {
 
   @Override
   public void handleExecutionException(Throwable exception) {
-    // FIXME: more resiliant failure cause detection :D
+    // FIXME: more resiliant failure cause detection
     if (exception.getMessage().contains("Vertex failed,")) {
       retryPossible = true;
     }
