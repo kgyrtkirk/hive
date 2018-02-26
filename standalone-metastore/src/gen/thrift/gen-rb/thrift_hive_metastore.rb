@@ -1471,22 +1471,6 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_index failed: unknown result')
     end
 
-    def alter_index(dbname, base_tbl_name, idx_name, new_idx)
-      send_alter_index(dbname, base_tbl_name, idx_name, new_idx)
-      recv_alter_index()
-    end
-
-    def send_alter_index(dbname, base_tbl_name, idx_name, new_idx)
-      send_message('alter_index', Alter_index_args, :dbname => dbname, :base_tbl_name => base_tbl_name, :idx_name => idx_name, :new_idx => new_idx)
-    end
-
-    def recv_alter_index()
-      result = receive_message(Alter_index_result)
-      raise result.o1 unless result.o1.nil?
-      raise result.o2 unless result.o2.nil?
-      return
-    end
-
     def get_primary_keys(request)
       send_get_primary_keys(request)
       return recv_get_primary_keys()
@@ -4179,19 +4163,6 @@ module ThriftHiveMetastore
         result.o3 = o3
       end
       write_result(result, oprot, 'add_index', seqid)
-    end
-
-    def process_alter_index(seqid, iprot, oprot)
-      args = read_args(iprot, Alter_index_args)
-      result = Alter_index_result.new()
-      begin
-        @handler.alter_index(args.dbname, args.base_tbl_name, args.idx_name, args.new_idx)
-      rescue ::InvalidOperationException => o1
-        result.o1 = o1
-      rescue ::MetaException => o2
-        result.o2 = o2
-      end
-      write_result(result, oprot, 'alter_index', seqid)
     end
 
     def process_get_primary_keys(seqid, iprot, oprot)
@@ -8638,46 +8609,6 @@ module ThriftHiveMetastore
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::AlreadyExistsException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Alter_index_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    DBNAME = 1
-    BASE_TBL_NAME = 2
-    IDX_NAME = 3
-    NEW_IDX = 4
-
-    FIELDS = {
-      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
-      BASE_TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'base_tbl_name'},
-      IDX_NAME => {:type => ::Thrift::Types::STRING, :name => 'idx_name'},
-      NEW_IDX => {:type => ::Thrift::Types::STRUCT, :name => 'new_idx', :class => ::Index}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Alter_index_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    O1 = 1
-    O2 = 2
-
-    FIELDS = {
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidOperationException},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end
