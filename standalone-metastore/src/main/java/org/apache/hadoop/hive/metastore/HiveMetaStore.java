@@ -79,7 +79,6 @@ import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
@@ -95,7 +94,6 @@ import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.PreAlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreAuthorizationCallEvent;
@@ -4261,55 +4259,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public void alter_index(final String dbname, final String base_table_name,
         final String index_name, final Index newIndex)
         throws InvalidOperationException, MetaException {
-      startFunction("alter_index", ": db=" + dbname + " base_tbl=" + base_table_name
-          + " idx=" + index_name + " newidx=" + newIndex.getIndexName());
-      newIndex.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
-          .currentTimeMillis() / 1000));
-      boolean success = false;
-      Exception ex = null;
-      Index oldIndex = null;
-      RawStore ms  = getMS();
-      Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-      try {
-        ms.openTransaction();
-        oldIndex = null;//get_index_by_name(dbname, base_table_name, index_name);
-        firePreEvent(new PreAlterIndexEvent(oldIndex, newIndex, this));
-        ms.alterIndex(dbname, base_table_name, index_name, newIndex);
-        if (!transactionalListeners.isEmpty()) {
-          transactionalListenerResponses =
-              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                                                    EventType.ALTER_INDEX,
-                                                    new AlterIndexEvent(oldIndex, newIndex, true, this));
-        }
-
-        success = ms.commitTransaction();
-      } catch (InvalidObjectException e) {
-        ex = e;
-        throw new InvalidOperationException(e.getMessage());
-      } catch (Exception e) {
-        ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof InvalidOperationException) {
-          throw (InvalidOperationException) e;
-        } else {
-          throw newMetaException(e);
-        }
-      } finally {
-        if (!success) {
-          ms.rollbackTransaction();
-        }
-
-        endFunction("alter_index", success, ex, base_table_name);
-
-        if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-                                                EventType.ALTER_INDEX,
-                                                new AlterIndexEvent(oldIndex, newIndex, success, this),
-                                                null,
-                                                transactionalListenerResponses, ms);
-        }
-      }
     }
 
     @Override
