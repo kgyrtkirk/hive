@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan.mapping;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -38,11 +39,10 @@ import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-
-import jdk.nashorn.internal.ir.annotations.Ignore;
 
 public class TestReOptimization {
 
@@ -137,23 +137,30 @@ public class TestReOptimization {
   }
 
   @Test(expected = Exception.class)
+  @Ignore
   public void testNotReExecutedIfAssertionError() throws ParseException {
 
     IDriver driver = createDriver();
-    String query =
-        "select assert_true(0>sum(1)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
-    PlanMapper pm = getMapperForQuery(driver, query);
+    String query = "select assert_true(0>sum(1)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
 
+    PlanMapper pm = getMapperForQuery(driver, query);
   }
 
   @Test
-  @Ignore
-  public void testExplainSupport() throws ParseException {
-    env_setup.getTestCtx().hiveConf.set("hive.query.reexecution.explain", "true");
+  public void testExplainSupport() throws Exception {
 
     IDriver driver = createDriver();
-    String query = "explain select 1 from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
+    String query = "explain reoptimization select 1 from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
     PlanMapper pm = getMapperForQuery(driver, query);
+    List<String> res = new ArrayList<>();
+    List<String> res1 = new ArrayList<>();
+    while (driver.getResults(res1)) {
+      res.addAll(res1);
+    }
+
+    assertEquals("2TS", 2, res.stream().filter(line -> line.contains("TS_")).count());
+    assertEquals("2TS(runtime)", 2,
+        res.stream().filter(line -> line.contains("TS") && line.contains("runtime")).count());
 
   }
 
@@ -161,6 +168,7 @@ public class TestReOptimization {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
     conf.set("hive.query.reexecution.strategy", "reoptimize");
+    conf.set("hive.explain.user", "true");
     conf.set("zzz", "1");
     conf.set("reexec.overlay.zzz", "2000");
     //

@@ -43,6 +43,7 @@ import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -140,6 +141,7 @@ public class TestCounterMapping {
   }
 
   @Test
+  @Ignore("needs HiveFilter mapping")
   public void testMappingJoinLookup() throws ParseException {
     IDriver driver = createDriver();
 
