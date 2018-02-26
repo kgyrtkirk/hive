@@ -1947,25 +1947,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         firePreEvent(new PreDropTableEvent(tbl, deleteData, this));
 
-        boolean isIndexTable = isIndexTable(tbl);
-        if (indexName == null && isIndexTable) {
-          throw new RuntimeException(
-              "The table " + name + " is an index table. Please do drop index instead.");
-        }
-
-        if (!isIndexTable) {
-          try {
-            List<Index> indexes = ms.getIndexes(dbname, name, Short.MAX_VALUE);
-            while (indexes != null && indexes.size() > 0) {
-              for (Index idx : indexes) {
-                this.drop_index_by_name(dbname, name, idx.getIndexName(), true);
-              }
-              indexes = ms.getIndexes(dbname, name, Short.MAX_VALUE);
-            }
-          } catch (TException e) {
-            throw new MetaException(e.getMessage());
-          }
-        }
         isExternal = isExternal(tbl);
         if (tbl.getSd().getLocation() != null) {
           tblPath = new Path(tbl.getSd().getLocation());
@@ -2341,6 +2322,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return MetaStoreUtils.isExternalTable(table);
     }
 
+    @Deprecated
+    @DMX
     private boolean isIndexTable(Table table) {
       return MetaStoreUtils.isIndexTable(table);
     }
@@ -4993,15 +4976,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private Index add_index_core(final RawStore ms, final Index index, final Table indexTable)
         throws InvalidObjectException, AlreadyExistsException, MetaException {
       return index;
-    }
-
-    @DMX
-    @Deprecated
-
-    @Override
-    public boolean drop_index_by_name(final String dbName, final String tblName,
-        final String indexName, final boolean deleteData) throws TException {
-      return deleteData;
     }
 
     @DMX

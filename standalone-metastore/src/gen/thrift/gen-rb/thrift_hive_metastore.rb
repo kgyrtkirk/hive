@@ -1487,23 +1487,6 @@ module ThriftHiveMetastore
       return
     end
 
-    def drop_index_by_name(db_name, tbl_name, index_name, deleteData)
-      send_drop_index_by_name(db_name, tbl_name, index_name, deleteData)
-      return recv_drop_index_by_name()
-    end
-
-    def send_drop_index_by_name(db_name, tbl_name, index_name, deleteData)
-      send_message('drop_index_by_name', Drop_index_by_name_args, :db_name => db_name, :tbl_name => tbl_name, :index_name => index_name, :deleteData => deleteData)
-    end
-
-    def recv_drop_index_by_name()
-      result = receive_message(Drop_index_by_name_result)
-      return result.success unless result.success.nil?
-      raise result.o1 unless result.o1.nil?
-      raise result.o2 unless result.o2.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'drop_index_by_name failed: unknown result')
-    end
-
     def get_index_by_name(db_name, tbl_name, index_name)
       send_get_index_by_name(db_name, tbl_name, index_name)
       return recv_get_index_by_name()
@@ -4243,19 +4226,6 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'alter_index', seqid)
-    end
-
-    def process_drop_index_by_name(seqid, iprot, oprot)
-      args = read_args(iprot, Drop_index_by_name_args)
-      result = Drop_index_by_name_result.new()
-      begin
-        result.success = @handler.drop_index_by_name(args.db_name, args.tbl_name, args.index_name, args.deleteData)
-      rescue ::NoSuchObjectException => o1
-        result.o1 = o1
-      rescue ::MetaException => o2
-        result.o2 = o2
-      end
-      write_result(result, oprot, 'drop_index_by_name', seqid)
     end
 
     def process_get_index_by_name(seqid, iprot, oprot)
@@ -8767,48 +8737,6 @@ module ThriftHiveMetastore
 
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidOperationException},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Drop_index_by_name_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    DB_NAME = 1
-    TBL_NAME = 2
-    INDEX_NAME = 3
-    DELETEDATA = 4
-
-    FIELDS = {
-      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
-      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
-      INDEX_NAME => {:type => ::Thrift::Types::STRING, :name => 'index_name'},
-      DELETEDATA => {:type => ::Thrift::Types::BOOL, :name => 'deleteData'}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Drop_index_by_name_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    SUCCESS = 0
-    O1 = 1
-    O2 = 2
-
-    FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }
 

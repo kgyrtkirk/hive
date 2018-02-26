@@ -1129,9 +1129,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       }
       return;
     }
-    if (MetaStoreUtils.isIndexTable(tbl)) {
-      throw new UnsupportedOperationException("Cannot drop index tables");
-    }
     HiveMetaHook hook = getHook(tbl);
     if (hook != null) {
       hook.preDropTable(tbl);
@@ -2023,7 +2020,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public boolean dropIndex(String dbName, String tblName, String name,
       boolean deleteData) throws NoSuchObjectException, MetaException,
       TException {
-    return client.drop_index_by_name(dbName, tblName, name, deleteData);
+    return deleteData;
   }
 
   @Override

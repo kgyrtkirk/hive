@@ -767,16 +767,6 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
-  def drop_index_by_name(self, db_name, tbl_name, index_name, deleteData):
-    """
-    Parameters:
-     - db_name
-     - tbl_name
-     - index_name
-     - deleteData
-    """
-    pass
-
   def get_index_by_name(self, db_name, tbl_name, index_name):
     """
     Parameters:
@@ -4759,47 +4749,6 @@ class Client(fb303.FacebookService.Client, Iface):
       raise result.o2
     return
 
-  def drop_index_by_name(self, db_name, tbl_name, index_name, deleteData):
-    """
-    Parameters:
-     - db_name
-     - tbl_name
-     - index_name
-     - deleteData
-    """
-    self.send_drop_index_by_name(db_name, tbl_name, index_name, deleteData)
-    return self.recv_drop_index_by_name()
-
-  def send_drop_index_by_name(self, db_name, tbl_name, index_name, deleteData):
-    self._oprot.writeMessageBegin('drop_index_by_name', TMessageType.CALL, self._seqid)
-    args = drop_index_by_name_args()
-    args.db_name = db_name
-    args.tbl_name = tbl_name
-    args.index_name = index_name
-    args.deleteData = deleteData
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
-
-  def recv_drop_index_by_name(self):
-    iprot = self._iprot
-    (fname, mtype, rseqid) = iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      raise x
-    result = drop_index_by_name_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    if result.o1 is not None:
-      raise result.o1
-    if result.o2 is not None:
-      raise result.o2
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "drop_index_by_name failed: unknown result")
-
   def get_index_by_name(self, db_name, tbl_name, index_name):
     """
     Parameters:
@@ -8137,7 +8086,6 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     self._processMap["isPartitionMarkedForEvent"] = Processor.process_isPartitionMarkedForEvent
     self._processMap["add_index"] = Processor.process_add_index
     self._processMap["alter_index"] = Processor.process_alter_index
-    self._processMap["drop_index_by_name"] = Processor.process_drop_index_by_name
     self._processMap["get_index_by_name"] = Processor.process_get_index_by_name
     self._processMap["get_indexes"] = Processor.process_get_indexes
     self._processMap["get_primary_keys"] = Processor.process_get_primary_keys
@@ -10486,31 +10434,6 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
       logging.exception(ex)
       result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
     oprot.writeMessageBegin("alter_index", msg_type, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def process_drop_index_by_name(self, seqid, iprot, oprot):
-    args = drop_index_by_name_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = drop_index_by_name_result()
-    try:
-      result.success = self._handler.drop_index_by_name(args.db_name, args.tbl_name, args.index_name, args.deleteData)
-      msg_type = TMessageType.REPLY
-    except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
-      raise
-    except NoSuchObjectException as o1:
-      msg_type = TMessageType.REPLY
-      result.o1 = o1
-    except MetaException as o2:
-      msg_type = TMessageType.REPLY
-      result.o2 = o2
-    except Exception as ex:
-      msg_type = TMessageType.EXCEPTION
-      logging.exception(ex)
-      result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-    oprot.writeMessageBegin("drop_index_by_name", msg_type, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -28776,202 +28699,6 @@ class alter_index_result:
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.o1)
-    value = (value * 31) ^ hash(self.o2)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class drop_index_by_name_args:
-  """
-  Attributes:
-   - db_name
-   - tbl_name
-   - index_name
-   - deleteData
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'db_name', None, None, ), # 1
-    (2, TType.STRING, 'tbl_name', None, None, ), # 2
-    (3, TType.STRING, 'index_name', None, None, ), # 3
-    (4, TType.BOOL, 'deleteData', None, None, ), # 4
-  )
-
-  def __init__(self, db_name=None, tbl_name=None, index_name=None, deleteData=None,):
-    self.db_name = db_name
-    self.tbl_name = tbl_name
-    self.index_name = index_name
-    self.deleteData = deleteData
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.db_name = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRING:
-          self.tbl_name = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.STRING:
-          self.index_name = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 4:
-        if ftype == TType.BOOL:
-          self.deleteData = iprot.readBool()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('drop_index_by_name_args')
-    if self.db_name is not None:
-      oprot.writeFieldBegin('db_name', TType.STRING, 1)
-      oprot.writeString(self.db_name)
-      oprot.writeFieldEnd()
-    if self.tbl_name is not None:
-      oprot.writeFieldBegin('tbl_name', TType.STRING, 2)
-      oprot.writeString(self.tbl_name)
-      oprot.writeFieldEnd()
-    if self.index_name is not None:
-      oprot.writeFieldBegin('index_name', TType.STRING, 3)
-      oprot.writeString(self.index_name)
-      oprot.writeFieldEnd()
-    if self.deleteData is not None:
-      oprot.writeFieldBegin('deleteData', TType.BOOL, 4)
-      oprot.writeBool(self.deleteData)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.db_name)
-    value = (value * 31) ^ hash(self.tbl_name)
-    value = (value * 31) ^ hash(self.index_name)
-    value = (value * 31) ^ hash(self.deleteData)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class drop_index_by_name_result:
-  """
-  Attributes:
-   - success
-   - o1
-   - o2
-  """
-
-  thrift_spec = (
-    (0, TType.BOOL, 'success', None, None, ), # 0
-    (1, TType.STRUCT, 'o1', (NoSuchObjectException, NoSuchObjectException.thrift_spec), None, ), # 1
-    (2, TType.STRUCT, 'o2', (MetaException, MetaException.thrift_spec), None, ), # 2
-  )
-
-  def __init__(self, success=None, o1=None, o2=None,):
-    self.success = success
-    self.o1 = o1
-    self.o2 = o2
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.BOOL:
-          self.success = iprot.readBool()
-        else:
-          iprot.skip(ftype)
-      elif fid == 1:
-        if ftype == TType.STRUCT:
-          self.o1 = NoSuchObjectException()
-          self.o1.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRUCT:
-          self.o2 = MetaException()
-          self.o2.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('drop_index_by_name_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.BOOL, 0)
-      oprot.writeBool(self.success)
-      oprot.writeFieldEnd()
-    if self.o1 is not None:
-      oprot.writeFieldBegin('o1', TType.STRUCT, 1)
-      self.o1.write(oprot)
-      oprot.writeFieldEnd()
-    if self.o2 is not None:
-      oprot.writeFieldBegin('o2', TType.STRUCT, 2)
-      self.o2.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.success)
     value = (value * 31) ^ hash(self.o1)
     value = (value * 31) ^ hash(self.o2)
     return value
