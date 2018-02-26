@@ -4574,31 +4574,8 @@ public class ObjectStore implements RawStore, Configurable {
 
   @DMX
   @Deprecated
-  private MIndex convertToMIndex(Index index) throws InvalidObjectException,
-      MetaException {
-
-    StorageDescriptor sd = index.getSd();
-    if (sd == null) {
-      throw new InvalidObjectException("Storage descriptor is not defined for index.");
-    }
-
-    MStorageDescriptor msd = this.convertToMStorageDescriptor(sd);
-    MTable origTable = getMTable(index.getDbName(), index.getOrigTableName());
-    if (origTable == null) {
-      throw new InvalidObjectException(
-          "Original table does not exist for the given index.");
-    }
-
-    String[] qualified = null;
-    MTable indexTable = getMTable(qualified[0], qualified[1]);
-    if (indexTable == null) {
-      throw new InvalidObjectException(
-          "Underlying index table does not exist for the given index.");
-    }
-
-    return new MIndex(normalizeIdentifier(index.getIndexName()), origTable, index.getCreateTime(),
-        index.getLastAccessTime(), index.getParameters(), indexTable, msd,
-        index.getIndexHandlerClass(), index.isDeferredRebuild());
+  private MIndex convertToMIndex(Index index) throws InvalidObjectException, MetaException {
+    return null;
   }
 
   @Override
@@ -4606,22 +4583,11 @@ public class ObjectStore implements RawStore, Configurable {
   @Deprecated
   public boolean dropIndex(String dbName, String origTableName, String indexName)
       throws MetaException {
-    boolean success = false;
-    try {
-      openTransaction();
-      MIndex index = getMIndex(dbName, origTableName, indexName);
-      if (index != null) {
-        pm.deletePersistent(index);
-      }
-      success = commitTransaction();
-    } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
-    }
-    return success;
+    return isInitialized;
   }
 
+  @Deprecated
+  @DMX
   private MIndex getMIndex(String dbName, String originalTblName, String indexName)
       throws MetaException {
     MIndex midx = null;
