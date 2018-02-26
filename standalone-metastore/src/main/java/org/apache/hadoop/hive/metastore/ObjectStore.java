@@ -4566,12 +4566,6 @@ public class ObjectStore implements RawStore, Configurable {
     return null;
   }
 
-  @DMX
-  @Deprecated
-  private Index convertToIndex(MIndex mIndex) throws MetaException {
-      return null;
-
-  }
 
   @Override
   public boolean addRole(String roleName, String ownerName)
