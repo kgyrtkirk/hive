@@ -234,10 +234,6 @@ public interface RawStore extends Configurable {
       List<List<String>> part_vals_list, List<Partition> new_parts)
       throws InvalidObjectException, MetaException;
 
-  @DMX
-  @Deprecated
-  boolean dropIndex(String dbName, String origTableName, String indexName) throws MetaException;
-
   List<Partition> getPartitionsByFilter(
       String dbName, String tblName, String filter, short maxParts)
       throws MetaException, NoSuchObjectException;

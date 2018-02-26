@@ -40,7 +40,6 @@ import java.util.regex.Pattern;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.metastore.DMX;
 import org.apache.hadoop.hive.metastore.Deadline;
 import org.apache.hadoop.hive.metastore.FileMetadataHandler;
 import org.apache.hadoop.hive.metastore.ObjectStore;
@@ -1439,13 +1438,6 @@ public class CachedStore implements RawStore, Configurable {
     } finally {
       partitionAggrColStatsCacheLock.readLock().unlock();
     }
-  }
-
-  @DMX
-  @Override
-  public boolean dropIndex(String dbName, String origTableName,
-      String indexName) throws MetaException {
-    return rawStore.dropIndex(dbName, origTableName, indexName);
   }
 
   private boolean getPartitionNamesPrunedByExprNoTxn(Table table, byte[] expr,

@@ -92,7 +92,6 @@ import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -4516,14 +4515,6 @@ public class ObjectStore implements RawStore, Configurable {
     }
     pm.makePersistentAll(cstrs);
     return nnNames;
-  }
-
-  @Override
-  @DMX
-  @Deprecated
-  public boolean dropIndex(String dbName, String origTableName, String indexName)
-      throws MetaException {
-    return false;
   }
 
   @Deprecated

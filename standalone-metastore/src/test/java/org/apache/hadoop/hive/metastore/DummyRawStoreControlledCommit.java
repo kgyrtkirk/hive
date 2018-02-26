@@ -316,15 +316,6 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  @Deprecated
-  @DMX
-
-  public boolean dropIndex(String dbName, String origTableName, String indexName)
-      throws MetaException {
-    return objectStore.dropIndex(dbName, origTableName, indexName);
-  }
-
-  @Override
   public List<Partition> getPartitionsByFilter(String dbName, String tblName,
       String filter, short maxParts) throws MetaException, NoSuchObjectException {
     return objectStore.getPartitionsByFilter(dbName, tblName, filter, maxParts);

@@ -316,15 +316,6 @@ public class DummyRawStoreForJdoConnection implements RawStore {
       List<Partition> new_parts) throws InvalidObjectException, MetaException {
   }
 
-  @Deprecated
-  @DMX
-  @Override
-  public boolean dropIndex(String dbName, String origTableName, String indexName)
-      throws MetaException {
-
-    return false;
-  }
-
   @Override
   public List<Partition> getPartitionsByFilter(String dbName, String tblName, String filter,
       short maxParts) throws MetaException, NoSuchObjectException {
