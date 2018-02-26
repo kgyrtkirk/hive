@@ -1656,25 +1656,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   /**
-   * @param dbname
-   * @param base_tbl_name
-   * @param idx_name
-   * @param new_idx
-   * @throws InvalidOperationException
-   * @throws MetaException
-   * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#alter_index(java.lang.String,
-   *      java.lang.String, java.lang.String, org.apache.hadoop.hive.metastore.api.Index)
-   */
-  @Override
-  @DMX
-  @Deprecated
-
-  public void alter_index(String dbname, String base_tbl_name, String idx_name, Index new_idx)
-      throws InvalidOperationException, MetaException, TException {
-  }
-
-  /**
    * @param dbName
    * @param tblName
    * @param indexName

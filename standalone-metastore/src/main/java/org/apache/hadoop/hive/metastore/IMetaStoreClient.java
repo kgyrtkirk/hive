@@ -1019,10 +1019,6 @@ public interface IMetaStoreClient {
   Map<String, String> partitionNameToSpec(String name)
       throws MetaException, TException;
 
-  @DMX
-  @Deprecated
-  void alter_index(String dbName, String tblName, String indexName,
-      Index index) throws InvalidOperationException, MetaException, TException;
 
   /**
    *

@@ -303,7 +303,6 @@ public class TestMetaStoreEventListener {
 
     Index alteredIndex = new Index(oldIndex);
     alteredIndex.getParameters().put("prop3", "val3");
-    msc.alter_index(dbName, tblName, indexName, alteredIndex);
     listSize++;
     assertEquals(notifyList.size(), listSize);
 
