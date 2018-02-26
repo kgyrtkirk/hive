@@ -19,8 +19,6 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
-import org.apache.hadoop.hive.metastore.DMX;
-
 /**
  * Class representing messages emitted when Metastore operations are done.
  * (E.g. Creation and deletion of databases, tables and partitions.)
@@ -44,15 +42,7 @@ public abstract class EventMessage {
     INSERT(MessageFactory.INSERT_EVENT),
     CREATE_FUNCTION(MessageFactory.CREATE_FUNCTION_EVENT),
     DROP_FUNCTION(MessageFactory.DROP_FUNCTION_EVENT),
-    @Deprecated
-    @DMX
-    CREATE_INDEX(MessageFactory.CREATE_INDEX_EVENT),
-    @Deprecated
-    @DMX
-    DROP_INDEX(MessageFactory.DROP_INDEX_EVENT),
-    @Deprecated
-    @DMX
-    ALTER_INDEX(MessageFactory.ALTER_INDEX_EVENT),
+
     ADD_PRIMARYKEY(MessageFactory.ADD_PRIMARYKEY_EVENT),
     ADD_FOREIGNKEY(MessageFactory.ADD_FOREIGNKEY_EVENT),
     ADD_UNIQUECONSTRAINT(MessageFactory.ADD_UNIQUECONSTRAINT_EVENT),
