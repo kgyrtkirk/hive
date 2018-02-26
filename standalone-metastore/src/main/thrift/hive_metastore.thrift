@@ -1340,10 +1340,6 @@ exception NoSuchObjectException {
   1: string message
 }
 
-exception IndexAlreadyExistsException {
-  1: string message
-}
-
 exception InvalidOperationException {
   1: string message
 }

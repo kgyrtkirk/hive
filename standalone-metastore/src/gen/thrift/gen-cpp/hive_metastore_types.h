@@ -576,8 +576,6 @@ class InvalidObjectException;
 
 class NoSuchObjectException;
 
-class IndexAlreadyExistsException;
-
 class InvalidOperationException;
 
 class ConfigValSecurityException;
@@ -11590,54 +11588,6 @@ class NoSuchObjectException : public ::apache::thrift::TException {
 void swap(NoSuchObjectException &a, NoSuchObjectException &b);
 
 inline std::ostream& operator<<(std::ostream& out, const NoSuchObjectException& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
-typedef struct _IndexAlreadyExistsException__isset {
-  _IndexAlreadyExistsException__isset() : message(false) {}
-  bool message :1;
-} _IndexAlreadyExistsException__isset;
-
-class IndexAlreadyExistsException : public ::apache::thrift::TException {
- public:
-
-  IndexAlreadyExistsException(const IndexAlreadyExistsException&);
-  IndexAlreadyExistsException& operator=(const IndexAlreadyExistsException&);
-  IndexAlreadyExistsException() : message() {
-  }
-
-  virtual ~IndexAlreadyExistsException() throw();
-  std::string message;
-
-  _IndexAlreadyExistsException__isset __isset;
-
-  void __set_message(const std::string& val);
-
-  bool operator == (const IndexAlreadyExistsException & rhs) const
-  {
-    if (!(message == rhs.message))
-      return false;
-    return true;
-  }
-  bool operator != (const IndexAlreadyExistsException &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const IndexAlreadyExistsException & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-  mutable std::string thriftTExceptionMessageHolder_;
-  const char* what() const throw();
-};
-
-void swap(IndexAlreadyExistsException &a, IndexAlreadyExistsException &b);
-
-inline std::ostream& operator<<(std::ostream& out, const IndexAlreadyExistsException& obj)
 {
   obj.printTo(out);
   return out;
