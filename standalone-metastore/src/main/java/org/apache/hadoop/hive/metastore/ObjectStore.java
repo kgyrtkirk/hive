@@ -154,7 +154,6 @@ import org.apache.hadoop.hive.metastore.model.MDelegationToken;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;
 import org.apache.hadoop.hive.metastore.model.MFunction;
 import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
-import org.apache.hadoop.hive.metastore.model.MIndex;
 import org.apache.hadoop.hive.metastore.model.MMasterKey;
 import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
@@ -4515,38 +4514,6 @@ public class ObjectStore implements RawStore, Configurable {
     }
     pm.makePersistentAll(cstrs);
     return nnNames;
-  }
-
-  @Deprecated
-  @DMX
-  private MIndex getMIndex(String dbName, String originalTblName, String indexName)
-      throws MetaException {
-    MIndex midx = null;
-    boolean commited = false;
-    Query query = null;
-    try {
-      openTransaction();
-      dbName = normalizeIdentifier(dbName);
-      originalTblName = normalizeIdentifier(originalTblName);
-      MTable mtbl = getMTable(dbName, originalTblName);
-      if (mtbl == null) {
-        commited = commitTransaction();
-        return null;
-      }
-      query =
-          pm.newQuery(MIndex.class,
-              "origTable.tableName == t1 && origTable.database.name == t2 && indexName == t3");
-      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
-      query.setUnique(true);
-      midx =
-          (MIndex) query.execute(originalTblName, dbName,
-              normalizeIdentifier(indexName));
-      pm.retrieve(midx);
-      commited = commitTransaction();
-    } finally {
-      rollbackAndCleanup(commited, query);
-    }
-    return midx;
   }
 
   @Override
