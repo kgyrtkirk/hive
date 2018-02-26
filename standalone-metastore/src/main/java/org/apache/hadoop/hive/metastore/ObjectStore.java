@@ -3775,14 +3775,6 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  @DMX
-  @Deprecated
-
-  @Override
-  public void alterIndex(String dbname, String baseTblName, String name, Index newIndex)
-      throws InvalidObjectException, MetaException {
-  }
-
   /**
    * Alters an existing partition. Initiates copy of SD. Returns the old CD.
    * @param dbname
@@ -4590,6 +4582,9 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
+  @Deprecated
+  @DMX
+
   public List<String> listIndexNames(String dbName, String origTableName, short max)
       throws MetaException {
     return null;

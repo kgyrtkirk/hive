@@ -253,11 +253,6 @@ public interface RawStore extends Configurable {
   List<String> listIndexNames(String dbName,
       String origTableName, short max) throws MetaException;
 
-  @DMX
-  @Deprecated
-  void alterIndex(String dbname, String baseTblName, String name, Index newIndex)
-      throws InvalidObjectException, MetaException;
-
   List<Partition> getPartitionsByFilter(
       String dbName, String tblName, String filter, short maxParts)
       throws MetaException, NoSuchObjectException;

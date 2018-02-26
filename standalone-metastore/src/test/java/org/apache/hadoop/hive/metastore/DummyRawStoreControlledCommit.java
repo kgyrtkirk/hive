@@ -340,14 +340,6 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return objectStore.listIndexNames(dbName, origTableName, max);
   }
 
-  @DMX
-  @Deprecated
-
-  @Override
-  public void alterIndex(String dbName, String baseTblName, String name, Index newIndex)
-      throws InvalidObjectException, MetaException {
-    objectStore.alterIndex(dbName, baseTblName, name, newIndex);
-  }
 
   @Override
   public List<Partition> getPartitionsByFilter(String dbName, String tblName,

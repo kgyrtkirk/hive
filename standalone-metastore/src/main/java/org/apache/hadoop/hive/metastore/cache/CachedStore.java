@@ -1470,14 +1470,6 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.listIndexNames(dbName, origTableName, max);
   }
 
-  @DMX
-  @Deprecated
-  @Override
-  public void alterIndex(String dbname, String baseTblName, String name,
-      Index newIndex) throws InvalidObjectException, MetaException {
-    rawStore.alterIndex(dbname, baseTblName, name, newIndex);
-  }
-
   private boolean getPartitionNamesPrunedByExprNoTxn(Table table, byte[] expr,
       String defaultPartName, short maxParts, List<String> result, SharedCache sharedCache)
           throws MetaException, NoSuchObjectException {

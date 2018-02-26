@@ -321,6 +321,9 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   }
 
+  @Deprecated
+  @DMX
+
   @Override
   public Index getIndex(String dbName, String origTableName, String indexName)
       throws MetaException {
@@ -328,6 +331,8 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     return null;
   }
 
+  @Deprecated
+  @DMX
   @Override
   public boolean dropIndex(String dbName, String origTableName, String indexName)
       throws MetaException {
@@ -335,6 +340,8 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     return false;
   }
 
+  @Deprecated
+  @DMX
   @Override
   public List<Index> getIndexes(String dbName, String origTableName, int max)
       throws MetaException {
@@ -342,6 +349,8 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     return null;
   }
 
+  @Deprecated
+  @DMX
   @Override
   public List<String> listIndexNames(String dbName, String origTableName, short max)
       throws MetaException {
@@ -349,12 +358,6 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     return Collections.emptyList();
   }
 
-  @Override
-  public void alterIndex(String dbname, String baseTblName, String name, Index newIndex)
-      throws InvalidObjectException, MetaException {
-
-
-  }
 
   @Override
   public List<Partition> getPartitionsByFilter(String dbName, String tblName, String filter,
