@@ -22,7 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
+import org.junit.rules.Timeout;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
@@ -81,7 +83,8 @@ public abstract class CliAdapter {
   }
 
   public final TestRule buildTestRule() {
-    return new TestRule() {
+
+    TestRule localRule = new TestRule() {
       @Override
       public Statement apply(final Statement base, Description description) {
         return new Statement() {
@@ -97,6 +100,9 @@ public abstract class CliAdapter {
         };
       }
     };
+
+    TestRule chain = RuleChain.outerRule(new Timeout(cliConfig.getMethodTimeoutMs())).around(localRule);
+    return chain;
   }
 
   // HIVE-14444: pending refactor to push File forward
