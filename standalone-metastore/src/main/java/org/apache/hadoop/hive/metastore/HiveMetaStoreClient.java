@@ -1656,22 +1656,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   /**
-   * create an index
-   * @param index the index object
-   * @param indexTable which stores the index data
-   * @throws InvalidObjectException
-   * @throws MetaException
-   * @throws NoSuchObjectException
-   * @throws TException
-   * @throws AlreadyExistsException
-   */
-  @Override
-  @Deprecated
-  @DMX
-  public void createIndex(Index index, Table indexTable) throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException {
-  }
-
-  /**
    * @param dbname
    * @param base_tbl_name
    * @param idx_name

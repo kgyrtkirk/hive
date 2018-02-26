@@ -1019,20 +1019,6 @@ public interface IMetaStoreClient {
   Map<String, String> partitionNameToSpec(String name)
       throws MetaException, TException;
 
-  /**
-   * create an index
-   * @param index the index object
-   * @throws InvalidObjectException
-   * @throws MetaException
-   * @throws NoSuchObjectException
-   * @throws TException
-   * @throws AlreadyExistsException
-   */
-  @DMX
-  @Deprecated
-  void createIndex(Index index, Table indexTable) throws InvalidObjectException,
-      MetaException, NoSuchObjectException, TException, AlreadyExistsException;
-
   @DMX
   @Deprecated
   void alter_index(String dbName, String tblName, String indexName,

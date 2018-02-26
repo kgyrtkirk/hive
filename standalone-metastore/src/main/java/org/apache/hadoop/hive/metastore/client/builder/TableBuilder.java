@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.client.builder;
 
+import org.apache.hadoop.hive.metastore.DMX;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -123,7 +124,9 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
   }
 
   public TableBuilder addTableParam(String key, String value) {
-    if (tableParams == null) tableParams = new HashMap<>();
+    if (tableParams == null) {
+      tableParams = new HashMap<>();
+    }
     tableParams.put(key, value);
     return this;
   }
@@ -137,6 +140,9 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
     this.temporary = temporary;
     return this;
   }
+
+  @Deprecated
+  @DMX
 
   public TableBuilder fromIndex(Index index) {
     dbName = index.getDbName();
@@ -159,8 +165,12 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
     }
     Table t = new Table(tableName, dbName, owner, createTime, lastAccessTime, retention, buildSd(),
         partCols, tableParams, viewOriginalText, viewExpandedText, type);
-    if (rewriteEnabled) t.setRewriteEnabled(true);
-    if (temporary) t.setTemporary(temporary);
+    if (rewriteEnabled) {
+      t.setRewriteEnabled(true);
+    }
+    if (temporary) {
+      t.setTemporary(temporary);
+    }
     return t;
   }
 

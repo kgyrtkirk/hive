@@ -288,7 +288,6 @@ public class TestMetaStoreEventListener {
     Table indexTable = new TableBuilder()
         .fromIndex(index)
         .build();
-    msc.createIndex(index, indexTable);
     listSize += 2;  // creates index table internally
     assertEquals(notifyList.size(), listSize);
 

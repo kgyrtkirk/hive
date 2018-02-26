@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
-import org.apache.hadoop.hive.metastore.client.builder.IndexBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -201,13 +200,6 @@ public class TestFilterHooks {
         .addValue("value2")
         .build();
     msc.add_partition(part2);
-    Index index = new IndexBuilder()
-        .setDbAndTableName(tab1)
-        .setIndexName(INDEX1)
-        .setDeferredRebuild(true)
-        .addCol("id", "int")
-        .build();
-    msc.createIndex(index, new TableBuilder().fromIndex(index).build());
   }
 
   @AfterClass
