@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.events;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.hive.metastore.DMX;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 
 /**
@@ -42,8 +43,15 @@ public abstract class PreEventContext {
     AUTHORIZATION_API_CALL,
     READ_TABLE,
     READ_DATABASE,
+    @Deprecated
+    @DMX
     ADD_INDEX,
+    @Deprecated
+    @DMX
+
     ALTER_INDEX,
+    @Deprecated
+    @DMX
     DROP_INDEX,
     ALTER_DATABASE
   }

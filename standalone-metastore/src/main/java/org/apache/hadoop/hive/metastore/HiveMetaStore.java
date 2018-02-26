@@ -4272,7 +4272,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
       try {
         ms.openTransaction();
-        oldIndex = get_index_by_name(dbname, base_table_name, index_name);
+        oldIndex = null;//get_index_by_name(dbname, base_table_name, index_name);
         firePreEvent(new PreAlterIndexEvent(oldIndex, newIndex, this));
         ms.alterIndex(dbname, base_table_name, index_name, newIndex);
         if (!transactionalListeners.isEmpty()) {
@@ -4987,15 +4987,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return deleteData;
     }
 
-    @DMX
-    @Deprecated
-
-    @Override
-    public Index get_index_by_name(final String dbName, final String tblName,
-        final String indexName) throws TException {
-      return null;
-
-    }
 
     @Deprecated
     @DMX

@@ -1706,7 +1706,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public Index getIndex(String dbName, String tblName, String indexName)
       throws MetaException, UnknownTableException, NoSuchObjectException,
       TException {
-    return deepCopy(filterHook.filterIndex(client.get_index_by_name(dbName, tblName, indexName)));
+    return null;
   }
 
   /**
