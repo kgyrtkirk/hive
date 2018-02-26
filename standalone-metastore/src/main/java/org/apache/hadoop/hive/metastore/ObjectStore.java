@@ -4589,7 +4589,7 @@ public class ObjectStore implements RawStore, Configurable {
           "Original table does not exist for the given index.");
     }
 
-    String[] qualified = MetaStoreUtils.getQualifiedName(index.getDbName(), index.getIndexTableName());
+    String[] qualified = null;
     MTable indexTable = getMTable(qualified[0], qualified[1]);
     if (indexTable == null) {
       throw new InvalidObjectException(

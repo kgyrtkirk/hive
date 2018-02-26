@@ -4998,8 +4998,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private Index add_index_core(final RawStore ms, final Index index, final Table indexTable)
         throws InvalidObjectException, AlreadyExistsException, MetaException {
       boolean success = false, indexTableCreated = false;
-      String[] qualified =
-          MetaStoreUtils.getQualifiedName(index.getDbName(), index.getIndexTableName());
+      String[] qualified = null;
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
       try {
         ms.openTransaction();
@@ -5120,7 +5119,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ms.dropIndex(dbName, tblName, indexName);
         String idxTblName = index.getIndexTableName();
         if (idxTblName != null) {
-          String[] qualified = MetaStoreUtils.getQualifiedName(index.getDbName(), idxTblName);
+          String[] qualified = null;
           Table tbl = get_table_core(qualified[0], qualified[1]);
           if (tbl.getSd() == null) {
             throw new MetaException("Table metadata is corrupted");
