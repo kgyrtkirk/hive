@@ -89,7 +89,6 @@ import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
-import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
@@ -103,7 +102,6 @@ import org.apache.hadoop.hive.metastore.events.PreAuthorizationCallEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.PreDropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
@@ -5012,56 +5010,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private boolean drop_index_by_name_core(final RawStore ms,
         final String dbName, final String tblName,
         final String indexName, final boolean deleteData) throws TException, IOException {
-      boolean success = false;
-      Index index = null;
-      Path tblPath = null;
-      List<Path> partPaths = null;
-      Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-      try {
-        ms.openTransaction();
-        // drop the underlying index table
-        index = get_index_by_name(dbName, tblName, indexName);  // throws exception if not exists
-        firePreEvent(new PreDropIndexEvent(index, this));
-        ms.dropIndex(dbName, tblName, indexName);
-        String idxTblName = index.getIndexTableName();
-        if (idxTblName != null) {
-          String[] qualified = null;
-          Table tbl = get_table_core(qualified[0], qualified[1]);
-          if (tbl.getSd() == null) {
-            throw new MetaException("Table metadata is corrupted");
-          }
-
-          if (tbl.getSd().getLocation() != null) {
-            tblPath = new Path(tbl.getSd().getLocation());
-            if (!wh.isWritable(tblPath.getParent())) {
-              throw new MetaException("Index table metadata not deleted since " +
-                  tblPath.getParent() + " is not writable by " +
-                  SecurityUtils.getUser());
-            }
-          }
-
-        }
-
-
-        success = ms.commitTransaction();
-      } finally {
-        if (!success) {
-          ms.rollbackTransaction();
-        } else if (deleteData && tblPath != null) {
-          deletePartitionData(partPaths);
-          deleteTableData(tblPath);
-          // ok even if the data is not deleted
-        }
-        // Skip the event listeners if the index is NULL
-        if (index != null && !listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-                                                EventType.DROP_INDEX,
-                                                new DropIndexEvent(index, success, this),
-                                                null,
-                                                transactionalListenerResponses, ms);
-        }
-      }
-      return success;
+      return deleteData;
     }
 
     @DMX
@@ -5070,32 +5019,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public Index get_index_by_name(final String dbName, final String tblName,
         final String indexName) throws TException {
+      return null;
 
-      startFunction("get_index_by_name", ": db=" + dbName + " tbl="
-          + tblName + " index=" + indexName);
-
-      Index ret = null;
-      Exception ex = null;
-      try {
-        ret = get_index_by_name_core(getMS(), dbName, tblName, indexName);
-      } catch (Exception e) {
-        ex = e;
-        rethrowException(e);
-      } finally {
-        endFunction("get_index_by_name", ret != null, ex, tblName);
-      }
-      return ret;
     }
+
+    @Deprecated
+    @DMX
 
     private Index get_index_by_name_core(final RawStore ms, final String db_name,
         final String tbl_name, final String index_name) throws TException {
-      Index index = ms.getIndex(db_name, tbl_name, index_name);
-
-      if (index == null) {
-        throw new NoSuchObjectException(db_name + "." + tbl_name
-            + " index=" + index_name + " not found");
-      }
-      return index;
+      return null;
     }
 
     @DMX
@@ -5104,19 +5037,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public List<Index> get_indexes(final String dbName, final String tblName,
         final short maxIndexes) throws TException {
-      startTableFunction("get_indexes", dbName, tblName);
-
-      List<Index> ret = null;
-      Exception ex = null;
-      try {
-        ret = getMS().getIndexes(dbName, tblName, maxIndexes);
-      } catch (Exception e) {
-        ex = e;
-        rethrowException(e);
-      } finally {
-        endFunction("get_indexes", ret != null, ex, tblName);
-      }
-      return ret;
+      return null;
     }
 
     private String lowerCaseConvertPartName(String partName) throws MetaException {
