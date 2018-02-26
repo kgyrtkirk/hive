@@ -4619,34 +4619,17 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
+  @DMX
+  @Deprecated
   public Index getIndex(String dbName, String origTableName, String indexName)
       throws MetaException {
-    openTransaction();
-    MIndex mIndex = this.getMIndex(dbName, origTableName, indexName);
-    Index ret = convertToIndex(mIndex);
-    commitTransaction();
-    return ret;
+    return null;
   }
 
+  @DMX
+  @Deprecated
   private Index convertToIndex(MIndex mIndex) throws MetaException {
-    if (mIndex == null) {
       return null;
-    }
-
-    MTable origTable = mIndex.getOrigTable();
-    MTable indexTable = mIndex.getIndexTable();
-
-    return new Index(
-    mIndex.getIndexName(),
-    mIndex.getIndexHandlerClass(),
-    origTable.getDatabase().getName(),
-    origTable.getTableName(),
-    mIndex.getCreateTime(),
-    mIndex.getLastAccessTime(),
-    indexTable.getTableName(),
-    convertToStorageDescriptor(mIndex.getSd()),
-    mIndex.getParameters(),
-    mIndex.getDeferredRebuild());
 
   }
 
