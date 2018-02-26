@@ -143,6 +143,9 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @param indexEvent index event
    * @throws MetaException
    */
+  @Deprecated
+  @DMX
+
   public void onAddIndex(AddIndexEvent indexEvent) throws MetaException {
   }
 
@@ -150,6 +153,8 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @param indexEvent index event
    * @throws MetaException
    */
+  @Deprecated
+  @DMX
   public void onDropIndex(DropIndexEvent indexEvent) throws MetaException {
   }
 
@@ -157,6 +162,8 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @param indexEvent index event
    * @throws MetaException
    */
+  @Deprecated
+  @DMX
   public void onAlterIndex(AlterIndexEvent indexEvent) throws MetaException {
   }
 
