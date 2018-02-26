@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.ql.parse.CoreParseNegative;
 
 public class CliConfigs {
 
-  public static final long QTEST_TIMEOUT_MS = 11110;
   private static URL testConfigProps = getTestPropsURL();
 
   private static URL getTestPropsURL() {

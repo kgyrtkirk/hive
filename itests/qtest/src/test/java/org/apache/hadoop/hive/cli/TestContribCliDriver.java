@@ -54,7 +54,7 @@ public class TestContribCliDriver {
     this.qfile = qfile;
   }
 
-  @Test(timeout = CliConfigs.QTEST_TIMEOUT_MS)
+  @Test
   public void testCliDriver() throws Exception {
     adapter.runTest(name, qfile);
   }
