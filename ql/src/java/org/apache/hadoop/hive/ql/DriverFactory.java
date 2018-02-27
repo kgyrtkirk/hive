@@ -77,7 +77,7 @@ public class DriverFactory {
       return new ReExecutionOverlayPlugin();
     }
     if (name.equals("reoptimize")) {
-
+      return new ReOptimizePlugin();
     }
     throw new RuntimeException(
         "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
