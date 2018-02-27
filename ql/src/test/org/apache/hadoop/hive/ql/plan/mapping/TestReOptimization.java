@@ -24,9 +24,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.ReOptimizeDriver;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
@@ -91,7 +91,7 @@ public class TestReOptimization {
     if (res.getResponseCode() != 0) {
       throw res;
     }
-    PlanMapper pm0 = ((ReOptimizeDriver) driver).getContext().getPlanMapper();
+    PlanMapper pm0 = driver.getContext().getPlanMapper();
     return pm0;
   }
 
@@ -139,12 +139,15 @@ public class TestReOptimization {
 
   @Test(expected = CommandProcessorResponse.class)
   public void testNotReExecutedIfAssertionError() throws Exception {
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, "reoptimize");
 
     IDriver driver = createDriver();
     String query =
         "select assert_true(${hiveconf:zzz}>sum(1)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
 
     PlanMapper pm = getMapperForQuery(driver, query);
+    assertEquals(1, driver.getContext().getExecutionIndex());
   }
 
   @Test

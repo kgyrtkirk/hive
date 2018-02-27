@@ -142,6 +142,7 @@ public class ReExecDriver2 implements IDriver {
 
     while (true) {
       executionIndex++;
+      coreDriver.getContext().setExecutionIndex(executionIndex);
       LOG.info("Execution #{} of query", executionIndex);
       CommandProcessorResponse cpr = coreDriver.run();
 
@@ -161,14 +162,14 @@ public class ReExecDriver2 implements IDriver {
       }
 
       PlanMapper newPlanMapper = coreDriver.getPlanMapper();
-      if (!shouldReExecute2(oldPlanMapper, newPlanMapper)) {
+      if (!shouldReExecuteAfterCompile(oldPlanMapper, newPlanMapper)) {
         // FIXME: retain old error; or create a new one?
         return cpr;
       }
     }
   }
 
-  private boolean shouldReExecute2(PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
+  private boolean shouldReExecuteAfterCompile(PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
     boolean ret = false;
     for (ReExecutionPlugin p : plugins) {
       ret |= p.shouldReExecute2(executionIndex, oldPlanMapper, newPlanMapper);

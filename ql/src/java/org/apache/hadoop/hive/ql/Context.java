@@ -162,6 +162,7 @@ public class Context {
   private boolean isExplainPlan = false;
   private PlanMapper planMapper = new PlanMapper();
   private RuntimeStatsSource runtimeStatsSource;
+  private int executionIndex;
 
   public void setOperation(Operation operation) {
     this.operation = operation;
@@ -1063,5 +1064,13 @@ public class Context {
       // hierarchical; add def stats also here
       return new EmptyStatsSource();
     }
+  }
+
+  public int getExecutionIndex() {
+    return executionIndex;
+  }
+
+  public void setExecutionIndex(int executionIndex) {
+    this.executionIndex = executionIndex;
   }
 }

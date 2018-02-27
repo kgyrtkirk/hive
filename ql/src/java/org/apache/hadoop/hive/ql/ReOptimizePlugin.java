@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.SimpleRuntimeStatsSource;
+import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +69,10 @@ public class ReOptimizePlugin implements ReExecutionPlugin {
   @Override
   public void initialize(Driver driver) {
     coreDriver = driver;
+    coreDriver.getHookRunner().addOnFailureHook(new LocalHook());
+    OperatorStatsReaderHook hook = new OperatorStatsReaderHook();
+    coreDriver.getHookRunner().addOnFailureHook(hook);
+    coreDriver.getHookRunner().addPostHook(hook);
   }
 
   @Override
