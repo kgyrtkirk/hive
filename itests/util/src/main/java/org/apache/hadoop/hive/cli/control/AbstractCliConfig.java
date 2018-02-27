@@ -41,6 +41,9 @@ import com.google.common.base.Splitter;
 
 public abstract class AbstractCliConfig {
 
+  // used in every cli method to set an upperbound to execution time
+  public static final int QTEST_TIMEOUT_MS = 10 * 60 * 1000;
+
   public static final String HIVE_ROOT = HiveTestEnvSetup.HIVE_ROOT;
 
   public static enum MetastoreType {
@@ -69,7 +72,7 @@ public abstract class AbstractCliConfig {
   // moved...this may change
   private Set<String> includeQueryFileNames;
   private Class<? extends CliAdapter> cliAdapter;
-  private int methodTimeoutMs = -1;
+  private int methodTimeoutMs = QTEST_TIMEOUT_MS;
 
   public AbstractCliConfig(Class<? extends CliAdapter> adapter) {
     cliAdapter=adapter;
