@@ -101,8 +101,11 @@ public abstract class CliAdapter {
       }
     };
 
-    TestRule chain = RuleChain.outerRule(localRule).around(new Timeout(cliConfig.getMethodTimeoutMs()));
-    return chain;
+    if(System.getProperty("maven.surefire.debug") == null){
+      TestRule chain = RuleChain.outerRule(localRule).around(new Timeout(cliConfig.getMethodTimeoutMs()));
+      return chain;
+    }
+    return localRule;
   }
 
   // HIVE-14444: pending refactor to push File forward
