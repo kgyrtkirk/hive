@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 // FIXME: move to a different package?
 @InterfaceAudience.Private
 @InterfaceStability.Unstable
-public interface ReExecutionPlugin {
+public interface IReExecutionPlugin {
 
   /**
    * Called when the {@link Driver} is being initialized

@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-public class ReOptimizePlugin implements ReExecutionPlugin {
+public class ReOptimizePlugin implements IReExecutionPlugin {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReOptimizePlugin.class);
 

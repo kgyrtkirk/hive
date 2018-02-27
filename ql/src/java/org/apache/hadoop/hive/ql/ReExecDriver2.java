@@ -83,7 +83,7 @@ public class ReExecDriver2 implements IDriver {
   @Deprecated
   private int executionIndex;
 
-  private ArrayList<ReExecutionPlugin> plugins;
+  private ArrayList<IReExecutionPlugin> plugins;
 
   @Override
   public HiveConf getConf() {
@@ -95,13 +95,13 @@ public class ReExecDriver2 implements IDriver {
   }
 
   public ReExecDriver2(QueryState queryState, String userName, QueryInfo queryInfo,
-      ArrayList<ReExecutionPlugin> plugins) {
+      ArrayList<IReExecutionPlugin> plugins) {
     this.queryState = queryState;
     coreDriver = new Driver(queryState, userName, queryInfo, null);
     coreDriver.getHookRunner().addSemanticAnalyzerHook(new HandleReOptimizationExplain());
     this.plugins = plugins;
 
-    for (ReExecutionPlugin p : plugins) {
+    for (IReExecutionPlugin p : plugins) {
       p.initialize(coreDriver);
     }
   }
@@ -168,7 +168,7 @@ public class ReExecDriver2 implements IDriver {
 
   private boolean shouldReExecuteAfterCompile(PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
     boolean ret = false;
-    for (ReExecutionPlugin p : plugins) {
+    for (IReExecutionPlugin p : plugins) {
       ret |= p.shouldReExecute2(executionIndex, oldPlanMapper, newPlanMapper);
     }
     return ret;
@@ -176,7 +176,7 @@ public class ReExecDriver2 implements IDriver {
 
   private boolean shouldReExecute() {
     boolean ret = false;
-    for (ReExecutionPlugin p : plugins) {
+    for (IReExecutionPlugin p : plugins) {
       ret |= p.shouldReExecute(executionIndex);
     }
     return ret;
@@ -192,7 +192,7 @@ public class ReExecDriver2 implements IDriver {
   }
 
   protected void prepareToReExecute() {
-    for (ReExecutionPlugin p : plugins) {
+    for (IReExecutionPlugin p : plugins) {
       p.prepareToReExecute2();
     }
   }

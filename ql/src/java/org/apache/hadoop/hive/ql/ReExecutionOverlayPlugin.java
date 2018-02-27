@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 /**
  * Re-Executes a query only adding an extra overlay
  */
-public class ReExecutionOverlayPlugin implements ReExecutionPlugin {
+public class ReExecutionOverlayPlugin implements IReExecutionPlugin {
 
   private Driver driver;
   private Map<String, String> subtree;
