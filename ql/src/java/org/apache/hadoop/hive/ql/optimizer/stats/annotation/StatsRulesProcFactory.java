@@ -136,7 +136,7 @@ public class StatsRulesProcFactory {
         // gather statistics for the first time and the attach it to table scan operator
         Statistics stats = StatsUtils.collectStatistics(aspCtx.getConf(), partList, colStatsCached, table, tsop);
 
-        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, tsop);
+        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, tsop, stats.getNumRows());
         tsop.setStatistics(stats);
 
         if (LOG.isDebugEnabled()) {
@@ -195,7 +195,7 @@ public class StatsRulesProcFactory {
           long dataSize = StatsUtils.getDataSizeFromColumnStats(stats.getNumRows(), colStats);
           stats.setDataSize(dataSize);
         }
-        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, sop);
+        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, sop, parentStats.getNumRows());
         sop.setStatistics(stats);
 
         if (LOG.isDebugEnabled()) {
@@ -203,7 +203,7 @@ public class StatsRulesProcFactory {
         }
       } else {
         if (parentStats != null) {
-          stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, sop);
+          stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, sop, parentStats.getNumRows());
           sop.setStatistics(stats);
 
           if (LOG.isDebugEnabled()) {
@@ -308,7 +308,7 @@ public class StatsRulesProcFactory {
           }
         }
 
-        st = applyRuntimeStats(aspCtx.getParseContext().getContext(), st, fop);
+        st = applyRuntimeStats(aspCtx.getParseContext().getContext(), st, fop, parent.getStatistics().getNumRows());
         fop.setStatistics(st);
 
         aspCtx.setAndExprStats(null);
@@ -1260,7 +1260,7 @@ public class StatsRulesProcFactory {
         }
       }
 
-      stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, gop);
+      stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, gop, parentStats.getNumRows());
       gop.setStatistics(stats);
 
       if (LOG.isDebugEnabled() && stats != null) {
@@ -1588,7 +1588,7 @@ public class StatsRulesProcFactory {
           }
         }
 
-        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, jop);
+        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, jop, stats.getNumRows());
         jop.setStatistics(stats);
 
         if (LOG.isDebugEnabled()) {
@@ -1678,7 +1678,7 @@ public class StatsRulesProcFactory {
           }
         }
 
-        wcStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), wcStats, jop);
+        wcStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), wcStats, jop, wcStats.getNumRows());
         jop.setStatistics(wcStats);
 
         if (LOG.isDebugEnabled()) {
@@ -2247,7 +2247,7 @@ public class StatsRulesProcFactory {
         if (limit <= parentStats.getNumRows()) {
           updateStats(stats, limit, true, lop);
         }
-        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, lop);
+        stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, lop, parentStats.getNumRows());
         lop.setStatistics(stats);
 
         if (LOG.isDebugEnabled()) {
@@ -2260,7 +2260,7 @@ public class StatsRulesProcFactory {
           // based on average row size
           limit = StatsUtils.getMaxIfOverflow(limit);
           Statistics wcStats = parentStats.scaleToRowCount(limit, true);
-          wcStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), wcStats, lop);
+          wcStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), wcStats, lop, parentStats.getNumRows());
           lop.setStatistics(wcStats);
           if (LOG.isDebugEnabled()) {
             LOG.debug("[1] STATS-" + lop.toString() + ": " + wcStats.extendedToString());
@@ -2322,7 +2322,8 @@ public class StatsRulesProcFactory {
           outStats.setColumnStats(colStats);
         }
 
-        outStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), outStats, rop);
+        outStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), outStats, rop,
+            parent.getStatistics().getNumRows());
         rop.setStatistics(outStats);
         if (LOG.isDebugEnabled()) {
           LOG.debug("[0] STATS-" + rop.toString() + ": " + outStats.extendedToString());
@@ -2371,7 +2372,7 @@ public class StatsRulesProcFactory {
                 LOG.debug("[0] STATS-" + op.toString() + ": " + stats.extendedToString());
               }
             }
-            stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, op);
+            stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, op, stats.getNumRows());
             op.getConf().setStatistics(stats);
           }
         }
@@ -2491,7 +2492,7 @@ public class StatsRulesProcFactory {
         && !stats.getColumnStatsState().equals(Statistics.State.NONE);
   }
 
-  private static Statistics applyRuntimeStats(Context context, Statistics stats, Operator<?> op) {
+  private static Statistics applyRuntimeStats(Context context, Statistics stats, Operator<?> op, long maxRows) {
     if (!context.getRuntimeStatsSource().isPresent()) {
       return stats;
     }
@@ -2500,6 +2501,10 @@ public class StatsRulesProcFactory {
     Optional<OperatorStats> os = rss.lookup(op);
 
     if (!os.isPresent()) {
+      return stats;
+    }
+    // maxRows are defaulted to 1 in some cases; in case of those: OperatorStats may be go higher
+    if (maxRows > 1 && os.get().getOutputRecords() > maxRows) {
       return stats;
     }
 
