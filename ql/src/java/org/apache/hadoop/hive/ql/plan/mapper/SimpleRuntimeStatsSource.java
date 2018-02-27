@@ -42,7 +42,6 @@ public class SimpleRuntimeStatsSource implements RuntimeStatsSource {
       List<? extends Operator> candidates = pm.getAll(op.getClass());
       for (Operator candidate : candidates) {
         if (op.logicalEqualsTree(candidate)) {
-          // FIXME: change this back to lookup...find that bug
           List<OperatorStats> v = pm.lookupAll(OperatorStats.class, candidate);
           if (v.size() > 0) {
             return Optional.of(v.get(0));
