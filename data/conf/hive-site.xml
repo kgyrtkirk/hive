@@ -334,8 +334,8 @@
 </property>
 
 <property>
-  <name>hive.query.reexecution.strategy</name>
-  <value>none</value>
+  <name>hive.query.reexecution.strategies</name>
+  <value></value>
 </property>
 
 </configuration>
