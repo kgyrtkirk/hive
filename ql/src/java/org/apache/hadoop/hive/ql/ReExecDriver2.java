@@ -82,8 +82,6 @@ public class ReExecDriver2 implements IDriver {
   // field
   @Deprecated
   private int executionIndex;
-  @Deprecated
-  private boolean comparePlanFirstReExec;
 
   private ArrayList<ReExecutionPlugin> plugins;
 
@@ -101,7 +99,6 @@ public class ReExecDriver2 implements IDriver {
     this.queryState = queryState;
     coreDriver = new Driver(queryState, userName, queryInfo, null);
     coreDriver.getHookRunner().addSemanticAnalyzerHook(new HandleReOptimizationExplain());
-    comparePlanFirstReExec = queryState.getConf().getBoolVar(ConfVars.HIVE_QUERY_FIRST_REEXECUTION_COMPARE_PLAN);
     this.plugins = plugins;
 
     for (ReExecutionPlugin p : plugins) {

@@ -26,7 +26,6 @@ import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.ReOptimizeDriver;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -89,7 +88,7 @@ public class TestOperatorCmp {
   private PlanMapper getMapperForQuery(IDriver driver, String query) {
     int ret = driver.run(query).getResponseCode();
     assertEquals("Checking command success", 0, ret);
-    PlanMapper pm0 = ((ReOptimizeDriver) driver).getContext().getPlanMapper();
+    PlanMapper pm0 = driver.getContext().getPlanMapper();
     return pm0;
   }
 
