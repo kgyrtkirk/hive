@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 /**
  * Defines an interface for re-execution logics.
  */
-// FIXME: move to a different package?
 @InterfaceAudience.Private
 @InterfaceStability.Unstable
 public interface IReExecutionPlugin {
