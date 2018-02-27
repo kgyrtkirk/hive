@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.SimpleRuntimeStatsSource;
+import org.apache.hadoop.hive.ql.reexec.IReExecutionPlugin;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

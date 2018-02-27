@@ -22,6 +22,8 @@ import java.util.ArrayList;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.reexec.IReExecutionPlugin;
+
 import com.google.common.base.Strings;
 
 /**
@@ -63,7 +65,7 @@ public class DriverFactory {
       plugins.add(buildReExecPlugin(string));
     }
 
-    return new ReExecDriver2(queryState, userName, queryInfo, plugins);
+    return new ReExecDriver(queryState, userName, queryInfo, plugins);
   }
 
   private static IReExecutionPlugin buildReExecPlugin(String name) throws RuntimeException {

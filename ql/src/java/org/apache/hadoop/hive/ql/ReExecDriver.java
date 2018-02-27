@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.reexec.IReExecutionPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +45,7 @@ import org.slf4j.LoggerFactory;
  *
  * Covers the IDriver interface, handles query re-execution; and asks clear questions from the underlying re-execution plugins.
  */
-public class ReExecDriver2 implements IDriver {
+public class ReExecDriver implements IDriver {
 
   private class HandleReOptimizationExplain implements HiveSemanticAnalyzerHook {
 
@@ -74,7 +76,7 @@ public class ReExecDriver2 implements IDriver {
     }
   }
 
-  private static final Logger LOG = LoggerFactory.getLogger(ReExecDriver2.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ReExecDriver.class);
   private boolean explainReOptimization;
   protected Driver coreDriver;
   private QueryState queryState;
@@ -94,7 +96,7 @@ public class ReExecDriver2 implements IDriver {
     return executionIndex == 0;
   }
 
-  public ReExecDriver2(QueryState queryState, String userName, QueryInfo queryInfo,
+  public ReExecDriver(QueryState queryState, String userName, QueryInfo queryInfo,
       ArrayList<IReExecutionPlugin> plugins) {
     this.queryState = queryState;
     coreDriver = new Driver(queryState, userName, queryInfo, null);

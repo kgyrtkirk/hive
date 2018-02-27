@@ -16,10 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql;
+package org.apache.hadoop.hive.ql.reexec;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 
 /**
