@@ -101,7 +101,7 @@ public abstract class CliAdapter {
       }
     };
 
-    TestRule chain = RuleChain.outerRule(new Timeout(cliConfig.getMethodTimeoutMs())).around(localRule);
+    TestRule chain = RuleChain.outerRule(localRule).around(new Timeout(cliConfig.getMethodTimeoutMs()));
     return chain;
   }
 
