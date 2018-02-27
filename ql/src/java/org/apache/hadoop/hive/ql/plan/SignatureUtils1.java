@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,7 +29,7 @@ import com.google.common.collect.Sets;
 
 public class SignatureUtils1 {
 
-  private static Map<Class<?>, SignatureMapper> mappers;
+  private static Map<Class<?>, SignatureMapper> mappers = new HashMap<>();
 
   public static void write(Map<String, Object> ret, Object o) {
     SignatureMapper mapper = getSigMapper(o.getClass());

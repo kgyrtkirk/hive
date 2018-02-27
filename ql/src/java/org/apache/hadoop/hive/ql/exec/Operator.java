@@ -1579,7 +1579,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   protected void fillSignature(Map<String, Object> ret) {
-    SignatureUtils1.write(ret, this);
+    //    SignatureUtils1.write(ret, this);
     SignatureUtils1.write(ret, conf);
   }
 
