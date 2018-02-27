@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
@@ -27,6 +31,9 @@ import org.apache.hadoop.hive.ql.plan.mapper.SimpleRuntimeStatsSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ *
+ */
 public class ReOptimizePlugin implements ReExecutionPlugin {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReOptimizePlugin.class);
@@ -44,12 +51,14 @@ public class ReOptimizePlugin implements ReExecutionPlugin {
         if (exception != null) {
           {
             String message = exception.getMessage();
-            boolean isOOM = message.contains(MapJoinMemoryExhaustionError.class.getName())
-                || message.contains(OutOfMemoryError.class.getName());
-            if (message.contains("Vertex failed,") && isOOM) {
-              retryPossible = true;
+            if (message != null) {
+              boolean isOOM = message.contains(MapJoinMemoryExhaustionError.class.getName())
+                  || message.contains(OutOfMemoryError.class.getName());
+              if (message.contains("Vertex failed,") && isOOM) {
+                retryPossible = true;
+              }
+              System.out.println(exception);
             }
-            System.out.println(exception);
           }
         }
       }
@@ -70,13 +79,40 @@ public class ReOptimizePlugin implements ReExecutionPlugin {
   public void prepareToReExecute2() {
     PlanMapper pm = coreDriver.getContext().getPlanMapper();
     coreDriver.setRuntimeStatsSource(new SimpleRuntimeStatsSource(pm));
+    retryPossible = false;
   }
 
   @Override
   public boolean shouldReExecute2(int executionNum, PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
-    throw new RuntimeException();
-    // TODO Auto-generated method stub
-    // return false;
+    return planDidChange(oldPlanMapper, newPlanMapper);
+  }
+
+  private boolean planDidChange(PlanMapper pmL, PlanMapper pmR) {
+    List<Operator> opsL = getRootOps(pmL);
+    List<Operator> opsR = getRootOps(pmR);
+    for (Iterator<Operator> itL = opsL.iterator(); itL.hasNext();) {
+      Operator<?> opL = itL.next();
+      for (Iterator<Operator> itR = opsR.iterator(); itR.hasNext();) {
+        Operator<?> opR = itR.next();
+        if (opL.logicalEqualsTree(opR)) {
+          itL.remove();
+          itR.remove();
+          break;
+        }
+      }
+    }
+    return opsL.isEmpty() && opsR.isEmpty();
+  }
+
+  private List<Operator> getRootOps(PlanMapper pmL) {
+    List<Operator> ops = pmL.getAll(Operator.class);
+    for (Iterator<Operator> iterator = ops.iterator(); iterator.hasNext();) {
+      Operator o = iterator.next();
+      if (o.getNumChild() != 0) {
+        iterator.remove();
+      }
+    }
+    return ops;
   }
 
 }
