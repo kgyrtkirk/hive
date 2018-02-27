@@ -161,14 +161,14 @@ public class ReExecDriver2 implements IDriver {
       }
 
       PlanMapper newPlanMapper = coreDriver.getPlanMapper();
-      if ((executionIndex != 1 || comparePlanFirstReExec) && !planDidChange(oldPlanMapper, newPlanMapper)) {
+      if (!shouldReExecute2(oldPlanMapper, newPlanMapper)) {
         // FIXME: retain old error; or create a new one?
         return cpr;
       }
     }
   }
 
-  private boolean planDidChange(PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
+  private boolean shouldReExecute2(PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
     boolean ret = false;
     for (ReExecutionPlugin p : plugins) {
       ret |= p.shouldReExecute2(executionIndex, oldPlanMapper, newPlanMapper);
@@ -194,6 +194,9 @@ public class ReExecDriver2 implements IDriver {
   }
 
   protected void prepareToReExecute() {
+    for (ReExecutionPlugin p : plugins) {
+      p.prepareToReExecute2();
+    }
   }
 
   @Override
