@@ -298,4 +298,9 @@
   <value>false</value>
 </property>
 
+<property>
+  <name>hive.query.reexecution.strategy</name>
+  <value>none</value>
+</property>
+
 </configuration>
