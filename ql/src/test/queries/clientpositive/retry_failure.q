@@ -4,7 +4,7 @@ insert into tx values (1,'non_existent_file');
 set zzz=1;
 set reexec.overlay.zzz=2;
 
-set hive.query.reexecution.strategy=overlay;
+set hive.query.reexecution.strategies=overlay;
 
 select assert_true(${hiveconf:zzz} > a) from tx group by a;
 
