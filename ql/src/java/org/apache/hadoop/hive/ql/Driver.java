@@ -286,7 +286,6 @@ public class Driver implements IDriver {
     return schema;
   }
 
-  // FIXME: consider not adding this method..
   @Override
   public Context getContext() {
     return ctx;
