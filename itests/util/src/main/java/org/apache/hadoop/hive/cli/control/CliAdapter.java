@@ -101,8 +101,9 @@ public abstract class CliAdapter {
       }
     };
 
-    if(System.getProperty("maven.surefire.debug") == null){
-      TestRule chain = RuleChain.outerRule(localRule).around(new Timeout(cliConfig.getMethodTimeoutMs()));
+    int timeoutMs = cliConfig.getMethodTimeoutMs();
+    if (timeoutMs > 0) {
+      TestRule chain = RuleChain.outerRule(localRule).around(new Timeout(timeoutMs));
       return chain;
     }
     return localRule;

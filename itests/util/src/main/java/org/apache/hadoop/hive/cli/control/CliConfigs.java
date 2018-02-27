@@ -27,6 +27,9 @@ import org.apache.hadoop.hive.ql.parse.CoreParseNegative;
 
 public class CliConfigs {
 
+  // used in every cli method to set an upperbound to execution time
+  public static final int QTEST_TIMEOUT_MS = 10 * 60 * 1000;
+
   private static URL testConfigProps = getTestPropsURL();
 
   private static URL getTestPropsURL() {
@@ -65,6 +68,7 @@ public class CliConfigs {
 
         setHiveConfDir("");
         setClusterType(MiniClusterType.none);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -85,6 +89,7 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/perf-reg/");
         setClusterType(MiniClusterType.none);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -107,6 +112,7 @@ public class CliConfigs {
 
         setHiveConfDir("");
         setClusterType(MiniClusterType.mr);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -134,6 +140,7 @@ public class CliConfigs {
         setClusterType(MiniClusterType.tez);
         setMetastoreType(MetastoreType.sql);
         setFsType(QTestUtil.FsType.hdfs);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -158,6 +165,7 @@ public class CliConfigs {
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.llap);
         setMetastoreType(MetastoreType.sql);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -181,6 +189,7 @@ public class CliConfigs {
         setClusterType(MiniClusterType.druid);
         setMetastoreType(MetastoreType.sql);
         setFsType(QTestUtil.FsType.hdfs);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -207,6 +216,7 @@ public class CliConfigs {
         setClusterType(MiniClusterType.llap_local);
         setMetastoreType(MetastoreType.sql);
         setFsType(QTestUtil.FsType.local);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -236,6 +246,7 @@ public class CliConfigs {
           setHiveConfDir("data/conf");
         }
 
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -255,6 +266,7 @@ public class CliConfigs {
         setCleanupScript("q_test_cleanup_contrib.sql");
 
         setHiveConfDir("");
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -279,6 +291,7 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/perf-reg/tez");
         setClusterType(MiniClusterType.tez);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -321,6 +334,7 @@ public class CliConfigs {
 
         setHiveConfDir("");
         setClusterType(MiniClusterType.none);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -346,6 +360,7 @@ public class CliConfigs {
 
         setHiveConfDir("");
         setClusterType(MiniClusterType.none);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -368,6 +383,7 @@ public class CliConfigs {
 
         setHiveConfDir("");
         setClusterType(MiniClusterType.mr);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -388,6 +404,7 @@ public class CliConfigs {
 
         setHiveConfDir("");
         setClusterType(MiniClusterType.none);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -408,6 +425,7 @@ public class CliConfigs {
 
         setHiveConfDir("");
         setClusterType(MiniClusterType.none);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -428,6 +446,7 @@ public class CliConfigs {
 
         setHiveConfDir("");
         setClusterType(MiniClusterType.none);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -448,6 +467,7 @@ public class CliConfigs {
 
         setHiveConfDir("");
         setClusterType(MiniClusterType.none);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -470,6 +490,7 @@ public class CliConfigs {
 
         setHiveConfDir("");
         setClusterType(MiniClusterType.none);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -490,6 +511,7 @@ public class CliConfigs {
 
         setHiveConfDir("");
         setClusterType(MiniClusterType.none);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -600,6 +622,7 @@ public class CliConfigs {
 
         setHiveConfDir("itests/hive-blobstore/src/test/resources");
         setClusterType(MiniClusterType.none);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -620,6 +643,7 @@ public class CliConfigs {
 
         setHiveConfDir("itests/hive-blobstore/src/test/resources");
         setClusterType(MiniClusterType.none);
+        setMethodTimeoutMs(QTEST_TIMEOUT_MS);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
