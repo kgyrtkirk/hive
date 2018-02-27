@@ -23,6 +23,8 @@ import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
 // FIXME: move to a different package?
 public interface ReExecutionPlugin1 {
 
+  void initialize(Driver coreDriver);
+
   void init2(Driver coreDriver);
 
   void prepareToReExecute2();
@@ -30,5 +32,6 @@ public interface ReExecutionPlugin1 {
   boolean shouldReExecute2(int executionNum);
 
   void driverHook(PrivateHookContext hookContext);
+
 
 }

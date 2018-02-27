@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
@@ -30,6 +31,26 @@ public class ReExecOverlayDriver extends AbstractReExecDriver implements ReExecu
 
   private Driver driver;
 
+  class LocalHook implements ExecuteWithHookContext {
+
+    @Override
+    public void run(HookContext hookContext) throws Exception {
+      if (hookContext.getHookType() == HookType.ON_FAILURE_HOOK) {
+        Throwable exception = hookContext.getException();
+        if (exception != null) {
+          if (exception.getMessage().contains("Vertex failed,")) {
+            retryPossible = true;
+          }
+        }
+      }
+    }
+  }
+  @Override
+  public void initialize(Driver driver) {
+    this.driver = driver;
+    driver.getHookRunner().addOnFailureHook(new LocalHook());
+  }
+
   @Override
   public void init2(Driver driver) {
     this.driver = driver;
@@ -40,6 +61,7 @@ public class ReExecOverlayDriver extends AbstractReExecDriver implements ReExecu
   public ReExecOverlayDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
     super(queryState, userName, queryInfo);
   }
+
 
   @Override
   public void driverHook(PrivateHookContext hookContext) {
@@ -53,15 +75,6 @@ public class ReExecOverlayDriver extends AbstractReExecDriver implements ReExecu
 
   @Override
   public void handleExecutionException(Throwable exception) {
-    if (exception == null) {
-      return;
-    }
-    // FIXME: more resiliant failure cause detection
-    if (exception.getMessage().contains("Vertex failed,")) {
-      //    if (exception instanceof TezException) {
-      retryPossible = true;
-    }
-    System.out.println(exception);
   }
 
   @Override
@@ -94,6 +107,7 @@ public class ReExecOverlayDriver extends AbstractReExecDriver implements ReExecu
   protected void onExecutionFailure(HookContext hookContext) {
     handleExecutionException(hookContext.getException());
   }
+
 
 
 }

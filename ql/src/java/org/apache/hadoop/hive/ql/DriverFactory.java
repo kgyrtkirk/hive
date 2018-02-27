@@ -18,8 +18,11 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.util.ArrayList;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import com.google.common.base.Strings;
 
 /**
  * Constructs a driver for ql clients.
@@ -54,8 +57,30 @@ public class DriverFactory {
   }
 
   public static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
-    ExecutionStrategy strategy = ExecutionStrategy.valueOf(queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGY));
-    return strategy.build(queryState, userName, queryInfo);
+    //    ExecutionStrategy strategy = ExecutionStrategy.valueOf(queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGY));
+    String strategies = queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES);
+    strategies = Strings.nullToEmpty(strategies).trim();
+    if (strategies.isEmpty()) {
+      return new Driver(queryState, userName, queryInfo);
+    }
+    String[] s = strategies.split(",");
+    ArrayList<ReExecutionPlugin1> plugins = new ArrayList<>();
+    for (String string : s) {
+      plugins.add(buildReExecPlugin(string));
+    }
+
+    return new ReExecDriver2(queryState, userName, queryInfo, plugins);
+  }
+
+  private static ReExecutionPlugin1 buildReExecPlugin(String name) throws RuntimeException {
+    if (name.equals("overlay")) {
+      //      return new ReExecOverlayDriver(queryState, userName, queryInfo);
+    }
+    if (name.equals("reoptimize")) {
+
+    }
+    throw new RuntimeException(
+        "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
   }
 
   private static QueryState getNewQueryState(HiveConf conf) {

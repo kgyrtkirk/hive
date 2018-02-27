@@ -76,7 +76,6 @@ public class ReOptimizeDriver extends AbstractReExecDriver {
     handleExecutionException(exception);
   }
 
-
   @Override
   public CommandProcessorResponse run() {
     return super.run();
