@@ -30,6 +30,11 @@ import java.util.Set;
 
 import com.google.common.annotations.VisibleForTesting;
 
+/**
+ * Enables to connect related objects to eachother.
+ *
+ * Most importantly it aids to connect Operators to OperatorStats and probably RelNodes.
+ */
 public class PlanMapper {
 
   Set<LinkGroup> groups = new HashSet<>();

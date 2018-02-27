@@ -174,8 +174,6 @@ public abstract class AbstractReExecDriver implements IDriver {
       if (executionIndex >= maxExecutuions || !shouldReExecute) {
         return cpr;
       }
-      PlanMapper oldPlanMapper = coreDriver.getPlanMapper();
-
       LOG.info("Preparing to re-execute query");
       prepareToReExecute();
       CommandProcessorResponse compile_resp = coreDriver.compileAndRespond(currentQuery);
