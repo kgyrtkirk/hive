@@ -20,16 +20,35 @@ package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
+import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
+import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
 
 /**
  * Re-Executes a query only adding an extra overlay
  */
-public class ReExecOverlayDriver extends AbstractReExecDriver {
+public class ReExecOverlayDriver extends AbstractReExecDriver implements ReExecutionPlugin1 {
+
+  private Driver driver;
+
+  @Override
+  public void init2(Driver driver) {
+    this.driver = driver;
+  }
 
   private boolean retryPossible;
 
   public ReExecOverlayDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
     super(queryState, userName, queryInfo);
+  }
+
+  @Override
+  public void driverHook(PrivateHookContext hookContext) {
+    if (hookContext.getHookType() == HookType.ON_FAILURE_HOOK) {
+      Throwable exception = hookContext.getException();
+      if (exception != null) {
+        handleExecutionException(exception);
+      }
+    }
   }
 
   @Override
@@ -46,9 +65,19 @@ public class ReExecOverlayDriver extends AbstractReExecDriver {
   }
 
   @Override
+  public void prepareToReExecute2() {
+    prepareToReExecute();
+  }
+
+  @Override
   protected void prepareToReExecute() {
     HiveConf conf = getConf();
     conf.verifyAndSetAll(conf.subtree("reexec.overlay"));
+  }
+
+  @Override
+  public boolean shouldReExecute2(int executionNum) {
+    return executionNum == 0;
   }
 
   @Override
@@ -70,4 +99,6 @@ public class ReExecOverlayDriver extends AbstractReExecDriver {
   public Context getContext() {
     return coreDriver.getContext();
   }
+
+
 }
