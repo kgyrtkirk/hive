@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.SimpleRuntimeStatsSource;
@@ -39,8 +40,10 @@ public class ReOptimizeDriver extends AbstractReExecDriver {
 
   @Override
   public void handleExecutionException(Throwable exception) {
-    // FIXME: more resiliant failure cause detection
-    if (exception.getMessage().contains("Vertex failed,")) {
+    String message = exception.getMessage();
+    boolean isOOM = message.contains(MapJoinMemoryExhaustionError.class.getName())
+        || message.contains(OutOfMemoryError.class.getName());
+    if (message.contains("Vertex failed,") && isOOM) {
       retryPossible = true;
     }
     System.out.println(exception);

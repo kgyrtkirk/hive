@@ -28,10 +28,10 @@ import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.ReOptimizeDriver;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
-import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
@@ -39,7 +39,6 @@ import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -87,15 +86,17 @@ public class TestReOptimization {
     }
   }
 
-  private PlanMapper getMapperForQuery(IDriver driver, String query) {
-    int ret = driver.run(query).getResponseCode();
-    assertEquals("Checking command success", 0, ret);
+  private PlanMapper getMapperForQuery(IDriver driver, String query) throws CommandProcessorResponse {
+    CommandProcessorResponse res = driver.run(query);
+    if (res.getResponseCode() != 0) {
+      throw res;
+    }
     PlanMapper pm0 = ((ReOptimizeDriver) driver).getContext().getPlanMapper();
     return pm0;
   }
 
   @Test
-  public void testStatsAreSetInReopt() throws ParseException {
+  public void testStatsAreSetInReopt() throws Exception {
     IDriver driver = createDriver();
     String query = "select assert_true_oom(${hiveconf:zzz} > sum(u*v)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
 
@@ -127,7 +128,7 @@ public class TestReOptimization {
   }
 
   @Test
-  public void testReExecutedIfMapJoinError() throws ParseException {
+  public void testReExecutedIfMapJoinError() throws Exception {
 
     IDriver driver = createDriver();
     String query =
@@ -136,12 +137,12 @@ public class TestReOptimization {
 
   }
 
-  @Test(expected = Exception.class)
-  @Ignore
-  public void testNotReExecutedIfAssertionError() throws ParseException {
+  @Test(expected = CommandProcessorResponse.class)
+  public void testNotReExecutedIfAssertionError() throws Exception {
 
     IDriver driver = createDriver();
-    String query = "select assert_true(0>sum(1)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
+    String query =
+        "select assert_true(${hiveconf:zzz}>sum(1)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
 
     PlanMapper pm = getMapperForQuery(driver, query);
   }
