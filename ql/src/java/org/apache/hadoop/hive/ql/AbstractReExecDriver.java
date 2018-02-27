@@ -20,12 +20,14 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.List;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
@@ -34,6 +36,7 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.slf4j.Logger;
@@ -101,6 +104,7 @@ public abstract class AbstractReExecDriver implements IDriver {
   private QueryState queryState;
   private String currentQuery;
   private int executionIndex;
+  private boolean comparePlanFirstReExec;
 
   @Override
   public HiveConf getConf() {
@@ -121,6 +125,8 @@ public abstract class AbstractReExecDriver implements IDriver {
     hookup(new ExecutionInfoHook());
     hookup(new OperatorStatsReaderHook());
     coreDriver.getHookRunner().addSemanticAnalyzerHook(new HandleReOptimizationExplain());
+    comparePlanFirstReExec = queryState.getConf().getBoolVar(ConfVars.HIVE_QUERY_FIRST_REEXECUTION_COMPARE_PLAN);
+
   }
 
   private void hookup(ExecuteWithHookContext operatorStatsReaderHook) {
@@ -175,12 +181,47 @@ public abstract class AbstractReExecDriver implements IDriver {
       }
       LOG.info("Preparing to re-execute query");
       prepareToReExecute();
+      PlanMapper oldPlanMapper = coreDriver.getPlanMapper();
       CommandProcessorResponse compile_resp = coreDriver.compileAndRespond(currentQuery);
       if (compile_resp.failed()) {
         // FIXME: somehow place pointers that re-execution compilation have failed; the query have been successfully compiled before?
         return compile_resp;
       }
+
+      PlanMapper newPlanMapper = coreDriver.getPlanMapper();
+      if ((executionIndex != 1 || comparePlanFirstReExec) && !planDidChange(oldPlanMapper, newPlanMapper)) {
+        // FIXME: retain old error; or create a new one?
+        return cpr;
+      }
     }
+  }
+
+  private boolean planDidChange(PlanMapper pmL, PlanMapper pmR) {
+    List<Operator> opsL = getRootOps(pmL);
+    List<Operator> opsR = getRootOps(pmR);
+    for (Iterator<Operator> itL = opsL.iterator(); itL.hasNext();) {
+      Operator<?> opL = itL.next();
+      for (Iterator<Operator> itR = opsR.iterator(); itR.hasNext();) {
+        Operator<?> opR = itR.next();
+        if (opL.logicalEqualsTree(opR)) {
+          itL.remove();
+          itR.remove();
+          break;
+        }
+      }
+    }
+    return opsL.isEmpty() && opsR.isEmpty();
+  }
+
+  private List<Operator> getRootOps(PlanMapper pmL) {
+    List<Operator> ops = pmL.getAll(Operator.class);
+    for (Iterator<Operator> iterator = ops.iterator(); iterator.hasNext();) {
+      Operator o = iterator.next();
+      if (o.getNumChild() != 0) {
+        iterator.remove();
+      }
+    }
+    return ops;
   }
 
   @Override
