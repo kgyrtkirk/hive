@@ -145,8 +145,7 @@ public class TezCompiler extends TaskCompiler {
     runDynamicPartitionPruning(procCtx, inputs, outputs);
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Setup dynamic partition pruning");
 
-    // FIXME: need to run this; to get consistent filterop conditions; for operator tree matching
-    // not sure if the one at the end of this function will have any use after executing it at this point...
+    // need to run this; to get consistent filterop conditions(for operator tree matching)
     if (procCtx.conf.getBoolVar(ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
       new ConstantPropagate(ConstantPropagateOption.SHORTCUT).transform(procCtx.parseContext);
     }
