@@ -18,18 +18,20 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.util.Map;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
-import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
 
 /**
  * Re-Executes a query only adding an extra overlay
  */
-public class ReExecOverlayDriver extends AbstractReExecDriver implements ReExecutionPlugin1 {
+public class ReExecOverlayDriver implements ReExecutionPlugin1 {
 
   private Driver driver;
+  private Map<String, String> subtree;
 
   class LocalHook implements ExecuteWithHookContext {
 
@@ -45,69 +47,26 @@ public class ReExecOverlayDriver extends AbstractReExecDriver implements ReExecu
       }
     }
   }
+
   @Override
   public void initialize(Driver driver) {
     this.driver = driver;
     driver.getHookRunner().addOnFailureHook(new LocalHook());
-  }
-
-  @Override
-  public void init2(Driver driver) {
-    this.driver = driver;
+    HiveConf conf = driver.getConf();
+    subtree = conf.subtree("reexec.overlay");
   }
 
   private boolean retryPossible;
 
-  public ReExecOverlayDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
-    super(queryState, userName, queryInfo);
-  }
-
-
-  @Override
-  public void driverHook(PrivateHookContext hookContext) {
-    if (hookContext.getHookType() == HookType.ON_FAILURE_HOOK) {
-      Throwable exception = hookContext.getException();
-      if (exception != null) {
-        handleExecutionException(exception);
-      }
-    }
-  }
-
-  @Override
-  public void handleExecutionException(Throwable exception) {
-  }
-
   @Override
   public void prepareToReExecute2() {
-    prepareToReExecute();
-  }
-
-  @Override
-  protected void prepareToReExecute() {
-    HiveConf conf = getConf();
-    conf.verifyAndSetAll(conf.subtree("reexec.overlay"));
+    HiveConf conf = driver.getConf();
+    conf.verifyAndSetAll(subtree);
   }
 
   @Override
   public boolean shouldReExecute2(int executionNum) {
-    return executionNum == 0;
+    return executionNum == 1 && !subtree.isEmpty() && retryPossible;
   }
-
-  @Override
-  protected boolean shouldReExecute() {
-    return retryPossible;
-  }
-
-
-  @Override
-  protected void onExecutionSuccess(HookContext hookContext) {
-  }
-
-  @Override
-  protected void onExecutionFailure(HookContext hookContext) {
-    handleExecutionException(hookContext.getException());
-  }
-
-
 
 }
