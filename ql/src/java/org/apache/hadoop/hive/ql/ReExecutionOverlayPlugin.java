@@ -24,11 +24,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 
 /**
  * Re-Executes a query only adding an extra overlay
  */
-public class ReExecOverlayDriver implements ReExecutionPlugin1 {
+public class ReExecutionOverlayPlugin implements ReExecutionPlugin {
 
   private Driver driver;
   private Map<String, String> subtree;
@@ -65,8 +66,13 @@ public class ReExecOverlayDriver implements ReExecutionPlugin1 {
   }
 
   @Override
-  public boolean shouldReExecute2(int executionNum) {
+  public boolean shouldReExecute(int executionNum) {
     return executionNum == 1 && !subtree.isEmpty() && retryPossible;
+  }
+
+  @Override
+  public boolean shouldReExecute2(int executionNum, PlanMapper pm1, PlanMapper pm2) {
+    return executionNum == 1;
   }
 
 }

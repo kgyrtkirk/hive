@@ -28,8 +28,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
-import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
@@ -46,27 +44,6 @@ import org.slf4j.LoggerFactory;
  * Covers the IDriver interface, handles query re-execution; and asks clear questions from the underlying re-execution plugins.
  */
 public class ReExecDriver2 implements IDriver {
-
-  private static final Logger LOG = LoggerFactory.getLogger(ReExecDriver2.class);
-
-  private class ExecutionInfoHook implements ExecuteWithHookContext {
-
-    @Override
-    public void run(HookContext hookContext) throws Exception {
-      switch (hookContext.getHookType()) {
-      case PRE_EXEC_HOOK:
-        break;
-      case POST_EXEC_HOOK:
-        //        onExecutionSuccess(hookContext);
-        break;
-      case ON_FAILURE_HOOK:
-        //        onExecutionFailure(hookContext);
-        break;
-      }
-    }
-  }
-
-  private boolean explainReOptimization;
 
   private class HandleReOptimizationExplain implements HiveSemanticAnalyzerHook {
 
@@ -97,14 +74,18 @@ public class ReExecDriver2 implements IDriver {
     }
   }
 
+  private static final Logger LOG = LoggerFactory.getLogger(ReExecDriver2.class);
+  private boolean explainReOptimization;
   protected Driver coreDriver;
   private QueryState queryState;
   private String currentQuery;
+  // field
+  @Deprecated
   private int executionIndex;
   @Deprecated
   private boolean comparePlanFirstReExec;
 
-  private ArrayList<ReExecutionPlugin1> plugins;
+  private ArrayList<ReExecutionPlugin> plugins;
 
   @Override
   public HiveConf getConf() {
@@ -116,29 +97,16 @@ public class ReExecDriver2 implements IDriver {
   }
 
   public ReExecDriver2(QueryState queryState, String userName, QueryInfo queryInfo,
-      ArrayList<ReExecutionPlugin1> plugins) {
+      ArrayList<ReExecutionPlugin> plugins) {
     this.queryState = queryState;
     coreDriver = new Driver(queryState, userName, queryInfo, null);
     coreDriver.getHookRunner().addSemanticAnalyzerHook(new HandleReOptimizationExplain());
     comparePlanFirstReExec = queryState.getConf().getBoolVar(ConfVars.HIVE_QUERY_FIRST_REEXECUTION_COMPARE_PLAN);
     this.plugins = plugins;
 
-    for (ReExecutionPlugin1 p : plugins) {
+    for (ReExecutionPlugin p : plugins) {
       p.initialize(coreDriver);
     }
-    //    hookup(new ExecutionInfoHook());
-    //    hookup(new OperatorStatsReaderHook());
-
-  }
-
-  private void hookup(ExecuteWithHookContext hook) {
-    coreDriver.getHookRunner().addPreHook(hook);
-    coreDriver.getHookRunner().addPostHook(hook);
-    coreDriver.getHookRunner().addOnFailureHook(hook);
-  }
-
-  protected void handleExecutionException(Throwable exception) {
-
   }
 
   @Override
@@ -201,13 +169,19 @@ public class ReExecDriver2 implements IDriver {
   }
 
   private boolean planDidChange(PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
-    throw new RuntimeException();
-    // TODO Auto-generated method stub
-    // return false;
+    boolean ret = false;
+    for (ReExecutionPlugin p : plugins) {
+      ret |= p.shouldReExecute2(executionIndex, oldPlanMapper, newPlanMapper);
+    }
+    return ret;
   }
 
   private boolean shouldReExecute() {
-    return false;
+    boolean ret = false;
+    for (ReExecutionPlugin p : plugins) {
+      ret |= p.shouldReExecute(executionIndex);
+    }
+    return ret;
   }
 
   @Override

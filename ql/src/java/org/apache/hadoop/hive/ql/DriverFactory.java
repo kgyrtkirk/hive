@@ -64,7 +64,7 @@ public class DriverFactory {
       return new Driver(queryState, userName, queryInfo);
     }
     String[] s = strategies.split(",");
-    ArrayList<ReExecutionPlugin1> plugins = new ArrayList<>();
+    ArrayList<ReExecutionPlugin> plugins = new ArrayList<>();
     for (String string : s) {
       plugins.add(buildReExecPlugin(string));
     }
@@ -72,7 +72,7 @@ public class DriverFactory {
     return new ReExecDriver2(queryState, userName, queryInfo, plugins);
   }
 
-  private static ReExecutionPlugin1 buildReExecPlugin(String name) throws RuntimeException {
+  private static ReExecutionPlugin buildReExecPlugin(String name) throws RuntimeException {
     if (name.equals("overlay")) {
       //      return new ReExecOverlayDriver(queryState, userName, queryInfo);
     }
