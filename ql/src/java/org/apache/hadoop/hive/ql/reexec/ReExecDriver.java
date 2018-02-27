@@ -87,8 +87,6 @@ public class ReExecDriver implements IDriver {
   protected Driver coreDriver;
   private QueryState queryState;
   private String currentQuery;
-  // field
-  @Deprecated
   private int executionIndex;
 
   private ArrayList<IReExecutionPlugin> plugins;
@@ -151,7 +149,7 @@ public class ReExecDriver implements IDriver {
       LOG.info("Execution #{} of query", executionIndex);
       CommandProcessorResponse cpr = coreDriver.run();
 
-      boolean shouldReExecute = explainReOptimization;
+      boolean shouldReExecute = explainReOptimization && executionIndex==1;
       shouldReExecute |= cpr.getResponseCode() != 0 && shouldReExecute();
 
       if (executionIndex >= maxExecutuions || !shouldReExecute) {
@@ -167,7 +165,7 @@ public class ReExecDriver implements IDriver {
       }
 
       PlanMapper newPlanMapper = coreDriver.getPlanMapper();
-      if (!shouldReExecuteAfterCompile(oldPlanMapper, newPlanMapper)) {
+      if (!explainReOptimization && !shouldReExecuteAfterCompile(oldPlanMapper, newPlanMapper)) {
         // FIXME: retain old error; or create a new one?
         return cpr;
       }

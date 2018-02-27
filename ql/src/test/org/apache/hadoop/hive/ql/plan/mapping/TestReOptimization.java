@@ -53,7 +53,7 @@ public class TestReOptimization {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    IDriver driver = createDriver();
+    IDriver driver = createDriver("");
     dropTables(driver);
     String cmds[] = {
         // @formatter:off
@@ -74,7 +74,7 @@ public class TestReOptimization {
 
   @AfterClass
   public static void afterClass() throws Exception {
-    IDriver driver = createDriver();
+    IDriver driver = createDriver("");
     dropTables(driver);
   }
 
@@ -97,7 +97,7 @@ public class TestReOptimization {
 
   @Test
   public void testStatsAreSetInReopt() throws Exception {
-    IDriver driver = createDriver();
+    IDriver driver = createDriver("overlay,reoptimize");
     String query = "select assert_true_oom(${hiveconf:zzz} > sum(u*v)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
 
     PlanMapper pm = getMapperForQuery(driver, query);
@@ -130,7 +130,7 @@ public class TestReOptimization {
   @Test
   public void testReExecutedIfMapJoinError() throws Exception {
 
-    IDriver driver = createDriver();
+    IDriver driver = createDriver("overlay,reoptimize");
     String query =
         "select assert_true_oom(${hiveconf:zzz}>sum(1)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
     PlanMapper pm = getMapperForQuery(driver, query);
@@ -139,10 +139,7 @@ public class TestReOptimization {
 
   @Test(expected = CommandProcessorResponse.class)
   public void testNotReExecutedIfAssertionError() throws Exception {
-    HiveConf conf = env_setup.getTestCtx().hiveConf;
-    conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, "reoptimize");
-
-    IDriver driver = createDriver();
+    IDriver driver = createDriver("reoptimize");
     String query =
         "select assert_true(${hiveconf:zzz}>sum(1)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
 
@@ -153,7 +150,7 @@ public class TestReOptimization {
   @Test
   public void testExplainSupport() throws Exception {
 
-    IDriver driver = createDriver();
+    IDriver driver = createDriver("overlay,reoptimize");
     String query = "explain reoptimization select 1 from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
     PlanMapper pm = getMapperForQuery(driver, query);
     List<String> res = new ArrayList<>();
@@ -168,11 +165,11 @@ public class TestReOptimization {
 
   }
 
-  private static IDriver createDriver() {
+  private static IDriver createDriver(String strategies) {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
-    conf.set("hive.query.reexecution.strategy", "reoptimize");
-    conf.set("hive.explain.user", "true");
+    conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, strategies);
+    conf.setBoolVar(ConfVars.HIVE_EXPLAIN_USER, true);
     conf.set("zzz", "1");
     conf.set("reexec.overlay.zzz", "2000");
     //
