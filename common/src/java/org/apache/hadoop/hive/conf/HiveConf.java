@@ -3695,7 +3695,9 @@ public class HiveConf extends Configuration {
         "Maximum number of threads that Hive uses to list file information from file systems (recommended > 1 for blobstore)."),
 
     HIVE_QUERY_REEXECUTION_STRATEGIES("hive.query.reexecution.strategies", "overlay,reoptimize",
-        "none: no recovery\noverlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of execution errors"),
+        "empty value or disabled: no reexecution will occur\n otherwise comma separated list of plugin can be used:\n"
+            + "  overlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of an execution errors out\n"
+            + "  reoptimize: collects operator statistics during execution and recompile the query after a failure"),
     HIVE_QUERY_MAX_REEXECUTION_COUNT("hive.query.max.reexecution.count", 1,
         "maximum number of re-executions for a single query"),
 

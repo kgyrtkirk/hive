@@ -58,8 +58,8 @@ public class DriverFactory {
   public static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
     //    ExecutionStrategy strategy = ExecutionStrategy.valueOf(queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGY));
     String strategies = queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES);
-    strategies = Strings.nullToEmpty(strategies).trim();
-    if (strategies.isEmpty()) {
+    strategies = Strings.nullToEmpty(strategies).trim().toLowerCase();
+    if (strategies.isEmpty() || strategies.equals("disabled")) {
       return new Driver(queryState, userName, queryInfo);
     }
     String[] s = strategies.split(",");

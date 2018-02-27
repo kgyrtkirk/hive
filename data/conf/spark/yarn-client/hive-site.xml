@@ -313,7 +313,7 @@
 
 <property>
   <name>hive.query.reexecution.strategies</name>
-  <value></value>
+  <value>disabled</value>
 </property>
 
 </configuration>

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -113,7 +114,7 @@ public class TestCounterMapping {
     int ret;
     ret = driver.run(query).getResponseCode();
     assertEquals("Checking command success", 0, ret);
-    PlanMapper pm0 = ((Driver) driver).getContext().getPlanMapper();
+    PlanMapper pm0 = driver.getContext().getPlanMapper();
     return pm0;
   }
 
@@ -173,6 +174,7 @@ public class TestCounterMapping {
   private static IDriver createDriver() {
     //    HiveConf conf = new HiveConf(Driver.class);
     HiveConf conf = env_setup.getTestCtx().hiveConf;
+    conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, "disabled");
     conf.set("hive.auto.convert.join", "false");
     conf.set("hive.optimize.ppd", "false");
 
