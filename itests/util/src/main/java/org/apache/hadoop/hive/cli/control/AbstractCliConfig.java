@@ -416,7 +416,12 @@ public abstract class AbstractCliConfig {
   }
 
   public int getMethodTimeoutMs() {
-    return methodTimeoutMs;
+    // disable in case debug is enabled
+    if (System.getProperty("maven.surefire.debug") == null) {
+      return methodTimeoutMs;
+    } else {
+      return -1;
+    }
   }
 
 }
