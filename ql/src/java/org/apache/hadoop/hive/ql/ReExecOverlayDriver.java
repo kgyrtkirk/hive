@@ -95,10 +95,5 @@ public class ReExecOverlayDriver extends AbstractReExecDriver implements ReExecu
     handleExecutionException(hookContext.getException());
   }
 
-  @Override
-  public Context getContext() {
-    return coreDriver.getContext();
-  }
-
 
 }

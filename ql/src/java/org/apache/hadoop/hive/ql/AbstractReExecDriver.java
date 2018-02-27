@@ -275,6 +275,11 @@ public abstract class AbstractReExecDriver implements IDriver {
     coreDriver.destroy();
   }
 
+  @Override
+  public final Context getContext() {
+    return coreDriver.getContext();
+  }
+
   abstract protected boolean shouldReExecute();
 
 }

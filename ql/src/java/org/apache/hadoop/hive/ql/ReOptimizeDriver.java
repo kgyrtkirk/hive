@@ -82,10 +82,5 @@ public class ReOptimizeDriver extends AbstractReExecDriver {
     return super.run();
   }
 
-  // FIXME: this should be different; or at least interface driven?
-  @Override
-  public Context getContext() {
-    return coreDriver.getContext();
-  }
 
 }
