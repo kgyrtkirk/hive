@@ -74,7 +74,7 @@ public class DriverFactory {
 
   private static ReExecutionPlugin buildReExecPlugin(String name) throws RuntimeException {
     if (name.equals("overlay")) {
-      //      return new ReExecOverlayDriver(queryState, userName, queryInfo);
+      return new ReExecutionOverlayPlugin();
     }
     if (name.equals("reoptimize")) {
 
