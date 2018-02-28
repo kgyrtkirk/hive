@@ -59,3 +59,4 @@ script:
   - git checkout $HASH
   - sed -i 's/0.9.1-SNAPSHOT/0.9.1/' pom.xml
   - travis_wait 30 mvn $M_OPTS
+
