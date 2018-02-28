@@ -1039,6 +1039,8 @@ public class SharedWorkOptimizer extends Transform {
     // We handle TableScanOperator here as we can safely ignore table alias
     // and the current comparator implementation does not.
     // TODO: move this to logicalEquals
+    // FIXME: it's not possible to move this to logicalequals because of pctx usage; I can't imageine a use case in which everything else matches; but the
+    // prunedPartitions are different
     if (op1 instanceof TableScanOperator) {
       TableScanOperator tsOp1 = (TableScanOperator) op1;
       TableScanOperator tsOp2 = (TableScanOperator) op2;
