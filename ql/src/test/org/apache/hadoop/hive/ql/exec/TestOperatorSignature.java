@@ -18,20 +18,33 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
-import org.apache.hadoop.hive.ql.plan.OSF;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.SignatureUtils1;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.XSignature;
-import org.jets3t.service.utils.SignatureUtils;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+
+import com.google.common.collect.Lists;
 
 public class TestOperatorSignature {
+  CompilationOpContext cCtx = new CompilationOpContext();
 
   @Test
   public void testFilterOpEquals() {
@@ -39,13 +52,11 @@ public class TestOperatorSignature {
     {
       ExprNodeDesc pred = new ExprNodeConstantDesc(7);
       FilterDesc fd = new FilterDesc(pred, true);
-      CompilationOpContext cCtx = new CompilationOpContext();
       op7 = OperatorFactory.get(cCtx, fd);
     }
     {
       ExprNodeDesc pred = new ExprNodeConstantDesc(7);
       FilterDesc fd = new FilterDesc(pred, true);
-      CompilationOpContext cCtx = new CompilationOpContext();
       op7b = OperatorFactory.get(cCtx, fd);
     }
 
@@ -54,4 +65,39 @@ public class TestOperatorSignature {
     assertTrue(op7.logicalEquals(op7b));
 
   }
+
+  @Rule
+  public MockitoRule mockito = MockitoJUnit.rule();
+
+  @Mock
+  GenericUDF udfMock;
+
+  @Test
+  public void testTableScand() {
+    Operator<TableScanDesc> t1, t2;
+    {
+      Table tblMetadata = new Table("db", "t1");
+      TableScanDesc desc = new TableScanDesc("alias", tblMetadata);
+      List<ExprNodeDesc> as = Lists.newArrayList(new ExprNodeConstantDesc(3),
+          new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo, "c1", "aa", false));
+      ExprNodeGenericFuncDesc f1 = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, udfMock, as);
+      desc.setFilterExpr(f1);
+      t1 = OperatorFactory.get(cCtx, desc);
+    }
+    {
+      Table tblMetadata = new Table("db", "t2");
+      TableScanDesc desc = new TableScanDesc("alias", tblMetadata);
+
+      List<ExprNodeDesc> as = Lists.newArrayList(new ExprNodeConstantDesc(3),
+          new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo, "c1", "aa", false));
+      ExprNodeGenericFuncDesc f1 = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, udfMock, as);
+      desc.setFilterExpr(f1);
+      t2 = OperatorFactory.get(cCtx, desc);
+    }
+
+    //    XSignature.of(op7);
+
+    assertFalse(t1.logicalEquals(t2));
+  }
+
 }
