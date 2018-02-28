@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -390,6 +392,15 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
 
   public void setBucketMapjoinContext(BucketMapJoinContext bucketMapjoinContext) {
     this.bucketMapjoinContext = bucketMapjoinContext;
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (super.isSame(other)) {
+      HashTableSinkDesc otherDesc = (HashTableSinkDesc) other;
+      return Objects.equals(getFilterMapString(), otherDesc.getFilterMapString());
+    }
+    return false;
   }
 
 }

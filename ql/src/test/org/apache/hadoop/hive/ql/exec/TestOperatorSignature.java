@@ -24,7 +24,11 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.OSF;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.SignatureUtils1;
+import org.apache.hadoop.hive.ql.plan.XSignature;
+import org.jets3t.service.utils.SignatureUtils;
 import org.junit.Test;
 
 public class TestOperatorSignature {
@@ -44,8 +48,10 @@ public class TestOperatorSignature {
       CompilationOpContext cCtx = new CompilationOpContext();
       op7b = OperatorFactory.get(cCtx, fd);
     }
+
+    XSignature.of(op7);
+
     assertTrue(op7.logicalEquals(op7b));
+
   }
-
-
 }

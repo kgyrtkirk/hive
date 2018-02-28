@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.util.Objects;
+
 import org.apache.hadoop.hive.ql.exec.RecordReader;
 import org.apache.hadoop.hive.ql.exec.RecordWriter;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -144,4 +146,15 @@ public class ScriptDesc extends AbstractOperatorDesc {
       Class<? extends RecordWriter> inRecordWriterClass) {
     this.inRecordWriterClass = inRecordWriterClass;
   }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      ScriptDesc otherDesc = (ScriptDesc) other;
+      return Objects.equals(getScriptCmd(), otherDesc.getScriptCmd()) &&
+          Objects.equals(getScriptOutputInfo(), otherDesc.getScriptOutputInfo());
+    }
+    return false;
+  }
+
 }

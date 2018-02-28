@@ -24,8 +24,6 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-import com.google.common.base.Objects;
-
 public abstract class AbstractOperatorDesc implements OperatorDesc {
 
   protected boolean vectorMode = false;
@@ -139,18 +137,8 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
    * overridden by sub classes.
    */
   @Override
-  public final boolean isSame(OperatorDesc other) {
-    Map<String, Object> s1 = getSignature();
-    Map<String, Object> s2 = getSignature();
-    boolean res = Objects.equal(s1, s2);
-    if (!res) {
-      return res;
-    }
-    return sameCompareInternal(other);
-  }
-
-  protected boolean sameCompareInternal(OperatorDesc other) {
-    return true;
+  public boolean isSame(OperatorDesc other) {
+    return equals(other);
   }
 
   @Explain(displayName = "columnExprMap", jsonOnly = true)
@@ -172,16 +160,9 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
     this.colExprMap = colExprMap;
   }
 
-  private Map<String, Object> getSignature() {
-    Map<String, Object> ret = new HashMap<>();
-    fillSignature(ret);
-    return ret;
-  }
-
   @Override
   public void fillSignature(Map<String, Object> ret) {
-    SignatureUtils1.write(ret, this);
+    throw new RuntimeException();
   }
-
 
 }

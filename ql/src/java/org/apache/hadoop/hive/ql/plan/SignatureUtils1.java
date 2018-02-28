@@ -27,6 +27,9 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
+//FIXME: rename?
+//FIXME: package?
+//FIXME: apidoc
 public class SignatureUtils1 {
 
   private static Map<Class<?>, SignatureMapper> mappers = new HashMap<>();

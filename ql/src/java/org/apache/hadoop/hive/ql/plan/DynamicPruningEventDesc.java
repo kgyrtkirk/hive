@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.IOException;
+import java.util.Objects;
+
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -101,6 +103,17 @@ public class DynamicPruningEventDesc extends AppMasterEventDesc {
 
   public ExprNodeDesc getPartKey() {
     return this.partKey;
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (super.isSame(other)) {
+      DynamicPruningEventDesc otherDesc = (DynamicPruningEventDesc) other;
+      return Objects.equals(getTargetColumnName(), otherDesc.getTargetColumnName()) &&
+          Objects.equals(getTargetColumnType(), otherDesc.getTargetColumnType()) &&
+          Objects.equals(getPartKeyString(), otherDesc.getPartKeyString());
+    }
+    return false;
   }
 
 }

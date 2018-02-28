@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Signature;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
@@ -148,4 +149,14 @@ public class SparkPartitionPruningSinkDesc extends AbstractOperatorDesc {
     return Arrays.toString(targetInfos.stream().map(
         info -> info.partKey.getExprString()).toArray());
   }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      SparkPartitionPruningSinkDesc otherDesc = (SparkPartitionPruningSinkDesc) other;
+      return getTable().equals(otherDesc.getTable());
+    }
+    return false;
+  }
+
 }

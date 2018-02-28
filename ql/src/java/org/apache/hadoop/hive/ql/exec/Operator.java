@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,7 +47,6 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.SignatureUtils1;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
@@ -62,8 +60,6 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Objects;
 
 /**
  * Base operator implementation.
@@ -1562,25 +1558,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * This can be used to merge same operators and avoid repeated computation.
    */
   public boolean logicalEquals(Operator other) {
-    Map<String, Object> s1 = getSignature();
-    Map<String, Object> s2 = other.getSignature();
-    return Objects.equal(s1, s2);
-  }
-
-  public static enum D {
-    OPERATOR_CLASS, DESC_CLASS, INPUT, VERTEX_NAME, TABLE, FULL_DESC, TARGET_COLNAME, TARGET_COLTYPE, PARTKEY, DIRNAME, getTableInfo, getCompressed, getDestTableId, isMultiFileSpray, getTotalFiles, getNumFiles, getStaticSpec, isGatherStats, getStatsAggPrefix, getPredicateString, getSampleDescExpr, getIsSamplingPred, ModeString, getKeyString, getOutputColumnNames, pruneGroupingSetId, getAggregatorStrings, getBucketGroup
-
-  }
-
-  public final Map<String, Object> getSignature() {
-    Map<String, Object> ret = new LinkedHashMap<>();
-    fillSignature(ret);
-    return ret;
-  }
-
-  protected void fillSignature(Map<String, Object> ret) {
-    //    SignatureUtils1.write(ret, this);
-    SignatureUtils1.write(ret, conf);
+    return getClass().getName().equals(other.getClass().getName()) &&
+        (conf == other.getConf() || (conf != null && other.getConf() != null &&
+            conf.isSame(other.getConf())));
   }
 
 }
