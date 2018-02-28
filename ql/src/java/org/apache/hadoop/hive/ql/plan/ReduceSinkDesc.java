@@ -97,7 +97,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   private float topNMemoryUsage = -1;
   private boolean mapGroupBy;  // for group-by, values with same key on top-K should be forwarded
   //flag used to control how TopN handled for PTF/Windowing partitions.
-  private boolean isPTFReduceSink = false; 
+  private boolean isPTFReduceSink = false;
   private boolean skipTag; // Skip writing tags when feeding into mapjoin hashtable
   private boolean forwarding; // Whether this RS can forward records directly instead of shuffling/sorting
 
@@ -462,7 +462,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     // reducers or hash function.
 
     boolean wasUnset = this.reduceTraits.remove(ReducerTraits.UNSET);
-    
+
     if (this.reduceTraits.contains(ReducerTraits.FIXED)) {
       return;
     } else if (traits.contains(ReducerTraits.FIXED)) {

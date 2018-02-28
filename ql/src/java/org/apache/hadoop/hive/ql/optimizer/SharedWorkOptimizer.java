@@ -62,7 +62,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
@@ -598,6 +597,7 @@ public class SharedWorkOptimizer extends Transform {
         new LinkedList<>(tableToTotalSize.entrySet());
     Collections.sort(sortedTables, Collections.reverseOrder(
         new Comparator<Map.Entry<String, Long>>() {
+          @Override
           public int compare(Map.Entry<String, Long> o1, Map.Entry<String, Long> o2) {
             return (o1.getValue()).compareTo(o2.getValue());
           }
@@ -637,6 +637,7 @@ public class SharedWorkOptimizer extends Transform {
         new LinkedList<>(opToTotalSize.entrySet());
     Collections.sort(sortedOps, Collections.reverseOrder(
         new Comparator<Map.Entry<Operator<?>, Long>>() {
+          @Override
           public int compare(Map.Entry<Operator<?>, Long> o1, Map.Entry<Operator<?>, Long> o2) {
             int valCmp = o1.getValue().compareTo(o2.getValue());
             if (valCmp == 0) {
@@ -1033,29 +1034,6 @@ public class SharedWorkOptimizer extends Transform {
           throws SemanticException {
     if (!op1.getClass().getName().equals(op2.getClass().getName())) {
       return false;
-    }
-
-    // We handle ReduceSinkOperator here as we can safely ignore table alias
-    // and the current comparator implementation does not.
-    // We can ignore table alias since when we compare ReduceSinkOperator, all
-    // its ancestors need to match (down to table scan), thus we make sure that
-    // both plans are the same.
-    // TODO: move this to logicalEquals
-    if (op1 instanceof ReduceSinkOperator) {
-      ReduceSinkDesc op1Conf = ((ReduceSinkOperator) op1).getConf();
-      ReduceSinkDesc op2Conf = ((ReduceSinkOperator) op2).getConf();
-
-      if (StringUtils.equals(op1Conf.getKeyColString(), op2Conf.getKeyColString()) &&
-        StringUtils.equals(op1Conf.getValueColsString(), op2Conf.getValueColsString()) &&
-        StringUtils.equals(op1Conf.getParitionColsString(), op2Conf.getParitionColsString()) &&
-        op1Conf.getTag() == op2Conf.getTag() &&
-        StringUtils.equals(op1Conf.getOrder(), op2Conf.getOrder()) &&
-        op1Conf.getTopN() == op2Conf.getTopN() &&
-        op1Conf.isAutoParallel() == op2Conf.isAutoParallel()) {
-        return true;
-      } else {
-        return false;
-      }
     }
 
     // We handle TableScanOperator here as we can safely ignore table alias
