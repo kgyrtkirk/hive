@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.XSignature;
+import org.apache.hadoop.hive.ql.plan.XTSignature;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Rule;
@@ -61,9 +63,40 @@ public class TestOperatorSignature {
     Operator<? extends OperatorDesc> op7b = getFilterOp(7);
 
     checkEquals(op7, op7b);
-    assertFalse(op7.logicalEquals(op8));
+    checkNotEquals(op7, op8);
+  }
 
+  @Test
+  public void testTree1() {
+    Operator<?> tr37 = getFilTsOp(3, 7);
+    Operator<?> tr37a = getFilTsOp(3, 7);
+    Operator<?> tr17 = getFilTsOp(1, 7);
+    Operator<?> tr31 = getFilTsOp(3, 1);
 
+    checkEquals(tr37, tr37a);
+
+    checkTreeEquals(tr37, tr37a);
+    checkTreeNotEquals(tr37, tr31);
+    checkTreeNotEquals(tr37, tr17);
+  }
+
+  private Operator<?> getFilTsOp(int i, int j) {
+    Operator<TableScanDesc> ts = getTsOp(i);
+    Operator<? extends OperatorDesc> fil = getFilterOp(j);
+
+    ts.getChildOperators().add(fil);
+    fil.getParentOperators().add(ts);
+
+    return fil;
+  }
+
+  @Test
+  public void testTableScand() {
+    Operator<TableScanDesc> t1 = getTsOp(3);
+    Operator<TableScanDesc> t1a = getTsOp(3);
+    Operator<TableScanDesc> t2 = getTsOp(4);
+
+    assertTrue(t1.logicalEquals(t1a));
   }
 
   private void checkEquals(Operator<?> o1, Operator<?> o2) {
@@ -76,15 +109,34 @@ public class TestOperatorSignature {
     assertEquals(s1, s2);
   }
 
-  @Test
-  public void testTableScand() {
-    Operator<TableScanDesc> t1 = getTsOp(3);
-    Operator<TableScanDesc> t1a = getTsOp(3);
-    Operator<TableScanDesc> t2 = getTsOp(4);
 
-    assertTrue(t1.logicalEquals(t1a));
-    assertFalse(t1.logicalEquals(t2));
+  private void checkNotEquals(Operator<? extends OperatorDesc> o1, Operator<? extends OperatorDesc> o2) {
+    assertFalse(o1.logicalEquals(o2));
+    XSignature s1 = XSignature.of(o1);
+    XSignature s2 = XSignature.of(o2);
+
+    // this might be a little bit too much...but in most cases this should be true
+    assertNotEquals(s1.hashCode(), s2.hashCode());
+    assertNotEquals(s1, s2);
   }
+
+  private void checkTreeEquals(Operator<?> o1, Operator<?> o2) {
+    XTSignature ts1 = XTSignature.of(o1);
+    XTSignature ts2 = XTSignature.of(o2);
+
+    assertEquals(ts1.hashCode(), ts2.hashCode());
+    assertEquals(ts1, ts2);
+  }
+
+  private void checkTreeNotEquals(Operator<? extends OperatorDesc> o1, Operator<? extends OperatorDesc> o2) {
+
+    XTSignature ts1 = XTSignature.of(o1);
+    XTSignature ts2 = XTSignature.of(o2);
+
+    assertNotEquals(ts1.hashCode(), ts2.hashCode());
+    assertNotEquals(ts1, ts2);
+  }
+
 
   private Operator<? extends OperatorDesc> getFilterOp(int constVal) {
     ExprNodeDesc pred = new ExprNodeConstantDesc(constVal);
@@ -105,5 +157,6 @@ public class TestOperatorSignature {
       t1 = OperatorFactory.get(cCtx, desc);
     return t1;
   }
+
 
 }
