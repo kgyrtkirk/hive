@@ -29,15 +29,16 @@ import org.apache.hadoop.hive.ql.exec.Operator;
  */
 public class XSignature {
 
-  private Map<String, Object> ret;
+  private Map<String, Object> sigMap;
   // FIXME: this is currently retained...
   // but later the signature should be able to serve the same comparision granulaty level as op.logicalEquals right now
   private Operator<? extends OperatorDesc> op;
 
   private XSignature(Operator<? extends OperatorDesc> op) {
     this.op = op;
-    ret = new HashMap<>();
-    SignatureUtils1.write(ret, op);
+    sigMap = new HashMap<>();
+    // FIXME: consider to operator info as well..not just conf?
+    SignatureUtils1.write(sigMap, op.getConf());
   }
 
   public static XSignature of(Operator<? extends OperatorDesc> op) {
@@ -46,7 +47,7 @@ public class XSignature {
 
   @Override
   public int hashCode() {
-    return ret.hashCode();
+    return sigMap.hashCode();
   }
 
   @Override
@@ -59,6 +60,10 @@ public class XSignature {
     }
     XSignature o = (XSignature) obj;
     return op.logicalEquals(o.op);
+  }
+
+  public boolean signatureCompare(XSignature other) {
+    return sigMap.equals(other.sigMap);
   }
 
 }

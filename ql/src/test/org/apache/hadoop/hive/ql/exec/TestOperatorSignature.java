@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -44,27 +45,6 @@ import org.mockito.junit.MockitoRule;
 import com.google.common.collect.Lists;
 
 public class TestOperatorSignature {
-  CompilationOpContext cCtx = new CompilationOpContext();
-
-  @Test
-  public void testFilterOpEquals() {
-    Operator<? extends OperatorDesc> op7, op7b;
-    {
-      ExprNodeDesc pred = new ExprNodeConstantDesc(7);
-      FilterDesc fd = new FilterDesc(pred, true);
-      op7 = OperatorFactory.get(cCtx, fd);
-    }
-    {
-      ExprNodeDesc pred = new ExprNodeConstantDesc(7);
-      FilterDesc fd = new FilterDesc(pred, true);
-      op7b = OperatorFactory.get(cCtx, fd);
-    }
-
-    XSignature.of(op7);
-
-    assertTrue(op7.logicalEquals(op7b));
-
-  }
 
   @Rule
   public MockitoRule mockito = MockitoJUnit.rule();
@@ -72,32 +52,58 @@ public class TestOperatorSignature {
   @Mock
   GenericUDF udfMock;
 
+  CompilationOpContext cCtx = new CompilationOpContext();
+
+  @Test
+  public void testFilterOpEquals() {
+    Operator<? extends OperatorDesc> op7 = getFilterOp(7);
+    Operator<? extends OperatorDesc> op8 = getFilterOp(8);
+    Operator<? extends OperatorDesc> op7b = getFilterOp(7);
+
+    checkEquals(op7, op7b);
+    assertFalse(op7.logicalEquals(op8));
+
+
+  }
+
+  private void checkEquals(Operator<?> o1, Operator<?> o2) {
+    assertTrue(o1.logicalEquals(o2));
+    XSignature s1 = XSignature.of(o1);
+    XSignature s2 = XSignature.of(o2);
+
+    assertTrue("sigCmp", s1.signatureCompare(s2));
+    assertEquals(s1.hashCode(), s2.hashCode());
+    assertEquals(s1, s2);
+  }
+
   @Test
   public void testTableScand() {
-    Operator<TableScanDesc> t1, t2;
-    {
-      Table tblMetadata = new Table("db", "t1");
+    Operator<TableScanDesc> t1 = getTsOp(3);
+    Operator<TableScanDesc> t1a = getTsOp(3);
+    Operator<TableScanDesc> t2 = getTsOp(4);
+
+    assertTrue(t1.logicalEquals(t1a));
+    assertFalse(t1.logicalEquals(t2));
+  }
+
+  private Operator<? extends OperatorDesc> getFilterOp(int constVal) {
+    ExprNodeDesc pred = new ExprNodeConstantDesc(constVal);
+    FilterDesc fd = new FilterDesc(pred, true);
+    Operator<? extends OperatorDesc> op7 = OperatorFactory.get(cCtx, fd);
+    return op7;
+  }
+
+  private Operator<TableScanDesc> getTsOp(int i) {
+    Operator<TableScanDesc> t1;
+    Table tblMetadata = new Table("db", "table");
       TableScanDesc desc = new TableScanDesc("alias", tblMetadata);
-      List<ExprNodeDesc> as = Lists.newArrayList(new ExprNodeConstantDesc(3),
+      List<ExprNodeDesc> as =
+        Lists.newArrayList(new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, Integer.valueOf(i)),
           new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo, "c1", "aa", false));
       ExprNodeGenericFuncDesc f1 = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, udfMock, as);
       desc.setFilterExpr(f1);
       t1 = OperatorFactory.get(cCtx, desc);
-    }
-    {
-      Table tblMetadata = new Table("db", "t2");
-      TableScanDesc desc = new TableScanDesc("alias", tblMetadata);
-
-      List<ExprNodeDesc> as = Lists.newArrayList(new ExprNodeConstantDesc(3),
-          new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo, "c1", "aa", false));
-      ExprNodeGenericFuncDesc f1 = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, udfMock, as);
-      desc.setFilterExpr(f1);
-      t2 = OperatorFactory.get(cCtx, desc);
-    }
-
-    //    XSignature.of(op7);
-
-    assertFalse(t1.logicalEquals(t2));
+    return t1;
   }
 
 }
