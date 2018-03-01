@@ -48,6 +48,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.concurrent.ExecutionException;
 
 import com.google.common.collect.ImmutableSet;
@@ -61,6 +63,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -2708,16 +2711,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
+  /**
+   * Write a list of the columns in the table to a file.
+   *
+   * @param db
+   *          The database in context.
+   * @param showCols
+   *        A ShowColumnsDesc for columns we're interested in.
+   * @return Returns 0 when execution succeeds.
+   * @throws HiveException
+   *        Throws this exception if an unexpected error occurs.
+   */
   public int showColumns(Hive db, ShowColumnsDesc showCols)
       throws HiveException {
 
     Table table = db.getTable(showCols.getTableName());
 
     // write the results in the file
-    DataOutputStream outStream = getOutputStream(showCols.getResFile());;
+    DataOutputStream outStream = getOutputStream(showCols.getResFile());
     try {
-      List<FieldSchema> cols = table.getCols();
-      cols.addAll(table.getPartCols());
+      List<FieldSchema> allCols = table.getCols();
+      allCols.addAll(table.getPartCols());
+      List<FieldSchema> cols = getColumnsByPattern(allCols,showCols.getPattern());
       // In case the query is served by HiveServer2, don't pad it with spaces,
       // as HiveServer2 output is consumed by JDBC/ODBC clients.
       boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
@@ -2732,6 +2747,42 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       IOUtils.closeStream(outStream);
     }
     return 0;
+  }
+
+  /**
+   * Returns a sorted list of columns matching a column pattern.
+   *
+   * @param cols
+   *        Columns of a table.
+   * @param columnPattern
+   *        we want to find columns similar to a column pattern.
+   * @return sorted list of columns.
+   */
+  private List<FieldSchema> getColumnsByPattern(List<FieldSchema> cols, String columnPattern) {
+
+    if(columnPattern == null) {
+      columnPattern = "*";
+    }
+    columnPattern = columnPattern.toLowerCase();
+    columnPattern = columnPattern.replaceAll("\\*", ".*");
+    Pattern pattern = Pattern.compile(columnPattern);
+    Matcher matcher = pattern.matcher("");
+
+    SortedSet<FieldSchema> sortedCol = new TreeSet<>( new Comparator<FieldSchema>() {
+      @Override
+      public int compare(FieldSchema f1, FieldSchema f2) {
+        return f1.getName().compareTo(f2.getName());
+      }
+    });
+
+    for(FieldSchema column : cols)  {
+      matcher.reset(column.getName());
+      if(matcher.matches()) {
+        sortedCol.add(column);
+      }
+    }
+
+    return new ArrayList<FieldSchema>(sortedCol);
   }
 
   /**
@@ -4214,7 +4265,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private void handleRemoveMm(
-      Path path, ValidTxnList validTxnList, List<Path> result) throws HiveException {
+      Path path, ValidWriteIdList validWriteIdList, List<Path> result) throws HiveException {
     // Note: doesn't take LB into account; that is not presently supported here (throws above).
     try {
       FileSystem fs = path.getFileSystem(conf);
@@ -4224,10 +4275,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           ensureDelete(fs, childPath, "a non-directory file");
           continue;
         }
-        Long writeId = JavaUtils.extractTxnId(childPath);
+        Long writeId = JavaUtils.extractWriteId(childPath);
         if (writeId == null) {
           ensureDelete(fs, childPath, "an unknown directory");
-        } else if (!validTxnList.isTxnValid(writeId)) {
+        } else if (!validWriteIdList.isWriteIdValid(writeId)) {
           // Assume no concurrent active writes - we rely on locks here. We could check and fail.
           ensureDelete(fs, childPath, "an uncommitted directory");
         } else {
@@ -4262,9 +4313,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       HiveTxnManager txnManager = SessionState.get().getTxnMgr();
       if (txnManager.isTxnOpen()) {
-        mmWriteId = txnManager.getCurrentTxnId();
+        mmWriteId = txnManager.getTableWriteId(tbl.getDbName(), tbl.getTableName());
       } else {
-        mmWriteId = txnManager.openTxn(new Context(conf), conf.getUser());
+        txnManager.openTxn(new Context(conf), conf.getUser());
+        mmWriteId = txnManager.getTableWriteId(tbl.getDbName(), tbl.getTableName());
         txnManager.commitTxn();
       }
     } catch (Exception e) {
@@ -4923,39 +4975,30 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         throw new HiveException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(crtView.getViewName()));
       }
 
-      if (crtView.isMaterialized()) {
-        // We need to update the status of the creation signature
-        CreationMetadata cm =
-            new CreationMetadata(oldview.getDbName(), oldview.getTableName(),
-                ImmutableSet.copyOf(crtView.getTablesUsed()));
-        cm.setValidTxnList(conf.get(ValidTxnList.VALID_TXNS_KEY));
-        oldview.getTTable().setCreationMetadata(cm);
-        db.alterTable(crtView.getViewName(), oldview, null);
-        // This is a replace/rebuild, so we need an exclusive lock
-        addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_EXCLUSIVE));
-      } else {
-        // replace existing view
-        // remove the existing partition columns from the field schema
-        oldview.setViewOriginalText(crtView.getViewOriginalText());
-        oldview.setViewExpandedText(crtView.getViewExpandedText());
-        oldview.setFields(crtView.getSchema());
-        if (crtView.getComment() != null) {
-          oldview.setProperty("comment", crtView.getComment());
-        }
-        if (crtView.getTblProps() != null) {
-          oldview.getTTable().getParameters().putAll(crtView.getTblProps());
-        }
-        oldview.setPartCols(crtView.getPartCols());
-        if (crtView.getInputFormat() != null) {
-          oldview.setInputFormatClass(crtView.getInputFormat());
-        }
-        if (crtView.getOutputFormat() != null) {
-          oldview.setOutputFormatClass(crtView.getOutputFormat());
-        }
-        oldview.checkValidity(null);
-        db.alterTable(crtView.getViewName(), oldview, null);
-        addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_NO_LOCK));
+      // It should not be a materialized view
+      assert !crtView.isMaterialized();
+
+      // replace existing view
+      // remove the existing partition columns from the field schema
+      oldview.setViewOriginalText(crtView.getViewOriginalText());
+      oldview.setViewExpandedText(crtView.getViewExpandedText());
+      oldview.setFields(crtView.getSchema());
+      if (crtView.getComment() != null) {
+        oldview.setProperty("comment", crtView.getComment());
       }
+      if (crtView.getTblProps() != null) {
+        oldview.getTTable().getParameters().putAll(crtView.getTblProps());
+      }
+      oldview.setPartCols(crtView.getPartCols());
+      if (crtView.getInputFormat() != null) {
+        oldview.setInputFormatClass(crtView.getInputFormat());
+      }
+      if (crtView.getOutputFormat() != null) {
+        oldview.setOutputFormatClass(crtView.getOutputFormat());
+      }
+      oldview.checkValidity(null);
+      db.alterTable(crtView.getViewName(), oldview, null);
+      addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_NO_LOCK));
     } else {
       // We create new view
       Table tbl = crtView.toTable(conf);
@@ -4977,8 +5020,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
- private int truncateTable(Hive db, TruncateTableDesc truncateTableDesc) throws HiveException {
-
+  private int truncateTable(Hive db, TruncateTableDesc truncateTableDesc) throws HiveException {
     if (truncateTableDesc.getColumnIndexes() != null) {
       ColumnTruncateWork truncateWork = new ColumnTruncateWork(
           truncateTableDesc.getColumnIndexes(), truncateTableDesc.getInputDir(),

@@ -207,6 +207,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_materialization_invalidation_info\n");
   }
 
+  void update_creation_metadata(const std::string& dbname, const std::string& tbl_name, const CreationMetadata& creation_metadata) {
+    // Your implementation goes here
+    printf("update_creation_metadata\n");
+  }
+
   void get_table_names_by_filter(std::vector<std::string> & _return, const std::string& dbname, const std::string& filter, const int16_t max_tables) {
     // Your implementation goes here
     printf("get_table_names_by_filter\n");
@@ -730,6 +735,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void commit_txn(const CommitTxnRequest& rqst) {
     // Your implementation goes here
     printf("commit_txn\n");
+  }
+
+  void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst) {
+    // Your implementation goes here
+    printf("get_valid_write_ids\n");
+  }
+
+  void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst) {
+    // Your implementation goes here
+    printf("allocate_table_write_ids\n");
   }
 
   void lock(LockResponse& _return, const LockRequest& rqst) {

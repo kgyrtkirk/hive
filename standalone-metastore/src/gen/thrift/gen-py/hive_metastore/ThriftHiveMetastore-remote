@@ -61,6 +61,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  GetTableResult get_table_req(GetTableRequest req)')
   print('  GetTablesResult get_table_objects_by_name_req(GetTablesRequest req)')
   print('   get_materialization_invalidation_info(string dbname,  tbl_names)')
+  print('  void update_creation_metadata(string dbname, string tbl_name, CreationMetadata creation_metadata)')
   print('   get_table_names_by_filter(string dbname, string filter, i16 max_tables)')
   print('  void alter_table(string dbname, string tbl_name, Table new_tbl)')
   print('  void alter_table_with_environment_context(string dbname, string tbl_name, Table new_tbl, EnvironmentContext environment_context)')
@@ -166,6 +167,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void abort_txn(AbortTxnRequest rqst)')
   print('  void abort_txns(AbortTxnsRequest rqst)')
   print('  void commit_txn(CommitTxnRequest rqst)')
+  print('  GetValidWriteIdsResponse get_valid_write_ids(GetValidWriteIdsRequest rqst)')
+  print('  AllocateTableWriteIdsResponse allocate_table_write_ids(AllocateTableWriteIdsRequest rqst)')
   print('  LockResponse lock(LockRequest rqst)')
   print('  LockResponse check_lock(CheckLockRequest rqst)')
   print('  void unlock(UnlockRequest rqst)')
@@ -495,6 +498,12 @@ elif cmd == 'get_materialization_invalidation_info':
     print('get_materialization_invalidation_info requires 2 args')
     sys.exit(1)
   pp.pprint(client.get_materialization_invalidation_info(args[0],eval(args[1]),))
+
+elif cmd == 'update_creation_metadata':
+  if len(args) != 3:
+    print('update_creation_metadata requires 3 args')
+    sys.exit(1)
+  pp.pprint(client.update_creation_metadata(args[0],args[1],eval(args[2]),))
 
 elif cmd == 'get_table_names_by_filter':
   if len(args) != 3:
@@ -1125,6 +1134,18 @@ elif cmd == 'commit_txn':
     print('commit_txn requires 1 args')
     sys.exit(1)
   pp.pprint(client.commit_txn(eval(args[0]),))
+
+elif cmd == 'get_valid_write_ids':
+  if len(args) != 1:
+    print('get_valid_write_ids requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_valid_write_ids(eval(args[0]),))
+
+elif cmd == 'allocate_table_write_ids':
+  if len(args) != 1:
+    print('allocate_table_write_ids requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.allocate_table_write_ids(eval(args[0]),))
 
 elif cmd == 'lock':
   if len(args) != 1:

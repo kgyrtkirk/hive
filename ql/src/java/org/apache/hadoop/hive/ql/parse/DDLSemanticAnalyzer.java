@@ -1135,8 +1135,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeCreatePool(ASTNode ast) throws SemanticException {
     // TODO: allow defaults for e.g. scheduling policy.
-    if (ast.getChildCount() != 5) {
-      throw new SemanticException("Invalid syntax for create pool.");
+    if (ast.getChildCount() < 3) {
+      throw new SemanticException("Expected more arguments: " + ast.toStringTree());
     }
     String rpName = unescapeIdentifier(ast.getChild(0).getText());
     String poolPath = poolPath(ast.getChild(1));
@@ -1167,6 +1167,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     if (!pool.isSetAllocFraction()) {
       throw new SemanticException("alloc_fraction should be specified for a pool");
+    }
+    if (!pool.isSetQueryParallelism()) {
+      throw new SemanticException("query_parallelism should be specified for a pool");
     }
     CreateOrAlterWMPoolDesc desc = new CreateOrAlterWMPoolDesc(pool, poolPath, false);
     addServiceOutput();
@@ -1560,7 +1563,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
         truncateTblDesc.setOutputDir(queryTmpdir);
         LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
-            partSpec == null ? new HashMap<>() : partSpec, null);
+            partSpec == null ? new HashMap<>() : partSpec);
         ltd.setLbCtx(lbCtx);
         @SuppressWarnings("unchecked")
         Task<MoveWork> moveTsk =
@@ -2014,7 +2017,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       mergeDesc.setOutputDir(queryTmpdir);
       // No need to handle MM tables - unsupported path.
       LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
-          partSpec == null ? new HashMap<>() : partSpec, null);
+          partSpec == null ? new HashMap<>() : partSpec);
       ltd.setLbCtx(lbCtx);
       Task<MoveWork> moveTsk =
           TaskFactory.get(new MoveWork(null, null, ltd, null, false), conf);
@@ -2556,17 +2559,45 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeShowColumns(ASTNode ast) throws SemanticException {
-    String tableName = getUnescapedName((ASTNode) ast.getChild(0));
-    if (ast.getChildCount() > 1) {
-      if (tableName.contains(".")) {
-        throw new SemanticException("Duplicates declaration for database name");
-      }
-      tableName = getUnescapedName((ASTNode) ast.getChild(1)) + "." + tableName;
+
+  // table name has to be present so min child 1 and max child 4
+    if (ast.getChildCount() > 4 || ast.getChildCount()<1) {
+      throw new SemanticException(ErrorMsg.INVALID_AST_TREE.getMsg(ast.toStringTree()));
     }
+
+    String tableName = getUnescapedName((ASTNode) ast.getChild(0));
+
+    ShowColumnsDesc showColumnsDesc = null;
+    String pattern = null;
+    switch(ast.getChildCount()) {
+      case 1: //  only tablename no pattern and db
+        showColumnsDesc = new ShowColumnsDesc(ctx.getResFile(), tableName);
+        break;
+      case 2: // tablename and pattern
+        pattern = unescapeSQLString(ast.getChild(1).getText());
+        showColumnsDesc = new ShowColumnsDesc(ctx.getResFile(), tableName, pattern);
+        break;
+      case 3: // specifies db
+        if (tableName.contains(".")) {
+          throw new SemanticException("Duplicates declaration for database name");
+        }
+        tableName = getUnescapedName((ASTNode) ast.getChild(2)) + "." + tableName;
+        showColumnsDesc = new ShowColumnsDesc(ctx.getResFile(), tableName);
+        break;
+      case 4: // specifies db and pattern
+        if (tableName.contains(".")) {
+          throw new SemanticException("Duplicates declaration for database name");
+        }
+        tableName = getUnescapedName((ASTNode) ast.getChild(2)) + "." + tableName;
+        pattern = unescapeSQLString(ast.getChild(3).getText());
+        showColumnsDesc = new ShowColumnsDesc(ctx.getResFile(), tableName, pattern);
+        break;
+      default:
+        break;
+    }
+
     Table tab = getTable(tableName);
     inputs.add(new ReadEntity(tab));
-
-    ShowColumnsDesc showColumnsDesc = new ShowColumnsDesc(ctx.getResFile(), tableName);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showColumnsDesc), conf));
     setFetchTask(createFetchTask(showColumnsDesc.getSchema()));
