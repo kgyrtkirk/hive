@@ -20,8 +20,11 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Wraps the operator and provides hashcode on the basis of the
@@ -64,6 +67,25 @@ public class XSignature {
 
   public boolean signatureCompare(XSignature other) {
     return sigMap.equals(other.sigMap);
+  }
+
+  @VisibleForTesting
+  public void proveEquals(XSignature other) {
+    proveEquals(sigMap,other.sigMap);
+  }
+
+  private static void proveEquals(Map<String, Object> m1, Map<String, Object> m2) {
+    for (Entry<String, Object> e : m1.entrySet()) {
+      String key = e.getKey();
+      Object v1 = e.getValue();
+      Object v2 = m2.get(key);
+      if (v1 == v2) {
+        continue;
+      }
+      if (v1 == null || v2 == null || !v1.equals(v2)) {
+        throw new RuntimeException(String.format("equals fails: %s (%s!=%s)", key, v1, v2));
+      }
+    }
   }
 
 }

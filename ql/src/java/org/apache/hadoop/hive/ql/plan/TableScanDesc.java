@@ -218,7 +218,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     return PlanUtils.getExprListString(Arrays.asList(filterExpr));
   }
 
-  @Signature // XXX
+  // @Signature // XXX
   public ExprNodeGenericFuncDesc getFilterExpr() {
     return filterExpr;
   }

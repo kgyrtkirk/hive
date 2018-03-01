@@ -106,6 +106,7 @@ public class TestOperatorSignature {
     XSignature s1 = XSignature.of(o1);
     XSignature s2 = XSignature.of(o2);
 
+    s1.proveEquals(s2);
     assertTrue("sigCmp", s1.signatureCompare(s2));
     assertEquals(s1.hashCode(), s2.hashCode());
     assertEquals(s1, s2);
@@ -117,6 +118,7 @@ public class TestOperatorSignature {
     XSignature s1 = XSignature.of(o1);
     XSignature s2 = XSignature.of(o2);
 
+    assertFalse(s1.signatureCompare(s2));
     // this might be a little bit too much...but in most cases this should be true
     assertNotEquals(s1.hashCode(), s2.hashCode());
     assertNotEquals(s1, s2);
