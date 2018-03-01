@@ -93,4 +93,31 @@ public class TestOpSigFactory {
     assertEquals(1, sd.getDesc_invocations());
   }
 
+  @Test
+  public void checkImplicit() {
+    SampleOperator so = new SampleOperator();
+    SampleDesc sd = new SampleDesc();
+    so.setConf(sd);
+
+    SampleOperator so2 = new SampleOperator();
+    SampleDesc sd2 = new SampleDesc();
+    so2.setConf(sd2);
+
+    so.getParentOperators().add(so2);
+    so2.getChildOperators().add(so);
+
+    f.getSignature(so);
+    // computes the sig of every object
+    verify(f, times(2)).getSignature(Mockito.any());
+    assertEquals(1, sd.getDesc_invocations());
+    assertEquals(1, sd2.getDesc_invocations());
+
+    f.getSignature(so);
+    f.getSignature(so2);
+
+    verify(f, times(4)).getSignature(Mockito.any());
+    assertEquals(1, sd.getDesc_invocations());
+    assertEquals(1, sd2.getDesc_invocations());
+  }
+
 }
