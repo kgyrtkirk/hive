@@ -56,12 +56,13 @@ public class DriverFactory {
   }
 
   public static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
-    //    ExecutionStrategy strategy = ExecutionStrategy.valueOf(queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGY));
-    String strategies = queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES);
-    strategies = Strings.nullToEmpty(strategies).trim().toLowerCase();
-    if (strategies.isEmpty() || strategies.equals("disabled")) {
+    boolean en = queryState.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED);
+    if (!en) {
       return new Driver(queryState, userName, queryInfo);
     }
+
+    String strategies = queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES);
+    strategies = Strings.nullToEmpty(strategies).trim().toLowerCase();
     String[] s = strategies.split(",");
     ArrayList<IReExecutionPlugin> plugins = new ArrayList<>();
     for (String string : s) {

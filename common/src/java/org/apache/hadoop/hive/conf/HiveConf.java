@@ -3694,12 +3694,14 @@ public class HiveConf extends Configuration {
     HIVE_EXEC_INPUT_LISTING_MAX_THREADS("hive.exec.input.listing.max.threads", 0, new  SizeValidator(0L, true, 1024L, true),
         "Maximum number of threads that Hive uses to list file information from file systems (recommended > 1 for blobstore)."),
 
+    HIVE_QUERY_REEXECUTION_ENABLED("hive.query.reexecution.enabled", true,
+        "Enable query reexecutions"),
     HIVE_QUERY_REEXECUTION_STRATEGIES("hive.query.reexecution.strategies", "overlay,reoptimize",
-        "empty value or disabled: no reexecution will occur\n otherwise comma separated list of plugin can be used:\n"
+        "comma separated list of plugin can be used:\n"
             + "  overlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of an execution errors out\n"
             + "  reoptimize: collects operator statistics during execution and recompile the query after a failure"),
-    HIVE_QUERY_MAX_REEXECUTION_COUNT("hive.query.max.reexecution.count", 1,
-        "maximum number of re-executions for a single query"),
+    HIVE_QUERY_MAX_REEXECUTION_COUNT("hive.query.reexecution.max.count", 1,
+        "Maximum number of re-executions for a single query."),
 
     HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
         "If the query results cache is enabled. This will keep results of previously executed queries " +
