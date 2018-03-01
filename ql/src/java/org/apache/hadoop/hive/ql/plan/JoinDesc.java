@@ -229,6 +229,7 @@ public class JoinDesc extends AbstractOperatorDesc {
    * @return the keys in string form
    */
   @Explain(displayName = "keys")
+  @Signature
   public Map<Byte, String> getKeysString() {
     if (joinKeys == null) {
       return null;
@@ -266,6 +267,7 @@ public class JoinDesc extends AbstractOperatorDesc {
    * @return Map from alias to filters on the alias.
    */
   @Explain(displayName = "filter predicates")
+  @Signature
   public Map<Byte, String> getFiltersStringMap() {
     if (getFilters() == null || getFilters().size() == 0) {
       return null;
@@ -342,6 +344,7 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "outputColumnNames")
+  @Signature
   public List<String> getOutputColumnNames() {
     return outputColumnNames;
   }
@@ -365,6 +368,7 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "condition map", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Signature
   public List<JoinCondDesc> getCondsList() {
     if (conds == null) {
       return null;
@@ -425,6 +429,7 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "handleSkewJoin", displayOnlyOnTrue = true)
+  @Signature
   public boolean getHandleSkewJoin() {
     return handleSkewJoin;
   }
@@ -524,6 +529,7 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "nullSafes")
+  @Signature
   public String getNullSafeString() {
     if (nullsafes == null) {
       return null;
@@ -740,4 +746,5 @@ public class JoinDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 }

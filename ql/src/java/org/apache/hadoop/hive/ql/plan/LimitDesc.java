@@ -58,6 +58,7 @@ public class LimitDesc extends AbstractOperatorDesc {
     this.offset = offset;
   }
 
+  @Signature
   @Explain(displayName = "Number of rows", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public int getLimit() {
     return limit;
@@ -100,4 +101,5 @@ public class LimitDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 }

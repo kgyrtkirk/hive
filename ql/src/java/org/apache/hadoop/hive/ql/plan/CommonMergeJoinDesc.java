@@ -38,6 +38,7 @@ public class CommonMergeJoinDesc extends MapJoinDesc implements Serializable {
     this.mapJoinConversionPos = mapJoinConversionPos;
   }
 
+  @Signature
   public int getNumBuckets() {
     return numBuckets;
   }

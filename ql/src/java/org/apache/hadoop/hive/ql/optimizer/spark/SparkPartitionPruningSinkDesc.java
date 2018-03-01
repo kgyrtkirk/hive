@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.Signature;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
 import java.util.ArrayList;
@@ -134,6 +135,7 @@ public class SparkPartitionPruningSinkDesc extends AbstractOperatorDesc {
         info -> info.columnName + " (" + info.columnType + ")").toArray());
   }
 
+  @Signature
   public TableDesc getTable() {
     return table;
   }
@@ -156,4 +158,5 @@ public class SparkPartitionPruningSinkDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 }

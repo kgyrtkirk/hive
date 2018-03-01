@@ -19,9 +19,10 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.util.Objects;
+
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
 /**
@@ -54,6 +55,7 @@ public class UDTFDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "function name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Signature
   public String getUDTFName() {
     return genericUDTF.toString();
   }
@@ -67,6 +69,7 @@ public class UDTFDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "outer lateral view")
+  @Signature
   public String isOuterLateralView() {
     return outerLV ? "true" : null;
   }
@@ -80,4 +83,5 @@ public class UDTFDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 }

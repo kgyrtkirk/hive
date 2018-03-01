@@ -156,8 +156,15 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   }
 
   @Explain(displayName = "alias")
+  // FIXME: this might not needed to be in the signature; but in that case the compare shouldn't consider it either!
+  @Signature
   public String getAlias() {
     return alias;
+  }
+
+  @Signature
+  public String getPredicateString() {
+    return PlanUtils.getExprListString(Arrays.asList(filterExpr));
   }
 
   @Explain(displayName = "table", jsonOnly = true)
@@ -219,6 +226,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     return PlanUtils.getExprListString(Arrays.asList(filterExpr));
   }
 
+  // @Signature // XXX
   public ExprNodeGenericFuncDesc getFilterExpr() {
     return filterExpr;
   }
@@ -296,6 +304,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   @Override
   @Explain(displayName = "GatherStats", explainLevels = { Level.EXTENDED })
+  @Signature
   public boolean isGatherStats() {
     return gatherStats;
   }
@@ -347,6 +356,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     this.rowLimit = rowLimit;
   }
 
+  @Signature
   public int getRowLimit() {
     return rowLimit;
   }
@@ -370,6 +380,11 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   public boolean getIsMetadataOnly() {
     return isMetadataOnly;
+  }
+
+  //  @Signature
+  public String getQualifiedTable() {
+    return tableMetadata.getFullyQualifiedName();
   }
 
   public Table getTableMetadata() {

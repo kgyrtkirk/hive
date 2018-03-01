@@ -49,6 +49,7 @@ public class LateralViewJoinDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "outputColumnNames")
+  @Signature
   public ArrayList<String> getOutputInternalColNames() {
     return outputInternalColNames;
   }
@@ -74,4 +75,5 @@ public class LateralViewJoinDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 }

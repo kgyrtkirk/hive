@@ -25,16 +25,11 @@ import java.util.Objects;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hive.common.util.AnnotationUtils;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 
 /**
@@ -129,6 +124,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "mode")
+  @Signature
   public String getModeString() {
     switch (mode) {
     case COMPLETE:
@@ -155,6 +151,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "keys")
+  @Signature
   public String getKeyString() {
     return PlanUtils.getExprListString(keys);
   }
@@ -173,6 +170,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "outputColumnNames")
+  @Signature
   public ArrayList<java.lang.String> getOutputColumnNames() {
     return outputColumnNames;
   }
@@ -183,6 +181,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "pruneGroupingSetId", displayOnlyOnTrue = true)
+  @Signature
   public boolean pruneGroupingSetId() {
     return groupingSetPosition >= 0 &&
         outputColumnNames.size() != keys.size() + aggregators.size();
@@ -210,6 +209,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "aggregations", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Signature
   public List<String> getAggregatorStrings() {
     List<String> res = new ArrayList<String>();
     for (AggregationDesc agg: aggregators) {
@@ -235,6 +235,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "bucketGroup", displayOnlyOnTrue = true)
+  @Signature
   public boolean getBucketGroup() {
     return bucketGroup;
   }
@@ -423,5 +424,6 @@ public class GroupByDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 
 }

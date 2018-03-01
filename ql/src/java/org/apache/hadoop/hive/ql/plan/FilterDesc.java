@@ -109,6 +109,7 @@ public class FilterDesc extends AbstractOperatorDesc {
     this.sampleDescr = sampleDescr;
   }
 
+  @Signature
   public String getPredicateString() {
     return PlanUtils.getExprListString(Arrays.asList(predicate));
   }
@@ -137,6 +138,7 @@ public class FilterDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "isSamplingPred", explainLevels = { Level.EXTENDED })
+  @Signature
   public boolean getIsSamplingPred() {
     return isSamplingPred;
   }
@@ -154,6 +156,7 @@ public class FilterDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "sampleDesc", explainLevels = { Level.EXTENDED })
+  @Signature
   public String getSampleDescExpr() {
     return sampleDescr == null ? null : sampleDescr.toString();
   }
@@ -234,4 +237,5 @@ public class FilterDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 }
