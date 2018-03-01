@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignatureFactory;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
-import org.apache.hadoop.hive.ql.plan.mapper.refs.OperatorRef;
 
 public class PlanMapperProcess {
 
