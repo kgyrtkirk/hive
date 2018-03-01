@@ -75,9 +75,9 @@ public class TestOperatorSignature {
 
     checkEquals(tr37, tr37a);
 
+    checkTreeNotEquals(tr37, tr17);
     checkTreeEquals(tr37, tr37a);
     checkTreeNotEquals(tr37, tr31);
-    checkTreeNotEquals(tr37, tr17);
   }
 
   private Operator<?> getFilTsOp(int i, int j) {
@@ -97,6 +97,8 @@ public class TestOperatorSignature {
     Operator<TableScanDesc> t2 = getTsOp(4);
 
     assertTrue(t1.logicalEquals(t1a));
+    checkEquals(t1, t1a);
+    checkNotEquals(t1, t2);
   }
 
   private void checkEquals(Operator<?> o1, Operator<?> o2) {

@@ -28,16 +28,16 @@ public class XTSignature {
   private Operator<?> op;
   private int hashCode;
   private XSignature sig;
-  private ArrayList<XTSignature> childSig;
+  private ArrayList<XTSignature> parentSig;
 
   XTSignature(Operator<?> op) {
     this.op = op;
     sig = XSignature.of(op);
-    childSig = new ArrayList<>();
-    for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
-      childSig.add(XTSignature.of(childOp));
+    parentSig = new ArrayList<>();
+    for (Operator<? extends OperatorDesc> parentOp : op.getParentOperators()) {
+      parentSig.add(XTSignature.of(parentOp));
     }
-    hashCode = Objects.hash(sig, childSig);
+    hashCode = Objects.hash(sig, parentSig);
   }
 
   public static XTSignature of(Operator<?> root) {
