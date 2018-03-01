@@ -146,6 +146,7 @@ public class TestOperatorSignature {
   private Operator<TableScanDesc> getTsOp(int i) {
     Operator<TableScanDesc> t1;
     Table tblMetadata = new Table("db", "table");
+    // FIXME: I think this shouldn't be sensitive to the alias; but currently its included in logicalEquals...check that
     TableScanDesc desc = new TableScanDesc("alias"/*+ cCtx.nextOperatorId()*/, tblMetadata);
       List<ExprNodeDesc> as =
         Lists.newArrayList(new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, Integer.valueOf(i)),
