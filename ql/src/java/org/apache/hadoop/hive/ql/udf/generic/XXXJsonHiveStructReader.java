@@ -58,7 +58,6 @@ public class XXXJsonHiveStructReader {
   // XXX: consider exception types
   public Object parseStruct(String text) throws JsonParseException, IOException, HiveException {
     JsonParser parser = factory.createParser(text);
-
     return parseInternal(parser);
   }
 

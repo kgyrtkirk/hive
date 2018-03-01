@@ -103,6 +103,8 @@ public class JsonSerDe extends AbstractSerDe {
 
   private HCatRecordObjectInspector cachedObjectInspector;
   private TimestampParser tsParser;
+  // FIXME xxx.getOutputOI()
+  @Deprecated
   private ObjectInspector outputOI;
   private XXXJsonHiveStructReader xxx;
 
@@ -143,6 +145,7 @@ public class JsonSerDe extends AbstractSerDe {
     outputOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(rowTypeInfo);
     xxx = new XXXJsonHiveStructReader(rowTypeInfo);
 
+
     cachedObjectInspector = HCatRecordObjectInspectorFactory.getHCatRecordObjectInspector(rowTypeInfo);
     try {
       schema = HCatSchemaUtils.getHCatSchema(rowTypeInfo).get(0).getStructSubSchema();
@@ -173,7 +176,8 @@ public class JsonSerDe extends AbstractSerDe {
     try {
       if (false) {
         try {
-          xxx.parseStruct(new ByteArrayInputStream((t.getBytes())));
+          Object row = xxx.parseStruct(new ByteArrayInputStream((t.getBytes())));
+
         } catch (HiveException e) {
           throw new SerDeException(e);
         }
