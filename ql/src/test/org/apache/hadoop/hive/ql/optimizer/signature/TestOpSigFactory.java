@@ -18,20 +18,23 @@
 
 package org.apache.hadoop.hive.ql.optimizer.signature;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.exec.FilterOperator;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
+import org.apache.hadoop.hive.ql.plan.Signature;
+import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+
 
 public class TestOpSigFactory {
   CompilationOpContext cCtx = new CompilationOpContext();
@@ -42,23 +45,52 @@ public class TestOpSigFactory {
   @Spy
   OpTreeSignatureFactory f = OpTreeSignatureFactory.newCache();
 
+  public static class SampleDesc extends AbstractOperatorDesc {
+    private static final long serialVersionUID = 1L;
+    private int desc_invocations;
+
+    @Signature
+    public int asd() {
+      desc_invocations++;
+      return 8;
+    }
+
+    public int getDesc_invocations() {
+      return desc_invocations;
+    }
+  }
+
+  static class SampleOperator extends Operator<SampleDesc> {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public void process(Object row, int tag) throws HiveException {
+    }
+
+    @Override
+    public String getName() {
+      return "A1";
+    }
+
+    @Override
+    public OperatorType getType() {
+      return OperatorType.FILTER;
+
+    }
+
+  }
+
   @Test
   public void checkExplicit() {
+    SampleOperator so = new SampleOperator();
+    SampleDesc sd = new SampleDesc();
+    so.setConf(sd);
 
-    ExprNodeDesc pred = new ExprNodeConstantDesc(3);
-    FilterDesc fd0 = new FilterDesc(pred, true);
-    //    FilterOperator fop = (FilterOperator) OperatorFactory.get(cCtx, fd0);
-    FilterOperator fop = new FilterOperator(cCtx);
-
-    FilterDesc fd = Mockito.spy(fd0);
-    fop.setConf(fd);
-
-    OpTreeSignature s1 = f.getSignature(fop);
-    System.out.println(s1);
-    f.getSignature(fop);
+    f.getSignature(so);
+    f.getSignature(so);
 
     verify(f, times(2)).getSignature(Mockito.any());
-    verify(fd, times(1)).getPredicateString();
+    assertEquals(1, sd.getDesc_invocations());
   }
 
 }
