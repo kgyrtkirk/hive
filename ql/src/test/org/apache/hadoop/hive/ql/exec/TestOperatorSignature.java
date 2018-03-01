@@ -37,22 +37,14 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.XSignature;
 import org.apache.hadoop.hive.ql.plan.XTSignature;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-
 import com.google.common.collect.Lists;
 
 public class TestOperatorSignature {
 
-  @Rule
-  public MockitoRule mockito = MockitoJUnit.rule();
-
-  @Mock
-  GenericUDF udfMock;
+  GenericUDF udf = new GenericUDFConcat();
 
   CompilationOpContext cCtx = new CompilationOpContext();
 
@@ -158,7 +150,7 @@ public class TestOperatorSignature {
       List<ExprNodeDesc> as =
         Lists.newArrayList(new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, Integer.valueOf(i)),
           new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo, "c1", "aa", false));
-      ExprNodeGenericFuncDesc f1 = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, udfMock, as);
+    ExprNodeGenericFuncDesc f1 = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, udf, as);
       desc.setFilterExpr(f1);
       t1 = OperatorFactory.get(cCtx, desc);
     return t1;
