@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -165,7 +166,8 @@ public class TestOperatorCmp {
   private static IDriver createDriver() {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
-    conf.set("hive.query.reexecution.strategy", "reoptimize");
+    conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED, true);
+    conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, "reoptimize");
     conf.set("zzz", "1");
     conf.set("reexec.overlay.zzz", "2000");
     //

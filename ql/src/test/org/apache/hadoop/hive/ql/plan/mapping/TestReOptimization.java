@@ -168,6 +168,7 @@ public class TestReOptimization {
   private static IDriver createDriver(String strategies) {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
+    conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED, true);
     conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, strategies);
     conf.setBoolVar(ConfVars.HIVE_EXPLAIN_USER, true);
     conf.set("zzz", "1");

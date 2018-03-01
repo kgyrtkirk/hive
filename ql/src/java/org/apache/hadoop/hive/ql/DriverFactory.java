@@ -48,6 +48,9 @@ public class DriverFactory {
     strategies = Strings.nullToEmpty(strategies).trim().toLowerCase();
     ArrayList<IReExecutionPlugin> plugins = new ArrayList<>();
     for (String string : strategies.split(",")) {
+      if (string.trim().isEmpty()) {
+        continue;
+      }
       plugins.add(buildReExecPlugin(string));
     }
 
