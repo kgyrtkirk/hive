@@ -75,9 +75,7 @@ public class TestOpSigFactory {
     @Override
     public OperatorType getType() {
       return OperatorType.FILTER;
-
     }
-
   }
 
   @Test
