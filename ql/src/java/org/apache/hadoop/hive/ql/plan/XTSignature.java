@@ -51,14 +51,32 @@ public class XTSignature {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == null || !(obj instanceof XSignature)) {
+    if (obj == null || !(obj instanceof XTSignature)) {
       return false;
     }
     if (obj == this) {
       return true;
     }
     XTSignature o = (XTSignature) obj;
-    return op.logicalEquals(o.op);
+    return logicalEqualsTree(op, o.op);
+  }
+
+  // XXX: this is ain't cheap! :)
+  private final boolean logicalEqualsTree(Operator<?> o1, Operator<?> o) {
+    if (!o1.logicalEquals(o)) {
+      return false;
+    }
+    if (o.getNumParent() != o1.getNumParent()) {
+      return false;
+    }
+    for (int i = 0; i < o1.getNumParent(); i++) {
+      Operator<? extends OperatorDesc> copL = o1.getParentOperators().get(i);
+      Operator<? extends OperatorDesc> copR = o.getParentOperators().get(i);
+      if (!copL.logicalEquals(copR)) {
+        return false;
+      }
+    }
+    return true;
   }
 
 }

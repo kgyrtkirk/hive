@@ -148,9 +148,15 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   }
 
   @Explain(displayName = "alias")
+  // FIXME: this might not needed to be in the signature; but in that case the compare shouldn't consider it either!
   @Signature
   public String getAlias() {
     return alias;
+  }
+
+  @Signature
+  public String getPredicateString() {
+    return PlanUtils.getExprListString(Arrays.asList(filterExpr));
   }
 
   @Explain(displayName = "table", jsonOnly = true)

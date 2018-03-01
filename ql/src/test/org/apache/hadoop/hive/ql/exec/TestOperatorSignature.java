@@ -133,6 +133,7 @@ public class TestOperatorSignature {
     XTSignature ts1 = XTSignature.of(o1);
     XTSignature ts2 = XTSignature.of(o2);
 
+    // FIXME: currently ExprNode-s are not in the signature; which cause this to be the same
     assertNotEquals(ts1.hashCode(), ts2.hashCode());
     assertNotEquals(ts1, ts2);
   }
@@ -142,13 +143,14 @@ public class TestOperatorSignature {
     ExprNodeDesc pred = new ExprNodeConstantDesc(constVal);
     FilterDesc fd = new FilterDesc(pred, true);
     Operator<? extends OperatorDesc> op7 = OperatorFactory.get(cCtx, fd);
+
     return op7;
   }
 
   private Operator<TableScanDesc> getTsOp(int i) {
     Operator<TableScanDesc> t1;
     Table tblMetadata = new Table("db", "table");
-      TableScanDesc desc = new TableScanDesc("alias", tblMetadata);
+    TableScanDesc desc = new TableScanDesc("alias"/*+ cCtx.nextOperatorId()*/, tblMetadata);
       List<ExprNodeDesc> as =
         Lists.newArrayList(new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, Integer.valueOf(i)),
           new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo, "c1", "aa", false));
