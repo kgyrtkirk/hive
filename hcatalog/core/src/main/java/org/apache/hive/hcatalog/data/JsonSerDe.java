@@ -145,6 +145,8 @@ public class JsonSerDe extends AbstractSerDe {
     outputOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(rowTypeInfo);
     xxx = new XXXJsonHiveStructReader(rowTypeInfo);
 
+    xxx.setIgnoreUnknownFields(true);
+
 
     cachedObjectInspector = HCatRecordObjectInspectorFactory.getHCatRecordObjectInspector(rowTypeInfo);
     try {
@@ -179,7 +181,7 @@ public class JsonSerDe extends AbstractSerDe {
         try {
           //
 
-          row = xxx.parseStruct(new ByteArrayInputStream((t.getBytes())));
+          row = xxx.parseStruct(new ByteArrayInputStream((t.getBytes()), 0, t.getLength()));
 
         } catch (HiveException e) {
           throw new SerDeException(e);
@@ -203,11 +205,30 @@ public class JsonSerDe extends AbstractSerDe {
       throw new SerDeException(e);
     }
 
-    //    boolean aa = Arrays.deepEquals((Object[]) row, r.toArray());
+    List row2 = fatLand((Object[]) row);
 
+//    boolean aa = Arrays.deepEquals((Object[]) row, r.toArray());
+    boolean aa = row2.equals(r);
 
-    return new DefaultHCatRecord(r);
+    //    assert (aa);
+
+    return new DefaultHCatRecord(row2);
   }
+
+  private List fatLand(Object[] arr) {
+
+    List ret = new ArrayList<>();
+    for (Object o : arr) {
+      if (o != null && o.getClass().isArray()) {
+        ret.add(fatLand((Object[]) o));
+      } else {
+        ret.add(o);
+      }
+    }
+
+    return ret;
+  }
+
 
   private void populateRecord(List<Object> r, JsonToken token, JsonParser p, HCatSchema s) throws IOException {
     if (token != JsonToken.FIELD_NAME) {

@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
+import com.esotericsoftware.minlog.Log;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -48,6 +49,9 @@ public class XXXJsonHiveStructReader {
   // XXX: RENAME
   private ObjectInspector outputOI;
   private JsonFactory factory;
+  // FIX THIS!
+  @Deprecated
+  private static boolean ignoreUnknownFields;
 
   public XXXJsonHiveStructReader(TypeInfo t) {
     outputOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(t);
@@ -160,7 +164,18 @@ public class XXXJsonHiveStructReader {
       case FIELD_NAME:
         String name = parser.getCurrentName();
         try {
-          StructField field = oi.getStructFieldRef(name);
+          // XXX: linear scan inside the below method...get a map here or something..
+          StructField field = null;
+          try {
+            field = oi.getStructFieldRef(name);
+          } catch (RuntimeException e) {
+            if (ignoreUnknownFields) {
+              Log.warn("ignoring field:" + name);
+              parser.nextToken();
+              skipValue(parser);
+              break;
+            }
+          }
           if (field == null) {
             throw new HiveException("undeclared field");
           }
@@ -179,6 +194,31 @@ public class XXXJsonHiveStructReader {
       parser.nextToken();
     }
     return ret;
+  }
+
+  private static void skipValue(JsonParser parser) throws JsonParseException, IOException {
+
+    int array = 0;
+    int object = 0;
+    do {
+      JsonToken currentToken = parser.getCurrentToken();
+      if(currentToken == JsonToken.START_ARRAY) {
+        array++;
+      }
+      if (currentToken == JsonToken.END_ARRAY) {
+        array--;
+      }
+      if (currentToken == JsonToken.START_OBJECT) {
+        object++;
+      }
+      if (currentToken == JsonToken.END_OBJECT) {
+        object--;
+      }
+
+      parser.nextToken();
+
+    } while (array > 0 || object > 0);
+
   }
 
   private static Object parseList(JsonParser parser, ListObjectInspector oi)
@@ -257,5 +297,8 @@ public class XXXJsonHiveStructReader {
     }
   }
 
+  public void setIgnoreUnknownFields(boolean b) {
+    ignoreUnknownFields = b;
+  }
 
 }
