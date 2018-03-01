@@ -16,32 +16,39 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.optimizer.signature;
 
 import java.util.ArrayList;
 import java.util.Objects;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
+/**
+ * Operator tree signature.
+ */
 public class OpTreeSignature {
-
   private Operator<?> op;
   private int hashCode;
   private OpSignature sig;
   private ArrayList<OpTreeSignature> parentSig;
 
-  OpTreeSignature(Operator<?> op) {
+  OpTreeSignature(Operator<?> op, OpTreeSignatureFactory osf) {
     this.op = op;
     sig = OpSignature.of(op);
     parentSig = new ArrayList<>();
     for (Operator<? extends OperatorDesc> parentOp : op.getParentOperators()) {
-      parentSig.add(OpTreeSignature.of(parentOp));
+      parentSig.add(osf.getSignature(parentOp));
     }
     hashCode = Objects.hash(sig, parentSig);
   }
 
   public static OpTreeSignature of(Operator<?> root) {
-    return new OpTreeSignature(root);
+    return of(root, OpTreeSignatureFactory.DIRECT);
+  }
+
+  public static OpTreeSignature of(Operator<? extends OperatorDesc> op, OpTreeSignatureFactory osf) {
+    return new OpTreeSignature(op, osf);
   }
 
   @Override
