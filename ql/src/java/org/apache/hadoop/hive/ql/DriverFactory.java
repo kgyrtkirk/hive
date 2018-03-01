@@ -34,30 +34,13 @@ import com.google.common.base.Strings;
  */
 public class DriverFactory {
 
-  enum ExecutionStrategy {
-    none {
-      @Override
-      IDriver build(QueryState queryState, String userName, QueryInfo queryInfo) {
-        return new Driver(queryState, userName, queryInfo);
-      }
-    },
-    overlay() {
-      @Override
-      IDriver build(QueryState queryState, String userName, QueryInfo queryInfo) {
-        return null;
-      }
-    };
-
-    abstract IDriver build(QueryState queryState, String userName, QueryInfo queryInfo);
-  }
-
   public static IDriver newDriver(HiveConf conf) {
     return newDriver(getNewQueryState(conf), null, null);
   }
 
   public static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
-    boolean en = queryState.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED);
-    if (!en) {
+    boolean enabled = queryState.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED);
+    if (!enabled) {
       return new Driver(queryState, userName, queryInfo);
     }
 
