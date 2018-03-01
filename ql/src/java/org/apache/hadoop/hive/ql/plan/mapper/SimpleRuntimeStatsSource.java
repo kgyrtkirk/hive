@@ -24,11 +24,13 @@ import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 public class SimpleRuntimeStatsSource implements RuntimeStatsSource {
 
   private final PlanMapper pm;
+
 
   public SimpleRuntimeStatsSource(PlanMapper pm) {
     PlanMapperProcess.runPostProcess(pm);
@@ -38,15 +40,10 @@ public class SimpleRuntimeStatsSource implements RuntimeStatsSource {
   @Override
   public Optional<OperatorStats> lookup(Operator<?> op) {
     try {
-      // XXX: exhaustive search
-      List<? extends Operator> candidates = pm.getAll(op.getClass());
-      for (Operator candidate : candidates) {
-        if (op.logicalEqualsTree(candidate)) {
-          List<OperatorStats> v = pm.lookupAll(OperatorStats.class, candidate);
-          if (v.size() > 0) {
-            return Optional.of(v.get(0));
-          }
-        }
+      OpTreeSignature sig = OpTreeSignature.of(op);
+      List<OperatorStats> v = pm.lookupAll(OperatorStats.class, sig);
+      if (v.size() > 0) {
+        return Optional.of(v.get(0));
       }
       return Optional.empty();
     } catch (NoSuchElementException | IllegalArgumentException iae) {

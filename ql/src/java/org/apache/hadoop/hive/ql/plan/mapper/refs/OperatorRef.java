@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.plan.mapper.GroupTransformer;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
 
+// FIXME: remove?
+@Deprecated
 public class OperatorRef {
 
   public static final GroupTransformer MAPPER = new OperatorMapper();
