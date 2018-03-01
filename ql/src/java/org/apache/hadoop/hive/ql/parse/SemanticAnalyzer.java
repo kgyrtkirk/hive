@@ -43,6 +43,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import com.google.common.collect.ImmutableSet;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.TokenRewriteStream;
@@ -63,12 +64,14 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -98,6 +101,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
+import org.apache.hadoop.hive.ql.exec.MaterializedViewDesc;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RecordReader;
@@ -127,6 +131,8 @@ import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -308,6 +314,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   Map<String, PrunedPartitionList> prunedPartitions;
   protected List<FieldSchema> resultSchema;
   protected CreateViewDesc createVwDesc;
+  protected MaterializedViewDesc materializedViewUpdateDesc;
   protected ArrayList<String> viewsExpanded;
   protected ASTNode viewSelect;
   protected final UnparseTranslator unparseTranslator;
@@ -329,6 +336,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // flag for no scan during analyze ... compute statistics
   protected boolean noscan;
+
+  // whether this is a mv rebuild rewritten expression
+  protected boolean rewrittenRebuild = false;
 
   protected volatile boolean disableJoinMerge = false;
   protected final boolean defaultJoinMerge;
@@ -453,6 +463,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     nameToSplitSample.clear();
     resultSchema = null;
     createVwDesc = null;
+    materializedViewUpdateDesc = null;
     viewsExpanded = null;
     viewSelect = null;
     ctesExpanded = null;
@@ -490,11 +501,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return new ParseContext(queryState, opToPartPruner, opToPartList, topOps,
         new HashSet<JoinOperator>(joinContext.keySet()),
         new HashSet<SMBMapJoinOperator>(smbMapJoinContext.keySet()),
-        loadTableWork, loadFileWork, columnStatsAutoGatherContexts, ctx, idToTableNameMap, destTableId, uCtx,
+        loadTableWork, loadFileWork, columnStatsAutoGatherContexts,
+        ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, prunedPartitions, tabNameToTabObject,
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
         opToPartToSkewedPruner, viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting,
-        analyzeRewrite, tableDesc, createVwDesc, queryProperties, viewProjectToTableSchema, acidFileSinks);
+        analyzeRewrite, tableDesc, createVwDesc, materializedViewUpdateDesc,
+        queryProperties, viewProjectToTableSchema, acidFileSinks);
   }
 
   public CompilationOpContext getOpContext() {
@@ -1984,7 +1997,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       switch (ast.getToken().getType()) {
       case HiveParser.TOK_TAB: {
         TableSpec ts = new TableSpec(db, conf, ast);
-        if (ts.tableHandle.isView() || ts.tableHandle.isMaterializedView()) {
+        if (ts.tableHandle.isView() ||
+            (!rewrittenRebuild && ts.tableHandle.isMaterializedView())) {
           throw new SemanticException(ErrorMsg.DML_AGAINST_VIEW.getMsg());
         }
 
@@ -6789,7 +6803,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ListBucketingCtx lbCtx = null;
     Map<String, String> partSpec = null;
     boolean isMmTable = false, isMmCtas = false;
-    Long txnId = null;
+    Long writeId = null;
+    HiveTxnManager txnMgr = SessionState.get().getTxnMgr();
 
     switch (dest_type.intValue()) {
     case QBMetaData.DEST_TABLE: {
@@ -6872,15 +6887,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           //todo: should this be done for MM?  is it ok to use CombineHiveInputFormat with MM
           checkAcidConstraints(qb, table_desc, dest_tab);
         }
-        if (isMmTable) {
-          txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
-        } else {
-          txnId = acidOp == Operation.NOT_ACID ? null :
-              SessionState.get().getTxnMgr().getCurrentTxnId();
+        try {
+          if (ctx.getExplainConfig() != null) {
+            writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
+          } else {
+            if (isMmTable) {
+              writeId = txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+            } else {
+              writeId = acidOp == Operation.NOT_ACID ? null :
+                      txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+            }
+          }
+        } catch (LockException ex) {
+          throw new SemanticException("Failed to allocate write Id", ex);
         }
         boolean isReplace = !qb.getParseInfo().isInsertIntoTable(
             dest_tab.getDbName(), dest_tab.getTableName());
-        ltd = new LoadTableDesc(queryTmpdir, table_desc, dpCtx, acidOp, isReplace, txnId);
+        ltd = new LoadTableDesc(queryTmpdir, table_desc, dpCtx, acidOp, isReplace, writeId);
         // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
         // deltas and base and leave them up to the cleaner to clean up
         LoadFileType loadType = (!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
@@ -6897,6 +6920,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         boolean overwrite = !qb.getParseInfo().isInsertIntoTable(
             String.format("%s.%s", dest_tab.getDbName(), dest_tab.getTableName()));
         createInsertDesc(dest_tab, overwrite);
+      }
+
+      if (dest_tab.isMaterializedView()) {
+        materializedViewUpdateDesc = new MaterializedViewDesc(
+            dest_tab.getFullyQualifiedName(), false, false, true);
       }
 
       WriteEntity output = generateTableWriteEntity(
@@ -6950,13 +6978,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         //todo: should this be done for MM?  is it ok to use CombineHiveInputFormat with MM?
         checkAcidConstraints(qb, table_desc, dest_tab);
       }
-      if (isMmTable) {
-        txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
-      } else {
-        txnId = (acidOp == Operation.NOT_ACID) ? null :
-            SessionState.get().getTxnMgr().getCurrentTxnId();
+      try {
+        if (ctx.getExplainConfig() != null) {
+          writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
+        } else {
+          if (isMmTable) {
+            writeId = txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+          } else {
+            writeId = (acidOp == Operation.NOT_ACID) ? null :
+                    txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+          }
+        }
+      } catch (LockException ex) {
+        throw new SemanticException("Failed to allocate write Id", ex);
       }
-      ltd = new LoadTableDesc(queryTmpdir, table_desc, dest_part.getSpec(), acidOp, txnId);
+      ltd = new LoadTableDesc(queryTmpdir, table_desc, dest_part.getSpec(), acidOp, writeId);
       // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
       // deltas and base and leave them up to the cleaner to clean up
       LoadFileType loadType = (!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
@@ -6994,8 +7030,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         destTableIsMaterialization = tblDesc.isMaterialization();
         if (AcidUtils.isInsertOnlyTable(tblDesc.getTblProps(), true)) {
           isMmTable = isMmCtas = true;
-          txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
-          tblDesc.setInitialMmWriteId(txnId);
+          try {
+            if (ctx.getExplainConfig() != null) {
+              writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
+            } else {
+              writeId = txnMgr.getTableWriteId(tblDesc.getDatabaseName(), tblDesc.getTableName());
+            }
+          } catch (LockException ex) {
+            throw new SemanticException("Failed to allocate write Id", ex);
+          }
+          tblDesc.setInitialMmWriteId(writeId);
         }
       } else if (viewDesc != null) {
         field_schemas = new ArrayList<FieldSchema>();
@@ -7139,7 +7183,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     FileSinkDesc fileSinkDesc = createFileSinkDesc(dest, table_desc, dest_part,
         dest_path, currentTableId, destTableIsFullAcid, destTableIsTemporary,//this was 1/4 acid
         destTableIsMaterialization, queryTmpdir, rsCtx, dpCtx, lbCtx, fsRS,
-        canBeMerged, dest_tab, txnId, isMmCtas, dest_type, qb);
+        canBeMerged, dest_tab, writeId, isMmCtas, dest_type, qb);
     if (isMmCtas) {
       // Add FSD so that the LoadTask compilation could fix up its path to avoid the move.
       tableDesc.setWriter(fileSinkDesc);
@@ -7464,7 +7508,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     return dpCtx;
   }
-
 
   private void createInsertDesc(Table table, boolean overwrite) {
     Task<? extends Serializable>[] tasks = new Task[this.rootTasks.size()];
@@ -11207,7 +11250,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private Table getTableObjectByName(String tableName, boolean throwException) throws HiveException {
+  protected Table getTableObjectByName(String tableName, boolean throwException) throws HiveException {
     if (!tabNameToTabObject.containsKey(tableName)) {
       Table table = db.getTable(tableName, throwException);
       if (table != null) {
@@ -11475,8 +11518,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // 3. analyze create view command
     if (ast.getToken().getType() == HiveParser.TOK_CREATEVIEW ||
         ast.getToken().getType() == HiveParser.TOK_CREATE_MATERIALIZED_VIEW ||
-        (ast.getToken().getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW &&
-            ast.getChild(1).getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD) ||
         (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW &&
             ast.getChild(1).getType() == HiveParser.TOK_QUERY)) {
       child = analyzeCreateView(ast, qb, plannerCtx);
@@ -11702,7 +11743,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         listMapJoinOpsNoReducer, prunedPartitions, tabNameToTabObject, opToSamplePruner,
         globalLimitCtx, nameToSplitSample, inputs, rootTasks, opToPartToSkewedPruner,
         viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting,
-        analyzeRewrite, tableDesc, createVwDesc, queryProperties, viewProjectToTableSchema, acidFileSinks);
+        analyzeRewrite, tableDesc, createVwDesc, materializedViewUpdateDesc,
+        queryProperties, viewProjectToTableSchema, acidFileSinks);
 
     // Set the semijoin hints in parse context
     pCtx.setSemiJoinHints(parseSemiJoinHint(getQB().getParseInfo().getHintList()));
@@ -12771,10 +12813,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_ORREPLACE:
         orReplace = true;
         break;
-      case HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD:
-        isMaterialized = true;
-        isRebuild = true;
-        break;
       case HiveParser.TOK_QUERY:
         // For CBO
         if (plannerCtx != null) {
@@ -12849,27 +12887,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       queryState.setCommandType(HiveOperation.CREATEVIEW);
     }
     qb.setViewDesc(createVwDesc);
-
-    if (isRebuild) {
-      // We need to go lookup the table and get the select statement and then parse it.
-      try {
-        Table tab = getTableObjectByName(dbDotTable, true);
-        // We need to use the expanded text for the materialized view, as it will contain
-        // the qualified table aliases, etc.
-        String viewText = tab.getViewExpandedText();
-        if (viewText.trim().isEmpty()) {
-          throw new SemanticException(ErrorMsg.MATERIALIZED_VIEW_DEF_EMPTY);
-        }
-        Context ctx = new Context(queryState.getConf());
-        selectStmt = ParseUtils.parse(viewText, ctx);
-        // For CBO
-        if (plannerCtx != null) {
-          plannerCtx.setViewToken(selectStmt);
-        }
-      } catch (Exception e) {
-        throw new SemanticException(e);
-      }
-    }
 
     return selectStmt;
   }

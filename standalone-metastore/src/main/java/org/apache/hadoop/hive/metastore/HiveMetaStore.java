@@ -2518,6 +2518,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return MaterializationsInvalidationCache.get().getMaterializationInvalidationInfo(dbName, tableNames);
     }
 
+    @Override
+    public void update_creation_metadata(final String dbName, final String tableName, CreationMetadata cm) throws MetaException {
+      getMS().updateCreationMetadata(dbName, tableName, cm);
+    }
+
     private void assertClientHasCapability(ClientCapabilities client,
         ClientCapability value, String what, String call) throws MetaException {
       if (!doesClientHaveCapability(client, value)) {
@@ -4989,6 +4994,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         long time = System.currentTimeMillis() / 1000;
         Table indexTbl = indexTable;
         if (indexTbl != null) {
+          if (!TableType.INDEX_TABLE.name().equals(indexTbl.getTableType())){
+            throw new InvalidObjectException(
+                    "The table " + indexTbl.getTableName()+ " provided as index table must have "
+                            + TableType.INDEX_TABLE + " table type");
+          }
           try {
             indexTbl = ms.getTable(qualified[0], qualified[1]);
           } catch (Exception e) {
@@ -6678,6 +6688,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public void commit_txn(CommitTxnRequest rqst) throws TException {
       getTxnHandler().commitTxn(rqst);
+    }
+
+    @Override
+    public GetValidWriteIdsResponse get_valid_write_ids(GetValidWriteIdsRequest rqst) throws TException {
+      return getTxnHandler().getValidWriteIds(rqst);
+    }
+
+    @Override
+    public AllocateTableWriteIdsResponse allocate_table_write_ids(
+            AllocateTableWriteIdsRequest rqst) throws TException {
+      return getTxnHandler().allocateTableWriteIds(rqst);
     }
 
     @Override

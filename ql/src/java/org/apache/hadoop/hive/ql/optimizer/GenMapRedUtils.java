@@ -1270,8 +1270,8 @@ public final class GenMapRedUtils {
     FileSinkDesc fsInputDesc = fsInput.getConf();
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       Utilities.FILE_OP_LOGGER.trace("Creating merge work from " + System.identityHashCode(fsInput)
-        + " with write ID " + (fsInputDesc.isMmTable() ? fsInputDesc.getTransactionId() : null)
-        + " into " + finalName);
+          + " with write ID " + (fsInputDesc.isMmTable() ? fsInputDesc.getTableWriteId() : null)
+          + " into " + finalName);
     }
 
     boolean isBlockMerge = (conf.getBoolVar(ConfVars.HIVEMERGERCFILEBLOCKLEVEL) &&
@@ -1280,7 +1280,7 @@ public final class GenMapRedUtils {
             fsInputDesc.getTableInfo().getInputFileFormatClass().equals(OrcInputFormat.class));
 
     RowSchema inputRS = fsInput.getSchema();
-    Long srcMmWriteId = fsInputDesc.isMmTable() ? fsInputDesc.getTransactionId() : null;
+    Long srcMmWriteId = fsInputDesc.isMmTable() ? fsInputDesc.getTableWriteId() : null;
     FileSinkDesc fsOutputDesc = null;
     TableScanOperator tsMerge = null;
     if (!isBlockMerge) {
@@ -1509,22 +1509,12 @@ public final class GenMapRedUtils {
           table = null;
         }
       } else if (mvWork.getLoadFileWork().getCreateViewDesc() != null) {
-        if (mvWork.getLoadFileWork().getCreateViewDesc().isReplace()) {
-          // ALTER MV ... REBUILD
-          String tableName = mvWork.getLoadFileWork().getCreateViewDesc().getViewName();
-          try {
-            table = Hive.get().getTable(tableName);
-          } catch (HiveException e) {
-            throw new RuntimeException("unexpected; MV should be present already..: " + tableName, e);
-          }
-        } else {
-          // CREATE MATERIALIZED VIEW ...
-          try {
-            table = mvWork.getLoadFileWork().getCreateViewDesc().toTable(hconf);
-          } catch (HiveException e) {
-            LOG.debug("can't pre-create table for MV", e);
-            table = null;
-          }
+        // CREATE MATERIALIZED VIEW ...
+        try {
+          table = mvWork.getLoadFileWork().getCreateViewDesc().toTable(hconf);
+        } catch (HiveException e) {
+          LOG.debug("can't pre-create table for MV", e);
+          table = null;
         }
       } else {
         throw new RuntimeException("unexpected; this should be a CTAS or a CREATE/REBUILD MV - however no desc present");
@@ -1675,7 +1665,7 @@ public final class GenMapRedUtils {
       fmd = new OrcFileMergeDesc();
     }
     fmd.setIsMmTable(fsInputDesc.isMmTable());
-    fmd.setTxnId(fsInputDesc.getTransactionId());
+    fmd.setWriteId(fsInputDesc.getTableWriteId());
     int stmtId = fsInputDesc.getStatementId();
     fmd.setStmtId(stmtId == -1 ? 0 : stmtId);
     fmd.setDpCtx(fsInputDesc.getDynPartCtx());

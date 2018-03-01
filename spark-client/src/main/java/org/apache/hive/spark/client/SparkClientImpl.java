@@ -89,15 +89,13 @@ class SparkClientImpl implements SparkClient {
   private final Map<String, JobHandleImpl<?>> jobs;
   private final Rpc driverRpc;
   private final ClientProtocol protocol;
-  private final PrintStream consoleStream;
   private volatile boolean isAlive;
 
   SparkClientImpl(RpcServer rpcServer, Map<String, String> conf, HiveConf hiveConf,
-                  String sessionid, PrintStream consoleStream) throws IOException {
+                  String sessionid) throws IOException {
     this.conf = conf;
     this.hiveConf = hiveConf;
     this.jobs = Maps.newConcurrentMap();
-    this.consoleStream = consoleStream;
 
     String secret = rpcServer.createSecret();
     this.driverThread = startDriver(rpcServer, sessionid, secret);
@@ -577,7 +575,7 @@ class SparkClientImpl implements SparkClient {
     }
 
     private void handle(ChannelHandlerContext ctx, Error msg) {
-      LOG.warn("Error reported from remote driver.", msg.cause);
+      LOG.warn("Error reported from remote driver: {}", msg.cause);
     }
 
     private void handle(ChannelHandlerContext ctx, JobMetrics msg) {
@@ -622,12 +620,6 @@ class SparkClientImpl implements SparkClient {
       } else {
         LOG.warn("Received spark job ID: {} for unknown job {}", msg.sparkJobId, msg.clientJobId);
       }
-    }
-
-    private void handle(ChannelHandlerContext ctx, SparkUIWebURL msg) {
-      String printMsg = "Hive on Spark Session Web UI URL: " + msg.UIWebURL;
-      consoleStream.println(printMsg);
-      LOG.info(printMsg);
     }
   }
 

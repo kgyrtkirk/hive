@@ -731,6 +731,43 @@ struct CommitTxnRequest {
     1: required i64 txnid,
 }
 
+// Request msg to get the valid write ids list for the given list of tables wrt to input validTxnList
+struct GetValidWriteIdsRequest {
+    1: required list<string> fullTableNames, // Full table names of format <db_name>.<table_name>
+    2: required string validTxnList, // Valid txn list string wrt the current txn of the caller
+}
+
+// Valid Write ID list of one table wrt to current txn
+struct TableValidWriteIds {
+    1: required string fullTableName,  // Full table name of format <db_name>.<table_name>
+    2: required i64 writeIdHighWaterMark, // The highest write id valid for this table wrt given txn
+    3: required list<i64> invalidWriteIds, // List of open and aborted writes ids in the table
+    4: optional i64 minOpenWriteId, // Minimum write id which maps to a opened txn
+    5: required binary abortedBits, // Bit array to identify the aborted write ids in invalidWriteIds list
+}
+
+// Valid Write ID list for all the input tables wrt to current txn
+struct GetValidWriteIdsResponse {
+    1: required list<TableValidWriteIds> tblValidWriteIds,
+}
+
+// Request msg to allocate table write ids for the given list of txns
+struct AllocateTableWriteIdsRequest {
+    1: required list<i64> txnIds,
+    2: required string dbName,
+    3: required string tableName,
+}
+
+// Map for allocated write id against the txn for which it is allocated
+struct TxnToWriteId {
+    1: required i64 txnId,
+    2: required i64 writeId,
+}
+
+struct AllocateTableWriteIdsResponse {
+    1: required list<TxnToWriteId> txnToWriteIds,
+}
+
 struct LockComponent {
     1: required LockType type,
     2: required LockLevel level,
@@ -850,10 +887,11 @@ struct ShowCompactResponse {
 
 struct AddDynamicPartitions {
     1: required i64 txnid,
-    2: required string dbname,
-    3: required string tablename,
-    4: required list<string> partitionnames,
-    5: optional DataOperationType operationType = DataOperationType.UNSET
+    2: required i64 writeid,
+    3: required string dbname,
+    4: required string tablename,
+    5: required list<string> partitionnames,
+    6: optional DataOperationType operationType = DataOperationType.UNSET
 }
 
 struct BasicTxnInfo {
@@ -1049,8 +1087,8 @@ struct TableMeta {
 }
 
 struct Materialization {
-  1: required Table materializationTable;
-  2: required set<string> tablesUsed;
+  1: required set<string> tablesUsed;
+  2: optional string validTxnList
   3: required i64 invalidationTime;
 }
 
@@ -1420,6 +1458,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
   map<string, Materialization> get_materialization_invalidation_info(1:string dbname, 2:list<string> tbl_names)
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
+  void update_creation_metadata(1:string dbname, 2:string tbl_name, 3:CreationMetadata creation_metadata)
+                   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
 
   // Get a list of table names that match a filter.
   // The filter operators are LIKE, <, <=, >, >=, =, <>
@@ -1805,6 +1845,10 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void abort_txn(1:AbortTxnRequest rqst) throws (1:NoSuchTxnException o1)
   void abort_txns(1:AbortTxnsRequest rqst) throws (1:NoSuchTxnException o1)
   void commit_txn(1:CommitTxnRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
+  GetValidWriteIdsResponse get_valid_write_ids(1:GetValidWriteIdsRequest rqst)
+      throws (1:NoSuchTxnException o1, 2:MetaException o2)
+  AllocateTableWriteIdsResponse allocate_table_write_ids(1:AllocateTableWriteIdsRequest rqst)
+    throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2, 3:MetaException o3)
   LockResponse lock(1:LockRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
   LockResponse check_lock(1:CheckLockRequest rqst)
     throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2, 3:NoSuchLockException o3)
