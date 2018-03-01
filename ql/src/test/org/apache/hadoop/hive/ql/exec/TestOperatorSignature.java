@@ -34,8 +34,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.ql.plan.XSignature;
-import org.apache.hadoop.hive.ql.plan.XTSignature;
+import org.apache.hadoop.hive.ql.plan.OpSignature;
+import org.apache.hadoop.hive.ql.plan.OpTreeSignature;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -95,8 +95,8 @@ public class TestOperatorSignature {
 
   private void checkEquals(Operator<?> o1, Operator<?> o2) {
     assertTrue(o1.logicalEquals(o2));
-    XSignature s1 = XSignature.of(o1);
-    XSignature s2 = XSignature.of(o2);
+    OpSignature s1 = OpSignature.of(o1);
+    OpSignature s2 = OpSignature.of(o2);
 
     s1.proveEquals(s2);
     assertTrue("sigCmp", s1.signatureCompare(s2));
@@ -107,8 +107,8 @@ public class TestOperatorSignature {
 
   private void checkNotEquals(Operator<? extends OperatorDesc> o1, Operator<? extends OperatorDesc> o2) {
     assertFalse(o1.logicalEquals(o2));
-    XSignature s1 = XSignature.of(o1);
-    XSignature s2 = XSignature.of(o2);
+    OpSignature s1 = OpSignature.of(o1);
+    OpSignature s2 = OpSignature.of(o2);
 
     assertFalse(s1.signatureCompare(s2));
     // this might be a little bit too much...but in most cases this should be true
@@ -117,8 +117,8 @@ public class TestOperatorSignature {
   }
 
   private void checkTreeEquals(Operator<?> o1, Operator<?> o2) {
-    XTSignature ts1 = XTSignature.of(o1);
-    XTSignature ts2 = XTSignature.of(o2);
+    OpTreeSignature ts1 = OpTreeSignature.of(o1);
+    OpTreeSignature ts2 = OpTreeSignature.of(o2);
 
     assertEquals(ts1.hashCode(), ts2.hashCode());
     assertEquals(ts1, ts2);
@@ -126,8 +126,8 @@ public class TestOperatorSignature {
 
   private void checkTreeNotEquals(Operator<? extends OperatorDesc> o1, Operator<? extends OperatorDesc> o2) {
 
-    XTSignature ts1 = XTSignature.of(o1);
-    XTSignature ts2 = XTSignature.of(o2);
+    OpTreeSignature ts1 = OpTreeSignature.of(o1);
+    OpTreeSignature ts2 = OpTreeSignature.of(o2);
 
     // FIXME: currently ExprNode-s are not in the signature; which cause this to be the same
     assertNotEquals(ts1.hashCode(), ts2.hashCode());

@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 @Deprecated
 public class OSF {
 
-  public XSignature getSignatureOf(Operator<? extends OperatorDesc> op7) {
+  public OpSignature getSignatureOf(Operator<? extends OperatorDesc> op7) {
     throw new RuntimeException();
     // TODO Auto-generated method stub
     //

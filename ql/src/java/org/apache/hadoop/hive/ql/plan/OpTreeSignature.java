@@ -23,25 +23,25 @@ import java.util.Objects;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 
-public class XTSignature {
+public class OpTreeSignature {
 
   private Operator<?> op;
   private int hashCode;
-  private XSignature sig;
-  private ArrayList<XTSignature> parentSig;
+  private OpSignature sig;
+  private ArrayList<OpTreeSignature> parentSig;
 
-  XTSignature(Operator<?> op) {
+  OpTreeSignature(Operator<?> op) {
     this.op = op;
-    sig = XSignature.of(op);
+    sig = OpSignature.of(op);
     parentSig = new ArrayList<>();
     for (Operator<? extends OperatorDesc> parentOp : op.getParentOperators()) {
-      parentSig.add(XTSignature.of(parentOp));
+      parentSig.add(OpTreeSignature.of(parentOp));
     }
     hashCode = Objects.hash(sig, parentSig);
   }
 
-  public static XTSignature of(Operator<?> root) {
-    return new XTSignature(root);
+  public static OpTreeSignature of(Operator<?> root) {
+    return new OpTreeSignature(root);
   }
 
   @Override
@@ -51,13 +51,13 @@ public class XTSignature {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == null || !(obj instanceof XTSignature)) {
+    if (obj == null || !(obj instanceof OpTreeSignature)) {
       return false;
     }
     if (obj == this) {
       return true;
     }
-    XTSignature o = (XTSignature) obj;
+    OpTreeSignature o = (OpTreeSignature) obj;
     return logicalEqualsTree(op, o.op);
   }
 

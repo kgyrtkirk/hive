@@ -27,25 +27,25 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
- * Wraps the operator and provides hashcode on the basis of the
- *
+ * Signature of the operator(non-recursive).
  */
-public class XSignature {
+// FIXME: for review: this is separate; to make it easier to write simple tests for a single operator comparision.
+public class OpSignature {
 
   private Map<String, Object> sigMap;
   // FIXME: this is currently retained...
   // but later the signature should be able to serve the same comparision granulaty level as op.logicalEquals right now
   private Operator<? extends OperatorDesc> op;
 
-  private XSignature(Operator<? extends OperatorDesc> op) {
+  private OpSignature(Operator<? extends OperatorDesc> op) {
     this.op = op;
     sigMap = new HashMap<>();
     // FIXME: consider to operator info as well..not just conf?
     SignatureUtils1.write(sigMap, op.getConf());
   }
 
-  public static XSignature of(Operator<? extends OperatorDesc> op) {
-    return new XSignature(op);
+  public static OpSignature of(Operator<? extends OperatorDesc> op) {
+    return new OpSignature(op);
   }
 
   @Override
@@ -55,22 +55,22 @@ public class XSignature {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == null || !(obj instanceof XSignature)) {
+    if (obj == null || !(obj instanceof OpSignature)) {
       return false;
     }
     if (obj == this) {
       return true;
     }
-    XSignature o = (XSignature) obj;
+    OpSignature o = (OpSignature) obj;
     return op.logicalEquals(o.op);
   }
 
-  public boolean signatureCompare(XSignature other) {
+  public boolean signatureCompare(OpSignature other) {
     return sigMap.equals(other.sigMap);
   }
 
   @VisibleForTesting
-  public void proveEquals(XSignature other) {
+  public void proveEquals(OpSignature other) {
     proveEquals(sigMap,other.sigMap);
   }
 
