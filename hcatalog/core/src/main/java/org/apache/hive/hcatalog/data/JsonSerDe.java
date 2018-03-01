@@ -170,13 +170,16 @@ public class JsonSerDe extends AbstractSerDe {
   @Override
   public Object deserialize(Writable blob) throws SerDeException {
 
+    Object row;
     Text t = (Text) blob;
     JsonParser p;
     List<Object> r = new ArrayList<Object>(Collections.nCopies(columnNames.size(), null));
     try {
-      if (false) {
+      if (true) {
         try {
-          Object row = xxx.parseStruct(new ByteArrayInputStream((t.getBytes())));
+          //
+
+          row = xxx.parseStruct(new ByteArrayInputStream((t.getBytes())));
 
         } catch (HiveException e) {
           throw new SerDeException(e);
@@ -199,6 +202,9 @@ public class JsonSerDe extends AbstractSerDe {
       LOG.warn("Error [{}] parsing json text [{}].", e, t);
       throw new SerDeException(e);
     }
+
+    //    boolean aa = Arrays.deepEquals((Object[]) row, r.toArray());
+
 
     return new DefaultHCatRecord(r);
   }

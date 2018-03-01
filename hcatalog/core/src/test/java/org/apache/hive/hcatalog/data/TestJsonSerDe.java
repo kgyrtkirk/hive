@@ -160,7 +160,7 @@ public class TestJsonSerDe extends TestCase {
 
       Object o1 = hrsd.deserialize(s);
       StringBuilder msg = new StringBuilder();
-      boolean isEqual = HCatDataCheckUtil.recordsEqual(r, (HCatRecord) o1); 
+      boolean isEqual = HCatDataCheckUtil.recordsEqual(r, (HCatRecord) o1);
       assertTrue(msg.toString(), isEqual);
 
       Writable s2 = jsde.serialize(o1, hrsd.getObjectInspector());

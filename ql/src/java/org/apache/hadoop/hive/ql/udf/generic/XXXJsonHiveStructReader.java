@@ -63,7 +63,14 @@ public class XXXJsonHiveStructReader {
 
   // XXX: one method?
   public Object parseStruct(InputStream is) throws JsonParseException, IOException, HiveException {
-    JsonParser parser = factory.createJsonParser(is);
+//    JsonFactory f = new JsonFactory();
+//    JsonParser pp = f.createParser(is);
+//    if (pp.hasCurrentToken()) {
+//      pp.nextToken();
+//    }
+
+    //    JsonParser parser = factory.createJsonParser(is);
+    JsonParser parser = factory.createParser(is);
     return parseInternal(parser);
   }
 
