@@ -20,23 +20,31 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.CharacterCodingException;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.minlog.Log;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -45,6 +53,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
 public class XXXJsonHiveStructReader {
+
+  private static final Logger LOG = LoggerFactory.getLogger(XXXJsonHiveStructReader.class);
 
   // XXX: RENAME
   private ObjectInspector outputOI;
@@ -261,9 +271,7 @@ public class XXXJsonHiveStructReader {
       case VALUE_NUMBER_INT:
       case VALUE_NUMBER_FLOAT:
       case VALUE_STRING:
-        Converter c =
-            ObjectInspectorConverters.getConverter(PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi);
-        return c.convert(parser.getValueAsString());
+        return getObjectOfCorrespondingPrimitiveType(parser.getValueAsString(), oi.getTypeInfo());
       case VALUE_NULL:
         return null;
       default:
@@ -275,6 +283,46 @@ public class XXXJsonHiveStructReader {
     }
   }
 
+  private static Object getObjectOfCorrespondingPrimitiveType(String s, PrimitiveTypeInfo mapKeyType)
+      throws IOException {
+    switch (mapKeyType.getPrimitiveCategory()) {
+    case INT:
+      return Integer.valueOf(s);
+    case BYTE:
+      return Byte.valueOf(s);
+    case SHORT:
+      return Short.valueOf(s);
+    case LONG:
+      return Long.valueOf(s);
+    case BOOLEAN:
+      return (s.equalsIgnoreCase("true"));
+    case FLOAT:
+      return Float.valueOf(s);
+    case DOUBLE:
+      return Double.valueOf(s);
+    case STRING:
+      return s;
+    case BINARY:
+      try {
+        String t = Text.decode(s.getBytes(), 0, s.getBytes().length);
+        return t.getBytes();
+      } catch (CharacterCodingException e) {
+        LOG.warn("Error generating json binary type from object.", e);
+        return null;
+      }
+    case DATE:
+      return Date.valueOf(s);
+    case TIMESTAMP:
+      return Timestamp.valueOf(s);
+    case DECIMAL:
+      return HiveDecimal.create(s);
+    case VARCHAR:
+      return new HiveVarchar(s, ((BaseCharTypeInfo) mapKeyType).getLength());
+    case CHAR:
+      return new HiveChar(s, ((BaseCharTypeInfo) mapKeyType).getLength());
+    }
+    throw new IOException("Could not convert from string to map type " + mapKeyType.getTypeName());
+  }
   private static Object parseMapKey(JsonParser parser, PrimitiveObjectInspector oi) throws HiveException, IOException {
     JsonToken currentToken = parser.getCurrentToken();
     if (currentToken == null) {
@@ -283,9 +331,7 @@ public class XXXJsonHiveStructReader {
     try {
       switch (parser.getCurrentToken()) {
       case FIELD_NAME:
-        Converter c =
-            ObjectInspectorConverters.getConverter(PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi);
-        return c.convert(parser.getValueAsString());
+        return getObjectOfCorrespondingPrimitiveType(parser.getValueAsString(), oi.getTypeInfo());
       case VALUE_NULL:
         return null;
       default:
