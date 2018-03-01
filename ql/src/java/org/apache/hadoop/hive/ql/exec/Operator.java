@@ -1578,9 +1578,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
             conf.isSame(other.getConf())));
   }
 
+  // FIXME: don't use this!
   // XXX: this could easily become a hot-spot
+  @Deprecated
   public final boolean logicalEqualsTree(Operator<?> o) {
-    if (!logicalEquals(o)) {
+    if(!logicalEquals(o)) {
       return false;
     }
     if (o.getNumParent() != getNumParent()) {

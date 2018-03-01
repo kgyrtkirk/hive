@@ -18,30 +18,12 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
-import java.util.List;
-
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
-import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignatureFactory;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
+import org.apache.hadoop.hive.ql.plan.mapper.refs.OperatorRef;
 
 public class PlanMapperProcess {
 
-  private static class OpTreeSignatureMapper implements GroupTransformer {
-
-    private OpTreeSignatureFactory cache = OpTreeSignatureFactory.newCache();
-
-    @Override
-    public void map(LinkGroup group) {
-      List<Operator> filters = group.getAll(Operator.class);
-      for (Operator op : filters) {
-        group.add(OpTreeSignature.of(op,cache));
-      }
-    }
-  }
-
   public static void runPostProcess(PlanMapper planMapper) {
-    planMapper.runMapper(new OpTreeSignatureMapper());
+    planMapper.runMapper(OperatorRef.MAPPER);
   }
 
 }
