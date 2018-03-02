@@ -15,18 +15,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
-package org.apache.hive.minikdc;
+import java.util.Map;
 
-import org.apache.hive.jdbc.miniHS2.MiniHS2;
-import org.junit.BeforeClass;
+/**
+ * Captures authorization policy information on a {@link HivePrivilegeObject}.
+ */
+public interface HiveResourceACLs {
+  /**
+   * Privilege types.
+   */
+  enum Privilege {
+    SELECT, UPDATE, CREATE, DROP, ALTER, INDEX, LOCK, READ, WRITE
+  };
 
-public class TestJdbcWithMiniKdcSQLAuthBinary extends JdbcWithMiniKdcSQLAuthTest {
+  /**
+   * Privilege access result.
+   */
+  enum AccessResult {
+    ALLOWED, NOT_ALLOWED, CONDITIONAL_ALLOWED
+  };
 
-  @BeforeClass
-  public static void beforeTest() throws Exception {
-    JdbcWithMiniKdcSQLAuthTest.beforeTestBase(MiniHS2.HS2_BINARY_MODE);
+  /**
+   * @return Returns mapping of user name to privilege-access result pairs
+   */
+  Map<String, Map<Privilege, AccessResult>> getUserPermissions();
 
-  }
+  /**
+   * @return Returns mapping of group name to privilege-access result pairs
+   */
+  Map<String, Map<Privilege, AccessResult>> getGroupPermissions();
 
 }
