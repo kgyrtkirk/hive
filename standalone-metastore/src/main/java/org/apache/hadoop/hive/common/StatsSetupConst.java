@@ -178,6 +178,7 @@ public class StatsSetupConst {
 
     static class BooleanDeserializer extends JsonDeserializer<Boolean> {
 
+      @Override
       public Boolean deserialize(JsonParser jsonParser,
           DeserializationContext deserializationContext)
               throws IOException {
@@ -265,7 +266,7 @@ public class StatsSetupConst {
     ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
     return stats.columnStats.containsKey(colName);
   }
-  
+
   public static void clearColumnStatsState(Map<String, String> params) {
     if (params == null) {
       return;
@@ -274,7 +275,11 @@ public class StatsSetupConst {
     stats.columnStats.clear();
 
     try {
-      params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));
+      if (!stats.basicStats && stats.columnStats.isEmpty()) {
+        params.remove(COLUMN_STATS_ACCURATE);
+      } else {
+        params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));
+      }
     } catch (JsonProcessingException e) {
       LOG.trace(e.getMessage());
     }
@@ -289,7 +294,11 @@ public class StatsSetupConst {
       for (String string : colNames) {
         stats.columnStats.remove(string);
       }
-      params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));
+      if (!stats.basicStats && stats.columnStats.isEmpty()) {
+        params.remove(COLUMN_STATS_ACCURATE);
+      } else {
+        params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));
+      }
     } catch (JsonProcessingException e) {
       LOG.trace(e.getMessage());
     }
@@ -307,7 +316,7 @@ public class StatsSetupConst {
       setColumnStatsState(params, cols);
     }
   }
-  
+
   private static ColumnStatsAccurate parseStatsAcc(String statsAcc) {
     if (statsAcc == null) {
       return new ColumnStatsAccurate();
