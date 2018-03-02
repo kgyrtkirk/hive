@@ -200,8 +200,8 @@ public class TestFilterHooks {
   @Test
   public void testDefaultFilter() throws Exception {
     assertNotNull(msc.getTable(DBNAME1, TAB1));
-    assertEquals(3, msc.getTables(DBNAME1, "*").size());
-    assertEquals(3, msc.getAllTables(DBNAME1).size());
+    assertEquals(2, msc.getTables(DBNAME1, "*").size());
+    assertEquals(2, msc.getAllTables(DBNAME1).size());
     assertEquals(1, msc.getTables(DBNAME1, TAB2).size());
     assertEquals(0, msc.getAllTables(DBNAME2).size());
 
