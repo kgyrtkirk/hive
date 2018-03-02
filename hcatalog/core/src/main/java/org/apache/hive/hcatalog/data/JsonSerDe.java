@@ -29,10 +29,13 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -146,6 +149,7 @@ public class JsonSerDe extends AbstractSerDe {
     xxx = new XXXJsonHiveStructReader(rowTypeInfo);
 
     xxx.setIgnoreUnknownFields(true);
+    xxx.enableHiveColIndexParsing(true);
 
 
     cachedObjectInspector = HCatRecordObjectInspectorFactory.getHCatRecordObjectInspector(rowTypeInfo);
@@ -219,8 +223,17 @@ public class JsonSerDe extends AbstractSerDe {
 
     List ret = new ArrayList<>();
     for (Object o : arr) {
-      if (o != null && o.getClass().isArray()) {
-        ret.add(fatLand((Object[]) o));
+      if (o != null && o instanceof Map<?, ?>) {
+        ret.add(fatLand2(((Map) o)));
+      } else if (o != null && o instanceof List<?>) {
+        ret.add(fatLand(((List) o).toArray()));
+      } else if (o != null && o.getClass().isArray()) {
+        Class<?> ct = o.getClass().getComponentType();
+        if (ct.isPrimitive()) {
+          ret.add(primitiveArrayToList(o));
+        } else {
+          ret.add(fatLand((Object[]) o));
+        }
       } else {
         ret.add(o);
       }
@@ -229,6 +242,48 @@ public class JsonSerDe extends AbstractSerDe {
     return ret;
   }
 
+
+  private Object fatLand2(Map<Object, Object> map) {
+    Map ret = new LinkedHashMap<>();
+    Set<Entry<Object, Object>> es = map.entrySet();
+    for (Entry<Object, Object> e : es) {
+      Object oldV = e.getValue();
+      Object v;
+      if (oldV.getClass().isArray()) {
+        v = fatLand((Object[]) oldV);
+      } else {
+        v = oldV;
+      }
+      ret.put(e.getKey(), v);
+    }
+    return ret;
+  }
+
+  private Object primitiveArrayToList(Object arr) {
+    Class<?> ct = arr.getClass().getComponentType();
+    if (int.class.equals(ct)) {
+      return Arrays.asList(ArrayUtils.toObject((int[]) arr));
+    }
+    if (long.class.equals(ct)) {
+      return Arrays.asList(ArrayUtils.toObject((long[]) arr));
+    }
+    if (char.class.equals(ct)) {
+      return Arrays.asList(ArrayUtils.toObject((char[]) arr));
+    }
+    if (byte.class.equals(ct)) {
+      return Arrays.asList(ArrayUtils.toObject((byte[]) arr));
+    }
+    if (short.class.equals(ct)) {
+      return Arrays.asList(ArrayUtils.toObject((short[]) arr));
+    }
+    if (float.class.equals(ct)) {
+      return Arrays.asList(ArrayUtils.toObject((float[]) arr));
+    }
+    if (double.class.equals(ct)) {
+      return Arrays.asList(ArrayUtils.toObject((double[]) arr));
+    }
+    throw new RuntimeException("x");
+  }
 
   private void populateRecord(List<Object> r, JsonToken token, JsonParser p, HCatSchema s) throws IOException {
     if (token != JsonToken.FIELD_NAME) {

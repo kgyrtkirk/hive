@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -59,9 +61,12 @@ public class XXXJsonHiveStructReader {
   // XXX: RENAME
   private ObjectInspector outputOI;
   private JsonFactory factory;
+
   // FIX THIS!
   @Deprecated
   private static boolean ignoreUnknownFields;
+  @Deprecated
+  private static boolean hiveColIndexParsing;
 
   public XXXJsonHiveStructReader(TypeInfo t) {
     outputOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(t);
@@ -175,9 +180,15 @@ public class XXXJsonHiveStructReader {
         String name = parser.getCurrentName();
         try {
           // XXX: linear scan inside the below method...get a map here or something..
+          //          oi.getAllStructFieldRefs();
           StructField field = null;
           try {
-            field = oi.getStructFieldRef(name);
+            int colIndex = getColIndex(name);
+            if (colIndex >= 0) {
+              field = oi.getAllStructFieldRefs().get(colIndex);
+            } else {
+              field = oi.getStructFieldRef(name);
+            }
           } catch (RuntimeException e) {
             if (ignoreUnknownFields) {
               Log.warn("ignoring field:" + name);
@@ -204,6 +215,20 @@ public class XXXJsonHiveStructReader {
       parser.nextToken();
     }
     return ret;
+  }
+
+  private static int getColIndex(String internalName) {
+    //    return HiveConf.getPositionFromInternalName(fieldName);
+    // The above line should have been all the implementation that
+    // we need, but due to a bug in that impl which recognizes
+    // only single-digit columns, we need another impl here.
+    Pattern internalPattern = Pattern.compile("_col([0-9]+)");
+    Matcher m = internalPattern.matcher(internalName);
+    if (!m.matches()) {
+      return -1;
+    } else {
+      return Integer.parseInt(m.group(1));
+    }
   }
 
   private static void skipValue(JsonParser parser) throws JsonParseException, IOException {
@@ -345,6 +370,10 @@ public class XXXJsonHiveStructReader {
 
   public void setIgnoreUnknownFields(boolean b) {
     ignoreUnknownFields = b;
+  }
+
+  public void enableHiveColIndexParsing(boolean b) {
+    hiveColIndexParsing = b;
   }
 
 }
