@@ -15,18 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql;
 
-package org.apache.hive.minikdc;
+import org.apache.hadoop.hive.conf.HiveConf;
 
-import org.apache.hive.jdbc.miniHS2.MiniHS2;
-import org.junit.BeforeClass;
+/**
+ * Run all the TestTxnCommands tests but vectorized.
+ */
+public class TestTxnCommandsWithSplitUpdateAndVectorization  extends TestTxnCommands {
 
-public class TestJdbcWithMiniKdcSQLAuthBinary extends JdbcWithMiniKdcSQLAuthTest {
-
-  @BeforeClass
-  public static void beforeTest() throws Exception {
-    JdbcWithMiniKdcSQLAuthTest.beforeTestBase(MiniHS2.HS2_BINARY_MODE);
-
+  public TestTxnCommandsWithSplitUpdateAndVectorization() {
+    super();
   }
 
+  @Override
+  void initHiveConf() {
+    super.initHiveConf();
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
+  }
 }

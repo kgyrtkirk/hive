@@ -15,18 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
-package org.apache.hive.minikdc;
+/**
+ * Interface that can be used to retrieve authorization policy information from
+ * authorization plugins.
+ */
+public interface HivePolicyProvider {
+  /**
+   * @param hiveObject
+   * @return representation of user/group to permissions mapping.
+   */
+  HiveResourceACLs getResourceACLs(HivePrivilegeObject hiveObject);
 
-import org.apache.hive.jdbc.miniHS2.MiniHS2;
-import org.junit.BeforeClass;
-
-public class TestJdbcWithMiniKdcSQLAuthBinary extends JdbcWithMiniKdcSQLAuthTest {
-
-  @BeforeClass
-  public static void beforeTest() throws Exception {
-    JdbcWithMiniKdcSQLAuthTest.beforeTestBase(MiniHS2.HS2_BINARY_MODE);
-
-  }
+  /**
+   * @param listener
+   */
+  void registerHivePolicyChangeListener(HivePolicyChangeListener listener);
 
 }

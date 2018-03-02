@@ -15,18 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
-package org.apache.hive.minikdc;
+import java.util.List;
 
-import org.apache.hive.jdbc.miniHS2.MiniHS2;
-import org.junit.BeforeClass;
-
-public class TestJdbcWithMiniKdcSQLAuthBinary extends JdbcWithMiniKdcSQLAuthTest {
-
-  @BeforeClass
-  public static void beforeTest() throws Exception {
-    JdbcWithMiniKdcSQLAuthTest.beforeTestBase(MiniHS2.HS2_BINARY_MODE);
-
-  }
+/**
+ * This would be implemented by a class that needs to be notified when there is
+ * a policy change.
+ */
+public interface HivePolicyChangeListener {
+  /**
+   * @param hpo
+   *          List of Objects whose privileges have changed. If undetermined,
+   *          null can be returned (implies that it should be treated as if all object
+   *          policies might have changed).
+   */
+  void notifyPolicyChange(List<HivePrivilegeObject> hpo);
 
 }
