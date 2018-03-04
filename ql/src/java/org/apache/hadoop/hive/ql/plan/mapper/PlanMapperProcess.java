@@ -33,8 +33,8 @@ public class PlanMapperProcess {
 
     @Override
     public void map(LinkGroup group) {
-      List<Operator> filters = group.getAll(Operator.class);
-      for (Operator op : filters) {
+      List<Operator> operators= group.getAll(Operator.class);
+      for (Operator op : operators) {
         group.add(OpTreeSignature.of(op,cache));
       }
     }
