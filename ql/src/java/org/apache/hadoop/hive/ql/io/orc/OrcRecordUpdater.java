@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -48,6 +47,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.orc.OrcConf;
 import org.apache.orc.impl.AcidStats;
 import org.apache.orc.impl.OrcAcidUtils;
+import org.apache.orc.impl.WriterImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,9 +63,6 @@ public class OrcRecordUpdater implements RecordUpdater {
   private static final Logger LOG = LoggerFactory.getLogger(OrcRecordUpdater.class);
 
   static final String ACID_KEY_INDEX_NAME = "hive.acid.key.index";
-  private static final String ACID_FORMAT = "_orc_acid_version";
-  private static final int ORC_ACID_VERSION = 0;
-
 
   final static int INSERT_OPERATION = 0;
   final static int UPDATE_OPERATION = 1;
@@ -86,6 +83,7 @@ public class OrcRecordUpdater implements RecordUpdater {
   final static long DELTA_STRIPE_SIZE = 16 * 1024 * 1024;
 
   private static final Charset UTF8 = Charset.forName("UTF-8");
+  private static final CharsetDecoder utf8Decoder = UTF8.newDecoder();
 
   private final AcidOutputFormat.Options options;
   private final AcidUtils.AcidOperationalProperties acidOperationalProperties;
@@ -195,9 +193,9 @@ public class OrcRecordUpdater implements RecordUpdater {
     return new OrcStruct.OrcStructInspector(fields);
   }
   /**
-   * @param path - partition root
+   * @param partitionRoot - partition root (or table root if not partitioned)
    */
-  OrcRecordUpdater(Path path,
+  OrcRecordUpdater(Path partitionRoot,
                    AcidOutputFormat.Options options) throws IOException {
     this.options = options;
     // Initialize acidOperationalProperties based on table properties, and
@@ -225,27 +223,16 @@ public class OrcRecordUpdater implements RecordUpdater {
       }
     }
     this.bucket.set(bucketCodec.encode(options));
-    this.path = AcidUtils.createFilename(path, options);
+    this.path = AcidUtils.createFilename(partitionRoot, options);
     this.deleteEventWriter = null;
     this.deleteEventPath = null;
     FileSystem fs = options.getFilesystem();
     if (fs == null) {
-      fs = path.getFileSystem(options.getConfiguration());
+      fs = partitionRoot.getFileSystem(options.getConfiguration());
     }
     this.fs = fs;
-    Path formatFile = new Path(path, ACID_FORMAT);
-    if(!fs.exists(formatFile)) {
-      try (FSDataOutputStream strm = fs.create(formatFile, false)) {
-        strm.writeInt(ORC_ACID_VERSION);
-      } catch (IOException ioe) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Failed to create " + path + "/" + ACID_FORMAT + " with " +
-            ioe);
-        }
-      }
-    }
     if (options.getMinimumWriteId() != options.getMaximumWriteId()
-        && !options.isWritingBase()){
+        && !options.isWritingBase()) {
       //throw if file already exists as that should never happen
       flushLengths = fs.create(OrcAcidUtils.getSideFile(this.path), false, 8,
           options.getReporter());
@@ -282,7 +269,7 @@ public class OrcRecordUpdater implements RecordUpdater {
         // This writes to a file in directory which starts with "delete_delta_..."
         // The actual initialization of a writer only happens if any delete events are written
         //to avoid empty files.
-        this.deleteEventPath = AcidUtils.createFilename(path, deleteOptions);
+        this.deleteEventPath = AcidUtils.createFilename(partitionRoot, deleteOptions);
         /**
          * HIVE-14514 is not done so we can't clone writerOptions().  So here we create a new
          * options object to make sure insert and delete writers don't share them (like the
@@ -319,7 +306,6 @@ public class OrcRecordUpdater implements RecordUpdater {
     item.setFieldValue(BUCKET, bucket);
     item.setFieldValue(ROW_ID, rowId);
   }
-
   @Override
   public String toString() {
     return getClass().getName() + "[" + path +"]";
@@ -380,9 +366,7 @@ public class OrcRecordUpdater implements RecordUpdater {
     item.setFieldValue(OrcRecordUpdater.OPERATION, new IntWritable(operation));
     item.setFieldValue(OrcRecordUpdater.ROW, (operation == DELETE_OPERATION ? null : row));
     indexBuilder.addKey(operation, originalWriteId, bucket.get(), rowId);
-    if (writer == null) {
-      writer = OrcFile.createWriter(path, writerOptions);
-    }
+    initWriter();
     writer.addRow(item);
     restoreBucket(currentBucket, operation);
   }
@@ -416,7 +400,9 @@ public class OrcRecordUpdater implements RecordUpdater {
         // Initialize an indexBuilder for deleteEvents. (HIVE-17284)
         deleteEventIndexBuilder = new KeyIndexBuilder("delete");
         this.deleteEventWriter = OrcFile.createWriter(deleteEventPath,
-                                                      deleteWriterOptions.callback(deleteEventIndexBuilder));
+            deleteWriterOptions.callback(deleteEventIndexBuilder));
+        AcidUtils.OrcAcidVersion.setAcidVersionInDataFile(deleteEventWriter);
+        AcidUtils.OrcAcidVersion.writeVersionFile(this.deleteEventPath.getParent(), fs);
       }
 
       // A delete/update generates a delete event for the original row.
@@ -482,9 +468,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       throw new IllegalStateException("Attempting to flush a RecordUpdater on "
          + path + " with a single transaction.");
     }
-    if (writer == null) {
-      writer = OrcFile.createWriter(path, writerOptions);
-    }
+    initWriter();
     long len = writer.writeIntermediateFooter();
     flushLengths.writeLong(len);
     OrcInputFormat.SHIMS.hflush(flushLengths);
@@ -507,10 +491,8 @@ public class OrcRecordUpdater implements RecordUpdater {
           writer.close(); // normal close, when there are inserts.
         }
       } else {
-        if (writer == null) {
-          //so that we create empty bucket files when needed (but see HIVE-17138)
-          writer = OrcFile.createWriter(path, writerOptions);
-        }
+        //so that we create empty bucket files when needed (but see HIVE-17138)
+        initWriter();
         writer.close(); // normal close.
       }
       if (deleteEventWriter != null) {
@@ -531,6 +513,13 @@ public class OrcRecordUpdater implements RecordUpdater {
     deleteEventWriter = null;
     writerClosed = true;
   }
+  private void initWriter() throws IOException {
+    if (writer == null) {
+      writer = OrcFile.createWriter(path, writerOptions);
+      AcidUtils.OrcAcidVersion.setAcidVersionInDataFile(writer);
+      AcidUtils.OrcAcidVersion.writeVersionFile(path.getParent(), fs);
+    }
+  }
 
   @Override
   public SerDeStats getStats() {
@@ -540,9 +529,6 @@ public class OrcRecordUpdater implements RecordUpdater {
     // without finding the row we are updating or deleting, which would be a mess.
     return stats;
   }
-
-  private static final Charset utf8 = Charset.forName("UTF-8");
-  private static final CharsetDecoder utf8Decoder = utf8.newDecoder();
 
   static RecordIdentifier[] parseKeyIndex(Reader reader) {
     String[] stripes;
@@ -574,6 +560,17 @@ public class OrcRecordUpdater implements RecordUpdater {
     int lastBucket;
     long lastRowId;
     AcidStats acidStats = new AcidStats();
+    /**
+     *  {@link #preStripeWrite(OrcFile.WriterContext)} is normally called by the
+     *  {@link org.apache.orc.MemoryManager} except on close().
+     *  {@link org.apache.orc.impl.WriterImpl#close()} calls preFooterWrite() before it calls
+     *  {@link WriterImpl#flushStripe()} which causes the {@link #ACID_KEY_INDEX_NAME} index to
+     *  have the last entry missing.  It should be also fixed in ORC but that requires upgrading
+     *  the ORC jars to have effect.
+     *
+     *  This is used to decide if we need to make preStripeWrite() call here.
+     */
+    private long numKeysCurrentStripe = 0;
 
     KeyIndexBuilder(String name) {
       this.builderName = name;
@@ -587,11 +584,15 @@ public class OrcRecordUpdater implements RecordUpdater {
       lastKey.append(',');
       lastKey.append(lastRowId);
       lastKey.append(';');
+      numKeysCurrentStripe = 0;
     }
 
     @Override
     public void preFooterWrite(OrcFile.WriterContext context
                                ) throws IOException {
+      if(numKeysCurrentStripe > 0) {
+        preStripeWrite(context);
+      }
       context.getWriter().addUserMetadata(ACID_KEY_INDEX_NAME,
           UTF8.encode(lastKey.toString()));
       context.getWriter().addUserMetadata(OrcAcidUtils.ACID_STATS,
@@ -615,6 +616,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       lastTransaction = transaction;
       lastBucket = bucket;
       lastRowId = rowId;
+      numKeysCurrentStripe++;
     }
   }
 
