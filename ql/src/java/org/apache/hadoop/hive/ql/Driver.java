@@ -649,7 +649,10 @@ public class Driver implements IDriver {
         plan.getFetchTask().initialize(queryState, plan, null, ctx.getOpContext());
       }
 
-      PlanMapperProcess.runPostProcess(ctx.getPlanMapper());
+      if(conf.getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED)) {
+        // runs misc PlanMapper postprocesses: calculates signatures ; currently only used during reexecution
+        PlanMapperProcess.runPostProcess(ctx.getPlanMapper());
+      }
 
       //do the authorization check
       if (!sem.skipAuthorization() &&
