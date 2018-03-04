@@ -287,9 +287,4 @@
   <value>false</value>
 </property>
 
-<property>
-  <name>hive.query.reexecution.enabled</name>
-  <value>false</value>
-</property>
-
 </configuration>
