@@ -1578,8 +1578,13 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
             conf.isSame(other.getConf())));
   }
 
-  // XXX: this could easily become a hot-spot
+  /**
+   * Compares the whole operator tree with the other.
+   */
+  // Currently only used during re-optimization related parts.
+  // FIXME: HIVE-18703 should probably move this method somewhere else
   public final boolean logicalEqualsTree(Operator<?> o) {
+    // XXX: this could easily become a hot-spot
     if (!logicalEquals(o)) {
       return false;
     }
