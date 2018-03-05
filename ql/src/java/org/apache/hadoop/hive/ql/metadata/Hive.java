@@ -4884,7 +4884,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // FIXME: move this wh creation somewhere else?
       Warehouse wh = new Warehouse(conf);
       StatsSetupConst.setBasicStatsState(p.getPartParameters(), StatsSetupConst.FALSE);
-      FileStatus[] partfileStatus = wh.getFileStatusesForSD(partish.getPartSd());
+      FileStatus[] partfileStatus = wh.getFileStatusesForSD(conf, partish.getPartSd());
       MetaStoreUtils.populateQuickStats(partfileStatus, p.getPartParameters());
     } catch (MetaException e) {
       throw new HiveException(e);

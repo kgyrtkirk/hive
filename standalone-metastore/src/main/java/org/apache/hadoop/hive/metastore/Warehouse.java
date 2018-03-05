@@ -542,13 +542,13 @@ public class Warehouse {
 
   /**
    * @param desc
+   * @param conf1
    * @return array of FileStatus objects corresponding to the files
    * making up the passed storage description
    */
   @Deprecated
   // FIXME: move to ql?
-  public FileStatus[] getFileStatusesForSD(StorageDescriptor desc)
-      throws MetaException {
+  public static FileStatus[] getFileStatusesForSD(Configuration conf, StorageDescriptor desc) throws MetaException {
     try {
       Path path = new Path(desc.getLocation());
       FileSystem fileSys = path.getFileSystem(conf);

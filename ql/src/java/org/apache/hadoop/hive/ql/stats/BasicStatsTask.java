@@ -164,8 +164,8 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       return p.getOutput();
     }
 
-    public void collectFileStatus(Warehouse wh) throws MetaException {
-      partfileStatus = wh.getFileStatusesForSD(partish.getPartSd());
+    public void collectFileStatus(HiveConf conf) throws MetaException {
+      partfileStatus = Warehouse.getFileStatusesForSD(conf, partish.getPartSd());
     }
 
     private void updateQuickStats(Map<String, String> parameters, FileStatus[] partfileStatus) throws MetaException {
@@ -247,7 +247,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         partishes.add(p = new Partish.PTable(table));
 
         BasicStatsProcessor basicStatsProcessor = new BasicStatsProcessor(p, work, conf, followedColStats);
-        basicStatsProcessor.collectFileStatus(wh);
+        basicStatsProcessor.collectFileStatus(conf);
         Table res = (Table) basicStatsProcessor.process(statsAggregator);
         if (res == null) {
           return 0;
@@ -280,7 +280,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
             futures.add(pool.submit(new Callable<Void>() {
               @Override
               public Void call() throws Exception {
-                bsp.collectFileStatus(wh);
+                bsp.collectFileStatus(conf);
                 return null;
               }
             }));
