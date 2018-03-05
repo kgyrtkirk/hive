@@ -675,14 +675,6 @@ public class MetaStoreUtils {
     }
   }
 
-  @Deprecated
-  // FIXME: method only used from a test unused method
-
-  public static boolean updatePartitionStatsFast(Partition part, Warehouse wh, EnvironmentContext environmentContext)
-      throws MetaException {
-    return updatePartitionStatsFast(part, wh, false, false, environmentContext);
-  }
-
   /**
    * Updates the numFiles and totalSize parameters for the passed Partition by querying
    *  the warehouse if the passed Partition does not already have values for these parameters.
@@ -694,13 +686,13 @@ public class MetaStoreUtils {
    * @return true if the stats were updated, false otherwise
    */
   @Deprecated
-  // FIXME: method only used from a test unused method (related)
-
-  public static boolean updatePartitionStatsFast(Partition part, Warehouse wh,
-                                                 boolean madeDir, boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
+  // FIXME: method only used from a test unused method
+  public static boolean updatePartitionStatsFast(Partition part, Warehouse wh, EnvironmentContext environmentContext)
+      throws MetaException {
     return updatePartitionStatsFast(new PartitionSpecProxy.SimplePartitionWrapperIterator(part),
-        wh, madeDir, forceRecompute, environmentContext);
+        wh, false, false, environmentContext);
   }
+
   /**
    * Updates the numFiles and totalSize parameters for the passed Partition by querying
    *  the warehouse if the passed Partition does not already have values for these parameters.
