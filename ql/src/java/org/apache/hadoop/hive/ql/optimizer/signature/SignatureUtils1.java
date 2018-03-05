@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.optimizer.signature;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -28,7 +28,6 @@ import java.util.Set;
 import com.google.common.collect.Sets;
 
 //FIXME: rename?
-//FIXME: package?
 //FIXME: apidoc
 public class SignatureUtils1 {
 

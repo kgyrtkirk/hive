@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
-import org.apache.hadoop.hive.ql.plan.Signature;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.junit.Rule;
 import org.junit.Test;

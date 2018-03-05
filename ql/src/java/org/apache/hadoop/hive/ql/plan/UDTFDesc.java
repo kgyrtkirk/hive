@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 
 import java.util.Objects;
 
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 

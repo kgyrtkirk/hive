@@ -24,7 +24,6 @@ import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.SignatureUtils1;
 
 import com.google.common.annotations.VisibleForTesting;
 
