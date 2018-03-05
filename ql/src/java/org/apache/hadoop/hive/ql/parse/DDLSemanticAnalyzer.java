@@ -1744,9 +1744,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc, isPotentialMmSwitch);
 
     if (changeStatsSucceeded) {
-      // mark stats as unuseable by setting it empty;
-      // because of alter call: can't use setBasicStatsState()
-      mapProp.put(StatsSetupConst.COLUMN_STATS_ACCURATE, "{}");
+      alterTblDesc.setInvalidateStats();
     }
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
