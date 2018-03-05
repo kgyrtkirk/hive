@@ -1723,6 +1723,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (changeStatsSucceeded) {
         environmentContext = new EnvironmentContext();
         environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.USER);
+
       }
     }
     AlterTableDesc alterTblDesc = null;
@@ -1741,6 +1742,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isPotentialMmSwitch = AcidUtils.isTablePropertyTransactional(mapProp)
         || mapProp.containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
     addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc, isPotentialMmSwitch);
+
+    if (changeStatsSucceeded) {
+      // mark stats as unuseable by setting it empty;
+      // because of alter call: can't use setBasicStatsState()
+      mapProp.put(StatsSetupConst.COLUMN_STATS_ACCURATE, "{}");
+    }
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
   }
