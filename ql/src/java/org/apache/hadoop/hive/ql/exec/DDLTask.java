@@ -3908,13 +3908,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       environmentContext = new EnvironmentContext();
       alterTbl.setEnvironmentContext(environmentContext);
     }
-    
-    if(alterTbl.isInvalidateStats()) {
-      if(tbl.isPartitioned() && part != null)
-        StatsSetupConst.setBasicStatsState(part.getParameters(), StatsSetupConst.FALSE);
-      else
-        StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
-    }
 
     if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAME) {
       tbl.setDbName(Utilities.getDatabaseName(alterTbl.getNewName()));
@@ -4184,7 +4177,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       tbl.setStoredAsSubDirectories(alterTbl.isStoredAsSubDirectories());
-      
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERSKEWEDLOCATION) {
       // process location one-by-one
       Map<List<String>,String> locMaps = alterTbl.getSkewedLocations();
@@ -4205,7 +4197,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       }
 
-      StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
       Hive.collectFsStats(tbl, part, conf);
     } else if (alterTbl.getOp() == AlterTableTypes.ALTERBUCKETNUM) {
       if (part != null) {

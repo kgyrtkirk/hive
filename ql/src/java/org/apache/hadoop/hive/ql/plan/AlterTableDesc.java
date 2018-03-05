@@ -71,8 +71,8 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     private AlterTableTypes(String name) { this.name = name; }
     public String getName() { return name; }
 
-    public static final List<AlterTableTypes> nonNativeTableAllowedTypes =
-        ImmutableList.of(ADDPROPS, DROPPROPS);
+    public static final List<AlterTableTypes> nonNativeTableAllowedTypes = 
+        ImmutableList.of(ADDPROPS, DROPPROPS); 
   }
 
   public static enum ProtectModeType {
@@ -134,8 +134,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   List<SQLNotNullConstraint> notNullConstraintCols;
   List<SQLDefaultConstraint> defaultConstraintsCols;
   ReplicationSpec replicationSpec;
-  // the change should mark the stats as inconsitent
-  private boolean invalidateStats;
 
   public AlterTableDesc() {
   }
@@ -913,12 +911,4 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    * This can result in a "ALTER IF NEWER THAN" kind of semantic
    */
   public ReplicationSpec getReplicationSpec(){ return this.replicationSpec; }
-
-  public void setInvalidateStats() {
-    invalidateStats = true;
-  }
-
-  public boolean isInvalidateStats() {
-    return invalidateStats;
-  }
 }
