@@ -2221,6 +2221,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     EnvironmentContext environmentContext = null;
     if (!hasFollowingStatsTask) {
+      StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
       collectFsStats(tbl, null, conf);
     }
 
