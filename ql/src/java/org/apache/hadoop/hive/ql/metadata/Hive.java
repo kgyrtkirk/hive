@@ -1809,12 +1809,8 @@ public class Hive {
   }
 
   private void setStatsPropAndAlterPartition(Table tbl, Partition newTPart) throws MetaException, TException {
-
-    EnvironmentContext environmentContext = null;
-    // FIXME: propagate hasFollowingStatsTask removal
     LOG.debug("Altering existing partition " + newTPart.getSpec());
-    getSynchronizedMSC().alter_partition(tbl.getDbName(), tbl.getTableName(),
-      newTPart.getTPartition(), environmentContext);
+    getSynchronizedMSC().alter_partition(tbl.getDbName(), tbl.getTableName(), newTPart.getTPartition(), null);
   }
 
   /**
