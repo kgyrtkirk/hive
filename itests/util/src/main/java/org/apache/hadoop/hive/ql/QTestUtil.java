@@ -1149,15 +1149,17 @@ public class QTestUtil {
       createRemoteDirs();
     }
 
-    // Create views registry
-    HiveMaterializedViewsRegistry.get().init();
-
     testWarehouse = conf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
     String execEngine = conf.get("hive.execution.engine");
     conf.set("hive.execution.engine", "mr");
     SessionState.start(conf);
     conf.set("hive.execution.engine", execEngine);
     db = Hive.get(conf);
+    // Create views registry
+    String registryImpl = db.getConf().get("hive.server2.materializedviews.registry.impl");
+    db.getConf().set("hive.server2.materializedviews.registry.impl", "DUMMY");
+    HiveMaterializedViewsRegistry.get().init(db);
+    db.getConf().set("hive.server2.materializedviews.registry.impl", registryImpl);
     drv = DriverFactory.newDriver(conf);
     pd = new ParseDriver();
     sem = new SemanticAnalyzer(queryState);
@@ -1713,7 +1715,8 @@ public class QTestUtil {
       "pk_-?[0-9]*_[0-9]*_[0-9]*",
       "fk_-?[0-9]*_[0-9]*_[0-9]*",
       "uk_-?[0-9]*_[0-9]*_[0-9]*",
-      "nn_-?[0-9]*_[0-9]*_[0-9]*",
+      "nn_-?[0-9]*_[0-9]*_[0-9]*", // not null constraint name
+      "dc_-?[0-9]*_[0-9]*_[0-9]*", // default constraint name
       ".*at com\\.sun\\.proxy.*",
       ".*at com\\.jolbox.*",
       ".*at com\\.zaxxer.*",
