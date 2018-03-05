@@ -173,7 +173,7 @@ public class TestCounterMapping {
   private static IDriver createDriver() {
     //    HiveConf conf = new HiveConf(Driver.class);
     HiveConf conf = env_setup.getTestCtx().hiveConf;
-    conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, "disabled");
+    conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED, false);
     conf.set("hive.auto.convert.join", "false");
     conf.set("hive.optimize.ppd", "false");
 
