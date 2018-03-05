@@ -1673,7 +1673,7 @@ public class Hive {
         skewedInfo.setSkewedColValueLocationMaps(skewedColValueLocationMaps);
         newCreatedTpart.getSd().setSkewedInfo(skewedInfo);
       }
-      if (!hasFollowingStatsTask) {
+      if (!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
         StatsSetupConst.setBasicStatsState(newTPart.getParameters(), StatsSetupConst.FALSE);
       }
       if (oldPart == null) {
