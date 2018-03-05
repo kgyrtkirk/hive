@@ -1698,7 +1698,7 @@ public class Hive {
           //  insert into table T partition (ds) values ('Joe', 'today'); -- will fail with AlreadyExistsException
           // In that case, we want to retry with alterPartition.
           LOG.debug("Caught AlreadyExistsException, trying to alter partition instead");
-          setStatsPropAndAlterPartition(hasFollowingStatsTask, tbl, newTPart);
+          setStatsPropAndAlterPartition(tbl, newTPart);
         } catch (Exception e) {
           try {
             final FileSystem newPathFileSystem = newPartPath.getFileSystem(this.getConf());
@@ -1711,7 +1711,7 @@ public class Hive {
           throw e;
         }
       } else {
-        setStatsPropAndAlterPartition(hasFollowingStatsTask, tbl, newTPart);
+        setStatsPropAndAlterPartition(tbl, newTPart);
       }
       return newTPart;
     } catch (IOException e) {
@@ -1808,8 +1808,8 @@ public class Hive {
     return newFiles;
   }
 
-  private void setStatsPropAndAlterPartition(boolean hasFollowingStatsTask, Table tbl,
-      Partition newTPart) throws MetaException, TException {
+  private void setStatsPropAndAlterPartition(Table tbl, Partition newTPart) throws MetaException, TException {
+
     EnvironmentContext environmentContext = null;
     // FIXME: propagate hasFollowingStatsTask removal
     LOG.debug("Altering existing partition " + newTPart.getSpec());
