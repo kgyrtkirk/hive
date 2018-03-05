@@ -4742,6 +4742,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     List<SQLDefaultConstraint> defaultConstraints = crtTbl.getDefaultConstraints();
     LOG.debug("creating table {} on {}",tbl.getFullyQualifiedName(),tbl.getDataLocation());
 
+    if (tbl.getDataLocation() != null) {
+      // should collect fs level stat info
+      Hive.collectFsStats(tbl, null, conf);
+    }
+
     if (crtTbl.getReplicationSpec().isInReplicationScope() && (!crtTbl.getReplaceMode())){
       // if this is a replication spec, then replace-mode semantics might apply.
       // if we're already asking for a table replacement, then we can skip this check.
@@ -4927,6 +4932,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       makeLocationQualified(tbl.getDbName(), tbl.getTTable().getSd(), tbl.getTableName(), conf);
     }
 
+    Hive.collectFsStats(tbl, null, conf);
     if (crtTbl.getLocation() == null && !tbl.isPartitioned()
         && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
       StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),

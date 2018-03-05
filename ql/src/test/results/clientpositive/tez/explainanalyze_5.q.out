@@ -382,6 +382,49 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_dot
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 12288
+PREHOOK: query: desc formatted acid_dot
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@acid_dot
+POSTHOOK: query: desc formatted acid_dot
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@acid_dot
+# col_name            	data_type           	comment             
+ctinyint            	tinyint             	                    
+csmallint           	smallint            	                    
+cint                	int                 	                    
+cbigint             	bigint              	                    
+cfloat              	float               	                    
+cdouble             	double              	                    
+cstring1            	string              	                    
+cstring2            	string              	                    
+ctimestamp1         	timestamp           	                    
+ctimestamp2         	timestamp           	                    
+cboolean1           	boolean             	                    
+cboolean2           	boolean             	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	totalSize           	377237              
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	1                   	 
+Bucket Columns:     	[cint]              	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: delete from acid_dot where cint < -1070551679
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_dot

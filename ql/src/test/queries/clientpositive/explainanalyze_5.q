@@ -76,6 +76,7 @@ create table acid_dot(
 
 select count(*) from acid_dot;
 
+desc formatted acid_dot;
 explain analyze delete from acid_dot where cint < -1070551679;
 
 select count(*) from acid_dot;
