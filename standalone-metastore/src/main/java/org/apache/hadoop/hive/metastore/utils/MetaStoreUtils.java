@@ -25,7 +25,6 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.collections.ListUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
@@ -37,7 +36,6 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
-import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -539,67 +537,8 @@ public class MetaStoreUtils {
     return TableType.VIRTUAL_VIEW.toString().equals(table.getTableType());
   }
 
-  /**
-   * @param partParams
-   * @return True if the passed Parameters Map contains values for all "Fast Stats".
-   */
-  private static boolean containsAllFastStats(Map<String, String> partParams) {
-    for (String stat : StatsSetupConst.fastStats) {
-      if (!partParams.containsKey(stat)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  public static boolean isFastStatsSame(Partition oldPart, Partition newPart) {
-    // requires to calculate stats if new and old have different fast stats
-    if ((oldPart != null) && (oldPart.getParameters() != null)) {
-      for (String stat : StatsSetupConst.fastStats) {
-        if (oldPart.getParameters().containsKey(stat)) {
-          Long oldStat = Long.parseLong(oldPart.getParameters().get(stat));
-          Long newStat = Long.parseLong(newPart.getParameters().get(stat));
-          if (!oldStat.equals(newStat)) {
-            return false;
-          }
-        } else {
-          return false;
-        }
-      }
-      return true;
-    }
-    return false;
-  }
-
-  //FIXME move this method to ql?
-  public static void populateQuickStats(FileStatus[] fileStatus, Map<String, String> params) {
-    int numFiles = 0;
-    long tableSize = 0L;
-    for (FileStatus status : fileStatus) {
-      // don't take directories into account for quick stats
-      if (!status.isDir()) {
-        tableSize += status.getLen();
-        numFiles += 1;
-      }
-    }
-    params.put(StatsSetupConst.NUM_FILES, Integer.toString(numFiles));
-    params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
-  }
-
   public static boolean areSameColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     return ListUtils.isEqualList(oldCols, newCols);
-  }
-
-  public static void updateBasicState(EnvironmentContext environmentContext, Map<String, String> params) {
-    if (params == null) {
-      return;
-    }
-    if (environmentContext != null && environmentContext.isSetProperties()
-        && StatsSetupConst.TASK.equals(environmentContext.getProperties().get(StatsSetupConst.STATS_GENERATED))) {
-      StatsSetupConst.setBasicStatsState(params, StatsSetupConst.TRUE);
-    } else {
-      StatsSetupConst.setBasicStatsState(params, StatsSetupConst.FALSE);
-    }
   }
 
   /*

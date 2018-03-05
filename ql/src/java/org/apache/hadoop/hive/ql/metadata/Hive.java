@@ -1683,7 +1683,9 @@ public class Hive {
           StatsSetupConst.setStatsStateForCreateTable(newTPart.getParameters(),
               MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
         }
-        MetaStoreUtils.populateQuickStats(HiveStatsUtils.getFileStatusRecurse(newPartPath, -1, newPartPath.getFileSystem(conf)), newTPart.getParameters());
+        FSStatsUtils.populateQuickStats(
+            HiveStatsUtils.getFileStatusRecurse(newPartPath, -1, newPartPath.getFileSystem(conf)),
+            newTPart.getParameters());
         try {
           LOG.debug("Adding new partition " + newTPart.getSpec());
           getSynchronizedMSC().add_partition(newTPart.getTPartition());
@@ -4886,7 +4888,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       Warehouse wh = new Warehouse(conf);
       StatsSetupConst.setBasicStatsState(p.getPartParameters(), StatsSetupConst.FALSE);
       FileStatus[] partfileStatus = FSStatsUtils.getFileStatusesForSD(conf, partish.getPartSd());
-      MetaStoreUtils.populateQuickStats(partfileStatus, p.getPartParameters());
+      FSStatsUtils.populateQuickStats(partfileStatus, p.getPartParameters());
     } catch (MetaException e) {
       throw new HiveException(e);
     }

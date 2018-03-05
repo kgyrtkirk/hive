@@ -168,7 +168,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     }
 
     private void updateQuickStats(Map<String, String> parameters, FileStatus[] partfileStatus) throws MetaException {
-      MetaStoreUtils.populateQuickStats(partfileStatus, parameters);
+      FSStatsUtils.populateQuickStats(partfileStatus, parameters);
     }
 
     private String getAggregationPrefix(Table table, Partition partition) throws MetaException {

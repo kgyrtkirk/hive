@@ -19,11 +19,13 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
@@ -46,6 +48,21 @@ public class FSStatsUtils {
       MetaStoreUtils.logAndThrowMetaException(ioe);
     }
     return null;
+  }
+
+  //FIXME move this method to ql?
+  public static void populateQuickStats(FileStatus[] fileStatus, Map<String, String> params) {
+    int numFiles = 0;
+    long tableSize = 0L;
+    for (FileStatus status : fileStatus) {
+      // don't take directories into account for quick stats
+      if (!status.isDir()) {
+        tableSize += status.getLen();
+        numFiles += 1;
+      }
+    }
+    params.put(StatsSetupConst.NUM_FILES, Integer.toString(numFiles));
+    params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
   }
 
 }
