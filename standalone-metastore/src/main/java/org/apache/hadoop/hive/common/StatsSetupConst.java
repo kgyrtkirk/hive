@@ -126,12 +126,6 @@ public class StatsSetupConst {
    */
   public static final String[] fastStats = new String[] {NUM_FILES,TOTAL_SIZE};
 
-  // This string constant is used by AlterHandler to figure out that it should not attempt to
-  // update stats. It is set by any client-side task which wishes to signal that no stats
-  // update should take place, such as with replication.
-  // FIXME: remove
-  public static final String DO_NOT_UPDATE_STATS = "DO_NOT_UPDATE_STATS";
-
   //This string constant will be persisted in metastore to indicate whether corresponding
   //table or partition's statistics and table or partition's column statistics are accurate or not.
   public static final String COLUMN_STATS_ACCURATE = "COLUMN_STATS_ACCURATE";
