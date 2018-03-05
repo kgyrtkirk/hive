@@ -77,6 +77,7 @@ import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HdfsUtils;
+import org.apache.hadoop.hive.metastore.FSStatsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
@@ -4884,7 +4885,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // FIXME: move this wh creation somewhere else?
       Warehouse wh = new Warehouse(conf);
       StatsSetupConst.setBasicStatsState(p.getPartParameters(), StatsSetupConst.FALSE);
-      FileStatus[] partfileStatus = wh.getFileStatusesForSD(conf, partish.getPartSd());
+      FileStatus[] partfileStatus = FSStatsUtils.getFileStatusesForSD(conf, partish.getPartSd());
       MetaStoreUtils.populateQuickStats(partfileStatus, p.getPartParameters());
     } catch (MetaException e) {
       throw new HiveException(e);

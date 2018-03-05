@@ -50,7 +50,6 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -538,25 +537,6 @@ public class Warehouse {
   public static String makePartName(List<FieldSchema> partCols,
       List<String> vals) throws MetaException {
     return makePartName(partCols, vals, null);
-  }
-
-  /**
-   * @param desc
-   * @param conf1
-   * @return array of FileStatus objects corresponding to the files
-   * making up the passed storage description
-   */
-  @Deprecated
-  // FIXME: move to ql?
-  public static FileStatus[] getFileStatusesForSD(Configuration conf, StorageDescriptor desc) throws MetaException {
-    try {
-      Path path = new Path(desc.getLocation());
-      FileSystem fileSys = path.getFileSystem(conf);
-      return FileUtils.getFileStatusRecurse(path, -1, fileSys);
-    } catch (IOException ioe) {
-      MetaStoreUtils.logAndThrowMetaException(ioe);
-    }
-    return null;
   }
 
   /**
