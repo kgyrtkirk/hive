@@ -532,16 +532,6 @@ public class MetaStoreUtils {
     return "TRUE".equalsIgnoreCase(params.get("EXTERNAL"));
   }
 
-  // check if stats need to be (re)calculated
-  // FIXME: remove
-  @Deprecated
-  public static boolean requireCalStats(Partition oldPart,
-                                        Partition newPart, Table tbl,
-                                        EnvironmentContext environmentContext) {
-
-    return false;
-  }
-
   public static boolean isView(Table table) {
     if (table == null) {
       return false;
@@ -579,64 +569,6 @@ public class MetaStoreUtils {
       return true;
     }
     return false;
-  }
-
-  /**
-   * Updates the numFiles and totalSize parameters for the passed Table by querying
-   * the warehouse if the passed Table does not already have values for these parameters.
-   * @param tbl
-   * @param fileStatus
-   * @param newDir if true, the directory was just created and can be assumed to be empty
-   * @param forceRecompute Recompute stats even if the passed Table already has
-   * these parameters set
-   * @return true if the stats were updated, false otherwise
-   */
-  //FIXME unused method subtree
-  @Deprecated
-
-  public static boolean updateTableStatsFast(Table tbl, FileStatus[] fileStatus, boolean newDir,
-                                             boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
-
-    Map<String,String> params = tbl.getParameters();
-    if(true) {
-      return false;
-    }
-
-    if ((params!=null) && params.containsKey(StatsSetupConst.DO_NOT_UPDATE_STATS)){
-      boolean doNotUpdateStats = Boolean.valueOf(params.get(StatsSetupConst.DO_NOT_UPDATE_STATS));
-      params.remove(StatsSetupConst.DO_NOT_UPDATE_STATS);
-      tbl.setParameters(params); // to make sure we remove this marker property
-      if (doNotUpdateStats){
-        return false;
-      }
-    }
-
-    boolean updated = false;
-    if (forceRecompute ||
-        params == null ||
-        !containsAllFastStats(params)) {
-      if (params == null) {
-        params = new HashMap<>();
-      }
-      if (!newDir) {
-        // The table location already exists and may contain data.
-        // Let's try to populate those stats that don't require full scan.
-        LOG.info("Updating table stats fast for " + tbl.getTableName());
-        populateQuickStats(fileStatus, params);
-        LOG.info("Updated size of table " + tbl.getTableName() +" to "+ params.get(StatsSetupConst.TOTAL_SIZE));
-        if (environmentContext != null
-            && environmentContext.isSetProperties()
-            && StatsSetupConst.TASK.equals(environmentContext.getProperties().get(
-            StatsSetupConst.STATS_GENERATED))) {
-          StatsSetupConst.setBasicStatsState(params, StatsSetupConst.TRUE);
-        } else {
-          StatsSetupConst.setBasicStatsState(params, StatsSetupConst.FALSE);
-        }
-      }
-      tbl.setParameters(params);
-      updated = true;
-    }
-    return updated;
   }
 
   //FIXME move this method to ql?
