@@ -284,7 +284,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     static final Logger auditLog = LoggerFactory.getLogger(
         HiveMetaStore.class.getName() + ".audit");
-    
+
     private static void logAuditEvent(String cmd) {
       if (cmd == null) {
         return;
@@ -6958,7 +6958,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           newStatsMap.put(partName, csNew);
         }
-        
+
         Map<String, ColumnStatistics> oldStatsMap = new HashMap<>();
         Map<String, Partition> mapToPart = new HashMap<>();
         if (request.isSetNeedMerge() && request.isNeedMerge()) {
@@ -7123,8 +7123,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       getMS().getFileMetadataByExpr(fileIds, type, req.getExpr(), metadatas, ppdResults, eliminated);
       for (int i = 0; i < fileIds.size(); ++i) {
-        if (!eliminated[i] && ppdResults[i] == null)
-         {
+        if (!eliminated[i] && ppdResults[i] == null) {
           continue; // No metadata => no ppd.
         }
         MetadataPpdResult mpr = new MetadataPpdResult();

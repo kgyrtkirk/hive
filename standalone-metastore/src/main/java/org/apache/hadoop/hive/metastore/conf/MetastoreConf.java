@@ -695,10 +695,6 @@ public class MetastoreConf {
         "Metastore SSL certificate truststore location."),
     SSL_TRUSTSTORE_PASSWORD("metastore.truststore.password", "hive.metastore.truststore.password", "",
         "Metastore SSL certificate truststore password."),
-    @Deprecated
-    // FIXME: looks unused right now
-    STATS_AUTO_GATHER("metastore.stats.autogather", "hive.stats.autogather", true,
-        "A flag to gather statistics (only basic) automatically during the INSERT OVERWRITE command."),
     STATS_FETCH_BITVECTOR("metastore.stats.fetch.bitvector", "hive.stats.fetch.bitvector", false,
         "Whether we fetch bitvector when we compute ndv. Users can turn it off if they want to use old schema"),
     STATS_NDV_TUNER("metastore.stats.ndv.tuner", "hive.metastore.stats.ndv.tuner", 0.0,
@@ -1115,16 +1111,22 @@ public class MetastoreConf {
        */
       hiveSiteURL = findConfigFile(classLoader, "hive-site.xml");
     }
-    if (hiveSiteURL != null) conf.addResource(hiveSiteURL);
+    if (hiveSiteURL != null) {
+      conf.addResource(hiveSiteURL);
+    }
 
     // Now add hivemetastore-site.xml.  Again we add this before our own config files so that the
     // newer overrides the older.
     hiveMetastoreSiteURL = findConfigFile(classLoader, "hivemetastore-site.xml");
-    if (hiveMetastoreSiteURL != null) conf.addResource(hiveMetastoreSiteURL);
+    if (hiveMetastoreSiteURL != null) {
+      conf.addResource(hiveMetastoreSiteURL);
+    }
 
     // Add in our conf file
     metastoreSiteURL = findConfigFile(classLoader, "metastore-site.xml");
-    if (metastoreSiteURL !=  null) conf.addResource(metastoreSiteURL);
+    if (metastoreSiteURL !=  null) {
+      conf.addResource(metastoreSiteURL);
+    }
 
     // If a system property that matches one of our conf value names is set then use the value
     // it's set to to set our own conf value.
@@ -1247,8 +1249,12 @@ public class MetastoreConf {
   public static Collection<String> getStringCollection(Configuration conf, ConfVars var) {
     assert var.defaultVal.getClass() == String.class;
     String val = conf.get(var.varname);
-    if (val == null) val = conf.get(var.hiveName, (String)var.defaultVal);
-    if (val == null) return Collections.emptySet();
+    if (val == null) {
+      val = conf.get(var.hiveName, (String)var.defaultVal);
+    }
+    if (val == null) {
+      return Collections.emptySet();
+    }
     return StringUtils.asSet(val.split(","));
   }
 
