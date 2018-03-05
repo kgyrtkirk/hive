@@ -45,6 +45,9 @@ public class OperatorStatsReaderHook implements ExecuteWithHookContext {
     if (hookContext.getHookType() == HookType.PRE_EXEC_HOOK) {
       return;
     }
+    if (hookContext.getHookType() == HookType.POST_EXEC_HOOK) {
+      return;
+    }
 
     HiveConf conf = hookContext.getConf();
     QueryPlan plan = hookContext.getQueryPlan();
