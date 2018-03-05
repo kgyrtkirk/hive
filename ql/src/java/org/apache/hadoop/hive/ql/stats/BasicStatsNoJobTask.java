@@ -32,7 +32,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
@@ -311,9 +310,6 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       }
     }
 
-    // FIXME this envCtx is probably not needed anymore
-    EnvironmentContext environmentContext = new EnvironmentContext();
-
     ImmutableListMultimap<String, FooterStatCollector> collectorsByTable = Multimaps.index(validColectors, FooterStatCollector.SIMPLE_NAME_FUNCTION);
 
     LOG.debug("Collectors.size(): {}", collectorsByTable.keySet());
@@ -335,12 +331,12 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       }
 
       if (values.get(0).result instanceof Table) {
-        db.alterTable(tableFullName, (Table) values.get(0).result, environmentContext);
+        db.alterTable(tableFullName, (Table) values.get(0).result, null);
         LOG.debug("Updated stats for {}.", tableFullName);
       } else {
         if (values.get(0).result instanceof Partition) {
           List<Partition> results = Lists.transform(values, FooterStatCollector.EXTRACT_RESULT_FUNCTION);
-          db.alterPartitions(tableFullName, results, environmentContext);
+          db.alterPartitions(tableFullName, results, null);
           LOG.debug("Bulk updated {} partitions of {}.", results.size(), tableFullName);
         } else {
           throw new RuntimeException("inconsistent");
