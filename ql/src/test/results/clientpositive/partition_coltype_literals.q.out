@@ -609,12 +609,11 @@ Database:           	default
 Table:              	partcoltypenum      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
-	numFiles            	1                   
+	numFiles            	0                   
 	numRows             	10                  
 	rawDataSize         	104                 
-	totalSize           	114                 
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
