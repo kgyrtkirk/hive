@@ -590,15 +590,12 @@ public class MetaStoreUtils {
     return ListUtils.isEqualList(oldCols, newCols);
   }
 
-  public static void updateBasicState(EnvironmentContext environmentContext, Map<String,String>
-      params) {
+  public static void updateBasicState(EnvironmentContext environmentContext, Map<String, String> params) {
     if (params == null) {
       return;
     }
-    if (environmentContext != null
-        && environmentContext.isSetProperties()
-        && StatsSetupConst.TASK.equals(environmentContext.getProperties().get(
-        StatsSetupConst.STATS_GENERATED))) {
+    if (environmentContext != null && environmentContext.isSetProperties()
+        && StatsSetupConst.TASK.equals(environmentContext.getProperties().get(StatsSetupConst.STATS_GENERATED))) {
       StatsSetupConst.setBasicStatsState(params, StatsSetupConst.TRUE);
     } else {
       StatsSetupConst.setBasicStatsState(params, StatsSetupConst.FALSE);
