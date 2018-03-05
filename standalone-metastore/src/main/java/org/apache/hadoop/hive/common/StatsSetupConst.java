@@ -126,12 +126,6 @@ public class StatsSetupConst {
    */
   public static final String[] fastStats = new String[] {NUM_FILES,TOTAL_SIZE};
 
-  // This string constant is used to indicate to AlterHandler that
-  // alterPartition/alterTable is happening via statsTask or via user.
-  // FIXME: remove
-  @Deprecated
-  public static final String STATS_GENERATED = "STATS_GENERATED";
-
   // This string constant is used by AlterHandler to figure out that it should not attempt to
   // update stats. It is set by any client-side task which wishes to signal that no stats
   // update should take place, such as with replication.
