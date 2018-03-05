@@ -215,7 +215,6 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{}                  	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: DESCRIBE db1.t1 key1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@t1
@@ -248,7 +247,6 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{}                  	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: DESCRIBE t1 key1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@t1
@@ -281,7 +279,6 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{}                  	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: DESCRIBE t1 PARTITION(ds='4', part='5')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@t1
