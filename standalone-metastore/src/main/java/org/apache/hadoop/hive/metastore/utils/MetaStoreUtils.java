@@ -683,13 +683,6 @@ public class MetaStoreUtils {
     return updatePartitionStatsFast(part, wh, false, false, environmentContext);
   }
 
-  @Deprecated
-  // FIXME: unused method
-  public static boolean updatePartitionStatsFast(Partition part, Warehouse wh, boolean madeDir, EnvironmentContext environmentContext)
-      throws MetaException {
-    return updatePartitionStatsFast(part, wh, madeDir, false, environmentContext);
-  }
-
   /**
    * Updates the numFiles and totalSize parameters for the passed Partition by querying
    *  the warehouse if the passed Partition does not already have values for these parameters.
