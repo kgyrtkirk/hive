@@ -42,7 +42,7 @@ public class OpSignature {
     this.op = op;
     sigMap = new HashMap<>();
     // FIXME: consider to operator info as well..not just conf?
-    SignatureUtils1.write(sigMap, op.getConf());
+    SignatureUtils.write(sigMap, op.getConf());
   }
 
   public static OpSignature of(Operator<? extends OperatorDesc> op) {

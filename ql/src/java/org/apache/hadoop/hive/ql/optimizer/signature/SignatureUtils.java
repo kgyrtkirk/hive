@@ -27,9 +27,13 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-//FIXME: rename?
-//FIXME: apidoc
-public class SignatureUtils1 {
+/**
+ * Enables to calculate the signature of an object.
+ *
+ * If the object has methods annotated with {@link Signature}, they will be used.
+ * If the object has no methods marked with the annotation; the object itself is used in the signature to prevent incorrect matches.
+ */
+public class SignatureUtils {
 
   private static Map<Class<?>, SignatureMapper> mappers = new HashMap<>();
 
