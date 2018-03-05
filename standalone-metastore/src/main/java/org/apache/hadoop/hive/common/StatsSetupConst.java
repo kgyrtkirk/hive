@@ -132,10 +132,6 @@ public class StatsSetupConst {
   @Deprecated
   public static final String STATS_GENERATED = "STATS_GENERATED";
 
-  @Deprecated
-  // FIXME: remove
-  public static final String TASK = "TASK";
-
   // This string constant is used by AlterHandler to figure out that it should not attempt to
   // update stats. It is set by any client-side task which wishes to signal that no stats
   // update should take place, such as with replication.
