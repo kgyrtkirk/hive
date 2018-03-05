@@ -2221,7 +2221,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     EnvironmentContext environmentContext = null;
     if (!hasFollowingStatsTask) {
-      StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
       collectFsStats(tbl, null, conf);
     }
 
@@ -4871,13 +4870,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
 
+  /**
+   * Collects <b>only</b> filesystem level stats.
+   *
+   * For complete stat collection StatsTask should run.
+   */
   public static void collectFsStats(Table tbl, Partition part, HiveConf conf) throws HiveException {
     Partish p;
-    if (tbl.isPartitioned()) {
-      if (part == null) {
-        // FIXME: this is could happen if a partitioned table is being altered without recursing
-        return;
-      }
+    if (tbl.isPartitioned() && part != null) {
       p = Partish.buildFor(tbl, part);
     } else {
       p = Partish.buildFor(tbl);
@@ -4887,6 +4887,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       // FIXME: move this wh creation somewhere else?
       Warehouse wh = new Warehouse(conf);
+      StatsSetupConst.setBasicStatsState(p.getPartParameters(), StatsSetupConst.FALSE);
       FileStatus[] partfileStatus = wh.getFileStatusesForSD(partish.getPartSd());
       MetaStoreUtils.populateQuickStats(partfileStatus, p.getPartParameters());
     } catch (MetaException e) {

@@ -172,6 +172,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{}                  
 #### A masked pattern was here ####
 	numFiles            	1                   
 	numRows             	1000                
@@ -480,6 +481,7 @@ Database:           	statsdb
 Table:              	srcpart             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{}                  
 #### A masked pattern was here ####
 	numFiles            	1                   
 	numRows             	1000                
