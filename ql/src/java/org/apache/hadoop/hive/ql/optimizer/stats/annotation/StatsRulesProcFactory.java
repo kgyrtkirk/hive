@@ -2491,7 +2491,12 @@ public class StatsRulesProcFactory {
         && !stats.getColumnStatsState().equals(Statistics.State.NONE);
   }
 
+
   private static Statistics applyRuntimeStats(Context context, Statistics stats, Operator<?> op, Statistics maxStat) {
+    return applyRuntimeStats(context, stats, op);
+  }
+
+  private static Statistics applyRuntimeStats(Context context, Statistics stats, Operator<?> op) {
     if (!context.getRuntimeStatsSource().isPresent()) {
       return stats;
     }
@@ -2502,11 +2507,6 @@ public class StatsRulesProcFactory {
     if (!os.isPresent()) {
       return stats;
     }
-    if (maxStat != null && maxStat.getBasicStatsState() == State.COMPLETE
-        && os.get().getOutputRecords() > maxStat.getNumRows()) {
-      return stats;
-    }
-
     LOG.debug("using runtime stats for {}; {}", op, os.get());
     Statistics outStats = stats.clone();
     outStats = outStats.scaleToRowCount(os.get().getOutputRecords(), false);
