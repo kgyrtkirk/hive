@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore;
+package org.apache.hadoop.hive.ql.stats;
 
 import java.io.IOException;
 
