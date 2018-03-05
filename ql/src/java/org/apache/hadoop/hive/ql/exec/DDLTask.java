@@ -1246,8 +1246,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // It can be fully qualified name or use default database
     Table oldMV = db.getTable(mvName);
     Table mv = oldMV.copy(); // Do not mess with Table instance
-    // FIXME: this envContext is probably not needed anymore
-    EnvironmentContext environmentContext = new EnvironmentContext();
 
     switch (alterMVDesc.getOp()) {
     case UPDATE_REWRITE_FLAG:
@@ -1262,7 +1260,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new AssertionError("Unsupported alter materialized view type! : " + alterMVDesc.getOp());
     }
 
-    db.alterTable(mv, environmentContext);
+    db.alterTable(mv, null);
 
     return 0;
   }
