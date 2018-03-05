@@ -4146,9 +4146,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       } catch (URISyntaxException e) {
         throw new HiveException(e);
       }
-
       Hive.collectFsStats(tbl, part, conf);
-
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSKEWEDBY) {
       // Validation's been done at compile time. no validation is needed here.
       List<String> skewedColNames = null;
