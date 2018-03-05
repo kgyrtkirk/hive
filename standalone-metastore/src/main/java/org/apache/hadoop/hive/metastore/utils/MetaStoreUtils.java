@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
@@ -54,7 +53,6 @@ import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFa
 import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMerger;
 import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMergerFactory;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hadoop.security.authorize.DefaultImpersonationProvider;
@@ -673,61 +671,6 @@ public class MetaStoreUtils {
     } else {
       StatsSetupConst.setBasicStatsState(params, StatsSetupConst.FALSE);
     }
-  }
-
-  /**
-   * Updates the numFiles and totalSize parameters for the passed Partition by querying
-   *  the warehouse if the passed Partition does not already have values for these parameters.
-   * @param part
-   * @param wh
-   * @param madeDir if true, the directory was just created and can be assumed to be empty
-   * @param forceRecompute Recompute stats even if the passed Partition already has
-   * these parameters set
-   * @return true if the stats were updated, false otherwise
-   */
-  @Deprecated
-  // FIXME: method only used from a test unused method
-  public static boolean updatePartitionStatsFast(Partition part, Warehouse wh, EnvironmentContext environmentContext)
-      throws MetaException {
-    return updatePartitionStatsFast(new PartitionSpecProxy.SimplePartitionWrapperIterator(part),
-        wh, false, false, environmentContext);
-  }
-
-  /**
-   * Updates the numFiles and totalSize parameters for the passed Partition by querying
-   *  the warehouse if the passed Partition does not already have values for these parameters.
-   * @param part
-   * @param wh
-   * @param madeDir if true, the directory was just created and can be assumed to be empty
-   * @param forceRecompute Recompute stats even if the passed Partition already has
-   * these parameters set
-   * @return true if the stats were updated, false otherwise
-   */
-  @Deprecated
-  // FIXME: method only used from a test unused method (related)
-  public static boolean updatePartitionStatsFast(PartitionSpecProxy.PartitionIterator part, Warehouse wh,
-                                                 boolean madeDir, boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
-    Map<String,String> params = part.getParameters();
-    boolean updated = false;
-    if (forceRecompute ||
-        params == null ||
-        !containsAllFastStats(params)) {
-      if (params == null) {
-        params = new HashMap<>();
-      }
-      if (!madeDir) {
-        // The partition location already existed and may contain data. Lets try to
-        // populate those statistics that don't require a full scan of the data.
-        LOG.warn("Updating partition stats fast for: " + part.getTableName());
-        FileStatus[] fileStatus = wh.getFileStatusesForLocation(part.getLocation());
-        populateQuickStats(fileStatus, params);
-        LOG.warn("Updated size to " + params.get(StatsSetupConst.TOTAL_SIZE));
-        updateBasicState(environmentContext, params);
-      }
-      part.setParameters(params);
-      updated = true;
-    }
-    return updated;
   }
 
   /*
