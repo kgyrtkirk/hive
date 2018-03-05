@@ -111,7 +111,6 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapperProcess;
 import org.apache.hadoop.hive.ql.plan.mapper.RuntimeStatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
@@ -648,11 +647,6 @@ public class Driver implements IDriver {
       // initialize FetchTask right here
       if (plan.getFetchTask() != null) {
         plan.getFetchTask().initialize(queryState, plan, null, ctx.getOpContext());
-      }
-
-      if(conf.getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED)) {
-        // runs misc PlanMapper postprocesses: calculates signatures ; currently only used during reexecution
-        PlanMapperProcess.runPostProcess(ctx.getPlanMapper());
       }
 
       //do the authorization check
@@ -1298,7 +1292,9 @@ public class Driver implements IDriver {
         return;
       }
     }
-    if (!AcidUtils.isTransactionalTable(tbl)) return;
+    if (!AcidUtils.isTransactionalTable(tbl)) {
+      return;
+    }
     String fullTableName = AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName());
     tableList.add(fullTableName);
   }
