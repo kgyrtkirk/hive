@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -217,9 +216,6 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     StatsAggregator statsAggregator = null;
     int ret = 0;
     StatsCollectionContext scc = null;
-    // FIXME: this envContext is probably not needed anymore
-    EnvironmentContext environmentContext = null;
-    environmentContext = new EnvironmentContext();
 
     try {
       // Stats setup:
@@ -252,7 +248,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         if (res == null) {
           return 0;
         }
-        db.alterTable(tableFullName, res, environmentContext);
+        db.alterTable(tableFullName, res, null);
 
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
           console.printInfo("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
@@ -320,7 +316,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         }
 
         if (!updates.isEmpty()) {
-          db.alterPartitions(tableFullName, updates, environmentContext);
+          db.alterPartitions(tableFullName, updates, null);
         }
         if (work.isStatsReliable() && updates.size() != processors.size()) {
           LOG.info("Stats should be reliadble...however seems like there were some issue.. => ret 1");
