@@ -30,7 +30,6 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * Signature of the operator(non-recursive).
  */
-// FIXME: for review: this is separate; to make it easier to write simple tests for a single operator comparision.
 public class OpSignature {
 
   private Map<String, Object> sigMap;

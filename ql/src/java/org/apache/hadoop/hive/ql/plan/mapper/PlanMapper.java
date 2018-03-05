@@ -103,7 +103,6 @@ public class PlanMapper {
     return all.get(0);
   }
 
-  // FIXME: find a more natural way...
   @VisibleForTesting
   public Iterator<LinkGroup> iterateGroups() {
     return groups.iterator();

@@ -150,7 +150,6 @@ public class TestCounterMapping {
 
     Iterator<LinkGroup> itG = pm0.iterateGroups();
     int checkedOperators = 0;
-    // FIXME: introduce the Operator trimmer mapper!
     while (itG.hasNext()) {
       LinkGroup g = itG.next();
       List<HiveFilter> hfs = g.getAll(HiveFilter.class);

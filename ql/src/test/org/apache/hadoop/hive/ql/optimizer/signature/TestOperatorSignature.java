@@ -130,7 +130,6 @@ public class TestOperatorSignature {
     OpTreeSignature ts1 = OpTreeSignature.of(o1);
     OpTreeSignature ts2 = OpTreeSignature.of(o2);
 
-    // FIXME: currently ExprNode-s are not in the signature; which cause this to be the same
     assertNotEquals(ts1.hashCode(), ts2.hashCode());
     assertNotEquals(ts1, ts2);
   }
