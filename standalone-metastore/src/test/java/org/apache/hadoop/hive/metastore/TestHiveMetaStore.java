@@ -81,8 +81,6 @@ import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.junit.Test;
@@ -489,7 +487,6 @@ public abstract class TestHiveMetaStore {
     part4.setSd(tbl.getSd().deepCopy());
     part4.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo().deepCopy());
     part4.getSd().setLocation(tbl.getSd().getLocation() + ptnLocationSuffix);
-    MetaStoreUtils.updatePartitionStatsFast(part4, warehouse, null);
     return part4;
   }
 
