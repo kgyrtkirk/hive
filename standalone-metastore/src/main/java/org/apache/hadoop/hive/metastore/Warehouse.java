@@ -572,26 +572,6 @@ public class Warehouse {
   }
 
   /**
-   * @param db database
-   * @param table table
-   * @return array of FileStatus objects corresponding to the files making up the passed
-   * unpartitioned table
-   */
-  @Deprecated
-  // FIXME: unused subtree?
-  public FileStatus[] getFileStatusesForUnpartitionedTable(Database db, Table table)
-      throws MetaException {
-    Path tablePath = getDnsPath(new Path(table.getSd().getLocation()));
-    try {
-      FileSystem fileSys = tablePath.getFileSystem(conf);
-      return FileUtils.getFileStatusRecurse(tablePath, -1, fileSys);
-    } catch (IOException ioe) {
-      MetaStoreUtils.logAndThrowMetaException(ioe);
-    }
-    return null;
-  }
-
-  /**
    * Makes a valid partition name.
    * @param partCols The partition columns
    * @param vals The partition values

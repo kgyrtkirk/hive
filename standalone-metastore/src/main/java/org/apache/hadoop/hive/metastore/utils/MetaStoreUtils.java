@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -582,26 +581,6 @@ public class MetaStoreUtils {
       return true;
     }
     return false;
-  }
-
-  //FIXME unused method subtree
-  @Deprecated
-  public static boolean updateTableStatsFast(Database db, Table tbl, Warehouse wh,
-                                             boolean madeDir, EnvironmentContext environmentContext) throws MetaException {
-    return updateTableStatsFast(db, tbl, wh, madeDir, false, environmentContext);
-  }
-
-  //FIXME unused method subtree
-  @Deprecated
-  public static boolean updateTableStatsFast(Database db, Table tbl, Warehouse wh,
-                                             boolean madeDir, boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
-    if (tbl.getPartitionKeysSize() == 0) {
-      // Update stats only when unpartitioned
-      FileStatus[] fileStatuses = wh.getFileStatusesForUnpartitionedTable(db, tbl);
-      return updateTableStatsFast(tbl, fileStatuses, madeDir, forceRecompute, environmentContext);
-    } else {
-      return false;
-    }
   }
 
   /**
