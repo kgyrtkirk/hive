@@ -174,13 +174,6 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 /**
  * This class has functions that implement meta data/DDL operations using calls
  * to the metastore.
@@ -4880,6 +4873,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public static void collectFsStats(Table tbl, Partition part, HiveConf conf) throws HiveException {
     Partish p;
     if (tbl.isPartitioned()) {
+      if (part == null) {
+        // FIXME: this is could happen if a partitioned table is being altered without recursing
+        return;
+      }
       p = Partish.buildFor(tbl, part);
     } else {
       p = Partish.buildFor(tbl);
