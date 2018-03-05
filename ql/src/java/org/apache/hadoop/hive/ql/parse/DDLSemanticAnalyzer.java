@@ -1719,12 +1719,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
               + StatsSetupConst.RAW_DATA_SIZE);
         }
       }
-
-      if (changeStatsSucceeded) {
-        environmentContext = new EnvironmentContext();
-        environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.USER);
-
-      }
     }
     AlterTableDesc alterTblDesc = null;
     if (isUnset == true) {

@@ -136,10 +136,6 @@ public class StatsSetupConst {
   // FIXME: remove
   public static final String TASK = "TASK";
 
-  @Deprecated
-  // FIXME: remove
-  public static final String USER = "USER";
-
   // This string constant is used by AlterHandler to figure out that it should not attempt to
   // update stats. It is set by any client-side task which wishes to signal that no stats
   // update should take place, such as with replication.
