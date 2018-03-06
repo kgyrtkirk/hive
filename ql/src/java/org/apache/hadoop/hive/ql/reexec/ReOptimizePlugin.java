@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.reexec;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
@@ -76,9 +77,8 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
     statsReaderHook = new OperatorStatsReaderHook();
     coreDriver.getHookRunner().addOnFailureHook(statsReaderHook);
     coreDriver.getHookRunner().addPostHook(statsReaderHook);
-    statsReaderHook.setCollectOnSuccess(true);
-    //    statsReaderHook.setCollectOnSuccess(
-    //      driver.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS));
+    statsReaderHook.setCollectOnSuccess(
+        driver.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS));
   }
 
   @Override
