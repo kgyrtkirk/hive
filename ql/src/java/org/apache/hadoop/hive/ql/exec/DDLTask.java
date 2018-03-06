@@ -4738,9 +4738,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     List<SQLDefaultConstraint> defaultConstraints = crtTbl.getDefaultConstraints();
     LOG.debug("creating table {} on {}",tbl.getFullyQualifiedName(),tbl.getDataLocation());
 
-    if (tbl.getDataLocation() != null) {
-      // should collect fs level stat info
-      Hive.collectFsStats(tbl, null, conf);
+    Hive.collectFsStats(tbl, null, conf);
+    if (crtTbl.getLocation() == null && !tbl.isPartitioned()
+        && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+      StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),
+          MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
     }
 
     if (crtTbl.getReplicationSpec().isInReplicationScope() && (!crtTbl.getReplaceMode())){
