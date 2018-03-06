@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 public class OperatorStatsReaderHook implements ExecuteWithHookContext {
 
   private static final Logger LOG = LoggerFactory.getLogger(OperatorStatsReaderHook.class);
+  private boolean collectOnSuccess;
 
   @Override
   public void run(HookContext hookContext) throws Exception {
@@ -45,7 +46,7 @@ public class OperatorStatsReaderHook implements ExecuteWithHookContext {
     if (hookContext.getHookType() == HookType.PRE_EXEC_HOOK) {
       return;
     }
-    if (hookContext.getHookType() == HookType.POST_EXEC_HOOK) {
+    if (hookContext.getHookType() == HookType.POST_EXEC_HOOK && !isCollectOnSuccess()) {
       return;
     }
 
@@ -82,6 +83,14 @@ public class OperatorStatsReaderHook implements ExecuteWithHookContext {
         }
       }
     }
+  }
+
+  public boolean isCollectOnSuccess() {
+    return collectOnSuccess;
+  }
+
+  public void setCollectOnSuccess(boolean collectOnSuccess) {
+    this.collectOnSuccess = collectOnSuccess;
   }
 
 }

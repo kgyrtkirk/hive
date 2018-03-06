@@ -38,6 +38,11 @@ public interface IReExecutionPlugin {
   void initialize(Driver driver);
 
   /**
+   * Called before executing the query.
+   */
+  void beforeExecute(int executionIndex, boolean explainReOptimization);
+
+  /**
    * The query have failed, does this plugin advises to re-execute it again?
    */
   boolean shouldReExecute(int executionNum);
@@ -51,5 +56,7 @@ public interface IReExecutionPlugin {
    * The query have failed; and have been recompiled - does this plugin advises to re-execute it again?
    */
   boolean shouldReExecute2(int executionNum, PlanMapper oldPlanMapper, PlanMapper newPlanMapper);
+
+
 
 }

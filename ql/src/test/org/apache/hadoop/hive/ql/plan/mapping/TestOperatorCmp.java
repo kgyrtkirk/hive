@@ -167,6 +167,7 @@ public class TestOperatorCmp {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
     conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED, true);
+    conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS, true);
     conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, "reoptimize");
     conf.set("zzz", "1");
     conf.set("reexec.overlay.zzz", "2000");

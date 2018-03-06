@@ -76,4 +76,8 @@ public class ReExecutionOverlayPlugin implements IReExecutionPlugin {
     return executionNum == 1;
   }
 
+  @Override
+  public void beforeExecute(int executionIndex, boolean explainReOptimization) {
+  }
+
 }

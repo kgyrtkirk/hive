@@ -27,7 +27,6 @@ import java.util.Objects;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -36,6 +35,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.SimpleRuntimeStatsSource;
+import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
@@ -128,7 +128,8 @@ public class TestCounterMapping {
     filters1.sort(OPERATOR_ID_COMPARATOR.reversed());
     FilterOperator filter1 = filters1.get(0);
 
-    ((Driver) driver).setRuntimeStatsSource(new SimpleRuntimeStatsSource(pm1));
+    driver = createDriver();
+    ((ReExecDriver) driver).setRuntimeStatsSource(new SimpleRuntimeStatsSource(pm1));
 
     PlanMapper pm2 = getMapperForQuery(driver, query);
 
@@ -173,7 +174,8 @@ public class TestCounterMapping {
   private static IDriver createDriver() {
     //    HiveConf conf = new HiveConf(Driver.class);
     HiveConf conf = env_setup.getTestCtx().hiveConf;
-    conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED, false);
+    conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED, true);
+    conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS, true);
     conf.set("hive.auto.convert.join", "false");
     conf.set("hive.optimize.ppd", "false");
 

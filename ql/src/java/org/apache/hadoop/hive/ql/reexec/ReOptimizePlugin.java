@@ -44,6 +44,8 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
 
   private Driver coreDriver;
 
+  private OperatorStatsReaderHook statsReaderHook;
+
   class LocalHook implements ExecuteWithHookContext {
 
     @Override
@@ -71,9 +73,12 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   public void initialize(Driver driver) {
     coreDriver = driver;
     coreDriver.getHookRunner().addOnFailureHook(new LocalHook());
-    OperatorStatsReaderHook hook = new OperatorStatsReaderHook();
-    coreDriver.getHookRunner().addOnFailureHook(hook);
-    coreDriver.getHookRunner().addPostHook(hook);
+    statsReaderHook = new OperatorStatsReaderHook();
+    coreDriver.getHookRunner().addOnFailureHook(statsReaderHook);
+    coreDriver.getHookRunner().addPostHook(statsReaderHook);
+    statsReaderHook.setCollectOnSuccess(true);
+    //    statsReaderHook.setCollectOnSuccess(
+    //      driver.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS));
   }
 
   @Override
@@ -83,6 +88,7 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
 
   @Override
   public void prepareToReExecute2() {
+    statsReaderHook.setCollectOnSuccess(true);
     PlanMapper pm = coreDriver.getContext().getPlanMapper();
     coreDriver.setRuntimeStatsSource(new SimpleRuntimeStatsSource(pm));
     retryPossible = false;
@@ -119,6 +125,13 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
       }
     }
     return ops;
+  }
+
+  @Override
+  public void beforeExecute(int executionIndex, boolean explainReOptimization) {
+    if (explainReOptimization) {
+      statsReaderHook.setCollectOnSuccess(true);
+    }
   }
 
 }

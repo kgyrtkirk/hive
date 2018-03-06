@@ -42,9 +42,12 @@ import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.plan.mapper.SimpleRuntimeStatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Enables to use re-execution logics.
@@ -143,8 +146,12 @@ public class ReExecDriver implements IDriver {
     executionIndex = 0;
     int maxExecutuions = 1 + coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
 
+
     while (true) {
       executionIndex++;
+      for (IReExecutionPlugin p : plugins) {
+        p.beforeExecute(executionIndex, explainReOptimization);
+      }
       coreDriver.getContext().setExecutionIndex(executionIndex);
       LOG.info("Execution #{} of query", executionIndex);
       CommandProcessorResponse cpr = coreDriver.run();
@@ -246,6 +253,11 @@ public class ReExecDriver implements IDriver {
   @Override
   public final Context getContext() {
     return coreDriver.getContext();
+  }
+
+  @VisibleForTesting
+  public void setRuntimeStatsSource(SimpleRuntimeStatsSource statsSource) {
+    coreDriver.setRuntimeStatsSource(statsSource);
   }
 
 }
