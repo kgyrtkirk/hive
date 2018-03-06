@@ -129,15 +129,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: analyze_t1
-<<<<<<< HEAD
-<<<<<<< HEAD
-            Statistics: Num rows: 36 Data size: 23248 Basic stats: COMPLETE Column stats: NONE
-=======
-            Statistics: Num rows: 1 Data size: 232480 Basic stats: PARTIAL Column stats: NONE
->>>>>>> asf/master
-=======
             Statistics: Num rows: 392 Data size: 232480 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
 
   Stage: Stage-1
     Stats Work
