@@ -196,9 +196,6 @@ public class StatsUtils {
         noColsMissingStats.getAndIncrement();
       }
       results.add(basicStatsFactory.build(pi));
-      float deserFactor = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
-
-        dataSizes = safeMult(dataSizes, deserFactor);
     }
 
     BasicStats aggregateStat = BasicStats.buildFrom(results);
@@ -296,13 +293,11 @@ public class StatsUtils {
       basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
 
       List<BasicStats> partStats = new ArrayList<>();
-        dataSizes = safeMult(dataSizes, deserFactor);
 
       for (Partition p : partList.getNotDeniedPartns()) {
         BasicStats basicStats = basicStatsFactory.build(Partish.buildFor(table, p));
         partStats.add(basicStats);
-        dataSizes = safeMult(dataSizes, deserFactor);
-
+      }
       BasicStats bbs = BasicStats.buildFrom(partStats);
 
       List<Long> rowCounts = Lists.newArrayList();
@@ -653,14 +648,6 @@ public class StatsUtils {
       return null;
     }
     return range;
-  }
-
-  public static int estimateRowSizeFromSchema(HiveConf conf, List<ColumnInfo> schema) {
-    List<String> neededColumns = new ArrayList<>();
-    for (ColumnInfo ci : schema) {
-      neededColumns.add(ci.getInternalName());
-    }
-    return estimateRowSizeFromSchema(conf, schema, neededColumns);
   }
 
   public static int estimateRowSizeFromSchema(HiveConf conf, List<ColumnInfo> schema) {
