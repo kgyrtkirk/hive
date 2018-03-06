@@ -61,7 +61,7 @@ public class ReExecutionOverlayPlugin implements IReExecutionPlugin {
   private boolean retryPossible;
 
   @Override
-  public void prepareToReExecute2() {
+  public void prepareToReExecute() {
     HiveConf conf = driver.getConf();
     conf.verifyAndSetAll(subtree);
   }
@@ -72,7 +72,7 @@ public class ReExecutionOverlayPlugin implements IReExecutionPlugin {
   }
 
   @Override
-  public boolean shouldReExecute2(int executionNum, PlanMapper pm1, PlanMapper pm2) {
+  public boolean shouldReExecute(int executionNum, PlanMapper pm1, PlanMapper pm2) {
     return executionNum == 1;
   }
 

@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 
 /**
  * Defines an interface for re-execution logics.
+ *
+ * FIXME: rethink methods.
  */
 @InterfaceAudience.Private
 @InterfaceStability.Unstable
@@ -50,12 +52,12 @@ public interface IReExecutionPlugin {
   /**
    * The plugin should prepare for the re-compilaton of the query.
    */
-  void prepareToReExecute2();
+  void prepareToReExecute();
 
   /**
    * The query have failed; and have been recompiled - does this plugin advises to re-execute it again?
    */
-  boolean shouldReExecute2(int executionNum, PlanMapper oldPlanMapper, PlanMapper newPlanMapper);
+  boolean shouldReExecute(int executionNum, PlanMapper oldPlanMapper, PlanMapper newPlanMapper);
 
 
 

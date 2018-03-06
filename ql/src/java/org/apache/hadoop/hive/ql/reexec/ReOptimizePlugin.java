@@ -87,7 +87,7 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   }
 
   @Override
-  public void prepareToReExecute2() {
+  public void prepareToReExecute() {
     statsReaderHook.setCollectOnSuccess(true);
     PlanMapper pm = coreDriver.getContext().getPlanMapper();
     coreDriver.setRuntimeStatsSource(new SimpleRuntimeStatsSource(pm));
@@ -95,7 +95,7 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   }
 
   @Override
-  public boolean shouldReExecute2(int executionNum, PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
+  public boolean shouldReExecute(int executionNum, PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
     return planDidChange(oldPlanMapper, newPlanMapper);
   }
 

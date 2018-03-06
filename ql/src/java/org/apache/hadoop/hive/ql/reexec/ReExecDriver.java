@@ -182,7 +182,7 @@ public class ReExecDriver implements IDriver {
   private boolean shouldReExecuteAfterCompile(PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
     boolean ret = false;
     for (IReExecutionPlugin p : plugins) {
-      ret |= p.shouldReExecute2(executionIndex, oldPlanMapper, newPlanMapper);
+      ret |= p.shouldReExecute(executionIndex, oldPlanMapper, newPlanMapper);
     }
     return ret;
   }
@@ -206,7 +206,7 @@ public class ReExecDriver implements IDriver {
 
   protected void prepareToReExecute() {
     for (IReExecutionPlugin p : plugins) {
-      p.prepareToReExecute2();
+      p.prepareToReExecute();
     }
   }
 
