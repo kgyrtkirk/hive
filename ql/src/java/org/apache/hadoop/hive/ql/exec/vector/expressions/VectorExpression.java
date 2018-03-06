@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -305,6 +305,17 @@ public abstract class VectorExpression implements Serializable {
     } else {
       return typeInfo.toString();
     }
+  }
+
+  /**
+   * A vector expression which implements a checked execution to account for overflow handling
+   * should override this method and return true. In such a case Vectorizer will use Checked
+   * variation of the vector expression to process data
+   * @return true if vector expression implements a Checked variation of vector expression
+   */
+  public boolean supportsCheckedExecution() {
+    // default is false
+    return false;
   }
 
   @Override

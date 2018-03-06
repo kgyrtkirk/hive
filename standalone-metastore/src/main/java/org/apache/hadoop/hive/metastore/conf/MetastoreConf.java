@@ -21,6 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader;
 import org.apache.hadoop.hive.metastore.HiveAlterHandler;
+import org.apache.hadoop.hive.metastore.MaterializationsCacheCleanerTask;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
@@ -53,7 +54,7 @@ import java.util.regex.Pattern;
 /**
  * A set of definitions of config values used by the Metastore.  One of the key aims of this
  * class is to provide backwards compatibility with existing Hive configuration keys while
- * allowing the metastore to have its own, Hive independant keys.   For this reason access to the
+ * allowing the metastore to have its own, Hive independent keys.   For this reason access to the
  * underlying Configuration object should always be done via the static methods provided here
  * rather than directly via {@link Configuration#get(String)} and
  * {@link Configuration#set(String, String)}.  All the methods of this class will handle checking
@@ -96,7 +97,16 @@ public class MetastoreConf {
 
     @Override
     public String toString() {
-      return Long.toString(unit.toNanos(val)) + "ns";
+      switch (unit) {
+      case NANOSECONDS: return Long.toString(val) + "ns";
+      case MICROSECONDS: return Long.toString(val) + "us";
+      case MILLISECONDS: return Long.toString(val) + "ms";
+      case SECONDS: return Long.toString(val) + "s";
+      case MINUTES: return Long.toString(val) + "m";
+      case HOURS: return Long.toString(val) + "h";
+      case DAYS: return Long.toString(val) + "d";
+      }
+      throw new RuntimeException("Unknown time unit " + unit);
     }
   }
 
@@ -373,6 +383,9 @@ public class MetastoreConf {
     CONNECTION_USER_NAME("javax.jdo.option.ConnectionUserName",
         "javax.jdo.option.ConnectionUserName", "APP",
         "Username to use against metastore database"),
+    CREATE_TABLES_AS_ACID("metastore.create.as.acid", "hive.create.as.acid", false,
+        "Whether the eligible tables should be created as full ACID by default. Does \n" +
+            "not apply to external tables, the ones using storage handlers, etc."),
     COUNT_OPEN_TXNS_INTERVAL("metastore.count.open.txns.interval", "hive.count.open.txns.interval",
         1, TimeUnit.SECONDS, "Time in seconds between checks to count open transactions."),
     DATANUCLEUS_AUTOSTART("datanucleus.autoStartMechanismMode",
@@ -482,7 +495,7 @@ public class MetastoreConf {
         "hive.metastore.hbase.file.metadata.threads", 1,
         "Number of threads to use to read file metadata in background to cache it."),
     FILTER_HOOK("metastore.filter.hook", "hive.metastore.filter.hook",
-        "org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl",
+        org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl.class.getName(),
         "Metastore hook class for filtering the metadata read results. If hive.security.authorization.manager"
             + "is set to instance of HiveAuthorizerFactory, then this value is ignored."),
     FS_HANDLER_CLS("metastore.fs.handler.class", "hive.metastore.fs.handler.class",
@@ -525,17 +538,36 @@ public class MetastoreConf {
             "The special string _HOST will be replaced automatically with the correct host name."),
     LIMIT_PARTITION_REQUEST("metastore.limit.partition.request",
         "hive.metastore.limit.partition.request", -1,
-        "This limits the number of partitions that can be requested from the metastore for a given table.\n" +
+        "This limits the number of partitions (whole partition objects) that can be requested " +
+        "from the metastore for a give table. MetaStore API methods using this are: \n" +
+                "get_partitions, \n" +
+                "get_partitions_with_auth, \n" +
+                "get_partitions_by_filter, \n" +
+                "get_partitions_by_expr.\n" +
             "The default value \"-1\" means no limit."),
     LOG4J_FILE("metastore.log4j.file", "hive.log4j.file", "",
         "Hive log4j configuration file.\n" +
-            "If the property is not set, then logging will be initialized using hive-log4j2.properties found on the classpath.\n" +
+            "If the property is not set, then logging will be initialized using metastore-log4j2.properties found on the classpath.\n" +
             "If the property is set, the value must be a valid URI (java.net.URI, e.g. \"file:///tmp/my-logging.xml\"), \n" +
             "which you can then extract a URL from and pass to PropertyConfigurator.configure(URL)."),
     MANAGER_FACTORY_CLASS("javax.jdo.PersistenceManagerFactoryClass",
         "javax.jdo.PersistenceManagerFactoryClass",
         "org.datanucleus.api.jdo.JDOPersistenceManagerFactory",
         "class implementing the jdo persistence"),
+    MATERIALIZATIONS_INVALIDATION_CACHE_IMPL("metastore.materializations.invalidation.impl",
+        "hive.metastore.materializations.invalidation.impl", "DEFAULT",
+        new Validator.StringSet("DEFAULT", "DISABLE"),
+        "The implementation that we should use for the materializations invalidation cache. \n" +
+            "  DEFAULT: Default implementation for invalidation cache\n" +
+            "  DISABLE: Disable invalidation cache (debugging purposes)"),
+    MATERIALIZATIONS_INVALIDATION_CACHE_CLEAN_FREQUENCY("metastore.materializations.invalidation.clean.frequency",
+         "hive.metastore.materializations.invalidation.clean.frequency",
+         3600, TimeUnit.SECONDS, "Frequency at which timer task runs to remove unnecessary transaction entries from" +
+          "materializations invalidation cache."),
+    MATERIALIZATIONS_INVALIDATION_CACHE_EXPIRY_DURATION("metastore.materializations.invalidation.max.duration",
+         "hive.metastore.materializations.invalidation.max.duration",
+         86400, TimeUnit.SECONDS, "Maximum duration for query producing a materialization. After this time, transaction" +
+         "entries that are not relevant for materializations can be removed from invalidation cache."),
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
     METADATA_EXPORT_LOCATION("metastore.metadata.export.location", "hive.metadata.export.location",
@@ -691,7 +723,9 @@ public class MetastoreConf {
             + "The only supported special character right now is '/'. This flag applies only to quoted table names.\n"
             + "The default value is true."),
     TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
-        EventCleanerTask.class.getName() + "," + "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask",
+        EventCleanerTask.class.getName() + "," +
+        "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask" + "," +
+        MaterializationsCacheCleanerTask.class.getName(),
         "Comma separated list of tasks that will be started in separate threads.  These will " +
             "always be started, regardless of whether the metastore is running in embedded mode " +
             "or in server mode.  They must implement " + MetastoreTaskThread.class.getName()),
@@ -715,6 +749,12 @@ public class MetastoreConf {
         "Number of retries upon failure of Thrift metastore calls"),
     THRIFT_URIS("metastore.thrift.uris", "hive.metastore.uris", "",
         "Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore."),
+    THRIFT_URI_SELECTION("metastore.thrift.uri.selection", "hive.metastore.uri.selection", "RANDOM",
+        new Validator.StringSet("RANDOM", "SEQUENTIAL"),
+        "Determines the selection mechanism used by metastore client to connect to remote " +
+        "metastore.  SEQUENTIAL implies that the first valid metastore from the URIs specified " +
+        "as part of hive.metastore.uris will be picked.  RANDOM implies that the metastore " +
+        "will be picked randomly"),
     TIMEDOUT_TXN_REAPER_START("metastore.timedout.txn.reaper.start",
         "hive.timedout.txn.reaper.start", 100, TimeUnit.SECONDS,
         "Time delay of 1st reaper run after metastore start"),
@@ -763,6 +803,8 @@ public class MetastoreConf {
             "class is used to store and retrieve transactions and locks"),
     TXN_TIMEOUT("metastore.txn.timeout", "hive.txn.timeout", 300, TimeUnit.SECONDS,
         "time after which transactions are declared aborted if the client has not sent a heartbeat."),
+    URI_RESOLVER("metastore.uri.resolver", "hive.metastore.uri.resolver", "",
+            "If set, fully qualified class name of resolver for hive metastore uri's"),
     USERS_IN_ADMIN_ROLE("metastore.users.in.admin.role", "hive.users.in.admin.role", "", false,
         "Comma separated list of users who are in admin role for bootstrapping.\n" +
             "More users can be added in ADMIN role later."),
@@ -877,81 +919,91 @@ public class MetastoreConf {
     private final Object defaultVal;
     private final Validator validator;
     private final boolean caseSensitive;
+    private final String description;
 
-    ConfVars(String varname, String hiveName, String defaultVal, String comment) {
+    ConfVars(String varname, String hiveName, String defaultVal, String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = defaultVal;
       validator = null;
       caseSensitive = false;
+      this.description = description;
     }
 
     ConfVars(String varname, String hiveName, String defaultVal, Validator validator,
-             String comment) {
+             String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = defaultVal;
       this.validator = validator;
       caseSensitive = false;
+      this.description = description;
     }
 
     ConfVars(String varname, String hiveName, String defaultVal, boolean caseSensitive,
-             String comment) {
+             String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = defaultVal;
       validator = null;
       this.caseSensitive = caseSensitive;
+      this.description = description;
     }
 
-    ConfVars(String varname, String hiveName, long defaultVal, String comment) {
+    ConfVars(String varname, String hiveName, long defaultVal, String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = defaultVal;
       validator = null;
       caseSensitive = false;
+      this.description = description;
     }
 
     ConfVars(String varname, String hiveName, long defaultVal, Validator validator,
-             String comment) {
+             String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = defaultVal;
       this.validator = validator;
       caseSensitive = false;
+      this.description = description;
     }
 
-    ConfVars(String varname, String hiveName, boolean defaultVal, String comment) {
+    ConfVars(String varname, String hiveName, boolean defaultVal, String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = defaultVal;
       validator = null;
       caseSensitive = false;
+      this.description = description;
     }
 
-    ConfVars(String varname, String hiveName, double defaultVal, String comment) {
+    ConfVars(String varname, String hiveName, double defaultVal, String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = defaultVal;
       validator = null;
       caseSensitive = false;
+      this.description = description;
     }
 
-    ConfVars(String varname, String hiveName, long defaultVal, TimeUnit unit, String comment) {
+    ConfVars(String varname, String hiveName, long defaultVal, TimeUnit unit, String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = new TimeValue(defaultVal, unit);
       validator = new Validator.TimeValidator(unit);
       caseSensitive = false;
+      this.description = description;
     }
 
     ConfVars(String varname, String hiveName, long defaultVal, TimeUnit unit,
-             Validator validator, String comment) {
+             Validator validator, String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = new TimeValue(defaultVal, unit);
       this.validator = validator;
       caseSensitive = false;
+      this.description = description;
     }
 
     public void validate(String value) throws IllegalArgumentException {
@@ -992,6 +1044,10 @@ public class MetastoreConf {
       return defaultVal;
     }
 
+    public String getDescription() {
+      return description;
+    }
+
     @Override
     public String toString() {
       return varname;
@@ -1029,6 +1085,10 @@ public class MetastoreConf {
     throw new RuntimeException("You should never be creating one of these!");
   }
 
+  public static void setHiveSiteLocation(URL location) {
+    hiveSiteURL = location;
+  }
+
   public static Configuration newMetastoreConf() {
 
     Configuration conf = new Configuration();
@@ -1044,7 +1104,15 @@ public class MetastoreConf {
 
     // Add in hive-site.xml.  We add this first so that it gets overridden by the new metastore
     // specific files if they exist.
-    hiveSiteURL = findConfigFile(classLoader, "hive-site.xml");
+    if(hiveSiteURL == null) {
+      /*
+       * this 'if' is pretty lame - QTestUtil.QTestUtil() uses hiveSiteURL to load a specific
+       * hive-site.xml from data/conf/<subdir> so this makes it follow the same logic - otherwise
+       * HiveConf and MetastoreConf may load different hive-site.xml  ( For example,
+       * HiveConf uses data/conf/spark/hive-site.xml and MetastoreConf data/conf/hive-site.xml)
+       */
+      hiveSiteURL = findConfigFile(classLoader, "hive-site.xml");
+    }
     if (hiveSiteURL != null) conf.addResource(hiveSiteURL);
 
     // Now add hivemetastore-site.xml.  Again we add this before our own config files so that the

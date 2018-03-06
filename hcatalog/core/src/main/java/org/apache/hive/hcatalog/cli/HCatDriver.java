@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,13 +18,16 @@
  */
 package org.apache.hive.hcatalog.cli;
 
-import org.apache.hadoop.conf.Configuration;
+import java.io.IOException;
+import java.util.ArrayList;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -32,23 +35,25 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatConstants;
 
-public class HCatDriver extends Driver {
+public class HCatDriver {
 
-  @Override
+  private IDriver driver;
+
+  public HCatDriver(HiveConf hiveConf) {
+    driver = DriverFactory.newDriver(hiveConf);
+  }
+
   public CommandProcessorResponse run(String command) {
 
     CommandProcessorResponse cpr = null;
-    try {
-      cpr = super.run(command);
-    } catch (CommandNeedRetryException e) {
-      return new CommandProcessorResponse(-1, e.toString(), "");
-    }
+    cpr = driver.run(command);
 
     SessionState ss = SessionState.get();
 
     if (cpr.getResponseCode() == 0) {
       // Only attempt to do this, if cmd was successful.
-      int rc = setFSPermsNGrp(ss);
+      // FIXME: it would be probably better to move this to an after-execution
+      int rc = setFSPermsNGrp(ss, driver.getConf());
       cpr = new CommandProcessorResponse(rc);
     }
     // reset conf vars
@@ -58,9 +63,7 @@ public class HCatDriver extends Driver {
     return cpr;
   }
 
-  private int setFSPermsNGrp(SessionState ss) {
-
-    Configuration conf = ss.getConf();
+  private int setFSPermsNGrp(SessionState ss, HiveConf conf) {
 
     String tblName = conf.get(HCatConstants.HCAT_CREATE_TBL_NAME, "");
     if (tblName.isEmpty()) {
@@ -139,4 +142,14 @@ public class HCatDriver extends Driver {
       }
     }
   }
+
+  public int close() {
+    driver.close();
+    return 0;
+  }
+
+  public boolean getResults(ArrayList<String> res) throws IOException {
+    return driver.getResults(res);
+  }
+
 }

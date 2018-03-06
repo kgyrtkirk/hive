@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,13 +19,11 @@
 package org.apache.hive.hcatalog.listener;
 
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.FileMetadataHandler;
@@ -35,7 +33,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -61,9 +59,12 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -76,7 +77,9 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WMNullablePool;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
 import org.apache.thrift.TException;
 
 /**
@@ -247,6 +250,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public void updateCreationMetadata(String dbname, String tablename, CreationMetadata cm)
+      throws MetaException {
+    objectStore.updateCreationMetadata(dbname, tablename, cm);
+  }
+
+  @Override
   public void alterTable(String dbName, String name, Table newTable)
       throws InvalidObjectException, MetaException {
     if (shouldEventSucceed) {
@@ -264,6 +273,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public List<String> getTables(String dbName, String pattern, TableType tableType) throws MetaException {
     return objectStore.getTables(dbName, pattern, tableType);
+  }
+
+  @Override
+  public List<String> getMaterializedViewsForRewriting(String dbName)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getMaterializedViewsForRewriting(dbName);
   }
 
   @Override
@@ -934,10 +949,17 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public List<SQLDefaultConstraint> getDefaultConstraints(String db_name, String tbl_name)
+      throws MetaException {
+    return null;
+  }
+
+  @Override
   public List<String> createTableWithConstraints(Table tbl,
                                          List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
                                          List<SQLUniqueConstraint> uniqueConstraints,
-                                         List<SQLNotNullConstraint> notNullConstraints)
+                                         List<SQLNotNullConstraint> notNullConstraints,
+                                         List<SQLDefaultConstraint> defaultConstraints)
       throws InvalidObjectException, MetaException {
     return null;
   }
@@ -972,9 +994,9 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
-      String tableName) throws MetaException, NoSuchObjectException {
-    return objectStore.getColStatsForTablePartitions(dbName, tableName);
+  public List<String> addDefaultConstraints(List<SQLDefaultConstraint> nns)
+      throws InvalidObjectException, MetaException {
+    return null;
   }
 
   @Override
@@ -983,13 +1005,13 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public void createResourcePlan(WMResourcePlan resourcePlan, int defaultPoolSize)
-      throws AlreadyExistsException, InvalidObjectException, MetaException {
-    objectStore.createResourcePlan(resourcePlan, defaultPoolSize);
+  public void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
+      throws AlreadyExistsException, MetaException, InvalidObjectException, NoSuchObjectException {
+    objectStore.createResourcePlan(resourcePlan, copyFrom, defaultPoolSize);
   }
 
   @Override
-  public WMResourcePlan getResourcePlan(String name) throws NoSuchObjectException {
+  public WMFullResourcePlan getResourcePlan(String name) throws NoSuchObjectException {
     return objectStore.getResourcePlan(name);
   }
 
@@ -997,12 +1019,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public List<WMResourcePlan> getAllResourcePlans() throws MetaException {
     return objectStore.getAllResourcePlans();
   }
-
+ 
   @Override
-  public WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan resourcePlan, boolean canActivateDisabled)
-      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
-          MetaException {
-    return objectStore.alterResourcePlan(name, resourcePlan, canActivateDisabled);
+  public WMFullResourcePlan alterResourcePlan(String name, WMNullableResourcePlan resourcePlan,
+      boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException, MetaException {
+    return objectStore.alterResourcePlan(name, resourcePlan, canActivateDisabled, canDeactivate, isReplace);
   }
 
   @Override
@@ -1011,7 +1033,7 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> validateResourcePlan(String name)
+  public WMValidateResourcePlanResponse validateResourcePlan(String name)
       throws NoSuchObjectException, InvalidObjectException, MetaException {
     return objectStore.validateResourcePlan(name);
   }
@@ -1053,7 +1075,7 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public void alterPool(WMPool pool, String poolPath) throws AlreadyExistsException,
+  public void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
       NoSuchObjectException, InvalidOperationException, MetaException {
     objectStore.alterPool(pool, poolPath);
   }
@@ -1088,5 +1110,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public void dropWMTriggerToPoolMapping(String resourcePlanName, String triggerName,
       String poolPath) throws NoSuchObjectException, InvalidOperationException, MetaException {
     objectStore.dropWMTriggerToPoolMapping(resourcePlanName, triggerName, poolPath);
+  }
+
+  @Override
+  public List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String dbName)
+      throws MetaException, NoSuchObjectException {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -93,19 +93,6 @@ public class VectorizedBatchUtil {
     cv.isNull[rowIndex] = true;
     if (cv.noNulls) {
       cv.noNulls = false;
-    }
-  }
-
-  /**
-   * Iterates thru all the column vectors and sets noNull to
-   * specified value.
-   *
-   * @param batch
-   *          Batch on which noNull is set
-   */
-  public static void setNoNullFields(VectorizedRowBatch batch) {
-    for (int i = 0; i < batch.numCols; i++) {
-      batch.cols[i].noNulls = true;
     }
   }
 

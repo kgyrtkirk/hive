@@ -16,9 +16,10 @@
 
 package org.apache.hive.jdbc;
 
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
+
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
@@ -29,7 +30,6 @@ import org.apache.hadoop.hive.ql.wm.Expression;
 import org.apache.hadoop.hive.ql.wm.ExpressionFactory;
 import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.junit.Test;
-
 import com.google.common.collect.Lists;
 
 public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest {
@@ -37,6 +37,16 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
   @Test(timeout = 60000)
   public void testTriggerSlowQueryElapsedTime() throws Exception {
     Expression expression = ExpressionFactory.fromString("ELAPSED_TIME > 20000");
+    Trigger trigger = new ExecutionTrigger("slow_query", expression, new Action(Action.Type.KILL_QUERY));
+    setupTriggers(Lists.newArrayList(trigger));
+    String query = "select sleep(t1.under_col, 500), t1.value from " + tableName + " t1 join " + tableName +
+      " t2 on t1.under_col>=t2.under_col";
+    runQueryWithTrigger(query, null, trigger + " violated");
+  }
+
+  @Test(timeout = 60000)
+  public void testTriggerShortQueryElapsedTime() throws Exception {
+    Expression expression = ExpressionFactory.fromString("ELAPSED_TIME > 100");
     Trigger trigger = new ExecutionTrigger("slow_query", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 500), t1.value from " + tableName + " t1 join " + tableName +
@@ -91,7 +101,17 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
 
   @Test(timeout = 60000)
   public void testTriggerTotalTasks() throws Exception {
-    Expression expression = ExpressionFactory.fromString("TOTAL_TASKS > 50");
+    Expression expression = ExpressionFactory.fromString("VERTEX_TOTAL_TASKS > 50");
+    Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
+    setupTriggers(Lists.newArrayList(trigger));
+    String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
+      " t2 on t1.under_col>=t2.under_col";
+    runQueryWithTrigger(query, getConfigs(), trigger + " violated");
+  }
+
+  @Test(timeout = 60000)
+  public void testTriggerDagTotalTasks() throws Exception {
+    Expression expression = ExpressionFactory.fromString("DAG_TOTAL_TASKS > 50");
     Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
@@ -219,6 +239,54 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
   }
 
   @Test(timeout = 60000)
+  public void testTriggerDagRawInputSplitsKill() throws Exception {
+    // Map 1 - 55 splits
+    // Map 3 - 55 splits
+    Expression expression = ExpressionFactory.fromString("DAG_RAW_INPUT_SPLITS > 100");
+    Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
+    setupTriggers(Lists.newArrayList(trigger));
+    String query = "select t1.under_col, t1.value from " + tableName + " t1 join " + tableName +
+      " t2 on t1.under_col>=t2.under_col";
+    runQueryWithTrigger(query, getConfigs(), "Query was cancelled");
+  }
+
+  @Test(timeout = 60000)
+  public void testTriggerVertexRawInputSplitsNoKill() throws Exception {
+    // Map 1 - 55 splits
+    // Map 3 - 55 splits
+    Expression expression = ExpressionFactory.fromString("VERTEX_RAW_INPUT_SPLITS > 100");
+    Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
+    setupTriggers(Lists.newArrayList(trigger));
+    String query = "select t1.under_col, t1.value from " + tableName + " t1 join " + tableName +
+      " t2 on t1.under_col>=t2.under_col";
+    runQueryWithTrigger(query, getConfigs(), null);
+  }
+
+  @Test(timeout = 60000)
+  public void testTriggerVertexRawInputSplitsKill() throws Exception {
+    // Map 1 - 55 splits
+    // Map 3 - 55 splits
+    Expression expression = ExpressionFactory.fromString("VERTEX_RAW_INPUT_SPLITS > 50");
+    Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
+    setupTriggers(Lists.newArrayList(trigger));
+    String query = "select t1.under_col, t1.value from " + tableName + " t1 join " + tableName +
+      " t2 on t1.under_col>=t2.under_col";
+    runQueryWithTrigger(query, getConfigs(), "Query was cancelled");
+  }
+
+  @Test(timeout = 60000)
+  public void testTriggerDefaultRawInputSplits() throws Exception {
+    // Map 1 - 55 splits
+    // Map 3 - 55 splits
+    Expression expression = ExpressionFactory.fromString("RAW_INPUT_SPLITS > 50");
+    Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
+    setupTriggers(Lists.newArrayList(trigger));
+    String query = "select t1.under_col, t1.value from " + tableName + " t1 join " + tableName +
+      " t2 on t1.under_col>=t2.under_col";
+    runQueryWithTrigger(query, getConfigs(), "Query was cancelled");
+  }
+
+  @Test(timeout = 60000)
   public void testMultipleTriggers1() throws Exception {
     Expression shuffleExpression = ExpressionFactory.fromString("HDFS_BYTES_READ > 1000000");
     Trigger shuffleTrigger = new ExecutionTrigger("big_shuffle", shuffleExpression, new Action(Action.Type.KILL_QUERY));
@@ -247,7 +315,9 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     WMFullResourcePlan rp = new WMFullResourcePlan(
       new WMResourcePlan("rp"), null);
     for (Trigger trigger : triggers) {
-      rp.addToTriggers(wmTriggerFromTrigger(trigger));
+      WMTrigger wmTrigger = wmTriggerFromTrigger(trigger);
+      wmTrigger.setIsInUnmanaged(true);
+      rp.addToTriggers(wmTrigger);
     }
     TezSessionPoolManager.getInstance().updateTriggers(rp);
   }

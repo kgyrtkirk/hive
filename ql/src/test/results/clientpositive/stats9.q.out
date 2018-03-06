@@ -31,9 +31,13 @@ STAGE PLANS:
           TableScan
             alias: analyze_srcbucket
 <<<<<<< HEAD
+<<<<<<< HEAD
             Statistics: Num rows: 39 Data size: 11603 Basic stats: COMPLETE Column stats: COMPLETE
 =======
             Statistics: Num rows: 1 Data size: 116030 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> asf/master
+=======
+            Statistics: Num rows: 391 Data size: 116030 Basic stats: COMPLETE Column stats: COMPLETE
 >>>>>>> asf/master
 
   Stage: Stage-1

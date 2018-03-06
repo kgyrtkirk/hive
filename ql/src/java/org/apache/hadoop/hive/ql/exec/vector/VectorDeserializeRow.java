@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -108,6 +108,8 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
   private static class Field {
 
+    private boolean isPrimitive;
+ 
     private Category category;
 
     private PrimitiveCategory primitiveCategory;
@@ -137,6 +139,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
     public Field(PrimitiveCategory primitiveCategory, DataTypePhysicalVariation dataTypePhysicalVariation,
         int maxLength) {
+      isPrimitive = true;
       this.category = Category.PRIMITIVE;
       this.primitiveCategory = primitiveCategory;
       this.dataTypePhysicalVariation = dataTypePhysicalVariation;
@@ -149,6 +152,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     }
 
     public Field(Category category, ComplexTypeHelper complexTypeHelper, TypeInfo typeInfo) {
+      isPrimitive = false;
       this.category = category;
       this.objectInspector = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo);
       this.primitiveCategory = null;
@@ -157,6 +161,10 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       this.isConvert = false;
       this.conversionWritable = null;
       this.complexTypeHelper = complexTypeHelper;
+    }
+
+    public boolean getIsPrimitive() {
+      return isPrimitive;
     }
 
     public Category getCategory() {
@@ -169,6 +177,10 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
     public DataTypePhysicalVariation getDataTypePhysicalVariation() {
       return dataTypePhysicalVariation;
+    }
+
+    public void setMaxLength(int maxLength) {
+      this.maxLength = maxLength;
     }
 
     public int getMaxLength() {
@@ -331,13 +343,25 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
   /*
    * Initialize the conversion related arrays.  Assumes initTopLevelField has already been called.
    */
-  private void addTopLevelConversion(int logicalColumnIndex) {
+  private void addTopLevelConversion(int logicalColumnIndex, TypeInfo targetTypeInfo) {
 
     final Field field = topLevelFields[logicalColumnIndex];
     field.setIsConvert(true);
 
-    if (field.getCategory() == Category.PRIMITIVE) {
+    if (field.getIsPrimitive()) {
 
+      PrimitiveTypeInfo targetPrimitiveTypeInfo = (PrimitiveTypeInfo) targetTypeInfo;
+      switch (targetPrimitiveTypeInfo.getPrimitiveCategory()) {
+      case CHAR:
+        field.setMaxLength(((CharTypeInfo) targetPrimitiveTypeInfo).getLength());
+        break;
+      case VARCHAR:
+        field.setMaxLength(((VarcharTypeInfo) targetPrimitiveTypeInfo).getLength());
+        break;
+      default:
+        // No additional data type specific setting.
+        break;
+      }
       field.setConversionWritable(
           VectorizedBatchUtil.getPrimitiveWritable(field.getPrimitiveCategory()));
     }
@@ -474,7 +498,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
             initTopLevelField(i, i, sourceTypeInfo, dataTypePhysicalVariations[i]);
 
             // UNDONE: No for List and Map; Yes for Struct and Union when field count different...
-            addTopLevelConversion(i);
+            addTopLevelConversion(i, targetTypeInfo);
             atLeastOneConvert = true;
 
           }
@@ -750,24 +774,25 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       return;
     }
 
-    switch (field.getCategory()) {
-    case PRIMITIVE:
+    if (field.getIsPrimitive()) {
       storePrimitiveRowColumn(fieldColVector, field, batchIndex, canRetainByteRef);
-      break;
-    case LIST:
-      storeListRowColumn(fieldColVector, field, batchIndex, canRetainByteRef);
-      break;
-    case MAP:
-      storeMapRowColumn(fieldColVector, field, batchIndex, canRetainByteRef);
-      break;
-    case STRUCT:
-      storeStructRowColumn(fieldColVector, field, batchIndex, canRetainByteRef);
-      break;
-    case UNION:
-      storeUnionRowColumn(fieldColVector, field, batchIndex, canRetainByteRef);
-      break;
-    default:
-      throw new RuntimeException("Category " + field.getCategory() + " not supported");
+    } else {
+      switch (field.getCategory()) {
+      case LIST:
+        storeListRowColumn(fieldColVector, field, batchIndex, canRetainByteRef);
+        break;
+      case MAP:
+        storeMapRowColumn(fieldColVector, field, batchIndex, canRetainByteRef);
+        break;
+      case STRUCT:
+        storeStructRowColumn(fieldColVector, field, batchIndex, canRetainByteRef);
+        break;
+      case UNION:
+        storeUnionRowColumn(fieldColVector, field, batchIndex, canRetainByteRef);
+        break;
+      default:
+        throw new RuntimeException("Category " + field.getCategory() + " not supported");
+      }
     }
 
     fieldColVector.isNull[batchIndex] = false;
@@ -905,24 +930,25 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     final int projectionColumnNum = projectionColumnNums[logicalColumnIndex];
     final ColumnVector colVector = batch.cols[projectionColumnNum];
 
-    switch (field.getCategory()) {
-    case PRIMITIVE:
+    if (field.getIsPrimitive()) {
       storePrimitiveRowColumn(colVector, field, batchIndex, canRetainByteRef);
-      break;
-    case LIST:
-      storeListRowColumn(colVector, field, batchIndex, canRetainByteRef);
-      break;
-    case MAP:
-      storeMapRowColumn(colVector, field, batchIndex, canRetainByteRef);
-      break;
-    case STRUCT:
-      storeStructRowColumn(colVector, field, batchIndex, canRetainByteRef);
-      break;
-    case UNION:
-      storeUnionRowColumn(colVector, field, batchIndex, canRetainByteRef);
-      break;
-    default:
-      throw new RuntimeException("Category " + field.getCategory() + " not supported");
+    } else {
+      switch (field.getCategory()) {
+      case LIST:
+        storeListRowColumn(colVector, field, batchIndex, canRetainByteRef);
+        break;
+      case MAP:
+        storeMapRowColumn(colVector, field, batchIndex, canRetainByteRef);
+        break;
+      case STRUCT:
+        storeStructRowColumn(colVector, field, batchIndex, canRetainByteRef);
+        break;
+      case UNION:
+        storeUnionRowColumn(colVector, field, batchIndex, canRetainByteRef);
+        break;
+      default:
+        throw new RuntimeException("Category " + field.getCategory() + " not supported");
+      }
     }
 
     // We always set the null flag to false when there is a value.
@@ -947,24 +973,25 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     final ColumnVector colVector = batch.cols[projectionColumnIndex];
 
     final Object convertSourceWritable;
-    switch (field.getCategory()) {
-    case PRIMITIVE:
+    if (field.getIsPrimitive()) {
       convertSourceWritable = convertPrimitiveRowColumn(batchIndex, field);
-      break;
-    case LIST:
-      convertSourceWritable = convertListRowColumn(colVector, batchIndex, field);
-      break;
-    case MAP:
-      convertSourceWritable = convertMapRowColumn(colVector, batchIndex, field);
-      break;
-    case STRUCT:
-      convertSourceWritable = convertStructRowColumn(colVector, batchIndex, field);
-      break;
-    case UNION:
-      convertSourceWritable = convertUnionRowColumn(colVector, batchIndex, field);
-      break;
-    default:
-      throw new RuntimeException();
+    } else {
+      switch (field.getCategory()) {
+      case LIST:
+        convertSourceWritable = convertListRowColumn(colVector, batchIndex, field);
+        break;
+      case MAP:
+        convertSourceWritable = convertMapRowColumn(colVector, batchIndex, field);
+        break;
+      case STRUCT:
+        convertSourceWritable = convertStructRowColumn(colVector, batchIndex, field);
+        break;
+      case UNION:
+        convertSourceWritable = convertUnionRowColumn(colVector, batchIndex, field);
+        break;
+      default:
+        throw new RuntimeException();
+      }
     }
 
     /*
@@ -984,10 +1011,11 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     }
 
     colVector.isNull[batchIndex] = false;
+    if (field.getIsPrimitive()) {
+      return convertPrimitiveRowColumn(batchIndex, field);
+    }
 
     switch (field.getCategory()) {
-    case PRIMITIVE:
-      return convertPrimitiveRowColumn(batchIndex, field);
     case LIST:
       return convertListRowColumn(colVector, batchIndex, field);
     case MAP:

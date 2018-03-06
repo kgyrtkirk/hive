@@ -112,7 +112,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("create_table_with_environment_context\n");
   }
 
-  void create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys, const std::vector<SQLUniqueConstraint> & uniqueConstraints, const std::vector<SQLNotNullConstraint> & notNullConstraints) {
+  void create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys, const std::vector<SQLUniqueConstraint> & uniqueConstraints, const std::vector<SQLNotNullConstraint> & notNullConstraints, const std::vector<SQLDefaultConstraint> & defaultConstraints) {
     // Your implementation goes here
     printf("create_table_with_constraints\n");
   }
@@ -142,6 +142,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_not_null_constraint\n");
   }
 
+  void add_default_constraint(const AddDefaultConstraintRequest& req) {
+    // Your implementation goes here
+    printf("add_default_constraint\n");
+  }
+
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) {
     // Your implementation goes here
     printf("drop_table\n");
@@ -165,6 +170,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_tables_by_type(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern, const std::string& tableType) {
     // Your implementation goes here
     printf("get_tables_by_type\n");
+  }
+
+  void get_materialized_views_for_rewriting(std::vector<std::string> & _return, const std::string& db_name) {
+    // Your implementation goes here
+    printf("get_materialized_views_for_rewriting\n");
   }
 
   void get_table_meta(std::vector<TableMeta> & _return, const std::string& db_patterns, const std::string& tbl_patterns, const std::vector<std::string> & tbl_types) {
@@ -195,6 +205,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_table_objects_by_name_req(GetTablesResult& _return, const GetTablesRequest& req) {
     // Your implementation goes here
     printf("get_table_objects_by_name_req\n");
+  }
+
+  void get_materialization_invalidation_info(std::map<std::string, Materialization> & _return, const std::string& dbname, const std::vector<std::string> & tbl_names) {
+    // Your implementation goes here
+    printf("get_materialization_invalidation_info\n");
+  }
+
+  void update_creation_metadata(const std::string& dbname, const std::string& tbl_name, const CreationMetadata& creation_metadata) {
+    // Your implementation goes here
+    printf("update_creation_metadata\n");
   }
 
   void get_table_names_by_filter(std::vector<std::string> & _return, const std::string& dbname, const std::string& filter, const int16_t max_tables) {
@@ -482,6 +502,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_not_null_constraints\n");
   }
 
+  void get_default_constraints(DefaultConstraintsResponse& _return, const DefaultConstraintsRequest& request) {
+    // Your implementation goes here
+    printf("get_default_constraints\n");
+  }
+
   bool update_table_column_statistics(const ColumnStatistics& stats_obj) {
     // Your implementation goes here
     printf("update_table_column_statistics\n");
@@ -720,6 +745,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void commit_txn(const CommitTxnRequest& rqst) {
     // Your implementation goes here
     printf("commit_txn\n");
+  }
+
+  void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst) {
+    // Your implementation goes here
+    printf("get_valid_write_ids\n");
+  }
+
+  void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst) {
+    // Your implementation goes here
+    printf("allocate_table_write_ids\n");
   }
 
   void lock(LockResponse& _return, const LockRequest& rqst) {

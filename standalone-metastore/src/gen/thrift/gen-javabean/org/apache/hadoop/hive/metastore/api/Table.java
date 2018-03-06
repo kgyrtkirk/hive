@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField PRIVILEGES_FIELD_DESC = new org.apache.thrift.protocol.TField("privileges", org.apache.thrift.protocol.TType.STRUCT, (short)13);
   private static final org.apache.thrift.protocol.TField TEMPORARY_FIELD_DESC = new org.apache.thrift.protocol.TField("temporary", org.apache.thrift.protocol.TType.BOOL, (short)14);
   private static final org.apache.thrift.protocol.TField REWRITE_ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("rewriteEnabled", org.apache.thrift.protocol.TType.BOOL, (short)15);
+  private static final org.apache.thrift.protocol.TField CREATION_METADATA_FIELD_DESC = new org.apache.thrift.protocol.TField("creationMetadata", org.apache.thrift.protocol.TType.STRUCT, (short)16);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -75,6 +76,7 @@ import org.slf4j.LoggerFactory;
   private PrincipalPrivilegeSet privileges; // optional
   private boolean temporary; // optional
   private boolean rewriteEnabled; // optional
+  private CreationMetadata creationMetadata; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -92,7 +94,8 @@ import org.slf4j.LoggerFactory;
     TABLE_TYPE((short)12, "tableType"),
     PRIVILEGES((short)13, "privileges"),
     TEMPORARY((short)14, "temporary"),
-    REWRITE_ENABLED((short)15, "rewriteEnabled");
+    REWRITE_ENABLED((short)15, "rewriteEnabled"),
+    CREATION_METADATA((short)16, "creationMetadata");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -137,6 +140,8 @@ import org.slf4j.LoggerFactory;
           return TEMPORARY;
         case 15: // REWRITE_ENABLED
           return REWRITE_ENABLED;
+        case 16: // CREATION_METADATA
+          return CREATION_METADATA;
         default:
           return null;
       }
@@ -183,7 +188,7 @@ import org.slf4j.LoggerFactory;
   private static final int __TEMPORARY_ISSET_ID = 3;
   private static final int __REWRITEENABLED_ISSET_ID = 4;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.REWRITE_ENABLED};
+  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.REWRITE_ENABLED,_Fields.CREATION_METADATA};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -220,6 +225,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.REWRITE_ENABLED, new org.apache.thrift.meta_data.FieldMetaData("rewriteEnabled", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.CREATION_METADATA, new org.apache.thrift.meta_data.FieldMetaData("creationMetadata", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT        , "CreationMetadata")));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Table.class, metaDataMap);
   }
@@ -306,6 +313,9 @@ import org.slf4j.LoggerFactory;
     }
     this.temporary = other.temporary;
     this.rewriteEnabled = other.rewriteEnabled;
+    if (other.isSetCreationMetadata()) {
+      this.creationMetadata = other.creationMetadata;
+    }
   }
 
   public Table deepCopy() {
@@ -334,6 +344,7 @@ import org.slf4j.LoggerFactory;
 
     setRewriteEnabledIsSet(false);
     this.rewriteEnabled = false;
+    this.creationMetadata = null;
   }
 
   public String getTableName() {
@@ -702,6 +713,29 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __REWRITEENABLED_ISSET_ID, value);
   }
 
+  public CreationMetadata getCreationMetadata() {
+    return this.creationMetadata;
+  }
+
+  public void setCreationMetadata(CreationMetadata creationMetadata) {
+    this.creationMetadata = creationMetadata;
+  }
+
+  public void unsetCreationMetadata() {
+    this.creationMetadata = null;
+  }
+
+  /** Returns true if field creationMetadata is set (has been assigned a value) and false otherwise */
+  public boolean isSetCreationMetadata() {
+    return this.creationMetadata != null;
+  }
+
+  public void setCreationMetadataIsSet(boolean value) {
+    if (!value) {
+      this.creationMetadata = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TABLE_NAME:
@@ -824,6 +858,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case CREATION_METADATA:
+      if (value == null) {
+        unsetCreationMetadata();
+      } else {
+        setCreationMetadata((CreationMetadata)value);
+      }
+      break;
+
     }
   }
 
@@ -874,6 +916,9 @@ import org.slf4j.LoggerFactory;
     case REWRITE_ENABLED:
       return isRewriteEnabled();
 
+    case CREATION_METADATA:
+      return getCreationMetadata();
+
     }
     throw new IllegalStateException();
   }
@@ -915,6 +960,8 @@ import org.slf4j.LoggerFactory;
       return isSetTemporary();
     case REWRITE_ENABLED:
       return isSetRewriteEnabled();
+    case CREATION_METADATA:
+      return isSetCreationMetadata();
     }
     throw new IllegalStateException();
   }
@@ -1067,6 +1114,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_creationMetadata = true && this.isSetCreationMetadata();
+    boolean that_present_creationMetadata = true && that.isSetCreationMetadata();
+    if (this_present_creationMetadata || that_present_creationMetadata) {
+      if (!(this_present_creationMetadata && that_present_creationMetadata))
+        return false;
+      if (!this.creationMetadata.equals(that.creationMetadata))
+        return false;
+    }
+
     return true;
   }
 
@@ -1148,6 +1204,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_rewriteEnabled);
     if (present_rewriteEnabled)
       list.add(rewriteEnabled);
+
+    boolean present_creationMetadata = true && (isSetCreationMetadata());
+    list.add(present_creationMetadata);
+    if (present_creationMetadata)
+      list.add(creationMetadata);
 
     return list.hashCode();
   }
@@ -1310,6 +1371,16 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetCreationMetadata()).compareTo(other.isSetCreationMetadata());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCreationMetadata()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.creationMetadata, other.creationMetadata);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1433,6 +1504,16 @@ import org.slf4j.LoggerFactory;
       if (!first) sb.append(", ");
       sb.append("rewriteEnabled:");
       sb.append(this.rewriteEnabled);
+      first = false;
+    }
+    if (isSetCreationMetadata()) {
+      if (!first) sb.append(", ");
+      sb.append("creationMetadata:");
+      if (this.creationMetadata == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.creationMetadata);
+      }
       first = false;
     }
     sb.append(")");
@@ -1631,6 +1712,15 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 16: // CREATION_METADATA
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.creationMetadata = new CreationMetadata();
+              struct.creationMetadata.read(iprot);
+              struct.setCreationMetadataIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1730,6 +1820,13 @@ import org.slf4j.LoggerFactory;
         oprot.writeBool(struct.rewriteEnabled);
         oprot.writeFieldEnd();
       }
+      if (struct.creationMetadata != null) {
+        if (struct.isSetCreationMetadata()) {
+          oprot.writeFieldBegin(CREATION_METADATA_FIELD_DESC);
+          struct.creationMetadata.write(oprot);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1793,7 +1890,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetRewriteEnabled()) {
         optionals.set(14);
       }
-      oprot.writeBitSet(optionals, 15);
+      if (struct.isSetCreationMetadata()) {
+        optionals.set(15);
+      }
+      oprot.writeBitSet(optionals, 16);
       if (struct.isSetTableName()) {
         oprot.writeString(struct.tableName);
       }
@@ -1852,12 +1952,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetRewriteEnabled()) {
         oprot.writeBool(struct.rewriteEnabled);
       }
+      if (struct.isSetCreationMetadata()) {
+        struct.creationMetadata.write(oprot);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Table struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(15);
+      BitSet incoming = iprot.readBitSet(16);
       if (incoming.get(0)) {
         struct.tableName = iprot.readString();
         struct.setTableNameIsSet(true);
@@ -1940,6 +2043,11 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(14)) {
         struct.rewriteEnabled = iprot.readBool();
         struct.setRewriteEnabledIsSet(true);
+      }
+      if (incoming.get(15)) {
+        struct.creationMetadata = new CreationMetadata();
+        struct.creationMetadata.read(iprot);
+        struct.setCreationMetadataIsSet(true);
       }
     }
   }

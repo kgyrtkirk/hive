@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,9 +21,12 @@ import org.apache.hadoop.hive.ql.parse.repl.load.message.AddNotNullConstraintHan
 import org.apache.hadoop.hive.ql.parse.repl.load.message.AddForeignKeyHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.AddPrimaryKeyHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.AddUniqueConstraintHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.AlterDatabaseHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.CreateDatabaseHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.CreateFunctionHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.DefaultHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.DropConstraintHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.DropDatabaseHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.DropFunctionHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.DropPartitionHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.DropTableHandler;
@@ -65,6 +68,12 @@ public enum DumpType {
     @Override
     public MessageHandler handler() {
       return new DropPartitionHandler();
+    }
+  },
+  EVENT_ALTER_DATABASE("EVENT_ALTER_DATABASE") {
+    @Override
+    public MessageHandler handler() {
+      return new AlterDatabaseHandler();
     }
   },
   EVENT_ALTER_TABLE("EVENT_ALTER_TABLE") {
@@ -161,6 +170,18 @@ public enum DumpType {
     @Override
     public MessageHandler handler() {
       return new DefaultHandler();
+    }
+  },
+  EVENT_CREATE_DATABASE("EVENT_CREATE_DATABASE") {
+    @Override
+    public MessageHandler handler() {
+      return new CreateDatabaseHandler();
+    }
+  },
+  EVENT_DROP_DATABASE("EVENT_DROP_DATABASE") {
+    @Override
+    public MessageHandler handler() {
+      return new DropDatabaseHandler();
     }
   };
 

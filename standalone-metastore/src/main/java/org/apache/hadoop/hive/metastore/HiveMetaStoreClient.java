@@ -30,6 +30,7 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,7 +45,6 @@ import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.security.PrivilegedExceptionAction;
 
 import javax.security.auth.login.LoginException;
 
@@ -53,18 +53,21 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.hooks.URIResolverHook;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
@@ -113,6 +116,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private String tokenStrForm;
   private final boolean localMetaStore;
   private final MetaStoreFilterHook filterHook;
+  private final URIResolverHook uriResolverHook;
   private final int fileMetadataBatchSize;
 
   private Map<String, String> currentMetaVars;
@@ -146,6 +150,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     version = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) ? TEST_VERSION : VERSION;
     filterHook = loadFilterHooks();
+    uriResolverHook = loadUriResolverHook();
     fileMetadataBatchSize = MetastoreConf.getIntVar(
         conf, ConfVars.BATCH_RETRIEVE_OBJECTS_MAX);
 
@@ -159,6 +164,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       // instantiate the metastore server handler directly instead of connecting
       // through the network
       client = HiveMetaStore.newRetryingHMSHandler("hive client", this.conf, true);
+      // Initialize materializations invalidation cache (only for local metastore)
+      MaterializationsInvalidationCache.get().init(conf, (IHMSHandler) client);
       isConnected = true;
       snapshotActiveConf();
       return;
@@ -171,37 +178,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
     // user wants file store based configuration
     if (MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS) != null) {
-      String metastoreUrisString[] = MetastoreConf.getVar(conf,
-          ConfVars.THRIFT_URIS).split(",");
-      metastoreUris = new URI[metastoreUrisString.length];
-      try {
-        int i = 0;
-        for (String s : metastoreUrisString) {
-          URI tmpUri = new URI(s);
-          if (tmpUri.getScheme() == null) {
-            throw new IllegalArgumentException("URI: " + s
-                + " does not have a scheme");
-          }
-          metastoreUris[i++] = new URI(
-              tmpUri.getScheme(),
-              tmpUri.getUserInfo(),
-              HadoopThriftAuthBridge.getBridge().getCanonicalHostName(tmpUri.getHost()),
-              tmpUri.getPort(),
-              tmpUri.getPath(),
-              tmpUri.getQuery(),
-              tmpUri.getFragment()
-          );
-
-        }
-        // make metastore URIS random
-        List<?> uriList = Arrays.asList(metastoreUris);
-        Collections.shuffle(uriList);
-        metastoreUris = (URI[]) uriList.toArray();
-      } catch (IllegalArgumentException e) {
-        throw (e);
-      } catch (Exception e) {
-        MetaStoreUtils.logAndThrowMetaException(e);
-      }
+      resolveUris();
     } else {
       LOG.error("NOT getting uris from conf");
       throw new MetaException("MetaStoreURIs not found in conf file");
@@ -246,6 +223,51 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     open();
   }
 
+  private void resolveUris() throws MetaException {
+    String metastoreUrisString[] =  MetastoreConf.getVar(conf,
+            ConfVars.THRIFT_URIS).split(",");
+
+    List<URI> metastoreURIArray = new ArrayList<URI>();
+    try {
+      int i = 0;
+      for (String s : metastoreUrisString) {
+        URI tmpUri = new URI(s);
+        if (tmpUri.getScheme() == null) {
+          throw new IllegalArgumentException("URI: " + s
+                  + " does not have a scheme");
+        }
+        if (uriResolverHook != null) {
+          metastoreURIArray.addAll(uriResolverHook.resolveURI(tmpUri));
+        } else {
+          metastoreURIArray.add(new URI(
+                  tmpUri.getScheme(),
+                  tmpUri.getUserInfo(),
+                  HadoopThriftAuthBridge.getBridge().getCanonicalHostName(tmpUri.getHost()),
+                  tmpUri.getPort(),
+                  tmpUri.getPath(),
+                  tmpUri.getQuery(),
+                  tmpUri.getFragment()
+          ));
+        }
+      }
+      metastoreUris = new URI[metastoreURIArray.size()];
+      for (int j = 0; j < metastoreURIArray.size(); j++) {
+        metastoreUris[j] = metastoreURIArray.get(j);
+      }
+
+      if (MetastoreConf.getVar(conf, ConfVars.THRIFT_URI_SELECTION).equalsIgnoreCase("RANDOM")) {
+        List uriList = Arrays.asList(metastoreUris);
+        Collections.shuffle(uriList);
+        metastoreUris = (URI[]) uriList.toArray();
+      }
+    } catch (IllegalArgumentException e) {
+      throw (e);
+    } catch (Exception e) {
+      MetaStoreUtils.logAndThrowMetaException(e);
+    }
+  }
+
+
   private MetaStoreFilterHook loadFilterHooks() throws IllegalStateException {
     Class<? extends MetaStoreFilterHook> authProviderClass = MetastoreConf.
         getClass(conf, ConfVars.FILTER_HOOK, DefaultMetaStoreFilterHookImpl.class,
@@ -257,6 +279,26 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       return constructor.newInstance(conf);
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InstantiationException | IllegalArgumentException | InvocationTargetException e) {
       throw new IllegalStateException(msg + e.getMessage(), e);
+    }
+  }
+
+  //multiple clients may initialize the hook at the same time
+  synchronized private URIResolverHook loadUriResolverHook() throws IllegalStateException {
+
+    String uriResolverClassName =
+            MetastoreConf.getAsString(conf, ConfVars.URI_RESOLVER);
+    if (uriResolverClassName.equals("")) {
+      return null;
+    } else {
+      LOG.info("Loading uri resolver" + uriResolverClassName);
+      try {
+        Class<?> uriResolverClass = Class.forName(uriResolverClassName, true,
+                JavaUtils.getClassLoader());
+        return (URIResolverHook) ReflectionUtils.newInstance(uriResolverClass, null);
+      } catch (Exception e) {
+        LOG.error("Exception loading uri resolver hook" + e);
+        return null;
+      }
     }
   }
 
@@ -321,10 +363,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           " at the client level.");
     } else {
       close();
-      // Swap the first element of the metastoreUris[] with a random element from the rest
-      // of the array. Rationale being that this method will generally be called when the default
-      // connection has died and the default connection is likely to be the first array element.
-      promoteRandomMetaStoreURI();
+
+      if (uriResolverHook != null) {
+        //for dynamic uris, re-lookup if there are new metastore locations
+        resolveUris();
+      }
+
+      if (MetastoreConf.getVar(conf, ConfVars.THRIFT_URI_SELECTION).equalsIgnoreCase("RANDOM")) {
+        // Swap the first element of the metastoreUris[] with a random element from the rest
+        // of the array. Rationale being that this method will generally be called when the default
+        // connection has died and the default connection is likely to be the first array element.
+        promoteRandomMetaStoreURI();
+      }
       open();
     }
   }
@@ -751,7 +801,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void createTableWithConstraints(Table tbl,
     List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
     List<SQLUniqueConstraint> uniqueConstraints,
-    List<SQLNotNullConstraint> notNullConstraints)
+    List<SQLNotNullConstraint> notNullConstraints,
+    List<SQLDefaultConstraint> defaultConstraints)
         throws AlreadyExistsException, InvalidObjectException,
         MetaException, NoSuchObjectException, TException {
     HiveMetaHook hook = getHook(tbl);
@@ -762,7 +813,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       // Subclasses can override this step (for example, for temporary tables)
       client.create_table_with_constraints(tbl, primaryKeys, foreignKeys,
-          uniqueConstraints, notNullConstraints);
+          uniqueConstraints, notNullConstraints, defaultConstraints);
       if (hook != null) {
         hook.commitCreateTable(tbl);
       }
@@ -802,6 +853,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void addNotNullConstraint(List<SQLNotNullConstraint> notNullConstraintCols) throws
     NoSuchObjectException, MetaException, TException {
     client.add_not_null_constraint(new AddNotNullConstraintRequest(notNullConstraintCols));
+  }
+
+  @Override
+  public void addDefaultConstraint(List<SQLDefaultConstraint> defaultConstraints) throws
+      NoSuchObjectException, MetaException, TException {
+    client.add_default_constraint(new AddDefaultConstraintRequest(defaultConstraints));
   }
 
   /**
@@ -1398,6 +1455,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   /** {@inheritDoc} */
   @Override
+  public Map<String, Materialization> getMaterializationsInvalidationInfo(String dbName, List<String> viewNames)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException {
+    return client.get_materialization_invalidation_info(
+        dbName, filterHook.filterTableNames(dbName, viewNames));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void updateCreationMetadata(String dbName, String tableName, CreationMetadata cm)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException {
+    client.update_creation_metadata(dbName, tableName, cm);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public List<String> listTableNamesByFilter(String dbName, String filter, short maxTables)
       throws MetaException, TException, InvalidOperationException, UnknownDBException {
     return filterHook.filterTableNames(dbName,
@@ -1431,7 +1503,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<String> getTables(String dbname, String tablePattern, TableType tableType) throws MetaException {
     try {
-      return filterHook.filterTableNames(dbname, client.get_tables_by_type(dbname, tablePattern, tableType.toString()));
+      return filterHook.filterTableNames(dbname,
+          client.get_tables_by_type(dbname, tablePattern, tableType.toString()));
+    } catch (Exception e) {
+      MetaStoreUtils.logAndThrowMetaException(e);
+    }
+    return null;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<String> getMaterializedViewsForRewriting(String dbname) throws MetaException {
+    try {
+      return filterHook.filterTableNames(dbname, client.get_materialized_views_for_rewriting(dbname));
     } catch (Exception e) {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
@@ -1686,6 +1770,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return client.get_not_null_constraints(req).getNotNullConstraints();
   }
 
+  @Override
+  public List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest req)
+      throws MetaException, NoSuchObjectException, TException {
+    return client.get_default_constraints(req).getDefaultConstraints();
+  }
 
   /** {@inheritDoc} */
   @Override
@@ -2155,6 +2244,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public ValidWriteIdList getValidWriteIds(String fullTableName) throws TException {
+    GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName), null);
+    GetValidWriteIdsResponse validWriteIds = client.get_valid_write_ids(rqst);
+    return TxnUtils.createValidReaderWriteIdList(validWriteIds.getTblValidWriteIds().get(0));
+  }
+
+  @Override
+  public ValidTxnWriteIdList getValidWriteIds(Long currentTxnId, List<String> tablesList, String validTxnList)
+          throws TException {
+    GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(tablesList, validTxnList);
+    return TxnUtils.createValidTxnWriteIdList(currentTxnId, client.get_valid_write_ids(rqst));
+  }
+
+  @Override
   public long openTxn(String user) throws TException {
     OpenTxnsResponse txns = openTxns(user, 1);
     return txns.getTxn_ids().get(0);
@@ -2191,6 +2294,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public void abortTxns(List<Long> txnids) throws NoSuchTxnException, TException {
     client.abort_txns(new AbortTxnsRequest(txnids));
+  }
+
+  @Override
+  public long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException {
+    return allocateTableWriteIdsBatch(Collections.singletonList(txnId), dbName, tableName).get(0).getWriteId();
+  }
+
+  @Override
+  public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName)
+          throws TException {
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(txnIds, dbName, tableName);
+    AllocateTableWriteIdsResponse writeIds = client.allocate_table_write_ids(rqst);
+    return writeIds.getTxnToWriteIds();
   }
 
   @Override
@@ -2278,14 +2394,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Deprecated
   @Override
-  public void addDynamicPartitions(long txnId, String dbName, String tableName,
+  public void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName,
                                    List<String> partNames) throws TException {
-    client.add_dynamic_partitions(new AddDynamicPartitions(txnId, dbName, tableName, partNames));
+    client.add_dynamic_partitions(new AddDynamicPartitions(txnId, writeId, dbName, tableName, partNames));
   }
   @Override
-  public void addDynamicPartitions(long txnId, String dbName, String tableName,
+  public void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName,
                                    List<String> partNames, DataOperationType operationType) throws TException {
-    AddDynamicPartitions adp = new AddDynamicPartitions(txnId, dbName, tableName, partNames);
+    AddDynamicPartitions adp = new AddDynamicPartitions(txnId, writeId, dbName, tableName, partNames);
     adp.setOperationType(operationType);
     client.add_dynamic_partitions(adp);
   }
@@ -2604,15 +2720,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void createResourcePlan(WMResourcePlan resourcePlan)
+  public void createResourcePlan(WMResourcePlan resourcePlan, String copyFromName)
       throws InvalidObjectException, MetaException, TException {
     WMCreateResourcePlanRequest request = new WMCreateResourcePlanRequest();
     request.setResourcePlan(resourcePlan);
+    request.setCopyFrom(copyFromName);
     client.create_resource_plan(request);
   }
 
   @Override
-  public WMResourcePlan getResourcePlan(String resourcePlanName)
+  public WMFullResourcePlan getResourcePlan(String resourcePlanName)
       throws NoSuchObjectException, MetaException, TException {
     WMGetResourcePlanRequest request = new WMGetResourcePlanRequest();
     request.setResourcePlanName(resourcePlanName);
@@ -2635,13 +2752,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMResourcePlan resourcePlan,
-      boolean canActivateDisabled)
+  public WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMNullableResourcePlan resourcePlan,
+      boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
     WMAlterResourcePlanRequest request = new WMAlterResourcePlanRequest();
     request.setResourcePlanName(resourcePlanName);
     request.setResourcePlan(resourcePlan);
     request.setIsEnableAndActivate(canActivateDisabled);
+    request.setIsForceDeactivate(isForceDeactivate);
+    request.setIsReplace(isReplace);
     WMAlterResourcePlanResponse resp = client.alter_resource_plan(request);
     return resp.isSetFullResourcePlan() ? resp.getFullResourcePlan() : null;
   }
@@ -2652,11 +2771,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public List<String> validateResourcePlan(String resourcePlanName)
+  public WMValidateResourcePlanResponse validateResourcePlan(String resourcePlanName)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
     WMValidateResourcePlanRequest request = new WMValidateResourcePlanRequest();
     request.setResourcePlanName(resourcePlanName);
-    return client.validate_resource_plan(request).getErrors();
+    return client.validate_resource_plan(request);
   }
 
   @Override
@@ -2701,7 +2820,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void alterWMPool(WMPool pool, String poolPath)
+  public void alterWMPool(WMNullablePool pool, String poolPath)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
     WMAlterPoolRequest request = new WMAlterPoolRequest();
     request.setPool(pool);
@@ -2746,4 +2865,5 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     request.setDrop(shouldDrop);
     client.create_or_drop_wm_trigger_to_pool_mapping(request);
   }
+
 }

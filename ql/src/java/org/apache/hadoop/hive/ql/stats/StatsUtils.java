@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -196,6 +196,9 @@ public class StatsUtils {
         noColsMissingStats.getAndIncrement();
       }
       results.add(basicStatsFactory.build(pi));
+      float deserFactor = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
+
+        dataSizes = safeMult(dataSizes, deserFactor);
     }
 
     BasicStats aggregateStat = BasicStats.buildFrom(results);
@@ -293,11 +296,12 @@ public class StatsUtils {
       basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
 
       List<BasicStats> partStats = new ArrayList<>();
+        dataSizes = safeMult(dataSizes, deserFactor);
 
       for (Partition p : partList.getNotDeniedPartns()) {
         BasicStats basicStats = basicStatsFactory.build(Partish.buildFor(table, p));
         partStats.add(basicStats);
-      }
+        dataSizes = safeMult(dataSizes, deserFactor);
 
       BasicStats bbs = BasicStats.buildFrom(partStats);
 
@@ -649,6 +653,14 @@ public class StatsUtils {
       return null;
     }
     return range;
+  }
+
+  public static int estimateRowSizeFromSchema(HiveConf conf, List<ColumnInfo> schema) {
+    List<String> neededColumns = new ArrayList<>();
+    for (ColumnInfo ci : schema) {
+      neededColumns.add(ci.getInternalName());
+    }
+    return estimateRowSizeFromSchema(conf, schema, neededColumns);
   }
 
   public static int estimateRowSizeFromSchema(HiveConf conf, List<ColumnInfo> schema) {
@@ -1598,7 +1610,7 @@ public class StatsUtils {
   private static long getNDVFor(ExprNodeGenericFuncDesc engfd, long numRows, Statistics parentStats) {
 
     GenericUDF udf = engfd.getGenericUDF();
-    if (!FunctionRegistry.isDeterministic(udf)){
+    if (!FunctionRegistry.isDeterministic(udf) && !FunctionRegistry.isRuntimeConstant(udf)){
       return numRows;
     }
     List<Long> ndvs = Lists.newArrayList();
@@ -1829,6 +1841,14 @@ public class StatsUtils {
     } catch (ArithmeticException ex) {
       return Long.MAX_VALUE;
     }
+  }
+
+  public static List<Long> safeMult(List<Long> l, float b) {
+    List<Long> ret = new ArrayList<>();
+    for (Long a : l) {
+      ret.add(safeMult(a, b));
+    }
+    return ret;
   }
 
   public static boolean hasDiscreteRange(ColStatistics colStat) {

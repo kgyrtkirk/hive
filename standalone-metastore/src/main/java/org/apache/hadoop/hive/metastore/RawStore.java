@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 
 import java.lang.annotation.ElementType;
@@ -33,7 +34,6 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -58,10 +58,14 @@ import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.WMNullablePool;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -75,6 +79,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
 import org.apache.thrift.TException;
 
 public interface RawStore extends Configurable {
@@ -169,11 +174,17 @@ public interface RawStore extends Configurable {
   void alterTable(String dbname, String name, Table newTable)
       throws InvalidObjectException, MetaException;
 
+  void updateCreationMetadata(String dbname, String tablename, CreationMetadata cm)
+      throws MetaException;
+
   List<String> getTables(String dbName, String pattern)
       throws MetaException;
 
   List<String> getTables(String dbName, String pattern, TableType tableType)
       throws MetaException;
+
+  List<String> getMaterializedViewsForRewriting(String dbName)
+      throws MetaException, NoSuchObjectException;
 
   List<TableMeta> getTableMeta(
       String dbNames, String tableNames, List<String> tableTypes) throws MetaException;
@@ -596,17 +607,15 @@ public interface RawStore extends Configurable {
     List<String> partNames, List<String> colNames) throws MetaException, NoSuchObjectException;
 
   /**
-   * Get all partition column statistics for a table in a db
+   * Get column stats for all partitions of all tables in the database
    *
    * @param dbName
-   * @param tableName
-   * @return Map of partition column statistics. Key in the map is partition name. Value is a list
-   *         of column stat object for each column in the partition
+   * @return List of column stats objects for all partitions of all tables in the database
    * @throws MetaException
    * @throws NoSuchObjectException
    */
-  Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
-      String tableName) throws MetaException, NoSuchObjectException;
+  List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String dbName)
+      throws MetaException, NoSuchObjectException;
 
   /**
    * Get the next notification event.
@@ -732,9 +741,13 @@ public interface RawStore extends Configurable {
   List<SQLNotNullConstraint> getNotNullConstraints(String db_name,
     String tbl_name) throws MetaException;
 
+  List<SQLDefaultConstraint> getDefaultConstraints(String db_name,
+                                                   String tbl_name) throws MetaException;
+
   List<String> createTableWithConstraints(Table tbl, List<SQLPrimaryKey> primaryKeys,
     List<SQLForeignKey> foreignKeys, List<SQLUniqueConstraint> uniqueConstraints,
-    List<SQLNotNullConstraint> notNullConstraints) throws InvalidObjectException, MetaException;
+    List<SQLNotNullConstraint> notNullConstraints,
+    List<SQLDefaultConstraint> defaultConstraints) throws InvalidObjectException, MetaException;
 
   void dropConstraint(String dbName, String tableName, String constraintName) throws NoSuchObjectException;
 
@@ -746,6 +759,8 @@ public interface RawStore extends Configurable {
 
   List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns) throws InvalidObjectException, MetaException;
 
+  List<String> addDefaultConstraints(List<SQLDefaultConstraint> nns) throws InvalidObjectException, MetaException;
+
   /**
    * Gets the unique id of the backing datastore for the metadata
    * @return
@@ -753,21 +768,21 @@ public interface RawStore extends Configurable {
    */
   String getMetastoreDbUuid() throws MetaException;
 
-  void createResourcePlan(WMResourcePlan resourcePlan, int defaultPoolSize)
-      throws AlreadyExistsException, MetaException, InvalidObjectException;
+  void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
+      throws AlreadyExistsException, MetaException, InvalidObjectException, NoSuchObjectException;
 
-  WMResourcePlan getResourcePlan(String name) throws NoSuchObjectException, MetaException;
+  WMFullResourcePlan getResourcePlan(String name) throws NoSuchObjectException, MetaException;
 
   List<WMResourcePlan> getAllResourcePlans() throws MetaException;
 
-  WMFullResourcePlan alterResourcePlan(
-      String name, WMResourcePlan resourcePlan, boolean canActivateDisabled)
+  WMFullResourcePlan alterResourcePlan(String name, WMNullableResourcePlan resourcePlan,
+      boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
           MetaException;
 
   WMFullResourcePlan getActiveResourcePlan() throws MetaException;
 
-  List<String> validateResourcePlan(String name)
+  WMValidateResourcePlanResponse validateResourcePlan(String name)
       throws NoSuchObjectException, InvalidObjectException, MetaException;
 
   void dropResourcePlan(String name) throws NoSuchObjectException, MetaException;
@@ -788,7 +803,7 @@ public interface RawStore extends Configurable {
   void createPool(WMPool pool) throws AlreadyExistsException, NoSuchObjectException,
       InvalidOperationException, MetaException;
 
-  void alterPool(WMPool pool, String poolPath) throws AlreadyExistsException,
+  void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
       NoSuchObjectException, InvalidOperationException, MetaException;
 
   void dropWMPool(String resourcePlanName, String poolPath)

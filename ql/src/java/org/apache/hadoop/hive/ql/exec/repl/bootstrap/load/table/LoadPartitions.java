@@ -1,19 +1,19 @@
 /*
-  Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements.  See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership.  The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table;
 
@@ -113,7 +113,7 @@ public class LoadPartitions {
   private void createTableReplLogTask() throws SemanticException {
     ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger,
                                             tableDesc.getTableName(), tableDesc.tableType());
-    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, context.hiveConf);
+    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, context.hiveConf, true);
 
     if (tracker.tasks().isEmpty()) {
       tracker.addTask(replLogTask);
@@ -224,7 +224,8 @@ public class LoadPartitions {
 
     Task<?> addPartTask = TaskFactory.get(
         new DDLWork(new HashSet<>(), new HashSet<>(), addPartitionDesc),
-        context.hiveConf
+        context.hiveConf,
+        true
     );
 
     Task<?> movePartitionTask = movePartitionTask(table, partSpec, tmpPath);
@@ -246,7 +247,7 @@ public class LoadPartitions {
     );
     loadTableWork.setInheritTableSpecs(false);
     MoveWork work = new MoveWork(new HashSet<>(), new HashSet<>(), loadTableWork, null, false);
-    return TaskFactory.get(work, context.hiveConf);
+    return TaskFactory.get(work, context.hiveConf, true);
   }
 
   private Path locationOnReplicaWarehouse(Table table, AddPartitionDesc.OnePartitionDesc partSpec)
@@ -274,7 +275,8 @@ public class LoadPartitions {
     desc.getPartition(0).setLocation(ptn.getLocation()); // use existing location
     return TaskFactory.get(
         new DDLWork(new HashSet<>(), new HashSet<>(), desc),
-        context.hiveConf
+        context.hiveConf,
+        true
     );
   }
 

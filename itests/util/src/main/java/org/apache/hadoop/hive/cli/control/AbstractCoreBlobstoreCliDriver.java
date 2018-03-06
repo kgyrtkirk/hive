@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.google.common.base.Strings;
+
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Map;
@@ -32,6 +34,7 @@ import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -134,7 +137,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
         System.err.println("Test " + fname + " skipped");
         return;
       }
-      qt.cliInit(fname, false);
+      qt.cliInit(new File(fpath), false);
       int ecode = qt.executeClient(fname);
       if ((ecode == 0) ^ expectSuccess) {
         qt.failed(ecode, fname, debugHint);
@@ -171,8 +174,8 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
       }
     }).substitute(new HiveConf(), qt.getConf().get(HCONF_TEST_BLOBSTORE_PATH));
 
-    testBlobstorePath = QTestUtil.ensurePathEndsInSlash(testBlobstorePath);
-    testBlobstorePath += QTestUtil.ensurePathEndsInSlash(this.getClass().getSimpleName()); // name of child class
+    testBlobstorePath = HiveTestEnvSetup.ensurePathEndsInSlash(testBlobstorePath);
+    testBlobstorePath += HiveTestEnvSetup.ensurePathEndsInSlash(this.getClass().getSimpleName()); // name of child class
     String uid = new SimpleDateFormat("yyyyMMdd.HHmmss.SSS").format(Calendar.getInstance().getTime())
         + "-" + String.format("%03d", (int)(Math.random() * 999));
     testBlobstorePathUnique = testBlobstorePath + uid;

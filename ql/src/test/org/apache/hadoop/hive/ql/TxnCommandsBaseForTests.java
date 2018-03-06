@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -71,8 +71,11 @@ public abstract class TxnCommandsBaseForTests {
   public void setUp() throws Exception {
     setUpInternal();
   }
-  protected void setUpInternal() throws Exception {
+  void initHiveConf() {
     hiveConf = new HiveConf(this.getClass());
+  }
+  void setUpInternal() throws Exception {
+    initHiveConf();
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, getWarehouseDir());
@@ -91,8 +94,9 @@ public abstract class TxnCommandsBaseForTests {
     if (!(new File(getWarehouseDir()).mkdirs())) {
       throw new RuntimeException("Could not create " + getWarehouseDir());
     }
-    SessionState.start(new SessionState(hiveConf));
-    d = new Driver(hiveConf);
+    SessionState ss = SessionState.start(hiveConf);
+    ss.applyAuthorizationPolicy();
+    d = new Driver(new QueryState.Builder().withHiveConf(hiveConf).nonIsolated().build(), null);
     d.setMaxRows(10000);
     dropTables();
     runStatementOnDriver("create table " + Table.ACIDTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
@@ -100,7 +104,7 @@ public abstract class TxnCommandsBaseForTests {
     runStatementOnDriver("create table " + Table.NONACIDORCTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='false')");
     runStatementOnDriver("create table " + Table.NONACIDORCTBL2 + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='false')");
     runStatementOnDriver("create temporary  table " + Table.ACIDTBL2 + "(a int, b int, c int) clustered by (c) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
-    runStatementOnDriver("create table " + Table.NONACIDNONBUCKET + "(a int, b int) stored as orc");
+    runStatementOnDriver("create table " + Table.NONACIDNONBUCKET + "(a int, b int) stored as orc TBLPROPERTIES ('transactional'='false')");
   }
   protected void dropTables() throws Exception {
     for(TxnCommandsBaseForTests.Table t : TxnCommandsBaseForTests.Table.values()) {
@@ -135,7 +139,7 @@ public abstract class TxnCommandsBaseForTests {
   String makeValuesClause(int[][] rows) {
     return TestTxnCommands2.makeValuesClause(rows);
   }
-  
+
   void runWorker(HiveConf hiveConf) throws MetaException {
     TestTxnCommands2.runWorker(hiveConf);
   }

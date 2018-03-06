@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -76,6 +76,7 @@ class TezSessionPoolSession extends TezSessionState {
         Runnable triggerValidatorRunnable = getTriggerValidatorRunnable();
         scheduledExecutorService.scheduleWithFixedDelay(triggerValidatorRunnable, triggerValidationIntervalMs,
           triggerValidationIntervalMs, TimeUnit.MILLISECONDS);
+        LOG.info("Started trigger validator with interval: {} ms", triggerValidationIntervalMs);
       }
     }
 
@@ -83,6 +84,7 @@ class TezSessionPoolSession extends TezSessionState {
       if (scheduledExecutorService != null) {
         scheduledExecutorService.shutdownNow();
         scheduledExecutorService = null;
+        LOG.info("Stopped trigger validator");
       }
     }
   }

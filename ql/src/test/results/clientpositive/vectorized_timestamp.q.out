@@ -12,11 +12,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test
 PREHOOK: query: INSERT INTO TABLE test VALUES ('0001-01-01 00:00:00.000000000'), ('9999-12-31 23:59:59.999999999')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
 POSTHOOK: query: INSERT INTO TABLE test VALUES ('0001-01-01 00:00:00.000000000'), ('9999-12-31 23:59:59.999999999')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
-POSTHOOK: Lineage: test.ts EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test.ts SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ts FROM test
 PREHOOK: type: QUERY
@@ -117,7 +119,7 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:ts:timestamp, 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:ts:timestamp, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: ts (type: timestamp)
               outputColumnNames: ts
@@ -223,13 +225,13 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:ts:timestamp, 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:ts:timestamp, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
                   predicateExpression: FilterTimestampColumnInList(col 0:timestamp, values [0001-01-01 00:00:00.0, 0002-02-02 00:00:00.0])
-              predicate: (ts) IN (0001-01-01 00:00:00.0, 0002-02-02 00:00:00.0) (type: boolean)
+              predicate: (ts) IN (TIMESTAMP'0001-01-01 00:00:00.0', TIMESTAMP'0002-02-02 00:00:00.0') (type: boolean)
               Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ts (type: timestamp)
@@ -304,7 +306,7 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:ts:timestamp, 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:ts:timestamp, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: ts (type: timestamp)
               outputColumnNames: ts
@@ -410,7 +412,7 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:ts:timestamp, 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:ts:timestamp, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: ts (type: timestamp)
               outputColumnNames: ts

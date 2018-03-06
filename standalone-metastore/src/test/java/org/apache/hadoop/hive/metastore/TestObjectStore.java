@@ -23,6 +23,7 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.hive.metastore.ObjectStore.RetryingExecutor;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -56,6 +57,7 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +75,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+@Category(MetastoreUnitTest.class)
 public class TestObjectStore {
   private ObjectStore objectStore = null;
 
@@ -129,8 +132,7 @@ public class TestObjectStore {
   @Before
   public void setUp() throws Exception {
     Configuration conf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS,
-        MockPartitionExpressionProxy.class.getName());
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
 
     objectStore = new ObjectStore();
     objectStore.setConf(conf);
@@ -443,7 +445,7 @@ public class TestObjectStore {
     spy.getAllFunctions();
     spy.getAllTables(DB1);
     spy.getPartitionCount();
-    Mockito.verify(spy, Mockito.times(2))
+    Mockito.verify(spy, Mockito.times(3))
         .rollbackAndCleanup(Mockito.anyBoolean(), Mockito.<Query>anyObject());
   }
 
@@ -462,8 +464,7 @@ public class TestObjectStore {
     String value1 = "another_value";
     Assume.assumeTrue(System.getProperty(key) == null);
     Configuration localConf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setVar(localConf, MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS,
-        MockPartitionExpressionProxy.class.getName());
+    MetaStoreTestUtils.setConfForStandloneMode(localConf);
     localConf.set(key, value);
     localConf.set(key1, value1);
     objectStore = new ObjectStore();
@@ -537,8 +538,7 @@ public class TestObjectStore {
             .debug(NUM_THREADS + " threads going to add notification"));
 
     Configuration conf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS,
-        MockPartitionExpressionProxy.class.getName());
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
     /*
        Below are the properties that need to be set based on what database this test is going to be run
      */

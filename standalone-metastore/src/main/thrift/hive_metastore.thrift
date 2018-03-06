@@ -90,6 +90,17 @@ struct SQLNotNullConstraint {
   7: bool rely_cstr      // Rely/No Rely
 }
 
+struct SQLDefaultConstraint {
+  1: string table_db,    // table schema
+  2: string table_name,  // table name
+  3: string column_name, // column name
+  4: string default_value,// default value
+  5: string dc_name,     // default name
+  6: bool enable_cstr,   // Enable/Disable
+  7: bool validate_cstr, // Validate/No validate
+  8: bool rely_cstr      // Rely/No Rely
+}
+
 struct Type {
   1: string          name,             // one of the types in PrimitiveTypes or CollectionTypes or User defined types
   2: optional string type1,            // object type if the name is 'list' (LIST_TYPE), key type if the name is 'map' (MAP_TYPE)
@@ -327,6 +338,7 @@ struct Table {
   13: optional PrincipalPrivilegeSet privileges,
   14: optional bool temporary=false,
   15: optional bool rewriteEnabled,     // rewrite enabled or not
+  16: optional CreationMetadata creationMetadata   // only for MVs, it stores table names used and txn list at MV creation
 }
 
 struct Partition {
@@ -536,6 +548,16 @@ struct NotNullConstraintsResponse {
   1: required list<SQLNotNullConstraint> notNullConstraints
 }
 
+struct DefaultConstraintsRequest {
+  1: required string db_name,
+  2: required string tbl_name
+}
+
+struct DefaultConstraintsResponse {
+  1: required list<SQLDefaultConstraint> defaultConstraints
+}
+
+
 struct DropConstraintRequest {
   1: required string dbname, 
   2: required string tablename,
@@ -556,6 +578,10 @@ struct AddUniqueConstraintRequest {
 
 struct AddNotNullConstraintRequest {
   1: required list<SQLNotNullConstraint> notNullConstraintCols
+}
+
+struct AddDefaultConstraintRequest {
+  1: required list<SQLDefaultConstraint> defaultConstraintCols
 }
 
 // Return type for get_partitions_by_expr
@@ -730,6 +756,43 @@ struct CommitTxnRequest {
     1: required i64 txnid,
 }
 
+// Request msg to get the valid write ids list for the given list of tables wrt to input validTxnList
+struct GetValidWriteIdsRequest {
+    1: required list<string> fullTableNames, // Full table names of format <db_name>.<table_name>
+    2: required string validTxnList, // Valid txn list string wrt the current txn of the caller
+}
+
+// Valid Write ID list of one table wrt to current txn
+struct TableValidWriteIds {
+    1: required string fullTableName,  // Full table name of format <db_name>.<table_name>
+    2: required i64 writeIdHighWaterMark, // The highest write id valid for this table wrt given txn
+    3: required list<i64> invalidWriteIds, // List of open and aborted writes ids in the table
+    4: optional i64 minOpenWriteId, // Minimum write id which maps to a opened txn
+    5: required binary abortedBits, // Bit array to identify the aborted write ids in invalidWriteIds list
+}
+
+// Valid Write ID list for all the input tables wrt to current txn
+struct GetValidWriteIdsResponse {
+    1: required list<TableValidWriteIds> tblValidWriteIds,
+}
+
+// Request msg to allocate table write ids for the given list of txns
+struct AllocateTableWriteIdsRequest {
+    1: required list<i64> txnIds,
+    2: required string dbName,
+    3: required string tableName,
+}
+
+// Map for allocated write id against the txn for which it is allocated
+struct TxnToWriteId {
+    1: required i64 txnId,
+    2: required i64 writeId,
+}
+
+struct AllocateTableWriteIdsResponse {
+    1: required list<TxnToWriteId> txnToWriteIds,
+}
+
 struct LockComponent {
     1: required LockType type,
     2: required LockLevel level,
@@ -849,10 +912,27 @@ struct ShowCompactResponse {
 
 struct AddDynamicPartitions {
     1: required i64 txnid,
-    2: required string dbname,
-    3: required string tablename,
-    4: required list<string> partitionnames,
-    5: optional DataOperationType operationType = DataOperationType.UNSET
+    2: required i64 writeid,
+    3: required string dbname,
+    4: required string tablename,
+    5: required list<string> partitionnames,
+    6: optional DataOperationType operationType = DataOperationType.UNSET
+}
+
+struct BasicTxnInfo {
+    1: required bool isnull,
+    2: optional i64 time,
+    3: optional i64 txnid,
+    4: optional string dbname,
+    5: optional string tablename,
+    6: optional string partitionname
+}
+
+struct CreationMetadata {
+    1: required string dbName,
+    2: required string tblName,
+    3: required set<string> tablesUsed,
+    4: optional string validTxnList
 }
 
 struct NotificationEventRequest {
@@ -1031,6 +1111,12 @@ struct TableMeta {
   4: optional string comments;
 }
 
+struct Materialization {
+  1: required set<string> tablesUsed;
+  2: optional string validTxnList
+  3: required i64 invalidationTime;
+}
+
 // Data types for workload management.
 
 enum WMResourcePlanStatus {
@@ -1039,11 +1125,25 @@ enum WMResourcePlanStatus {
   DISABLED = 3
 }
 
+enum  WMPoolSchedulingPolicy {
+  FAIR = 1,
+  FIFO = 2
+}
+
 struct WMResourcePlan {
   1: required string name;
   2: optional WMResourcePlanStatus status;
   3: optional i32 queryParallelism;
   4: optional string defaultPoolPath;
+}
+
+struct WMNullableResourcePlan {
+  1: required string name;
+  2: optional WMResourcePlanStatus status;
+  4: optional i32 queryParallelism;
+  5: optional bool isSetQueryParallelism;
+  6: optional string defaultPoolPath;
+  7: optional bool isSetDefaultPoolPath;
 }
 
 struct WMPool {
@@ -1054,11 +1154,22 @@ struct WMPool {
   5: optional string schedulingPolicy;
 }
 
+
+struct WMNullablePool {
+  1: required string resourcePlanName;
+  2: required string poolPath;
+  3: optional double allocFraction;
+  4: optional i32 queryParallelism;
+  5: optional string schedulingPolicy;
+  6: optional bool isSetSchedulingPolicy;
+}
+
 struct WMTrigger {
   1: required string resourcePlanName;
   2: required string triggerName;
   3: optional string triggerExpression;
   4: optional string actionExpression;
+  5: optional bool isInUnmanaged;
 }
 
 struct WMMapping {
@@ -1086,6 +1197,7 @@ struct WMFullResourcePlan {
 
 struct WMCreateResourcePlanRequest {
   1: optional WMResourcePlan resourcePlan;
+  2: optional string copyFrom;
 }
 
 struct WMCreateResourcePlanResponse {
@@ -1103,7 +1215,7 @@ struct WMGetResourcePlanRequest {
 }
 
 struct WMGetResourcePlanResponse {
-  1: optional WMResourcePlan resourcePlan;
+  1: optional WMFullResourcePlan resourcePlan;
 }
 
 struct WMGetAllResourcePlanRequest {
@@ -1115,8 +1227,10 @@ struct WMGetAllResourcePlanResponse {
 
 struct WMAlterResourcePlanRequest {
   1: optional string resourcePlanName;
-  2: optional WMResourcePlan resourcePlan;
+  2: optional WMNullableResourcePlan resourcePlan;
   3: optional bool isEnableAndActivate;
+  4: optional bool isForceDeactivate;
+  5: optional bool isReplace;
 }
 
 struct WMAlterResourcePlanResponse {
@@ -1129,6 +1243,7 @@ struct WMValidateResourcePlanRequest {
 
 struct WMValidateResourcePlanResponse {
   1: optional list<string> errors;
+  2: optional list<string> warnings;
 }
 
 struct WMDropResourcePlanRequest {
@@ -1176,7 +1291,7 @@ struct WMCreatePoolResponse {
 }
 
 struct WMAlterPoolRequest {
-  1: optional WMPool pool;
+  1: optional WMNullablePool pool;
   2: optional string poolPath;
 }
 
@@ -1329,7 +1444,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
               2:InvalidObjectException o2, 3:MetaException o3,
               4:NoSuchObjectException o4)
   void create_table_with_constraints(1:Table tbl, 2: list<SQLPrimaryKey> primaryKeys, 3: list<SQLForeignKey> foreignKeys,
-  4: list<SQLUniqueConstraint> uniqueConstraints, 5: list<SQLNotNullConstraint> notNullConstraints)
+  4: list<SQLUniqueConstraint> uniqueConstraints, 5: list<SQLNotNullConstraint> notNullConstraints,
+  6: list<SQLDefaultConstraint> defaultConstraints)
       throws (1:AlreadyExistsException o1,
               2:InvalidObjectException o2, 3:MetaException o3,
               4:NoSuchObjectException o4)
@@ -1343,6 +1459,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void add_not_null_constraint(1:AddNotNullConstraintRequest req)
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  void add_default_constraint(1:AddDefaultConstraintRequest req)
+      throws(1:NoSuchObjectException o1, 2:MetaException o2)
 
   // drops the table and all the partitions associated with it if the table has partitions
   // delete data (including partitions) if deleteData is set to true
@@ -1355,6 +1473,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
                           throws(1:MetaException o1)
   list<string> get_tables(1: string db_name, 2: string pattern) throws (1: MetaException o1)
   list<string> get_tables_by_type(1: string db_name, 2: string pattern, 3: string tableType) throws (1: MetaException o1)
+  list<string> get_materialized_views_for_rewriting(1: string db_name) throws (1: MetaException o1)
   list<TableMeta> get_table_meta(1: string db_patterns, 2: string tbl_patterns, 3: list<string> tbl_types)
                        throws (1: MetaException o1)
   list<string> get_all_tables(1: string db_name) throws (1: MetaException o1)
@@ -1365,6 +1484,10 @@ service ThriftHiveMetastore extends fb303.FacebookService
   GetTableResult get_table_req(1:GetTableRequest req) throws (1:MetaException o1, 2:NoSuchObjectException o2)
   GetTablesResult get_table_objects_by_name_req(1:GetTablesRequest req)
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
+  map<string, Materialization> get_materialization_invalidation_info(1:string dbname, 2:list<string> tbl_names)
+				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
+  void update_creation_metadata(1:string dbname, 2:string tbl_name, 3:CreationMetadata creation_metadata)
+                   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
 
   // Get a list of table names that match a filter.
   // The filter operators are LIKE, <, <=, >, >=, =, <>
@@ -1601,6 +1724,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
   NotNullConstraintsResponse get_not_null_constraints(1:NotNullConstraintsRequest request)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  DefaultConstraintsResponse get_default_constraints(1:DefaultConstraintsRequest request)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // column statistics interfaces
 
@@ -1750,6 +1875,10 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void abort_txn(1:AbortTxnRequest rqst) throws (1:NoSuchTxnException o1)
   void abort_txns(1:AbortTxnsRequest rqst) throws (1:NoSuchTxnException o1)
   void commit_txn(1:CommitTxnRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
+  GetValidWriteIdsResponse get_valid_write_ids(1:GetValidWriteIdsRequest rqst)
+      throws (1:NoSuchTxnException o1, 2:MetaException o2)
+  AllocateTableWriteIdsResponse allocate_table_write_ids(1:AllocateTableWriteIdsRequest rqst)
+    throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2, 3:MetaException o3)
   LockResponse lock(1:LockRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
   LockResponse check_lock(1:CheckLockRequest rqst)
     throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2, 3:NoSuchLockException o3)
@@ -1765,7 +1894,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // Notification logging calls
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
   CurrentNotificationEventId get_current_notificationEventId()
-  NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)
+  NotificationEventsCountResponse get_notification_events_count(1:NotificationEventsCountRequest rqst)
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()
 

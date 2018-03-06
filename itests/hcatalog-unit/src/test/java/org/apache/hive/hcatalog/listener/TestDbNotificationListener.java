@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -94,13 +94,15 @@ import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.api.repl.ReplicationV1CompatRule;
 import org.apache.hive.hcatalog.data.Pair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -118,7 +120,7 @@ public class TestDbNotificationListener {
   private static final int CLEANUP_SLEEP_TIME = 10;
   private static Map<String, String> emptyParameters = new HashMap<String, String>();
   private static IMetaStoreClient msClient;
-  private static Driver driver;
+  private static IDriver driver;
   private static MessageDeserializer md = null;
   private int startTime;
   private long firstEventId;
@@ -255,7 +257,7 @@ public class TestDbNotificationListener {
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     SessionState.start(new CliSessionState(conf));
     msClient = new HiveMetaStoreClient(conf);
-    driver = new Driver(conf);
+    driver = DriverFactory.newDriver(conf);
     md = MessageFactory.getInstance().getDeserializer();
 
     bcompat = new ReplicationV1CompatRule(msClient, conf, testsToSkipForReplV1BackwardCompatTesting );
@@ -961,6 +963,7 @@ public class TestDbNotificationListener {
   }
 
   @Test
+  @Ignore("HIVE-18715")
   public void createIndex() throws Exception {
     String indexName = "createIndex";
     String dbName = "default";
@@ -1032,6 +1035,7 @@ public class TestDbNotificationListener {
   }
 
   @Test
+  @Ignore("HIVE-18715")
   public void dropIndex() throws Exception {
     String indexName = "dropIndex";
     String dbName = "default";
@@ -1107,6 +1111,7 @@ public class TestDbNotificationListener {
   }
 
   @Test
+  @Ignore("HIVE-18715")
   public void alterIndex() throws Exception {
     String indexName = "alterIndex";
     String dbName = "default";

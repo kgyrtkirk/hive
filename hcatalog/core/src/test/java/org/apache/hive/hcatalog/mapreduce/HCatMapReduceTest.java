@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -217,6 +217,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
       tableParams.put(hive_metastoreConstants.IS_IMMUTABLE,"true");
     }
     StatsSetupConst.setBasicStatsState(tableParams, StatsSetupConst.TRUE);
+    tableParams.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false");
     tbl.setParameters(tableParams);
 
     client.createTable(tbl);
