@@ -4928,7 +4928,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       makeLocationQualified(tbl.getDbName(), tbl.getTTable().getSd(), tbl.getTableName(), conf);
     }
 
-    Hive.collectFsStats(tbl, null, conf);
+    // FIXME: this is missing; and it's definetly an improvement; but separating it from the current changeset
+    // Hive.collectFsStats(tbl, null, conf);
     if (crtTbl.getLocation() == null && !tbl.isPartitioned()
         && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
       StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),
