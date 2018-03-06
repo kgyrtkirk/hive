@@ -354,6 +354,7 @@ import org.slf4j.LoggerFactory;
           case 1: // TABLES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list768 = iprot.readListBegin();
                 struct.tables = new ArrayList<Table>(_list768.size);
                 Table _elem769;
@@ -362,6 +363,16 @@ import org.slf4j.LoggerFactory;
                   _elem769 = new Table();
                   _elem769.read(iprot);
                   struct.tables.add(_elem769);
+=======
+                org.apache.thrift.protocol.TList _list794 = iprot.readListBegin();
+                struct.tables = new ArrayList<Table>(_list794.size);
+                Table _elem795;
+                for (int _i796 = 0; _i796 < _list794.size; ++_i796)
+                {
+                  _elem795 = new Table();
+                  _elem795.read(iprot);
+                  struct.tables.add(_elem795);
+>>>>>>> asf/master
                 }
                 iprot.readListEnd();
               }
@@ -387,9 +398,15 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(TABLES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.tables.size()));
+<<<<<<< HEAD
           for (Table _iter771 : struct.tables)
           {
             _iter771.write(oprot);
+=======
+          for (Table _iter797 : struct.tables)
+          {
+            _iter797.write(oprot);
+>>>>>>> asf/master
           }
           oprot.writeListEnd();
         }
@@ -414,9 +431,15 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.tables.size());
+<<<<<<< HEAD
         for (Table _iter772 : struct.tables)
         {
           _iter772.write(oprot);
+=======
+        for (Table _iter798 : struct.tables)
+        {
+          _iter798.write(oprot);
+>>>>>>> asf/master
         }
       }
     }
@@ -425,6 +448,7 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetTablesResult struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list773 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.tables = new ArrayList<Table>(_list773.size);
         Table _elem774;
@@ -433,6 +457,16 @@ import org.slf4j.LoggerFactory;
           _elem774 = new Table();
           _elem774.read(iprot);
           struct.tables.add(_elem774);
+=======
+        org.apache.thrift.protocol.TList _list799 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.tables = new ArrayList<Table>(_list799.size);
+        Table _elem800;
+        for (int _i801 = 0; _i801 < _list799.size; ++_i801)
+        {
+          _elem800 = new Table();
+          _elem800.read(iprot);
+          struct.tables.add(_elem800);
+>>>>>>> asf/master
         }
       }
       struct.setTablesIsSet(true);

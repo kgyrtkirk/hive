@@ -619,6 +619,7 @@ import org.slf4j.LoggerFactory;
           case 3: // TABLES_USED
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TSet _set644 = iprot.readSetBegin();
                 struct.tablesUsed = new HashSet<String>(2*_set644.size);
                 String _elem645;
@@ -626,6 +627,15 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem645 = iprot.readString();
                   struct.tablesUsed.add(_elem645);
+=======
+                org.apache.thrift.protocol.TSet _set670 = iprot.readSetBegin();
+                struct.tablesUsed = new HashSet<String>(2*_set670.size);
+                String _elem671;
+                for (int _i672 = 0; _i672 < _set670.size; ++_i672)
+                {
+                  _elem671 = iprot.readString();
+                  struct.tablesUsed.add(_elem671);
+>>>>>>> asf/master
                 }
                 iprot.readSetEnd();
               }
@@ -669,9 +679,15 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(TABLES_USED_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.tablesUsed.size()));
+<<<<<<< HEAD
           for (String _iter647 : struct.tablesUsed)
           {
             oprot.writeString(_iter647);
+=======
+          for (String _iter673 : struct.tablesUsed)
+          {
+            oprot.writeString(_iter673);
+>>>>>>> asf/master
           }
           oprot.writeSetEnd();
         }
@@ -705,9 +721,15 @@ import org.slf4j.LoggerFactory;
       oprot.writeString(struct.tblName);
       {
         oprot.writeI32(struct.tablesUsed.size());
+<<<<<<< HEAD
         for (String _iter648 : struct.tablesUsed)
         {
           oprot.writeString(_iter648);
+=======
+        for (String _iter674 : struct.tablesUsed)
+        {
+          oprot.writeString(_iter674);
+>>>>>>> asf/master
         }
       }
       BitSet optionals = new BitSet();
@@ -728,6 +750,7 @@ import org.slf4j.LoggerFactory;
       struct.tblName = iprot.readString();
       struct.setTblNameIsSet(true);
       {
+<<<<<<< HEAD
         org.apache.thrift.protocol.TSet _set649 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
         struct.tablesUsed = new HashSet<String>(2*_set649.size);
         String _elem650;
@@ -735,6 +758,15 @@ import org.slf4j.LoggerFactory;
         {
           _elem650 = iprot.readString();
           struct.tablesUsed.add(_elem650);
+=======
+        org.apache.thrift.protocol.TSet _set675 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.tablesUsed = new HashSet<String>(2*_set675.size);
+        String _elem676;
+        for (int _i677 = 0; _i677 < _set675.size; ++_i677)
+        {
+          _elem676 = iprot.readString();
+          struct.tablesUsed.add(_elem676);
+>>>>>>> asf/master
         }
       }
       struct.setTablesUsedIsSet(true);

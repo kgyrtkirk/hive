@@ -2978,7 +2978,12 @@ public class HiveConf extends Configuration {
         "Which vectorized input format support features are enabled for vectorization.\n" +
         "That is, if a VectorizedInputFormat input format does support \"decimal_64\" for example\n" +
         "this variable must enable that to be used in vectorization"),
-
+    HIVE_VECTORIZED_IF_EXPR_MODE("hive.vectorized.if.expr.mode", "better", new StringSet("adaptor", "good", "better"),
+        "Specifies the extent to which SQL IF statements will be vectorized.\n" +
+        "0. adaptor: only use the VectorUDFAdaptor to vectorize IF statements\n" +
+        "1. good   : use regular vectorized IF expression classes that get good performance\n" +
+        "2. better : use vectorized IF expression classes that conditionally execute THEN/ELSE\n" +
+        "            expressions for better performance.\n"),
     HIVE_TEST_VECTORIZATION_ENABLED_OVERRIDE("hive.test.vectorized.execution.enabled.override",
         "none", new StringSet("none", "enable", "disable"),
         "internal use only, used to override the hive.vectorized.execution.enabled setting and\n" +
@@ -3033,7 +3038,7 @@ public class HiveConf extends Configuration {
         "Enable (configurable) deprecated behaviors by setting desired level of backward compatibility.\n" +
         "Setting to 0.12:\n" +
         "  Maintains division behavior: int / int = double"),
-    HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ("hive.convert.join.bucket.mapjoin.tez", false,
+    HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ("hive.convert.join.bucket.mapjoin.tez", true,
         "Whether joins can be automatically converted to bucket map joins in hive \n" +
         "when tez is used as the execution engine."),
     HIVE_TEZ_BMJ_USE_SUBCACHE("hive.tez.bmj.use.subcache", true,
@@ -3231,6 +3236,8 @@ public class HiveConf extends Configuration {
     LLAP_IO_VRB_QUEUE_LIMIT_MIN("hive.llap.io.vrb.queue.limit.min", 10,
         "The minimum queue size for VRBs produced by a LLAP IO thread when the processing is\n" +
         "slower than the IO (used when determining the size from base size)."),
+    LLAP_IO_SHARE_OBJECT_POOLS("hive.llap.io.share.object.pools", false,
+        "Whether to used shared object pools in LLAP IO. A safety flag."),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", false,
         "Whether or not to allow the planner to run vertices in the AM."),
     LLAP_AUTO_ENFORCE_TREE("hive.llap.auto.enforce.tree", true,

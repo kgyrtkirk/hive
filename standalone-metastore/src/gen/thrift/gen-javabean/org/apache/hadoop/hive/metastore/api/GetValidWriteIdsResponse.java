@@ -354,6 +354,7 @@ import org.slf4j.LoggerFactory;
           case 1: // TBL_VALID_WRITE_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list562 = iprot.readListBegin();
                 struct.tblValidWriteIds = new ArrayList<TableValidWriteIds>(_list562.size);
                 TableValidWriteIds _elem563;
@@ -362,6 +363,16 @@ import org.slf4j.LoggerFactory;
                   _elem563 = new TableValidWriteIds();
                   _elem563.read(iprot);
                   struct.tblValidWriteIds.add(_elem563);
+=======
+                org.apache.thrift.protocol.TList _list588 = iprot.readListBegin();
+                struct.tblValidWriteIds = new ArrayList<TableValidWriteIds>(_list588.size);
+                TableValidWriteIds _elem589;
+                for (int _i590 = 0; _i590 < _list588.size; ++_i590)
+                {
+                  _elem589 = new TableValidWriteIds();
+                  _elem589.read(iprot);
+                  struct.tblValidWriteIds.add(_elem589);
+>>>>>>> asf/master
                 }
                 iprot.readListEnd();
               }
@@ -387,9 +398,15 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(TBL_VALID_WRITE_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.tblValidWriteIds.size()));
+<<<<<<< HEAD
           for (TableValidWriteIds _iter565 : struct.tblValidWriteIds)
           {
             _iter565.write(oprot);
+=======
+          for (TableValidWriteIds _iter591 : struct.tblValidWriteIds)
+          {
+            _iter591.write(oprot);
+>>>>>>> asf/master
           }
           oprot.writeListEnd();
         }
@@ -414,9 +431,15 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.tblValidWriteIds.size());
+<<<<<<< HEAD
         for (TableValidWriteIds _iter566 : struct.tblValidWriteIds)
         {
           _iter566.write(oprot);
+=======
+        for (TableValidWriteIds _iter592 : struct.tblValidWriteIds)
+        {
+          _iter592.write(oprot);
+>>>>>>> asf/master
         }
       }
     }
@@ -425,6 +448,7 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetValidWriteIdsResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list567 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.tblValidWriteIds = new ArrayList<TableValidWriteIds>(_list567.size);
         TableValidWriteIds _elem568;
@@ -433,6 +457,16 @@ import org.slf4j.LoggerFactory;
           _elem568 = new TableValidWriteIds();
           _elem568.read(iprot);
           struct.tblValidWriteIds.add(_elem568);
+=======
+        org.apache.thrift.protocol.TList _list593 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.tblValidWriteIds = new ArrayList<TableValidWriteIds>(_list593.size);
+        TableValidWriteIds _elem594;
+        for (int _i595 = 0; _i595 < _list593.size; ++_i595)
+        {
+          _elem594 = new TableValidWriteIds();
+          _elem594.read(iprot);
+          struct.tblValidWriteIds.add(_elem594);
+>>>>>>> asf/master
         }
       }
       struct.setTblValidWriteIdsIsSet(true);

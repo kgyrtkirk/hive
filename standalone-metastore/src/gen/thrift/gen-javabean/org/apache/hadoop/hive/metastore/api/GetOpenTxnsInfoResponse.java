@@ -447,6 +447,7 @@ import org.slf4j.LoggerFactory;
           case 2: // OPEN_TXNS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list514 = iprot.readListBegin();
                 struct.open_txns = new ArrayList<TxnInfo>(_list514.size);
                 TxnInfo _elem515;
@@ -455,6 +456,16 @@ import org.slf4j.LoggerFactory;
                   _elem515 = new TxnInfo();
                   _elem515.read(iprot);
                   struct.open_txns.add(_elem515);
+=======
+                org.apache.thrift.protocol.TList _list540 = iprot.readListBegin();
+                struct.open_txns = new ArrayList<TxnInfo>(_list540.size);
+                TxnInfo _elem541;
+                for (int _i542 = 0; _i542 < _list540.size; ++_i542)
+                {
+                  _elem541 = new TxnInfo();
+                  _elem541.read(iprot);
+                  struct.open_txns.add(_elem541);
+>>>>>>> asf/master
                 }
                 iprot.readListEnd();
               }
@@ -483,9 +494,15 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(OPEN_TXNS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.open_txns.size()));
+<<<<<<< HEAD
           for (TxnInfo _iter517 : struct.open_txns)
           {
             _iter517.write(oprot);
+=======
+          for (TxnInfo _iter543 : struct.open_txns)
+          {
+            _iter543.write(oprot);
+>>>>>>> asf/master
           }
           oprot.writeListEnd();
         }
@@ -511,9 +528,15 @@ import org.slf4j.LoggerFactory;
       oprot.writeI64(struct.txn_high_water_mark);
       {
         oprot.writeI32(struct.open_txns.size());
+<<<<<<< HEAD
         for (TxnInfo _iter518 : struct.open_txns)
         {
           _iter518.write(oprot);
+=======
+        for (TxnInfo _iter544 : struct.open_txns)
+        {
+          _iter544.write(oprot);
+>>>>>>> asf/master
         }
       }
     }
@@ -524,6 +547,7 @@ import org.slf4j.LoggerFactory;
       struct.txn_high_water_mark = iprot.readI64();
       struct.setTxn_high_water_markIsSet(true);
       {
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list519 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.open_txns = new ArrayList<TxnInfo>(_list519.size);
         TxnInfo _elem520;
@@ -532,6 +556,16 @@ import org.slf4j.LoggerFactory;
           _elem520 = new TxnInfo();
           _elem520.read(iprot);
           struct.open_txns.add(_elem520);
+=======
+        org.apache.thrift.protocol.TList _list545 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.open_txns = new ArrayList<TxnInfo>(_list545.size);
+        TxnInfo _elem546;
+        for (int _i547 = 0; _i547 < _list545.size; ++_i547)
+        {
+          _elem546 = new TxnInfo();
+          _elem546.read(iprot);
+          struct.open_txns.add(_elem546);
+>>>>>>> asf/master
         }
       }
       struct.setOpen_txnsIsSet(true);

@@ -354,6 +354,7 @@ import org.slf4j.LoggerFactory;
           case 1: // PRIMARY_KEY_COLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list344 = iprot.readListBegin();
                 struct.primaryKeyCols = new ArrayList<SQLPrimaryKey>(_list344.size);
                 SQLPrimaryKey _elem345;
@@ -362,6 +363,16 @@ import org.slf4j.LoggerFactory;
                   _elem345 = new SQLPrimaryKey();
                   _elem345.read(iprot);
                   struct.primaryKeyCols.add(_elem345);
+=======
+                org.apache.thrift.protocol.TList _list362 = iprot.readListBegin();
+                struct.primaryKeyCols = new ArrayList<SQLPrimaryKey>(_list362.size);
+                SQLPrimaryKey _elem363;
+                for (int _i364 = 0; _i364 < _list362.size; ++_i364)
+                {
+                  _elem363 = new SQLPrimaryKey();
+                  _elem363.read(iprot);
+                  struct.primaryKeyCols.add(_elem363);
+>>>>>>> asf/master
                 }
                 iprot.readListEnd();
               }
@@ -387,9 +398,15 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PRIMARY_KEY_COLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.primaryKeyCols.size()));
+<<<<<<< HEAD
           for (SQLPrimaryKey _iter347 : struct.primaryKeyCols)
           {
             _iter347.write(oprot);
+=======
+          for (SQLPrimaryKey _iter365 : struct.primaryKeyCols)
+          {
+            _iter365.write(oprot);
+>>>>>>> asf/master
           }
           oprot.writeListEnd();
         }
@@ -414,9 +431,15 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.primaryKeyCols.size());
+<<<<<<< HEAD
         for (SQLPrimaryKey _iter348 : struct.primaryKeyCols)
         {
           _iter348.write(oprot);
+=======
+        for (SQLPrimaryKey _iter366 : struct.primaryKeyCols)
+        {
+          _iter366.write(oprot);
+>>>>>>> asf/master
         }
       }
     }
@@ -425,6 +448,7 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, AddPrimaryKeyRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list349 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.primaryKeyCols = new ArrayList<SQLPrimaryKey>(_list349.size);
         SQLPrimaryKey _elem350;
@@ -433,6 +457,16 @@ import org.slf4j.LoggerFactory;
           _elem350 = new SQLPrimaryKey();
           _elem350.read(iprot);
           struct.primaryKeyCols.add(_elem350);
+=======
+        org.apache.thrift.protocol.TList _list367 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.primaryKeyCols = new ArrayList<SQLPrimaryKey>(_list367.size);
+        SQLPrimaryKey _elem368;
+        for (int _i369 = 0; _i369 < _list367.size; ++_i369)
+        {
+          _elem368 = new SQLPrimaryKey();
+          _elem368.read(iprot);
+          struct.primaryKeyCols.add(_elem368);
+>>>>>>> asf/master
         }
       }
       struct.setPrimaryKeyColsIsSet(true);

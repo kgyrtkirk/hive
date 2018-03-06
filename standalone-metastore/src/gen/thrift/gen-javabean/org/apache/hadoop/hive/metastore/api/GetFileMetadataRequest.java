@@ -351,6 +351,7 @@ import org.slf4j.LoggerFactory;
           case 1: // FILE_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list712 = iprot.readListBegin();
                 struct.fileIds = new ArrayList<Long>(_list712.size);
                 long _elem713;
@@ -358,6 +359,15 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem713 = iprot.readI64();
                   struct.fileIds.add(_elem713);
+=======
+                org.apache.thrift.protocol.TList _list738 = iprot.readListBegin();
+                struct.fileIds = new ArrayList<Long>(_list738.size);
+                long _elem739;
+                for (int _i740 = 0; _i740 < _list738.size; ++_i740)
+                {
+                  _elem739 = iprot.readI64();
+                  struct.fileIds.add(_elem739);
+>>>>>>> asf/master
                 }
                 iprot.readListEnd();
               }
@@ -383,9 +393,15 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(FILE_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.fileIds.size()));
+<<<<<<< HEAD
           for (long _iter715 : struct.fileIds)
           {
             oprot.writeI64(_iter715);
+=======
+          for (long _iter741 : struct.fileIds)
+          {
+            oprot.writeI64(_iter741);
+>>>>>>> asf/master
           }
           oprot.writeListEnd();
         }
@@ -410,9 +426,15 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.fileIds.size());
+<<<<<<< HEAD
         for (long _iter716 : struct.fileIds)
         {
           oprot.writeI64(_iter716);
+=======
+        for (long _iter742 : struct.fileIds)
+        {
+          oprot.writeI64(_iter742);
+>>>>>>> asf/master
         }
       }
     }
@@ -421,6 +443,7 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetFileMetadataRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list717 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
         struct.fileIds = new ArrayList<Long>(_list717.size);
         long _elem718;
@@ -428,6 +451,15 @@ import org.slf4j.LoggerFactory;
         {
           _elem718 = iprot.readI64();
           struct.fileIds.add(_elem718);
+=======
+        org.apache.thrift.protocol.TList _list743 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.fileIds = new ArrayList<Long>(_list743.size);
+        long _elem744;
+        for (int _i745 = 0; _i745 < _list743.size; ++_i745)
+        {
+          _elem744 = iprot.readI64();
+          struct.fileIds.add(_elem744);
+>>>>>>> asf/master
         }
       }
       struct.setFileIdsIsSet(true);

@@ -351,6 +351,7 @@ import org.slf4j.LoggerFactory;
           case 1: // TXN_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list538 = iprot.readListBegin();
                 struct.txn_ids = new ArrayList<Long>(_list538.size);
                 long _elem539;
@@ -358,6 +359,15 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem539 = iprot.readI64();
                   struct.txn_ids.add(_elem539);
+=======
+                org.apache.thrift.protocol.TList _list564 = iprot.readListBegin();
+                struct.txn_ids = new ArrayList<Long>(_list564.size);
+                long _elem565;
+                for (int _i566 = 0; _i566 < _list564.size; ++_i566)
+                {
+                  _elem565 = iprot.readI64();
+                  struct.txn_ids.add(_elem565);
+>>>>>>> asf/master
                 }
                 iprot.readListEnd();
               }
@@ -383,9 +393,15 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(TXN_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.txn_ids.size()));
+<<<<<<< HEAD
           for (long _iter541 : struct.txn_ids)
           {
             oprot.writeI64(_iter541);
+=======
+          for (long _iter567 : struct.txn_ids)
+          {
+            oprot.writeI64(_iter567);
+>>>>>>> asf/master
           }
           oprot.writeListEnd();
         }
@@ -410,9 +426,15 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.txn_ids.size());
+<<<<<<< HEAD
         for (long _iter542 : struct.txn_ids)
         {
           oprot.writeI64(_iter542);
+=======
+        for (long _iter568 : struct.txn_ids)
+        {
+          oprot.writeI64(_iter568);
+>>>>>>> asf/master
         }
       }
     }
@@ -421,6 +443,7 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, AbortTxnsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list543 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
         struct.txn_ids = new ArrayList<Long>(_list543.size);
         long _elem544;
@@ -428,6 +451,15 @@ import org.slf4j.LoggerFactory;
         {
           _elem544 = iprot.readI64();
           struct.txn_ids.add(_elem544);
+=======
+        org.apache.thrift.protocol.TList _list569 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.txn_ids = new ArrayList<Long>(_list569.size);
+        long _elem570;
+        for (int _i571 = 0; _i571 < _list569.size; ++_i571)
+        {
+          _elem570 = iprot.readI64();
+          struct.txn_ids.add(_elem570);
+>>>>>>> asf/master
         }
       }
       struct.setTxn_idsIsSet(true);

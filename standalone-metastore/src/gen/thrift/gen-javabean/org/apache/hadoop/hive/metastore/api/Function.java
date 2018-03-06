@@ -997,6 +997,7 @@ import org.slf4j.LoggerFactory;
           case 8: // RESOURCE_URIS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list506 = iprot.readListBegin();
                 struct.resourceUris = new ArrayList<ResourceUri>(_list506.size);
                 ResourceUri _elem507;
@@ -1005,6 +1006,16 @@ import org.slf4j.LoggerFactory;
                   _elem507 = new ResourceUri();
                   _elem507.read(iprot);
                   struct.resourceUris.add(_elem507);
+=======
+                org.apache.thrift.protocol.TList _list532 = iprot.readListBegin();
+                struct.resourceUris = new ArrayList<ResourceUri>(_list532.size);
+                ResourceUri _elem533;
+                for (int _i534 = 0; _i534 < _list532.size; ++_i534)
+                {
+                  _elem533 = new ResourceUri();
+                  _elem533.read(iprot);
+                  struct.resourceUris.add(_elem533);
+>>>>>>> asf/master
                 }
                 iprot.readListEnd();
               }
@@ -1063,9 +1074,15 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(RESOURCE_URIS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.resourceUris.size()));
+<<<<<<< HEAD
           for (ResourceUri _iter509 : struct.resourceUris)
           {
             _iter509.write(oprot);
+=======
+          for (ResourceUri _iter535 : struct.resourceUris)
+          {
+            _iter535.write(oprot);
+>>>>>>> asf/master
           }
           oprot.writeListEnd();
         }
@@ -1138,9 +1155,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetResourceUris()) {
         {
           oprot.writeI32(struct.resourceUris.size());
+<<<<<<< HEAD
           for (ResourceUri _iter510 : struct.resourceUris)
           {
             _iter510.write(oprot);
+=======
+          for (ResourceUri _iter536 : struct.resourceUris)
+          {
+            _iter536.write(oprot);
+>>>>>>> asf/master
           }
         }
       }
@@ -1180,6 +1203,7 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(7)) {
         {
+<<<<<<< HEAD
           org.apache.thrift.protocol.TList _list511 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
           struct.resourceUris = new ArrayList<ResourceUri>(_list511.size);
           ResourceUri _elem512;
@@ -1188,6 +1212,16 @@ import org.slf4j.LoggerFactory;
             _elem512 = new ResourceUri();
             _elem512.read(iprot);
             struct.resourceUris.add(_elem512);
+=======
+          org.apache.thrift.protocol.TList _list537 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.resourceUris = new ArrayList<ResourceUri>(_list537.size);
+          ResourceUri _elem538;
+          for (int _i539 = 0; _i539 < _list537.size; ++_i539)
+          {
+            _elem538 = new ResourceUri();
+            _elem538.read(iprot);
+            struct.resourceUris.add(_elem538);
+>>>>>>> asf/master
           }
         }
         struct.setResourceUrisIsSet(true);

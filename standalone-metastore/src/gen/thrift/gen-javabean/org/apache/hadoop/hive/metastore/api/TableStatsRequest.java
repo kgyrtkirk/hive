@@ -537,6 +537,7 @@ import org.slf4j.LoggerFactory;
           case 3: // COL_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list410 = iprot.readListBegin();
                 struct.colNames = new ArrayList<String>(_list410.size);
                 String _elem411;
@@ -544,6 +545,15 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem411 = iprot.readString();
                   struct.colNames.add(_elem411);
+=======
+                org.apache.thrift.protocol.TList _list436 = iprot.readListBegin();
+                struct.colNames = new ArrayList<String>(_list436.size);
+                String _elem437;
+                for (int _i438 = 0; _i438 < _list436.size; ++_i438)
+                {
+                  _elem437 = iprot.readString();
+                  struct.colNames.add(_elem437);
+>>>>>>> asf/master
                 }
                 iprot.readListEnd();
               }
@@ -579,9 +589,15 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(COL_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.colNames.size()));
+<<<<<<< HEAD
           for (String _iter413 : struct.colNames)
           {
             oprot.writeString(_iter413);
+=======
+          for (String _iter439 : struct.colNames)
+          {
+            oprot.writeString(_iter439);
+>>>>>>> asf/master
           }
           oprot.writeListEnd();
         }
@@ -608,9 +624,15 @@ import org.slf4j.LoggerFactory;
       oprot.writeString(struct.tblName);
       {
         oprot.writeI32(struct.colNames.size());
+<<<<<<< HEAD
         for (String _iter414 : struct.colNames)
         {
           oprot.writeString(_iter414);
+=======
+        for (String _iter440 : struct.colNames)
+        {
+          oprot.writeString(_iter440);
+>>>>>>> asf/master
         }
       }
     }
@@ -623,6 +645,7 @@ import org.slf4j.LoggerFactory;
       struct.tblName = iprot.readString();
       struct.setTblNameIsSet(true);
       {
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list415 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
         struct.colNames = new ArrayList<String>(_list415.size);
         String _elem416;
@@ -630,6 +653,15 @@ import org.slf4j.LoggerFactory;
         {
           _elem416 = iprot.readString();
           struct.colNames.add(_elem416);
+=======
+        org.apache.thrift.protocol.TList _list441 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.colNames = new ArrayList<String>(_list441.size);
+        String _elem442;
+        for (int _i443 = 0; _i443 < _list441.size; ++_i443)
+        {
+          _elem442 = iprot.readString();
+          struct.colNames.add(_elem442);
+>>>>>>> asf/master
         }
       }
       struct.setColNamesIsSet(true);

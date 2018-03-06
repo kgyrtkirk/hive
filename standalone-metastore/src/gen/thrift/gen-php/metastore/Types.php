@@ -1474,6 +1474,242 @@ class SQLNotNullConstraint {
 
 }
 
+class SQLDefaultConstraint {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $table_db = null;
+  /**
+   * @var string
+   */
+  public $table_name = null;
+  /**
+   * @var string
+   */
+  public $column_name = null;
+  /**
+   * @var string
+   */
+  public $default_value = null;
+  /**
+   * @var string
+   */
+  public $dc_name = null;
+  /**
+   * @var bool
+   */
+  public $enable_cstr = null;
+  /**
+   * @var bool
+   */
+  public $validate_cstr = null;
+  /**
+   * @var bool
+   */
+  public $rely_cstr = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'table_db',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'table_name',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'column_name',
+          'type' => TType::STRING,
+          ),
+        4 => array(
+          'var' => 'default_value',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'dc_name',
+          'type' => TType::STRING,
+          ),
+        6 => array(
+          'var' => 'enable_cstr',
+          'type' => TType::BOOL,
+          ),
+        7 => array(
+          'var' => 'validate_cstr',
+          'type' => TType::BOOL,
+          ),
+        8 => array(
+          'var' => 'rely_cstr',
+          'type' => TType::BOOL,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['table_db'])) {
+        $this->table_db = $vals['table_db'];
+      }
+      if (isset($vals['table_name'])) {
+        $this->table_name = $vals['table_name'];
+      }
+      if (isset($vals['column_name'])) {
+        $this->column_name = $vals['column_name'];
+      }
+      if (isset($vals['default_value'])) {
+        $this->default_value = $vals['default_value'];
+      }
+      if (isset($vals['dc_name'])) {
+        $this->dc_name = $vals['dc_name'];
+      }
+      if (isset($vals['enable_cstr'])) {
+        $this->enable_cstr = $vals['enable_cstr'];
+      }
+      if (isset($vals['validate_cstr'])) {
+        $this->validate_cstr = $vals['validate_cstr'];
+      }
+      if (isset($vals['rely_cstr'])) {
+        $this->rely_cstr = $vals['rely_cstr'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'SQLDefaultConstraint';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->table_db);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->table_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->column_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->default_value);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dc_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->enable_cstr);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->validate_cstr);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 8:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->rely_cstr);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('SQLDefaultConstraint');
+    if ($this->table_db !== null) {
+      $xfer += $output->writeFieldBegin('table_db', TType::STRING, 1);
+      $xfer += $output->writeString($this->table_db);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->table_name !== null) {
+      $xfer += $output->writeFieldBegin('table_name', TType::STRING, 2);
+      $xfer += $output->writeString($this->table_name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->column_name !== null) {
+      $xfer += $output->writeFieldBegin('column_name', TType::STRING, 3);
+      $xfer += $output->writeString($this->column_name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->default_value !== null) {
+      $xfer += $output->writeFieldBegin('default_value', TType::STRING, 4);
+      $xfer += $output->writeString($this->default_value);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->dc_name !== null) {
+      $xfer += $output->writeFieldBegin('dc_name', TType::STRING, 5);
+      $xfer += $output->writeString($this->dc_name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->enable_cstr !== null) {
+      $xfer += $output->writeFieldBegin('enable_cstr', TType::BOOL, 6);
+      $xfer += $output->writeBool($this->enable_cstr);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->validate_cstr !== null) {
+      $xfer += $output->writeFieldBegin('validate_cstr', TType::BOOL, 7);
+      $xfer += $output->writeBool($this->validate_cstr);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->rely_cstr !== null) {
+      $xfer += $output->writeFieldBegin('rely_cstr', TType::BOOL, 8);
+      $xfer += $output->writeBool($this->rely_cstr);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class Type {
   static $_TSPEC;
 
@@ -9803,6 +10039,207 @@ class NotNullConstraintsResponse {
 
 }
 
+class DefaultConstraintsRequest {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $db_name = null;
+  /**
+   * @var string
+   */
+  public $tbl_name = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'db_name',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'tbl_name',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['db_name'])) {
+        $this->db_name = $vals['db_name'];
+      }
+      if (isset($vals['tbl_name'])) {
+        $this->tbl_name = $vals['tbl_name'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'DefaultConstraintsRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->db_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tbl_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('DefaultConstraintsRequest');
+    if ($this->db_name !== null) {
+      $xfer += $output->writeFieldBegin('db_name', TType::STRING, 1);
+      $xfer += $output->writeString($this->db_name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tbl_name !== null) {
+      $xfer += $output->writeFieldBegin('tbl_name', TType::STRING, 2);
+      $xfer += $output->writeString($this->tbl_name);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class DefaultConstraintsResponse {
+  static $_TSPEC;
+
+  /**
+   * @var \metastore\SQLDefaultConstraint[]
+   */
+  public $defaultConstraints = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'defaultConstraints',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\metastore\SQLDefaultConstraint',
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['defaultConstraints'])) {
+        $this->defaultConstraints = $vals['defaultConstraints'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'DefaultConstraintsResponse';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::LST) {
+            $this->defaultConstraints = array();
+            $_size313 = 0;
+            $_etype316 = 0;
+            $xfer += $input->readListBegin($_etype316, $_size313);
+            for ($_i317 = 0; $_i317 < $_size313; ++$_i317)
+            {
+              $elem318 = null;
+              $elem318 = new \metastore\SQLDefaultConstraint();
+              $xfer += $elem318->read($input);
+              $this->defaultConstraints []= $elem318;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('DefaultConstraintsResponse');
+    if ($this->defaultConstraints !== null) {
+      if (!is_array($this->defaultConstraints)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('defaultConstraints', TType::LST, 1);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->defaultConstraints));
+        {
+          foreach ($this->defaultConstraints as $iter319)
+          {
+            $xfer += $iter319->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class DropConstraintRequest {
   static $_TSPEC;
 
@@ -9975,6 +10412,7 @@ class AddPrimaryKeyRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->primaryKeyCols = array();
+<<<<<<< HEAD
             $_size304 = 0;
             $_etype307 = 0;
             $xfer += $input->readListBegin($_etype307, $_size304);
@@ -9984,6 +10422,17 @@ class AddPrimaryKeyRequest {
               $elem309 = new \metastore\SQLPrimaryKey();
               $xfer += $elem309->read($input);
               $this->primaryKeyCols []= $elem309;
+=======
+            $_size320 = 0;
+            $_etype323 = 0;
+            $xfer += $input->readListBegin($_etype323, $_size320);
+            for ($_i324 = 0; $_i324 < $_size320; ++$_i324)
+            {
+              $elem325 = null;
+              $elem325 = new \metastore\SQLPrimaryKey();
+              $xfer += $elem325->read($input);
+              $this->primaryKeyCols []= $elem325;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -10011,9 +10460,15 @@ class AddPrimaryKeyRequest {
       {
         $output->writeListBegin(TType::STRUCT, count($this->primaryKeyCols));
         {
+<<<<<<< HEAD
           foreach ($this->primaryKeyCols as $iter310)
           {
             $xfer += $iter310->write($output);
+=======
+          foreach ($this->primaryKeyCols as $iter326)
+          {
+            $xfer += $iter326->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -10078,6 +10533,7 @@ class AddForeignKeyRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->foreignKeyCols = array();
+<<<<<<< HEAD
             $_size311 = 0;
             $_etype314 = 0;
             $xfer += $input->readListBegin($_etype314, $_size311);
@@ -10087,6 +10543,17 @@ class AddForeignKeyRequest {
               $elem316 = new \metastore\SQLForeignKey();
               $xfer += $elem316->read($input);
               $this->foreignKeyCols []= $elem316;
+=======
+            $_size327 = 0;
+            $_etype330 = 0;
+            $xfer += $input->readListBegin($_etype330, $_size327);
+            for ($_i331 = 0; $_i331 < $_size327; ++$_i331)
+            {
+              $elem332 = null;
+              $elem332 = new \metastore\SQLForeignKey();
+              $xfer += $elem332->read($input);
+              $this->foreignKeyCols []= $elem332;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -10114,9 +10581,15 @@ class AddForeignKeyRequest {
       {
         $output->writeListBegin(TType::STRUCT, count($this->foreignKeyCols));
         {
+<<<<<<< HEAD
           foreach ($this->foreignKeyCols as $iter317)
           {
             $xfer += $iter317->write($output);
+=======
+          foreach ($this->foreignKeyCols as $iter333)
+          {
+            $xfer += $iter333->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -10181,6 +10654,7 @@ class AddUniqueConstraintRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->uniqueConstraintCols = array();
+<<<<<<< HEAD
             $_size318 = 0;
             $_etype321 = 0;
             $xfer += $input->readListBegin($_etype321, $_size318);
@@ -10190,6 +10664,17 @@ class AddUniqueConstraintRequest {
               $elem323 = new \metastore\SQLUniqueConstraint();
               $xfer += $elem323->read($input);
               $this->uniqueConstraintCols []= $elem323;
+=======
+            $_size334 = 0;
+            $_etype337 = 0;
+            $xfer += $input->readListBegin($_etype337, $_size334);
+            for ($_i338 = 0; $_i338 < $_size334; ++$_i338)
+            {
+              $elem339 = null;
+              $elem339 = new \metastore\SQLUniqueConstraint();
+              $xfer += $elem339->read($input);
+              $this->uniqueConstraintCols []= $elem339;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -10217,9 +10702,15 @@ class AddUniqueConstraintRequest {
       {
         $output->writeListBegin(TType::STRUCT, count($this->uniqueConstraintCols));
         {
+<<<<<<< HEAD
           foreach ($this->uniqueConstraintCols as $iter324)
           {
             $xfer += $iter324->write($output);
+=======
+          foreach ($this->uniqueConstraintCols as $iter340)
+          {
+            $xfer += $iter340->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -10284,6 +10775,7 @@ class AddNotNullConstraintRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->notNullConstraintCols = array();
+<<<<<<< HEAD
             $_size325 = 0;
             $_etype328 = 0;
             $xfer += $input->readListBegin($_etype328, $_size325);
@@ -10293,6 +10785,17 @@ class AddNotNullConstraintRequest {
               $elem330 = new \metastore\SQLNotNullConstraint();
               $xfer += $elem330->read($input);
               $this->notNullConstraintCols []= $elem330;
+=======
+            $_size341 = 0;
+            $_etype344 = 0;
+            $xfer += $input->readListBegin($_etype344, $_size341);
+            for ($_i345 = 0; $_i345 < $_size341; ++$_i345)
+            {
+              $elem346 = null;
+              $elem346 = new \metastore\SQLNotNullConstraint();
+              $xfer += $elem346->read($input);
+              $this->notNullConstraintCols []= $elem346;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -10320,9 +10823,118 @@ class AddNotNullConstraintRequest {
       {
         $output->writeListBegin(TType::STRUCT, count($this->notNullConstraintCols));
         {
+<<<<<<< HEAD
           foreach ($this->notNullConstraintCols as $iter331)
           {
             $xfer += $iter331->write($output);
+=======
+          foreach ($this->notNullConstraintCols as $iter347)
+          {
+            $xfer += $iter347->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class AddDefaultConstraintRequest {
+  static $_TSPEC;
+
+  /**
+   * @var \metastore\SQLDefaultConstraint[]
+   */
+  public $defaultConstraintCols = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'defaultConstraintCols',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\metastore\SQLDefaultConstraint',
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['defaultConstraintCols'])) {
+        $this->defaultConstraintCols = $vals['defaultConstraintCols'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'AddDefaultConstraintRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::LST) {
+            $this->defaultConstraintCols = array();
+            $_size348 = 0;
+            $_etype351 = 0;
+            $xfer += $input->readListBegin($_etype351, $_size348);
+            for ($_i352 = 0; $_i352 < $_size348; ++$_i352)
+            {
+              $elem353 = null;
+              $elem353 = new \metastore\SQLDefaultConstraint();
+              $xfer += $elem353->read($input);
+              $this->defaultConstraintCols []= $elem353;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('AddDefaultConstraintRequest');
+    if ($this->defaultConstraintCols !== null) {
+      if (!is_array($this->defaultConstraintCols)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('defaultConstraintCols', TType::LST, 1);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->defaultConstraintCols));
+        {
+          foreach ($this->defaultConstraintCols as $iter354)
+          {
+            $xfer += $iter354->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -10398,6 +11010,7 @@ class PartitionsByExprResult {
         case 1:
           if ($ftype == TType::LST) {
             $this->partitions = array();
+<<<<<<< HEAD
             $_size332 = 0;
             $_etype335 = 0;
             $xfer += $input->readListBegin($_etype335, $_size332);
@@ -10407,6 +11020,17 @@ class PartitionsByExprResult {
               $elem337 = new \metastore\Partition();
               $xfer += $elem337->read($input);
               $this->partitions []= $elem337;
+=======
+            $_size355 = 0;
+            $_etype358 = 0;
+            $xfer += $input->readListBegin($_etype358, $_size355);
+            for ($_i359 = 0; $_i359 < $_size355; ++$_i359)
+            {
+              $elem360 = null;
+              $elem360 = new \metastore\Partition();
+              $xfer += $elem360->read($input);
+              $this->partitions []= $elem360;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -10441,9 +11065,15 @@ class PartitionsByExprResult {
       {
         $output->writeListBegin(TType::STRUCT, count($this->partitions));
         {
+<<<<<<< HEAD
           foreach ($this->partitions as $iter338)
           {
             $xfer += $iter338->write($output);
+=======
+          foreach ($this->partitions as $iter361)
+          {
+            $xfer += $iter361->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -10680,6 +11310,7 @@ class TableStatsResult {
         case 1:
           if ($ftype == TType::LST) {
             $this->tableStats = array();
+<<<<<<< HEAD
             $_size339 = 0;
             $_etype342 = 0;
             $xfer += $input->readListBegin($_etype342, $_size339);
@@ -10689,6 +11320,17 @@ class TableStatsResult {
               $elem344 = new \metastore\ColumnStatisticsObj();
               $xfer += $elem344->read($input);
               $this->tableStats []= $elem344;
+=======
+            $_size362 = 0;
+            $_etype365 = 0;
+            $xfer += $input->readListBegin($_etype365, $_size362);
+            for ($_i366 = 0; $_i366 < $_size362; ++$_i366)
+            {
+              $elem367 = null;
+              $elem367 = new \metastore\ColumnStatisticsObj();
+              $xfer += $elem367->read($input);
+              $this->tableStats []= $elem367;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -10716,9 +11358,15 @@ class TableStatsResult {
       {
         $output->writeListBegin(TType::STRUCT, count($this->tableStats));
         {
+<<<<<<< HEAD
           foreach ($this->tableStats as $iter345)
           {
             $xfer += $iter345->write($output);
+=======
+          foreach ($this->tableStats as $iter368)
+          {
+            $xfer += $iter368->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -10791,6 +11439,7 @@ class PartitionsStatsResult {
         case 1:
           if ($ftype == TType::MAP) {
             $this->partStats = array();
+<<<<<<< HEAD
             $_size346 = 0;
             $_ktype347 = 0;
             $_vtype348 = 0;
@@ -10813,6 +11462,30 @@ class PartitionsStatsResult {
               }
               $xfer += $input->readListEnd();
               $this->partStats[$key351] = $val352;
+=======
+            $_size369 = 0;
+            $_ktype370 = 0;
+            $_vtype371 = 0;
+            $xfer += $input->readMapBegin($_ktype370, $_vtype371, $_size369);
+            for ($_i373 = 0; $_i373 < $_size369; ++$_i373)
+            {
+              $key374 = '';
+              $val375 = array();
+              $xfer += $input->readString($key374);
+              $val375 = array();
+              $_size376 = 0;
+              $_etype379 = 0;
+              $xfer += $input->readListBegin($_etype379, $_size376);
+              for ($_i380 = 0; $_i380 < $_size376; ++$_i380)
+              {
+                $elem381 = null;
+                $elem381 = new \metastore\ColumnStatisticsObj();
+                $xfer += $elem381->read($input);
+                $val375 []= $elem381;
+              }
+              $xfer += $input->readListEnd();
+              $this->partStats[$key374] = $val375;
+>>>>>>> asf/master
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -10840,6 +11513,7 @@ class PartitionsStatsResult {
       {
         $output->writeMapBegin(TType::STRING, TType::LST, count($this->partStats));
         {
+<<<<<<< HEAD
           foreach ($this->partStats as $kiter359 => $viter360)
           {
             $xfer += $output->writeString($kiter359);
@@ -10849,6 +11523,17 @@ class PartitionsStatsResult {
                 foreach ($viter360 as $iter361)
                 {
                   $xfer += $iter361->write($output);
+=======
+          foreach ($this->partStats as $kiter382 => $viter383)
+          {
+            $xfer += $output->writeString($kiter382);
+            {
+              $output->writeListBegin(TType::STRUCT, count($viter383));
+              {
+                foreach ($viter383 as $iter384)
+                {
+                  $xfer += $iter384->write($output);
+>>>>>>> asf/master
                 }
               }
               $output->writeListEnd();
@@ -10952,6 +11637,7 @@ class TableStatsRequest {
         case 3:
           if ($ftype == TType::LST) {
             $this->colNames = array();
+<<<<<<< HEAD
             $_size362 = 0;
             $_etype365 = 0;
             $xfer += $input->readListBegin($_etype365, $_size362);
@@ -10960,6 +11646,16 @@ class TableStatsRequest {
               $elem367 = null;
               $xfer += $input->readString($elem367);
               $this->colNames []= $elem367;
+=======
+            $_size385 = 0;
+            $_etype388 = 0;
+            $xfer += $input->readListBegin($_etype388, $_size385);
+            for ($_i389 = 0; $_i389 < $_size385; ++$_i389)
+            {
+              $elem390 = null;
+              $xfer += $input->readString($elem390);
+              $this->colNames []= $elem390;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -10997,9 +11693,15 @@ class TableStatsRequest {
       {
         $output->writeListBegin(TType::STRING, count($this->colNames));
         {
+<<<<<<< HEAD
           foreach ($this->colNames as $iter368)
           {
             $xfer += $output->writeString($iter368);
+=======
+          foreach ($this->colNames as $iter391)
+          {
+            $xfer += $output->writeString($iter391);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -11114,6 +11816,7 @@ class PartitionsStatsRequest {
         case 3:
           if ($ftype == TType::LST) {
             $this->colNames = array();
+<<<<<<< HEAD
             $_size369 = 0;
             $_etype372 = 0;
             $xfer += $input->readListBegin($_etype372, $_size369);
@@ -11122,6 +11825,16 @@ class PartitionsStatsRequest {
               $elem374 = null;
               $xfer += $input->readString($elem374);
               $this->colNames []= $elem374;
+=======
+            $_size392 = 0;
+            $_etype395 = 0;
+            $xfer += $input->readListBegin($_etype395, $_size392);
+            for ($_i396 = 0; $_i396 < $_size392; ++$_i396)
+            {
+              $elem397 = null;
+              $xfer += $input->readString($elem397);
+              $this->colNames []= $elem397;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -11131,6 +11844,7 @@ class PartitionsStatsRequest {
         case 4:
           if ($ftype == TType::LST) {
             $this->partNames = array();
+<<<<<<< HEAD
             $_size375 = 0;
             $_etype378 = 0;
             $xfer += $input->readListBegin($_etype378, $_size375);
@@ -11139,6 +11853,16 @@ class PartitionsStatsRequest {
               $elem380 = null;
               $xfer += $input->readString($elem380);
               $this->partNames []= $elem380;
+=======
+            $_size398 = 0;
+            $_etype401 = 0;
+            $xfer += $input->readListBegin($_etype401, $_size398);
+            for ($_i402 = 0; $_i402 < $_size398; ++$_i402)
+            {
+              $elem403 = null;
+              $xfer += $input->readString($elem403);
+              $this->partNames []= $elem403;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -11176,9 +11900,15 @@ class PartitionsStatsRequest {
       {
         $output->writeListBegin(TType::STRING, count($this->colNames));
         {
+<<<<<<< HEAD
           foreach ($this->colNames as $iter381)
           {
             $xfer += $output->writeString($iter381);
+=======
+          foreach ($this->colNames as $iter404)
+          {
+            $xfer += $output->writeString($iter404);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -11193,9 +11923,15 @@ class PartitionsStatsRequest {
       {
         $output->writeListBegin(TType::STRING, count($this->partNames));
         {
+<<<<<<< HEAD
           foreach ($this->partNames as $iter382)
           {
             $xfer += $output->writeString($iter382);
+=======
+          foreach ($this->partNames as $iter405)
+          {
+            $xfer += $output->writeString($iter405);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -11260,6 +11996,7 @@ class AddPartitionsResult {
         case 1:
           if ($ftype == TType::LST) {
             $this->partitions = array();
+<<<<<<< HEAD
             $_size383 = 0;
             $_etype386 = 0;
             $xfer += $input->readListBegin($_etype386, $_size383);
@@ -11269,6 +12006,17 @@ class AddPartitionsResult {
               $elem388 = new \metastore\Partition();
               $xfer += $elem388->read($input);
               $this->partitions []= $elem388;
+=======
+            $_size406 = 0;
+            $_etype409 = 0;
+            $xfer += $input->readListBegin($_etype409, $_size406);
+            for ($_i410 = 0; $_i410 < $_size406; ++$_i410)
+            {
+              $elem411 = null;
+              $elem411 = new \metastore\Partition();
+              $xfer += $elem411->read($input);
+              $this->partitions []= $elem411;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -11296,9 +12044,15 @@ class AddPartitionsResult {
       {
         $output->writeListBegin(TType::STRUCT, count($this->partitions));
         {
+<<<<<<< HEAD
           foreach ($this->partitions as $iter389)
           {
             $xfer += $iter389->write($output);
+=======
+          foreach ($this->partitions as $iter412)
+          {
+            $xfer += $iter412->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -11421,6 +12175,7 @@ class AddPartitionsRequest {
         case 3:
           if ($ftype == TType::LST) {
             $this->parts = array();
+<<<<<<< HEAD
             $_size390 = 0;
             $_etype393 = 0;
             $xfer += $input->readListBegin($_etype393, $_size390);
@@ -11430,6 +12185,17 @@ class AddPartitionsRequest {
               $elem395 = new \metastore\Partition();
               $xfer += $elem395->read($input);
               $this->parts []= $elem395;
+=======
+            $_size413 = 0;
+            $_etype416 = 0;
+            $xfer += $input->readListBegin($_etype416, $_size413);
+            for ($_i417 = 0; $_i417 < $_size413; ++$_i417)
+            {
+              $elem418 = null;
+              $elem418 = new \metastore\Partition();
+              $xfer += $elem418->read($input);
+              $this->parts []= $elem418;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -11481,9 +12247,15 @@ class AddPartitionsRequest {
       {
         $output->writeListBegin(TType::STRUCT, count($this->parts));
         {
+<<<<<<< HEAD
           foreach ($this->parts as $iter396)
           {
             $xfer += $iter396->write($output);
+=======
+          foreach ($this->parts as $iter419)
+          {
+            $xfer += $iter419->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -11558,6 +12330,7 @@ class DropPartitionsResult {
         case 1:
           if ($ftype == TType::LST) {
             $this->partitions = array();
+<<<<<<< HEAD
             $_size397 = 0;
             $_etype400 = 0;
             $xfer += $input->readListBegin($_etype400, $_size397);
@@ -11567,6 +12340,17 @@ class DropPartitionsResult {
               $elem402 = new \metastore\Partition();
               $xfer += $elem402->read($input);
               $this->partitions []= $elem402;
+=======
+            $_size420 = 0;
+            $_etype423 = 0;
+            $xfer += $input->readListBegin($_etype423, $_size420);
+            for ($_i424 = 0; $_i424 < $_size420; ++$_i424)
+            {
+              $elem425 = null;
+              $elem425 = new \metastore\Partition();
+              $xfer += $elem425->read($input);
+              $this->partitions []= $elem425;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -11594,9 +12378,15 @@ class DropPartitionsResult {
       {
         $output->writeListBegin(TType::STRUCT, count($this->partitions));
         {
+<<<<<<< HEAD
           foreach ($this->partitions as $iter403)
           {
             $xfer += $iter403->write($output);
+=======
+          foreach ($this->partitions as $iter426)
+          {
+            $xfer += $iter426->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -11774,6 +12564,7 @@ class RequestPartsSpec {
         case 1:
           if ($ftype == TType::LST) {
             $this->names = array();
+<<<<<<< HEAD
             $_size404 = 0;
             $_etype407 = 0;
             $xfer += $input->readListBegin($_etype407, $_size404);
@@ -11782,6 +12573,16 @@ class RequestPartsSpec {
               $elem409 = null;
               $xfer += $input->readString($elem409);
               $this->names []= $elem409;
+=======
+            $_size427 = 0;
+            $_etype430 = 0;
+            $xfer += $input->readListBegin($_etype430, $_size427);
+            for ($_i431 = 0; $_i431 < $_size427; ++$_i431)
+            {
+              $elem432 = null;
+              $xfer += $input->readString($elem432);
+              $this->names []= $elem432;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -11791,6 +12592,7 @@ class RequestPartsSpec {
         case 2:
           if ($ftype == TType::LST) {
             $this->exprs = array();
+<<<<<<< HEAD
             $_size410 = 0;
             $_etype413 = 0;
             $xfer += $input->readListBegin($_etype413, $_size410);
@@ -11800,6 +12602,17 @@ class RequestPartsSpec {
               $elem415 = new \metastore\DropPartitionsExpr();
               $xfer += $elem415->read($input);
               $this->exprs []= $elem415;
+=======
+            $_size433 = 0;
+            $_etype436 = 0;
+            $xfer += $input->readListBegin($_etype436, $_size433);
+            for ($_i437 = 0; $_i437 < $_size433; ++$_i437)
+            {
+              $elem438 = null;
+              $elem438 = new \metastore\DropPartitionsExpr();
+              $xfer += $elem438->read($input);
+              $this->exprs []= $elem438;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -11827,9 +12640,15 @@ class RequestPartsSpec {
       {
         $output->writeListBegin(TType::STRING, count($this->names));
         {
+<<<<<<< HEAD
           foreach ($this->names as $iter416)
           {
             $xfer += $output->writeString($iter416);
+=======
+          foreach ($this->names as $iter439)
+          {
+            $xfer += $output->writeString($iter439);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -11844,9 +12663,15 @@ class RequestPartsSpec {
       {
         $output->writeListBegin(TType::STRUCT, count($this->exprs));
         {
+<<<<<<< HEAD
           foreach ($this->exprs as $iter417)
           {
             $xfer += $iter417->write($output);
+=======
+          foreach ($this->exprs as $iter440)
+          {
+            $xfer += $iter440->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -12253,6 +13078,7 @@ class PartitionValuesRequest {
         case 3:
           if ($ftype == TType::LST) {
             $this->partitionKeys = array();
+<<<<<<< HEAD
             $_size418 = 0;
             $_etype421 = 0;
             $xfer += $input->readListBegin($_etype421, $_size418);
@@ -12262,6 +13088,17 @@ class PartitionValuesRequest {
               $elem423 = new \metastore\FieldSchema();
               $xfer += $elem423->read($input);
               $this->partitionKeys []= $elem423;
+=======
+            $_size441 = 0;
+            $_etype444 = 0;
+            $xfer += $input->readListBegin($_etype444, $_size441);
+            for ($_i445 = 0; $_i445 < $_size441; ++$_i445)
+            {
+              $elem446 = null;
+              $elem446 = new \metastore\FieldSchema();
+              $xfer += $elem446->read($input);
+              $this->partitionKeys []= $elem446;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -12285,6 +13122,7 @@ class PartitionValuesRequest {
         case 6:
           if ($ftype == TType::LST) {
             $this->partitionOrder = array();
+<<<<<<< HEAD
             $_size424 = 0;
             $_etype427 = 0;
             $xfer += $input->readListBegin($_etype427, $_size424);
@@ -12294,6 +13132,17 @@ class PartitionValuesRequest {
               $elem429 = new \metastore\FieldSchema();
               $xfer += $elem429->read($input);
               $this->partitionOrder []= $elem429;
+=======
+            $_size447 = 0;
+            $_etype450 = 0;
+            $xfer += $input->readListBegin($_etype450, $_size447);
+            for ($_i451 = 0; $_i451 < $_size447; ++$_i451)
+            {
+              $elem452 = null;
+              $elem452 = new \metastore\FieldSchema();
+              $xfer += $elem452->read($input);
+              $this->partitionOrder []= $elem452;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -12345,9 +13194,15 @@ class PartitionValuesRequest {
       {
         $output->writeListBegin(TType::STRUCT, count($this->partitionKeys));
         {
+<<<<<<< HEAD
           foreach ($this->partitionKeys as $iter430)
           {
             $xfer += $iter430->write($output);
+=======
+          foreach ($this->partitionKeys as $iter453)
+          {
+            $xfer += $iter453->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -12372,9 +13227,15 @@ class PartitionValuesRequest {
       {
         $output->writeListBegin(TType::STRUCT, count($this->partitionOrder));
         {
+<<<<<<< HEAD
           foreach ($this->partitionOrder as $iter431)
           {
             $xfer += $iter431->write($output);
+=======
+          foreach ($this->partitionOrder as $iter454)
+          {
+            $xfer += $iter454->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -12448,6 +13309,7 @@ class PartitionValuesRow {
         case 1:
           if ($ftype == TType::LST) {
             $this->row = array();
+<<<<<<< HEAD
             $_size432 = 0;
             $_etype435 = 0;
             $xfer += $input->readListBegin($_etype435, $_size432);
@@ -12456,6 +13318,16 @@ class PartitionValuesRow {
               $elem437 = null;
               $xfer += $input->readString($elem437);
               $this->row []= $elem437;
+=======
+            $_size455 = 0;
+            $_etype458 = 0;
+            $xfer += $input->readListBegin($_etype458, $_size455);
+            for ($_i459 = 0; $_i459 < $_size455; ++$_i459)
+            {
+              $elem460 = null;
+              $xfer += $input->readString($elem460);
+              $this->row []= $elem460;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -12483,9 +13355,15 @@ class PartitionValuesRow {
       {
         $output->writeListBegin(TType::STRING, count($this->row));
         {
+<<<<<<< HEAD
           foreach ($this->row as $iter438)
           {
             $xfer += $output->writeString($iter438);
+=======
+          foreach ($this->row as $iter461)
+          {
+            $xfer += $output->writeString($iter461);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -12550,6 +13428,7 @@ class PartitionValuesResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->partitionValues = array();
+<<<<<<< HEAD
             $_size439 = 0;
             $_etype442 = 0;
             $xfer += $input->readListBegin($_etype442, $_size439);
@@ -12559,6 +13438,17 @@ class PartitionValuesResponse {
               $elem444 = new \metastore\PartitionValuesRow();
               $xfer += $elem444->read($input);
               $this->partitionValues []= $elem444;
+=======
+            $_size462 = 0;
+            $_etype465 = 0;
+            $xfer += $input->readListBegin($_etype465, $_size462);
+            for ($_i466 = 0; $_i466 < $_size462; ++$_i466)
+            {
+              $elem467 = null;
+              $elem467 = new \metastore\PartitionValuesRow();
+              $xfer += $elem467->read($input);
+              $this->partitionValues []= $elem467;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -12586,9 +13476,15 @@ class PartitionValuesResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->partitionValues));
         {
+<<<<<<< HEAD
           foreach ($this->partitionValues as $iter445)
           {
             $xfer += $iter445->write($output);
+=======
+          foreach ($this->partitionValues as $iter468)
+          {
+            $xfer += $iter468->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -12877,6 +13773,7 @@ class Function {
         case 8:
           if ($ftype == TType::LST) {
             $this->resourceUris = array();
+<<<<<<< HEAD
             $_size446 = 0;
             $_etype449 = 0;
             $xfer += $input->readListBegin($_etype449, $_size446);
@@ -12886,6 +13783,17 @@ class Function {
               $elem451 = new \metastore\ResourceUri();
               $xfer += $elem451->read($input);
               $this->resourceUris []= $elem451;
+=======
+            $_size469 = 0;
+            $_etype472 = 0;
+            $xfer += $input->readListBegin($_etype472, $_size469);
+            for ($_i473 = 0; $_i473 < $_size469; ++$_i473)
+            {
+              $elem474 = null;
+              $elem474 = new \metastore\ResourceUri();
+              $xfer += $elem474->read($input);
+              $this->resourceUris []= $elem474;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -12948,9 +13856,15 @@ class Function {
       {
         $output->writeListBegin(TType::STRUCT, count($this->resourceUris));
         {
+<<<<<<< HEAD
           foreach ($this->resourceUris as $iter452)
           {
             $xfer += $iter452->write($output);
+=======
+          foreach ($this->resourceUris as $iter475)
+          {
+            $xfer += $iter475->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -13292,6 +14206,7 @@ class GetOpenTxnsInfoResponse {
         case 2:
           if ($ftype == TType::LST) {
             $this->open_txns = array();
+<<<<<<< HEAD
             $_size453 = 0;
             $_etype456 = 0;
             $xfer += $input->readListBegin($_etype456, $_size453);
@@ -13301,6 +14216,17 @@ class GetOpenTxnsInfoResponse {
               $elem458 = new \metastore\TxnInfo();
               $xfer += $elem458->read($input);
               $this->open_txns []= $elem458;
+=======
+            $_size476 = 0;
+            $_etype479 = 0;
+            $xfer += $input->readListBegin($_etype479, $_size476);
+            for ($_i480 = 0; $_i480 < $_size476; ++$_i480)
+            {
+              $elem481 = null;
+              $elem481 = new \metastore\TxnInfo();
+              $xfer += $elem481->read($input);
+              $this->open_txns []= $elem481;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -13333,9 +14259,15 @@ class GetOpenTxnsInfoResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->open_txns));
         {
+<<<<<<< HEAD
           foreach ($this->open_txns as $iter459)
           {
             $xfer += $iter459->write($output);
+=======
+          foreach ($this->open_txns as $iter482)
+          {
+            $xfer += $iter482->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -13439,6 +14371,7 @@ class GetOpenTxnsResponse {
         case 2:
           if ($ftype == TType::LST) {
             $this->open_txns = array();
+<<<<<<< HEAD
             $_size460 = 0;
             $_etype463 = 0;
             $xfer += $input->readListBegin($_etype463, $_size460);
@@ -13447,6 +14380,16 @@ class GetOpenTxnsResponse {
               $elem465 = null;
               $xfer += $input->readI64($elem465);
               $this->open_txns []= $elem465;
+=======
+            $_size483 = 0;
+            $_etype486 = 0;
+            $xfer += $input->readListBegin($_etype486, $_size483);
+            for ($_i487 = 0; $_i487 < $_size483; ++$_i487)
+            {
+              $elem488 = null;
+              $xfer += $input->readI64($elem488);
+              $this->open_txns []= $elem488;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -13493,9 +14436,15 @@ class GetOpenTxnsResponse {
       {
         $output->writeListBegin(TType::I64, count($this->open_txns));
         {
+<<<<<<< HEAD
           foreach ($this->open_txns as $iter466)
           {
             $xfer += $output->writeI64($iter466);
+=======
+          foreach ($this->open_txns as $iter489)
+          {
+            $xfer += $output->writeI64($iter489);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -13713,6 +14662,7 @@ class OpenTxnsResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->txn_ids = array();
+<<<<<<< HEAD
             $_size467 = 0;
             $_etype470 = 0;
             $xfer += $input->readListBegin($_etype470, $_size467);
@@ -13721,6 +14671,16 @@ class OpenTxnsResponse {
               $elem472 = null;
               $xfer += $input->readI64($elem472);
               $this->txn_ids []= $elem472;
+=======
+            $_size490 = 0;
+            $_etype493 = 0;
+            $xfer += $input->readListBegin($_etype493, $_size490);
+            for ($_i494 = 0; $_i494 < $_size490; ++$_i494)
+            {
+              $elem495 = null;
+              $xfer += $input->readI64($elem495);
+              $this->txn_ids []= $elem495;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -13748,9 +14708,15 @@ class OpenTxnsResponse {
       {
         $output->writeListBegin(TType::I64, count($this->txn_ids));
         {
+<<<<<<< HEAD
           foreach ($this->txn_ids as $iter473)
           {
             $xfer += $output->writeI64($iter473);
+=======
+          foreach ($this->txn_ids as $iter496)
+          {
+            $xfer += $output->writeI64($iter496);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -13889,6 +14855,7 @@ class AbortTxnsRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->txn_ids = array();
+<<<<<<< HEAD
             $_size474 = 0;
             $_etype477 = 0;
             $xfer += $input->readListBegin($_etype477, $_size474);
@@ -13897,6 +14864,16 @@ class AbortTxnsRequest {
               $elem479 = null;
               $xfer += $input->readI64($elem479);
               $this->txn_ids []= $elem479;
+=======
+            $_size497 = 0;
+            $_etype500 = 0;
+            $xfer += $input->readListBegin($_etype500, $_size497);
+            for ($_i501 = 0; $_i501 < $_size497; ++$_i501)
+            {
+              $elem502 = null;
+              $xfer += $input->readI64($elem502);
+              $this->txn_ids []= $elem502;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -13924,9 +14901,15 @@ class AbortTxnsRequest {
       {
         $output->writeListBegin(TType::I64, count($this->txn_ids));
         {
+<<<<<<< HEAD
           foreach ($this->txn_ids as $iter480)
           {
             $xfer += $output->writeI64($iter480);
+=======
+          foreach ($this->txn_ids as $iter503)
+          {
+            $xfer += $output->writeI64($iter503);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -14076,6 +15059,7 @@ class GetValidWriteIdsRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->fullTableNames = array();
+<<<<<<< HEAD
             $_size481 = 0;
             $_etype484 = 0;
             $xfer += $input->readListBegin($_etype484, $_size481);
@@ -14084,6 +15068,16 @@ class GetValidWriteIdsRequest {
               $elem486 = null;
               $xfer += $input->readString($elem486);
               $this->fullTableNames []= $elem486;
+=======
+            $_size504 = 0;
+            $_etype507 = 0;
+            $xfer += $input->readListBegin($_etype507, $_size504);
+            for ($_i508 = 0; $_i508 < $_size504; ++$_i508)
+            {
+              $elem509 = null;
+              $xfer += $input->readString($elem509);
+              $this->fullTableNames []= $elem509;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -14118,9 +15112,15 @@ class GetValidWriteIdsRequest {
       {
         $output->writeListBegin(TType::STRING, count($this->fullTableNames));
         {
+<<<<<<< HEAD
           foreach ($this->fullTableNames as $iter487)
           {
             $xfer += $output->writeString($iter487);
+=======
+          foreach ($this->fullTableNames as $iter510)
+          {
+            $xfer += $output->writeString($iter510);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -14247,6 +15247,7 @@ class TableValidWriteIds {
         case 3:
           if ($ftype == TType::LST) {
             $this->invalidWriteIds = array();
+<<<<<<< HEAD
             $_size488 = 0;
             $_etype491 = 0;
             $xfer += $input->readListBegin($_etype491, $_size488);
@@ -14255,6 +15256,16 @@ class TableValidWriteIds {
               $elem493 = null;
               $xfer += $input->readI64($elem493);
               $this->invalidWriteIds []= $elem493;
+=======
+            $_size511 = 0;
+            $_etype514 = 0;
+            $xfer += $input->readListBegin($_etype514, $_size511);
+            for ($_i515 = 0; $_i515 < $_size511; ++$_i515)
+            {
+              $elem516 = null;
+              $xfer += $input->readI64($elem516);
+              $this->invalidWriteIds []= $elem516;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -14306,9 +15317,15 @@ class TableValidWriteIds {
       {
         $output->writeListBegin(TType::I64, count($this->invalidWriteIds));
         {
+<<<<<<< HEAD
           foreach ($this->invalidWriteIds as $iter494)
           {
             $xfer += $output->writeI64($iter494);
+=======
+          foreach ($this->invalidWriteIds as $iter517)
+          {
+            $xfer += $output->writeI64($iter517);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -14383,6 +15400,7 @@ class GetValidWriteIdsResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->tblValidWriteIds = array();
+<<<<<<< HEAD
             $_size495 = 0;
             $_etype498 = 0;
             $xfer += $input->readListBegin($_etype498, $_size495);
@@ -14392,6 +15410,17 @@ class GetValidWriteIdsResponse {
               $elem500 = new \metastore\TableValidWriteIds();
               $xfer += $elem500->read($input);
               $this->tblValidWriteIds []= $elem500;
+=======
+            $_size518 = 0;
+            $_etype521 = 0;
+            $xfer += $input->readListBegin($_etype521, $_size518);
+            for ($_i522 = 0; $_i522 < $_size518; ++$_i522)
+            {
+              $elem523 = null;
+              $elem523 = new \metastore\TableValidWriteIds();
+              $xfer += $elem523->read($input);
+              $this->tblValidWriteIds []= $elem523;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -14419,9 +15448,15 @@ class GetValidWriteIdsResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->tblValidWriteIds));
         {
+<<<<<<< HEAD
           foreach ($this->tblValidWriteIds as $iter501)
           {
             $xfer += $iter501->write($output);
+=======
+          foreach ($this->tblValidWriteIds as $iter524)
+          {
+            $xfer += $iter524->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -14507,6 +15542,7 @@ class AllocateTableWriteIdsRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->txnIds = array();
+<<<<<<< HEAD
             $_size502 = 0;
             $_etype505 = 0;
             $xfer += $input->readListBegin($_etype505, $_size502);
@@ -14515,6 +15551,16 @@ class AllocateTableWriteIdsRequest {
               $elem507 = null;
               $xfer += $input->readI64($elem507);
               $this->txnIds []= $elem507;
+=======
+            $_size525 = 0;
+            $_etype528 = 0;
+            $xfer += $input->readListBegin($_etype528, $_size525);
+            for ($_i529 = 0; $_i529 < $_size525; ++$_i529)
+            {
+              $elem530 = null;
+              $xfer += $input->readI64($elem530);
+              $this->txnIds []= $elem530;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -14556,9 +15602,15 @@ class AllocateTableWriteIdsRequest {
       {
         $output->writeListBegin(TType::I64, count($this->txnIds));
         {
+<<<<<<< HEAD
           foreach ($this->txnIds as $iter508)
           {
             $xfer += $output->writeI64($iter508);
+=======
+          foreach ($this->txnIds as $iter531)
+          {
+            $xfer += $output->writeI64($iter531);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -14731,6 +15783,7 @@ class AllocateTableWriteIdsResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->txnToWriteIds = array();
+<<<<<<< HEAD
             $_size509 = 0;
             $_etype512 = 0;
             $xfer += $input->readListBegin($_etype512, $_size509);
@@ -14740,6 +15793,17 @@ class AllocateTableWriteIdsResponse {
               $elem514 = new \metastore\TxnToWriteId();
               $xfer += $elem514->read($input);
               $this->txnToWriteIds []= $elem514;
+=======
+            $_size532 = 0;
+            $_etype535 = 0;
+            $xfer += $input->readListBegin($_etype535, $_size532);
+            for ($_i536 = 0; $_i536 < $_size532; ++$_i536)
+            {
+              $elem537 = null;
+              $elem537 = new \metastore\TxnToWriteId();
+              $xfer += $elem537->read($input);
+              $this->txnToWriteIds []= $elem537;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -14767,9 +15831,15 @@ class AllocateTableWriteIdsResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->txnToWriteIds));
         {
+<<<<<<< HEAD
           foreach ($this->txnToWriteIds as $iter515)
           {
             $xfer += $iter515->write($output);
+=======
+          foreach ($this->txnToWriteIds as $iter538)
+          {
+            $xfer += $iter538->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -15114,6 +16184,7 @@ class LockRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->component = array();
+<<<<<<< HEAD
             $_size516 = 0;
             $_etype519 = 0;
             $xfer += $input->readListBegin($_etype519, $_size516);
@@ -15123,6 +16194,17 @@ class LockRequest {
               $elem521 = new \metastore\LockComponent();
               $xfer += $elem521->read($input);
               $this->component []= $elem521;
+=======
+            $_size539 = 0;
+            $_etype542 = 0;
+            $xfer += $input->readListBegin($_etype542, $_size539);
+            for ($_i543 = 0; $_i543 < $_size539; ++$_i543)
+            {
+              $elem544 = null;
+              $elem544 = new \metastore\LockComponent();
+              $xfer += $elem544->read($input);
+              $this->component []= $elem544;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -15178,9 +16260,15 @@ class LockRequest {
       {
         $output->writeListBegin(TType::STRUCT, count($this->component));
         {
+<<<<<<< HEAD
           foreach ($this->component as $iter522)
           {
             $xfer += $iter522->write($output);
+=======
+          foreach ($this->component as $iter545)
+          {
+            $xfer += $iter545->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -16123,6 +17211,7 @@ class ShowLocksResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->locks = array();
+<<<<<<< HEAD
             $_size523 = 0;
             $_etype526 = 0;
             $xfer += $input->readListBegin($_etype526, $_size523);
@@ -16132,6 +17221,17 @@ class ShowLocksResponse {
               $elem528 = new \metastore\ShowLocksResponseElement();
               $xfer += $elem528->read($input);
               $this->locks []= $elem528;
+=======
+            $_size546 = 0;
+            $_etype549 = 0;
+            $xfer += $input->readListBegin($_etype549, $_size546);
+            for ($_i550 = 0; $_i550 < $_size546; ++$_i550)
+            {
+              $elem551 = null;
+              $elem551 = new \metastore\ShowLocksResponseElement();
+              $xfer += $elem551->read($input);
+              $this->locks []= $elem551;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -16159,9 +17259,15 @@ class ShowLocksResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->locks));
         {
+<<<<<<< HEAD
           foreach ($this->locks as $iter529)
           {
             $xfer += $iter529->write($output);
+=======
+          foreach ($this->locks as $iter552)
+          {
+            $xfer += $iter552->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -16436,6 +17542,7 @@ class HeartbeatTxnRangeResponse {
         case 1:
           if ($ftype == TType::SET) {
             $this->aborted = array();
+<<<<<<< HEAD
             $_size530 = 0;
             $_etype533 = 0;
             $xfer += $input->readSetBegin($_etype533, $_size530);
@@ -16447,6 +17554,19 @@ class HeartbeatTxnRangeResponse {
                 $this->aborted[$elem535] = true;
               } else {
                 $this->aborted []= $elem535;
+=======
+            $_size553 = 0;
+            $_etype556 = 0;
+            $xfer += $input->readSetBegin($_etype556, $_size553);
+            for ($_i557 = 0; $_i557 < $_size553; ++$_i557)
+            {
+              $elem558 = null;
+              $xfer += $input->readI64($elem558);
+              if (is_scalar($elem558)) {
+                $this->aborted[$elem558] = true;
+              } else {
+                $this->aborted []= $elem558;
+>>>>>>> asf/master
               }
             }
             $xfer += $input->readSetEnd();
@@ -16457,6 +17577,7 @@ class HeartbeatTxnRangeResponse {
         case 2:
           if ($ftype == TType::SET) {
             $this->nosuch = array();
+<<<<<<< HEAD
             $_size536 = 0;
             $_etype539 = 0;
             $xfer += $input->readSetBegin($_etype539, $_size536);
@@ -16468,6 +17589,19 @@ class HeartbeatTxnRangeResponse {
                 $this->nosuch[$elem541] = true;
               } else {
                 $this->nosuch []= $elem541;
+=======
+            $_size559 = 0;
+            $_etype562 = 0;
+            $xfer += $input->readSetBegin($_etype562, $_size559);
+            for ($_i563 = 0; $_i563 < $_size559; ++$_i563)
+            {
+              $elem564 = null;
+              $xfer += $input->readI64($elem564);
+              if (is_scalar($elem564)) {
+                $this->nosuch[$elem564] = true;
+              } else {
+                $this->nosuch []= $elem564;
+>>>>>>> asf/master
               }
             }
             $xfer += $input->readSetEnd();
@@ -16496,12 +17630,21 @@ class HeartbeatTxnRangeResponse {
       {
         $output->writeSetBegin(TType::I64, count($this->aborted));
         {
+<<<<<<< HEAD
           foreach ($this->aborted as $iter542 => $iter543)
           {
             if (is_scalar($iter543)) {
             $xfer += $output->writeI64($iter542);
             } else {
             $xfer += $output->writeI64($iter543);
+=======
+          foreach ($this->aborted as $iter565 => $iter566)
+          {
+            if (is_scalar($iter566)) {
+            $xfer += $output->writeI64($iter565);
+            } else {
+            $xfer += $output->writeI64($iter566);
+>>>>>>> asf/master
             }
           }
         }
@@ -16517,12 +17660,21 @@ class HeartbeatTxnRangeResponse {
       {
         $output->writeSetBegin(TType::I64, count($this->nosuch));
         {
+<<<<<<< HEAD
           foreach ($this->nosuch as $iter544 => $iter545)
           {
             if (is_scalar($iter545)) {
             $xfer += $output->writeI64($iter544);
             } else {
             $xfer += $output->writeI64($iter545);
+=======
+          foreach ($this->nosuch as $iter567 => $iter568)
+          {
+            if (is_scalar($iter568)) {
+            $xfer += $output->writeI64($iter567);
+            } else {
+            $xfer += $output->writeI64($iter568);
+>>>>>>> asf/master
             }
           }
         }
@@ -16681,6 +17833,7 @@ class CompactionRequest {
         case 6:
           if ($ftype == TType::MAP) {
             $this->properties = array();
+<<<<<<< HEAD
             $_size546 = 0;
             $_ktype547 = 0;
             $_vtype548 = 0;
@@ -16692,6 +17845,19 @@ class CompactionRequest {
               $xfer += $input->readString($key551);
               $xfer += $input->readString($val552);
               $this->properties[$key551] = $val552;
+=======
+            $_size569 = 0;
+            $_ktype570 = 0;
+            $_vtype571 = 0;
+            $xfer += $input->readMapBegin($_ktype570, $_vtype571, $_size569);
+            for ($_i573 = 0; $_i573 < $_size569; ++$_i573)
+            {
+              $key574 = '';
+              $val575 = '';
+              $xfer += $input->readString($key574);
+              $xfer += $input->readString($val575);
+              $this->properties[$key574] = $val575;
+>>>>>>> asf/master
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -16744,10 +17910,17 @@ class CompactionRequest {
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->properties));
         {
+<<<<<<< HEAD
           foreach ($this->properties as $kiter553 => $viter554)
           {
             $xfer += $output->writeString($kiter553);
             $xfer += $output->writeString($viter554);
+=======
+          foreach ($this->properties as $kiter576 => $viter577)
+          {
+            $xfer += $output->writeString($kiter576);
+            $xfer += $output->writeString($viter577);
+>>>>>>> asf/master
           }
         }
         $output->writeMapEnd();
@@ -17334,6 +18507,7 @@ class ShowCompactResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->compacts = array();
+<<<<<<< HEAD
             $_size555 = 0;
             $_etype558 = 0;
             $xfer += $input->readListBegin($_etype558, $_size555);
@@ -17343,6 +18517,17 @@ class ShowCompactResponse {
               $elem560 = new \metastore\ShowCompactResponseElement();
               $xfer += $elem560->read($input);
               $this->compacts []= $elem560;
+=======
+            $_size578 = 0;
+            $_etype581 = 0;
+            $xfer += $input->readListBegin($_etype581, $_size578);
+            for ($_i582 = 0; $_i582 < $_size578; ++$_i582)
+            {
+              $elem583 = null;
+              $elem583 = new \metastore\ShowCompactResponseElement();
+              $xfer += $elem583->read($input);
+              $this->compacts []= $elem583;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -17370,9 +18555,15 @@ class ShowCompactResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->compacts));
         {
+<<<<<<< HEAD
           foreach ($this->compacts as $iter561)
           {
             $xfer += $iter561->write($output);
+=======
+          foreach ($this->compacts as $iter584)
+          {
+            $xfer += $iter584->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -17519,6 +18710,7 @@ class AddDynamicPartitions {
         case 5:
           if ($ftype == TType::LST) {
             $this->partitionnames = array();
+<<<<<<< HEAD
             $_size562 = 0;
             $_etype565 = 0;
             $xfer += $input->readListBegin($_etype565, $_size562);
@@ -17527,6 +18719,16 @@ class AddDynamicPartitions {
               $elem567 = null;
               $xfer += $input->readString($elem567);
               $this->partitionnames []= $elem567;
+=======
+            $_size585 = 0;
+            $_etype588 = 0;
+            $xfer += $input->readListBegin($_etype588, $_size585);
+            for ($_i589 = 0; $_i589 < $_size585; ++$_i589)
+            {
+              $elem590 = null;
+              $xfer += $input->readString($elem590);
+              $this->partitionnames []= $elem590;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -17581,9 +18783,15 @@ class AddDynamicPartitions {
       {
         $output->writeListBegin(TType::STRING, count($this->partitionnames));
         {
+<<<<<<< HEAD
           foreach ($this->partitionnames as $iter568)
           {
             $xfer += $output->writeString($iter568);
+=======
+          foreach ($this->partitionnames as $iter591)
+          {
+            $xfer += $output->writeString($iter591);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -17889,6 +19097,7 @@ class CreationMetadata {
         case 3:
           if ($ftype == TType::SET) {
             $this->tablesUsed = array();
+<<<<<<< HEAD
             $_size569 = 0;
             $_etype572 = 0;
             $xfer += $input->readSetBegin($_etype572, $_size569);
@@ -17900,6 +19109,19 @@ class CreationMetadata {
                 $this->tablesUsed[$elem574] = true;
               } else {
                 $this->tablesUsed []= $elem574;
+=======
+            $_size592 = 0;
+            $_etype595 = 0;
+            $xfer += $input->readSetBegin($_etype595, $_size592);
+            for ($_i596 = 0; $_i596 < $_size592; ++$_i596)
+            {
+              $elem597 = null;
+              $xfer += $input->readString($elem597);
+              if (is_scalar($elem597)) {
+                $this->tablesUsed[$elem597] = true;
+              } else {
+                $this->tablesUsed []= $elem597;
+>>>>>>> asf/master
               }
             }
             $xfer += $input->readSetEnd();
@@ -17945,12 +19167,21 @@ class CreationMetadata {
       {
         $output->writeSetBegin(TType::STRING, count($this->tablesUsed));
         {
+<<<<<<< HEAD
           foreach ($this->tablesUsed as $iter575 => $iter576)
           {
             if (is_scalar($iter576)) {
             $xfer += $output->writeString($iter575);
             } else {
             $xfer += $output->writeString($iter576);
+=======
+          foreach ($this->tablesUsed as $iter598 => $iter599)
+          {
+            if (is_scalar($iter599)) {
+            $xfer += $output->writeString($iter598);
+            } else {
+            $xfer += $output->writeString($iter599);
+>>>>>>> asf/master
             }
           }
         }
@@ -18332,6 +19563,7 @@ class NotificationEventResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->events = array();
+<<<<<<< HEAD
             $_size577 = 0;
             $_etype580 = 0;
             $xfer += $input->readListBegin($_etype580, $_size577);
@@ -18341,6 +19573,17 @@ class NotificationEventResponse {
               $elem582 = new \metastore\NotificationEvent();
               $xfer += $elem582->read($input);
               $this->events []= $elem582;
+=======
+            $_size600 = 0;
+            $_etype603 = 0;
+            $xfer += $input->readListBegin($_etype603, $_size600);
+            for ($_i604 = 0; $_i604 < $_size600; ++$_i604)
+            {
+              $elem605 = null;
+              $elem605 = new \metastore\NotificationEvent();
+              $xfer += $elem605->read($input);
+              $this->events []= $elem605;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -18368,9 +19611,15 @@ class NotificationEventResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->events));
         {
+<<<<<<< HEAD
           foreach ($this->events as $iter583)
           {
             $xfer += $iter583->write($output);
+=======
+          foreach ($this->events as $iter606)
+          {
+            $xfer += $iter606->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -18715,6 +19964,7 @@ class InsertEventRequestData {
         case 2:
           if ($ftype == TType::LST) {
             $this->filesAdded = array();
+<<<<<<< HEAD
             $_size584 = 0;
             $_etype587 = 0;
             $xfer += $input->readListBegin($_etype587, $_size584);
@@ -18723,6 +19973,16 @@ class InsertEventRequestData {
               $elem589 = null;
               $xfer += $input->readString($elem589);
               $this->filesAdded []= $elem589;
+=======
+            $_size607 = 0;
+            $_etype610 = 0;
+            $xfer += $input->readListBegin($_etype610, $_size607);
+            for ($_i611 = 0; $_i611 < $_size607; ++$_i611)
+            {
+              $elem612 = null;
+              $xfer += $input->readString($elem612);
+              $this->filesAdded []= $elem612;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -18732,6 +19992,7 @@ class InsertEventRequestData {
         case 3:
           if ($ftype == TType::LST) {
             $this->filesAddedChecksum = array();
+<<<<<<< HEAD
             $_size590 = 0;
             $_etype593 = 0;
             $xfer += $input->readListBegin($_etype593, $_size590);
@@ -18740,6 +20001,16 @@ class InsertEventRequestData {
               $elem595 = null;
               $xfer += $input->readString($elem595);
               $this->filesAddedChecksum []= $elem595;
+=======
+            $_size613 = 0;
+            $_etype616 = 0;
+            $xfer += $input->readListBegin($_etype616, $_size613);
+            for ($_i617 = 0; $_i617 < $_size613; ++$_i617)
+            {
+              $elem618 = null;
+              $xfer += $input->readString($elem618);
+              $this->filesAddedChecksum []= $elem618;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -18772,9 +20043,15 @@ class InsertEventRequestData {
       {
         $output->writeListBegin(TType::STRING, count($this->filesAdded));
         {
+<<<<<<< HEAD
           foreach ($this->filesAdded as $iter596)
           {
             $xfer += $output->writeString($iter596);
+=======
+          foreach ($this->filesAdded as $iter619)
+          {
+            $xfer += $output->writeString($iter619);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -18789,9 +20066,15 @@ class InsertEventRequestData {
       {
         $output->writeListBegin(TType::STRING, count($this->filesAddedChecksum));
         {
+<<<<<<< HEAD
           foreach ($this->filesAddedChecksum as $iter597)
           {
             $xfer += $output->writeString($iter597);
+=======
+          foreach ($this->filesAddedChecksum as $iter620)
+          {
+            $xfer += $output->writeString($iter620);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -19009,6 +20292,7 @@ class FireEventRequest {
         case 5:
           if ($ftype == TType::LST) {
             $this->partitionVals = array();
+<<<<<<< HEAD
             $_size598 = 0;
             $_etype601 = 0;
             $xfer += $input->readListBegin($_etype601, $_size598);
@@ -19017,6 +20301,16 @@ class FireEventRequest {
               $elem603 = null;
               $xfer += $input->readString($elem603);
               $this->partitionVals []= $elem603;
+=======
+            $_size621 = 0;
+            $_etype624 = 0;
+            $xfer += $input->readListBegin($_etype624, $_size621);
+            for ($_i625 = 0; $_i625 < $_size621; ++$_i625)
+            {
+              $elem626 = null;
+              $xfer += $input->readString($elem626);
+              $this->partitionVals []= $elem626;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -19067,9 +20361,15 @@ class FireEventRequest {
       {
         $output->writeListBegin(TType::STRING, count($this->partitionVals));
         {
+<<<<<<< HEAD
           foreach ($this->partitionVals as $iter604)
           {
             $xfer += $output->writeString($iter604);
+=======
+          foreach ($this->partitionVals as $iter627)
+          {
+            $xfer += $output->writeString($iter627);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -19297,6 +20597,7 @@ class GetFileMetadataByExprResult {
         case 1:
           if ($ftype == TType::MAP) {
             $this->metadata = array();
+<<<<<<< HEAD
             $_size605 = 0;
             $_ktype606 = 0;
             $_vtype607 = 0;
@@ -19309,6 +20610,20 @@ class GetFileMetadataByExprResult {
               $val611 = new \metastore\MetadataPpdResult();
               $xfer += $val611->read($input);
               $this->metadata[$key610] = $val611;
+=======
+            $_size628 = 0;
+            $_ktype629 = 0;
+            $_vtype630 = 0;
+            $xfer += $input->readMapBegin($_ktype629, $_vtype630, $_size628);
+            for ($_i632 = 0; $_i632 < $_size628; ++$_i632)
+            {
+              $key633 = 0;
+              $val634 = new \metastore\MetadataPpdResult();
+              $xfer += $input->readI64($key633);
+              $val634 = new \metastore\MetadataPpdResult();
+              $xfer += $val634->read($input);
+              $this->metadata[$key633] = $val634;
+>>>>>>> asf/master
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -19343,10 +20658,17 @@ class GetFileMetadataByExprResult {
       {
         $output->writeMapBegin(TType::I64, TType::STRUCT, count($this->metadata));
         {
+<<<<<<< HEAD
           foreach ($this->metadata as $kiter612 => $viter613)
           {
             $xfer += $output->writeI64($kiter612);
             $xfer += $viter613->write($output);
+=======
+          foreach ($this->metadata as $kiter635 => $viter636)
+          {
+            $xfer += $output->writeI64($kiter635);
+            $xfer += $viter636->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeMapEnd();
@@ -19448,6 +20770,7 @@ class GetFileMetadataByExprRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->fileIds = array();
+<<<<<<< HEAD
             $_size614 = 0;
             $_etype617 = 0;
             $xfer += $input->readListBegin($_etype617, $_size614);
@@ -19456,6 +20779,16 @@ class GetFileMetadataByExprRequest {
               $elem619 = null;
               $xfer += $input->readI64($elem619);
               $this->fileIds []= $elem619;
+=======
+            $_size637 = 0;
+            $_etype640 = 0;
+            $xfer += $input->readListBegin($_etype640, $_size637);
+            for ($_i641 = 0; $_i641 < $_size637; ++$_i641)
+            {
+              $elem642 = null;
+              $xfer += $input->readI64($elem642);
+              $this->fileIds []= $elem642;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -19504,9 +20837,15 @@ class GetFileMetadataByExprRequest {
       {
         $output->writeListBegin(TType::I64, count($this->fileIds));
         {
+<<<<<<< HEAD
           foreach ($this->fileIds as $iter620)
           {
             $xfer += $output->writeI64($iter620);
+=======
+          foreach ($this->fileIds as $iter643)
+          {
+            $xfer += $output->writeI64($iter643);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -19600,6 +20939,7 @@ class GetFileMetadataResult {
         case 1:
           if ($ftype == TType::MAP) {
             $this->metadata = array();
+<<<<<<< HEAD
             $_size621 = 0;
             $_ktype622 = 0;
             $_vtype623 = 0;
@@ -19611,6 +20951,19 @@ class GetFileMetadataResult {
               $xfer += $input->readI64($key626);
               $xfer += $input->readString($val627);
               $this->metadata[$key626] = $val627;
+=======
+            $_size644 = 0;
+            $_ktype645 = 0;
+            $_vtype646 = 0;
+            $xfer += $input->readMapBegin($_ktype645, $_vtype646, $_size644);
+            for ($_i648 = 0; $_i648 < $_size644; ++$_i648)
+            {
+              $key649 = 0;
+              $val650 = '';
+              $xfer += $input->readI64($key649);
+              $xfer += $input->readString($val650);
+              $this->metadata[$key649] = $val650;
+>>>>>>> asf/master
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -19645,10 +20998,17 @@ class GetFileMetadataResult {
       {
         $output->writeMapBegin(TType::I64, TType::STRING, count($this->metadata));
         {
+<<<<<<< HEAD
           foreach ($this->metadata as $kiter628 => $viter629)
           {
             $xfer += $output->writeI64($kiter628);
             $xfer += $output->writeString($viter629);
+=======
+          foreach ($this->metadata as $kiter651 => $viter652)
+          {
+            $xfer += $output->writeI64($kiter651);
+            $xfer += $output->writeString($viter652);
+>>>>>>> asf/master
           }
         }
         $output->writeMapEnd();
@@ -19717,6 +21077,7 @@ class GetFileMetadataRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->fileIds = array();
+<<<<<<< HEAD
             $_size630 = 0;
             $_etype633 = 0;
             $xfer += $input->readListBegin($_etype633, $_size630);
@@ -19725,6 +21086,16 @@ class GetFileMetadataRequest {
               $elem635 = null;
               $xfer += $input->readI64($elem635);
               $this->fileIds []= $elem635;
+=======
+            $_size653 = 0;
+            $_etype656 = 0;
+            $xfer += $input->readListBegin($_etype656, $_size653);
+            for ($_i657 = 0; $_i657 < $_size653; ++$_i657)
+            {
+              $elem658 = null;
+              $xfer += $input->readI64($elem658);
+              $this->fileIds []= $elem658;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -19752,9 +21123,15 @@ class GetFileMetadataRequest {
       {
         $output->writeListBegin(TType::I64, count($this->fileIds));
         {
+<<<<<<< HEAD
           foreach ($this->fileIds as $iter636)
           {
             $xfer += $output->writeI64($iter636);
+=======
+          foreach ($this->fileIds as $iter659)
+          {
+            $xfer += $output->writeI64($iter659);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -19894,6 +21271,7 @@ class PutFileMetadataRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->fileIds = array();
+<<<<<<< HEAD
             $_size637 = 0;
             $_etype640 = 0;
             $xfer += $input->readListBegin($_etype640, $_size637);
@@ -19902,6 +21280,16 @@ class PutFileMetadataRequest {
               $elem642 = null;
               $xfer += $input->readI64($elem642);
               $this->fileIds []= $elem642;
+=======
+            $_size660 = 0;
+            $_etype663 = 0;
+            $xfer += $input->readListBegin($_etype663, $_size660);
+            for ($_i664 = 0; $_i664 < $_size660; ++$_i664)
+            {
+              $elem665 = null;
+              $xfer += $input->readI64($elem665);
+              $this->fileIds []= $elem665;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -19911,6 +21299,7 @@ class PutFileMetadataRequest {
         case 2:
           if ($ftype == TType::LST) {
             $this->metadata = array();
+<<<<<<< HEAD
             $_size643 = 0;
             $_etype646 = 0;
             $xfer += $input->readListBegin($_etype646, $_size643);
@@ -19919,6 +21308,16 @@ class PutFileMetadataRequest {
               $elem648 = null;
               $xfer += $input->readString($elem648);
               $this->metadata []= $elem648;
+=======
+            $_size666 = 0;
+            $_etype669 = 0;
+            $xfer += $input->readListBegin($_etype669, $_size666);
+            for ($_i670 = 0; $_i670 < $_size666; ++$_i670)
+            {
+              $elem671 = null;
+              $xfer += $input->readString($elem671);
+              $this->metadata []= $elem671;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -19953,9 +21352,15 @@ class PutFileMetadataRequest {
       {
         $output->writeListBegin(TType::I64, count($this->fileIds));
         {
+<<<<<<< HEAD
           foreach ($this->fileIds as $iter649)
           {
             $xfer += $output->writeI64($iter649);
+=======
+          foreach ($this->fileIds as $iter672)
+          {
+            $xfer += $output->writeI64($iter672);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -19970,9 +21375,15 @@ class PutFileMetadataRequest {
       {
         $output->writeListBegin(TType::STRING, count($this->metadata));
         {
+<<<<<<< HEAD
           foreach ($this->metadata as $iter650)
           {
             $xfer += $output->writeString($iter650);
+=======
+          foreach ($this->metadata as $iter673)
+          {
+            $xfer += $output->writeString($iter673);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -20091,6 +21502,7 @@ class ClearFileMetadataRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->fileIds = array();
+<<<<<<< HEAD
             $_size651 = 0;
             $_etype654 = 0;
             $xfer += $input->readListBegin($_etype654, $_size651);
@@ -20099,6 +21511,16 @@ class ClearFileMetadataRequest {
               $elem656 = null;
               $xfer += $input->readI64($elem656);
               $this->fileIds []= $elem656;
+=======
+            $_size674 = 0;
+            $_etype677 = 0;
+            $xfer += $input->readListBegin($_etype677, $_size674);
+            for ($_i678 = 0; $_i678 < $_size674; ++$_i678)
+            {
+              $elem679 = null;
+              $xfer += $input->readI64($elem679);
+              $this->fileIds []= $elem679;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -20126,9 +21548,15 @@ class ClearFileMetadataRequest {
       {
         $output->writeListBegin(TType::I64, count($this->fileIds));
         {
+<<<<<<< HEAD
           foreach ($this->fileIds as $iter657)
           {
             $xfer += $output->writeI64($iter657);
+=======
+          foreach ($this->fileIds as $iter680)
+          {
+            $xfer += $output->writeI64($iter680);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -20412,6 +21840,7 @@ class GetAllFunctionsResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->functions = array();
+<<<<<<< HEAD
             $_size658 = 0;
             $_etype661 = 0;
             $xfer += $input->readListBegin($_etype661, $_size658);
@@ -20421,6 +21850,17 @@ class GetAllFunctionsResponse {
               $elem663 = new \metastore\Function();
               $xfer += $elem663->read($input);
               $this->functions []= $elem663;
+=======
+            $_size681 = 0;
+            $_etype684 = 0;
+            $xfer += $input->readListBegin($_etype684, $_size681);
+            for ($_i685 = 0; $_i685 < $_size681; ++$_i685)
+            {
+              $elem686 = null;
+              $elem686 = new \metastore\Function();
+              $xfer += $elem686->read($input);
+              $this->functions []= $elem686;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -20448,9 +21888,15 @@ class GetAllFunctionsResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->functions));
         {
+<<<<<<< HEAD
           foreach ($this->functions as $iter664)
           {
             $xfer += $iter664->write($output);
+=======
+          foreach ($this->functions as $iter687)
+          {
+            $xfer += $iter687->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -20514,6 +21960,7 @@ class ClientCapabilities {
         case 1:
           if ($ftype == TType::LST) {
             $this->values = array();
+<<<<<<< HEAD
             $_size665 = 0;
             $_etype668 = 0;
             $xfer += $input->readListBegin($_etype668, $_size665);
@@ -20522,6 +21969,16 @@ class ClientCapabilities {
               $elem670 = null;
               $xfer += $input->readI32($elem670);
               $this->values []= $elem670;
+=======
+            $_size688 = 0;
+            $_etype691 = 0;
+            $xfer += $input->readListBegin($_etype691, $_size688);
+            for ($_i692 = 0; $_i692 < $_size688; ++$_i692)
+            {
+              $elem693 = null;
+              $xfer += $input->readI32($elem693);
+              $this->values []= $elem693;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -20549,9 +22006,15 @@ class ClientCapabilities {
       {
         $output->writeListBegin(TType::I32, count($this->values));
         {
+<<<<<<< HEAD
           foreach ($this->values as $iter671)
           {
             $xfer += $output->writeI32($iter671);
+=======
+          foreach ($this->values as $iter694)
+          {
+            $xfer += $output->writeI32($iter694);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -20851,6 +22314,7 @@ class GetTablesRequest {
         case 2:
           if ($ftype == TType::LST) {
             $this->tblNames = array();
+<<<<<<< HEAD
             $_size672 = 0;
             $_etype675 = 0;
             $xfer += $input->readListBegin($_etype675, $_size672);
@@ -20859,6 +22323,16 @@ class GetTablesRequest {
               $elem677 = null;
               $xfer += $input->readString($elem677);
               $this->tblNames []= $elem677;
+=======
+            $_size695 = 0;
+            $_etype698 = 0;
+            $xfer += $input->readListBegin($_etype698, $_size695);
+            for ($_i699 = 0; $_i699 < $_size695; ++$_i699)
+            {
+              $elem700 = null;
+              $xfer += $input->readString($elem700);
+              $this->tblNames []= $elem700;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -20899,9 +22373,15 @@ class GetTablesRequest {
       {
         $output->writeListBegin(TType::STRING, count($this->tblNames));
         {
+<<<<<<< HEAD
           foreach ($this->tblNames as $iter678)
           {
             $xfer += $output->writeString($iter678);
+=======
+          foreach ($this->tblNames as $iter701)
+          {
+            $xfer += $output->writeString($iter701);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -20974,6 +22454,7 @@ class GetTablesResult {
         case 1:
           if ($ftype == TType::LST) {
             $this->tables = array();
+<<<<<<< HEAD
             $_size679 = 0;
             $_etype682 = 0;
             $xfer += $input->readListBegin($_etype682, $_size679);
@@ -20983,6 +22464,17 @@ class GetTablesResult {
               $elem684 = new \metastore\Table();
               $xfer += $elem684->read($input);
               $this->tables []= $elem684;
+=======
+            $_size702 = 0;
+            $_etype705 = 0;
+            $xfer += $input->readListBegin($_etype705, $_size702);
+            for ($_i706 = 0; $_i706 < $_size702; ++$_i706)
+            {
+              $elem707 = null;
+              $elem707 = new \metastore\Table();
+              $xfer += $elem707->read($input);
+              $this->tables []= $elem707;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -21010,9 +22502,15 @@ class GetTablesResult {
       {
         $output->writeListBegin(TType::STRUCT, count($this->tables));
         {
+<<<<<<< HEAD
           foreach ($this->tables as $iter685)
           {
             $xfer += $iter685->write($output);
+=======
+          foreach ($this->tables as $iter708)
+          {
+            $xfer += $iter708->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -21390,6 +22888,7 @@ class Materialization {
         case 1:
           if ($ftype == TType::SET) {
             $this->tablesUsed = array();
+<<<<<<< HEAD
             $_size686 = 0;
             $_etype689 = 0;
             $xfer += $input->readSetBegin($_etype689, $_size686);
@@ -21401,6 +22900,19 @@ class Materialization {
                 $this->tablesUsed[$elem691] = true;
               } else {
                 $this->tablesUsed []= $elem691;
+=======
+            $_size709 = 0;
+            $_etype712 = 0;
+            $xfer += $input->readSetBegin($_etype712, $_size709);
+            for ($_i713 = 0; $_i713 < $_size709; ++$_i713)
+            {
+              $elem714 = null;
+              $xfer += $input->readString($elem714);
+              if (is_scalar($elem714)) {
+                $this->tablesUsed[$elem714] = true;
+              } else {
+                $this->tablesUsed []= $elem714;
+>>>>>>> asf/master
               }
             }
             $xfer += $input->readSetEnd();
@@ -21443,12 +22955,21 @@ class Materialization {
       {
         $output->writeSetBegin(TType::STRING, count($this->tablesUsed));
         {
+<<<<<<< HEAD
           foreach ($this->tablesUsed as $iter692 => $iter693)
           {
             if (is_scalar($iter693)) {
             $xfer += $output->writeString($iter692);
             } else {
             $xfer += $output->writeString($iter693);
+=======
+          foreach ($this->tablesUsed as $iter715 => $iter716)
+          {
+            if (is_scalar($iter716)) {
+            $xfer += $output->writeString($iter715);
+            } else {
+            $xfer += $output->writeString($iter716);
+>>>>>>> asf/master
             }
           }
         }
@@ -22715,6 +24236,7 @@ class WMFullResourcePlan {
         case 2:
           if ($ftype == TType::LST) {
             $this->pools = array();
+<<<<<<< HEAD
             $_size694 = 0;
             $_etype697 = 0;
             $xfer += $input->readListBegin($_etype697, $_size694);
@@ -22724,6 +24246,17 @@ class WMFullResourcePlan {
               $elem699 = new \metastore\WMPool();
               $xfer += $elem699->read($input);
               $this->pools []= $elem699;
+=======
+            $_size717 = 0;
+            $_etype720 = 0;
+            $xfer += $input->readListBegin($_etype720, $_size717);
+            for ($_i721 = 0; $_i721 < $_size717; ++$_i721)
+            {
+              $elem722 = null;
+              $elem722 = new \metastore\WMPool();
+              $xfer += $elem722->read($input);
+              $this->pools []= $elem722;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -22733,6 +24266,7 @@ class WMFullResourcePlan {
         case 3:
           if ($ftype == TType::LST) {
             $this->mappings = array();
+<<<<<<< HEAD
             $_size700 = 0;
             $_etype703 = 0;
             $xfer += $input->readListBegin($_etype703, $_size700);
@@ -22742,6 +24276,17 @@ class WMFullResourcePlan {
               $elem705 = new \metastore\WMMapping();
               $xfer += $elem705->read($input);
               $this->mappings []= $elem705;
+=======
+            $_size723 = 0;
+            $_etype726 = 0;
+            $xfer += $input->readListBegin($_etype726, $_size723);
+            for ($_i727 = 0; $_i727 < $_size723; ++$_i727)
+            {
+              $elem728 = null;
+              $elem728 = new \metastore\WMMapping();
+              $xfer += $elem728->read($input);
+              $this->mappings []= $elem728;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -22751,6 +24296,7 @@ class WMFullResourcePlan {
         case 4:
           if ($ftype == TType::LST) {
             $this->triggers = array();
+<<<<<<< HEAD
             $_size706 = 0;
             $_etype709 = 0;
             $xfer += $input->readListBegin($_etype709, $_size706);
@@ -22760,6 +24306,17 @@ class WMFullResourcePlan {
               $elem711 = new \metastore\WMTrigger();
               $xfer += $elem711->read($input);
               $this->triggers []= $elem711;
+=======
+            $_size729 = 0;
+            $_etype732 = 0;
+            $xfer += $input->readListBegin($_etype732, $_size729);
+            for ($_i733 = 0; $_i733 < $_size729; ++$_i733)
+            {
+              $elem734 = null;
+              $elem734 = new \metastore\WMTrigger();
+              $xfer += $elem734->read($input);
+              $this->triggers []= $elem734;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -22769,6 +24326,7 @@ class WMFullResourcePlan {
         case 5:
           if ($ftype == TType::LST) {
             $this->poolTriggers = array();
+<<<<<<< HEAD
             $_size712 = 0;
             $_etype715 = 0;
             $xfer += $input->readListBegin($_etype715, $_size712);
@@ -22778,6 +24336,17 @@ class WMFullResourcePlan {
               $elem717 = new \metastore\WMPoolTrigger();
               $xfer += $elem717->read($input);
               $this->poolTriggers []= $elem717;
+=======
+            $_size735 = 0;
+            $_etype738 = 0;
+            $xfer += $input->readListBegin($_etype738, $_size735);
+            for ($_i739 = 0; $_i739 < $_size735; ++$_i739)
+            {
+              $elem740 = null;
+              $elem740 = new \metastore\WMPoolTrigger();
+              $xfer += $elem740->read($input);
+              $this->poolTriggers []= $elem740;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -22813,9 +24382,15 @@ class WMFullResourcePlan {
       {
         $output->writeListBegin(TType::STRUCT, count($this->pools));
         {
+<<<<<<< HEAD
           foreach ($this->pools as $iter718)
           {
             $xfer += $iter718->write($output);
+=======
+          foreach ($this->pools as $iter741)
+          {
+            $xfer += $iter741->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -22830,9 +24405,15 @@ class WMFullResourcePlan {
       {
         $output->writeListBegin(TType::STRUCT, count($this->mappings));
         {
+<<<<<<< HEAD
           foreach ($this->mappings as $iter719)
           {
             $xfer += $iter719->write($output);
+=======
+          foreach ($this->mappings as $iter742)
+          {
+            $xfer += $iter742->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -22847,9 +24428,15 @@ class WMFullResourcePlan {
       {
         $output->writeListBegin(TType::STRUCT, count($this->triggers));
         {
+<<<<<<< HEAD
           foreach ($this->triggers as $iter720)
           {
             $xfer += $iter720->write($output);
+=======
+          foreach ($this->triggers as $iter743)
+          {
+            $xfer += $iter743->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -22864,9 +24451,15 @@ class WMFullResourcePlan {
       {
         $output->writeListBegin(TType::STRUCT, count($this->poolTriggers));
         {
+<<<<<<< HEAD
           foreach ($this->poolTriggers as $iter721)
           {
             $xfer += $iter721->write($output);
+=======
+          foreach ($this->poolTriggers as $iter744)
+          {
+            $xfer += $iter744->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -23419,6 +25012,7 @@ class WMGetAllResourcePlanResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->resourcePlans = array();
+<<<<<<< HEAD
             $_size722 = 0;
             $_etype725 = 0;
             $xfer += $input->readListBegin($_etype725, $_size722);
@@ -23428,6 +25022,17 @@ class WMGetAllResourcePlanResponse {
               $elem727 = new \metastore\WMResourcePlan();
               $xfer += $elem727->read($input);
               $this->resourcePlans []= $elem727;
+=======
+            $_size745 = 0;
+            $_etype748 = 0;
+            $xfer += $input->readListBegin($_etype748, $_size745);
+            for ($_i749 = 0; $_i749 < $_size745; ++$_i749)
+            {
+              $elem750 = null;
+              $elem750 = new \metastore\WMResourcePlan();
+              $xfer += $elem750->read($input);
+              $this->resourcePlans []= $elem750;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -23455,9 +25060,15 @@ class WMGetAllResourcePlanResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->resourcePlans));
         {
+<<<<<<< HEAD
           foreach ($this->resourcePlans as $iter728)
           {
             $xfer += $iter728->write($output);
+=======
+          foreach ($this->resourcePlans as $iter751)
+          {
+            $xfer += $iter751->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -23863,6 +25474,7 @@ class WMValidateResourcePlanResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->errors = array();
+<<<<<<< HEAD
             $_size729 = 0;
             $_etype732 = 0;
             $xfer += $input->readListBegin($_etype732, $_size729);
@@ -23871,6 +25483,16 @@ class WMValidateResourcePlanResponse {
               $elem734 = null;
               $xfer += $input->readString($elem734);
               $this->errors []= $elem734;
+=======
+            $_size752 = 0;
+            $_etype755 = 0;
+            $xfer += $input->readListBegin($_etype755, $_size752);
+            for ($_i756 = 0; $_i756 < $_size752; ++$_i756)
+            {
+              $elem757 = null;
+              $xfer += $input->readString($elem757);
+              $this->errors []= $elem757;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -23880,6 +25502,7 @@ class WMValidateResourcePlanResponse {
         case 2:
           if ($ftype == TType::LST) {
             $this->warnings = array();
+<<<<<<< HEAD
             $_size735 = 0;
             $_etype738 = 0;
             $xfer += $input->readListBegin($_etype738, $_size735);
@@ -23888,6 +25511,16 @@ class WMValidateResourcePlanResponse {
               $elem740 = null;
               $xfer += $input->readString($elem740);
               $this->warnings []= $elem740;
+=======
+            $_size758 = 0;
+            $_etype761 = 0;
+            $xfer += $input->readListBegin($_etype761, $_size758);
+            for ($_i762 = 0; $_i762 < $_size758; ++$_i762)
+            {
+              $elem763 = null;
+              $xfer += $input->readString($elem763);
+              $this->warnings []= $elem763;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -23915,9 +25548,15 @@ class WMValidateResourcePlanResponse {
       {
         $output->writeListBegin(TType::STRING, count($this->errors));
         {
+<<<<<<< HEAD
           foreach ($this->errors as $iter741)
           {
             $xfer += $output->writeString($iter741);
+=======
+          foreach ($this->errors as $iter764)
+          {
+            $xfer += $output->writeString($iter764);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -23932,9 +25571,15 @@ class WMValidateResourcePlanResponse {
       {
         $output->writeListBegin(TType::STRING, count($this->warnings));
         {
+<<<<<<< HEAD
           foreach ($this->warnings as $iter742)
           {
             $xfer += $output->writeString($iter742);
+=======
+          foreach ($this->warnings as $iter765)
+          {
+            $xfer += $output->writeString($iter765);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();
@@ -24607,6 +26252,7 @@ class WMGetTriggersForResourePlanResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->triggers = array();
+<<<<<<< HEAD
             $_size743 = 0;
             $_etype746 = 0;
             $xfer += $input->readListBegin($_etype746, $_size743);
@@ -24616,6 +26262,17 @@ class WMGetTriggersForResourePlanResponse {
               $elem748 = new \metastore\WMTrigger();
               $xfer += $elem748->read($input);
               $this->triggers []= $elem748;
+=======
+            $_size766 = 0;
+            $_etype769 = 0;
+            $xfer += $input->readListBegin($_etype769, $_size766);
+            for ($_i770 = 0; $_i770 < $_size766; ++$_i770)
+            {
+              $elem771 = null;
+              $elem771 = new \metastore\WMTrigger();
+              $xfer += $elem771->read($input);
+              $this->triggers []= $elem771;
+>>>>>>> asf/master
             }
             $xfer += $input->readListEnd();
           } else {
@@ -24643,9 +26300,15 @@ class WMGetTriggersForResourePlanResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->triggers));
         {
+<<<<<<< HEAD
           foreach ($this->triggers as $iter749)
           {
             $xfer += $iter749->write($output);
+=======
+          foreach ($this->triggers as $iter772)
+          {
+            $xfer += $iter772->write($output);
+>>>>>>> asf/master
           }
         }
         $output->writeListEnd();

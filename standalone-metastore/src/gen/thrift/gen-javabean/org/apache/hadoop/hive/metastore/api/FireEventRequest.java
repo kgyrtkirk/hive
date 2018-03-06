@@ -713,6 +713,7 @@ import org.slf4j.LoggerFactory;
           case 5: // PARTITION_VALS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list676 = iprot.readListBegin();
                 struct.partitionVals = new ArrayList<String>(_list676.size);
                 String _elem677;
@@ -720,6 +721,15 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem677 = iprot.readString();
                   struct.partitionVals.add(_elem677);
+=======
+                org.apache.thrift.protocol.TList _list702 = iprot.readListBegin();
+                struct.partitionVals = new ArrayList<String>(_list702.size);
+                String _elem703;
+                for (int _i704 = 0; _i704 < _list702.size; ++_i704)
+                {
+                  _elem703 = iprot.readString();
+                  struct.partitionVals.add(_elem703);
+>>>>>>> asf/master
                 }
                 iprot.readListEnd();
               }
@@ -768,9 +778,15 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(PARTITION_VALS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.partitionVals.size()));
+<<<<<<< HEAD
             for (String _iter679 : struct.partitionVals)
             {
               oprot.writeString(_iter679);
+=======
+            for (String _iter705 : struct.partitionVals)
+            {
+              oprot.writeString(_iter705);
+>>>>>>> asf/master
             }
             oprot.writeListEnd();
           }
@@ -816,9 +832,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetPartitionVals()) {
         {
           oprot.writeI32(struct.partitionVals.size());
+<<<<<<< HEAD
           for (String _iter680 : struct.partitionVals)
           {
             oprot.writeString(_iter680);
+=======
+          for (String _iter706 : struct.partitionVals)
+          {
+            oprot.writeString(_iter706);
+>>>>>>> asf/master
           }
         }
       }
@@ -843,6 +865,7 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(2)) {
         {
+<<<<<<< HEAD
           org.apache.thrift.protocol.TList _list681 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.partitionVals = new ArrayList<String>(_list681.size);
           String _elem682;
@@ -850,6 +873,15 @@ import org.slf4j.LoggerFactory;
           {
             _elem682 = iprot.readString();
             struct.partitionVals.add(_elem682);
+=======
+          org.apache.thrift.protocol.TList _list707 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.partitionVals = new ArrayList<String>(_list707.size);
+          String _elem708;
+          for (int _i709 = 0; _i709 < _list707.size; ++_i709)
+          {
+            _elem708 = iprot.readString();
+            struct.partitionVals.add(_elem708);
+>>>>>>> asf/master
           }
         }
         struct.setPartitionValsIsSet(true);
