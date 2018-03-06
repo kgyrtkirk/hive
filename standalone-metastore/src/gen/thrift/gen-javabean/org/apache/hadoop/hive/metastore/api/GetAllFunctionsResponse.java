@@ -346,25 +346,14 @@ import org.slf4j.LoggerFactory;
           case 1: // FUNCTIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list744 = iprot.readListBegin();
-                struct.functions = new ArrayList<Function>(_list744.size);
-                Function _elem745;
-                for (int _i746 = 0; _i746 < _list744.size; ++_i746)
+                org.apache.thrift.protocol.TList _list760 = iprot.readListBegin();
+                struct.functions = new ArrayList<Function>(_list760.size);
+                Function _elem761;
+                for (int _i762 = 0; _i762 < _list760.size; ++_i762)
                 {
-                  _elem745 = new Function();
-                  _elem745.read(iprot);
-                  struct.functions.add(_elem745);
-=======
-                org.apache.thrift.protocol.TList _list770 = iprot.readListBegin();
-                struct.functions = new ArrayList<Function>(_list770.size);
-                Function _elem771;
-                for (int _i772 = 0; _i772 < _list770.size; ++_i772)
-                {
-                  _elem771 = new Function();
-                  _elem771.read(iprot);
-                  struct.functions.add(_elem771);
->>>>>>> asf/master
+                  _elem761 = new Function();
+                  _elem761.read(iprot);
+                  struct.functions.add(_elem761);
                 }
                 iprot.readListEnd();
               }
@@ -391,15 +380,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(FUNCTIONS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.functions.size()));
-<<<<<<< HEAD
-            for (Function _iter747 : struct.functions)
+            for (Function _iter763 : struct.functions)
             {
-              _iter747.write(oprot);
-=======
-            for (Function _iter773 : struct.functions)
-            {
-              _iter773.write(oprot);
->>>>>>> asf/master
+              _iter763.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -431,15 +414,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetFunctions()) {
         {
           oprot.writeI32(struct.functions.size());
-<<<<<<< HEAD
-          for (Function _iter748 : struct.functions)
+          for (Function _iter764 : struct.functions)
           {
-            _iter748.write(oprot);
-=======
-          for (Function _iter774 : struct.functions)
-          {
-            _iter774.write(oprot);
->>>>>>> asf/master
+            _iter764.write(oprot);
           }
         }
       }
@@ -451,25 +428,14 @@ import org.slf4j.LoggerFactory;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-<<<<<<< HEAD
-          org.apache.thrift.protocol.TList _list749 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.functions = new ArrayList<Function>(_list749.size);
-          Function _elem750;
-          for (int _i751 = 0; _i751 < _list749.size; ++_i751)
+          org.apache.thrift.protocol.TList _list765 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.functions = new ArrayList<Function>(_list765.size);
+          Function _elem766;
+          for (int _i767 = 0; _i767 < _list765.size; ++_i767)
           {
-            _elem750 = new Function();
-            _elem750.read(iprot);
-            struct.functions.add(_elem750);
-=======
-          org.apache.thrift.protocol.TList _list775 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.functions = new ArrayList<Function>(_list775.size);
-          Function _elem776;
-          for (int _i777 = 0; _i777 < _list775.size; ++_i777)
-          {
-            _elem776 = new Function();
-            _elem776.read(iprot);
-            struct.functions.add(_elem776);
->>>>>>> asf/master
+            _elem766 = new Function();
+            _elem766.read(iprot);
+            struct.functions.add(_elem766);
           }
         }
         struct.setFunctionsIsSet(true);

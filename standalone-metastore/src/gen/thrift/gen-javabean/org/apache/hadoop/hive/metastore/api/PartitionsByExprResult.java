@@ -439,25 +439,14 @@ import org.slf4j.LoggerFactory;
           case 1: // PARTITIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list376 = iprot.readListBegin();
-                struct.partitions = new ArrayList<Partition>(_list376.size);
-                Partition _elem377;
-                for (int _i378 = 0; _i378 < _list376.size; ++_i378)
+                org.apache.thrift.protocol.TList _list392 = iprot.readListBegin();
+                struct.partitions = new ArrayList<Partition>(_list392.size);
+                Partition _elem393;
+                for (int _i394 = 0; _i394 < _list392.size; ++_i394)
                 {
-                  _elem377 = new Partition();
-                  _elem377.read(iprot);
-                  struct.partitions.add(_elem377);
-=======
-                org.apache.thrift.protocol.TList _list402 = iprot.readListBegin();
-                struct.partitions = new ArrayList<Partition>(_list402.size);
-                Partition _elem403;
-                for (int _i404 = 0; _i404 < _list402.size; ++_i404)
-                {
-                  _elem403 = new Partition();
-                  _elem403.read(iprot);
-                  struct.partitions.add(_elem403);
->>>>>>> asf/master
+                  _elem393 = new Partition();
+                  _elem393.read(iprot);
+                  struct.partitions.add(_elem393);
                 }
                 iprot.readListEnd();
               }
@@ -491,15 +480,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PARTITIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitions.size()));
-<<<<<<< HEAD
-          for (Partition _iter379 : struct.partitions)
+          for (Partition _iter395 : struct.partitions)
           {
-            _iter379.write(oprot);
-=======
-          for (Partition _iter405 : struct.partitions)
-          {
-            _iter405.write(oprot);
->>>>>>> asf/master
+            _iter395.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -527,15 +510,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.partitions.size());
-<<<<<<< HEAD
-        for (Partition _iter380 : struct.partitions)
+        for (Partition _iter396 : struct.partitions)
         {
-          _iter380.write(oprot);
-=======
-        for (Partition _iter406 : struct.partitions)
-        {
-          _iter406.write(oprot);
->>>>>>> asf/master
+          _iter396.write(oprot);
         }
       }
       oprot.writeBool(struct.hasUnknownPartitions);
@@ -545,25 +522,14 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, PartitionsByExprResult struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TList _list381 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.partitions = new ArrayList<Partition>(_list381.size);
-        Partition _elem382;
-        for (int _i383 = 0; _i383 < _list381.size; ++_i383)
+        org.apache.thrift.protocol.TList _list397 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.partitions = new ArrayList<Partition>(_list397.size);
+        Partition _elem398;
+        for (int _i399 = 0; _i399 < _list397.size; ++_i399)
         {
-          _elem382 = new Partition();
-          _elem382.read(iprot);
-          struct.partitions.add(_elem382);
-=======
-        org.apache.thrift.protocol.TList _list407 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.partitions = new ArrayList<Partition>(_list407.size);
-        Partition _elem408;
-        for (int _i409 = 0; _i409 < _list407.size; ++_i409)
-        {
-          _elem408 = new Partition();
-          _elem408.read(iprot);
-          struct.partitions.add(_elem408);
->>>>>>> asf/master
+          _elem398 = new Partition();
+          _elem398.read(iprot);
+          struct.partitions.add(_elem398);
         }
       }
       struct.setPartitionsIsSet(true);

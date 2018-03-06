@@ -525,23 +525,13 @@ import org.slf4j.LoggerFactory;
           case 2: // TBL_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list760 = iprot.readListBegin();
-                struct.tblNames = new ArrayList<String>(_list760.size);
-                String _elem761;
-                for (int _i762 = 0; _i762 < _list760.size; ++_i762)
+                org.apache.thrift.protocol.TList _list776 = iprot.readListBegin();
+                struct.tblNames = new ArrayList<String>(_list776.size);
+                String _elem777;
+                for (int _i778 = 0; _i778 < _list776.size; ++_i778)
                 {
-                  _elem761 = iprot.readString();
-                  struct.tblNames.add(_elem761);
-=======
-                org.apache.thrift.protocol.TList _list786 = iprot.readListBegin();
-                struct.tblNames = new ArrayList<String>(_list786.size);
-                String _elem787;
-                for (int _i788 = 0; _i788 < _list786.size; ++_i788)
-                {
-                  _elem787 = iprot.readString();
-                  struct.tblNames.add(_elem787);
->>>>>>> asf/master
+                  _elem777 = iprot.readString();
+                  struct.tblNames.add(_elem777);
                 }
                 iprot.readListEnd();
               }
@@ -582,15 +572,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(TBL_NAMES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.tblNames.size()));
-<<<<<<< HEAD
-            for (String _iter763 : struct.tblNames)
+            for (String _iter779 : struct.tblNames)
             {
-              oprot.writeString(_iter763);
-=======
-            for (String _iter789 : struct.tblNames)
-            {
-              oprot.writeString(_iter789);
->>>>>>> asf/master
+              oprot.writeString(_iter779);
             }
             oprot.writeListEnd();
           }
@@ -633,15 +617,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetTblNames()) {
         {
           oprot.writeI32(struct.tblNames.size());
-<<<<<<< HEAD
-          for (String _iter764 : struct.tblNames)
+          for (String _iter780 : struct.tblNames)
           {
-            oprot.writeString(_iter764);
-=======
-          for (String _iter790 : struct.tblNames)
-          {
-            oprot.writeString(_iter790);
->>>>>>> asf/master
+            oprot.writeString(_iter780);
           }
         }
       }
@@ -658,23 +636,13 @@ import org.slf4j.LoggerFactory;
       BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         {
-<<<<<<< HEAD
-          org.apache.thrift.protocol.TList _list765 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.tblNames = new ArrayList<String>(_list765.size);
-          String _elem766;
-          for (int _i767 = 0; _i767 < _list765.size; ++_i767)
+          org.apache.thrift.protocol.TList _list781 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.tblNames = new ArrayList<String>(_list781.size);
+          String _elem782;
+          for (int _i783 = 0; _i783 < _list781.size; ++_i783)
           {
-            _elem766 = iprot.readString();
-            struct.tblNames.add(_elem766);
-=======
-          org.apache.thrift.protocol.TList _list791 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.tblNames = new ArrayList<String>(_list791.size);
-          String _elem792;
-          for (int _i793 = 0; _i793 < _list791.size; ++_i793)
-          {
-            _elem792 = iprot.readString();
-            struct.tblNames.add(_elem792);
->>>>>>> asf/master
+            _elem782 = iprot.readString();
+            struct.tblNames.add(_elem782);
           }
         }
         struct.setTblNamesIsSet(true);

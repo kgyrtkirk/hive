@@ -354,25 +354,14 @@ import org.slf4j.LoggerFactory;
           case 1: // EVENTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list652 = iprot.readListBegin();
-                struct.events = new ArrayList<NotificationEvent>(_list652.size);
-                NotificationEvent _elem653;
-                for (int _i654 = 0; _i654 < _list652.size; ++_i654)
+                org.apache.thrift.protocol.TList _list668 = iprot.readListBegin();
+                struct.events = new ArrayList<NotificationEvent>(_list668.size);
+                NotificationEvent _elem669;
+                for (int _i670 = 0; _i670 < _list668.size; ++_i670)
                 {
-                  _elem653 = new NotificationEvent();
-                  _elem653.read(iprot);
-                  struct.events.add(_elem653);
-=======
-                org.apache.thrift.protocol.TList _list678 = iprot.readListBegin();
-                struct.events = new ArrayList<NotificationEvent>(_list678.size);
-                NotificationEvent _elem679;
-                for (int _i680 = 0; _i680 < _list678.size; ++_i680)
-                {
-                  _elem679 = new NotificationEvent();
-                  _elem679.read(iprot);
-                  struct.events.add(_elem679);
->>>>>>> asf/master
+                  _elem669 = new NotificationEvent();
+                  _elem669.read(iprot);
+                  struct.events.add(_elem669);
                 }
                 iprot.readListEnd();
               }
@@ -398,15 +387,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(EVENTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.events.size()));
-<<<<<<< HEAD
-          for (NotificationEvent _iter655 : struct.events)
+          for (NotificationEvent _iter671 : struct.events)
           {
-            _iter655.write(oprot);
-=======
-          for (NotificationEvent _iter681 : struct.events)
-          {
-            _iter681.write(oprot);
->>>>>>> asf/master
+            _iter671.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -431,15 +414,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.events.size());
-<<<<<<< HEAD
-        for (NotificationEvent _iter656 : struct.events)
+        for (NotificationEvent _iter672 : struct.events)
         {
-          _iter656.write(oprot);
-=======
-        for (NotificationEvent _iter682 : struct.events)
-        {
-          _iter682.write(oprot);
->>>>>>> asf/master
+          _iter672.write(oprot);
         }
       }
     }
@@ -448,25 +425,14 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, NotificationEventResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TList _list657 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.events = new ArrayList<NotificationEvent>(_list657.size);
-        NotificationEvent _elem658;
-        for (int _i659 = 0; _i659 < _list657.size; ++_i659)
+        org.apache.thrift.protocol.TList _list673 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.events = new ArrayList<NotificationEvent>(_list673.size);
+        NotificationEvent _elem674;
+        for (int _i675 = 0; _i675 < _list673.size; ++_i675)
         {
-          _elem658 = new NotificationEvent();
-          _elem658.read(iprot);
-          struct.events.add(_elem658);
-=======
-        org.apache.thrift.protocol.TList _list683 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.events = new ArrayList<NotificationEvent>(_list683.size);
-        NotificationEvent _elem684;
-        for (int _i685 = 0; _i685 < _list683.size; ++_i685)
-        {
-          _elem684 = new NotificationEvent();
-          _elem684.read(iprot);
-          struct.events.add(_elem684);
->>>>>>> asf/master
+          _elem674 = new NotificationEvent();
+          _elem674.read(iprot);
+          struct.events.add(_elem674);
         }
       }
       struct.setEventsIsSet(true);

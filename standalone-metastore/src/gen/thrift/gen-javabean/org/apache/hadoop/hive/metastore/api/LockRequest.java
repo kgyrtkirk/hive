@@ -689,25 +689,14 @@ import org.slf4j.LoggerFactory;
           case 1: // COMPONENT
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list586 = iprot.readListBegin();
-                struct.component = new ArrayList<LockComponent>(_list586.size);
-                LockComponent _elem587;
-                for (int _i588 = 0; _i588 < _list586.size; ++_i588)
+                org.apache.thrift.protocol.TList _list602 = iprot.readListBegin();
+                struct.component = new ArrayList<LockComponent>(_list602.size);
+                LockComponent _elem603;
+                for (int _i604 = 0; _i604 < _list602.size; ++_i604)
                 {
-                  _elem587 = new LockComponent();
-                  _elem587.read(iprot);
-                  struct.component.add(_elem587);
-=======
-                org.apache.thrift.protocol.TList _list612 = iprot.readListBegin();
-                struct.component = new ArrayList<LockComponent>(_list612.size);
-                LockComponent _elem613;
-                for (int _i614 = 0; _i614 < _list612.size; ++_i614)
-                {
-                  _elem613 = new LockComponent();
-                  _elem613.read(iprot);
-                  struct.component.add(_elem613);
->>>>>>> asf/master
+                  _elem603 = new LockComponent();
+                  _elem603.read(iprot);
+                  struct.component.add(_elem603);
                 }
                 iprot.readListEnd();
               }
@@ -765,15 +754,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(COMPONENT_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.component.size()));
-<<<<<<< HEAD
-          for (LockComponent _iter589 : struct.component)
+          for (LockComponent _iter605 : struct.component)
           {
-            _iter589.write(oprot);
-=======
-          for (LockComponent _iter615 : struct.component)
-          {
-            _iter615.write(oprot);
->>>>>>> asf/master
+            _iter605.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -820,15 +803,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.component.size());
-<<<<<<< HEAD
-        for (LockComponent _iter590 : struct.component)
+        for (LockComponent _iter606 : struct.component)
         {
-          _iter590.write(oprot);
-=======
-        for (LockComponent _iter616 : struct.component)
-        {
-          _iter616.write(oprot);
->>>>>>> asf/master
+          _iter606.write(oprot);
         }
       }
       oprot.writeString(struct.user);
@@ -853,25 +830,14 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, LockRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TList _list591 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.component = new ArrayList<LockComponent>(_list591.size);
-        LockComponent _elem592;
-        for (int _i593 = 0; _i593 < _list591.size; ++_i593)
+        org.apache.thrift.protocol.TList _list607 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.component = new ArrayList<LockComponent>(_list607.size);
+        LockComponent _elem608;
+        for (int _i609 = 0; _i609 < _list607.size; ++_i609)
         {
-          _elem592 = new LockComponent();
-          _elem592.read(iprot);
-          struct.component.add(_elem592);
-=======
-        org.apache.thrift.protocol.TList _list617 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.component = new ArrayList<LockComponent>(_list617.size);
-        LockComponent _elem618;
-        for (int _i619 = 0; _i619 < _list617.size; ++_i619)
-        {
-          _elem618 = new LockComponent();
-          _elem618.read(iprot);
-          struct.component.add(_elem618);
->>>>>>> asf/master
+          _elem608 = new LockComponent();
+          _elem608.read(iprot);
+          struct.component.add(_elem608);
         }
       }
       struct.setComponentIsSet(true);

@@ -354,23 +354,13 @@ import org.slf4j.LoggerFactory;
           case 1: // VALUES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list752 = iprot.readListBegin();
-                struct.values = new ArrayList<ClientCapability>(_list752.size);
-                ClientCapability _elem753;
-                for (int _i754 = 0; _i754 < _list752.size; ++_i754)
+                org.apache.thrift.protocol.TList _list768 = iprot.readListBegin();
+                struct.values = new ArrayList<ClientCapability>(_list768.size);
+                ClientCapability _elem769;
+                for (int _i770 = 0; _i770 < _list768.size; ++_i770)
                 {
-                  _elem753 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
-                  struct.values.add(_elem753);
-=======
-                org.apache.thrift.protocol.TList _list778 = iprot.readListBegin();
-                struct.values = new ArrayList<ClientCapability>(_list778.size);
-                ClientCapability _elem779;
-                for (int _i780 = 0; _i780 < _list778.size; ++_i780)
-                {
-                  _elem779 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
-                  struct.values.add(_elem779);
->>>>>>> asf/master
+                  _elem769 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
+                  struct.values.add(_elem769);
                 }
                 iprot.readListEnd();
               }
@@ -396,15 +386,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(VALUES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.values.size()));
-<<<<<<< HEAD
-          for (ClientCapability _iter755 : struct.values)
+          for (ClientCapability _iter771 : struct.values)
           {
-            oprot.writeI32(_iter755.getValue());
-=======
-          for (ClientCapability _iter781 : struct.values)
-          {
-            oprot.writeI32(_iter781.getValue());
->>>>>>> asf/master
+            oprot.writeI32(_iter771.getValue());
           }
           oprot.writeListEnd();
         }
@@ -429,15 +413,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.values.size());
-<<<<<<< HEAD
-        for (ClientCapability _iter756 : struct.values)
+        for (ClientCapability _iter772 : struct.values)
         {
-          oprot.writeI32(_iter756.getValue());
-=======
-        for (ClientCapability _iter782 : struct.values)
-        {
-          oprot.writeI32(_iter782.getValue());
->>>>>>> asf/master
+          oprot.writeI32(_iter772.getValue());
         }
       }
     }
@@ -446,23 +424,13 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, ClientCapabilities struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TList _list757 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
-        struct.values = new ArrayList<ClientCapability>(_list757.size);
-        ClientCapability _elem758;
-        for (int _i759 = 0; _i759 < _list757.size; ++_i759)
+        org.apache.thrift.protocol.TList _list773 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
+        struct.values = new ArrayList<ClientCapability>(_list773.size);
+        ClientCapability _elem774;
+        for (int _i775 = 0; _i775 < _list773.size; ++_i775)
         {
-          _elem758 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
-          struct.values.add(_elem758);
-=======
-        org.apache.thrift.protocol.TList _list783 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
-        struct.values = new ArrayList<ClientCapability>(_list783.size);
-        ClientCapability _elem784;
-        for (int _i785 = 0; _i785 < _list783.size; ++_i785)
-        {
-          _elem784 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
-          struct.values.add(_elem784);
->>>>>>> asf/master
+          _elem774 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
+          struct.values.add(_elem774);
         }
       }
       struct.setValuesIsSet(true);

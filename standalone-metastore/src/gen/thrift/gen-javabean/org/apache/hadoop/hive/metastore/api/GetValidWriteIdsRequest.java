@@ -436,23 +436,13 @@ import org.slf4j.LoggerFactory;
           case 1: // FULL_TABLE_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list546 = iprot.readListBegin();
-                struct.fullTableNames = new ArrayList<String>(_list546.size);
-                String _elem547;
-                for (int _i548 = 0; _i548 < _list546.size; ++_i548)
+                org.apache.thrift.protocol.TList _list562 = iprot.readListBegin();
+                struct.fullTableNames = new ArrayList<String>(_list562.size);
+                String _elem563;
+                for (int _i564 = 0; _i564 < _list562.size; ++_i564)
                 {
-                  _elem547 = iprot.readString();
-                  struct.fullTableNames.add(_elem547);
-=======
-                org.apache.thrift.protocol.TList _list572 = iprot.readListBegin();
-                struct.fullTableNames = new ArrayList<String>(_list572.size);
-                String _elem573;
-                for (int _i574 = 0; _i574 < _list572.size; ++_i574)
-                {
-                  _elem573 = iprot.readString();
-                  struct.fullTableNames.add(_elem573);
->>>>>>> asf/master
+                  _elem563 = iprot.readString();
+                  struct.fullTableNames.add(_elem563);
                 }
                 iprot.readListEnd();
               }
@@ -486,15 +476,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(FULL_TABLE_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.fullTableNames.size()));
-<<<<<<< HEAD
-          for (String _iter549 : struct.fullTableNames)
+          for (String _iter565 : struct.fullTableNames)
           {
-            oprot.writeString(_iter549);
-=======
-          for (String _iter575 : struct.fullTableNames)
-          {
-            oprot.writeString(_iter575);
->>>>>>> asf/master
+            oprot.writeString(_iter565);
           }
           oprot.writeListEnd();
         }
@@ -524,15 +508,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.fullTableNames.size());
-<<<<<<< HEAD
-        for (String _iter550 : struct.fullTableNames)
+        for (String _iter566 : struct.fullTableNames)
         {
-          oprot.writeString(_iter550);
-=======
-        for (String _iter576 : struct.fullTableNames)
-        {
-          oprot.writeString(_iter576);
->>>>>>> asf/master
+          oprot.writeString(_iter566);
         }
       }
       oprot.writeString(struct.validTxnList);
@@ -542,23 +520,13 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetValidWriteIdsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TList _list551 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.fullTableNames = new ArrayList<String>(_list551.size);
-        String _elem552;
-        for (int _i553 = 0; _i553 < _list551.size; ++_i553)
+        org.apache.thrift.protocol.TList _list567 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.fullTableNames = new ArrayList<String>(_list567.size);
+        String _elem568;
+        for (int _i569 = 0; _i569 < _list567.size; ++_i569)
         {
-          _elem552 = iprot.readString();
-          struct.fullTableNames.add(_elem552);
-=======
-        org.apache.thrift.protocol.TList _list577 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.fullTableNames = new ArrayList<String>(_list577.size);
-        String _elem578;
-        for (int _i579 = 0; _i579 < _list577.size; ++_i579)
-        {
-          _elem578 = iprot.readString();
-          struct.fullTableNames.add(_elem578);
->>>>>>> asf/master
+          _elem568 = iprot.readString();
+          struct.fullTableNames.add(_elem568);
         }
       }
       struct.setFullTableNamesIsSet(true);

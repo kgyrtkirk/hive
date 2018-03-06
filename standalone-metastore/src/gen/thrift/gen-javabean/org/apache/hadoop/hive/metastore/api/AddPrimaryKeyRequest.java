@@ -354,25 +354,14 @@ import org.slf4j.LoggerFactory;
           case 1: // PRIMARY_KEY_COLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list344 = iprot.readListBegin();
-                struct.primaryKeyCols = new ArrayList<SQLPrimaryKey>(_list344.size);
-                SQLPrimaryKey _elem345;
-                for (int _i346 = 0; _i346 < _list344.size; ++_i346)
+                org.apache.thrift.protocol.TList _list352 = iprot.readListBegin();
+                struct.primaryKeyCols = new ArrayList<SQLPrimaryKey>(_list352.size);
+                SQLPrimaryKey _elem353;
+                for (int _i354 = 0; _i354 < _list352.size; ++_i354)
                 {
-                  _elem345 = new SQLPrimaryKey();
-                  _elem345.read(iprot);
-                  struct.primaryKeyCols.add(_elem345);
-=======
-                org.apache.thrift.protocol.TList _list362 = iprot.readListBegin();
-                struct.primaryKeyCols = new ArrayList<SQLPrimaryKey>(_list362.size);
-                SQLPrimaryKey _elem363;
-                for (int _i364 = 0; _i364 < _list362.size; ++_i364)
-                {
-                  _elem363 = new SQLPrimaryKey();
-                  _elem363.read(iprot);
-                  struct.primaryKeyCols.add(_elem363);
->>>>>>> asf/master
+                  _elem353 = new SQLPrimaryKey();
+                  _elem353.read(iprot);
+                  struct.primaryKeyCols.add(_elem353);
                 }
                 iprot.readListEnd();
               }
@@ -398,15 +387,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PRIMARY_KEY_COLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.primaryKeyCols.size()));
-<<<<<<< HEAD
-          for (SQLPrimaryKey _iter347 : struct.primaryKeyCols)
+          for (SQLPrimaryKey _iter355 : struct.primaryKeyCols)
           {
-            _iter347.write(oprot);
-=======
-          for (SQLPrimaryKey _iter365 : struct.primaryKeyCols)
-          {
-            _iter365.write(oprot);
->>>>>>> asf/master
+            _iter355.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -431,15 +414,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.primaryKeyCols.size());
-<<<<<<< HEAD
-        for (SQLPrimaryKey _iter348 : struct.primaryKeyCols)
+        for (SQLPrimaryKey _iter356 : struct.primaryKeyCols)
         {
-          _iter348.write(oprot);
-=======
-        for (SQLPrimaryKey _iter366 : struct.primaryKeyCols)
-        {
-          _iter366.write(oprot);
->>>>>>> asf/master
+          _iter356.write(oprot);
         }
       }
     }
@@ -448,25 +425,14 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, AddPrimaryKeyRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TList _list349 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.primaryKeyCols = new ArrayList<SQLPrimaryKey>(_list349.size);
-        SQLPrimaryKey _elem350;
-        for (int _i351 = 0; _i351 < _list349.size; ++_i351)
+        org.apache.thrift.protocol.TList _list357 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.primaryKeyCols = new ArrayList<SQLPrimaryKey>(_list357.size);
+        SQLPrimaryKey _elem358;
+        for (int _i359 = 0; _i359 < _list357.size; ++_i359)
         {
-          _elem350 = new SQLPrimaryKey();
-          _elem350.read(iprot);
-          struct.primaryKeyCols.add(_elem350);
-=======
-        org.apache.thrift.protocol.TList _list367 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.primaryKeyCols = new ArrayList<SQLPrimaryKey>(_list367.size);
-        SQLPrimaryKey _elem368;
-        for (int _i369 = 0; _i369 < _list367.size; ++_i369)
-        {
-          _elem368 = new SQLPrimaryKey();
-          _elem368.read(iprot);
-          struct.primaryKeyCols.add(_elem368);
->>>>>>> asf/master
+          _elem358 = new SQLPrimaryKey();
+          _elem358.read(iprot);
+          struct.primaryKeyCols.add(_elem358);
         }
       }
       struct.setPrimaryKeyColsIsSet(true);
