@@ -300,14 +300,6 @@ public class MetaStoreUtils {
     return new BigDecimal(new BigInteger(decimal.getUnscaled()), decimal.getScale()).doubleValue();
   }
 
-  public static String[] getQualifiedName(String defaultDbName, String tableName) {
-    String[] names = tableName.split("\\.");
-    if (names.length == 1) {
-      return new String[] { defaultDbName, tableName};
-    }
-    return names;
-  }
-
   public static void validatePartitionNameCharacters(List<String> partVals,
                                                      Pattern partitionValidationPattern) throws MetaException {
 
@@ -645,13 +637,6 @@ public class MetaStoreUtils {
       return false;
     }
     return (table.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE) != null);
-  }
-
-  public static boolean isIndexTable(Table table) {
-    if (table == null) {
-      return false;
-    }
-    return TableType.INDEX_TABLE.toString().equals(table.getTableType());
   }
 
   /**
