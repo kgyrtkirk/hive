@@ -248,19 +248,20 @@ public class BasicStats {
     partish = null;
     List<Long> nrIn = Lists.newArrayList();
     List<Long> dsIn = Lists.newArrayList();
-    state = State.COMPLETE;
+    state = (partStats.size() == 0) ? State.COMPLETE : null;
     for (BasicStats ps : partStats) {
       nrIn.add(ps.getNumRows());
       dsIn.add(ps.getDataSize());
-      // new logic should be this
-      // state = state.merge(ps.getState());
+
+      if (state == null) {
+        state = ps.getState();
+      } else {
+        state = state.merge(ps.getState());
+      }
     }
     currentNumRows = StatsUtils.getSumIgnoreNegatives(nrIn);
     currentDataSize = StatsUtils.getSumIgnoreNegatives(dsIn);
 
-    if (state.morePreciseThan(State.COMPLETE) && StatsUtils.containsNonPositives(nrIn)) {
-      state = State.PARTIAL;
-    }
   }
 
   public long getNumRows() {
