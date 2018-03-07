@@ -233,20 +233,7 @@ public class StatsUtils {
         referencedColumns, fetchColStats, false);
   }
 
-  private static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
-      Table table, List<ColumnInfo> schema, List<String> neededColumns, ColumnStatsList colStatsCache,
-      List<String> referencedColumns, boolean fetchColStats, boolean failIfCacheMiss)
-      throws HiveException {
-    Statistics n = collectStatistics000(conf, partList, table, schema, neededColumns, colStatsCache, referencedColumns,
-        fetchColStats, failIfCacheMiss);
-    Statistics o = StatsUtils0.collectStatistics(conf, partList, table, schema, neededColumns, colStatsCache,
-        referencedColumns, fetchColStats, failIfCacheMiss);
-
-    return n;
-
-  }
-
-  private static Statistics collectStatistics000(HiveConf conf, PrunedPartitionList partList, Table table,
+  private static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList, Table table,
       List<ColumnInfo> schema, List<String> neededColumns, ColumnStatsList colStatsCache,
       List<String> referencedColumns, boolean fetchColStats, boolean failIfCacheMiss) throws HiveException {
 
