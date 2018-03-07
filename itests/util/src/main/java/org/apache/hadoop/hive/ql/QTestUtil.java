@@ -1004,11 +1004,6 @@ public class QTestUtil {
             LOG.warn("Trying to drop table " + e.getTableName() + ". But it does not exist.");
             continue;
           }
-          // dropping index table can not be dropped directly. Dropping the base
-          // table will automatically drop all its index table
-          if(tblObj.isIndexTable()) {
-            continue;
-          }
           db.dropTable(dbName, tblName, true, true, fsType == FsType.encrypted_hdfs);
         }
       }
@@ -1827,7 +1822,7 @@ public class QTestUtil {
     ppm.add(new PatternReplacementPair(Pattern.compile("\\{\"writeid\":[1-9][0-9]*,\"bucketid\":"),
       "{\"writeid\":### Masked writeid ###,\"bucketid\":"));
 
-    ppm.add(new PatternReplacementPair(Pattern.compile("attempt_[0-9]+"), "attempt_#ID#"));
+    ppm.add(new PatternReplacementPair(Pattern.compile("attempt_[0-9_]+"), "attempt_#ID#"));
     ppm.add(new PatternReplacementPair(Pattern.compile("vertex_[0-9_]+"), "vertex_#ID#"));
     ppm.add(new PatternReplacementPair(Pattern.compile("task_[0-9_]+"), "task_#ID#"));
     partialPlanMask = ppm.toArray(new PatternReplacementPair[ppm.size()]);

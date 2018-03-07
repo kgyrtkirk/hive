@@ -56,6 +56,7 @@ public class Statistics implements Serializable {
   private State basicStatsState;
   private Map<String, ColStatistics> columnStats;
   private State columnStatsState;
+  private boolean runtimeStats;
 
   public Statistics() {
     this(0, 0);
@@ -126,6 +127,9 @@ public class Statistics implements Serializable {
   @Explain(displayName = "Statistics")
   public String toString() {
     StringBuilder sb = new StringBuilder();
+    if (runtimeStats) {
+      sb.append("(RUNTIME) ");
+    }
     sb.append("Num rows: ");
     sb.append(numRows);
     if (runTimeNumRows >= 0) {
@@ -143,6 +147,9 @@ public class Statistics implements Serializable {
   @Explain(displayName = "Statistics", explainLevels = { Level.USER })
   public String toUserLevelExplainString() {
     StringBuilder sb = new StringBuilder();
+    if (runtimeStats) {
+      sb.append("runtime: ");
+    }
     sb.append("rows=");
     sb.append(numRows);
     if (runTimeNumRows >= 0) {
@@ -160,6 +167,9 @@ public class Statistics implements Serializable {
 
   public String extendedToString() {
     StringBuilder sb = new StringBuilder();
+    if (runtimeStats) {
+      sb.append(" (runtime) ");
+    }
     sb.append(" numRows: ");
     sb.append(numRows);
     sb.append(" dataSize: ");
@@ -186,6 +196,8 @@ public class Statistics implements Serializable {
       }
       clone.setColumnStats(cloneColStats);
     }
+    // TODO: this boolean flag is set only by RS stats annotation at this point
+    //clone.setRuntimeStats(runtimeStats);
     return clone;
   }
 
@@ -307,14 +319,25 @@ public class Statistics implements Serializable {
     this.runTimeNumRows = runTimeNumRows;
   }
 
-  public Statistics scaleToRowCount(long newRowCount) {
+  public Statistics scaleToRowCount(long newRowCount, boolean downScaleOnly) {
     Statistics ret = clone();
-    if(numRows == 0 || newRowCount >= numRows) {
+    if (numRows == 0) {
+      return ret;
+    }
+    if (downScaleOnly && newRowCount >= numRows) {
       return ret;
     }
     // FIXME: using real scaling by new/old ration might yield better results?
     ret.numRows = newRowCount;
     ret.dataSize = StatsUtils.safeMult(getAvgRowSize(), newRowCount);
     return ret;
+  }
+
+  public boolean isRuntimeStats() {
+    return runtimeStats;
+  }
+
+  public void setRuntimeStats(final boolean runtimeStats) {
+    this.runtimeStats = runtimeStats;
   }
 }
