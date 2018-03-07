@@ -237,6 +237,18 @@ public class StatsUtils {
       Table table, List<ColumnInfo> schema, List<String> neededColumns, ColumnStatsList colStatsCache,
       List<String> referencedColumns, boolean fetchColStats, boolean failIfCacheMiss)
       throws HiveException {
+    Statistics n = collectStatistics000(conf, partList, table, schema, neededColumns, colStatsCache, referencedColumns,
+        fetchColStats, failIfCacheMiss);
+    Statistics o = StatsUtils0.collectStatistics(conf, partList, table, schema, neededColumns, colStatsCache,
+        referencedColumns, fetchColStats, failIfCacheMiss);
+
+    return n;
+
+  }
+
+  private static Statistics collectStatistics000(HiveConf conf, PrunedPartitionList partList, Table table,
+      List<ColumnInfo> schema, List<String> neededColumns, ColumnStatsList colStatsCache,
+      List<String> referencedColumns, boolean fetchColStats, boolean failIfCacheMiss) throws HiveException {
 
     Statistics stats = null;
 
@@ -941,8 +953,8 @@ public class StatsUtils {
       cs.setAvgColLen(getAvgColLenOf(conf,cinfo.getObjectInspector(), cinfo.getTypeName()));
     } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
         cs.setCountDistint(2);
-        cs.setNumTrues(Math.max(1, (long)numRows/2));
-        cs.setNumFalses(Math.max(1, (long)numRows/2));
+        cs.setNumTrues(Math.max(1, numRows/2));
+        cs.setNumFalses(Math.max(1, numRows/2));
         cs.setAvgColLen(JavaDataModel.get().primitive1());
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||
         colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {

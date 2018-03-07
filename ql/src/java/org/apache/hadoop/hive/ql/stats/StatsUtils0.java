@@ -118,9 +118,9 @@ import com.google.common.collect.Lists;
 import com.google.common.math.LongMath;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-public class StatsUtils {
+public class StatsUtils0 {
 
-  private static final Logger LOG = LoggerFactory.getLogger(StatsUtils.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(StatsUtils0.class.getName());
 
 
   /**
@@ -320,7 +320,7 @@ public class StatsUtils {
         referencedColumns, fetchColStats, false);
   }
 
-  private static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
+  static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
       Table table, List<ColumnInfo> schema, List<String> neededColumns, ColumnStatsList colStatsCache,
       List<String> referencedColumns, boolean fetchColStats, boolean failIfCacheMiss)
       throws HiveException {
@@ -668,7 +668,7 @@ public class StatsUtils {
     long numPartitions = getNDVPartitionColumn(partList,
         ci.getInternalName());
     partCS.setCountDistint(numPartitions);
-    partCS.setAvgColLen(StatsUtils.getAvgColLenOf(conf,
+    partCS.setAvgColLen(StatsUtils0.getAvgColLenOf(conf,
         ci.getObjectInspector(), partCS.getColumnType()));
     partCS.setRange(getRangePartitionColumn(partList, ci.getInternalName(),
         ci.getType().getTypeName(), conf.getVar(ConfVars.DEFAULTPARTITIONNAME)));
@@ -1054,8 +1054,8 @@ public class StatsUtils {
       cs.setAvgColLen(getAvgColLenOf(conf,cinfo.getObjectInspector(), cinfo.getTypeName()));
     } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
         cs.setCountDistint(2);
-        cs.setNumTrues(Math.max(1, (long)numRows/2));
-        cs.setNumFalses(Math.max(1, (long)numRows/2));
+        cs.setNumTrues(Math.max(1, numRows/2));
+        cs.setNumFalses(Math.max(1, numRows/2));
         cs.setAvgColLen(JavaDataModel.get().primitive1());
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||
         colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
