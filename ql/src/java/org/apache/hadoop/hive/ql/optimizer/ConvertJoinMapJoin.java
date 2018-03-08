@@ -215,7 +215,9 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // Determine the size of small table inputs
     long totalSize = 0;
     for (int pos = 0; pos < joinOp.getParentOperators().size(); pos++) {
-      if (pos == mapJoinConversionPos) continue;
+      if (pos == mapJoinConversionPos) {
+        continue;
+      }
       Operator<? extends OperatorDesc> parentOp = joinOp.getParentOperators().get(pos);
       totalSize += parentOp.getStatistics().getDataSize();
     }
@@ -376,6 +378,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         (CommonMergeJoinOperator) OperatorFactory.get(joinOp.getCompilationOpContext(),
             new CommonMergeJoinDesc(numBuckets, mapJoinConversionPos, mapJoinDesc),
             joinOp.getSchema());
+    context.parseContext.getContext().getPlanMapper().link(joinOp, mergeJoinOp);
     int numReduceSinks = joinOp.getOpTraits().getNumReduceSinks();
     OpTraits opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(), numBuckets,
       joinOp.getOpTraits().getSortCols(), numReduceSinks);
@@ -513,7 +516,9 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       // use the positions to only pick the partitionCols which are required
       // on the small table side.
       for (Operator<?> op : mapJoinOp.getParentOperators()) {
-        if (!(op instanceof ReduceSinkOperator)) continue;;
+        if (!(op instanceof ReduceSinkOperator)) {
+          continue;
+        };
 
         ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
         ArrayList<ExprNodeDesc> newPartitionCols = new ArrayList<>();
@@ -1058,7 +1063,9 @@ public class ConvertJoinMapJoin implements NodeProcessor {
               break;
             }
           }
-          if (found) break;
+          if (found) {
+            break;
+          }
         }
       }
     }
