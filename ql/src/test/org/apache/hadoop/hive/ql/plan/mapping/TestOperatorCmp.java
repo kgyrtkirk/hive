@@ -172,9 +172,11 @@ public class TestOperatorCmp {
     if (same == AssertHelperOp.SAME) {
       assertTrue(clazz + " " + same, compareOperators(opL, opR));
       TestOperatorSignature.checkEquals(opL, opR);
+      TestOperatorSignature.checkTreeEquals(opL, opR);
     } else {
       assertFalse(clazz + " " + same, compareOperators(opL, opR));
       TestOperatorSignature.checkNotEquals(opL, opR);
+      TestOperatorSignature.checkTreeNotEquals(opL, opR);
     }
   }
 
