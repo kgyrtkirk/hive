@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -121,7 +122,7 @@ public class TestOperatorCmp {
   }
 
   @Test
-  public void testDifferentFiltersAreNotMatched1() throws ParseException {
+  public void testDifferentFiltersAreNotMatched() throws ParseException {
     IDriver driver = createDriver();
     PlanMapper pm0 = getMapperForQuery(driver, "select u from tu where id_uv = 1 group by u");
     PlanMapper pm1 = getMapperForQuery(driver, "select u from tu where id_uv = 2 group by u");
@@ -132,7 +133,7 @@ public class TestOperatorCmp {
   }
 
   @Test
-  public void testSameFiltersMatched1() throws ParseException, Exception {
+  public void testSameFiltersMatched() throws ParseException, Exception {
     IDriver driver = createDriver();
     PlanMapper pm0 = getMapperForQuery(driver, "select u from tu where id_uv = 1 group by u");
     PlanMapper pm1 = getMapperForQuery(driver, "select u from tu where id_uv = 1 group by u");
@@ -141,6 +142,17 @@ public class TestOperatorCmp {
     assertHelper(AssertHelperOp.SAME, pm0, pm1, TableScanOperator.class);
   }
 
+  @Test
+  public void testSameJoinMatched() throws ParseException, Exception {
+    IDriver driver = createDriver();
+    PlanMapper pm0 =
+        getMapperForQuery(driver, "select u,v from tu,tv where tu.id_uv = tv.id_uv and u>1 and v<10 group by u,v");
+    PlanMapper pm1 =
+        getMapperForQuery(driver, "select u,v from tu,tv where tu.id_uv = tv.id_uv and u>1 and v<10 group by u,v");
+
+    assertHelper(AssertHelperOp.SAME, pm0, pm1, CommonJoinOperator.class);
+    //    assertHelper(AssertHelperOp.SAME, pm0, pm1, TableScanOperator.class);
+  }
 
   enum AssertHelperOp {
     SAME, NOT_SAME
@@ -153,7 +165,8 @@ public class TestOperatorCmp {
     assertEquals(1, fos1.size());
 
     if (same == AssertHelperOp.SAME) {
-      assertTrue(clazz + " " + same, compareOperators(fos0.get(0), fos1.get(0)));
+      assertTrue(clazz + "/cmp " + same, compareOperators(fos0.get(0), fos1.get(0)));
+      // FIXME: check signature also
     } else {
       assertFalse(clazz + " " + same, compareOperators(fos0.get(0), fos1.get(0)));
     }
