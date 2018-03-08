@@ -141,8 +141,6 @@ public class BasicStats {
 
     private long avgRowSize;
 
-    // FIXME: this is most probably broken ; the call-site is dependent on neededColumns; which indicates that it might mis calculate the value
-    // HIVE-18108
     public RowNumEstimator(long avgRowSize) {
       this.avgRowSize = avgRowSize;
       if (avgRowSize > 0) {
@@ -172,6 +170,12 @@ public class BasicStats {
             s = StatsUtils.safeMult(rc, avgRowSize);
             stats.setDataSize(s);
           }
+        }
+      }
+      if (stats.getNumRows() > 0) {
+        // FIXME: this must be changed to PARTIAL
+        if (State.COMPLETE.morePreciseThan(stats.state)) {
+          stats.state = State.COMPLETE;
         }
       }
     }
