@@ -31,6 +31,9 @@ import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.optimizer.signature.OpSignature;
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
+import org.apache.hadoop.hive.ql.optimizer.signature.TestOperatorSignature;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
@@ -164,12 +167,35 @@ public class TestOperatorCmp {
     assertEquals(1, fos0.size());
     assertEquals(1, fos1.size());
 
+    T opL = fos0.get(0);
+    T opR = fos1.get(0);
     if (same == AssertHelperOp.SAME) {
-      assertTrue(clazz + "/cmp " + same, compareOperators(fos0.get(0), fos1.get(0)));
-      // FIXME: check signature also
+      assertTrue(clazz + " " + same, compareOperators(opL, opR));
+      TestOperatorSignature.checkEquals(opL, opR);
     } else {
-      assertFalse(clazz + " " + same, compareOperators(fos0.get(0), fos1.get(0)));
+      assertFalse(clazz + " " + same, compareOperators(opL, opR));
+      TestOperatorSignature.checkNotEquals(opL, opR);
     }
+  }
+
+  private boolean compareSigTree(Operator<?> opL, Operator<?> opR) {
+    OpTreeSignature sL = OpTreeSignature.of(opL);
+    OpTreeSignature sR = OpTreeSignature.of(opR);
+
+    if (sL.hashCode() != sR.hashCode()) {
+      return false;
+    }
+    return sL.equals(sR);
+  }
+
+  private boolean compareSignature(Operator<?> opL, Operator<?> opR) {
+    OpSignature sL = OpSignature.of(opL);
+    OpSignature sR = OpSignature.of(opR);
+
+    if (sL.hashCode() != sR.hashCode()) {
+      return false;
+    }
+    return sL.equals(sR);
   }
 
   private boolean compareOperators(Operator<?> opL, Operator<?> opR) {
