@@ -31,8 +31,6 @@ import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.optimizer.signature.OpSignature;
-import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.TestOperatorSignature;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
@@ -180,26 +178,6 @@ public class TestOperatorCmp {
     }
   }
 
-  private boolean compareSigTree(Operator<?> opL, Operator<?> opR) {
-    OpTreeSignature sL = OpTreeSignature.of(opL);
-    OpTreeSignature sR = OpTreeSignature.of(opR);
-
-    if (sL.hashCode() != sR.hashCode()) {
-      return false;
-    }
-    return sL.equals(sR);
-  }
-
-  private boolean compareSignature(Operator<?> opL, Operator<?> opR) {
-    OpSignature sL = OpSignature.of(opL);
-    OpSignature sR = OpSignature.of(opR);
-
-    if (sL.hashCode() != sR.hashCode()) {
-      return false;
-    }
-    return sL.equals(sR);
-  }
-
   private boolean compareOperators(Operator<?> opL, Operator<?> opR) {
     return opL.logicalEqualsTree(opR);
   }
@@ -222,6 +200,4 @@ public class TestOperatorCmp {
     IDriver driver = DriverFactory.newDriver(conf);
     return driver;
   }
-
-
 }
