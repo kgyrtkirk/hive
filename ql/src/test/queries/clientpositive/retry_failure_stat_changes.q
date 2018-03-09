@@ -5,7 +5,8 @@ insert into tx values (1,1),(2,2),(3,3),(4,4),(5,5),(6,6),(7,7),(10,10);
 create table px(a int,p int);
 insert into px values (2,2),(3,3),(5,5),(7,7),(11,11);
 
-
+set hive.optimize.ppd=false;
+set hive.auto.convert.join=false;
 set hive.explain.user=true;
 set hive.query.reexecution.enabled=true;
 set hive.query.reexecution.strategies=overlay,reoptimize;
