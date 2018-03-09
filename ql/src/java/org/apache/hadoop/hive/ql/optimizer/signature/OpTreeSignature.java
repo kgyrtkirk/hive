@@ -65,6 +65,7 @@ public class OpTreeSignature {
       return true;
     }
     OpTreeSignature o = (OpTreeSignature) obj;
+
     // TODO: this should be removed as soon as signatures are able to provide the same level of confidentiality as logicalEquals
     return sig.equals(o.sig) && parentSig.equals(o.parentSig);
     //logicalEqualsTree(op, o.op);

@@ -65,7 +65,7 @@ public class OpSignature {
       return true;
     }
     OpSignature o = (OpSignature) obj;
-    return true;
+    return signatureCompare(o);
   }
 
   public boolean signatureCompare(OpSignature other) {

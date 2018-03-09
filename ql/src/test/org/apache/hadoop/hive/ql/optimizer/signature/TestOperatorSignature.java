@@ -131,6 +131,7 @@ public class TestOperatorSignature {
     OpTreeSignature ts2 = OpTreeSignature.of(o2);
 
     assertNotEquals(ts1.hashCode(), ts2.hashCode());
+    ts1.equals(ts2);
     assertNotEquals(ts1, ts2);
   }
 
