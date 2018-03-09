@@ -65,10 +65,10 @@ public class SignatureUtils {
       }
 
       Signature ann = o.getAnnotation(Signature.class);
-      if (ann != null && ann.getLabel().length() > 0) {
-        classLabel = ann.getLabel();
+      if (ann != null && ann.label().length() > 0) {
+        classLabel = ann.label();
       } else {
-        classLabel = o.getClass().getName();
+        classLabel = o.getName();
       }
 
     }
