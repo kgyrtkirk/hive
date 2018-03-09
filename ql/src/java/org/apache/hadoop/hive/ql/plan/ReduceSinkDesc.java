@@ -444,7 +444,6 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return forwarding;
   }
 
-  // FIXME: @Signature removed; should it be removed form logicalEquals also (might give sharedwork optimizer an edge)
   @Explain(displayName = "auto parallelism", explainLevels = { Level.EXTENDED })
   public final boolean isAutoParallel() {
     return (this.reduceTraits.contains(ReducerTraits.AUTOPARALLEL));
