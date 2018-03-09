@@ -66,27 +66,7 @@ public class OpTreeSignature {
     }
     OpTreeSignature o = (OpTreeSignature) obj;
 
-    // TODO: this should be removed as soon as signatures are able to provide the same level of confidentiality as logicalEquals
     return sig.equals(o.sig) && parentSig.equals(o.parentSig);
-    //logicalEqualsTree(op, o.op);
-  }
-
-  // XXX: this is ain't cheap! :)
-  private final boolean logicalEqualsTree(Operator<?> o1, Operator<?> o) {
-    if (!o1.logicalEquals(o)) {
-      return false;
-    }
-    if (o.getNumParent() != o1.getNumParent()) {
-      return false;
-    }
-    for (int i = 0; i < o1.getNumParent(); i++) {
-      Operator<? extends OperatorDesc> copL = o1.getParentOperators().get(i);
-      Operator<? extends OperatorDesc> copR = o.getParentOperators().get(i);
-      if (!copL.logicalEquals(copR)) {
-        return false;
-      }
-    }
-    return true;
   }
 
   @Override
