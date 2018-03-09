@@ -65,7 +65,7 @@ public class OpSignature {
       return true;
     }
     OpSignature o = (OpSignature) obj;
-    return op.logicalEquals(o.op);
+    return true;
   }
 
   public boolean signatureCompare(OpSignature other) {
@@ -91,4 +91,20 @@ public class OpSignature {
     }
   }
 
+  @Override
+  public String toString() {
+    return toString("");
+  }
+
+  public String toString(String pad) {
+    StringBuffer sb = new StringBuffer();
+    for (Entry<String, Object> e : sigMap.entrySet()) {
+      sb.append(pad);
+      sb.append(e.getKey());
+      sb.append(" = ");
+      sb.append(e.getValue());
+      sb.append('\n');
+    }
+    return sb.toString();
+  }
 }

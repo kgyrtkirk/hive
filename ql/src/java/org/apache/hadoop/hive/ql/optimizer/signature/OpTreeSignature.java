@@ -66,7 +66,8 @@ public class OpTreeSignature {
     }
     OpTreeSignature o = (OpTreeSignature) obj;
     // TODO: this should be removed as soon as signatures are able to provide the same level of confidentiality as logicalEquals
-    return logicalEqualsTree(op, o.op);
+    return sig.equals(o.sig) && parentSig.equals(o.parentSig);
+    //logicalEqualsTree(op, o.op);
   }
 
   // XXX: this is ain't cheap! :)
@@ -85,6 +86,21 @@ public class OpTreeSignature {
       }
     }
     return true;
+  }
+
+  @Override
+  public String toString() {
+    return toString("");
+  }
+
+  public String toString(String pad) {
+    StringBuffer sb = new StringBuffer();
+    sb.append(pad + "hashcode:" + hashCode + "\n");
+    sb.append(sig.toString(pad));
+    for (OpTreeSignature p : parentSig) {
+      sb.append(p.toString(pad + " "));
+    }
+    return sb.toString();
   }
 
 }
