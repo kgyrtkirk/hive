@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  *
  */
 @Explain(displayName = "Join Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-@Signature(label = "JoinDesc")
 public class JoinDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
   public static final int INNER_JOIN = 0;
