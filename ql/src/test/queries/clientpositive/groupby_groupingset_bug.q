@@ -1,9 +1,3 @@
-      set hive.limit.optimize.enable      =true;
-      set hive.mapjoin.optimized.hashtable      =true;
-      set hive.optimize.bucketmapjoin      =true;
-      set hive.optimize.bucketmapjoin.sortedmerge      =false;
-      set hive.optimize.constant.propagation      =true;
-      set hive.optimize.dynamic.partition.hashjoin      =true;
       set hive.optimize.index.filter      =true;
       set hive.optimize.metadataonly      =true;
       set hive.optimize.null.scan      =true;
