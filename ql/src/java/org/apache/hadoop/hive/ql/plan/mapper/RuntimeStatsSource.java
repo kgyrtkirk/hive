@@ -20,10 +20,10 @@ package org.apache.hadoop.hive.ql.plan.mapper;
 
 import java.util.Optional;
 
-import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 public interface RuntimeStatsSource extends StatsSource {
-  public Optional<OperatorStats> lookup(Operator<?> tsop);
+  public Optional<OperatorStats> lookup(OpTreeSignature treeSig);
 
 }

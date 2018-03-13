@@ -27,8 +27,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
+import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.optimizer.signature.TestOperatorSignature;
@@ -151,7 +152,8 @@ public class TestOperatorCmp {
     PlanMapper pm1 =
         getMapperForQuery(driver, "select u,v from tu,tv where tu.id_uv = tv.id_uv and u>1 and v<10 group by u,v");
 
-    assertHelper(AssertHelperOp.SAME, pm0, pm1, CommonJoinOperator.class);
+    assertHelper(AssertHelperOp.SAME, pm0, pm1, CommonMergeJoinOperator.class);
+    assertHelper(AssertHelperOp.SAME, pm0, pm1, JoinOperator.class);
     //    assertHelper(AssertHelperOp.SAME, pm0, pm1, TableScanOperator.class);
   }
 

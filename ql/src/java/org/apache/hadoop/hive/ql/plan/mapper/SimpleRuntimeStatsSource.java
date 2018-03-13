@@ -33,14 +33,12 @@ public class SimpleRuntimeStatsSource implements RuntimeStatsSource {
 
 
   public SimpleRuntimeStatsSource(PlanMapper pm) {
-    PlanMapperProcess.runPostProcess(pm);
     this.pm = pm;
   }
 
   @Override
-  public Optional<OperatorStats> lookup(Operator<?> op) {
+  public Optional<OperatorStats> lookup(OpTreeSignature sig) {
     try {
-      OpTreeSignature sig = OpTreeSignature.of(op);
       List<OperatorStats> v = pm.lookupAll(OperatorStats.class, sig);
       if (v.size() > 0) {
         return Optional.of(v.get(0));

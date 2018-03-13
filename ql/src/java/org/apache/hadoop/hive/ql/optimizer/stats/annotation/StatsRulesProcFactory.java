@@ -2495,16 +2495,15 @@ public class StatsRulesProcFactory {
 
 
   private static Statistics applyRuntimeStats(Context context, Statistics stats, Operator<?> op) {
-    //FIXME non-cached
     PlanMapper pm = context.getPlanMapper();
-    pm.link(op, OpTreeSignature.of(op));
+    OpTreeSignature treeSig = pm.getSignatureOf(op);
 
     if (!context.getRuntimeStatsSource().isPresent()) {
       return stats;
     }
     RuntimeStatsSource rss = context.getRuntimeStatsSource().get();
 
-    Optional<OperatorStats> os = rss.lookup(op);
+    Optional<OperatorStats> os = rss.lookup(treeSig);
 
     if (!os.isPresent()) {
       return stats;

@@ -28,6 +28,9 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignatureFactory;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
@@ -44,6 +47,9 @@ public class PlanMapper {
     Set<Object> members = new HashSet<>();
 
     public void add(Object o) {
+      if (members.contains(o)) {
+        return;
+      }
       members.add(o);
       objectMap.put(o, this);
     }
@@ -108,5 +114,20 @@ public class PlanMapper {
     return groups.iterator();
 
   }
+
+  private OpTreeSignatureFactory signatureCache = OpTreeSignatureFactory.newCache();
+
+  public OpTreeSignature getSignatureOf(Operator<?> op) {
+    LinkGroup g = objectMap.get(op);
+    if (g == null) {
+      g = new LinkGroup();
+      g.add(op);
+      groups.add(g);
+    }
+    OpTreeSignature sig = signatureCache.getSignature(op);
+    g.add(sig);
+    return sig;
+  }
+
 
 }
