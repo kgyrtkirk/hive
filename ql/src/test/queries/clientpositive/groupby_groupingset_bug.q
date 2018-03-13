@@ -1,9 +1,10 @@
       set hive.optimize.index.filter      =true;
-      set hive.optimize.metadataonly      =true;
-      set hive.optimize.null.scan      =true;
-      set hive.optimize.reducededuplication      =true;
-      set hive.optimize.reducededuplication.min.reducer      =4;
-      set hive.optimize.sort.dynamic.partition      =false;
+
+--      set hive.optimize.metadataonly      =true;
+--      set hive.optimize.null.scan      =true;
+--      set hive.optimize.reducededuplication      =true;
+--      set hive.optimize.reducededuplication.min.reducer      =4;
+--      set hive.optimize.sort.dynamic.partition      =false;
 
 set hive.mapjoin.hybridgrace.hashtable=true;
 
