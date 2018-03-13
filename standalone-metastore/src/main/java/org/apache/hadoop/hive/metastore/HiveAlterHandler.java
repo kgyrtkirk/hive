@@ -441,7 +441,6 @@ public class HiveAlterHandler implements AlterHandler {
               "Unable to alter partition because table or database does not exist.");
         }
         oldPart = msdb.getPartition(dbname, name, new_part.getValues());
-                new_part, tbl, wh, false, true, environmentContext, false);
 
         // PartitionView does not have SD. We do not need update its column stats
         if (oldPart.getSd() != null) {
