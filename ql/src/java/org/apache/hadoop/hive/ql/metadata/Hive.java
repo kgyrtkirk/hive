@@ -37,7 +37,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -175,12 +174,6 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 
 /**
@@ -1709,10 +1702,10 @@ public class Hive {
               newPartPath, -1, newPartPath.getFileSystem(conf));
         }
         if (filesForStats != null) {
-          XXXFSStatsUtils.populateQuickStats(filesForStats, newTPart.getParameters());
+          FSStatsUtils.populateQuickStats(filesForStats, newTPart.getParameters());
         } else {
           // The ACID state is probably absent. Warning is logged in the get method.
-          XXXFSStatsUtils.clearQuickStats(newTPart.getParameters());
+          FSStatsUtils.clearQuickStats(newTPart.getParameters());
         }
         try {
           LOG.debug("Adding new partition " + newTPart.getSpec());

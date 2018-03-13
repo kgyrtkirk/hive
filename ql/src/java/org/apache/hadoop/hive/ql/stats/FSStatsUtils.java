@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
@@ -39,7 +40,13 @@ public class FSStatsUtils {
    * @return array of FileStatus objects corresponding to the files
    * making up the passed storage description
    */
+  @Deprecated
   public static FileStatus[] getFileStatusesForSD(Configuration conf, StorageDescriptor desc) throws MetaException {
+    return getFileStatusesForSD1(conf, desc).toArray(new FileStatus[0]);
+  }
+
+  public static List<FileStatus> getFileStatusesForSD1(Configuration conf, StorageDescriptor desc)
+      throws MetaException {
     try {
       Path path = new Path(desc.getLocation());
       FileSystem fileSys = path.getFileSystem(conf);
@@ -50,6 +57,12 @@ public class FSStatsUtils {
     return null;
   }
 
+  public static void populateQuickStats(List<FileStatus> fileStatus, Map<String, String> params) {
+    populateQuickStats(fileStatus.toArray(new FileStatus[0]), params);
+
+  }
+
+  @Deprecated
   public static void populateQuickStats(FileStatus[] fileStatus, Map<String, String> params) {
     int numFiles = 0;
     long tableSize = 0L;
@@ -62,6 +75,11 @@ public class FSStatsUtils {
     }
     params.put(StatsSetupConst.NUM_FILES, Integer.toString(numFiles));
     params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
+  }
+
+  public static void clearQuickStats(Map<String, String> params) {
+    params.remove(StatsSetupConst.NUM_FILES);
+    params.remove(StatsSetupConst.TOTAL_SIZE);
   }
 
 }

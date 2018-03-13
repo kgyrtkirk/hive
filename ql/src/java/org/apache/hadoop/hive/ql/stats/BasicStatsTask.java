@@ -147,7 +147,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
             :  partish.getPartition().getSpec().toString();
         LOG.warn("Partition/partfiles is null for: " + spec);
         if (isMissingAcidState) {
-          MetaStoreUtils.clearQuickStats(parameters);
+          FSStatsUtils.clearQuickStats(parameters);
           return p.getOutput();
         }
         return null;
@@ -161,7 +161,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
       }
 
-      MetaStoreUtils.populateQuickStats(partfileStatus, parameters);
+      FSStatsUtils.populateQuickStats(partfileStatus, parameters);
 
       if (statsAggregator != null) {
         // Update stats for transactional tables (MM, or full ACID with overwrite), even
@@ -177,7 +177,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
     public void collectFileStatus(HiveConf conf) throws MetaException, IOException {
       if (!partish.isTransactionalTable()) {
-        partfileStatus = XXXFSStatsUtils.getFileStatusesForSD(conf, partish.getPartSd());
+        partfileStatus = FSStatsUtils.getFileStatusesForSD1(conf, partish.getPartSd());
       } else {
         Path path = new Path(partish.getPartSd().getLocation());
         partfileStatus = AcidUtils.getAcidFilesForStats(partish.getTable(), path, conf, null);
