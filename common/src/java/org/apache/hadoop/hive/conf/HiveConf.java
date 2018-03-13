@@ -575,6 +575,8 @@ public class HiveConf extends Configuration {
 
     HIVE_IN_TEST("hive.in.test", false, "internal usage only, true in test mode", true),
     HIVE_IN_TEST_SSL("hive.in.ssl.test", false, "internal usage only, true in SSL test mode", true),
+    // TODO: this needs to be removed; see TestReplicationScenarios* comments.
+    HIVE_IN_TEST_REPL("hive.in.repl.test", false, "internal usage only, true in replication test mode", true),
     HIVE_IN_TEST_IDE("hive.in.ide.test", false, "internal usage only, true if test running in ide",
         true),
     HIVE_TESTING_SHORT_LOGS("hive.testing.short.logs", false,
@@ -3672,7 +3674,8 @@ public class HiveConf extends Configuration {
             "hive.druid.coordinator.address.default,"+
             "hikari.,"+
             "hadoop.bin.path,"+
-            "yarn.bin.path",
+            "yarn.bin.path,"+
+            "spark.home",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
