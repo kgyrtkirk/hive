@@ -1,3 +1,7 @@
+set hive.explain.user=true;
+set hive.auto.convert.join=true;
+-- set hive.auto.convert.join.noconditionaltask.size=1000000000000;
+
 drop table if exists x1_store_sales;
 drop table if exists x1_date_dim;
 drop table if exists x1_item;
@@ -45,7 +49,31 @@ alter table x1_item update statistics set(
 'numRows'='18000',
 'rawDataSize'='32710432');
 
--- explain 
+explain 
+select   count(*) cnt
+ from
+     x1_store_sales s
+     ,x1_date_dim d
+     ,x1_item i
+ where  
+	1=1
+ 	and s.ss_sold_date_sk = d.d_date_sk
+ 	and s.ss_item_sk = i.i_item_sk
+ 	and d.d_month_seq in	 
+ 	     (select distinct (d_month_seq)
+ 	      from x1_date_dim
+               where d_year = 2000 and d_year*d_moy > 200000
+ 	        and d_moy = 2 )
+ 	and i.i_current_price > 
+            (select min(j.i_current_price) 
+ 	     from x1_item j 
+ 	     where j.i_category = i.i_category)
+
+ group by d.d_month_seq
+ order by cnt 
+ limit 100;
+
+
 select   count(*) cnt
  from
      x1_store_sales s
