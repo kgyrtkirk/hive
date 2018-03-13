@@ -1,3 +1,13 @@
+
+set hive.vectorized.execution.enabled=true;
+set hive.vectorized.execution.mapjoin.minmax.enabled=true;
+set hive.vectorized.execution.mapjoin.native.enabled=true;
+set hive.vectorized.execution.mapjoin.native.fast.hashtable.enabled=true;
+set hive.vectorized.execution.reduce.enabled=true;
+set hive.vectorized.groupby.checkinterval=4096;
+set hive.vectorized.groupby.flush.percent=0.1;
+set hive.vectorized.groupby.maxentries=100000;
+
 set hive.explain.user=true;
 set hive.auto.convert.join=true;
 -- set hive.auto.convert.join.noconditionaltask.size=1000000000000;
@@ -38,16 +48,16 @@ insert into x1_store_sales partition (ss_sold_date_sk=2) values (2);
 insert into x1_item values (1,2,1),(1,2,1),(2,2,1);
 
 alter table x1_store_sales partition (ss_sold_date_sk=1) update statistics set(
-'numRows'='123456789',
-'rawDataSize'='1234567890');
+'numRows'='123456',
+'rawDataSize'='1234567');
 
 alter table x1_date_dim update statistics set(
-'numRows'='56789',
-'rawDataSize'='81449635');
+'numRows'='56',
+'rawDataSize'='81449');
 
 alter table x1_item update statistics set(
-'numRows'='18000',
-'rawDataSize'='32710432');
+'numRows'='18',
+'rawDataSize'='32710');
 
 explain 
 select   count(*) cnt
