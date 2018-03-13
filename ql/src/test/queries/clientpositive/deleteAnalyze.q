@@ -10,6 +10,8 @@ sales_tax decimal(10,3),
 item string)
 stored as orc location '${system:test.tmp.dir}/testdeci2';
 
+analyze table testdeci2 compute statistics for columns;
+
 insert into table testdeci2 values(1,12.123,12345.123,'desk1'),(2,123.123,1234.123,'desk2');
 
 describe formatted testdeci2;
