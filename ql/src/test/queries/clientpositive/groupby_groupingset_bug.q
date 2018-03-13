@@ -1,3 +1,17 @@
+      set hive.limit.optimize.enable      =true;
+      set hive.mapjoin.optimized.hashtable      =true;
+      set hive.optimize.bucketmapjoin      =true;
+      set hive.optimize.bucketmapjoin.sortedmerge      =false;
+      set hive.optimize.constant.propagation      =true;
+      set hive.optimize.dynamic.partition.hashjoin      =true;
+      set hive.optimize.index.filter      =true;
+      set hive.optimize.metadataonly      =true;
+      set hive.optimize.null.scan      =true;
+      set hive.optimize.reducededuplication      =true;
+      set hive.optimize.reducededuplication.min.reducer      =4;
+      set hive.optimize.sort.dynamic.partition      =false;
+
+set hive.mapjoin.hybridgrace.hashtable=true;
 
 set hive.vectorized.execution.enabled=true;
 set hive.vectorized.execution.mapjoin.minmax.enabled=true;
@@ -11,6 +25,25 @@ set hive.vectorized.groupby.maxentries=100000;
 set hive.explain.user=true;
 set hive.auto.convert.join=true;
 -- set hive.auto.convert.join.noconditionaltask.size=1000000000000;
+
+
+      set hive.auto.convert.join      =true;
+      set hive.auto.convert.join.noconditionaltask      =true;
+      set hive.auto.convert.join.noconditionaltask.size      =1145324612;
+      set hive.auto.convert.sortmerge.join      =true;
+      set hive.auto.convert.sortmerge.join.to.mapjoin      =false;
+      set hive.convert.join.bucket.mapjoin.tez      =false;
+      set hive.enforce.sortmergebucketmapjoin      =true;
+      set hive.mapjoin.bucket.cache.size      =10000;
+      set hive.mapjoin.hybridgrace.hashtable      =true;
+      set hive.mapjoin.optimized.hashtable      =true;
+      set hive.optimize.bucketmapjoin      =true;
+      set hive.optimize.bucketmapjoin.sortedmerge      =false;
+      set hive.optimize.dynamic.partition.hashjoin      =true;
+      set hive.smbjoin.cache.rows      =10000;
+      set hive.vectorized.execution.mapjoin.minmax.enabled      =true;
+      set hive.vectorized.execution.mapjoin.native.enabled      =true;
+      set hive.vectorized.execution.mapjoin.native.fast.hashtable.enabled      =true;
 
 drop table if exists x1_store_sales;
 drop table if exists x1_date_dim;
