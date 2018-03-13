@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -110,7 +112,8 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
   private static class BasicStatsProcessor {
 
     private Partish partish;
-    private FileStatus[] partfileStatus;
+    private List<FileStatus> partfileStatus;
+    private boolean isMissingAcidState = false;
     private BasicStatsWork work;
     private boolean followedColStats1;
 
@@ -123,11 +126,10 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     public Object process(StatsAggregator statsAggregator) throws HiveException, MetaException {
       Partish p = partish;
       Map<String, String> parameters = p.getPartParameters();
-      if (p.isAcid()) {
+      if (p.isTransactionalTable()) {
+        // TODO: this should also happen on any error. Right now this task will just fail.
         StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
-      }
-
-      if (work.isTargetRewritten()) {
+      } else if (work.isTargetRewritten()) {
         StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
       }
 
@@ -139,8 +141,15 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         StatsSetupConst.clearColumnStatsState(parameters);
       }
 
-      if(partfileStatus == null){
-        LOG.warn("Partition/partfiles is null for: " + partish.getPartition().getSpec());
+      if (partfileStatus == null) {
+        // This may happen if ACID state is absent from config.
+        String spec =  partish.getPartition() == null ? partish.getTable().getTableName()
+            :  partish.getPartition().getSpec().toString();
+        LOG.warn("Partition/partfiles is null for: " + spec);
+        if (isMissingAcidState) {
+          MetaStoreUtils.clearQuickStats(parameters);
+          return p.getOutput();
+        }
         return null;
       }
 
@@ -152,23 +161,28 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
       }
 
-      updateQuickStats(parameters, partfileStatus);
-      if (StatsSetupConst.areBasicStatsUptoDate(parameters)) {
-        if (statsAggregator != null) {
+      MetaStoreUtils.populateQuickStats(partfileStatus, parameters);
+
+      if (statsAggregator != null) {
+        // Update stats for transactional tables (MM, or full ACID with overwrite), even
+        // though we are marking stats as not being accurate.
+        if (StatsSetupConst.areBasicStatsUptoDate(parameters) || p.isTransactionalTable()) {
           String prefix = getAggregationPrefix(p.getTable(), p.getPartition());
-          updateStats(statsAggregator, parameters, prefix);
+          updateStats(statsAggregator, parameters, prefix, p.isAcid());
         }
       }
 
       return p.getOutput();
     }
 
-    public void collectFileStatus(HiveConf conf) throws MetaException {
-      partfileStatus = FSStatsUtils.getFileStatusesForSD(conf, partish.getPartSd());
-    }
-
-    private void updateQuickStats(Map<String, String> parameters, FileStatus[] partfileStatus) throws MetaException {
-      FSStatsUtils.populateQuickStats(partfileStatus, parameters);
+    public void collectFileStatus(HiveConf conf) throws MetaException, IOException {
+      if (!partish.isTransactionalTable()) {
+        partfileStatus = XXXFSStatsUtils.getFileStatusesForSD(conf, partish.getPartSd());
+      } else {
+        Path path = new Path(partish.getPartSd().getLocation());
+        partfileStatus = AcidUtils.getAcidFilesForStats(partish.getTable(), path, conf, null);
+        isMissingAcidState = true;
+      }
     }
 
     private String getAggregationPrefix(Table table, Partition partition) throws MetaException {
@@ -190,9 +204,15 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       return prefix;
     }
 
-    private void updateStats(StatsAggregator statsAggregator, Map<String, String> parameters, String aggKey) throws HiveException {
-
+    private void updateStats(StatsAggregator statsAggregator, Map<String, String> parameters,
+        String aggKey, boolean isFullAcid) throws HiveException {
       for (String statType : StatsSetupConst.statsRequireCompute) {
+        if (isFullAcid && !work.isTargetRewritten()) {
+          // Don't bother with aggregation in this case, it will probably be invalid.
+          parameters.remove(statType);
+          continue;
+        }
+
         String value = statsAggregator.aggregateStats(aggKey, statType);
         if (value != null && !value.isEmpty()) {
           long longValue = Long.parseLong(value);

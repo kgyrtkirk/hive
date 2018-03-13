@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
 
 import com.google.common.base.Predicates;
@@ -555,6 +556,12 @@ public class MetaStoreUtils {
     }
 
     return true;
+  }
+
+  /** Duplicates AcidUtils; used in a couple places in metastore. */
+  public static boolean isTransactionalTable(Map<String, String> params) {
+    String transactionalProp = params.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    return (transactionalProp != null && "true".equalsIgnoreCase(transactionalProp));
   }
 
   /** Duplicates AcidUtils; used in a couple places in metastore. */

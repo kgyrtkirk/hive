@@ -429,17 +429,19 @@ public class HiveAlterHandler implements AlterHandler {
           .currentTimeMillis() / 1000));
     }
 
-    Table tbl = msdb.getTable(dbname, name);
-    if (tbl == null) {
-      throw new InvalidObjectException(
-          "Unable to alter partition because table or database does not exist.");
-    }
 
     //alter partition
     if (part_vals == null || part_vals.size() == 0) {
       try {
         msdb.openTransaction();
+
+        Table tbl = msdb.getTable(dbname, name);
+        if (tbl == null) {
+          throw new InvalidObjectException(
+              "Unable to alter partition because table or database does not exist.");
+        }
         oldPart = msdb.getPartition(dbname, name, new_part.getValues());
+                new_part, tbl, wh, false, true, environmentContext, false);
 
         // PartitionView does not have SD. We do not need update its column stats
         if (oldPart.getSd() != null) {
@@ -479,6 +481,11 @@ public class HiveAlterHandler implements AlterHandler {
     boolean dataWasMoved = false;
     try {
       msdb.openTransaction();
+      Table tbl = msdb.getTable(dbname, name);
+      if (tbl == null) {
+        throw new InvalidObjectException(
+            "Unable to alter partition because table or database does not exist.");
+      }
       try {
         oldPart = msdb.getPartition(dbname, name, part_vals);
       } catch (NoSuchObjectException e) {
@@ -631,15 +638,16 @@ public class HiveAlterHandler implements AlterHandler {
       transactionalListeners = handler.getTransactionalListeners();
     }
 
-    Table tbl = msdb.getTable(dbname, name);
-    if (tbl == null) {
-      throw new InvalidObjectException(
-          "Unable to alter partitions because table or database does not exist.");
-    }
 
     boolean success = false;
     try {
       msdb.openTransaction();
+
+      Table tbl = msdb.getTable(dbname, name);
+      if (tbl == null) {
+        throw new InvalidObjectException(
+            "Unable to alter partitions because table or database does not exist.");
+      }
       for (Partition tmpPart: new_parts) {
         // Set DDL time to now if not specified
         if (tmpPart.getParameters() == null ||
