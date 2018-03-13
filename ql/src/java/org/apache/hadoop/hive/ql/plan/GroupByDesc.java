@@ -116,7 +116,11 @@ public class GroupByDesc extends AbstractOperatorDesc {
     this.memoryThreshold = memoryThreshold;
     this.listGroupingSets = listGroupingSets;
     this.groupingSetsPresent = groupingSetsPresent;
-    this.groupingSetPosition = groupingSetsPosition;
+    if (groupingSetsPresent) {
+      this.groupingSetPosition = groupingSetsPosition;
+    } else {
+      this.groupingSetPosition = -1;
+    }
     this.isDistinct = isDistinct;
   }
 
