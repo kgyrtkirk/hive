@@ -67,8 +67,11 @@ public class PlanMapper {
   }
 
   public void link(Object o1, Object o2) {
-    LinkGroup g1 = objectMap.get(o1);
-    LinkGroup g2 = objectMap.get(o2);
+    Object k1 = getKeyFor(o1);
+    Object k2 = getKeyFor(o2);
+
+    LinkGroup g1 = objectMap.get(k1);
+    LinkGroup g2 = objectMap.get(k2);
     if (g1 != null && g2 != null && g1 != g2) {
       throw new RuntimeException("equivalence mapping violation");
     }
@@ -76,6 +79,16 @@ public class PlanMapper {
     groups.add(targetGroup);
     targetGroup.add(o1);
     targetGroup.add(o2);
+    targetGroup.add(k1);
+    targetGroup.add(k2);
+  }
+
+  private Object getKeyFor(Object o) {
+    if (o instanceof Operator) {
+      Operator operator = (Operator) o;
+      return getSignatureOf1(operator);
+    }
+    return o;
   }
 
   public <T> List<T> getAll(Class<T> clazz) {
@@ -117,17 +130,33 @@ public class PlanMapper {
 
   private OpTreeSignatureFactory signatureCache = OpTreeSignatureFactory.newCache();
 
-  public OpTreeSignature getSignatureOf(Operator<?> op) {
-    LinkGroup g = objectMap.get(op);
-    if (g == null) {
-      g = new LinkGroup();
-      g.add(op);
-      groups.add(g);
-    }
-    OpTreeSignature sig = signatureCache.getSignature(op);
-    g.add(sig);
-    return sig;
+  //  public OpTreeSignature getSignatureOf(Operator<?> op) {
+  //    LinkGroup g = objectMap.get(op);
+  //    if (g == null) {
+  //      g = new LinkGroup();
+  //      g.add(op);
+  //      groups.add(g);
+  //    }
+  //    OpTreeSignature sig = signatureCache.getSignature(op);
+  //    g.add(sig);
+  //    return sig;
+  //  }
+
+  public OpTreeSignature getSignatureOf1(Operator<?> op) {
+    return signatureCache.getSignature(op);
   }
 
+  public OpTreeSignature getSignatureOf2(Operator<?> op) {
+
+    OpTreeSignature sig = signatureCache.getSignature(op);
+    LinkGroup g = objectMap.get(sig);
+    if (g == null) {
+      g = new LinkGroup();
+      g.add(sig);
+      groups.add(g);
+    }
+    g.add(op);
+    return sig;
+  }
 
 }

@@ -104,9 +104,13 @@ public class TestOperatorCmp {
     PlanMapper pm = getMapperForQuery(driver, query);
     Iterator<LinkGroup> itG = pm.iterateGroups();
     List<FilterOperator> fos = pm.getAll(FilterOperator.class);
-    assertEquals(2, fos.size());
+    // the same operator is present 2 times
+    fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
+    assertEquals(4, fos.size());
 
-    assertFalse("logicalEquals", compareOperators(fos.get(0), fos.get(1)));
+    assertTrue("logicalEquals", compareOperators(fos.get(0), fos.get(1)));
+    assertFalse("logicalEquals", compareOperators(fos.get(0), fos.get(2)));
+    assertTrue("logicalEquals", compareOperators(fos.get(2), fos.get(3)));
 
   }
 
