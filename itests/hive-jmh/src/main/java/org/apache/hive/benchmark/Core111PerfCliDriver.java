@@ -45,11 +45,11 @@ import org.junit.AfterClass;
 This suite differs from TestCliDriver w.r.t the fact that we modify the underlying metastore
 database to reflect the dataset before running the queries.
 */
-public class CorePerfCliDriver extends CliAdapter {
+public class Core111PerfCliDriver extends CliAdapter {
 
   private static QTestUtil qt;
 
-  public CorePerfCliDriver(AbstractCliConfig testCliConfig) {
+  public Core111PerfCliDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
   }
 

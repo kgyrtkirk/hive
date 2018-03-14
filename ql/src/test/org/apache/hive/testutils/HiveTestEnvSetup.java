@@ -230,16 +230,42 @@ public class HiveTestEnvSetup extends ExternalResource {
     }
   }
 
+  static class SetupTpcds implements IHiveTestRule {
+    @Override
+    public void beforeClass(HiveTestEnvContext ctx) throws Exception {
+      System.setProperty("datanucleus.schema.autoCreateAll", "true");
+      System.setProperty("hive.metastore.schema.verification", "false");
+
+      //      QTestUtil.setupMetaStoreTableColumnStatsFor30TBTPCDSWorkload(ctx.hiveConf);
+
+    }
+
+    @Override
+    public void afterClass(HiveTestEnvContext ctx) throws Exception {
+
+    }
+  }
+
   public static final String HIVE_ROOT = getHiveRoot();
   public static final String DATA_DIR = HIVE_ROOT + "/data/";
+
+  public enum XAA {
+    TPCDS
+
+  }
   List<IHiveTestRule> parts = new ArrayList<>();
 
-  public HiveTestEnvSetup() {
+  public HiveTestEnvSetup(XAA... additional) {
     parts.add(new TmpDirSetup());
     parts.add(new SetTestEnvs());
     parts.add(new SetupHiveConf());
     parts.add(new SetupZookeeper());
     parts.add(new SetupTez());
+    for (XAA xaa : additional) {
+      if (xaa == XAA.TPCDS) {
+        parts.add(new SetupTpcds());
+      }
+    }
   }
 
   TemporaryFolder tmpFolderRule = new TemporaryFolder(new File(HIVE_ROOT + "/target/tmp"));

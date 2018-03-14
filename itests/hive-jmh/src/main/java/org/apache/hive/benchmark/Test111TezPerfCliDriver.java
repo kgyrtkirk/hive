@@ -33,7 +33,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class TestTezPerfCliDriver {
+public class Test111TezPerfCliDriver {
 
   static CliAdapter adapter = new CliConfigs.TezPerfCliConfig().getCliAdapter();
 
@@ -55,18 +55,15 @@ public class TestTezPerfCliDriver {
   }
 
   @ClassRule
-  public static TestRule cliClassRule = adapter.buildClassRule();
+  public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup(HiveTestEnvSetup.XAA.TPCDS);
 
   @Rule
-  public HiveTestEnvSetup ter = new HiveTestEnvSetup();
-
-  @Rule
-  public TestRule cliTestRule = adapter.buildTestRule();
+  public TestRule methodRule = env_setup.getMethodRule();
 
   private String name;
   private File qfile;
 
-  public TestTezPerfCliDriver(String name, File qfile) {
+  public Test111TezPerfCliDriver(String name, File qfile) {
     this.name = name;
     this.qfile = qfile;
   }
