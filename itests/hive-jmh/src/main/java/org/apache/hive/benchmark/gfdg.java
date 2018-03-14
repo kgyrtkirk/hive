@@ -13,12 +13,8 @@
  */
 package org.apache.hive.benchmark;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.cli.control.CliConfigs;
@@ -46,7 +42,7 @@ public class gfdg {
 
     static boolean initialized;
 
-    public HiveTestEnvSetup env_setup = new HiveTestEnvSetup(HiveTestEnvSetup.XAA.TPCDS);
+    public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup(HiveTestEnvSetup.XAA.TPCDS);
 
     @Setup(Level.Trial)
     public void doSetup() throws Throwable {
@@ -57,35 +53,35 @@ public class gfdg {
       initialized = true;
       env_setup.bClass();
       env_setup.bMethod();
+      HiveConf conf = MyState.env_setup.getTestCtx().hiveConf;
+
+
+      SessionState.start(conf);
     }
 
   }
 
 
 
+
   @Benchmark
   public void testQuery1x20(MyState st) throws Throwable {
+
     HiveConf conf = st.env_setup.getTestCtx().hiveConf;
 
-    SessionState.start(conf);
-
     Set<File> qfiles = new CliConfigs.TezPerfCliConfig().getQueryFiles();
-    File qfile = qfiles.iterator().next();
 
-    //    for (File qfile : qfiles)
-    for (int i = 0; i < 20; i++)
-    {
+    for (File qfile : qfiles) {
       String queryStrs = Files.toString(qfile, Charset.defaultCharset());
       String[] parts = queryStrs.split(";");
-      assertEquals(3, parts.length);
 
-      try (IDriver driver = DriverFactory.newDriver(conf)) {
-
-        driver.run(parts[1]);
-
-        List res = new ArrayList();
-        driver.getResults(res);
-        System.out.println(res);
+      for (String cmd : parts) {
+        try (IDriver driver = DriverFactory.newDriver(conf)) {
+          if (cmd.startsWith("set")) {
+            continue;
+          }
+          driver.run(cmd);
+        }
       }
     }
   }
