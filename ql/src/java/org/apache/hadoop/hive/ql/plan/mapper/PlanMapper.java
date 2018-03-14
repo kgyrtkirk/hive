@@ -83,10 +83,12 @@ public class PlanMapper {
     targetGroup.add(k2);
   }
 
+  private OpTreeSignatureFactory signatureCache = OpTreeSignatureFactory.newCache();
+
   private Object getKeyFor(Object o) {
     if (o instanceof Operator) {
       Operator operator = (Operator) o;
-      return getSignatureOf1(operator);
+      return signatureCache.getSignature(operator);
     }
     return o;
   }
@@ -128,26 +130,7 @@ public class PlanMapper {
 
   }
 
-  private OpTreeSignatureFactory signatureCache = OpTreeSignatureFactory.newCache();
-
-  //  public OpTreeSignature getSignatureOf(Operator<?> op) {
-  //    LinkGroup g = objectMap.get(op);
-  //    if (g == null) {
-  //      g = new LinkGroup();
-  //      g.add(op);
-  //      groups.add(g);
-  //    }
-  //    OpTreeSignature sig = signatureCache.getSignature(op);
-  //    g.add(sig);
-  //    return sig;
-  //  }
-
-  public OpTreeSignature getSignatureOf1(Operator<?> op) {
-    return signatureCache.getSignature(op);
-  }
-
-  public OpTreeSignature getSignatureOf2(Operator<?> op) {
-
+  public OpTreeSignature getSignatureOf(Operator<?> op) {
     OpTreeSignature sig = signatureCache.getSignature(op);
     LinkGroup g = objectMap.get(sig);
     if (g == null) {

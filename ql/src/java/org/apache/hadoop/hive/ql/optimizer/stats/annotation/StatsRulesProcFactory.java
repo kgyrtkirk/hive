@@ -2496,7 +2496,7 @@ public class StatsRulesProcFactory {
 
   private static Statistics applyRuntimeStats(Context context, Statistics stats, Operator<?> op) {
     PlanMapper pm = context.getPlanMapper();
-    OpTreeSignature treeSig = pm.getSignatureOf2(op);
+    OpTreeSignature treeSig = pm.getSignatureOf(op);
 
     if (!context.getRuntimeStatsSource().isPresent()) {
       return stats;
