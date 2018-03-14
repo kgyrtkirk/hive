@@ -93,7 +93,6 @@ public class Test111TezPerfCliDriver {
 
     List res = new ArrayList();
     driver.getResults(res);
-    //    driver.getFetchTask().fetch(res);
     System.out.println(res);
 
   }
