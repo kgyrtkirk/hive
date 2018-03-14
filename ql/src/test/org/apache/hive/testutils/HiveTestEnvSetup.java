@@ -237,7 +237,7 @@ public class HiveTestEnvSetup extends ExternalResource {
       System.setProperty("datanucleus.schema.autoCreateAll", "true");
       System.setProperty("hive.metastore.schema.verification", "false");
 
-      T30.setupMetaStoreTableColumnStatsFor30TBTPCDSWorkload(ctx.hiveConf, ctx.tmpFolder.getPath());
+      T30.setupMetaStoreTableColumnStatsFor30TBTPCDSWorkload(ctx.hiveConf,ctx.tmpFolder.getPath());
 
     }
 
