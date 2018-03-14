@@ -70,7 +70,29 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
+      <artifactId>hive-metastore</artifactId>
+       <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-dag</artifactId>
+      <version>${tez.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-mapreduce</artifactId>
+      <version>${tez.version}</version>
+    </dependency>
+    <dependency>
+
+      <groupId>org.apache.hive</groupId>
       <artifactId>hive-it-util</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-it-qfile</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
