@@ -61,7 +61,8 @@ public class T30 {
       Properties props = new Properties(); // connection properties
       props.put("user", conf.get("javax.jdo.option.ConnectionUserName"));
       props.put("password", conf.get("javax.jdo.option.ConnectionPassword"));
-      conn = DriverManager.getConnection(conf.get("javax.jdo.option.ConnectionURL"), props);
+      String url = conf.get("javax.jdo.option.ConnectionURL");
+      conn = DriverManager.getConnection(url, props);
       ResultSet rs = null;
       Statement s = conn.createStatement();
 
