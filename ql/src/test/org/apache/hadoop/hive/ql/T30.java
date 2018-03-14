@@ -46,10 +46,14 @@ import java.util.stream.Stream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.testutils.HiveTestEnvSetup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class T30 {
 
-  public static void setupMetaStoreTableColumnStatsFor30TBTPCDSWorkload(HiveConf conf) {
+  static final Logger LOG = LoggerFactory.getLogger("QTestUtil");
+
+  public static void setupMetaStoreTableColumnStatsFor30TBTPCDSWorkload(HiveConf conf, String tmpBaseDir) {
     Connection conn = null;
     ArrayList<Statement> statements = new ArrayList<Statement>(); // list of Statements, PreparedStatements
 
@@ -61,8 +65,8 @@ public class T30 {
       ResultSet rs = null;
       Statement s = conn.createStatement();
 
-      if (QTestUtil.LOG.isDebugEnabled()) {
-        QTestUtil.LOG.debug("Connected to metastore database ");
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Connected to metastore database ");
       }
 
       String mdbPath = HiveTestEnvSetup.HIVE_ROOT + "/data/files/tpcds-perf/metastore_export/";
@@ -80,18 +84,18 @@ public class T30 {
         if (!command.endsWith(";")) {
           continue;
         }
-        if (QTestUtil.LOG.isDebugEnabled()) {
-          QTestUtil.LOG.debug("Going to run command : " + command);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Going to run command : " + command);
         }
         try {
           PreparedStatement psCommand = conn.prepareStatement(command.substring(0, command.length()-1));
           statements.add(psCommand);
           psCommand.execute();
-          if (QTestUtil.LOG.isDebugEnabled()) {
-            QTestUtil.LOG.debug("successfully completed " + command);
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("successfully completed " + command);
           }
         } catch (SQLException e) {
-          QTestUtil.LOG.info("Got SQL Exception " + e.getMessage());
+          LOG.info("Got SQL Exception " + e.getMessage());
         }
       }
       br.close();
@@ -100,7 +104,6 @@ public class T30 {
       java.nio.file.Path tabParamsCsv = FileSystems.getDefault().getPath(mdbPath, "csv", "TABLE_PARAMS.txt.bz2");
 
       // Set up the foreign key constraints properly in the TAB_COL_STATS data
-      String tmpBaseDir =  System.getProperty(QTestUtil.TEST_TMP_DIR_PROPERTY);
       java.nio.file.Path tmpFileLoc1 = FileSystems.getDefault().getPath(tmpBaseDir, "TAB_COL_STATS.txt");
       java.nio.file.Path tmpFileLoc2 = FileSystems.getDefault().getPath(tmpBaseDir, "TABLE_PARAMS.txt");
 
@@ -122,8 +125,8 @@ public class T30 {
         Integer tblId = rs.getInt("TBL_ID");
         tableNameToID.put(tblName, tblId);
 
-        if (QTestUtil.LOG.isDebugEnabled()) {
-          QTestUtil.LOG.debug("Resultset : " +  tblName + " | " + tblId);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Resultset : " + tblName + " | " + tblId);
         }
       }
 
@@ -197,32 +200,33 @@ public class T30 {
         "', '@', null, 'UTF-8', 1)";
       try {
         PreparedStatement psImport1 = conn.prepareStatement(importStatement1);
-        if (QTestUtil.LOG.isDebugEnabled()) {
-          QTestUtil.LOG.debug("Going to execute : " + importStatement1);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Going to execute : " + importStatement1);
         }
         statements.add(psImport1);
         psImport1.execute();
-        if (QTestUtil.LOG.isDebugEnabled()) {
-          QTestUtil.LOG.debug("successfully completed " + importStatement1);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("successfully completed " + importStatement1);
         }
         PreparedStatement psImport2 = conn.prepareStatement(importStatement2);
-        if (QTestUtil.LOG.isDebugEnabled()) {
-          QTestUtil.LOG.debug("Going to execute : " + importStatement2);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Going to execute : " + importStatement2);
         }
         statements.add(psImport2);
         psImport2.execute();
-        if (QTestUtil.LOG.isDebugEnabled()) {
-          QTestUtil.LOG.debug("successfully completed " + importStatement2);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("successfully completed " + importStatement2);
         }
       } catch (SQLException e) {
-        QTestUtil.LOG.info("Got SQL Exception  " +  e.getMessage());
+        LOG.info("Got SQL Exception  " + e.getMessage());
       }
     } catch (FileNotFoundException e1) {
-        QTestUtil.LOG.info("Got File not found Exception " + e1.getMessage());
+      throw new RuntimeException(e1);
+      //      LOG.info("Got File not found Exception " + e1.getMessage());
   } catch (IOException e1) {
-        QTestUtil.LOG.info("Got IOException " + e1.getMessage());
+      throw new RuntimeException(e1);
   } catch (SQLException e1) {
-        QTestUtil.LOG.info("Got SQLException " + e1.getMessage());
+      throw new RuntimeException(e1);
   } finally {
       // Statements and PreparedStatements
       int i = 0;

@@ -146,7 +146,7 @@ public class QTestUtil {
   private final static String defaultCleanupScript = "q_test_cleanup.sql";
   private final String[] testOnlyCommands = new String[]{"crypto"};
 
-  static final String TEST_TMP_DIR_PROPERTY = "test.tmp.dir"; // typically target/tmp
+  public static final String TEST_TMP_DIR_PROPERTY = "test.tmp.dir"; // typically target/tmp
   private static final String BUILD_DIR_PROPERTY = "build.dir"; // typically target
 
   public static final String PATH_HDFS_REGEX = "(hdfs://)([a-zA-Z0-9:/_\\-\\.=])+";

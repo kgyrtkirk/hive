@@ -30,6 +30,7 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.T30;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.CuratorFrameworkSingleton;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 import org.apache.hadoop.hive.shims.HadoopShims;
@@ -236,7 +237,7 @@ public class HiveTestEnvSetup extends ExternalResource {
       System.setProperty("datanucleus.schema.autoCreateAll", "true");
       System.setProperty("hive.metastore.schema.verification", "false");
 
-      //      QTestUtil.setupMetaStoreTableColumnStatsFor30TBTPCDSWorkload(ctx.hiveConf);
+      T30.setupMetaStoreTableColumnStatsFor30TBTPCDSWorkload(ctx.hiveConf, ctx.tmpFolder.getPath());
 
     }
 
