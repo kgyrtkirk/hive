@@ -296,6 +296,20 @@ public class HiveTestEnvSetup extends ExternalResource {
     }
   }
 
+  // FIXME: this is not good
+  public void bClass() throws Throwable {
+    for (IHiveTestRule p : parts) {
+      p.beforeClass(testEnvContext);
+    }
+  }
+
+  // FIXME: this is not good
+  public void bMethod() throws Throwable {
+    for (IHiveTestRule p : parts) {
+      p.beforeMethod(testEnvContext);
+    }
+  }
+
   @Override
   protected void after() {
     try {
