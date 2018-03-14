@@ -44,6 +44,8 @@ public class gfdg {
 
     public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup(HiveTestEnvSetup.XAA.TPCDS);
 
+    public String namePattern = "query64.q";
+
     @Setup(Level.Trial)
     public void doSetup() throws Throwable {
       System.out.println("Do Setup");
@@ -61,7 +63,31 @@ public class gfdg {
 
   }
 
+  //Q1
+  //Result "org.apache.hive.benchmark.gfdg.testQuery1x20":
+  //  5.869 ±(99.9%) 0.340 ops/s [Average]
+  //  (min, avg, max) = (4.819, 5.869, 6.280), stdev = 0.391
+  //  CI (99.9%): [5.529, 6.208] (assumes normal distribution)
 
+  //Q64
+  //  Result "org.apache.hive.benchmark.gfdg.testQuery1x20":
+  //    0.737 ±(99.9%) 0.022 ops/s [Average]
+  //    (min, avg, max) = (0.697, 0.737, 0.783), stdev = 0.026
+  //    CI (99.9%): [0.715, 0.760] (assumes normal distribution)
+  //  Benchmark       Mode  Cnt  Score   Error  Units
+  //  testQuery1x20  thrpt   20  0.737 ± 0.022  ops/s
+
+  //  Result "org.apache.hive.benchmark.gfdg.testQuery1x20":
+  //    0.031 ±(99.9%) 0.005 ops/s [Average]
+  //    (min, avg, max) = (0.023, 0.031, 0.042), stdev = 0.006
+  //    CI (99.9%): [0.026, 0.036] (assumes normal distribution)
+  //
+  //
+  //  # Run complete. Total time: 00:21:43
+  //
+  //  Benchmark       Mode  Cnt  Score   Error  Units
+  //  testQuery1x20  thrpt   20  0.031 ± 0.005  ops/s
+  //
 
 
   @Benchmark
@@ -72,6 +98,9 @@ public class gfdg {
     Set<File> qfiles = new CliConfigs.TezPerfCliConfig().getQueryFiles();
 
     for (File qfile : qfiles) {
+      if (!qfile.getName().matches(st.namePattern)) {
+        continue;
+      }
       String queryStrs = Files.toString(qfile, Charset.defaultCharset());
       String[] parts = queryStrs.split(";");
 
