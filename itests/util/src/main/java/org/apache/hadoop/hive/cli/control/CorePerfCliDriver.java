@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+ 
 package org.apache.hadoop.hive.cli.control;
 
 
@@ -29,7 +29,6 @@ import com.google.common.base.Strings;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
-import org.apache.hadoop.hive.ql.T30;
 import org.junit.After;
 import org.junit.AfterClass;
 /**
@@ -71,8 +70,7 @@ public class CorePerfCliDriver extends CliAdapter{
       qt.createSources();
       // Manually modify the underlying metastore db to reflect statistics corresponding to
       // the 30TB TPCDS scale set. This way the optimizer will generate plans for a 30 TB set.
-      T30.setupMetaStoreTableColumnStatsFor30TBTPCDSWorkload(qt.getConf(),
-          System.getProperty(QTestUtil.TEST_TMP_DIR_PROPERTY));
+      QTestUtil.setupMetaStoreTableColumnStatsFor30TBTPCDSWorkload(qt.getConf());
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();

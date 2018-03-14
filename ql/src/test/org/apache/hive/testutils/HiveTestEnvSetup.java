@@ -20,7 +20,6 @@ package org.apache.hive.testutils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -30,12 +29,9 @@ import org.apache.commons.io.FileUtils;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.T30;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.CuratorFrameworkSingleton;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -47,7 +43,6 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
 
 import com.google.common.collect.Sets;
-import com.google.common.io.Files;
 
 /**
  * Helps in setting up environments to run high level hive tests
@@ -235,55 +230,16 @@ public class HiveTestEnvSetup extends ExternalResource {
     }
   }
 
-  static class SetupTpcds implements IHiveTestRule {
-    private boolean executed;
-
-    @Override
-    public void beforeClass(HiveTestEnvContext ctx) throws Exception {
-      System.setProperty("datanucleus.schema.autoCreateAll", "true");
-      System.setProperty("hive.metastore.schema.verification", "false");
-
-    }
-
-    @Override
-    public void beforeMethod(HiveTestEnvContext ctx) throws Exception {
-      if (executed) {
-        return;
-      }
-      executed=true;
-      SessionState ss = SessionState.start(ctx.hiveConf);
-      try (IDriver d = DriverFactory.newDriver(ctx.hiveConf)) {
-        String initCmds =
-            Files.toString(new File(HIVE_ROOT + "/data/scripts/q_perf_test_init.sql"), Charset.defaultCharset());
-        String[] pp = initCmds.split(";");
-        for (String string : pp) {
-          d.run(string);
-        }
-      }
-      T30.setupMetaStoreTableColumnStatsFor30TBTPCDSWorkload(ctx.hiveConf,ctx.tmpFolder.getPath());
-    }
-  }
-
   public static final String HIVE_ROOT = getHiveRoot();
   public static final String DATA_DIR = HIVE_ROOT + "/data/";
-
-  public enum XAA {
-    TPCDS
-
-  }
   List<IHiveTestRule> parts = new ArrayList<>();
 
-  public HiveTestEnvSetup(XAA... additional) {
+  public HiveTestEnvSetup() {
     parts.add(new TmpDirSetup());
     parts.add(new SetTestEnvs());
     parts.add(new SetupHiveConf());
     parts.add(new SetupZookeeper());
     parts.add(new SetupTez());
-    for (XAA xaa : additional) {
-      if (xaa == XAA.TPCDS) {
-        parts.add(new SetupTpcds());
-      }
-    }
   }
 
   TemporaryFolder tmpFolderRule = new TemporaryFolder(new File(HIVE_ROOT + "/target/tmp"));
@@ -293,20 +249,6 @@ public class HiveTestEnvSetup extends ExternalResource {
   protected void before() throws Throwable {
     for (IHiveTestRule p : parts) {
       p.beforeClass(testEnvContext);
-    }
-  }
-
-  // FIXME: this is not good
-  public void bClass() throws Throwable {
-    for (IHiveTestRule p : parts) {
-      p.beforeClass(testEnvContext);
-    }
-  }
-
-  // FIXME: this is not good
-  public void bMethod() throws Throwable {
-    for (IHiveTestRule p : parts) {
-      p.beforeMethod(testEnvContext);
     }
   }
 

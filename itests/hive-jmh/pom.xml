@@ -70,33 +70,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
-       <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.tez</groupId>
-      <artifactId>tez-dag</artifactId>
-      <version>${tez.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tez</groupId>
-      <artifactId>tez-mapreduce</artifactId>
-      <version>${tez.version}</version>
-    </dependency>
-    <dependency>
-
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-it-util</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-it-qfile</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>
       <classifier>tests</classifier>
@@ -158,38 +131,6 @@
           </dependency>
         </dependencies>
       </plugin>
-
-
-<plugin>
-    <artifactId>maven-dependency-plugin</artifactId>
-    <executions>
-        <execution>
-            <id>build-classpath</id>
-            <goals>
-                <goal>build-classpath</goal>
-            </goals>
-            <configuration>
-                <includeScope>runtime</includeScope>
-                <outputProperty>depClasspath</outputProperty>
-            </configuration>
-        </execution>
-    </executions>
-</plugin>
-<plugin>
-    <groupId>org.codehaus.mojo</groupId>
-    <artifactId>exec-maven-plugin</artifactId>
-    <configuration>
-        <mainClass>org.apache.hive.benchmark.gfdg</mainClass>
-        <systemProperties>
-            <systemProperty>
-                <key>java.class.path</key>
-                <value>${project.build.outputDirectory}${path.separator}${depClasspath}</value>
-            </systemProperty>
-        </systemProperties>
-    </configuration>
-</plugin>
-
-
     </plugins>
   </build>
 
