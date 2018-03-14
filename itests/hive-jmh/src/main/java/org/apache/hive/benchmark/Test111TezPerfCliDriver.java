@@ -17,12 +17,20 @@
  */
 package org.apache.hive.benchmark;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -31,6 +39,8 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import com.google.common.io.Files;
 
 @RunWith(Parameterized.class)
 public class Test111TezPerfCliDriver {
@@ -46,12 +56,10 @@ public class Test111TezPerfCliDriver {
   }
 
   static class C1 implements Comparator<Object[]> {
-
     @Override
     public int compare(Object[] o1, Object[] o2) {
       return o1[0].toString().compareTo(o2[0].toString());
     }
-
   }
 
   @ClassRule
@@ -71,7 +79,23 @@ public class Test111TezPerfCliDriver {
   @Test
   public void testCliDriver() throws Exception {
 
-    //    adapter.runTest(name, qfile);
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
+
+    String queryStrs = Files.toString(qfile, Charset.defaultCharset());
+    String[] parts = queryStrs.split(";");
+    assertEquals(3, parts.length);
+
+    SessionState.start(conf);
+
+    IDriver driver = DriverFactory.newDriver(conf);
+
+    driver.run(parts[1]);
+
+    List res = new ArrayList();
+    driver.getResults(res);
+    //    driver.getFetchTask().fetch(res);
+    System.out.println(res);
+
   }
 
 }
