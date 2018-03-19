@@ -343,11 +343,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: p
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
               expressions: a (type: int)
               outputColumnNames: a
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: NONE Column stats: NONE
               Group By Operator
                 aggregations: max(a)
                 mode: hash
@@ -405,11 +405,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: p
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: NONE Column stats: NONE
             Select Operator
               expressions: a (type: int)
               outputColumnNames: a
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: NONE Column stats: NONE
               Group By Operator
                 aggregations: max(a)
                 mode: hash
