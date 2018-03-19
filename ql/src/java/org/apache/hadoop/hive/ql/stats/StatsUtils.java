@@ -312,6 +312,12 @@ public class StatsUtils {
       }
       stats = new Statistics(nr, ds);
       stats.setBasicStatsState(bbs.getState());
+      if (nr > 0) {
+        // FIXME: this promotion process should be removed later
+        if (State.PARTIAL.morePreciseThan(bbs.getState())) {
+          stats.setBasicStatsState(State.PARTIAL);
+        }
+      }
 
       if (fetchColStats) {
         List<String> partitionCols = getPartitionColumns(schema, neededColumns, referencedColumns);
