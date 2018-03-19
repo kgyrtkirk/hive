@@ -173,9 +173,9 @@ public class BasicStats {
         }
       }
       if (stats.getNumRows() > 0) {
-        // FIXME: this must be changed to PARTIAL
-        if (State.COMPLETE.morePreciseThan(stats.state)) {
-          stats.state = State.COMPLETE;
+        // FIXME: this promotion process should be removed later
+        if (State.PARTIAL.morePreciseThan(stats.state)) {
+          stats.state = State.PARTIAL;
         }
       }
     }
