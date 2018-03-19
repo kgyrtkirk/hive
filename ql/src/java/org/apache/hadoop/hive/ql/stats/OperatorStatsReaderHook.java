@@ -74,7 +74,7 @@ public class OperatorStatsReaderHook implements ExecuteWithHookContext {
             }
 
             if (operatorStats != null) {
-              ((PrivateHookContext) hookContext).getContext().getPlanMapper().link(op, operatorStats, false);
+              ((PrivateHookContext) hookContext).getContext().getPlanMapper().link(op, operatorStats);
             } else {
               LOG.debug("Unable to get statistics for vertex: {} opId: {} groupName: {}", vertexName, operatorId,
                   groupName);

@@ -68,14 +68,13 @@ public class PlanMapper {
     }
   }
 
-  public void link(Object o1, Object o2, boolean addKey) {
+  public void link(Object o1, Object o2) {
 
     Set<Object> keySet = Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());
     keySet.add(o1);
     keySet.add(o2);
-    Object k1, k2;
-    keySet.add(k1 = getKeyFor(o1));
-    keySet.add(k2 = getKeyFor(o2));
+    keySet.add(getKeyFor(o1));
+    keySet.add(getKeyFor(o2));
 
     Set<LinkGroup> mGroups = Collections.newSetFromMap(new IdentityHashMap<LinkGroup, Boolean>());
 
@@ -93,10 +92,6 @@ public class PlanMapper {
     targetGroup.add(o1);
     targetGroup.add(o2);
 
-    if (addKey) {
-      targetGroup.add(k1);
-      targetGroup.add(k2);
-    }
   }
 
   private OpTreeSignatureFactory signatureCache = OpTreeSignatureFactory.newCache();

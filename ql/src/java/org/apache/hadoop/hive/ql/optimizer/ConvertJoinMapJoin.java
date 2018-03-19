@@ -378,7 +378,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         (CommonMergeJoinOperator) OperatorFactory.get(joinOp.getCompilationOpContext(),
             new CommonMergeJoinDesc(numBuckets, mapJoinConversionPos, mapJoinDesc),
             joinOp.getSchema());
-    context.parseContext.getContext().getPlanMapper().link(joinOp, mergeJoinOp, false);
+    context.parseContext.getContext().getPlanMapper().link(joinOp, mergeJoinOp);
     int numReduceSinks = joinOp.getOpTraits().getNumReduceSinks();
     OpTraits opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(), numBuckets,
       joinOp.getOpTraits().getSortCols(), numReduceSinks);
