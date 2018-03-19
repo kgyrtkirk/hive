@@ -143,13 +143,6 @@ public class PlanMapper {
 
   public OpTreeSignature getSignatureOf(Operator<?> op) {
     OpTreeSignature sig = signatureCache.getSignature(op);
-    /*    LinkGroup g = objectMap.get(sig);
-    if (g == null) {
-      g = new LinkGroup();
-      g.add(sig);
-      groups.add(g);
-    }
-    g.add(op);*/
     return sig;
   }
 
