@@ -655,7 +655,6 @@ public class JoinDesc extends AbstractOperatorDesc {
     return leftInputJoin;
   }
 
-  @Signature
   public String getLeftAlias() {
     return leftAlias;
   }
@@ -664,7 +663,6 @@ public class JoinDesc extends AbstractOperatorDesc {
     this.leftAlias = leftAlias;
   }
 
-  @Signature
   public String[] getRightAliases() {
     return rightAliases;
   }
