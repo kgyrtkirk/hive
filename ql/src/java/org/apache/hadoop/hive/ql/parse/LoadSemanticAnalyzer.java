@@ -329,8 +329,9 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       stmtId = SessionState.get().getTxnMgr().getStmtIdAndIncrement();
     }
 
-    LoadTableDesc loadTableWork;
-    loadTableWork = new LoadTableDesc(new Path(fromURI),
+    // Note: this sets LoadFileType incorrectly for ACID; is that relevant for load?
+    //       See setLoadFileType and setIsAcidIow calls elsewhere for an example.
+    LoadTableDesc loadTableWork = new LoadTableDesc(new Path(fromURI),
       Utilities.getTableDesc(ts.tableHandle), partSpec,
       isOverWrite ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING, writeId);
     loadTableWork.setStmtId(stmtId);
@@ -343,7 +344,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Task<? extends Serializable> childTask = TaskFactory.get(
         new MoveWork(getInputs(), getOutputs(), loadTableWork, null, true,
-            isLocal), conf
+            isLocal)
     );
     if (rTask != null) {
       rTask.addDependentTask(childTask);
@@ -363,7 +364,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       basicStatsWork.setNoStatsAggregator(true);
       basicStatsWork.setClearAggregatorStats(true);
       StatsWork columnStatsWork = new StatsWork(ts.tableHandle, basicStatsWork, conf);
-      statTask = TaskFactory.get(columnStatsWork, conf);
+      statTask = TaskFactory.get(columnStatsWork);
     }
 
     if (statTask != null) {

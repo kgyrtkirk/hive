@@ -45,6 +45,7 @@ import java.util.regex.PatternSyntaxException;
 
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenRewriteStream;
 import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.tree.TreeVisitor;
@@ -6700,7 +6701,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     alterTblDesc.setOldName(tableName);
     alterTblDesc.setProps(mapProp);
     alterTblDesc.setDropIfExists(true);
-    this.rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
+    this.rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
   }
 
   private ImmutableBitSet getEnabledNotNullConstraints(Table tbl) throws HiveException{
@@ -6953,10 +6954,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ltd = new LoadTableDesc(queryTmpdir, table_desc, dpCtx, acidOp, isReplace, writeId);
         // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
         // deltas and base and leave them up to the cleaner to clean up
-        LoadFileType loadType = (!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
-            dest_tab.getTableName()) && !destTableIsTransactional)
+        boolean isInsertInto = qb.getParseInfo().isInsertIntoTable(
+            dest_tab.getDbName(), dest_tab.getTableName());
+        LoadFileType loadType = (!isInsertInto && !destTableIsTransactional)
             ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING;
         ltd.setLoadFileType(loadType);
+        ltd.setInsertOverwrite(!isInsertInto);
         ltd.setLbCtx(lbCtx);
         loadTableWork.add(ltd);
       } else {
@@ -7042,10 +7045,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ltd = new LoadTableDesc(queryTmpdir, table_desc, dest_part.getSpec(), acidOp, writeId);
       // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
       // deltas and base and leave them up to the cleaner to clean up
-      LoadFileType loadType = (!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
-          dest_tab.getTableName()) && !destTableIsTransactional) // // Both Full-acid and MM tables are excluded.
+      boolean isInsertInto = qb.getParseInfo().isInsertIntoTable(
+          dest_tab.getDbName(), dest_tab.getTableName());
+      LoadFileType loadType = (!isInsertInto && !destTableIsTransactional)
           ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING;
       ltd.setLoadFileType(loadType);
+      ltd.setInsertOverwrite(!isInsertInto);
       ltd.setLbCtx(lbCtx);
 
       loadTableWork.add(ltd);
@@ -7055,7 +7060,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
             .getMsg(dest_tab.getTableName() + "@" + dest_part.getName()));
       }
-      break;
+     break;
     }
     case QBMetaData.DEST_LOCAL_FILE:
       isLocal = true;
@@ -7562,7 +7567,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     PreInsertTableDesc preInsertTableDesc = new PreInsertTableDesc(table, overwrite);
     InsertTableDesc insertTableDesc = new InsertTableDesc(table, overwrite);
     this.rootTasks
-        .add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), preInsertTableDesc), conf));
+        .add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), preInsertTableDesc)));
     TaskFactory
         .getAndMakeChild(new DDLWork(getInputs(), getOutputs(), insertTableDesc), conf, tasks);
   }
@@ -12323,7 +12328,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (WriteEntity writeEntity : getOutputs()) {
       WriteEntity.Type type = writeEntity.getType();
 
-
       if (type == WriteEntity.Type.PARTITION || type == WriteEntity.Type.DUMMYPARTITION) {
         String conflictingArchive = null;
         try {
@@ -12697,8 +12701,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE);
-
     if (isTemporary) {
       if (partCols.size() > 0) {
         throw new SemanticException("Partition columns are not supported on temporary tables");
@@ -12720,11 +12722,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // Handle different types of CREATE TABLE command
+    // Note: each branch must call addDbAndTabToOutputs after finalizing table properties.
+
     switch (command_type) {
 
     case CREATE_TABLE: // REGULAR CREATE TABLE DDL
       tblProps = addDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
+      addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, tblProps);
 
       CreateTableDesc crtTblDesc = new CreateTableDesc(dbDotTab, isExt, isTemporary, cols, partCols,
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
@@ -12741,12 +12746,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // outputs is empty, which means this create table happens in the current
       // database.
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-          crtTblDesc), conf));
+            crtTblDesc)));
       break;
 
     case CTLT: // create table like <tbl_name>
       tblProps = addDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
+      addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, tblProps);
 
       if (isTemporary) {
         Table likeTable = getTable(likeTableName, false);
@@ -12760,7 +12766,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.getSerde(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
           likeTableName, isUserStorageFormat);
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-          crtTblLikeDesc), conf));
+            crtTblLikeDesc)));
       break;
 
     case CTAS: // create table as select
@@ -12825,6 +12831,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       tblProps = addDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
+      addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, tblProps);
       tableDesc = new CreateTableDesc(qualifiedTabName[0], dbDotTab, isExt, isTemporary, cols,
           partCols, bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
           rowFormatParams.fieldEscape, rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim,
@@ -12846,11 +12853,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return null;
   }
 
-  private void addDbAndTabToOutputs(String[] qualifiedTabName, TableType type) throws SemanticException {
+  /** Adds entities for create table/create view. */
+  private void addDbAndTabToOutputs(String[] qualifiedTabName, TableType type,
+      Map<String, String> tblProps) throws SemanticException {
     Database database  = getDatabase(qualifiedTabName[0]);
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
 
     Table t = new Table(qualifiedTabName[0], qualifiedTabName[1]);
+    t.setParameters(tblProps);
     t.setTableType(type);
     outputs.add(new WriteEntity(t, WriteEntity.WriteType.DDL_NO_LOCK));
   }
@@ -12952,7 +12962,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(),
           location, storageFormat.getSerde(), storageFormat.getStorageHandler(),
           storageFormat.getSerdeProps());
-      addDbAndTabToOutputs(qualTabName, TableType.MATERIALIZED_VIEW);
+      addDbAndTabToOutputs(qualTabName, TableType.MATERIALIZED_VIEW, tblProps);
       queryState.setCommandType(HiveOperation.CREATE_MATERIALIZED_VIEW);
     } else {
       createVwDesc = new CreateViewDesc(
@@ -12960,8 +12970,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           ifNotExists, orReplace, isAlterViewAs, storageFormat.getInputFormat(),
           storageFormat.getOutputFormat(), storageFormat.getSerde());
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-          createVwDesc), conf));
-      addDbAndTabToOutputs(qualTabName, TableType.VIRTUAL_VIEW);
+          createVwDesc)));
+      addDbAndTabToOutputs(qualTabName, TableType.VIRTUAL_VIEW, tblProps);
       queryState.setCommandType(HiveOperation.CREATEVIEW);
     }
     qb.setViewDesc(createVwDesc);
@@ -14074,7 +14084,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // Make sure the proper transaction manager that supports ACID is being used
   protected void checkAcidTxnManager(Table table) throws SemanticException {
-    if (SessionState.get() != null && !getTxnMgr().supportsAcid()) {
+    if (SessionState.get() != null && !getTxnMgr().supportsAcid()
+        && !HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST_REPL)) {
       throw new SemanticException(ErrorMsg.TXNMGR_NOT_ACID, table.getDbName(), table.getTableName());
     }
   }
@@ -14130,13 +14141,41 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.loadFileWork = loadFileWork;
   }
 
+  private String getQueryStringFromAst(ASTNode ast) {
+    StringBuilder sb = new StringBuilder();
+    int startIdx = ast.getTokenStartIndex();
+    int endIdx = ast.getTokenStopIndex();
+
+    boolean queryNeedsQuotes = true;
+    if (conf.getVar(ConfVars.HIVE_QUOTEDID_SUPPORT).equals("none")) {
+      queryNeedsQuotes = false;
+    }
+
+    for (int idx = startIdx; idx <= endIdx; idx++) {
+      Token curTok = ctx.getTokenRewriteStream().get(idx);
+      if (curTok.getType() == Token.EOF) {
+        continue;
+      } else if (queryNeedsQuotes && curTok.getType() == HiveLexer.Identifier) {
+        // The Tokens have no distinction between Identifiers and QuotedIdentifiers.
+        // Ugly solution is just to surround all identifiers with quotes.
+        sb.append('`');
+        // Re-escape any backtick (`) characters in the identifier.
+        sb.append(curTok.getText().replaceAll("`", "``"));
+        sb.append('`');
+      } else {
+        sb.append(curTok.getText());
+      }
+    }
+    return sb.toString();
+  }
+
   /**
    * Generate the query string for this query (with fully resolved table references).
    * @return The query string with resolved references. NULL if an error occurred.
    */
   private String getQueryStringForCache(ASTNode ast) {
     // Use the UnparseTranslator to resolve unqualified table names.
-    String queryString = ctx.getTokenRewriteStream().toString(ast.getTokenStartIndex(), ast.getTokenStopIndex());
+    String queryString = getQueryStringFromAst(ast);
 
     // Re-using the TokenRewriteStream map for views so we do not overwrite the current TokenRewriteStream
     String rewriteStreamName = "__qualified_query_string__";
@@ -14168,7 +14207,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void useCachedResult(QueryResultsCache.CacheEntry cacheEntry) {
     // Change query FetchTask to use new location specified in results cache.
-    FetchTask fetchTask = (FetchTask) TaskFactory.get(cacheEntry.getFetchWork(), conf);
+    FetchTask fetchTask = (FetchTask) TaskFactory.get(cacheEntry.getFetchWork());
     setFetchTask(fetchTask);
 
     queryState.setCommandType(cacheEntry.getQueryInfo().getHiveOperation());
@@ -14270,14 +14309,38 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     // Don't increment the reader count for explain queries.
     boolean isExplainQuery = (ctx.getExplainConfig() != null);
-    QueryResultsCache.CacheEntry cacheEntry =
-        QueryResultsCache.getInstance().lookup(lookupInfo, !isExplainQuery);
+    QueryResultsCache.CacheEntry cacheEntry = QueryResultsCache.getInstance().lookup(lookupInfo);
     if (cacheEntry != null) {
-      // Use the cache rather than full query execution.
-      useCachedResult(cacheEntry);
+      // Potentially wait on the cache entry if entry is in PENDING status
+      // Blocking here can potentially be dangerous - for example if the global compile lock
+      // is used this will block all subsequent queries that try to acquire the compile lock,
+      // so it should not be done unless parallel compilation is enabled.
+      // We might not want to block for explain queries as well.
+      if (cacheEntry.getStatus() == QueryResultsCache.CacheEntryStatus.PENDING) {
+        if (!isExplainQuery &&
+            conf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_WAIT_FOR_PENDING_RESULTS) &&
+            conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_PARALLEL_COMPILATION)) {
+          if (!cacheEntry.waitForValidStatus()) {
+            LOG.info("Waiting on pending cacheEntry, but it failed to become valid");
+            return false;
+          }
+        } else {
+          LOG.info("Not waiting for pending cacheEntry");
+          return false;
+        }
+      }
 
-      // At this point the caller should return from semantic analysis.
-      return true;
+      if (cacheEntry.getStatus() == QueryResultsCache.CacheEntryStatus.VALID) {
+        if (!isExplainQuery) {
+          if (!cacheEntry.addReader()) {
+            return false;
+          }
+        }
+        // Use the cache rather than full query execution.
+        // At this point the caller should return from semantic analysis.
+        useCachedResult(cacheEntry);
+        return true;
+      }
     }
     return false;
   }
