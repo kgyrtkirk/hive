@@ -80,29 +80,36 @@ public class TestBasicStats {
 
   @Test
   public void mergeWithEmpty() {
-    Partish p0 = new LocalPartishBuilder().numRows(10).rawDataSize(10).buildPartition();
-    Partish p1 = new LocalPartishBuilder().totalSize(10).buildPartition();
 
     HiveConf conf = new HiveConf();
-    BasicStats.Factory factory = new BasicStats.Factory(new BasicStats.DataSizeEstimator(conf), new BasicStats.RowNumEstimator(1));
+    int avgRowSize = 100;
+    int r0 = 13;
+    int r1 = 15;
+    int deserFactor = (int) conf.getFloatVar(ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
+    Partish p0 = new LocalPartishBuilder().numRows(r0).rawDataSize(avgRowSize * r0).buildPartition();
+    Partish p1 = new LocalPartishBuilder().totalSize(r1 * avgRowSize / deserFactor).buildPartition();
+
+    BasicStats.Factory factory =
+        new BasicStats.Factory(new BasicStats.DataSizeEstimator(conf), new BasicStats.RowNumEstimator(avgRowSize));
 
     BasicStats bs0 = factory.build(p0);
     BasicStats bs1 = factory.build(p1);
 
     BasicStats res = BasicStats.buildFrom(Lists.newArrayList(bs0, bs1));
 
-    assertEquals(20, res.getNumRows());
-    assertEquals(20, res.getDataSize());
+    assertEquals(r0 + r1, res.getNumRows());
+    assertEquals(avgRowSize * (r0 + r1), res.getDataSize());
   }
 
   @Test
   @Ignore("HIVE-18062 will fix this")
   public void mergedKeepsPartialStateEvenIfValuesAreSuccessfullyEstimated() {
-    Partish p0 = new LocalPartishBuilder().numRows(10).rawDataSize(10).buildPartition();
+    Partish p0 = new LocalPartishBuilder().numRows(10).rawDataSize(100).buildPartition();
     Partish p1 = new LocalPartishBuilder().totalSize(10).buildPartition();
 
     HiveConf conf = new HiveConf();
-    BasicStats.Factory factory = new BasicStats.Factory(new BasicStats.DataSizeEstimator(conf), new BasicStats.RowNumEstimator(1));
+    BasicStats.Factory factory =
+        new BasicStats.Factory(new BasicStats.DataSizeEstimator(conf), new BasicStats.RowNumEstimator(10));
 
     BasicStats bs0 = factory.build(p0);
     BasicStats bs1 = factory.build(p1);
