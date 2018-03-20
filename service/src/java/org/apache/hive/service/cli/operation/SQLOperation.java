@@ -21,7 +21,6 @@ package org.apache.hive.service.cli.operation;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.SQLException;
@@ -53,9 +52,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.QueryDisplay;
 import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -217,12 +214,9 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
       // Set hasResultSet true if the plan has ExplainTask
       // TODO explain should use a FetchTask for reading
-      for (Task<? extends Serializable> task: driver.getPlan().getRootTasks()) {
-        if (task.getClass() == ExplainTask.class) {
+      if (driver.isExplain()) {
           resultSchema = new TableSchema(mResultSchema);
           setHasResultSet(true);
-          break;
-        }
       }
     } catch (HiveSQLException e) {
       setState(OperationState.ERROR);
@@ -572,10 +566,14 @@ public class SQLOperation extends ExecuteStatementOperation {
   }
 
   private AbstractSerDe getSerDe() throws SQLException {
+    serde = null;
     if (serde != null) {
       return serde;
     }
     try {
+      mResultSchema = driver.getSchema();
+      resultSchema = new TableSchema(mResultSchema);
+
       List<FieldSchema> fieldSchemas = mResultSchema.getFieldSchemas();
       StringBuilder namesSb = new StringBuilder();
       StringBuilder typesSb = new StringBuilder();
