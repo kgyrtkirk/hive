@@ -73,7 +73,4 @@ public interface IDriver extends CommandProcessor {
 
   Context getContext();
 
-  @Deprecated
-  boolean isExplain();
-
 }

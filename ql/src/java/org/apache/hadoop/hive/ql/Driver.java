@@ -2654,14 +2654,4 @@ public class Driver implements IDriver {
     this.runtimeStatsSource = runtimeStatsSource;
   }
 
-  @Override
-  public boolean isExplain() {
-    for (Task<? extends Serializable> task : getPlan().getRootTasks()) {
-      if (task.getClass() == ExplainTask.class) {
-        return true;
-      }
-    }
-    return false;
-  }
-
 }
