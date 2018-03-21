@@ -181,7 +181,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // map join operator by default has no bucket cols and num of reduce sinks
     // reduced by 1
     mapJoinOp.setOpTraits(new OpTraits(null, -1, null, joinOp.getOpTraits().getNumReduceSinks()));
-    successor(mapJoinOp, joinOp, context);
+    preserveOperatorInfos(mapJoinOp, joinOp, context);
     // propagate this change till the next RS
     for (Operator<? extends OperatorDesc> childOp : mapJoinOp.getChildOperators()) {
       setAllChildrenTraits(childOp, mapJoinOp.getOpTraits());
@@ -383,7 +383,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     OpTraits opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(), numBuckets,
       joinOp.getOpTraits().getSortCols(), numReduceSinks);
     mergeJoinOp.setOpTraits(opTraits);
-    successor(mergeJoinOp, joinOp, context);
+    preserveOperatorInfos(mergeJoinOp, joinOp, context);
 
     for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
       int pos = parentOp.getChildOperators().indexOf(joinOp);
@@ -441,10 +441,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       }
     }
     mergeJoinOp.cloneOriginalParentsList(mergeJoinOp.getParentOperators());
-  }
-
-  private void successor(Operator newOp, Operator oldOp, OptimizeTezProcContext context) {
-    preserveOperatorInfos(newOp, oldOp, context);
   }
 
   private void setAllChildrenTraits(Operator<? extends OperatorDesc> currentOp, OpTraits opTraits) {
@@ -507,7 +503,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(),
         tezBucketJoinProcCtx.getNumBuckets(), null, joinOp.getOpTraits().getNumReduceSinks());
     mapJoinOp.setOpTraits(opTraits);
-    successor(mapJoinOp, joinOp, context);
+    preserveOperatorInfos(mapJoinOp, joinOp, context);
     setNumberOfBucketsOnChildren(mapJoinOp);
 
     // Once the conversion is done, we can set the partitioner to bucket cols on the small table
@@ -1193,7 +1189,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
             null,
             joinOp.getOpTraits().getNumReduceSinks());
         mapJoinOp.setOpTraits(opTraits);
-        successor(mapJoinOp, joinOp, context);
+        preserveOperatorInfos(mapJoinOp, joinOp, context);
         // propagate this change till the next RS
         for (Operator<? extends OperatorDesc> childOp : mapJoinOp.getChildOperators()) {
           setAllChildrenTraits(childOp, mapJoinOp.getOpTraits());
