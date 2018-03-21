@@ -58,6 +58,7 @@ public interface IDriver extends CommandProcessor {
 
   FetchTask getFetchTask();
 
+  // FIXME: ensure explain schemas
   Schema getSchema();
 
   boolean isFetchingTable();

@@ -87,8 +87,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 public class SQLOperation extends ExecuteStatementOperation {
   private IDriver driver = null;
   private CommandProcessorResponse response;
-  private TableSchema resultSchema = null;
-  private Schema mResultSchema = null;
   private AbstractSerDe serde = null;
   private boolean fetchStarted = false;
   private volatile MetricsScope currentSQLStateScope;
@@ -103,6 +101,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   private static Map<String, AtomicInteger> userQueries = new HashMap<String, AtomicInteger>();
   private static final String ACTIVE_SQL_USER = MetricsConstant.SQL_OPERATION_PREFIX + "active_user";
   private MetricsScope submittedQryScp;
+  private TableSchema resultSchema;
 
   public SQLOperation(HiveSession parentSession, String statement, Map<String, String> confOverlay,
       boolean runInBackground, long queryTimeout) {
@@ -197,7 +196,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         throw toSQLException("Error while compiling statement", response);
       }
 
-      mResultSchema = driver.getSchema();
+      Schema mResultSchema = driver.getSchema();
 
       // hasResultSet should be true only if the query has a FetchTask
       // "explain" is an exception for now
@@ -207,7 +206,6 @@ public class SQLOperation extends ExecuteStatementOperation {
           throw new HiveSQLException("Error compiling query: Schema and FieldSchema " +
               "should be set when query plan has a FetchTask");
         }
-        resultSchema = new TableSchema(mResultSchema);
         setHasResultSet(true);
       } else {
         setHasResultSet(false);
@@ -215,7 +213,6 @@ public class SQLOperation extends ExecuteStatementOperation {
       // Set hasResultSet true if the plan has ExplainTask
       // TODO explain should use a FetchTask for reading
       if (driver.isExplain()) {
-          resultSchema = new TableSchema(mResultSchema);
           setHasResultSet(true);
       }
     } catch (HiveSQLException e) {
@@ -441,8 +438,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   public TableSchema getResultSetSchema() throws HiveSQLException {
     // Since compilation is always a blocking RPC call, and schema is ready after compilation,
     // we can return when are in the RUNNING state.
-    assertState(new ArrayList<OperationState>(Arrays.asList(OperationState.RUNNING,
-        OperationState.FINISHED)));
+    assertState(Arrays.asList(OperationState.RUNNING, OperationState.FINISHED));
     if (resultSchema == null) {
       resultSchema = new TableSchema(driver.getSchema());
     }
@@ -467,7 +463,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       isBlobBased = true;
     }
     driver.setMaxRows((int) maxRows);
-    RowSet rowSet = RowSetFactory.create(resultSchema, getProtocolVersion(), isBlobBased);
+    RowSet rowSet = RowSetFactory.create(getResultSetSchema(), getProtocolVersion(), isBlobBased);
     try {
       /* if client is requesting fetch-from-start and its not the first time reading from this operation
        * then reset the fetch position to beginning
@@ -566,13 +562,13 @@ public class SQLOperation extends ExecuteStatementOperation {
   }
 
   private AbstractSerDe getSerDe() throws SQLException {
-    //    serde = null;
+    serde = null;
     if (serde != null) {
       return serde;
     }
     try {
-      //      mResultSchema = driver.getSchema();
-      //      resultSchema = new TableSchema(mResultSchema);
+      Schema mResultSchema = driver.getSchema();
+      TableSchema resultSchema = new TableSchema(mResultSchema);
 
       List<FieldSchema> fieldSchemas = mResultSchema.getFieldSchemas();
       StringBuilder namesSb = new StringBuilder();
