@@ -225,6 +225,13 @@ public class ReExecDriver implements IDriver {
     return coreDriver.getFetchTask();
   }
 
+  public boolean isExplain() {
+    if (explainReOptimization) {
+      return true;
+    }
+    return coreDriver.isExplain();
+  }
+
   @Override
   public Schema getSchema() {
     if(isExplain()) {
@@ -261,14 +268,6 @@ public class ReExecDriver implements IDriver {
   @VisibleForTesting
   public void setRuntimeStatsSource(RuntimeStatsSource statsSource) {
     coreDriver.setRuntimeStatsSource(statsSource);
-  }
-
-  @Override
-  public boolean isExplain() {
-    if (explainReOptimization) {
-      return true;
-    }
-    return coreDriver.isExplain();
   }
 
 }
