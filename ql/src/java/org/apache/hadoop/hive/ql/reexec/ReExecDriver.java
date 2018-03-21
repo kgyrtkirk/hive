@@ -225,16 +225,9 @@ public class ReExecDriver implements IDriver {
     return coreDriver.getFetchTask();
   }
 
-  public boolean isExplain() {
-    if (explainReOptimization) {
-      return true;
-    }
-    return coreDriver.isExplain();
-  }
-
   @Override
   public Schema getSchema() {
-    if(isExplain()) {
+    if(explainReOptimization) {
       return coreDriver.getExplainSchema();
     }
     return coreDriver.getSchema();

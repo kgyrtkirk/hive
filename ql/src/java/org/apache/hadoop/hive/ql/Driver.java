@@ -283,9 +283,6 @@ public class Driver implements IDriver {
 
   @Override
   public Schema getSchema() {
-    if (isExplain()) {
-      return getExplainSchema();
-    }
     return schema;
   }
 
@@ -2660,14 +2657,4 @@ public class Driver implements IDriver {
   public void setStatsSource(StatsSource runtimeStatsSource) {
     this.statsSource = runtimeStatsSource;
   }
-
-  public boolean isExplain() {
-    for (Task<? extends Serializable> task : getPlan().getRootTasks()) {
-      if (task.getClass() == ExplainTask.class) {
-        return true;
-      }
-    }
-    return false;
-  }
-
 }
