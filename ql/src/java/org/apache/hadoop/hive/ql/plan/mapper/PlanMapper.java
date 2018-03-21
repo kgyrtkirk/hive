@@ -68,6 +68,12 @@ public class PlanMapper {
     }
   }
 
+  /**
+   * States that the two objects are representing the same.
+   *
+   * For example if during an optimization Operator_A is replaced by a specialized Operator_A1;
+   * then those two can be linked.
+   */
   public void link(Object o1, Object o2) {
 
     Set<Object> keySet = Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());

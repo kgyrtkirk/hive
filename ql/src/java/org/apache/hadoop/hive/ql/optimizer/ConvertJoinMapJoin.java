@@ -547,6 +547,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
    */
   private void preserveOperatorInfos(Operator<?> newOp, Operator<?> oldOp, OptimizeTezProcContext context) {
     newOp.setStatistics(oldOp.getStatistics());
+    // linking these two operator declares that they are representing the same thing
+    // currently important because statistincs are actually gather for newOp; but the lookup is done using oldOp
     context.parseContext.getContext().getPlanMapper().link(oldOp, newOp);
   }
 
