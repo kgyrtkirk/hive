@@ -198,22 +198,10 @@ public class SQLOperation extends ExecuteStatementOperation {
 
       Schema mResultSchema = driver.getSchema();
 
-      // hasResultSet should be true only if the query has a FetchTask
-      // "explain" is an exception for now
-      if(driver.getPlan().getFetchTask() != null) {
-        //Schema has to be set
-        if (mResultSchema == null || !mResultSchema.isSetFieldSchemas()) {
-          throw new HiveSQLException("Error compiling query: Schema and FieldSchema " +
-              "should be set when query plan has a FetchTask");
-        }
+      if (mResultSchema != null && mResultSchema.isSetFieldSchemas()) {
         setHasResultSet(true);
       } else {
         setHasResultSet(false);
-      }
-      // Set hasResultSet true if the plan has ExplainTask
-      // TODO explain should use a FetchTask for reading
-      if (driver.isExplain()) {
-          setHasResultSet(true);
       }
     } catch (HiveSQLException e) {
       setState(OperationState.ERROR);

@@ -227,6 +227,9 @@ public class ReExecDriver implements IDriver {
 
   @Override
   public Schema getSchema() {
+    if(isExplain()) {
+      return coreDriver.getExplainSchema();
+    }
     return coreDriver.getSchema();
   }
 

@@ -283,7 +283,14 @@ public class Driver implements IDriver {
 
   @Override
   public Schema getSchema() {
+    if (isExplain()) {
+      return getExplainSchema();
+    }
     return schema;
+  }
+
+  public Schema getExplainSchema() {
+    return new Schema(ExplainTask.getResultSchema(), null);
   }
 
   @Override
