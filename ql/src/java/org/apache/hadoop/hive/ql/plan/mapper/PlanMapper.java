@@ -47,8 +47,15 @@ public class PlanMapper {
 
   /**
    * A set of objects which are representing the same thing.
-   * 
-   * 
+   *
+   * A Group may contain different kind of things which are connected by their purpose;
+   * For example currently a group may contain the following objects:
+   * <ul>
+   *   <li> Operator(s) - which are doing the actual work;
+   *   there might be more than one, since an optimization may replace an operator with a new one
+   *   <li> Signature - to enable inter-plan look up of the same data
+   *   <li> OperatorStats - collected runtime information
+   * <ul>
    */
   public class EquivGroup {
     Set<Object> members = new HashSet<>();
