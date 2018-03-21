@@ -566,13 +566,13 @@ public class SQLOperation extends ExecuteStatementOperation {
   }
 
   private AbstractSerDe getSerDe() throws SQLException {
-    serde = null;
+    //    serde = null;
     if (serde != null) {
       return serde;
     }
     try {
-      mResultSchema = driver.getSchema();
-      resultSchema = new TableSchema(mResultSchema);
+      //      mResultSchema = driver.getSchema();
+      //      resultSchema = new TableSchema(mResultSchema);
 
       List<FieldSchema> fieldSchemas = mResultSchema.getFieldSchemas();
       StringBuilder namesSb = new StringBuilder();
