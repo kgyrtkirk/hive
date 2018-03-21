@@ -18,6 +18,13 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
+import org.apache.hadoop.hive.ql.stats.OperatorStats;
+
 public class StatsSources {
 
   @Deprecated
@@ -25,6 +32,19 @@ public class StatsSources {
     if (currentStatsSource instanceof SessionStatsSource) {
       SessionStatsSource sessionStatsSource = (SessionStatsSource) currentStatsSource;
 
+      Iterator<EquivGroup> it = pm.iterateGroups();
+      while (it.hasNext()) {
+        EquivGroup e = it.next();
+        List<OperatorStats> stat = e.getAll(OperatorStats.class);
+        List<OpTreeSignature> sig = e.getAll(OpTreeSignature.class);
+
+        if (stat.size() > 1 || sig.size() > 1) {
+          throw new RuntimeException("unexpected?!");
+        }
+        if (stat.size() == 1 && sig.size() == 1) {
+          sessionStatsSource.put(sig.get(0), stat.get(0));
+        }
+      }
       return sessionStatsSource;
     } else {
       return new SimpleRuntimeStatsSource(pm);
