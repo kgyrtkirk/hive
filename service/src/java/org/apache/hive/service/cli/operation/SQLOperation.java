@@ -87,6 +87,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 public class SQLOperation extends ExecuteStatementOperation {
   private IDriver driver = null;
   private CommandProcessorResponse response;
+  private TableSchema resultSchema;
   private AbstractSerDe serde = null;
   private boolean fetchStarted = false;
   private volatile MetricsScope currentSQLStateScope;
@@ -101,7 +102,6 @@ public class SQLOperation extends ExecuteStatementOperation {
   private static Map<String, AtomicInteger> userQueries = new HashMap<String, AtomicInteger>();
   private static final String ACTIVE_SQL_USER = MetricsConstant.SQL_OPERATION_PREFIX + "active_user";
   private MetricsScope submittedQryScp;
-  private TableSchema resultSchema;
 
   public SQLOperation(HiveSession parentSession, String statement, Map<String, String> confOverlay,
       boolean runInBackground, long queryTimeout) {
@@ -562,7 +562,6 @@ public class SQLOperation extends ExecuteStatementOperation {
   }
 
   private AbstractSerDe getSerDe() throws SQLException {
-    serde = null;
     if (serde != null) {
       return serde;
     }
