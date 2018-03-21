@@ -2657,4 +2657,8 @@ public class Driver implements IDriver {
   public void setStatsSource(StatsSource runtimeStatsSource) {
     this.statsSource = runtimeStatsSource;
   }
+
+  public StatsSource getStatsSource() {
+    return statsSource;
+  }
 }
