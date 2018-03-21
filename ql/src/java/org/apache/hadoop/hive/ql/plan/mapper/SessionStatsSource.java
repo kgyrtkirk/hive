@@ -42,7 +42,6 @@ public class SessionStatsSource implements StatsSource {
     cache.put(sig, opStat);
   }
 
-
   @Override
   public Optional<OperatorStats> lookup(OpTreeSignature treeSig) {
     return Optional.ofNullable(cache.getIfPresent(treeSig));
