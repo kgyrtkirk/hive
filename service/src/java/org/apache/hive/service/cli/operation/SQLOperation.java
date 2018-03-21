@@ -555,7 +555,6 @@ public class SQLOperation extends ExecuteStatementOperation {
     }
     try {
       Schema mResultSchema = driver.getSchema();
-      TableSchema resultSchema = new TableSchema(mResultSchema);
 
       List<FieldSchema> fieldSchemas = mResultSchema.getFieldSchemas();
       StringBuilder namesSb = new StringBuilder();
