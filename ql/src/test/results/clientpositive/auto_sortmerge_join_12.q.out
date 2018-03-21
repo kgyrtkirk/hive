@@ -274,16 +274,16 @@ STAGE PLANS:
         $hdt$_1:b 
           TableScan
             alias: b
-            Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -293,16 +293,16 @@ STAGE PLANS:
         $hdt$_2:a 
           TableScan
             alias: a
-            Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 1140 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 1140 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 1140 Basic stats: PARTIAL Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -315,16 +315,16 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: c
-            Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -334,7 +334,7 @@ STAGE PLANS:
                     1 _col0 (type: string)
                     2 _col0 (type: string)
                   Position of Big Table: 0
-                  Statistics: Num rows: 528 Data size: 255728 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 528 Data size: 255728 Basic stats: PARTIAL Column stats: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
@@ -620,10 +620,10 @@ STAGE PLANS:
         $hdt$_3:d 
           TableScan
             alias: d
-            Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Select Operator
-              Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 
@@ -642,12 +642,12 @@ STAGE PLANS:
                 0 
                 1 
               Position of Big Table: 0
-              Statistics: Num rows: 1584 Data size: 1666368 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1584 Data size: 1666368 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
@@ -753,7 +753,7 @@ STAGE PLANS:
             Reduce Output Operator
               null sort order: 
               sort order: 
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
               tag: -1
               value expressions: _col0 (type: bigint)
               auto parallelism: false
@@ -790,13 +790,13 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -835,10 +835,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: d
-            Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Select Operator
-              Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -846,12 +846,12 @@ STAGE PLANS:
                   0 
                   1 
                 Position of Big Table: 1
-                Statistics: Num rows: 1584 Data size: 1666368 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1584 Data size: 1666368 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
@@ -957,19 +957,19 @@ STAGE PLANS:
             Reduce Output Operator
               null sort order: 
               sort order: 
-              Statistics: Num rows: 528 Data size: 255728 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 528 Data size: 255728 Basic stats: PARTIAL Column stats: NONE
               tag: 0
               auto parallelism: false
           TableScan
             alias: d
-            Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Select Operator
-              Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
               Reduce Output Operator
                 null sort order: 
                 sort order: 
-                Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
                 tag: 1
                 auto parallelism: false
       Path -> Alias:
@@ -1057,12 +1057,12 @@ STAGE PLANS:
           keys:
             0 
             1 
-          Statistics: Num rows: 1584 Data size: 1666368 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1584 Data size: 1666368 Basic stats: PARTIAL Column stats: NONE
           Group By Operator
             aggregations: count()
             mode: hash
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -1241,16 +1241,16 @@ STAGE PLANS:
         $hdt$_0:c 
           TableScan
             alias: c
-            Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -1260,16 +1260,16 @@ STAGE PLANS:
         $hdt$_2:a 
           TableScan
             alias: a
-            Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 1140 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 1140 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 1140 Basic stats: PARTIAL Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -1282,16 +1282,16 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -1301,7 +1301,7 @@ STAGE PLANS:
                     1 _col0 (type: string)
                     2 _col0 (type: string)
                   Position of Big Table: 1
-                  Statistics: Num rows: 528 Data size: 255728 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 528 Data size: 255728 Basic stats: PARTIAL Column stats: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
@@ -1683,16 +1683,16 @@ STAGE PLANS:
         $hdt$_0:c 
           TableScan
             alias: c
-            Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -1702,16 +1702,16 @@ STAGE PLANS:
         $hdt$_1:b 
           TableScan
             alias: b
-            Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -1724,16 +1724,16 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 1140 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 1140 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 1140 Basic stats: PARTIAL Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -1743,7 +1743,7 @@ STAGE PLANS:
                     1 _col0 (type: string)
                     2 _col0 (type: string)
                   Position of Big Table: 2
-                  Statistics: Num rows: 528 Data size: 255728 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 528 Data size: 255728 Basic stats: PARTIAL Column stats: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
@@ -1971,62 +1971,62 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: c
-            Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
                   tag: 0
                   auto parallelism: false
           TableScan
             alias: b
-            Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 3 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 1700 Basic stats: PARTIAL Column stats: NONE
                   tag: 1
                   auto parallelism: false
           TableScan
             alias: a
-            Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 1140 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 1140 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 1140 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 1140 Basic stats: PARTIAL Column stats: NONE
                   tag: 2
                   auto parallelism: false
       Path -> Alias:
@@ -2243,7 +2243,7 @@ STAGE PLANS:
             0 _col0 (type: string)
             1 _col0 (type: string)
             2 _col0 (type: string)
-          Statistics: Num rows: 528 Data size: 255728 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 528 Data size: 255728 Basic stats: PARTIAL Column stats: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
