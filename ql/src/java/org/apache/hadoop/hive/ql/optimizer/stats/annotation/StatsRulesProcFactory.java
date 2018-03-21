@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -2495,12 +2496,16 @@ public class StatsRulesProcFactory {
 
 
   private static Statistics applyRuntimeStats(Context context, Statistics stats, Operator<?> op) {
+    if (!((HiveConf) context.getConf()).getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED)) {
+      return stats;
+    }
+
     PlanMapper pm = context.getPlanMapper();
     OpTreeSignature treeSig = pm.getSignatureOf(op);
     pm.link(op, treeSig);
 
     StatsSource statsSource = context.getStatsSource();
-    if (statsSource.canProvideStatsFor(op.getClass())) {
+    if (!statsSource.canProvideStatsFor(op.getClass())) {
       return stats;
     }
 
