@@ -77,7 +77,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.RuntimeStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
@@ -2499,12 +2499,12 @@ public class StatsRulesProcFactory {
     OpTreeSignature treeSig = pm.getSignatureOf(op);
     pm.link(op, treeSig);
 
-    if (!context.getRuntimeStatsSource().isPresent()) {
+    StatsSource statsSource = context.getStatsSource();
+    if (statsSource.canProvideStatsFor(op.getClass())) {
       return stats;
     }
-    RuntimeStatsSource rss = context.getRuntimeStatsSource().get();
 
-    Optional<OperatorStats> os = rss.lookup(treeSig);
+    Optional<OperatorStats> os = statsSource.lookup(treeSig);
 
     if (!os.isPresent()) {
       return stats;

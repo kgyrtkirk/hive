@@ -129,7 +129,7 @@ public class TestCounterMapping {
     FilterOperator filter1 = filters1.get(0);
 
     driver = createDriver();
-    ((ReExecDriver) driver).setRuntimeStatsSource(new SimpleRuntimeStatsSource(pm1));
+    ((ReExecDriver) driver).setStatsSource(new SimpleRuntimeStatsSource(pm1));
 
     PlanMapper pm2 = getMapperForQuery(driver, query);
 

@@ -111,7 +111,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.RuntimeStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -194,7 +194,7 @@ public class Driver implements IDriver {
   // Transaction manager used for the query. This will be set at compile time based on
   // either initTxnMgr or from the SessionState, in that order.
   private HiveTxnManager queryTxnMgr;
-  private RuntimeStatsSource runtimeStatsSource;
+  private StatsSource statsSource;
 
   private CacheUsage cacheUsage;
   private CacheEntry usedCacheEntry;
@@ -577,7 +577,7 @@ public class Driver implements IDriver {
         setTriggerContext(queryId);
       }
 
-      ctx.setRuntimeStatsSource(runtimeStatsSource);
+      ctx.setStatsSource(statsSource);
       ctx.setCmd(command);
       ctx.setHDFSCleanup(true);
 
@@ -2657,8 +2657,8 @@ public class Driver implements IDriver {
     return hookRunner;
   }
 
-  public void setRuntimeStatsSource(RuntimeStatsSource runtimeStatsSource) {
-    this.runtimeStatsSource = runtimeStatsSource;
+  public void setStatsSource(StatsSource runtimeStatsSource) {
+    this.statsSource = runtimeStatsSource;
   }
 
   public boolean isExplain() {

@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.RuntimeStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -266,8 +266,8 @@ public class ReExecDriver implements IDriver {
   }
 
   @VisibleForTesting
-  public void setRuntimeStatsSource(RuntimeStatsSource statsSource) {
-    coreDriver.setRuntimeStatsSource(statsSource);
+  public void setStatsSource(StatsSource statsSource) {
+    coreDriver.setStatsSource(statsSource);
   }
 
 }
