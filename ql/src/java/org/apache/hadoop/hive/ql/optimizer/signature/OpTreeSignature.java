@@ -28,13 +28,11 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  * Operator tree signature.
  */
 public class OpTreeSignature {
-  private Operator<?> op;
   private int hashCode;
   private OpSignature sig;
   private ArrayList<OpTreeSignature> parentSig;
 
   OpTreeSignature(Operator<?> op, OpTreeSignatureFactory osf) {
-    this.op = op;
     sig = OpSignature.of(op);
     parentSig = new ArrayList<>();
     for (Operator<? extends OperatorDesc> parentOp : op.getParentOperators()) {

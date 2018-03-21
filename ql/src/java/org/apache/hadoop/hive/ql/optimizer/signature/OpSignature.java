@@ -36,14 +36,10 @@ public class OpSignature {
    * Holds the signature of the operator; the keys are are the methods name marked by {@link Signature}.
    */
   private Map<String, Object> sigMap;
-  // FIXME: this is currently retained...
-  // but later the signature should be able to serve the same comparision granulaty level as op.logicalEquals right now
-  private Operator<? extends OperatorDesc> op;
 
   private OpSignature(Operator<? extends OperatorDesc> op) {
-    this.op = op;
     sigMap = new HashMap<>();
-    // FIXME: consider to operator info as well..not just conf?
+    // FIXME: consider other operator info as well..not just conf?
     SignatureUtils.write(sigMap, op.getConf());
   }
 

@@ -518,7 +518,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       for (Operator<?> op : mapJoinOp.getParentOperators()) {
         if (!(op instanceof ReduceSinkOperator)) {
           continue;
-        };
+        }
 
         ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
         ArrayList<ExprNodeDesc> newPartitionCols = new ArrayList<>();

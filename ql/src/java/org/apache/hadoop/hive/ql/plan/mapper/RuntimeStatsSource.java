@@ -24,6 +24,6 @@ import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 public interface RuntimeStatsSource extends StatsSource {
-  public Optional<OperatorStats> lookup(OpTreeSignature treeSig);
+  Optional<OperatorStats> lookup(OpTreeSignature treeSig);
 
 }
