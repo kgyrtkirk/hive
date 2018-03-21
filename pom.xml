@@ -1304,6 +1304,7 @@
 	<configuration>
 	  <excludes>
 	    <exclude>binary-package-licenses/**</exclude>
+	    <exclude>standalone-metastore/binary-package-licenses/**</exclude>
 	    <exclude>data/**</exclude>
 	    <exclude>conf/**</exclude>
 	    <exclude>checkstyle/**</exclude>
