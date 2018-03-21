@@ -95,16 +95,16 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 112 Data size: 55000 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 112 Data size: 55000 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 112 Data size: 55000 Basic stats: PARTIAL Column stats: NONE
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -353,16 +353,16 @@ STAGE PLANS:
         $hdt$_1:b 
           TableScan
             alias: b
-            Statistics: Num rows: 4 Data size: 2260 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 2260 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 4 Data size: 2260 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 2260 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 4 Data size: 2260 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 2260 Basic stats: PARTIAL Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -374,16 +374,16 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 112 Data size: 55000 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 112 Data size: 55000 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 112 Data size: 55000 Basic stats: PARTIAL Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -690,16 +690,16 @@ STAGE PLANS:
         $hdt$_0:a 
           TableScan
             alias: a
-            Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 112 Data size: 55000 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 112 Data size: 55000 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 112 Data size: 55000 Basic stats: PARTIAL Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -711,16 +711,16 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 4 Data size: 2260 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 2260 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 4 Data size: 2260 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 2260 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 4 Data size: 2260 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 2260 Basic stats: PARTIAL Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -924,16 +924,16 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 112 Data size: 55000 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 112 Data size: 55000 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 112 Data size: 55000 Basic stats: PARTIAL Column stats: NONE
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -1098,6 +1098,9 @@ PREHOOK: Input: default@bucket_big@ds=2008-04-09
 PREHOOK: Input: default@bucket_small
 PREHOOK: Input: default@bucket_small@ds=2008-04-08
 #### A masked pattern was here ####
+Hive Runtime Error: Map local work exhausted memory
+FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
+ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 POSTHOOK: query: select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket_big
