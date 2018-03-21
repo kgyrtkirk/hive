@@ -42,10 +42,15 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public class PlanMapper {
 
-  Set<LinkGroup> groups = new HashSet<>();
-  private Map<Object, LinkGroup> objectMap = new HashMap<>();
+  Set<EquivGroup> groups = new HashSet<>();
+  private Map<Object, EquivGroup> objectMap = new HashMap<>();
 
-  public class LinkGroup {
+  /**
+   * A set of objects which are representing the same thing.
+   * 
+   * 
+   */
+  public class EquivGroup {
     Set<Object> members = new HashSet<>();
 
     public void add(Object o) {
@@ -82,10 +87,10 @@ public class PlanMapper {
     keySet.add(getKeyFor(o1));
     keySet.add(getKeyFor(o2));
 
-    Set<LinkGroup> mGroups = Collections.newSetFromMap(new IdentityHashMap<LinkGroup, Boolean>());
+    Set<EquivGroup> mGroups = Collections.newSetFromMap(new IdentityHashMap<EquivGroup, Boolean>());
 
     for (Object object : keySet) {
-      LinkGroup group = objectMap.get(object);
+      EquivGroup group = objectMap.get(object);
       if (group != null) {
         mGroups.add(group);
       }
@@ -93,7 +98,7 @@ public class PlanMapper {
     if (mGroups.size() > 1) {
       throw new RuntimeException("equivalence mapping violation");
     }
-    LinkGroup targetGroup = mGroups.isEmpty() ? new LinkGroup() : mGroups.iterator().next();
+    EquivGroup targetGroup = mGroups.isEmpty() ? new EquivGroup() : mGroups.iterator().next();
     groups.add(targetGroup);
     targetGroup.add(o1);
     targetGroup.add(o2);
@@ -112,20 +117,20 @@ public class PlanMapper {
 
   public <T> List<T> getAll(Class<T> clazz) {
     List<T> ret = new ArrayList<>();
-    for (LinkGroup g : groups) {
+    for (EquivGroup g : groups) {
       ret.addAll(g.getAll(clazz));
     }
     return ret;
   }
 
   public void runMapper(GroupTransformer mapper) {
-    for (LinkGroup equivGroup : groups) {
+    for (EquivGroup equivGroup : groups) {
       mapper.map(equivGroup);
     }
   }
 
   public <T> List<T> lookupAll(Class<T> clazz, Object key) {
-    LinkGroup group = objectMap.get(key);
+    EquivGroup group = objectMap.get(key);
     if (group == null) {
       throw new NoSuchElementException(Objects.toString(key));
     }
@@ -142,7 +147,7 @@ public class PlanMapper {
   }
 
   @VisibleForTesting
-  public Iterator<LinkGroup> iterateGroups() {
+  public Iterator<EquivGroup> iterateGroups() {
     return groups.iterator();
 
   }
