@@ -182,6 +182,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // reduced by 1
     mapJoinOp.setOpTraits(new OpTraits(null, -1, null, joinOp.getOpTraits().getNumReduceSinks()));
     mapJoinOp.setStatistics(joinOp.getStatistics());
+    context.parseContext.getContext().getPlanMapper().link(joinOp, mapJoinOp);
     // propagate this change till the next RS
     for (Operator<? extends OperatorDesc> childOp : mapJoinOp.getChildOperators()) {
       setAllChildrenTraits(childOp, mapJoinOp.getOpTraits());
