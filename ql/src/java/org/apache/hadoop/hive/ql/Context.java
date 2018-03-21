@@ -1056,7 +1056,7 @@ public class Context {
       return statsSource;
     } else {
       // hierarchical; add def stats also here
-      return new EmptyStatsSource();
+      return EmptyStatsSource.INSTANCE;
     }
   }
 

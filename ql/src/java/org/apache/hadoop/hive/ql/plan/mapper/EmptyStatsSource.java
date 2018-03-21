@@ -25,6 +25,11 @@ import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 public class EmptyStatsSource implements StatsSource {
 
+  public static StatsSource INSTANCE = new EmptyStatsSource();
+
+  private EmptyStatsSource() {
+  }
+
   @Override
   public boolean canProvideStatsFor(Class<?> class1) {
     return false;
