@@ -260,4 +260,12 @@ public class ReExecDriver implements IDriver {
     coreDriver.setRuntimeStatsSource(statsSource);
   }
 
+  @Override
+  public boolean isExplain() {
+    if (explainReOptimization) {
+      return true;
+    }
+    return coreDriver.isExplain();
+  }
+
 }
