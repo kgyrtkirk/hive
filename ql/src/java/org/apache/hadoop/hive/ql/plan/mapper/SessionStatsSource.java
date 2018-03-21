@@ -20,13 +20,40 @@ package org.apache.hadoop.hive.ql.plan.mapper;
 
 import java.util.Optional;
 
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
-public interface StatsSource {
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
-  boolean canProvideStatsFor(Class<?> clazz);
+public class SessionStatsSource implements StatsSource {
 
-  Optional<OperatorStats> lookup(OpTreeSignature treeSig);
+
+  private final Cache<OpTreeSignature, OperatorStats> cache;
+
+  public SessionStatsSource() {
+    // FIXME: add conf
+    int size = 1000;
+    cache = CacheBuilder.newBuilder().maximumSize(size).build();
+  }
+
+  public void put(OpTreeSignature sig, OperatorStats opStat) {
+    cache.put(sig, opStat);
+  }
+
+
+  @Override
+  public Optional<OperatorStats> lookup(OpTreeSignature treeSig) {
+    return Optional.ofNullable(cache.getIfPresent(treeSig));
+  }
+
+  @Override
+  public boolean canProvideStatsFor(Class<?> clazz) {
+    if (Operator.class.isAssignableFrom(clazz)) {
+      return true;
+    }
+    return false;
+  }
 
 }
