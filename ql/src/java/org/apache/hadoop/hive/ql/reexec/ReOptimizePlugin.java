@@ -77,7 +77,6 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
     statsReaderHook = new OperatorStatsReaderHook();
     coreDriver.getHookRunner().addOnFailureHook(statsReaderHook);
     coreDriver.getHookRunner().addPostHook(statsReaderHook);
-    //    statsReaderHook.setCollectOnSuccess(true);
     statsReaderHook.setCollectOnSuccess(
         driver.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS));
   }
