@@ -37,10 +37,8 @@ public class SessionStatsPlugin implements IReExecutionPlugin {
     public void run(HookContext hookContext) throws Exception {
       PrivateHookContext h = (PrivateHookContext) hookContext;
       PlanMapper pm = h.getContext().getPlanMapper();
-
       StatsSources.loadFromPlanMapper(statsSource, pm);
     }
-
   }
 
   @Override
@@ -54,7 +52,7 @@ public class SessionStatsPlugin implements IReExecutionPlugin {
     driver.setStatsSource(statsSource);
     ExecuteWithHookContext hook = new A();
     driver.getHookRunner().addPostHook(hook);
-    driver.getHookRunner().addPostHook(hook);
+    driver.getHookRunner().addOnFailureHook(hook);
   }
 
   @Override
