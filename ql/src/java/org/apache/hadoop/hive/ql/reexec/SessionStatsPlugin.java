@@ -18,10 +18,8 @@
 
 package org.apache.hadoop.hive.ql.reexec;
 
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
-import org.apache.hadoop.hive.ql.hooks.HookContext;
-import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.SessionStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
@@ -30,16 +28,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 public class SessionStatsPlugin implements IReExecutionPlugin {
 
   private SessionStatsSource statsSource;
-
-  private class A implements ExecuteWithHookContext {
-
-    @Override
-    public void run(HookContext hookContext) throws Exception {
-      PrivateHookContext h = (PrivateHookContext) hookContext;
-      PlanMapper pm = h.getContext().getPlanMapper();
-      StatsSources.loadFromPlanMapper(statsSource, pm);
-    }
-  }
 
   @Override
   public void initialize(Driver driver) {
@@ -50,13 +38,20 @@ public class SessionStatsPlugin implements IReExecutionPlugin {
       ss.setSessionStatsSource(statsSource);
     }
     driver.setStatsSource(statsSource);
-    ExecuteWithHookContext hook = new A();
-    driver.getHookRunner().addPostHook(hook);
-    driver.getHookRunner().addOnFailureHook(hook);
+    if (!driver.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS)) {
+      throw new RuntimeException(
+          "To use session level statistics enable: "
+              + ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS.varname);
+    }
   }
 
   @Override
   public void beforeExecute(int executionIndex, boolean explainReOptimization) {
+  }
+
+  @Override
+  public void afterExecute(PlanMapper planMapper) {
+    StatsSources.loadFromPlanMapper(statsSource, planMapper);
   }
 
   @Override

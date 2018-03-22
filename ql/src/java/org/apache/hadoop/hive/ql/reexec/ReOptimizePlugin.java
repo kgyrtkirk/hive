@@ -134,4 +134,8 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
     }
   }
 
+  @Override
+  public void afterExecute(PlanMapper planMapper) {
+  }
+
 }

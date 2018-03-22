@@ -156,6 +156,9 @@ public class ReExecDriver implements IDriver {
       LOG.info("Execution #{} of query", executionIndex);
       CommandProcessorResponse cpr = coreDriver.run();
 
+      PlanMapper oldPlanMapper = coreDriver.getPlanMapper();
+      afterExecute(oldPlanMapper);
+
       boolean shouldReExecute = explainReOptimization && executionIndex==1;
       shouldReExecute |= cpr.getResponseCode() != 0 && shouldReExecute();
 
@@ -164,7 +167,6 @@ public class ReExecDriver implements IDriver {
       }
       LOG.info("Preparing to re-execute query");
       prepareToReExecute();
-      PlanMapper oldPlanMapper = coreDriver.getPlanMapper();
       CommandProcessorResponse compile_resp = coreDriver.compileAndRespond(currentQuery);
       if (compile_resp.failed()) {
         // FIXME: somehow place pointers that re-execution compilation have failed; the query have been successfully compiled before?
@@ -176,6 +178,12 @@ public class ReExecDriver implements IDriver {
         // FIXME: retain old error; or create a new one?
         return cpr;
       }
+    }
+  }
+
+  private void afterExecute(PlanMapper planMapper) {
+    for (IReExecutionPlugin p : plugins) {
+      p.afterExecute(planMapper);
     }
   }
 
