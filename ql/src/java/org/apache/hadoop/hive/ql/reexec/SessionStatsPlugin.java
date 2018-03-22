@@ -29,12 +29,12 @@ public class SessionStatsPlugin implements IReExecutionPlugin {
   @Override
   public void initialize(Driver driver) {
     SessionState ss = SessionState.get();
-    StatsSource sss = ss.getSessionStatsSource();
-    if (sss == null) {
-      sss = new SessionStatsSource();
-      ss.setSessionStatsSource(sss);
+    StatsSource statsSource = ss.getSessionStatsSource();
+    if (statsSource == null) {
+      statsSource = new SessionStatsSource();
+      ss.setSessionStatsSource(statsSource);
     }
-    driver.setStatsSource(sss);
+    driver.setStatsSource(statsSource);
   }
 
   @Override
