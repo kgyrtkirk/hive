@@ -30,24 +30,28 @@ public class StatsSources {
   @Deprecated
   public static StatsSource extracted(StatsSource currentStatsSource, PlanMapper pm) {
     if (currentStatsSource instanceof SessionStatsSource) {
+
       SessionStatsSource sessionStatsSource = (SessionStatsSource) currentStatsSource;
-
-      Iterator<EquivGroup> it = pm.iterateGroups();
-      while (it.hasNext()) {
-        EquivGroup e = it.next();
-        List<OperatorStats> stat = e.getAll(OperatorStats.class);
-        List<OpTreeSignature> sig = e.getAll(OpTreeSignature.class);
-
-        if (stat.size() > 1 || sig.size() > 1) {
-          throw new RuntimeException("unexpected?!");
-        }
-        if (stat.size() == 1 && sig.size() == 1) {
-          sessionStatsSource.put(sig.get(0), stat.get(0));
-        }
-      }
+      loadFromPlanMapper(sessionStatsSource, pm);
       return sessionStatsSource;
     } else {
       return new SimpleRuntimeStatsSource(pm);
+    }
+  }
+
+  public static void loadFromPlanMapper(SessionStatsSource sessionStatsSource, PlanMapper pm) {
+    Iterator<EquivGroup> it = pm.iterateGroups();
+    while (it.hasNext()) {
+      EquivGroup e = it.next();
+      List<OperatorStats> stat = e.getAll(OperatorStats.class);
+      List<OpTreeSignature> sig = e.getAll(OpTreeSignature.class);
+
+      if (stat.size() > 1 || sig.size() > 1) {
+        throw new RuntimeException("unexpected?!");
+      }
+      if (stat.size() == 1 && sig.size() == 1) {
+        sessionStatsSource.put(sig.get(0), stat.get(0));
+      }
     }
   }
 

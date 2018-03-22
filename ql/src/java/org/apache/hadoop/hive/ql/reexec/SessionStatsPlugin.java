@@ -19,22 +19,42 @@
 package org.apache.hadoop.hive.ql.reexec;
 
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
+import org.apache.hadoop.hive.ql.hooks.HookContext;
+import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.SessionStatsSource;
-import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class SessionStatsPlugin implements IReExecutionPlugin {
 
+  private SessionStatsSource statsSource;
+
+  private class A implements ExecuteWithHookContext {
+
+    @Override
+    public void run(HookContext hookContext) throws Exception {
+      PrivateHookContext h = (PrivateHookContext) hookContext;
+      PlanMapper pm = h.getContext().getPlanMapper();
+
+      StatsSources.loadFromPlanMapper(statsSource, pm);
+    }
+
+  }
+
   @Override
   public void initialize(Driver driver) {
     SessionState ss = SessionState.get();
-    StatsSource statsSource = ss.getSessionStatsSource();
+    statsSource = (SessionStatsSource) ss.getSessionStatsSource();
     if (statsSource == null) {
       statsSource = new SessionStatsSource();
       ss.setSessionStatsSource(statsSource);
     }
     driver.setStatsSource(statsSource);
+    ExecuteWithHookContext hook = new A();
+    driver.getHookRunner().addPostHook(hook);
+    driver.getHookRunner().addPostHook(hook);
   }
 
   @Override
