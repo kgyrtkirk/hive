@@ -196,13 +196,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         throw toSQLException("Error while compiling statement", response);
       }
 
-      Schema mResultSchema = driver.getSchema();
-
-      if (mResultSchema != null && mResultSchema.isSetFieldSchemas()) {
-        setHasResultSet(true);
-      } else {
-        setHasResultSet(false);
-      }
+      setHasResultSet(driver.hasResultSet());
     } catch (HiveSQLException e) {
       setState(OperationState.ERROR);
       throw e;

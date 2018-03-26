@@ -2657,4 +2657,20 @@ public class Driver implements IDriver {
   public void setStatsSource(StatsSource runtimeStatsSource) {
     this.statsSource = runtimeStatsSource;
   }
+
+  @Override
+  public boolean hasResultSet() {
+
+    // TODO explain should use a FetchTask for reading
+    for (Task<? extends Serializable> task : plan.getRootTasks()) {
+      if (task.getClass() == ExplainTask.class) {
+        return true;
+      }
+    }
+    if (plan.getFetchTask() != null && schema != null && schema.isSetFieldSchemas()) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
