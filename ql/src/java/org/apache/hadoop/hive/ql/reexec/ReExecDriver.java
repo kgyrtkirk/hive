@@ -271,4 +271,9 @@ public class ReExecDriver implements IDriver {
     coreDriver.setStatsSource(statsSource);
   }
 
+  @Override
+  public boolean hasResultSet() {
+    return explainReOptimization || coreDriver.hasResultSet();
+  }
+
 }

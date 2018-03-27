@@ -2999,6 +2999,11 @@ public class HiveConf extends Configuration {
         "internal use only, used to override the hive.vectorized.execution.enabled setting and\n" +
         "turn off vectorization.  The default is false, of course",
         true),
+    HIVE_TEST_VECTORIZATION_SUPPRESS_EXPLAIN_EXECUTION_MODE(
+        "hive.test.vectorization.suppress.explain.execution.mode", false,
+            "internal use only, used to suppress \"Execution mode: vectorized\" EXPLAIN display.\n" +
+            "The default is false, of course",
+            true),
 
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, "This property has been extended to control "
         + "whether to check, convert, and normalize partition value to conform to its column type in "
@@ -3201,7 +3206,7 @@ public class HiveConf extends Configuration {
         "The meaning of this parameter is the inverse of the number of time ticks (cache\n" +
         " operations, currently) that cause the combined recency-frequency of a block in cache\n" +
         " to be halved."),
-    LLAP_CACHE_ALLOW_SYNTHETIC_FILEID("hive.llap.cache.allow.synthetic.fileid", false,
+    LLAP_CACHE_ALLOW_SYNTHETIC_FILEID("hive.llap.cache.allow.synthetic.fileid", true,
         "Whether LLAP cache should use synthetic file ID if real one is not available. Systems\n" +
         "like HDFS, Isilon, etc. provide a unique file/inode ID. On other FSes (e.g. local\n" +
         "FS), the cache would not work by default because LLAP is unable to uniquely track the\n" +
