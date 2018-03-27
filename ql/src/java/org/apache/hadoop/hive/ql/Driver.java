@@ -2701,6 +2701,10 @@ public class Driver implements IDriver {
   public StatsSource getStatsSource() {
     return statsSource;
   }
+
+  @Override
+  public boolean hasResultSet() {
+
     // TODO explain should use a FetchTask for reading
     for (Task<? extends Serializable> task : plan.getRootTasks()) {
       if (task.getClass() == ExplainTask.class) {
