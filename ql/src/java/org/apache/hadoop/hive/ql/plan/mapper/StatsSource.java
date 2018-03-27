@@ -29,6 +29,4 @@ public interface StatsSource {
 
   Optional<OperatorStats> lookup(OpTreeSignature treeSig);
 
-  Optional<OperatorStats> lookup(OpTreeSignature treeSig);
-
 }
