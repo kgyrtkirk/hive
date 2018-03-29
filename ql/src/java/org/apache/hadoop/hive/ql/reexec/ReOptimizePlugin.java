@@ -62,10 +62,10 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
               if (message.contains("Vertex failed,") && isOOM) {
                 retryPossible = true;
               }
-              System.out.println(exception);
             }
           }
         }
+        LOG.info("ReOptimization: retryPossible: {}", retryPossible);
       }
     }
   }
