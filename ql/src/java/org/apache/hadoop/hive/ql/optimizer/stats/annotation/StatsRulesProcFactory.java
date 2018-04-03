@@ -344,9 +344,10 @@ public class StatsRulesProcFactory {
 
           // evaluate children
           long evaluatedRowCount = currNumRows;
+          Set<String> referencedColumns = new HashSet<>();
           for (ExprNodeDesc child : genFunc.getChildren()) {
             evaluatedRowCount = evaluateChildExpr(aspCtx.getAndExprStats(), child,
-                aspCtx, neededCols, op, evaluatedRowCount);
+                aspCtx, neededCols, op, evaluatedRowCount, referencedColumns);
           }
           newNumRows = evaluatedRowCount;
           if (satisfyPrecondition(aspCtx.getAndExprStats())) {
@@ -357,9 +358,8 @@ public class StatsRulesProcFactory {
         } else if (udf instanceof GenericUDFOPOr) {
           // for OR condition independently compute and update stats.
           for (ExprNodeDesc child : genFunc.getChildren()) {
-              newNumRows = StatsUtils.safeAdd(
-                  evaluateChildExpr(stats, child, aspCtx, neededCols, op, currNumRows),
-                  newNumRows);
+            newNumRows = StatsUtils.safeAdd(
+                evaluateChildExpr(stats, child, aspCtx, neededCols, op, currNumRows, Sets.newHashSet()), newNumRows);
           }
           if(newNumRows > currNumRows) {
             newNumRows = currNumRows;
@@ -376,7 +376,7 @@ public class StatsRulesProcFactory {
           return evaluateNotNullExpr(stats, genFunc, currNumRows);
         } else {
           // single predicate condition
-          newNumRows = evaluateChildExpr(stats, pred, aspCtx, neededCols, op,currNumRows);
+          newNumRows = evaluateChildExpr(stats, pred, aspCtx, neededCols, op, currNumRows, Sets.newHashSet());
         }
       } else if (pred instanceof ExprNodeColumnDesc) {
 
@@ -552,8 +552,7 @@ public class StatsRulesProcFactory {
             // GenericUDF
             long newNumRows = 0;
             for (ExprNodeDesc child : genFunc.getChildren()) {
-              newNumRows = evaluateChildExpr(stats, child, aspCtx, neededCols,
-                  op, numRows);
+              newNumRows = evaluateChildExpr(stats, child, aspCtx, neededCols, op, numRows, Sets.newHashSet());
             }
             return numRows - newNumRows;
           } else if (leaf instanceof ExprNodeConstantDesc) {
@@ -838,7 +837,7 @@ public class StatsRulesProcFactory {
 
     private long evaluateChildExpr(Statistics stats, ExprNodeDesc child,
         AnnotateStatsProcCtx aspCtx, List<String> neededCols,
-        Operator<?> op, long currNumRows) throws SemanticException {
+        Operator<?> op, long currNumRows, Set<String> referencedColumns) throws SemanticException {
 
       long numRows = currNumRows;
 
