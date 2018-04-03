@@ -26,6 +26,7 @@ import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.linq4j.QueryProvider;
 import org.apache.calcite.plan.RelOptPredicateList;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexExecutor;
@@ -37,6 +38,7 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexUtil.ExprSimplifier;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.junit.Before;
 import org.junit.Test;
 import org.spark_project.guava.collect.Lists;
@@ -48,18 +50,21 @@ public class T2 {
   @Test
   public void ass() {
     JavaTypeFactoryImpl typeFactory = new JavaTypeFactoryImpl();
+    final RelDataType intType = typeFactory.createSqlType(SqlTypeName.VARCHAR);
+
     RexBuilder rexBuilder = new RexBuilder(typeFactory);
 
     // @formatter:off
     List<RexNode> newConjuncts = Lists.newArrayList(
-        rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, rexBuilder.makeLiteral(true),rexBuilder.makeLiteral(true))
-//          rexBuilder.makeLiteral(true)
+        rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, rexBuilder.makeInputRef(intType, 0),rexBuilder.makeLiteral("x")),
+        rexBuilder.makeCall(SqlStdOperatorTable.IN, rexBuilder.makeInputRef(intType, 0),rexBuilder.makeLiteral("x")),
+        rexBuilder.makeCall(SqlStdOperatorTable.IN, rexBuilder.makeInputRef(intType, 0),rexBuilder.makeLiteral("x"),rexBuilder.makeLiteral("xx"))
         );
     // @formatter:on
 
     RexNode newPredicate = RexUtil.composeConjunction(rexBuilder, newConjuncts, false);
 
-    ExprSimplifier ss = new RexUtil.ExprSimplifier(simplify, true);
+    ExprSimplifier ss = new RexUtil.ExprSimplifier(simplify, false);
     RexNode p2 = ss.apply(newPredicate);
     System.out.println(newPredicate.toString());
     System.out.println(p2.toString());
