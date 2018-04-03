@@ -96,10 +96,12 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
 
   @Override
   public boolean shouldReExecute(int executionNum, PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
-    return planDidChange(oldPlanMapper, newPlanMapper);
+    boolean planDidChange = !planEquals(oldPlanMapper, newPlanMapper);
+    LOG.info("planDidChange: {}", planDidChange);
+    return planDidChange;
   }
 
-  private boolean planDidChange(PlanMapper pmL, PlanMapper pmR) {
+  private boolean planEquals(PlanMapper pmL, PlanMapper pmR) {
     List<Operator> opsL = getRootOps(pmL);
     List<Operator> opsR = getRootOps(pmR);
     for (Iterator<Operator> itL = opsL.iterator(); itL.hasNext();) {

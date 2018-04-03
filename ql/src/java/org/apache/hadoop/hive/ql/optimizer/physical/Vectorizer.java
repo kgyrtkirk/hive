@@ -161,6 +161,7 @@ import org.apache.hadoop.hive.ql.plan.VectorReduceSinkInfo;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.VectorSelectDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
@@ -373,6 +374,8 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   private Set<VirtualColumn> availableVectorizedVirtualColumnSet = null;
   private Set<VirtualColumn> neededVirtualColumnSet = null;
+
+  private PlanMapper planMapper;
 
   public class VectorizerCannotVectorizeException extends Exception {
   }
@@ -866,7 +869,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private void runDelayedFixups() {
-    for (Entry<Operator<? extends OperatorDesc>, Set<ImmutablePair<Operator<? extends OperatorDesc>, Operator<? extends OperatorDesc>>>> delayed 
+    for (Entry<Operator<? extends OperatorDesc>, Set<ImmutablePair<Operator<? extends OperatorDesc>, Operator<? extends OperatorDesc>>>> delayed
         : delayedFixups.entrySet()) {
       Operator<? extends OperatorDesc> key = delayed.getKey();
       Set<ImmutablePair<Operator<? extends OperatorDesc>, Operator<? extends OperatorDesc>>> value =
@@ -1469,7 +1472,7 @@ public class Vectorizer implements PhysicalPlanResolver {
           enabledConditionsNotMetList.add(HiveConf.ConfVars.HIVE_VECTORIZATION_USE_ROW_DESERIALIZE.varname);
         }
       }
- 
+
       return false;
     }
 
@@ -2144,6 +2147,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   public PhysicalContext resolve(PhysicalContext physicalContext) throws SemanticException {
 
     hiveConf = physicalContext.getConf();
+    planMapper = physicalContext.getContext().getPlanMapper();
 
     String vectorizationEnabledOverrideString =
         HiveConf.getVar(hiveConf,
@@ -2661,7 +2665,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
       if (exprNodeDescList != null) {
         ExprNodeDesc exprNodeDesc = exprNodeDescList.get(0);
-   
+
         if (containsLeadLag(exprNodeDesc)) {
           setOperatorIssue("lead and lag function not supported in argument expression of aggregation function " + functionName);
           return false;
@@ -4868,6 +4872,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     LOG.debug("vectorizeOperator " + vectorOp.getClass().getName());
     LOG.debug("vectorizeOperator " + vectorOp.getConf().getClass().getName());
+    planMapper.link(op, vectorOp);
 
     return vectorOp;
   }
