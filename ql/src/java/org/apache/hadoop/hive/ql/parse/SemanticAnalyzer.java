@@ -626,7 +626,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private boolean isInsertInto(QBParseInfo qbp, String dest) {
     // get the destination and check if it is TABLE
-    if(qbp == null || dest == null ) return false;
+    if(qbp == null || dest == null ) {
+      return false;
+    }
     ASTNode destNode = qbp.getDestForClause(dest);
     if(destNode != null && destNode.getType() == HiveParser.TOK_TAB) {
       return true;
@@ -639,7 +641,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * e.g. VALUES(1,3..)
    */
   private boolean isValueClause(ASTNode select) {
-    if(select == null) return false;
+    if(select == null) {
+      return false;
+    }
     if(select.getChildCount() == 1) {
       ASTNode selectExpr = (ASTNode)select.getChild(0);
       if(selectExpr.getChildCount() == 1 ) {
@@ -12186,7 +12190,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       fetchTask = pCtx.getFetchTask();
     }
     //find all Acid FileSinkOperatorS
-    QueryPlanPostProcessor qp = new QueryPlanPostProcessor((List<Task<?>>)rootTasks, acidFileSinks, ctx.getExecutionId());
+    QueryPlanPostProcessor qp = new QueryPlanPostProcessor(rootTasks, acidFileSinks, ctx.getExecutionId());
     LOG.info("Completed plan generation");
 
     // 10. put accessed columns to readEntity

@@ -60,7 +60,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
-import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -108,9 +107,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
-
 /**
  * BaseSemanticAnalyzer.
  *
@@ -121,7 +117,7 @@ public abstract class BaseSemanticAnalyzer {
   protected final Hive db;
   protected final HiveConf conf;
   protected final QueryState queryState;
-  protected List<Task<? extends Serializable>> rootTasks;
+  protected List<Task<?>> rootTasks;
   protected FetchTask fetchTask;
   protected final Logger LOG;
   protected final LogHelper console;
@@ -842,7 +838,9 @@ public abstract class BaseSemanticAnalyzer {
   // it throws an error.
   // This method is used to validate check expression since check expression isn't allowed to have subquery
   private static void validateCheckExprAST(ASTNode checkExpr) throws SemanticException {
-    if(checkExpr == null) return;
+    if(checkExpr == null) {
+      return;
+    }
     if(checkExpr.getType() == HiveParser.TOK_SUBQUERY_EXPR) {
       throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Subqueries are not allowed "
                                                                           + "in Check Constraints"));
