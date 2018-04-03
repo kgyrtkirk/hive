@@ -20,5 +20,7 @@ analyze table t8 compute statistics for columns;
 explain analyze select sum(a) from t8 where b in (2,3) group by b;
 explain analyze select sum(a) from t8 where b=2 group by b;
 
+explain analyze select sum(a) from t1 where 2=b and b=2 group by b;
+
 explain analyze select sum(a) from t1 where b in (2,3) and b=2 group by b;
 explain analyze select sum(a) from t8 where b in (2,3) and b=2 group by b;
