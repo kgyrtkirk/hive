@@ -321,6 +321,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   private Collection<Class<?>> rowDeserializeInputFormatExcludes;
   private int vectorizedPTFMaxMemoryBufferingBatchCount;
   private int vectorizedTestingReducerBatchSize;
+  private boolean isTestVectorizerSuppressFatalExceptions;
 
   private boolean isSchemaEvolution;
 
@@ -1850,6 +1851,25 @@ public class Vectorizer implements PhysicalPlanResolver {
 
         // The "not vectorized" information has been stored in the MapWork vertex.
         return false;
+      } catch (NullPointerException e) {
+        if (!isTestVectorizerSuppressFatalExceptions) {
+          // Re-throw without losing original stack trace.
+          throw e;
+        }
+        setNodeIssue("exception: " + VectorizationContext.getStackTraceAsSingleLine(e));
+        return false;
+      } catch (ClassCastException e) {
+        if (!isTestVectorizerSuppressFatalExceptions) {
+          throw e;
+        }
+        setNodeIssue("exception: " + VectorizationContext.getStackTraceAsSingleLine(e));
+        return false;
+      } catch (RuntimeException e) {
+        if (!isTestVectorizerSuppressFatalExceptions) {
+          throw e;
+        }
+        setNodeIssue("exception: " + VectorizationContext.getStackTraceAsSingleLine(e));
+        return false;
       }
 
       vectorTaskColumnInfo.setNeededVirtualColumnList(
@@ -2022,6 +2042,25 @@ public class Vectorizer implements PhysicalPlanResolver {
       } catch (VectorizerCannotVectorizeException e) {
 
         // The "not vectorized" information has been stored in the MapWork vertex.
+        return false;
+      } catch (NullPointerException e) {
+        if (!isTestVectorizerSuppressFatalExceptions) {
+          // Re-throw without losing original stack trace.
+          throw e;
+        }
+        setNodeIssue("exception: " + VectorizationContext.getStackTraceAsSingleLine(e));
+        return false;
+      } catch (ClassCastException e) {
+        if (!isTestVectorizerSuppressFatalExceptions) {
+          throw e;
+        }
+        setNodeIssue("exception: " + VectorizationContext.getStackTraceAsSingleLine(e));
+        return false;
+      } catch (RuntimeException e) {
+        if (!isTestVectorizerSuppressFatalExceptions) {
+          throw e;
+        }
+        setNodeIssue("exception: " + VectorizationContext.getStackTraceAsSingleLine(e));
         return false;
       }
 
@@ -2230,6 +2269,10 @@ public class Vectorizer implements PhysicalPlanResolver {
         HiveConf.getIntVar(hiveConf,
             HiveConf.ConfVars.HIVE_VECTORIZATION_TESTING_REDUCER_BATCH_SIZE);
 
+    isTestVectorizerSuppressFatalExceptions =
+        HiveConf.getBoolVar(hiveConf,
+            HiveConf.ConfVars.HIVE_TEST_VECTORIZER_SUPPRESS_FATAL_EXCEPTIONS);
+
     vectorizedInputFormatSupportEnabled =
         HiveConf.getVar(hiveConf,
             HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED);
@@ -2366,7 +2409,11 @@ public class Vectorizer implements PhysicalPlanResolver {
   private boolean validateSelectOperator(SelectOperator op) {
     List<ExprNodeDesc> descList = op.getConf().getColList();
     for (ExprNodeDesc desc : descList) {
-      boolean ret = validateExprNodeDesc(desc, "Select");
+      boolean ret =
+          validateExprNodeDesc(
+              desc, "Select",
+              VectorExpressionDescriptor.Mode.PROJECTION,
+              /* allowComplex */ true, /* allowVoidProjection */ true);
       if (!ret) {
         return false;
       }
@@ -2741,6 +2788,12 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   private boolean validateExprNodeDescRecursive(ExprNodeDesc desc, String expressionTitle,
       VectorExpressionDescriptor.Mode mode, boolean allowComplex) {
+    return validateExprNodeDescRecursive(desc, expressionTitle, mode,
+        allowComplex, /* allowVoidProjection */ false);
+  }
+
+  private boolean validateExprNodeDescRecursive(ExprNodeDesc desc, String expressionTitle,
+      VectorExpressionDescriptor.Mode mode, boolean allowComplex, boolean allowVoidProjection) {
     if (desc instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc c = (ExprNodeColumnDesc) desc;
       String columnName = c.getColumn();
@@ -2764,7 +2817,8 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
     }
     String typeName = desc.getTypeInfo().getTypeName();
-    boolean ret = validateDataType(typeName, mode, allowComplex && isVectorizationComplexTypesEnabled);
+    boolean ret = validateDataType(
+        typeName, mode, allowComplex && isVectorizationComplexTypesEnabled, allowVoidProjection);
     if (!ret) {
       setExpressionIssue(expressionTitle,
           getValidateDataTypeErrorMsg(
@@ -2787,7 +2841,8 @@ public class Vectorizer implements PhysicalPlanResolver {
           && desc.getChildren().get(0).getTypeInfo().getCategory() == Category.STRUCT) {
         // Don't restrict child expressions for projection.
         // Always use loose FILTER mode.
-        if (!validateStructInExpression(desc, expressionTitle, VectorExpressionDescriptor.Mode.FILTER)) {
+        if (!validateStructInExpression(
+            desc, expressionTitle, VectorExpressionDescriptor.Mode.FILTER)) {
           return false;
         }
       } else {
@@ -2795,7 +2850,8 @@ public class Vectorizer implements PhysicalPlanResolver {
           // Don't restrict child expressions for projection.
           // Always use loose FILTER mode.
           if (!validateExprNodeDescRecursive(
-              d, expressionTitle, VectorExpressionDescriptor.Mode.FILTER, /* allowComplex */ true)) {
+              d, expressionTitle, VectorExpressionDescriptor.Mode.FILTER,
+              /* allowComplex */ true, allowVoidProjection)) {
             return false;
           }
         }
@@ -2847,12 +2903,19 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   private boolean validateExprNodeDesc(ExprNodeDesc desc, String expressionTitle) {
     return validateExprNodeDesc(
-        desc, expressionTitle, VectorExpressionDescriptor.Mode.PROJECTION, /* allowComplex */ true);
+        desc, expressionTitle, VectorExpressionDescriptor.Mode.PROJECTION,
+        /* allowComplex */ true, /* allowVoidProjection */ false);
   }
 
   boolean validateExprNodeDesc(ExprNodeDesc desc, String expressionTitle,
       VectorExpressionDescriptor.Mode mode, boolean allowComplex) {
     return validateExprNodeDescRecursive(desc, expressionTitle, mode, allowComplex);
+  }
+
+  boolean validateExprNodeDesc(ExprNodeDesc desc, String expressionTitle,
+      VectorExpressionDescriptor.Mode mode, boolean allowComplex, boolean allowVoidProjection) {
+    return validateExprNodeDescRecursive(
+        desc, expressionTitle, mode, allowComplex, allowVoidProjection);
   }
 
   private boolean validateGenericUdf(ExprNodeGenericFuncDesc genericUDFExpr) {
@@ -2880,13 +2943,13 @@ public class Vectorizer implements PhysicalPlanResolver {
       setExpressionIssue("Aggregation Function", "UDF " + udfName + " not supported");
       return false;
     }
-    /*
+
     // The planner seems to pull this one out.
     if (aggDesc.getDistinct()) {
       setExpressionIssue("Aggregation Function", "DISTINCT not supported");
-      return new Pair<Boolean,Boolean>(false, false);
+      return false;
     }
-    */
+
 
     ArrayList<ExprNodeDesc> parameters = aggDesc.getParameters();
 
@@ -2899,10 +2962,16 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   public static boolean validateDataType(String type, VectorExpressionDescriptor.Mode mode,
       boolean allowComplex) {
+    return validateDataType(type, mode, allowComplex, /* allowVoidProjection */ false);
+  }
+
+  public static boolean validateDataType(String type, VectorExpressionDescriptor.Mode mode,
+      boolean allowComplex, boolean allowVoidProjection) {
 
     type = type.toLowerCase();
     boolean result = supportedDataTypesPattern.matcher(type).matches();
-    if (result && mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {
+    if (result && !allowVoidProjection &&
+        mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {
       return false;
     }
 
@@ -2919,10 +2988,18 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   public static String getValidateDataTypeErrorMsg(String type, VectorExpressionDescriptor.Mode mode,
       boolean allowComplex, boolean isVectorizationComplexTypesEnabled) {
+    return getValidateDataTypeErrorMsg(
+        type, mode, allowComplex, isVectorizationComplexTypesEnabled, false);
+  }
+
+  public static String getValidateDataTypeErrorMsg(String type, VectorExpressionDescriptor.Mode mode,
+      boolean allowComplex, boolean isVectorizationComplexTypesEnabled,
+      boolean allowVoidProjection) {
 
     type = type.toLowerCase();
     boolean result = supportedDataTypesPattern.matcher(type).matches();
-    if (result && mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {
+    if (result && !allowVoidProjection &&
+        mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {
       return "Vectorizing data type void not supported when mode = PROJECTION";
     }
 
@@ -4665,6 +4742,12 @@ public class Vectorizer implements PhysicalPlanResolver {
               Preconditions.checkState(op instanceof SMBMapJoinOperator);
 
               SMBJoinDesc smbJoinSinkDesc = (SMBJoinDesc) op.getConf();
+
+              // Check additional constraint.
+              if (smbJoinSinkDesc.getFilterMap() != null) {
+                setOperatorIssue("FilterMaps not supported for Vector Pass-Thru SMB MapJoin");
+                throw new VectorizerCannotVectorizeException();
+              }
 
               VectorSMBJoinDesc vectorSMBJoinDesc = new VectorSMBJoinDesc();
               vectorOp = OperatorFactory.getVectorOperator(
