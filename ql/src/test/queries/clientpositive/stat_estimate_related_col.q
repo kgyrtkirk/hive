@@ -1,4 +1,4 @@
-
+set hive.explain.user=true;
 set hive.query.results.cache.enabled=false;
 
 drop table if exists t1;
