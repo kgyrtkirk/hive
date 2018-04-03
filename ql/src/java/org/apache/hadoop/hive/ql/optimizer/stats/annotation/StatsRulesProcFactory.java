@@ -868,23 +868,19 @@ public class StatsRulesProcFactory {
               }
 
               // if the first argument is const then just set the flag and continue
-              if (colName == null) {
-                isConst = true;
-                prevConst = ((ExprNodeConstantDesc) leaf).getValue();
-                continue;
-              }
+              isConst = true;
+              prevConst = ((ExprNodeConstantDesc) leaf).getValue();
             } else if (leaf instanceof ExprNodeColumnDesc) {
               ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) leaf;
               colName = colDesc.getColumn();
             }
 
-            // if const is first argument then evaluate the result
+            // if 1 operand is const then evaluate the result
             if (isConst) {
-
               // if column name is not contained in needed column list then it
               // is a partition column. We do not need to evaluate partition columns
               // in filter expression since it will be taken care by partitio pruner
-              if (neededCols != null && neededCols.indexOf(colName) == -1) {
+              if (neededCols != null && !neededCols.contains(colName)) {
                 return numRows;
               }
 
