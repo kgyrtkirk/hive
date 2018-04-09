@@ -283,7 +283,7 @@ public class StatsRulesProcFactory {
 
         // evaluate filter expression and update statistics
         long newNumRows = evaluateExpression(parentStats, pred, aspCtx,
-            neededCols, fop, parentStats.getNumRows(), Sets.newHashSet());
+            neededCols, fop, parentStats.getNumRows());
         Statistics st = parentStats.clone();
 
         if (satisfyPrecondition(parentStats)) {
@@ -321,7 +321,7 @@ public class StatsRulesProcFactory {
 
     protected long evaluateExpression(Statistics stats, ExprNodeDesc pred,
         AnnotateStatsProcCtx aspCtx, List<String> neededCols,
-        Operator<?> op, long currNumRows, Set<String> referencedColumns) throws SemanticException {
+        Operator<?> op, long currNumRows) throws SemanticException {
       long newNumRows = 0;
       Statistics andStats = null;
 
@@ -344,10 +344,9 @@ public class StatsRulesProcFactory {
 
           // evaluate children
           long evaluatedRowCount = currNumRows;
-          Set<String> localReferencedColumns = new HashSet<>(referencedColumns);
           for (ExprNodeDesc child : genFunc.getChildren()) {
             evaluatedRowCount = evaluateChildExpr(aspCtx.getAndExprStats(), child,
-                aspCtx, neededCols, op, evaluatedRowCount, localReferencedColumns);
+                aspCtx, neededCols, op, evaluatedRowCount);
           }
           newNumRows = evaluatedRowCount;
           if (satisfyPrecondition(aspCtx.getAndExprStats())) {
@@ -358,15 +357,16 @@ public class StatsRulesProcFactory {
         } else if (udf instanceof GenericUDFOPOr) {
           // for OR condition independently compute and update stats.
           for (ExprNodeDesc child : genFunc.getChildren()) {
-            newNumRows = StatsUtils.safeAdd(
-                evaluateChildExpr(stats, child, aspCtx, neededCols, op, currNumRows, Sets.newHashSet()), newNumRows);
+              newNumRows = StatsUtils.safeAdd(
+                  evaluateChildExpr(stats, child, aspCtx, neededCols, op, currNumRows),
+                  newNumRows);
           }
           if(newNumRows > currNumRows) {
             newNumRows = currNumRows;
           }
         } else if (udf instanceof GenericUDFIn) {
           // for IN clause
-          newNumRows = evaluateInExpr(stats, pred, currNumRows, aspCtx, neededCols, op, referencedColumns);
+          newNumRows = evaluateInExpr(stats, pred, currNumRows, aspCtx, neededCols, op);
         } else if (udf instanceof GenericUDFBetween) {
           // for BETWEEN clause
           newNumRows = evaluateBetweenExpr(stats, pred, currNumRows, aspCtx, neededCols, op);
@@ -376,7 +376,7 @@ public class StatsRulesProcFactory {
           return evaluateNotNullExpr(stats, genFunc, currNumRows);
         } else {
           // single predicate condition
-          newNumRows = evaluateChildExpr(stats, pred, aspCtx, neededCols, op, currNumRows, Sets.newHashSet());
+          newNumRows = evaluateChildExpr(stats, pred, aspCtx, neededCols, op,currNumRows);
         }
       } else if (pred instanceof ExprNodeColumnDesc) {
 
@@ -416,7 +416,7 @@ public class StatsRulesProcFactory {
     }
 
     private long evaluateInExpr(Statistics stats, ExprNodeDesc pred, long currNumRows, AnnotateStatsProcCtx aspCtx,
-        List<String> neededCols, Operator<?> op, Set<String> referencedColumns) throws SemanticException {
+            List<String> neededCols, Operator<?> op) throws SemanticException {
 
       long numRows = currNumRows;
 
@@ -466,11 +466,6 @@ public class StatsRulesProcFactory {
           // Default
           return numRows / 2;
         }
-        if (referencedColumns.contains(columnName)) {
-          return numRows;
-        }
-        referencedColumns.add(columnName);
-
         columnStats.add(stats.getColumnStatisticsFromColName(columnName));
         values.add(Sets.<ExprNodeDescEqualityWrapper>newHashSet());
         multiColumn = false;
@@ -539,7 +534,7 @@ public class StatsRulesProcFactory {
           new GenericUDFOPNot(), Lists.newArrayList(newExpression));
       }
 
-      return evaluateExpression(stats, newExpression, aspCtx, neededCols, op, currNumRows, Sets.newHashSet());
+      return evaluateExpression(stats, newExpression, aspCtx, neededCols, op, currNumRows);
     }
 
     private long evaluateNotExpr(Statistics stats, ExprNodeDesc pred, long currNumRows,
@@ -557,7 +552,8 @@ public class StatsRulesProcFactory {
             // GenericUDF
             long newNumRows = 0;
             for (ExprNodeDesc child : genFunc.getChildren()) {
-              newNumRows = evaluateChildExpr(stats, child, aspCtx, neededCols, op, numRows, Sets.newHashSet());
+              newNumRows = evaluateChildExpr(stats, child, aspCtx, neededCols,
+                  op, numRows);
             }
             return numRows - newNumRows;
           } else if (leaf instanceof ExprNodeConstantDesc) {
@@ -842,7 +838,7 @@ public class StatsRulesProcFactory {
 
     private long evaluateChildExpr(Statistics stats, ExprNodeDesc child,
         AnnotateStatsProcCtx aspCtx, List<String> neededCols,
-        Operator<?> op, long currNumRows, Set<String> referencedColumns) throws SemanticException {
+        Operator<?> op, long currNumRows) throws SemanticException {
 
       long numRows = currNumRows;
 
@@ -873,32 +869,45 @@ public class StatsRulesProcFactory {
               }
 
               // if the first argument is const then just set the flag and continue
-              isConst = true;
-              prevConst = ((ExprNodeConstantDesc) leaf).getValue();
-            } else if (leaf instanceof ExprNodeColumnDesc) {
-              ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) leaf;
-              colName = colDesc.getColumn();
-            }
+              if (colName == null) {
+                isConst = true;
+                prevConst = ((ExprNodeConstantDesc) leaf).getValue();
+                continue;
+              }
 
-            // if 1 operand is const then evaluate the result
-            if (isConst) {
               // if column name is not contained in needed column list then it
               // is a partition column. We do not need to evaluate partition columns
               // in filter expression since it will be taken care by partitio pruner
               if (neededCols != null && !neededCols.contains(colName)) {
                 return numRows;
               }
-              if (referencedColumns.contains(colName)) {
-                // column is already referenced
-                return numRows;
-              }
-              referencedColumns.add(colName);
 
               ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
               if (cs != null) {
                 long dvs = cs.getCountDistint();
                 numRows = dvs == 0 ? numRows / 2 : Math.round( (double)numRows / dvs);
                 return numRows;
+              }
+            } else if (leaf instanceof ExprNodeColumnDesc) {
+              ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) leaf;
+              colName = colDesc.getColumn();
+
+              // if const is first argument then evaluate the result
+              if (isConst) {
+
+                // if column name is not contained in needed column list then it
+                // is a partition column. We do not need to evaluate partition columns
+                // in filter expression since it will be taken care by partitio pruner
+                if (neededCols != null && neededCols.indexOf(colName) == -1) {
+                  return numRows;
+                }
+
+                ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
+                if (cs != null) {
+                  long dvs = cs.getCountDistint();
+                  numRows = dvs == 0 ? numRows / 2 : Math.round( (double)numRows / dvs);
+                  return numRows;
+                }
               }
             }
           }
@@ -916,7 +925,7 @@ public class StatsRulesProcFactory {
         } else if (udf instanceof GenericUDFOPAnd || udf instanceof GenericUDFOPOr
                 || udf instanceof GenericUDFIn || udf instanceof GenericUDFBetween
                 || udf instanceof GenericUDFOPNot) {
-          return evaluateExpression(stats, genFunc, aspCtx, neededCols, op, numRows, referencedColumns);
+          return evaluateExpression(stats, genFunc, aspCtx, neededCols, op, numRows);
         } else if (udf instanceof GenericUDFInBloomFilter) {
           if (genFunc.getChildren().get(1) instanceof ExprNodeDynamicValueDesc) {
             // Synthetic predicates from semijoin opt should not affect stats.
@@ -1572,7 +1581,7 @@ public class StatsRulesProcFactory {
           }
           // evaluate filter expression and update statistics
           newNumRows = evaluateExpression(stats, pred,
-              aspCtx, jop.getSchema().getColumnNames(), jop, stats.getNumRows(), Sets.newHashSet());
+              aspCtx, jop.getSchema().getColumnNames(), jop, stats.getNumRows());
           // update statistics based on column statistics.
           // OR conditions keeps adding the stats independently, this may
           // result in number of rows getting more than the input rows in
@@ -1665,7 +1674,7 @@ public class StatsRulesProcFactory {
           }
           // evaluate filter expression and update statistics
             newNumRows = evaluateExpression(wcStats, pred,
-              aspCtx, jop.getSchema().getColumnNames(), jop, wcStats.getNumRows(), Sets.newHashSet());
+                aspCtx, jop.getSchema().getColumnNames(), jop, wcStats.getNumRows());
           // update only the basic statistics in the absence of column statistics
           if (newNumRows <= joinRowCount) {
             updateStats(wcStats, newNumRows, false, jop);
