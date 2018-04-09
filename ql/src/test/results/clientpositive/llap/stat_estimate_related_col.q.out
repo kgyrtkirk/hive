@@ -99,7 +99,7 @@ Stage-0
               Group By Operator [GBY_3] (rows=2/2 width=12)
                 Output:["_col0","_col1"],aggregations:["sum(a)"],keys:b
                 Filter Operator [FIL_8] (rows=16/16 width=8)
-                  predicate:(b) IN (2, 3)
+                  predicate:((b = 2) or (b = 3))
                   TableScan [TS_0] (rows=40/40 width=8)
                     default@t8,t8,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
 
@@ -213,10 +213,10 @@ Stage-0
               PartitionCols:_col0
               Group By Operator [GBY_4] (rows=1/1 width=12)
                 Output:["_col0","_col1"],aggregations:["sum(_col1)"],keys:2
-                Select Operator [SEL_2] (rows=2/1 width=8)
+                Select Operator [SEL_2] (rows=1/1 width=8)
                   Output:["_col1"]
-                  Filter Operator [FIL_9] (rows=2/1 width=8)
-                    predicate:((b = 2) and (b) IN (2, 3))
+                  Filter Operator [FIL_9] (rows=1/1 width=8)
+                    predicate:(b = 2)
                     TableScan [TS_0] (rows=5/5 width=8)
                       default@t1,t1,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
 
@@ -252,10 +252,10 @@ Stage-0
               PartitionCols:_col0
               Group By Operator [GBY_4] (rows=1/1 width=12)
                 Output:["_col0","_col1"],aggregations:["sum(_col1)"],keys:2
-                Select Operator [SEL_2] (rows=16/8 width=8)
+                Select Operator [SEL_2] (rows=8/8 width=8)
                   Output:["_col1"]
-                  Filter Operator [FIL_9] (rows=16/8 width=8)
-                    predicate:((b = 2) and (b) IN (2, 3))
+                  Filter Operator [FIL_9] (rows=8/8 width=8)
+                    predicate:(b = 2)
                     TableScan [TS_0] (rows=40/40 width=8)
                       default@t8,t8,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
 
@@ -307,4 +307,82 @@ Stage-0
                       predicate:(b = 3)
                       TableScan [TS_3] (rows=40/40 width=4)
                         default@t8,tb,Tbl:COMPLETE,Col:COMPLETE,Output:["b"]
+
+PREHOOK: query: select sum(a) from t8 where b in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50) and b=2 and b=2 and 2=b group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t8
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(a) from t8 where b in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50) and b=2 and b=2 and 2=b group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t8
+#### A masked pattern was here ####
+PREHOOK: query: explain analyze select sum(a) from t8 where b in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50) and b=2 and b=2 and 2=b group by b
+PREHOOK: type: QUERY
+POSTHOOK: query: explain analyze select sum(a) from t8 where b in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50) and b=2 and b=2 and 2=b group by b
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 llap
+      File Output Operator [FS_8]
+        Select Operator [SEL_7] (rows=1/1 width=8)
+          Output:["_col0"]
+          Group By Operator [GBY_6] (rows=1/1 width=12)
+            Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
+          <-Map 1 [SIMPLE_EDGE] llap
+            SHUFFLE [RS_5]
+              PartitionCols:_col0
+              Group By Operator [GBY_4] (rows=1/1 width=12)
+                Output:["_col0","_col1"],aggregations:["sum(_col1)"],keys:2
+                Select Operator [SEL_2] (rows=8/8 width=8)
+                  Output:["_col1"]
+                  Filter Operator [FIL_9] (rows=8/8 width=8)
+                    predicate:((b = 2) and (b) IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50))
+                    TableScan [TS_0] (rows=40/40 width=8)
+                      default@t8,t8,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
+
+PREHOOK: query: select sum(a) from t8 where b=2 and (b = 1 or b=2) group by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t8
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(a) from t8 where b=2 and (b = 1 or b=2) group by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t8
+#### A masked pattern was here ####
+PREHOOK: query: explain analyze select sum(a) from t8 where b=2 and (b = 1 or b=2) group by b
+PREHOOK: type: QUERY
+POSTHOOK: query: explain analyze select sum(a) from t8 where b=2 and (b = 1 or b=2) group by b
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 llap
+      File Output Operator [FS_8]
+        Select Operator [SEL_7] (rows=1/1 width=8)
+          Output:["_col0"]
+          Group By Operator [GBY_6] (rows=1/1 width=12)
+            Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
+          <-Map 1 [SIMPLE_EDGE] llap
+            SHUFFLE [RS_5]
+              PartitionCols:_col0
+              Group By Operator [GBY_4] (rows=1/1 width=12)
+                Output:["_col0","_col1"],aggregations:["sum(_col1)"],keys:2
+                Select Operator [SEL_2] (rows=8/8 width=8)
+                  Output:["_col1"]
+                  Filter Operator [FIL_9] (rows=8/8 width=8)
+                    predicate:(b = 2)
+                    TableScan [TS_0] (rows=40/40 width=8)
+                      default@t8,t8,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
 
