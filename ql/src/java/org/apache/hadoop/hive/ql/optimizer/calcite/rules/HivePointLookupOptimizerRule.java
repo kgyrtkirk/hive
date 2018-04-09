@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
@@ -32,13 +33,16 @@ import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexExecutor;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
+import org.apache.calcite.rex.RexSimplify;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.util.Util;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
@@ -149,13 +153,19 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     RexMergeInClause mergeInClause = new RexMergeInClause(rexBuilder);
     newCondition = mergeInClause.apply(newCondition);
 
+    RexExecutor executor =
+        Util.first(call.getPlanner().getExecutor(), RexUtil.EXECUTOR);
+    final RexSimplify simplify =
+        new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY, true, executor);
+    final RexNode newCondition2 = simplify.simplify(newCondition);
+
     // 4. If we could not transform anything, we bail out
-    if (newCondition.toString().equals(condition.toString())) {
+    if (newCondition2.toString().equals(condition.toString())) {
       return;
     }
 
     // 5. We create the Filter/Join with the new condition
-    RelNode newNode = copyNode(node, newCondition);
+    RelNode newNode = copyNode(node, newCondition2);
 
     call.transformTo(newNode);
   }
