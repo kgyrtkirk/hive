@@ -498,6 +498,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public List<MetaStoreEventListener> getListeners() {
+      return listeners;
+    }
+
+    @Override
     public void init() throws MetaException {
       initListeners = MetaStoreUtils.getMetaStoreListeners(
           MetaStoreInitListener.class, conf, MetastoreConf.getVar(conf, ConfVars.INIT_HOOKS));
@@ -1290,6 +1295,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public Database get_database_core(String catName, final String name) throws NoSuchObjectException, MetaException {
       Database db = null;
+      if (name == null) {
+        throw new MetaException("Database name cannot be null.");
+      }
       try {
         db = getMS().getDatabase(catName, name);
       } catch (MetaException | NoSuchObjectException e) {
@@ -1364,6 +1372,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<Path> tablePaths = new ArrayList<>();
       List<Path> partitionPaths = new ArrayList<>();
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
+      if (name == null) {
+        throw new MetaException("Database name cannot be null.");
+      }
       try {
         ms.openTransaction();
         db = ms.getDatabase(catName, name);
@@ -3083,7 +3094,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final String tableName, final List<String> part_vals, final EnvironmentContext envContext)
         throws InvalidObjectException, AlreadyExistsException, MetaException {
       if (part_vals == null || part_vals.isEmpty()) {
-        throw new MetaException("The partition values must not be null.");
+        throw new MetaException("The partition values must not be null or empty.");
       }
       String[] parsedDbName = parseDbName(dbName, conf);
       startPartitionFunction("append_partition", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, part_vals);
@@ -4840,31 +4851,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         alterHandler.alterTable(getMS(), wh, catName, dbname, name, newTable,
                 envContext, this);
         success = true;
-        if (!listeners.isEmpty()) {
-          if (oldt.getDbName().equalsIgnoreCase(newTable.getDbName())) {
-            MetaStoreListenerNotifier.notifyEvent(listeners,
-                    EventType.ALTER_TABLE,
-                    new AlterTableEvent(oldt, newTable, false, true, this),
-                    envContext);
-          } else {
-            MetaStoreListenerNotifier.notifyEvent(listeners,
-                    EventType.DROP_TABLE,
-                    new DropTableEvent(oldt, true, false, this),
-                    envContext);
-            MetaStoreListenerNotifier.notifyEvent(listeners,
-                    EventType.CREATE_TABLE,
-                    new CreateTableEvent(newTable, true, this),
-                    envContext);
-            if (newTable.getPartitionKeysSize() != 0) {
-              List<Partition> partitions = getMS().getPartitions(catName,
-                  newTable.getDbName(), newTable.getTableName(), -1);
-              MetaStoreListenerNotifier.notifyEvent(listeners,
-                      EventType.ADD_PARTITION,
-                      new AddPartitionEvent(newTable, partitions, true, this),
-                      envContext);
-            }
-          }
-        }
       } catch (NoSuchObjectException e) {
         // thrown when the table to be altered does not exist
         ex = e;
@@ -5995,8 +5981,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = ms.grantRole(role, principalName, principalType, grantor, grantorType, grantOption);
       } catch (MetaException e) {
         throw e;
+      } catch (InvalidObjectException | NoSuchObjectException e) {
+        ret = false;
+        MetaStoreUtils.logAndThrowMetaException(e);
       } catch (Exception e) {
-        throw new RuntimeException(e);
+        throw new TException(e);
       }
       return ret;
     }
@@ -6044,8 +6033,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = getMS().addRole(role.getRoleName(), role.getOwnerName());
       } catch (MetaException e) {
         throw e;
+      } catch (InvalidObjectException | NoSuchObjectException e) {
+        ret = false;
+        MetaStoreUtils.logAndThrowMetaException(e);
       } catch (Exception e) {
-        throw new RuntimeException(e);
+        throw new TException(e);
       }
       return ret;
     }
@@ -6062,8 +6054,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = getMS().removeRole(roleName);
       } catch (MetaException e) {
         throw e;
+      } catch (NoSuchObjectException e) {
+        ret = false;
+        MetaStoreUtils.logAndThrowMetaException(e);
       } catch (Exception e) {
-        throw new RuntimeException(e);
+        throw new TException(e);
       }
       return ret;
     }
@@ -6092,8 +6087,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = getMS().grantPrivileges(privileges);
       } catch (MetaException e) {
         throw e;
+      } catch (InvalidObjectException | NoSuchObjectException e) {
+        ret = false;
+        MetaStoreUtils.logAndThrowMetaException(e);
       } catch (Exception e) {
-        throw new RuntimeException(e);
+        throw new TException(e);
       }
       return ret;
     }
@@ -6118,8 +6116,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = ms.revokeRole(mRole, userName, principalType, grantOption);
       } catch (MetaException e) {
         throw e;
+      } catch (NoSuchObjectException e) {
+        ret = false;
+        MetaStoreUtils.logAndThrowMetaException(e);
       } catch (Exception e) {
-        throw new RuntimeException(e);
+        throw new TException(e);
       }
       return ret;
     }
@@ -6193,8 +6194,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = getMS().revokePrivileges(privileges, grantOption);
       } catch (MetaException e) {
         throw e;
+      } catch (InvalidObjectException | NoSuchObjectException e) {
+        ret = false;
+        MetaStoreUtils.logAndThrowMetaException(e);
       } catch (Exception e) {
-        throw new RuntimeException(e);
+        throw new TException(e);
       }
       return ret;
     }

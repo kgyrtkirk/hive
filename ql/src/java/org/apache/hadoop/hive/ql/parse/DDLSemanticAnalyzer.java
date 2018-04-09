@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnStatsUpdateTask;
+import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -358,6 +359,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         analyzeAlterTableDropConstraint(ast, tableName);
       } else if(ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ADDCONSTRAINT) {
           analyzeAlterTableAddConstraint(ast, tableName);
+      } else if(ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_UPDATECOLUMNS) {
+        analyzeAlterTableUpdateColumns(ast, tableName, partSpec);
       }
       break;
     }
@@ -2187,6 +2190,23 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         alterTblDesc)));
   }
 
+  private void analyzeAlterTableUpdateColumns(ASTNode ast, String tableName,
+      HashMap<String, String> partSpec) throws SemanticException {
+
+    boolean isCascade = false;
+    if (null != ast.getFirstChildWithType(HiveParser.TOK_CASCADE)) {
+      isCascade = true;
+    }
+
+    AlterTableDesc alterTblDesc = new AlterTableDesc(AlterTableTypes.UPDATECOLUMNS);
+    alterTblDesc.setOldName(tableName);
+    alterTblDesc.setIsCascade(isCascade);
+    alterTblDesc.setPartSpec(partSpec);
+
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+            alterTblDesc), conf));
+  }
+
   static HashMap<String, String> getProps(ASTNode prop) {
     // Must be deterministic order map for consistent q-test output across Java versions
     HashMap<String, String> mapProp = new LinkedHashMap<String, String>();
@@ -3389,7 +3409,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     Table tab = getTable(qualified);
     boolean isView = tab.isView();
     validateAlterTableType(tab, AlterTableTypes.ADDPARTITION, expectView);
-    outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED));
+    outputs.add(new WriteEntity(tab,
+        /*use DDL_EXCLUSIVE to cause X lock to prevent races between concurrent add partition calls
+        with IF NOT EXISTS.  w/o this 2 concurrent calls to add the same partition may both add
+        data since for transactional tables creating partition metadata and moving data there are
+        2 separate actions. */
+        ifNotExists && AcidUtils.isTransactionalTable(tab) ? WriteType.DDL_EXCLUSIVE
+        : WriteEntity.WriteType.DDL_SHARED));
 
     int numCh = ast.getChildCount();
     int start = ifNotExists ? 1 : 0;
@@ -3446,7 +3472,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       return;
     }
 
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), addPartitionDesc)));
+    Task<DDLWork> ddlTask =
+        TaskFactory.get(new DDLWork(getInputs(), getOutputs(), addPartitionDesc));
+    rootTasks.add(ddlTask);
+    handleTransactionalTable(tab, addPartitionDesc, ddlTask);
 
     if (isView) {
       // Compile internal query to capture underlying table partition dependencies
@@ -3488,6 +3517,61 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  /**
+   * Add partition for Transactional tables needs to add (copy/rename) the data so that it lands
+   * in a delta_x_x/ folder in the partition dir.
+   */
+  private void handleTransactionalTable(Table tab, AddPartitionDesc addPartitionDesc,
+      Task ddlTask) throws SemanticException {
+    if(!AcidUtils.isTransactionalTable(tab)) {
+      return;
+    }
+    Long writeId = null;
+    int stmtId = 0;
+
+    for (int index = 0; index < addPartitionDesc.getPartitionCount(); index++) {
+      OnePartitionDesc desc = addPartitionDesc.getPartition(index);
+      if (desc.getLocation() != null) {
+        if(addPartitionDesc.isIfNotExists()) {
+          //Don't add partition data if it already exists
+          Partition oldPart = getPartition(tab, desc.getPartSpec(), false);
+          if(oldPart != null) {
+            continue;
+          }
+        }
+        if(writeId == null) {
+          //so that we only allocate a writeId only if actually adding data
+          // (vs. adding a partition w/o data)
+          try {
+            writeId = SessionState.get().getTxnMgr().getTableWriteId(tab.getDbName(),
+                tab.getTableName());
+          } catch (LockException ex) {
+            throw new SemanticException("Failed to allocate the write id", ex);
+          }
+          stmtId = SessionState.get().getTxnMgr().getStmtIdAndIncrement();
+        }
+        LoadTableDesc loadTableWork = new LoadTableDesc(new Path(desc.getLocation()),
+            Utilities.getTableDesc(tab), desc.getPartSpec(),
+            LoadTableDesc.LoadFileType.KEEP_EXISTING, //not relevant - creating new partition
+            writeId);
+        loadTableWork.setStmtId(stmtId);
+        loadTableWork.setInheritTableSpecs(true);
+        try {
+          desc.setLocation(new Path(tab.getDataLocation(),
+              Warehouse.makePartPath(desc.getPartSpec())).toString());
+        }
+        catch (MetaException ex) {
+          throw new SemanticException("Could not determine partition path due to: "
+              + ex.getMessage(), ex);
+        }
+        Task<MoveWork> moveTask = TaskFactory.get(
+            new MoveWork(getInputs(), getOutputs(), loadTableWork, null,
+                true,//make sure to check format
+                false));//is this right?
+        ddlTask.addDependentTask(moveTask);
+      }
+    }
+  }
   /**
    * Rewrite the metadata for one or more partitions in a table. Useful when
    * an external process modifies files on HDFS and you want the pre/post

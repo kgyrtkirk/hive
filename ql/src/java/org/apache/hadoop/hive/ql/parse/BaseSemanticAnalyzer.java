@@ -1451,6 +1451,19 @@ public abstract class BaseSemanticAnalyzer {
       }
     }
 
+    private boolean createDynPartSpec(ASTNode ast) {
+      if(ast.getToken().getType() != HiveParser.TOK_CREATETABLE &&
+          ast.getToken().getType() != HiveParser.TOK_CREATE_MATERIALIZED_VIEW &&
+          ast.getToken().getType() != HiveParser.TOK_ALTER_MATERIALIZED_VIEW &&
+          tableHandle.getPartitionKeys().size() > 0
+          && (ast.getParent() != null && (ast.getParent().getType() == HiveParser.TOK_INSERT_INTO
+          || ast.getParent().getType() == HiveParser.TOK_INSERT)
+          || ast.getParent().getType() == HiveParser.TOK_DESTINATION
+          || ast.getParent().getType() == HiveParser.TOK_ANALYZE)) {
+        return true;
+      }
+      return false;
+    }
     public TableSpec(Hive db, HiveConf conf, ASTNode ast, boolean allowDynamicPartitionsSpec,
         boolean allowPartialPartitionsSpec) throws SemanticException {
       assert (ast.getToken().getType() == HiveParser.TOK_TAB
@@ -1572,6 +1585,17 @@ public abstract class BaseSemanticAnalyzer {
           }
           specType = SpecType.STATIC_PARTITION;
         }
+      } else if(createDynPartSpec(ast) && allowDynamicPartitionsSpec) {
+        // if user hasn't specify partition spec generate it from table's partition spec
+        // do this only if it is INSERT/INSERT INTO/INSERT OVERWRITE/ANALYZE
+        List<FieldSchema> parts = tableHandle.getPartitionKeys();
+        partSpec = new LinkedHashMap<String, String>(parts.size());
+        for (FieldSchema fs : parts) {
+          String partKey = fs.getName();
+          partSpec.put(partKey, null);
+        }
+        partHandle = null;
+        specType = SpecType.DYNAMIC_PARTITION;
       } else {
         specType = SpecType.TABLE_ONLY;
       }
