@@ -33,3 +33,9 @@ explain analyze select sum(a) from t8 where b in (1,2,3,4,5,6,7,8,9,10,11,12,13,
 
 explain analyze select sum(a) from t8 where b=2 and (b = 1 or b=2) group by b;
 
+explain analyze select sum(a) from t8 where
+	b=2 and (b = 1 or b=2)
+and
+	a=3 and (a = 3 or a=4)
+group by b;
+
