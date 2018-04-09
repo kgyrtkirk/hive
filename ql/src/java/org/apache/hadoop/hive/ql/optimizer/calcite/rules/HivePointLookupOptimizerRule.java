@@ -58,7 +58,6 @@ import com.google.common.collect.Sets;
 import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.rel.AbstractRelNode;
 import org.apache.calcite.rel.core.Join;
-import org.apache.calcite.rel.core.JoinRelType;
 
 
 public abstract class HivePointLookupOptimizerRule extends RelOptRule {
@@ -75,6 +74,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       super(operand(Filter.class, any()), minNumORClauses);
     }
 
+    @Override
     public void onMatch(RelOptRuleCall call) {
       final Filter filter = call.rel(0);
       final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
@@ -94,12 +94,13 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
  * to generate an IN clause (which is more efficient). If the OR operator contains
  * AND operator children, the optimization might generate an IN clause that uses
  * structs.
- */  
+ */
   public static class JoinCondition extends HivePointLookupOptimizerRule {
     public JoinCondition (int minNumORClauses) {
       super(operand(Join.class, any()), minNumORClauses);
     }
-    
+
+    @Override
     public void onMatch(RelOptRuleCall call) {
       final Join join = call.rel(0);
       final RexBuilder rexBuilder = join.getCluster().getRexBuilder();
@@ -133,24 +134,27 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
   public void analyzeCondition(RelOptRuleCall call,
           RexBuilder rexBuilder,
-          AbstractRelNode node, 
+          AbstractRelNode node,
           RexNode condition) {
 
-    // 1. We try to transform possible candidates
+    // 1. unwind INs with < minNumORClauses arguments
+    RexNode newCondition = new SubstituteInShuttle(rexBuilder, minNumORClauses).apply(condition);
+
+    // 2. We try to transform possible candidates
     RexTransformIntoInClause transformIntoInClause = new RexTransformIntoInClause(rexBuilder, node,
             minNumORClauses);
-    RexNode newCondition = transformIntoInClause.apply(condition);
+    newCondition = transformIntoInClause.apply(newCondition);
 
-    // 2. We merge IN expressions
+    // 3. We merge IN expressions
     RexMergeInClause mergeInClause = new RexMergeInClause(rexBuilder);
     newCondition = mergeInClause.apply(newCondition);
 
-    // 3. If we could not transform anything, we bail out
+    // 4. If we could not transform anything, we bail out
     if (newCondition.toString().equals(condition.toString())) {
       return;
     }
 
-    // 4. We create the Filter/Join with the new condition
+    // 5. We create the Filter/Join with the new condition
     RelNode newNode = copyNode(node, newCondition);
 
     call.transformTo(newNode);
@@ -426,6 +430,70 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       return newExpressions;
     }
 
+  }
+
+  /** Substitutes an IN into ORs */
+  protected static class SubstituteInShuttle extends RexShuttle {
+
+    private RexBuilder rexBuilder;
+    private int maxOperands;
+
+    public SubstituteInShuttle(RexBuilder rexBuilder, int maxOperands) {
+      super();
+      this.rexBuilder = rexBuilder;
+      this.maxOperands = maxOperands;
+    }
+
+    @Override
+    public RexNode visitCall(RexCall call) {
+      for (;;) {
+        call = (RexCall) super.visitCall(call);
+        final RexCall old = call;
+        call = decomposeIn(call);
+        if (call == old) {
+          return call;
+        }
+      }
+    }
+
+    private RexCall decomposeIn(RexCall call) {
+      if (call.getClass() != RexCall.class) {
+        return call;
+      }
+      if (call.getKind() != SqlKind.IN) {
+        return call;
+      }
+      List<RexNode> ops = call.getOperands();
+      List<RexNode> newOperands = new ArrayList<>();
+
+      if (ops.size() >= maxOperands) {
+        return call;
+      }
+
+      RexNode leftOp = ops.get(0);
+      for (int i = 1; i < ops.size(); i++) {
+        RexNode rexNode = ops.get(i);
+        newOperands.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, leftOp, rexNode));
+      }
+      return (RexCall) rexBuilder.makeCall(SqlStdOperatorTable.OR, newOperands);
+    }
+
+    private RexNode getReplacement(List<RexNode> ops) {
+      switch (ops.size()) {
+      case 1:
+        return rexBuilder.makeLiteral(true);
+      case 2:
+        return rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, ops);
+      }
+      RexNode leftOp = ops.get(0);
+      List<RexNode> newOperands = new ArrayList<>();
+
+      for (int i = 1; i < ops.size(); i++) {
+        RexNode rexNode = ops.get(i);
+        newOperands.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, leftOp, rexNode));
+      }
+      return rexBuilder.makeCall(SqlStdOperatorTable.OR, newOperands);
+    }
   }
 
 }

@@ -105,6 +105,7 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
 
     @Override public void onMatch(RelOptRuleCall call) {
       final Filter filter = call.rel(0);
+      RelNode origFilter = filter.copy(filter.getTraitSet(), filter.getInputs());
       final List<RexNode> expList =
           Lists.newArrayList(filter.getCondition());
       RexNode newConditionExp;
@@ -129,6 +130,7 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
       // predicate to see if it was already a constant,
       // in which case we don't need any runtime decision
       // about filtering.
+      RelNode newRel = null;
       if (newConditionExp.isAlwaysTrue()) {
         call.transformTo(
             filter.getInput());
@@ -144,8 +146,9 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
         if(newConditionExp.getType().getSqlTypeName() == SqlTypeName.NULL) {
           newConditionExp = call.builder().cast(newConditionExp, SqlTypeName.BOOLEAN);
         }
-        call.transformTo(call.builder().
-            push(filter.getInput()).filter(newConditionExp).build());
+        newRel = call.builder().
+            push(filter.getInput()).filter(newConditionExp).build();
+        call.transformTo(newRel);
       } else {
         if (newConditionExp instanceof RexCall) {
           RexCall rexCall = (RexCall) newConditionExp;
@@ -162,6 +165,10 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
         return;
       }
 
+
+      if (newRel != null) {
+        call.getPlanner().ensureRegistered(newRel, filter);
+      }
       // New plan is absolutely better than old plan.
       call.getPlanner().setImportance(filter, 0.0);
     }
