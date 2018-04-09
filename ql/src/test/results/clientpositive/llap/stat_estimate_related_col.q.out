@@ -259,3 +259,52 @@ Stage-0
                     TableScan [TS_0] (rows=40/40 width=8)
                       default@t8,t8,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
 
+Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select count(*) from t8 ta, t8 tb where ta.a = tb.b and ta.a=3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t8
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from t8 ta, t8 tb where ta.a = tb.b and ta.a=3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t8
+#### A masked pattern was here ####
+Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain analyze select count(*) from t8 ta, t8 tb where ta.a = tb.b and ta.a=3
+PREHOOK: type: QUERY
+POSTHOOK: query: explain analyze select count(*) from t8 ta, t8 tb where ta.a = tb.b and ta.a=3
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (XPROD_EDGE), Map 4 (XPROD_EDGE)
+Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 3 llap
+      File Output Operator [FS_14]
+        Group By Operator [GBY_12] (rows=1/1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Reducer 2 [CUSTOM_SIMPLE_EDGE] llap
+          PARTITION_ONLY_SHUFFLE [RS_11]
+            Group By Operator [GBY_10] (rows=1/1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Merge Join Operator [MERGEJOIN_17] (rows=64/64 width=8)
+                Conds:(Inner)
+              <-Map 1 [XPROD_EDGE] llap
+                XPROD_EDGE [RS_6]
+                  Select Operator [SEL_2] (rows=8/8 width=4)
+                    Filter Operator [FIL_15] (rows=8/8 width=4)
+                      predicate:(a = 3)
+                      TableScan [TS_0] (rows=40/40 width=4)
+                        default@t8,ta,Tbl:COMPLETE,Col:COMPLETE,Output:["a"]
+              <-Map 4 [XPROD_EDGE] llap
+                XPROD_EDGE [RS_7]
+                  Select Operator [SEL_5] (rows=8/8 width=4)
+                    Filter Operator [FIL_16] (rows=8/8 width=4)
+                      predicate:(b = 3)
+                      TableScan [TS_3] (rows=40/40 width=4)
+                        default@t8,tb,Tbl:COMPLETE,Col:COMPLETE,Output:["b"]
+
