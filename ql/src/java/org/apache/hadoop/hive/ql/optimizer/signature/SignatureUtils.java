@@ -64,13 +64,7 @@ public class SignatureUtils {
         }
       }
 
-      Signature ann = o.getAnnotation(Signature.class);
-      if (ann != null && ann.getLabel().length() > 0) {
-        classLabel = ann.getLabel();
-      } else {
-        classLabel = o.getClass().getName();
-      }
-
+      classLabel = o.getName();
     }
 
     public void write(Map<String, Object> ret, Object o) {

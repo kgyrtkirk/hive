@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.optimizer.signature.TestOperatorSignature;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.apache.hive.testutils.HiveTestEnvSetup;
@@ -102,7 +102,7 @@ public class TestOperatorCmp {
     String query = "select u from tu where id_uv = 1 union all select v from tv where id_uv = 1";
 
     PlanMapper pm = getMapperForQuery(driver, query);
-    Iterator<LinkGroup> itG = pm.iterateGroups();
+    Iterator<EquivGroup> itG = pm.iterateGroups();
     List<FilterOperator> fos = pm.getAll(FilterOperator.class);
     // the same operator is present 2 times
     fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());

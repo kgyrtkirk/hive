@@ -23,11 +23,10 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
-public class SimpleRuntimeStatsSource implements RuntimeStatsSource {
+public class SimpleRuntimeStatsSource implements StatsSource {
 
   private final PlanMapper pm;
 
@@ -52,9 +51,6 @@ public class SimpleRuntimeStatsSource implements RuntimeStatsSource {
   @Override
   public boolean canProvideStatsFor(Class<?> class1) {
     if (Operator.class.isAssignableFrom(class1)) {
-      return true;
-    }
-    if (HiveFilter.class.isAssignableFrom(class1)) {
       return true;
     }
     return false;

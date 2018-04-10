@@ -19,8 +19,10 @@
 package org.apache.hadoop.hive.ql.plan.mapper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,10 +42,22 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public class PlanMapper {
 
-  Set<LinkGroup> groups = new HashSet<>();
-  private Map<Object, LinkGroup> objectMap = new HashMap<>();
+  Set<EquivGroup> groups = new HashSet<>();
+  private Map<Object, EquivGroup> objectMap = new HashMap<>();
 
-  public class LinkGroup {
+  /**
+   * A set of objects which are representing the same thing.
+   *
+   * A Group may contain different kind of things which are connected by their purpose;
+   * For example currently a group may contain the following objects:
+   * <ul>
+   *   <li> Operator(s) - which are doing the actual work;
+   *   there might be more than one, since an optimization may replace an operator with a new one
+   *   <li> Signature - to enable inter-plan look up of the same data
+   *   <li> OperatorStats - collected runtime information
+   * <ul>
+   */
+  public class EquivGroup {
     Set<Object> members = new HashSet<>();
 
     public void add(Object o) {
@@ -66,21 +80,36 @@ public class PlanMapper {
     }
   }
 
+  /**
+   * States that the two objects are representing the same.
+   *
+   * For example if during an optimization Operator_A is replaced by a specialized Operator_A1;
+   * then those two can be linked.
+   */
   public void link(Object o1, Object o2) {
-    Object k1 = getKeyFor(o1);
-    Object k2 = getKeyFor(o2);
 
-    LinkGroup g1 = objectMap.get(k1);
-    LinkGroup g2 = objectMap.get(k2);
-    if (g1 != null && g2 != null && g1 != g2) {
+    Set<Object> keySet = Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());
+    keySet.add(o1);
+    keySet.add(o2);
+    keySet.add(getKeyFor(o1));
+    keySet.add(getKeyFor(o2));
+
+    Set<EquivGroup> mGroups = Collections.newSetFromMap(new IdentityHashMap<EquivGroup, Boolean>());
+
+    for (Object object : keySet) {
+      EquivGroup group = objectMap.get(object);
+      if (group != null) {
+        mGroups.add(group);
+      }
+    }
+    if (mGroups.size() > 1) {
       throw new RuntimeException("equivalence mapping violation");
     }
-    LinkGroup targetGroup = (g1 != null) ? g1 : (g2 != null ? g2 : new LinkGroup());
+    EquivGroup targetGroup = mGroups.isEmpty() ? new EquivGroup() : mGroups.iterator().next();
     groups.add(targetGroup);
     targetGroup.add(o1);
     targetGroup.add(o2);
-    targetGroup.add(k1);
-    targetGroup.add(k2);
+
   }
 
   private OpTreeSignatureFactory signatureCache = OpTreeSignatureFactory.newCache();
@@ -95,20 +124,20 @@ public class PlanMapper {
 
   public <T> List<T> getAll(Class<T> clazz) {
     List<T> ret = new ArrayList<>();
-    for (LinkGroup g : groups) {
+    for (EquivGroup g : groups) {
       ret.addAll(g.getAll(clazz));
     }
     return ret;
   }
 
   public void runMapper(GroupTransformer mapper) {
-    for (LinkGroup equivGroup : groups) {
+    for (EquivGroup equivGroup : groups) {
       mapper.map(equivGroup);
     }
   }
 
   public <T> List<T> lookupAll(Class<T> clazz, Object key) {
-    LinkGroup group = objectMap.get(key);
+    EquivGroup group = objectMap.get(key);
     if (group == null) {
       throw new NoSuchElementException(Objects.toString(key));
     }
@@ -125,20 +154,13 @@ public class PlanMapper {
   }
 
   @VisibleForTesting
-  public Iterator<LinkGroup> iterateGroups() {
+  public Iterator<EquivGroup> iterateGroups() {
     return groups.iterator();
 
   }
 
   public OpTreeSignature getSignatureOf(Operator<?> op) {
     OpTreeSignature sig = signatureCache.getSignature(op);
-    LinkGroup g = objectMap.get(sig);
-    if (g == null) {
-      g = new LinkGroup();
-      g.add(sig);
-      groups.add(g);
-    }
-    g.add(op);
     return sig;
   }
 

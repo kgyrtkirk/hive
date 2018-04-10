@@ -157,7 +157,8 @@ public class Initiator extends CompactorThread {
               /*Future thought: checkForCompaction will check a lot of file metadata and may be expensive.
               * Long term we should consider having a thread pool here and running checkForCompactionS
               * in parallel*/
-              CompactionType compactionNeeded = checkForCompaction(ci, tblValidWriteIds, sd, t.getParameters(), runAs);
+              CompactionType compactionNeeded
+                      = checkForCompaction(ci, tblValidWriteIds, sd, t.getParameters(), runAs);
               if (compactionNeeded != null) requestCompaction(ci, runAs, compactionNeeded);
             } catch (Throwable t) {
               LOG.error("Caught exception while trying to determine if we should compact " +
@@ -172,6 +173,9 @@ public class Initiator extends CompactorThread {
 
           // Clean anything from the txns table that has no components left in txn_components.
           txnHandler.cleanEmptyAbortedTxns();
+
+          // Clean TXN_TO_WRITE_ID table for entries under min_uncommitted_txn referred by any open txns.
+          txnHandler.cleanTxnToWriteIdTable();
         } catch (Throwable t) {
           LOG.error("Initiator loop caught unexpected exception this time through the loop: " +
               StringUtils.stringifyException(t));
@@ -235,6 +239,12 @@ public class Initiator extends CompactorThread {
           "initiating major compaction");
       return CompactionType.MAJOR;
     }
+
+    // If it is for insert-only transactional table, return null.
+    if (AcidUtils.isInsertOnlyTable(tblproperties)) {
+      return null;
+    }
+
     if (runJobAsSelf(runAs)) {
       return determineCompactionType(ci, writeIds, sd, tblproperties);
     } else {
@@ -260,10 +270,6 @@ public class Initiator extends CompactorThread {
   private CompactionType determineCompactionType(CompactionInfo ci, ValidWriteIdList writeIds,
                                                  StorageDescriptor sd, Map<String, String> tblproperties)
       throws IOException, InterruptedException {
-
-    if (AcidUtils.isInsertOnlyTable(tblproperties)) {
-      return CompactionType.MINOR;
-    }
 
     boolean noBase = false;
     Path location = new Path(sd.getLocation());

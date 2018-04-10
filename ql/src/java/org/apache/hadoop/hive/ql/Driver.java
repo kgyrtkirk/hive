@@ -33,6 +33,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +58,7 @@ import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
@@ -66,6 +68,9 @@ import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DagUtils;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionUtils;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionType;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -75,6 +80,7 @@ import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.Entity;
+import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
 import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
@@ -111,7 +117,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.RuntimeStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -194,7 +200,11 @@ public class Driver implements IDriver {
   // Transaction manager used for the query. This will be set at compile time based on
   // either initTxnMgr or from the SessionState, in that order.
   private HiveTxnManager queryTxnMgr;
-  private RuntimeStatsSource runtimeStatsSource;
+  private StatsSource statsSource;
+
+  // Boolean to store information about whether valid txn list was generated
+  // for current query.
+  private boolean validTxnListsGenerated;
 
   private CacheUsage cacheUsage;
   private CacheEntry usedCacheEntry;
@@ -284,6 +294,10 @@ public class Driver implements IDriver {
   @Override
   public Schema getSchema() {
     return schema;
+  }
+
+  public Schema getExplainSchema() {
+    return new Schema(ExplainTask.getResultSchema(), null);
   }
 
   @Override
@@ -570,7 +584,7 @@ public class Driver implements IDriver {
         setTriggerContext(queryId);
       }
 
-      ctx.setRuntimeStatsSource(runtimeStatsSource);
+      ctx.setStatsSource(statsSource);
       ctx.setCmd(command);
       ctx.setHDFSCleanup(true);
 
@@ -591,7 +605,9 @@ public class Driver implements IDriver {
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
 
       hookRunner.runBeforeCompileHook(command);
-
+      // clear CurrentFunctionsInUse set, to capture new set of functions
+      // that SemanticAnalyzer finds are in use
+      SessionState.get().getCurrentFunctionsInUse().clear();
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
 
       // Flush the metastore cache.  This assures that we don't pick up objects from a previous
@@ -613,6 +629,9 @@ public class Driver implements IDriver {
         tree =  hookRunner.runPreAnalyzeHooks(hookCtx, tree);
         sem = SemanticAnalyzerFactory.get(queryState, tree);
         openTransaction();
+        // TODO: Lock acquisition should be moved before this method call
+        // when we want to implement lock-based concurrency control
+        generateValidTxnList();
         sem.analyze(tree, ctx);
         hookCtx.update(sem);
 
@@ -620,6 +639,9 @@ public class Driver implements IDriver {
       } else {
         sem = SemanticAnalyzerFactory.get(queryState, tree);
         openTransaction();
+        // TODO: Lock acquisition should be moved before this method call
+        // when we want to implement lock-based concurrency control
+        generateValidTxnList();
         sem.analyze(tree, ctx);
       }
       LOG.info("Semantic Analysis Completed");
@@ -769,6 +791,24 @@ public class Driver implements IDriver {
     }
   }
 
+  private void generateValidTxnList() throws LockException {
+    // Record current valid txn list that will be used throughout the query
+    // compilation and processing. We only do this if 1) a transaction
+    // was already opened and 2) the list has not been recorded yet,
+    // e.g., by an explicit open transaction command.
+    validTxnListsGenerated = false;
+    String currentTxnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+    if (queryTxnMgr.isTxnOpen() && (currentTxnString == null || currentTxnString.isEmpty())) {
+      try {
+        recordValidTxns(queryTxnMgr);
+        validTxnListsGenerated = true;
+      } catch (LockException e) {
+        LOG.error("Exception while acquiring valid txn list", e);
+        throw e;
+      }
+    }
+  }
+
   private boolean startImplicitTxn(HiveTxnManager txnManager) throws LockException {
     boolean shouldOpenImplicitTxn = !ctx.isExplainPlan();
     //this is dumb. HiveOperation is not always set. see HIVE-16447/HIVE-16443
@@ -900,12 +940,22 @@ public class Driver implements IDriver {
       // get mapping of tables to columns used
       ColumnAccessInfo colAccessInfo = sem.getColumnAccessInfo();
       // colAccessInfo is set only in case of SemanticAnalyzer
-      Map<String, List<String>> selectTab2Cols = colAccessInfo != null ? colAccessInfo
-          .getTableToColumnAccessMap() : null;
-      Map<String, List<String>> updateTab2Cols = sem.getUpdateColumnAccessInfo() != null ?
-          sem.getUpdateColumnAccessInfo().getTableToColumnAccessMap() : null;
-      doAuthorizationV2(ss, op, inputs, outputs, command, selectTab2Cols, updateTab2Cols);
-     return;
+      Map<String, List<String>> selectTab2Cols = colAccessInfo != null
+          ? colAccessInfo.getTableToColumnAccessMap() : null;
+      Map<String, List<String>> updateTab2Cols = sem.getUpdateColumnAccessInfo() != null
+          ? sem.getUpdateColumnAccessInfo().getTableToColumnAccessMap() : null;
+
+      // convert to List as above Set was created using Sets.union (for reasons
+      // explained there)
+      // but that Set is immutable
+      List<ReadEntity> inputList = new ArrayList<ReadEntity>(inputs);
+      List<WriteEntity> outputList = new ArrayList<WriteEntity>(outputs);
+
+      // add permanent UDFs being used
+      inputList.addAll(getPermanentFunctionEntities(ss));
+
+      doAuthorizationV2(ss, op, inputList, outputList, command, selectTab2Cols, updateTab2Cols);
+      return;
     }
     if (op == null) {
       throw new HiveException("Operation should not be null");
@@ -1045,6 +1095,29 @@ public class Driver implements IDriver {
     }
   }
 
+  private static List<ReadEntity> getPermanentFunctionEntities(SessionState ss) throws HiveException {
+    List<ReadEntity> functionEntities = new ArrayList<>();
+    for (Entry<String, FunctionInfo> permFunction : ss.getCurrentFunctionsInUse().entrySet()) {
+      if (permFunction.getValue().getFunctionType() != FunctionType.PERSISTENT) {
+        // Only permanent functions need to be authorized.
+        // Built-in function access is allowed to all users.
+        // If user can create a temp function, they should be able to use it
+        // without additional authorization.
+        continue;
+      }
+      functionEntities.add(createReadEntity(permFunction.getKey(), permFunction.getValue()));
+    }
+    return functionEntities;
+  }
+
+  private static ReadEntity createReadEntity(String functionName, FunctionInfo functionInfo)
+      throws HiveException {
+    String[] qualFunctionName = FunctionUtils.getQualifiedFunctionNameParts(functionName);
+    // this is only for the purpose of authorization, only the name matters.
+    Database db = new Database(qualFunctionName[0], "", "", null);
+    return new ReadEntity(db, qualFunctionName[1], functionInfo.getClassName(), Type.FUNCTION);
+  }
+
   private static void getTablePartitionUsedColumns(HiveOperation op, BaseSemanticAnalyzer sem,
       Map<Table, List<String>> tab2Cols, Map<Partition, List<String>> part2Cols,
       Map<String, Boolean> tableUsePartLevelAuth) throws HiveException {
@@ -1099,8 +1172,8 @@ public class Driver implements IDriver {
     }
   }
 
-  private static void doAuthorizationV2(SessionState ss, HiveOperation op, Set<ReadEntity> inputs,
-      Set<WriteEntity> outputs, String command, Map<String, List<String>> tab2cols,
+  private static void doAuthorizationV2(SessionState ss, HiveOperation op, List<ReadEntity> inputs,
+      List<WriteEntity> outputs, String command, Map<String, List<String>> tab2cols,
       Map<String, List<String>> updateTab2Cols) throws HiveException {
 
     /* comment for reviewers -> updateTab2Cols needed to be separate from tab2cols because if I
@@ -1121,7 +1194,7 @@ public class Driver implements IDriver {
   }
 
   private static List<HivePrivilegeObject> getHivePrivObjects(
-      Set<? extends Entity> privObjects, Map<String, List<String>> tableName2Cols) {
+      List<? extends Entity> privObjects, Map<String, List<String>> tableName2Cols) {
     List<HivePrivilegeObject> hivePrivobjs = new ArrayList<HivePrivilegeObject>();
     if(privObjects == null){
       return hivePrivobjs;
@@ -1360,8 +1433,10 @@ public class Driver implements IDriver {
       /*It's imperative that {@code acquireLocks()} is called for all commands so that
       HiveTxnManager can transition its state machine correctly*/
       queryTxnMgr.acquireLocks(plan, ctx, userFromUGI, lDrvState);
-      if (queryTxnMgr.recordSnapshot(plan)) {
-        recordValidTxns(queryTxnMgr);
+      // This check is for controlling the correctness of the current state
+      if (queryTxnMgr.recordSnapshot(plan) && !validTxnListsGenerated) {
+        throw new IllegalStateException("calling recordValidTxn() more than once in the same " +
+            JavaUtils.txnIdToString(queryTxnMgr.getCurrentTxnId()));
       }
       if (plan.hasAcidResourcesInQuery()) {
         recordValidWriteIds(queryTxnMgr);
@@ -1519,11 +1594,21 @@ public class Driver implements IDriver {
 
   @Override
   public CommandProcessorResponse compileAndRespond(String command) {
+    return compileAndRespond(command, false);
+  }
+
+  public CommandProcessorResponse compileAndRespond(String command, boolean cleanupTxnList) {
     try {
       compileInternal(command, false);
       return createProcessorResponse(0);
     } catch (CommandProcessorResponse e) {
       return e;
+    } finally {
+      if (cleanupTxnList) {
+        // Valid txn list might be generated for a query compiled using this
+        // command, thus we need to reset it
+        conf.unset(ValidTxnList.VALID_TXNS_KEY);
+      }
     }
   }
 
@@ -1854,13 +1939,29 @@ public class Driver implements IDriver {
 
   private void useFetchFromCache(CacheEntry cacheEntry) {
     // Change query FetchTask to use new location specified in results cache.
-    FetchTask fetchTaskFromCache = (FetchTask) TaskFactory.get(cacheEntry.getFetchWork(), conf);
+    FetchTask fetchTaskFromCache = (FetchTask) TaskFactory.get(cacheEntry.getFetchWork());
     fetchTaskFromCache.initialize(queryState, plan, null, ctx.getOpContext());
     plan.setFetchTask(fetchTaskFromCache);
     cacheUsage = new CacheUsage(CacheUsage.CacheStatus.QUERY_USING_CACHE, cacheEntry);
   }
 
-  private void checkCacheUsage() throws Exception {
+  private void preExecutionCacheActions() throws Exception {
+    if (cacheUsage != null) {
+      if (cacheUsage.getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
+          plan.getFetchTask() != null) {
+        // The results of this query execution might be cacheable.
+        // Add a placeholder entry in the cache so other queries know this result is pending.
+        CacheEntry pendingCacheEntry =
+            QueryResultsCache.getInstance().addToCache(cacheUsage.getQueryInfo());
+        if (pendingCacheEntry != null) {
+          // Update cacheUsage to reference the pending entry.
+          this.cacheUsage.setCacheEntry(pendingCacheEntry);
+        }
+      }
+    }
+  }
+
+  private void postExecutionCacheActions() throws Exception {
     if (cacheUsage != null) {
       if (cacheUsage.getStatus() == CacheUsage.CacheStatus.QUERY_USING_CACHE) {
         // Using a previously cached result.
@@ -1868,22 +1969,22 @@ public class Driver implements IDriver {
 
         // Reader count already incremented during cache lookup.
         // Save to usedCacheEntry to ensure reader is released after query.
-        usedCacheEntry = cacheEntry;
+        this.usedCacheEntry = cacheEntry;
       } else if (cacheUsage.getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
+          cacheUsage.getCacheEntry() != null &&
           plan.getFetchTask() != null) {
-        // The query could not be resolved using the cache, but the query results
-        // can be added to the cache for future queries to use.
+        // Save results to the cache for future queries to use.
         PerfLogger perfLogger = SessionState.getPerfLogger();
         perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SAVE_TO_RESULTS_CACHE);
 
-        CacheEntry savedCacheEntry =
-            QueryResultsCache.getInstance().addToCache(
-                cacheUsage.getQueryInfo(),
-                plan.getFetchTask().getWork());
-        if (savedCacheEntry != null) {
-          useFetchFromCache(savedCacheEntry);
-          // addToCache() already increments the reader count. Set usedCacheEntry so it gets released.
-          usedCacheEntry = savedCacheEntry;
+        boolean savedToCache = QueryResultsCache.getInstance().setEntryValid(
+            cacheUsage.getCacheEntry(),
+            plan.getFetchTask().getWork());
+        LOG.info("savedToCache: {}", savedToCache);
+        if (savedToCache) {
+          useFetchFromCache(cacheUsage.getCacheEntry());
+          // setEntryValid() already increments the reader count. Set usedCacheEntry so it gets released.
+          this.usedCacheEntry = cacheUsage.getCacheEntry();
         }
 
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SAVE_TO_RESULTS_CACHE);
@@ -1944,6 +2045,7 @@ public class Driver implements IDriver {
 
       SessionState ss = SessionState.get();
 
+      // TODO: should this use getUserFromAuthenticator?
       hookContext = new PrivateHookContext(plan, queryState, ctx.getPathToCS(), SessionState.get().getUserName(),
           ss.getUserIpAddress(), InetAddress.getLocalHost().getHostAddress(), operationId,
           ss.getSessionId(), Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger, queryInfo, ctx);
@@ -1999,6 +2101,8 @@ public class Driver implements IDriver {
           tsk.updateTaskMetrics(metrics);
         }
       }
+
+      preExecutionCacheActions();
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RUN_TASKS);
       // Loop while you either have tasks running, or tasks queued up
@@ -2099,7 +2203,7 @@ public class Driver implements IDriver {
       }
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.RUN_TASKS);
 
-      checkCacheUsage();
+      postExecutionCacheActions();
 
       // in case we decided to run everything in local mode, restore the
       // the jobtracker setting to its initial value
@@ -2499,13 +2603,31 @@ public class Driver implements IDriver {
     }
   }
 
+  private boolean hasBadCacheAttempt() {
+    // Check if the query results were cacheable, and created a pending cache entry.
+    // If we successfully saved the results, the usage would have changed to QUERY_USING_CACHE.
+    return (cacheUsage != null &&
+        cacheUsage.getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
+        cacheUsage.getCacheEntry() != null);
+  }
+
   private void releaseCachedResult() {
     // Assumes the reader count has been incremented automatically by the results cache by either
     // lookup or creating the cache entry.
     if (usedCacheEntry != null) {
       usedCacheEntry.releaseReader();
       usedCacheEntry = null;
+    } else if (hasBadCacheAttempt()) {
+      // This query create a pending cache entry but it was never saved with real results, cleanup.
+      // This step is required, as there may be queries waiting on this pending cache entry.
+      // Removing/invalidating this entry will notify the waiters that this entry cannot be used.
+      try {
+        QueryResultsCache.getInstance().removeEntry(cacheUsage.getCacheEntry());
+      } catch (Exception err) {
+        LOG.error("Error removing failed cache entry " + cacheUsage.getCacheEntry(), err);
+      }
     }
+    cacheUsage = null;
   }
 
   // Close and release resources within a running query process. Since it runs under
@@ -2614,8 +2736,23 @@ public class Driver implements IDriver {
     return hookRunner;
   }
 
-  public void setRuntimeStatsSource(RuntimeStatsSource runtimeStatsSource) {
-    this.runtimeStatsSource = runtimeStatsSource;
+  public void setStatsSource(StatsSource runtimeStatsSource) {
+    this.statsSource = runtimeStatsSource;
   }
 
+  @Override
+  public boolean hasResultSet() {
+
+    // TODO explain should use a FetchTask for reading
+    for (Task<? extends Serializable> task : plan.getRootTasks()) {
+      if (task.getClass() == ExplainTask.class) {
+        return true;
+      }
+    }
+    if (plan.getFetchTask() != null && schema != null && schema.isSetFieldSchemas()) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
