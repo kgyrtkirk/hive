@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
  *
  * This can be used to check planning on a large scale database.
  */
-public class TPCDS30 {
+public class MetaStoreDumpUtility {
 
   static final Logger LOG = LoggerFactory.getLogger("QTestUtil");
 
