@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.reexec;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
@@ -28,21 +29,19 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 public class SessionStatsPlugin implements IReExecutionPlugin {
 
   private SessionStatsSource statsSource;
+  private boolean alwaysCollectStats;
 
   @Override
   public void initialize(Driver driver) {
+    HiveConf conf = driver.getConf();
     SessionState ss = SessionState.get();
     statsSource = (SessionStatsSource) ss.getSessionStatsSource();
     if (statsSource == null) {
-      statsSource = new SessionStatsSource();
+      statsSource = new SessionStatsSource(conf);
       ss.setSessionStatsSource(statsSource);
     }
     driver.setStatsSource(statsSource);
-    if (!driver.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS)) {
-      throw new RuntimeException(
-          "To use session level statistics enable: "
-              + ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS.varname);
-    }
+    alwaysCollectStats = conf.getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS);
   }
 
   @Override
@@ -51,7 +50,9 @@ public class SessionStatsPlugin implements IReExecutionPlugin {
 
   @Override
   public void afterExecute(PlanMapper planMapper) {
-    StatsSources.loadFromPlanMapper(statsSource, planMapper);
+    if (alwaysCollectStats) {
+      StatsSources.loadFromPlanMapper(statsSource, planMapper);
+    }
   }
 
   @Override

@@ -51,13 +51,19 @@ public class StatsSources {
       List<OpTreeSignature> sig = e.getAll(OpTreeSignature.class);
 
       if (stat.size() > 1 || sig.size() > 1) {
-        if (sig.size() >= 1) {
-          LOG.info("expected 1-1; got {} ; {}  {}", stat.size(), sig.size(),sig.get(0));
-        } else {
-          LOG.info("expected 1-1; got {} ; {}", stat.size(), sig.size());
+        StringBuffer sb = new StringBuffer();
+        sb.append(String.format("expected(stat-sig) 1-1, got {}-{} ;", stat.size(), sig.size()));
+        for (OperatorStats s : stat) {
+          sb.append(s);
+          sb.append(";");
         }
+        for (OpTreeSignature s : sig) {
+          sb.append(s);
+          sb.append(";");
+        }
+        LOG.info(sb.toString());
       }
-      if (stat.size() == 1 && sig.size() == 1) {
+      if (stat.size() >= 1 && sig.size() >= 1) {
         sessionStatsSource.put(sig.get(0), stat.get(0));
       }
     }
