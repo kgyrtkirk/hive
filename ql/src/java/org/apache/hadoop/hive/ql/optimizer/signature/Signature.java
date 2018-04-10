@@ -31,5 +31,4 @@ import java.lang.annotation.Target;
 @Target(value = { ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Signature {
-
 }
