@@ -42,6 +42,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -221,6 +222,8 @@ public class MetaStoreDumpUtility {
       }
 
       s.execute("ALTER TABLE APP.TAB_COL_STATS ADD COLUMN CAT_NAME VARCHAR(256)");
+      s.execute("update APP.TAB_COL_STATS set CAT_NAME = '" + Warehouse.DEFAULT_CATALOG_NAME + "'");
+
       s.close();
 
       conn.close();
