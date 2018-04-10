@@ -49,7 +49,12 @@ import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class T30 {
+/**
+ * Utility class which can load an existing metastore dump.
+ *
+ * This can be used to check planning on a large scale database.
+ */
+public class TPCDS30 {
 
   static final Logger LOG = LoggerFactory.getLogger("QTestUtil");
 
