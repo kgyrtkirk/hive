@@ -31,7 +31,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,8 +42,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaException;
-import org.apache.hive.beeline.HiveSchemaTool;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,11 +53,10 @@ import org.slf4j.LoggerFactory;
  */
 public class MetaStoreDumpUtility {
 
-  static final Logger LOG = LoggerFactory.getLogger("QTestUtil");
+  static final Logger LOG = LoggerFactory.getLogger(MetaStoreDumpUtility.class);
 
   public static void setupMetaStoreTableColumnStatsFor30TBTPCDSWorkload(HiveConf conf, String tmpBaseDir) {
     Connection conn = null;
-    ArrayList<Statement> statements = new ArrayList<Statement>(); // list of Statements, PreparedStatements
 
     try {
       Properties props = new Properties(); // connection properties
@@ -95,8 +91,8 @@ public class MetaStoreDumpUtility {
         }
         try {
           PreparedStatement psCommand = conn.prepareStatement(command.substring(0, command.length()-1));
-          statements.add(psCommand);
           psCommand.execute();
+          psCommand.close();
           if (LOG.isDebugEnabled()) {
             LOG.debug("successfully completed " + command);
           }
@@ -204,64 +200,34 @@ public class MetaStoreDumpUtility {
       String importStatement2 =  "CALL SYSCS_UTIL.SYSCS_IMPORT_TABLE(null, '" + "TABLE_PARAMS" +
         "', '" + tmpFileLoc2.toAbsolutePath().toString() +
         "', '@', null, 'UTF-8', 1)";
-      try {
-        PreparedStatement psImport1 = conn.prepareStatement(importStatement1);
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Going to execute : " + importStatement1);
-        }
-        statements.add(psImport1);
-        psImport1.execute();
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("successfully completed " + importStatement1);
-        }
-        PreparedStatement psImport2 = conn.prepareStatement(importStatement2);
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Going to execute : " + importStatement2);
-        }
-        statements.add(psImport2);
-        psImport2.execute();
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("successfully completed " + importStatement2);
-        }
-        //        upgradeSchemaToLatest();
-        throw new RuntimeException("no-error");
 
-      } catch (SQLException e) {
-        LOG.info("Got SQL Exception  " + e.getMessage());
+      PreparedStatement psImport1 = conn.prepareStatement(importStatement1);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Going to execute : " + importStatement1);
       }
+      psImport1.execute();
+      psImport1.close();
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("successfully completed " + importStatement1);
+      }
+      PreparedStatement psImport2 = conn.prepareStatement(importStatement2);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Going to execute : " + importStatement2);
+      }
+      psImport2.execute();
+      psImport2.close();
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("successfully completed " + importStatement2);
+      }
+
+      s.execute("ALTER TABLE APP.TAB_COL_STATS ADD COLUMN CAT_NAME VARCHAR(256)");
+      s.close();
+
+      conn.close();
+
     } catch (Exception e) {
       throw new RuntimeException("error while loading tpcds metastore dump", e);
-    } finally {
-      // Statements and PreparedStatements
-      int i = 0;
-      while (!statements.isEmpty()) {
-        // PreparedStatement extend Statement
-        Statement st = statements.remove(i);
-        try {
-          if (st != null) {
-            st.close();
-            st = null;
-          }
-        } catch (SQLException sqle) {
-          throw new RuntimeException("Error closing statements");
-        }
-      }
-
-      //Connection
-      try {
-        if (conn != null) {
-          conn.close();
-          conn = null;
-        }
-      } catch (SQLException sqle) {
-        throw new RuntimeException("Error closing conn");
-      }
     }
-  }
-
-  private static void upgradeSchemaToLatest() throws Exception {
-    HiveSchemaTool schemaTool = new HiveSchemaTool("derby", null);
-    schemaTool.setUrl(url);
   }
 
 }
