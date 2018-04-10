@@ -20,9 +20,7 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -45,6 +43,8 @@ import java.util.stream.Stream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaException;
+import org.apache.hive.beeline.HiveSchemaTool;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -223,17 +223,15 @@ public class MetaStoreDumpUtility {
         if (LOG.isDebugEnabled()) {
           LOG.debug("successfully completed " + importStatement2);
         }
+        //        upgradeSchemaToLatest();
+        throw new RuntimeException("no-error");
+
       } catch (SQLException e) {
         LOG.info("Got SQL Exception  " + e.getMessage());
       }
-    } catch (FileNotFoundException e1) {
-      throw new RuntimeException(e1);
-      //      LOG.info("Got File not found Exception " + e1.getMessage());
-  } catch (IOException e1) {
-      throw new RuntimeException(e1);
-  } catch (SQLException e1) {
-      throw new RuntimeException(e1);
-  } finally {
+    } catch (Exception e) {
+      throw new RuntimeException("error while loading tpcds metastore dump", e);
+    } finally {
       // Statements and PreparedStatements
       int i = 0;
       while (!statements.isEmpty()) {
@@ -245,6 +243,7 @@ public class MetaStoreDumpUtility {
             st = null;
           }
         } catch (SQLException sqle) {
+          throw new RuntimeException("Error closing statements");
         }
       }
 
@@ -255,8 +254,14 @@ public class MetaStoreDumpUtility {
           conn = null;
         }
       } catch (SQLException sqle) {
+        throw new RuntimeException("Error closing conn");
       }
     }
+  }
+
+  private static void upgradeSchemaToLatest() throws Exception {
+    HiveSchemaTool schemaTool = new HiveSchemaTool("derby", null);
+    schemaTool.setUrl(url);
   }
 
 }
