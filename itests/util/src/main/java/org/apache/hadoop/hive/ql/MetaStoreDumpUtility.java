@@ -29,7 +29,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -90,15 +89,11 @@ public class MetaStoreDumpUtility {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Going to run command : " + command);
         }
-        try {
-          PreparedStatement psCommand = conn.prepareStatement(command.substring(0, command.length()-1));
-          psCommand.execute();
-          psCommand.close();
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("successfully completed " + command);
-          }
-        } catch (SQLException e) {
-          LOG.info("Got SQL Exception " + e.getMessage());
+        PreparedStatement psCommand = conn.prepareStatement(command.substring(0, command.length() - 1));
+        psCommand.execute();
+        psCommand.close();
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("successfully completed " + command);
         }
       }
       br.close();
