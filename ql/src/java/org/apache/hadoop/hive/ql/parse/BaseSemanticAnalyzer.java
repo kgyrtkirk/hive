@@ -765,10 +765,11 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   protected static void processDefaultConstraints(String catName, String databaseName, String tableName,
-      ASTNode child, List<String> columnNames, List<SQLDefaultConstraint> defaultConstraints, final ASTNode typeChild)
+      ASTNode child, List<String> columnNames, List<SQLDefaultConstraint> defaultConstraints, final ASTNode typeChild,
+                                                  final TokenRewriteStream tokenRewriteStream)
       throws SemanticException {
     List<ConstraintInfo> defaultInfos = new ArrayList<ConstraintInfo>();
-    generateConstraintInfos(child, columnNames, defaultInfos, typeChild, null);
+    generateConstraintInfos(child, columnNames, defaultInfos, typeChild, tokenRewriteStream);
     constraintInfosToDefaultConstraints(catName, databaseName, tableName, defaultInfos, defaultConstraints);
   }
 
@@ -930,7 +931,8 @@ public abstract class BaseSemanticAnalyzer {
    * @return retrieve the default value and return it as string
    * @throws SemanticException
    */
-  private static String getDefaultValue(ASTNode defaultValueAST, ASTNode typeChild) throws SemanticException{
+  private static String getDefaultValue(ASTNode defaultValueAST, ASTNode typeChild,
+                                        final TokenRewriteStream tokenStream) throws SemanticException{
     // first create expression from defaultValueAST
     TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
     ExprNodeDesc defaultValExpr = TypeCheckProcFactory
@@ -942,7 +944,8 @@ public abstract class BaseSemanticAnalyzer {
     }
 
     //get default value to be be stored in metastore
-    String defaultValueText  = defaultValExpr.getExprString();
+    String defaultValueText  = tokenStream.toOriginalString(defaultValueAST.getTokenStartIndex(),
+                                                            defaultValueAST.getTokenStopIndex());
     final int DEFAULT_MAX_LEN = 255;
     if(defaultValueText.length() > DEFAULT_MAX_LEN) {
       throw new SemanticException(
@@ -1026,7 +1029,7 @@ public abstract class BaseSemanticAnalyzer {
         rely = false;
       } else if( child.getToken().getType() == HiveParser.TOK_DEFAULT_VALUE){
         // try to get default value only if this is DEFAULT constraint
-        checkOrDefaultValue = getDefaultValue(grandChild, typeChildForDefault);
+        checkOrDefaultValue = getDefaultValue(grandChild, typeChildForDefault, tokenRewriteStream);
       }
       else if(child.getToken().getType() == HiveParser.TOK_CHECK_CONSTRAINT) {
         checkOrDefaultValue = getCheckExpression(grandChild, tokenRewriteStream);
@@ -1259,7 +1262,7 @@ public abstract class BaseSemanticAnalyzer {
                 break;
               case HiveParser.TOK_DEFAULT_VALUE:
                 processDefaultConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
-                    ImmutableList.of(col.getName()), defaultConstraints, typeChild);
+                    ImmutableList.of(col.getName()), defaultConstraints, typeChild, tokenRewriteStream);
                 break;
                 case HiveParser.TOK_NOT_NULL:
                   processNotNullConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
@@ -1453,6 +1456,19 @@ public abstract class BaseSemanticAnalyzer {
       }
     }
 
+    private boolean createDynPartSpec(ASTNode ast) {
+      if(ast.getToken().getType() != HiveParser.TOK_CREATETABLE &&
+          ast.getToken().getType() != HiveParser.TOK_CREATE_MATERIALIZED_VIEW &&
+          ast.getToken().getType() != HiveParser.TOK_ALTER_MATERIALIZED_VIEW &&
+          tableHandle.getPartitionKeys().size() > 0
+          && (ast.getParent() != null && (ast.getParent().getType() == HiveParser.TOK_INSERT_INTO
+          || ast.getParent().getType() == HiveParser.TOK_INSERT)
+          || ast.getParent().getType() == HiveParser.TOK_DESTINATION
+          || ast.getParent().getType() == HiveParser.TOK_ANALYZE)) {
+        return true;
+      }
+      return false;
+    }
     public TableSpec(Hive db, HiveConf conf, ASTNode ast, boolean allowDynamicPartitionsSpec,
         boolean allowPartialPartitionsSpec) throws SemanticException {
       assert (ast.getToken().getType() == HiveParser.TOK_TAB
@@ -1574,6 +1590,17 @@ public abstract class BaseSemanticAnalyzer {
           }
           specType = SpecType.STATIC_PARTITION;
         }
+      } else if(createDynPartSpec(ast) && allowDynamicPartitionsSpec) {
+        // if user hasn't specify partition spec generate it from table's partition spec
+        // do this only if it is INSERT/INSERT INTO/INSERT OVERWRITE/ANALYZE
+        List<FieldSchema> parts = tableHandle.getPartitionKeys();
+        partSpec = new LinkedHashMap<String, String>(parts.size());
+        for (FieldSchema fs : parts) {
+          String partKey = fs.getName();
+          partSpec.put(partKey, null);
+        }
+        partHandle = null;
+        specType = SpecType.DYNAMIC_PARTITION;
       } else {
         specType = SpecType.TABLE_ONLY;
       }

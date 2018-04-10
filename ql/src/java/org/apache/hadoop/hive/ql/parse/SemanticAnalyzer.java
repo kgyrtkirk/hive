@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
@@ -345,7 +346,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   protected boolean noscan;
 
   // whether this is a mv rebuild rewritten expression
-  protected boolean rewrittenRebuild = false;
+  protected MaterializationRebuildMode mvRebuildMode = MaterializationRebuildMode.NONE;
+  protected String mvRebuildDbName; // Db name for materialization to rebuild
+  protected String mvRebuildName; // Name for materialization to rebuild
 
   protected volatile boolean disableJoinMerge = false;
   protected final boolean defaultJoinMerge;
@@ -664,13 +667,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /**
    * This method creates a list of default constraints which corresponds to
-   *  given schema (taretSchema) or target table's column schema (if targetSchema is null)
+   *  given schema (targetSchema) or target table's column schema (if targetSchema is null)
    * @param tbl
    * @param targetSchema
    * @return List of default constraints (including NULL if there is no default)
    * @throws SemanticException
    */
-  private List<String> getDefaultConstraints(Table tbl, List<String> targetSchema) throws SemanticException{
+  private static List<String> getDefaultConstraints(Table tbl, List<String> targetSchema) throws SemanticException{
     Map<String, String> colNameToDefaultVal =  null;
     try {
       DefaultConstraint dc = Hive.get().getEnabledDefaultConstraints(tbl.getDbName(), tbl.getTableName());
@@ -715,6 +718,28 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return newNode;
+  }
+
+  public static String replaceDefaultKeywordForMerge(String valueClause,Table targetTable)
+      throws SemanticException {
+    List<String> defaultConstraints = null;
+    String[] values = valueClause.trim().split(",");
+    StringBuilder newValueClause = new StringBuilder();
+    for (int i = 0; i < values.length; i++) {
+      if (values[i].trim().toLowerCase().equals("`default`")) {
+        if (defaultConstraints == null) {
+          defaultConstraints = getDefaultConstraints(targetTable, null);
+        }
+        newValueClause.append(defaultConstraints.get(i));
+      }
+      else {
+        newValueClause.append(values[i]);
+      }
+      if(i != values.length-1) {
+        newValueClause.append(",");
+      }
+    }
+    return newValueClause.toString();
   }
 
   /**
@@ -2187,7 +2212,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_TAB: {
         TableSpec ts = new TableSpec(db, conf, ast);
         if (ts.tableHandle.isView() ||
-            (!rewrittenRebuild && ts.tableHandle.isMaterializedView())) {
+            (mvRebuildMode == MaterializationRebuildMode.NONE && ts.tableHandle.isMaterializedView())) {
           throw new SemanticException(ErrorMsg.DML_AGAINST_VIEW.getMsg());
         }
 
@@ -14585,11 +14610,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // The query materialization validation check only occurs in CBO. Thus only cache results if CBO was used.
     if (!ctx.isCboSucceeded()) {
       LOG.info("Caching of query results is disabled if CBO was not run.");
+      QueryResultsCache.incrementMetric(MetricsConstant.QC_INVALID_FOR_CACHING);
       return false;
     }
 
     if (!isValidQueryMaterialization()) {
       LOG.info("Not eligible for results caching - {}", getInvalidQueryMaterializationReason());
+      QueryResultsCache.incrementMetric(MetricsConstant.QC_INVALID_FOR_CACHING);
       return false;
     }
 
@@ -14669,5 +14696,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public boolean isValidQueryMaterialization() {
     return (invalidQueryMaterializationReason == null);
+  }
+
+  protected enum MaterializationRebuildMode {
+    NONE,
+    INSERT_OVERWRITE_REBUILD,
+    AGGREGATE_REBUILD,
+    NO_AGGREGATE_REBUILD
   }
 }

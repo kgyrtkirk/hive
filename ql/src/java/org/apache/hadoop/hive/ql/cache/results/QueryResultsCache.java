@@ -48,6 +48,10 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -213,11 +217,13 @@ public final class QueryResultsCache {
           invalidationFuture.cancel(false);
         }
         cleanupIfNeeded();
+        decrementMetric(MetricsConstant.QC_VALID_ENTRIES);
       } else if (prevStatus == CacheEntryStatus.PENDING) {
         // Need to notify any queries waiting on the change from pending status.
         synchronized (this) {
           this.notifyAll();
         }
+        decrementMetric(MetricsConstant.QC_PENDING_FAILS);
       }
     }
 
@@ -267,12 +273,21 @@ public final class QueryResultsCache {
       LOG.info("Waiting on pending cacheEntry");
       long timeout = 1000;
 
+      long startTime = System.nanoTime();
+      long endTime;
+
       while (true) {
         try {
           switch (status) {
           case VALID:
+            endTime = System.nanoTime();
+            incrementMetric(MetricsConstant.QC_PENDING_SUCCESS_WAIT_TIME,
+                TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS));
             return true;
           case INVALID:
+            endTime = System.nanoTime();
+            incrementMetric(MetricsConstant.QC_PENDING_FAILS_WAIT_TIME,
+                TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS));
             return false;
           case PENDING:
             // Status has not changed, continue waiting.
@@ -344,6 +359,11 @@ public final class QueryResultsCache {
     if (!inited.getAndSet(true)) {
       try {
         instance = new QueryResultsCache(conf);
+
+        Metrics metrics = MetricsFactory.getInstance();
+        if (metrics != null) {
+          registerMetrics(metrics, instance);
+        }
       } catch (IOException err) {
         inited.set(false);
         throw err;
@@ -369,6 +389,7 @@ public final class QueryResultsCache {
 
     LOG.debug("QueryResultsCache lookup for query: {}", request.queryText);
 
+	boolean foundPending = false;
     Lock readLock = rwLock.readLock();
     try {
       readLock.lock();
@@ -390,6 +411,7 @@ public final class QueryResultsCache {
         // Try to find valid entry, but settle for pending entry if that is all we have.
         if (result == null && pendingResult != null) {
           result = pendingResult;
+          foundPending = true;
         }
 
         if (result != null) {
@@ -401,6 +423,14 @@ public final class QueryResultsCache {
     }
 
     LOG.debug("QueryResultsCache lookup result: {}", result);
+    incrementMetric(MetricsConstant.QC_LOOKUPS);
+    if (result != null) {
+      if (foundPending) {
+        incrementMetric(MetricsConstant.QC_PENDING_HITS);
+      } else {
+        incrementMetric(MetricsConstant.QC_VALID_HITS);
+      }
+    }
 
     return result;
   }
@@ -472,34 +502,44 @@ public final class QueryResultsCache {
         return false;
       }
 
-      if (requiresMove) {
-        // Move the query results to the query cache directory.
-        cachedResultsPath = moveResultsToCacheDirectory(queryResultsPath);
-        dataDirMoved = true;
-      }
-      LOG.info("Moved query results from {} to {} (size {}) for query '{}'",
-          queryResultsPath, cachedResultsPath, resultSize, queryText);
-
-      // Create a new FetchWork to reference the new cache location.
-      FetchWork fetchWorkForCache =
-          new FetchWork(cachedResultsPath, fetchWork.getTblDesc(), fetchWork.getLimit());
-      fetchWorkForCache.setCachedResult(true);
-      cacheEntry.fetchWork = fetchWorkForCache;
-      cacheEntry.cachedResultsPath = cachedResultsPath;
-      cacheEntry.size = resultSize;
-      this.cacheSize += resultSize;
-      cacheEntry.createTime = System.currentTimeMillis();
-
-      cacheEntry.setStatus(CacheEntryStatus.VALID);
-      // Mark this entry as being in use. Caller will need to release later.
-      cacheEntry.addReader();
-
-      scheduleEntryInvalidation(cacheEntry);
-
-      // Notify any queries waiting on this cacheEntry to become valid.
+      // Synchronize on the cache entry so that no one else can invalidate this entry
+      // while we are in the process of setting it to valid.
       synchronized (cacheEntry) {
+        if (cacheEntry.getStatus() == CacheEntryStatus.INVALID) {
+          // Entry either expired, or was invalidated due to table updates
+          return false;
+        }
+
+        if (requiresMove) {
+          // Move the query results to the query cache directory.
+          cachedResultsPath = moveResultsToCacheDirectory(queryResultsPath);
+          dataDirMoved = true;
+        }
+        LOG.info("Moved query results from {} to {} (size {}) for query '{}'",
+            queryResultsPath, cachedResultsPath, resultSize, queryText);
+
+        // Create a new FetchWork to reference the new cache location.
+        FetchWork fetchWorkForCache =
+            new FetchWork(cachedResultsPath, fetchWork.getTblDesc(), fetchWork.getLimit());
+        fetchWorkForCache.setCachedResult(true);
+        cacheEntry.fetchWork = fetchWorkForCache;
+        cacheEntry.cachedResultsPath = cachedResultsPath;
+        cacheEntry.size = resultSize;
+        this.cacheSize += resultSize;
+        cacheEntry.createTime = System.currentTimeMillis();
+
+        cacheEntry.setStatus(CacheEntryStatus.VALID);
+        // Mark this entry as being in use. Caller will need to release later.
+        cacheEntry.addReader();
+
+        scheduleEntryInvalidation(cacheEntry);
+
+        // Notify any queries waiting on this cacheEntry to become valid.
         cacheEntry.notifyAll();
       }
+
+      incrementMetric(MetricsConstant.QC_VALID_ENTRIES);
+      incrementMetric(MetricsConstant.QC_TOTAL_ENTRIES_ADDED);
     } catch (Exception err) {
       LOG.error("Failed to create cache entry for query results for query: " + queryText, err);
 
@@ -531,7 +571,11 @@ public final class QueryResultsCache {
     try {
       writeLock.lock();
       LOG.info("Clearing the results cache");
-      for (CacheEntry entry : lru.keySet().toArray(EMPTY_CACHEENTRY_ARRAY)) {
+      CacheEntry[] allEntries = null;
+      synchronized (lru) {
+        allEntries = lru.keySet().toArray(EMPTY_CACHEENTRY_ARRAY);
+      }
+      for (CacheEntry entry : allEntries) {
         try {
           removeEntry(entry);
         } catch (Exception err) {
@@ -578,10 +622,15 @@ public final class QueryResultsCache {
 
   public void removeEntry(CacheEntry entry) {
     entry.invalidate();
-    removeFromLookup(entry);
-    lru.remove(entry);
-    // Should the cache size be updated here, or after the result data has actually been deleted?
-    cacheSize -= entry.size;
+    rwLock.writeLock().lock();
+    try {
+      removeFromLookup(entry);
+      lru.remove(entry);
+      // Should the cache size be updated here, or after the result data has actually been deleted?
+      cacheSize -= entry.size;
+    } finally {
+      rwLock.writeLock().unlock();
+    }
   }
 
   private void removeFromLookup(CacheEntry entry) {
@@ -614,6 +663,7 @@ public final class QueryResultsCache {
     // Assumes the cache lock has already been taken.
     if (maxEntrySize >= 0 && size > maxEntrySize) {
       LOG.debug("Cache entry size {} larger than max entry size ({})", size, maxEntrySize);
+      incrementMetric(MetricsConstant.QC_REJECTED_TOO_LARGE);
       return false;
     }
 
@@ -640,6 +690,20 @@ public final class QueryResultsCache {
     return true;
   }
 
+  private CacheEntry findEntryToRemove() {
+    // Entries should be in LRU order in the keyset iterator.
+    Set<CacheEntry> entries = lru.keySet();
+    synchronized (lru) {
+      for (CacheEntry removalCandidate : entries) {
+        if (removalCandidate.getStatus() != CacheEntryStatus.VALID) {
+          continue;
+        }
+        return removalCandidate;
+      }
+    }
+    return null;
+  }
+
   private boolean clearSpaceForCacheEntry(CacheEntry entry, long size) {
     if (hasSpaceForCacheEntry(entry, size)) {
       return true;
@@ -648,20 +712,14 @@ public final class QueryResultsCache {
     LOG.info("Clearing space for cache entry for query: [{}] with size {}",
         entry.getQueryText(), size);
 
-    // Entries should be in LRU order in the keyset iterator.
-    CacheEntry[] entries = lru.keySet().toArray(EMPTY_CACHEENTRY_ARRAY);
-    for (CacheEntry removalCandidate : entries) {
-      if (removalCandidate.getStatus() != CacheEntryStatus.VALID) {
-        // Only entries marked as valid should have results that can be removed.
-        continue;
-      }
-      // Only delete the entry if it has no readers.
-      if (!(removalCandidate.numReaders() > 0)) {
-        LOG.info("Removing entry: {}", removalCandidate);
-        removeEntry(removalCandidate);
-        if (hasSpaceForCacheEntry(entry, size)) {
-          return true;
-        }
+    CacheEntry removalCandidate;
+    while ((removalCandidate = findEntryToRemove()) != null) {
+      LOG.info("Removing entry: {}", removalCandidate);
+      removeEntry(removalCandidate);
+      // TODO: Should we wait for the entry to actually be deleted from HDFS? Would have to
+      // poll the reader count, waiting for it to reach 0, at which point cleanup should occur.
+      if (hasSpaceForCacheEntry(entry, size)) {
+        return true;
       }
     }
 
@@ -725,5 +783,46 @@ public final class QueryResultsCache {
         }
       });
     }
+  }
+
+  public static void incrementMetric(String name, long count) {
+    Metrics metrics = MetricsFactory.getInstance();
+    if (metrics != null) {
+      metrics.incrementCounter(name, count);
+    }
+  }
+
+  public static void decrementMetric(String name, long count) {
+    Metrics metrics = MetricsFactory.getInstance();
+    if (metrics != null) {
+      metrics.decrementCounter(name, count);
+    }
+  }
+
+  public static void incrementMetric(String name) {
+    incrementMetric(name, 1);
+  }
+
+  public static void decrementMetric(String name) {
+    decrementMetric(name, 1);
+  }
+
+  private static void registerMetrics(Metrics metrics, final QueryResultsCache cache) {
+    MetricsVariable<Long> maxCacheSize = new MetricsVariable<Long>() {
+      @Override
+      public Long getValue() {
+        return cache.maxCacheSize;
+      }
+    };
+
+    MetricsVariable<Long> curCacheSize = new MetricsVariable<Long>() {
+      @Override
+      public Long getValue() {
+        return cache.cacheSize;
+      }
+    };
+
+    metrics.addGauge(MetricsConstant.QC_MAX_SIZE, maxCacheSize);
+    metrics.addGauge(MetricsConstant.QC_CURRENT_SIZE, curCacheSize);
   }
 }
