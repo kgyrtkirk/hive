@@ -116,8 +116,6 @@ import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -2228,8 +2226,8 @@ public class QTestUtil {
       Assert.fail("Unexpected exception " + org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
   }
-  }
 
   public QOutProcessor getQOutProcessor() {
     return qOutProcessor;
+  }
 }
