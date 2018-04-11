@@ -4955,6 +4955,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     LOG.debug("vectorizeOperator " + vectorOp.getClass().getName());
     LOG.debug("vectorizeOperator " + vectorOp.getConf().getClass().getName());
+    // These operators need to be linked to enable runtime statistics to be gathered/used correctly
     planMapper.link(op, vectorOp);
 
     return vectorOp;
