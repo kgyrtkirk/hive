@@ -31,8 +31,7 @@ public class StatsSources {
 
   private static final Logger LOG = LoggerFactory.getLogger(StatsSources.class);
 
-  @Deprecated
-  public static StatsSource extracted(StatsSource currentStatsSource, PlanMapper pm) {
+  public static StatsSource getStatsSourceContaining(StatsSource currentStatsSource, PlanMapper pm) {
     if (currentStatsSource instanceof SessionStatsSource) {
 
       SessionStatsSource sessionStatsSource = (SessionStatsSource) currentStatsSource;
