@@ -18,18 +18,27 @@
 
 package org.apache.hadoop.hive.metastore.model;
 
+import org.apache.hadoop.hive.metastore.api.RuntimeStat;
+
 public class MRuntimeStat {
-  //  <datastore-identity>
-  //  <column name="RS_ID"/>
-  //</datastore-identity>
-  //<field name="weight">
-  //  <column name="WEIGHT" jdbc-type="integer"/>
-  //</field>
-  //<field name="payload">
-  //  <column name="PAYLOAD" jdbc-type="BLOB" allows-null="true"/>
-  //</field>
 
   private int weight;
   private byte[] payload;
+
+  public static MRuntimeStat fromThrift(RuntimeStat stat) {
+    MRuntimeStat ret = new MRuntimeStat();
+    ret.weight = stat.getWeight();
+    ret.payload = stat.getPayload();
+    return ret;
+  }
+
+  public static RuntimeStat toThrift(MRuntimeStat stat) {
+    RuntimeStat ret = new RuntimeStat();
+    ret.setWeightIsSet(true);
+    ret.setWeight(stat.weight);
+    ret.setPayloadIsSet(true);
+    ret.setPayload(stat.payload);
+    return ret;
+  }
 
 }
