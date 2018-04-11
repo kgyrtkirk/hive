@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 public interface StatsSource {
 
-  boolean canProvideStatsFor(Class<?> class1);
+  boolean canProvideStatsFor(Class<?> clazz);
 
   Optional<OperatorStats> lookup(OpTreeSignature treeSig);
 
