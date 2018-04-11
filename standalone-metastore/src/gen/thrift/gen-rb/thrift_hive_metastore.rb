@@ -3378,6 +3378,35 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'heartbeat_lock_materialization_rebuild failed: unknown result')
     end
 
+    def store_runtime_stats(stat)
+      send_store_runtime_stats(stat)
+      recv_store_runtime_stats()
+    end
+
+    def send_store_runtime_stats(stat)
+      send_message('store_runtime_stats', Store_runtime_stats_args, :stat => stat)
+    end
+
+    def recv_store_runtime_stats()
+      result = receive_message(Store_runtime_stats_result)
+      return
+    end
+
+    def get_runtime_stats()
+      send_get_runtime_stats()
+      return recv_get_runtime_stats()
+    end
+
+    def send_get_runtime_stats()
+      send_message('get_runtime_stats', Get_runtime_stats_args)
+    end
+
+    def recv_get_runtime_stats()
+      result = receive_message(Get_runtime_stats_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_runtime_stats failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -5917,6 +5946,20 @@ module ThriftHiveMetastore
       result = Heartbeat_lock_materialization_rebuild_result.new()
       result.success = @handler.heartbeat_lock_materialization_rebuild(args.dbName, args.tableName, args.txnId)
       write_result(result, oprot, 'heartbeat_lock_materialization_rebuild', seqid)
+    end
+
+    def process_store_runtime_stats(seqid, iprot, oprot)
+      args = read_args(iprot, Store_runtime_stats_args)
+      result = Store_runtime_stats_result.new()
+      @handler.store_runtime_stats(args.stat)
+      write_result(result, oprot, 'store_runtime_stats', seqid)
+    end
+
+    def process_get_runtime_stats(seqid, iprot, oprot)
+      args = read_args(iprot, Get_runtime_stats_args)
+      result = Get_runtime_stats_result.new()
+      result.success = @handler.get_runtime_stats()
+      write_result(result, oprot, 'get_runtime_stats', seqid)
     end
 
   end
@@ -13407,6 +13450,68 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Store_runtime_stats_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    STAT = 1
+
+    FIELDS = {
+      STAT => {:type => ::Thrift::Types::STRUCT, :name => 'stat', :class => ::RuntimeStat}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Store_runtime_stats_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_runtime_stats_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_runtime_stats_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::RuntimeStat}}
     }
 
     def struct_fields; FIELDS; end
