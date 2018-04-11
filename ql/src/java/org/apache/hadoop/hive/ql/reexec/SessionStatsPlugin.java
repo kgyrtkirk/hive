@@ -23,34 +23,48 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.SessionStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class SessionStatsPlugin implements IReExecutionPlugin {
 
+  // cheang e type to interface
+  @Deprecated
   private SessionStatsSource statsSource;
   private boolean alwaysCollectStats;
 
   @Override
   public void initialize(Driver driver) {
     HiveConf conf = driver.getConf();
+    statsSource = (SessionStatsSource) getStatsSource(conf);
+    driver.setStatsSource(statsSource);
+    alwaysCollectStats = conf.getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS);
+  }
+
+
+  private StatsSource getStatsSource(HiveConf conf) {
     SessionState ss = SessionState.get();
     statsSource = (SessionStatsSource) ss.getSessionStatsSource();
     if (statsSource == null) {
       statsSource = new SessionStatsSource(conf);
       ss.setSessionStatsSource(statsSource);
     }
-    driver.setStatsSource(statsSource);
-    alwaysCollectStats = conf.getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS);
+    return statsSource;
+
   }
 
   @Override
   public void beforeExecute(int executionIndex, boolean explainReOptimization) {
+    if (executionIndex == 1 && explainReOptimization) {
+      alwaysCollectStats = true;
+      // FIXME: statsSource should probably be set to a hierarchical one; and prevent modifications
+    }
   }
 
   @Override
-  public void afterExecute(PlanMapper planMapper) {
-    if (alwaysCollectStats) {
+  public void afterExecute(PlanMapper planMapper, boolean success) {
+    if (!success || alwaysCollectStats) {
       StatsSources.loadFromPlanMapper(statsSource, planMapper);
     }
   }

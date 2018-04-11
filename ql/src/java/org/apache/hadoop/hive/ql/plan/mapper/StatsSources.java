@@ -36,7 +36,6 @@ public class StatsSources {
 
   public static StatsSource getStatsSourceContaining(StatsSource currentStatsSource, PlanMapper pm) {
     if (currentStatsSource instanceof SessionStatsSource) {
-
       SessionStatsSource sessionStatsSource = (SessionStatsSource) currentStatsSource;
       loadFromPlanMapper(sessionStatsSource, pm);
       return sessionStatsSource;
