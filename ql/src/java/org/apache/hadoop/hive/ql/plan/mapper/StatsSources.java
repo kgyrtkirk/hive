@@ -60,7 +60,7 @@ public class StatsSources {
           sb.append(s);
           sb.append(";");
         }
-        LOG.info(sb.toString());
+        LOG.debug(sb.toString());
       }
       if (stat.size() >= 1 && sig.size() >= 1) {
         sessionStatsSource.put(sig.get(0), stat.get(0));
