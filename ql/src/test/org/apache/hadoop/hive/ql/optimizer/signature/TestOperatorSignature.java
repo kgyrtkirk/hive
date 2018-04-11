@@ -23,6 +23,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -78,10 +79,14 @@ public class TestOperatorSignature {
     Operator<TableScanDesc> ts = getTsOp(i);
     Operator<? extends OperatorDesc> fil = getFilterOp(j);
 
-    ts.getChildOperators().add(fil);
-    fil.getParentOperators().add(ts);
+    connectOperators(ts, fil);
 
     return fil;
+  }
+
+  private void connectOperators(Operator<?> parent, Operator<?> child) {
+    parent.getChildOperators().add(child);
+    child.getParentOperators().add(parent);
   }
 
   @Test
@@ -99,11 +104,7 @@ public class TestOperatorSignature {
   public void checkPersistingSigWorks() throws Exception {
     OpSignature sig = OpSignature.of(getTsOp(3));
 
-    SignaturePersister sp = SignatureUtils.getSignaturePersister();
-    String stored = sp.encode(sig);
-
-    OpSignature sig2 = sp.decode(stored, OpSignature.class);
-
+    OpSignature sig2 = persistenceLoop(sig, OpSignature.class);
     assertEquals(sig, sig2);
   }
 
@@ -111,12 +112,43 @@ public class TestOperatorSignature {
   public void checkPersistingTreeSigWorks() throws Exception {
     OpTreeSignature sig = OpTreeSignature.of(getFilTsOp(3, 4));
 
-    SignaturePersister sp = SignatureUtils.getSignaturePersister();
-    String stored = sp.encode(sig);
-
-    OpTreeSignature sig2 = sp.decode(stored, OpTreeSignature.class);
+    OpTreeSignature sig2 = persistenceLoop(sig, OpTreeSignature.class);
 
     assertEquals(sig, sig2);
+  }
+
+  @Test
+  public void checkCanStoreAsGraph() throws Exception {
+
+    Operator<?> ts = getTsOp(0);
+    Operator<?> fil1 = getFilterOp(1);
+    Operator<?> fil2 = getFilterOp(2);
+    Operator<?> fil3 = getFilterOp(3);
+
+    connectOperators(ts, fil1);
+    connectOperators(ts, fil2);
+    connectOperators(fil1, fil3);
+    connectOperators(fil2, fil3);
+
+    OpTreeSignature sig = OpTreeSignature.of(fil3);
+    OpTreeSignature sig2 = persistenceLoop(sig, OpTreeSignature.class);
+
+
+    assertEquals(sig, sig2);
+
+    OpTreeSignature p0 = sig2.getParentSig().get(0).getParentSig().get(0);
+    OpTreeSignature p1 = sig2.getParentSig().get(1).getParentSig().get(0);
+
+    assertTrue("have to be the same instance; to store graphs reliably", p0 == p1);
+
+  }
+
+  private <T> T persistenceLoop(T sig, Class<T> clazz) throws IOException {
+    SignaturePersister sp = SignatureUtils.getSignaturePersister();
+    String stored = sp.encode(sig);
+    System.out.println(stored);
+    T sig2 = sp.decode(stored, clazz);
+    return sig2;
   }
 
   public static void checkEquals(Operator<?> o1, Operator<?> o2) {

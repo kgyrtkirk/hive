@@ -25,13 +25,15 @@ import java.util.Map.Entry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Signature of the operator(non-recursive).
  */
-//@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public class OpSignature {
 
   /**
@@ -110,6 +112,10 @@ public class OpSignature {
       sb.append('\n');
     }
     return sb.toString();
+  }
+
+  public Map<String, Object> getSigMap() {
+    return sigMap;
   }
 
 }

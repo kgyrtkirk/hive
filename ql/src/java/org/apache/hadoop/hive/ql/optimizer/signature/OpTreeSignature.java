@@ -24,11 +24,14 @@ import java.util.Objects;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 /**
  * Operator tree signature.
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public class OpTreeSignature {
 
   @JsonProperty
@@ -91,6 +94,14 @@ public class OpTreeSignature {
       sb.append(p.toString(pad + " "));
     }
     return sb.toString();
+  }
+
+  public OpSignature getSig() {
+    return sig;
+  }
+
+  public ArrayList<OpTreeSignature> getParentSig() {
+    return parentSig;
   }
 
 }
