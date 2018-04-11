@@ -21261,6 +21261,10 @@ class RuntimeStat:
     oprot.writeStructEnd()
 
   def validate(self):
+    if self.weight is None:
+      raise TProtocol.TProtocolException(message='Required field weight is unset!')
+    if self.payload is None:
+      raise TProtocol.TProtocolException(message='Required field payload is unset!')
     return
 
 

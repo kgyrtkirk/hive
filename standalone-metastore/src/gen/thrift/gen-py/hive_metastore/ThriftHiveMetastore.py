@@ -1566,10 +1566,11 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
-  def store_runtime_stats(self, stat):
+  def add_runtime_stats(self, stat, maxRetained):
     """
     Parameters:
      - stat
+     - maxRetained
     """
     pass
 
@@ -8809,23 +8810,25 @@ class Client(fb303.FacebookService.Client, Iface):
       return result.success
     raise TApplicationException(TApplicationException.MISSING_RESULT, "heartbeat_lock_materialization_rebuild failed: unknown result")
 
-  def store_runtime_stats(self, stat):
+  def add_runtime_stats(self, stat, maxRetained):
     """
     Parameters:
      - stat
+     - maxRetained
     """
-    self.send_store_runtime_stats(stat)
-    self.recv_store_runtime_stats()
+    self.send_add_runtime_stats(stat, maxRetained)
+    self.recv_add_runtime_stats()
 
-  def send_store_runtime_stats(self, stat):
-    self._oprot.writeMessageBegin('store_runtime_stats', TMessageType.CALL, self._seqid)
-    args = store_runtime_stats_args()
+  def send_add_runtime_stats(self, stat, maxRetained):
+    self._oprot.writeMessageBegin('add_runtime_stats', TMessageType.CALL, self._seqid)
+    args = add_runtime_stats_args()
     args.stat = stat
+    args.maxRetained = maxRetained
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_store_runtime_stats(self):
+  def recv_add_runtime_stats(self):
     iprot = self._iprot
     (fname, mtype, rseqid) = iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
@@ -8833,7 +8836,7 @@ class Client(fb303.FacebookService.Client, Iface):
       x.read(iprot)
       iprot.readMessageEnd()
       raise x
-    result = store_runtime_stats_result()
+    result = add_runtime_stats_result()
     result.read(iprot)
     iprot.readMessageEnd()
     return
@@ -9070,7 +9073,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     self._processMap["get_serde"] = Processor.process_get_serde
     self._processMap["get_lock_materialization_rebuild"] = Processor.process_get_lock_materialization_rebuild
     self._processMap["heartbeat_lock_materialization_rebuild"] = Processor.process_heartbeat_lock_materialization_rebuild
-    self._processMap["store_runtime_stats"] = Processor.process_store_runtime_stats
+    self._processMap["add_runtime_stats"] = Processor.process_add_runtime_stats
     self._processMap["get_runtime_stats"] = Processor.process_get_runtime_stats
 
   def process(self, iprot, oprot):
@@ -14084,13 +14087,13 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_store_runtime_stats(self, seqid, iprot, oprot):
-    args = store_runtime_stats_args()
+  def process_add_runtime_stats(self, seqid, iprot, oprot):
+    args = add_runtime_stats_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = store_runtime_stats_result()
+    result = add_runtime_stats_result()
     try:
-      self._handler.store_runtime_stats(args.stat)
+      self._handler.add_runtime_stats(args.stat, args.maxRetained)
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
@@ -14098,7 +14101,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
       result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-    oprot.writeMessageBegin("store_runtime_stats", msg_type, seqid)
+    oprot.writeMessageBegin("add_runtime_stats", msg_type, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -47826,19 +47829,22 @@ class heartbeat_lock_materialization_rebuild_result:
   def __ne__(self, other):
     return not (self == other)
 
-class store_runtime_stats_args:
+class add_runtime_stats_args:
   """
   Attributes:
    - stat
+   - maxRetained
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'stat', (RuntimeStat, RuntimeStat.thrift_spec), None, ), # 1
+    (2, TType.I32, 'maxRetained', None, None, ), # 2
   )
 
-  def __init__(self, stat=None,):
+  def __init__(self, stat=None, maxRetained=None,):
     self.stat = stat
+    self.maxRetained = maxRetained
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -47855,6 +47861,11 @@ class store_runtime_stats_args:
           self.stat.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.maxRetained = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -47864,10 +47875,14 @@ class store_runtime_stats_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('store_runtime_stats_args')
+    oprot.writeStructBegin('add_runtime_stats_args')
     if self.stat is not None:
       oprot.writeFieldBegin('stat', TType.STRUCT, 1)
       self.stat.write(oprot)
+      oprot.writeFieldEnd()
+    if self.maxRetained is not None:
+      oprot.writeFieldBegin('maxRetained', TType.I32, 2)
+      oprot.writeI32(self.maxRetained)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -47879,6 +47894,7 @@ class store_runtime_stats_args:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.stat)
+    value = (value * 31) ^ hash(self.maxRetained)
     return value
 
   def __repr__(self):
@@ -47892,7 +47908,7 @@ class store_runtime_stats_args:
   def __ne__(self, other):
     return not (self == other)
 
-class store_runtime_stats_result:
+class add_runtime_stats_result:
 
   thrift_spec = (
   )
@@ -47915,7 +47931,7 @@ class store_runtime_stats_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('store_runtime_stats_result')
+    oprot.writeStructBegin('add_runtime_stats_result')
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 

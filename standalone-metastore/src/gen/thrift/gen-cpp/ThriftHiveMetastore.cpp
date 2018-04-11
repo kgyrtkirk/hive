@@ -49205,11 +49205,11 @@ uint32_t ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_presult::rea
 }
 
 
-ThriftHiveMetastore_store_runtime_stats_args::~ThriftHiveMetastore_store_runtime_stats_args() throw() {
+ThriftHiveMetastore_add_runtime_stats_args::~ThriftHiveMetastore_add_runtime_stats_args() throw() {
 }
 
 
-uint32_t ThriftHiveMetastore_store_runtime_stats_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_add_runtime_stats_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -49238,6 +49238,14 @@ uint32_t ThriftHiveMetastore_store_runtime_stats_args::read(::apache::thrift::pr
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->maxRetained);
+          this->__isset.maxRetained = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -49250,32 +49258,17 @@ uint32_t ThriftHiveMetastore_store_runtime_stats_args::read(::apache::thrift::pr
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_store_runtime_stats_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_add_runtime_stats_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_store_runtime_stats_args");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_add_runtime_stats_args");
 
   xfer += oprot->writeFieldBegin("stat", ::apache::thrift::protocol::T_STRUCT, 1);
   xfer += this->stat.write(oprot);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-
-ThriftHiveMetastore_store_runtime_stats_pargs::~ThriftHiveMetastore_store_runtime_stats_pargs() throw() {
-}
-
-
-uint32_t ThriftHiveMetastore_store_runtime_stats_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_store_runtime_stats_pargs");
-
-  xfer += oprot->writeFieldBegin("stat", ::apache::thrift::protocol::T_STRUCT, 1);
-  xfer += (*(this->stat)).write(oprot);
+  xfer += oprot->writeFieldBegin("maxRetained", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->maxRetained);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -49284,11 +49277,34 @@ uint32_t ThriftHiveMetastore_store_runtime_stats_pargs::write(::apache::thrift::
 }
 
 
-ThriftHiveMetastore_store_runtime_stats_result::~ThriftHiveMetastore_store_runtime_stats_result() throw() {
+ThriftHiveMetastore_add_runtime_stats_pargs::~ThriftHiveMetastore_add_runtime_stats_pargs() throw() {
 }
 
 
-uint32_t ThriftHiveMetastore_store_runtime_stats_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_add_runtime_stats_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_add_runtime_stats_pargs");
+
+  xfer += oprot->writeFieldBegin("stat", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += (*(this->stat)).write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("maxRetained", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32((*(this->maxRetained)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+ThriftHiveMetastore_add_runtime_stats_result::~ThriftHiveMetastore_add_runtime_stats_result() throw() {
+}
+
+
+uint32_t ThriftHiveMetastore_add_runtime_stats_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -49316,11 +49332,11 @@ uint32_t ThriftHiveMetastore_store_runtime_stats_result::read(::apache::thrift::
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_store_runtime_stats_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_add_runtime_stats_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_store_runtime_stats_result");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_add_runtime_stats_result");
 
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
@@ -49328,11 +49344,11 @@ uint32_t ThriftHiveMetastore_store_runtime_stats_result::write(::apache::thrift:
 }
 
 
-ThriftHiveMetastore_store_runtime_stats_presult::~ThriftHiveMetastore_store_runtime_stats_presult() throw() {
+ThriftHiveMetastore_add_runtime_stats_presult::~ThriftHiveMetastore_add_runtime_stats_presult() throw() {
 }
 
 
-uint32_t ThriftHiveMetastore_store_runtime_stats_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_add_runtime_stats_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -62344,19 +62360,20 @@ bool ThriftHiveMetastoreClient::recv_heartbeat_lock_materialization_rebuild()
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "heartbeat_lock_materialization_rebuild failed: unknown result");
 }
 
-void ThriftHiveMetastoreClient::store_runtime_stats(const RuntimeStat& stat)
+void ThriftHiveMetastoreClient::add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained)
 {
-  send_store_runtime_stats(stat);
-  recv_store_runtime_stats();
+  send_add_runtime_stats(stat, maxRetained);
+  recv_add_runtime_stats();
 }
 
-void ThriftHiveMetastoreClient::send_store_runtime_stats(const RuntimeStat& stat)
+void ThriftHiveMetastoreClient::send_add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("store_runtime_stats", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("add_runtime_stats", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  ThriftHiveMetastore_store_runtime_stats_pargs args;
+  ThriftHiveMetastore_add_runtime_stats_pargs args;
   args.stat = &stat;
+  args.maxRetained = &maxRetained;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -62364,7 +62381,7 @@ void ThriftHiveMetastoreClient::send_store_runtime_stats(const RuntimeStat& stat
   oprot_->getTransport()->flush();
 }
 
-void ThriftHiveMetastoreClient::recv_store_runtime_stats()
+void ThriftHiveMetastoreClient::recv_add_runtime_stats()
 {
 
   int32_t rseqid = 0;
@@ -62384,12 +62401,12 @@ void ThriftHiveMetastoreClient::recv_store_runtime_stats()
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("store_runtime_stats") != 0) {
+  if (fname.compare("add_runtime_stats") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  ThriftHiveMetastore_store_runtime_stats_presult result;
+  ThriftHiveMetastore_add_runtime_stats_presult result;
   result.read(iprot_);
   iprot_->readMessageEnd();
   iprot_->getTransport()->readEnd();
@@ -74480,37 +74497,37 @@ void ThriftHiveMetastoreProcessor::process_heartbeat_lock_materialization_rebuil
   }
 }
 
-void ThriftHiveMetastoreProcessor::process_store_runtime_stats(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void ThriftHiveMetastoreProcessor::process_add_runtime_stats(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.store_runtime_stats", callContext);
+    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.add_runtime_stats", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.store_runtime_stats");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.add_runtime_stats");
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.store_runtime_stats");
+    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.add_runtime_stats");
   }
 
-  ThriftHiveMetastore_store_runtime_stats_args args;
+  ThriftHiveMetastore_add_runtime_stats_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.store_runtime_stats", bytes);
+    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.add_runtime_stats", bytes);
   }
 
-  ThriftHiveMetastore_store_runtime_stats_result result;
+  ThriftHiveMetastore_add_runtime_stats_result result;
   try {
-    iface_->store_runtime_stats(args.stat);
+    iface_->add_runtime_stats(args.stat, args.maxRetained);
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.store_runtime_stats");
+      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.add_runtime_stats");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("store_runtime_stats", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("add_runtime_stats", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -74519,17 +74536,17 @@ void ThriftHiveMetastoreProcessor::process_store_runtime_stats(int32_t seqid, ::
   }
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.store_runtime_stats");
+    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.add_runtime_stats");
   }
 
-  oprot->writeMessageBegin("store_runtime_stats", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("add_runtime_stats", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.store_runtime_stats", bytes);
+    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.add_runtime_stats", bytes);
   }
 }
 
@@ -92968,20 +92985,21 @@ bool ThriftHiveMetastoreConcurrentClient::recv_heartbeat_lock_materialization_re
   } // end while(true)
 }
 
-void ThriftHiveMetastoreConcurrentClient::store_runtime_stats(const RuntimeStat& stat)
+void ThriftHiveMetastoreConcurrentClient::add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained)
 {
-  int32_t seqid = send_store_runtime_stats(stat);
-  recv_store_runtime_stats(seqid);
+  int32_t seqid = send_add_runtime_stats(stat, maxRetained);
+  recv_add_runtime_stats(seqid);
 }
 
-int32_t ThriftHiveMetastoreConcurrentClient::send_store_runtime_stats(const RuntimeStat& stat)
+int32_t ThriftHiveMetastoreConcurrentClient::send_add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained)
 {
   int32_t cseqid = this->sync_.generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
-  oprot_->writeMessageBegin("store_runtime_stats", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("add_runtime_stats", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  ThriftHiveMetastore_store_runtime_stats_pargs args;
+  ThriftHiveMetastore_add_runtime_stats_pargs args;
   args.stat = &stat;
+  args.maxRetained = &maxRetained;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -92992,7 +93010,7 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_store_runtime_stats(const Runt
   return cseqid;
 }
 
-void ThriftHiveMetastoreConcurrentClient::recv_store_runtime_stats(const int32_t seqid)
+void ThriftHiveMetastoreConcurrentClient::recv_add_runtime_stats(const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -93021,7 +93039,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_store_runtime_stats(const int32_t
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
       }
-      if (fname.compare("store_runtime_stats") != 0) {
+      if (fname.compare("add_runtime_stats") != 0) {
         iprot_->skip(::apache::thrift::protocol::T_STRUCT);
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
@@ -93030,7 +93048,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_store_runtime_stats(const int32_t
         using ::apache::thrift::protocol::TProtocolException;
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
-      ThriftHiveMetastore_store_runtime_stats_presult result;
+      ThriftHiveMetastore_add_runtime_stats_presult result;
       result.read(iprot_);
       iprot_->readMessageEnd();
       iprot_->getTransport()->readEnd();

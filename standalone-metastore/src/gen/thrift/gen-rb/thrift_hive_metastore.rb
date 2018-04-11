@@ -3378,17 +3378,17 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'heartbeat_lock_materialization_rebuild failed: unknown result')
     end
 
-    def store_runtime_stats(stat)
-      send_store_runtime_stats(stat)
-      recv_store_runtime_stats()
+    def add_runtime_stats(stat, maxRetained)
+      send_add_runtime_stats(stat, maxRetained)
+      recv_add_runtime_stats()
     end
 
-    def send_store_runtime_stats(stat)
-      send_message('store_runtime_stats', Store_runtime_stats_args, :stat => stat)
+    def send_add_runtime_stats(stat, maxRetained)
+      send_message('add_runtime_stats', Add_runtime_stats_args, :stat => stat, :maxRetained => maxRetained)
     end
 
-    def recv_store_runtime_stats()
-      result = receive_message(Store_runtime_stats_result)
+    def recv_add_runtime_stats()
+      result = receive_message(Add_runtime_stats_result)
       return
     end
 
@@ -5948,11 +5948,11 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'heartbeat_lock_materialization_rebuild', seqid)
     end
 
-    def process_store_runtime_stats(seqid, iprot, oprot)
-      args = read_args(iprot, Store_runtime_stats_args)
-      result = Store_runtime_stats_result.new()
-      @handler.store_runtime_stats(args.stat)
-      write_result(result, oprot, 'store_runtime_stats', seqid)
+    def process_add_runtime_stats(seqid, iprot, oprot)
+      args = read_args(iprot, Add_runtime_stats_args)
+      result = Add_runtime_stats_result.new()
+      @handler.add_runtime_stats(args.stat, args.maxRetained)
+      write_result(result, oprot, 'add_runtime_stats', seqid)
     end
 
     def process_get_runtime_stats(seqid, iprot, oprot)
@@ -13460,12 +13460,14 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Store_runtime_stats_args
+  class Add_runtime_stats_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     STAT = 1
+    MAXRETAINED = 2
 
     FIELDS = {
-      STAT => {:type => ::Thrift::Types::STRUCT, :name => 'stat', :class => ::RuntimeStat}
+      STAT => {:type => ::Thrift::Types::STRUCT, :name => 'stat', :class => ::RuntimeStat},
+      MAXRETAINED => {:type => ::Thrift::Types::I32, :name => 'maxRetained'}
     }
 
     def struct_fields; FIELDS; end
@@ -13476,7 +13478,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Store_runtime_stats_result
+  class Add_runtime_stats_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
 
     FIELDS = {

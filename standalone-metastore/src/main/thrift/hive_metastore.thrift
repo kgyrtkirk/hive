@@ -2172,7 +2172,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   LockResponse get_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
   bool heartbeat_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
   
-  void store_runtime_stats(1: RuntimeStat stat)
+  void add_runtime_stats(1: RuntimeStat stat, 2: i32 maxRetained)
   list<RuntimeStat> get_runtime_stats()
 }
 

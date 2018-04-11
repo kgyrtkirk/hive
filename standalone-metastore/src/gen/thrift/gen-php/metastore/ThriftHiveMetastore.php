@@ -1530,8 +1530,9 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
   public function heartbeat_lock_materialization_rebuild($dbName, $tableName, $txnId);
   /**
    * @param \metastore\RuntimeStat $stat
+   * @param int $maxRetained
    */
-  public function store_runtime_stats(\metastore\RuntimeStat $stat);
+  public function add_runtime_stats(\metastore\RuntimeStat $stat, $maxRetained);
   /**
    * @return \metastore\RuntimeStat[]
    */
@@ -13015,34 +13016,35 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     throw new \Exception("heartbeat_lock_materialization_rebuild failed: unknown result");
   }
 
-  public function store_runtime_stats(\metastore\RuntimeStat $stat)
+  public function add_runtime_stats(\metastore\RuntimeStat $stat, $maxRetained)
   {
-    $this->send_store_runtime_stats($stat);
-    $this->recv_store_runtime_stats();
+    $this->send_add_runtime_stats($stat, $maxRetained);
+    $this->recv_add_runtime_stats();
   }
 
-  public function send_store_runtime_stats(\metastore\RuntimeStat $stat)
+  public function send_add_runtime_stats(\metastore\RuntimeStat $stat, $maxRetained)
   {
-    $args = new \metastore\ThriftHiveMetastore_store_runtime_stats_args();
+    $args = new \metastore\ThriftHiveMetastore_add_runtime_stats_args();
     $args->stat = $stat;
+    $args->maxRetained = $maxRetained;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
-      thrift_protocol_write_binary($this->output_, 'store_runtime_stats', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+      thrift_protocol_write_binary($this->output_, 'add_runtime_stats', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
     }
     else
     {
-      $this->output_->writeMessageBegin('store_runtime_stats', TMessageType::CALL, $this->seqid_);
+      $this->output_->writeMessageBegin('add_runtime_stats', TMessageType::CALL, $this->seqid_);
       $args->write($this->output_);
       $this->output_->writeMessageEnd();
       $this->output_->getTransport()->flush();
     }
   }
 
-  public function recv_store_runtime_stats()
+  public function recv_add_runtime_stats()
   {
     $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
-    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_store_runtime_stats_result', $this->input_->isStrictRead());
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_add_runtime_stats_result', $this->input_->isStrictRead());
     else
     {
       $rseqid = 0;
@@ -13056,7 +13058,7 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         $this->input_->readMessageEnd();
         throw $x;
       }
-      $result = new \metastore\ThriftHiveMetastore_store_runtime_stats_result();
+      $result = new \metastore\ThriftHiveMetastore_add_runtime_stats_result();
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
@@ -58604,13 +58606,17 @@ class ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_result {
 
 }
 
-class ThriftHiveMetastore_store_runtime_stats_args {
+class ThriftHiveMetastore_add_runtime_stats_args {
   static $_TSPEC;
 
   /**
    * @var \metastore\RuntimeStat
    */
   public $stat = null;
+  /**
+   * @var int
+   */
+  public $maxRetained = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -58620,17 +58626,24 @@ class ThriftHiveMetastore_store_runtime_stats_args {
           'type' => TType::STRUCT,
           'class' => '\metastore\RuntimeStat',
           ),
+        2 => array(
+          'var' => 'maxRetained',
+          'type' => TType::I32,
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['stat'])) {
         $this->stat = $vals['stat'];
       }
+      if (isset($vals['maxRetained'])) {
+        $this->maxRetained = $vals['maxRetained'];
+      }
     }
   }
 
   public function getName() {
-    return 'ThriftHiveMetastore_store_runtime_stats_args';
+    return 'ThriftHiveMetastore_add_runtime_stats_args';
   }
 
   public function read($input)
@@ -58656,6 +58669,13 @@ class ThriftHiveMetastore_store_runtime_stats_args {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->maxRetained);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -58668,13 +58688,18 @@ class ThriftHiveMetastore_store_runtime_stats_args {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_store_runtime_stats_args');
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_add_runtime_stats_args');
     if ($this->stat !== null) {
       if (!is_object($this->stat)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
       $xfer += $output->writeFieldBegin('stat', TType::STRUCT, 1);
       $xfer += $this->stat->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->maxRetained !== null) {
+      $xfer += $output->writeFieldBegin('maxRetained', TType::I32, 2);
+      $xfer += $output->writeI32($this->maxRetained);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -58684,7 +58709,7 @@ class ThriftHiveMetastore_store_runtime_stats_args {
 
 }
 
-class ThriftHiveMetastore_store_runtime_stats_result {
+class ThriftHiveMetastore_add_runtime_stats_result {
   static $_TSPEC;
 
 
@@ -58696,7 +58721,7 @@ class ThriftHiveMetastore_store_runtime_stats_result {
   }
 
   public function getName() {
-    return 'ThriftHiveMetastore_store_runtime_stats_result';
+    return 'ThriftHiveMetastore_add_runtime_stats_result';
   }
 
   public function read($input)
@@ -58726,7 +58751,7 @@ class ThriftHiveMetastore_store_runtime_stats_result {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_store_runtime_stats_result');
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_add_runtime_stats_result');
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;

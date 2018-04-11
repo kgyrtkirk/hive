@@ -30509,6 +30509,8 @@ uint32_t RuntimeStat::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   using ::apache::thrift::protocol::TProtocolException;
 
+  bool isset_weight = false;
+  bool isset_payload = false;
 
   while (true)
   {
@@ -30521,7 +30523,7 @@ uint32_t RuntimeStat::read(::apache::thrift::protocol::TProtocol* iprot) {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I32) {
           xfer += iprot->readI32(this->weight);
-          this->__isset.weight = true;
+          isset_weight = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -30529,7 +30531,7 @@ uint32_t RuntimeStat::read(::apache::thrift::protocol::TProtocol* iprot) {
       case 2:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readBinary(this->payload);
-          this->__isset.payload = true;
+          isset_payload = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -30543,6 +30545,10 @@ uint32_t RuntimeStat::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   xfer += iprot->readStructEnd();
 
+  if (!isset_weight)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_payload)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
 
@@ -30568,18 +30574,15 @@ void swap(RuntimeStat &a, RuntimeStat &b) {
   using ::std::swap;
   swap(a.weight, b.weight);
   swap(a.payload, b.payload);
-  swap(a.__isset, b.__isset);
 }
 
 RuntimeStat::RuntimeStat(const RuntimeStat& other1151) {
   weight = other1151.weight;
   payload = other1151.payload;
-  __isset = other1151.__isset;
 }
 RuntimeStat& RuntimeStat::operator=(const RuntimeStat& other1152) {
   weight = other1152.weight;
   payload = other1152.payload;
-  __isset = other1152.__isset;
   return *this;
 }
 void RuntimeStat::printTo(std::ostream& out) const {

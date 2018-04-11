@@ -12912,11 +12912,6 @@ inline std::ostream& operator<<(std::ostream& out, const GetSerdeRequest& obj)
   return out;
 }
 
-typedef struct _RuntimeStat__isset {
-  _RuntimeStat__isset() : weight(false), payload(false) {}
-  bool weight :1;
-  bool payload :1;
-} _RuntimeStat__isset;
 
 class RuntimeStat {
  public:
@@ -12929,8 +12924,6 @@ class RuntimeStat {
   virtual ~RuntimeStat() throw();
   int32_t weight;
   std::string payload;
-
-  _RuntimeStat__isset __isset;
 
   void __set_weight(const int32_t val);
 
