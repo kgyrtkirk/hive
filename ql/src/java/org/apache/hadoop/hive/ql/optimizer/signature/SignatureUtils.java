@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer.signature;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.Sets;
 
 /**
@@ -97,32 +94,6 @@ public class SignatureUtils {
       mappers.put(o, m);
     }
     return m;
-  }
-
-  // FIXME OS+Sig != SP
-  @Deprecated
-  public static class SignaturePersister {
-    private final ObjectMapper om;
-
-    SignaturePersister() {
-      om = new ObjectMapper();
-      om.configure(SerializationFeature.INDENT_OUTPUT, true);
-      //      om.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, true);
-      om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
-    }
-
-    public <T> String encode(T input) throws IOException {
-      return om.writeValueAsString(input);
-    }
-
-    public <T> T decode(String input, Class<T> clazz) throws IOException {
-      return om.readValue(input, clazz);
-    }
-
-  }
-
-  public static SignaturePersister getSignaturePersister() {
-    return new SignaturePersister();
   }
 
 }

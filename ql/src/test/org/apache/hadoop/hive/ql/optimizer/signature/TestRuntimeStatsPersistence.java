@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.signature.SignatureUtils.SignaturePersister;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -111,7 +110,7 @@ public class TestRuntimeStatsPersistence {
   }
 
   private <T> T persistenceLoop(T sig, Class<T> clazz) throws IOException {
-    SignaturePersister sp = SignatureUtils.getSignaturePersister();
+    RuntimeStatsPersister sp = RuntimeStatsPersister.INSTANCE;
     String stored = sp.encode(sig);
     System.out.println(stored);
     T sig2 = sp.decode(stored, clazz);
@@ -127,7 +126,6 @@ public class TestRuntimeStatsPersistence {
 
   private Operator<TableScanDesc> getTsOp(int i) {
     Table tblMetadata = new Table("db", "table");
-    // FIXME: I think this shouldn't be sensitive to the alias; but currently its included in logicalEquals...check that
     TableScanDesc desc = new TableScanDesc("alias"/*+ cCtx.nextOperatorId()*/, tblMetadata);
     List<ExprNodeDesc> as =
         Lists.newArrayList(new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, Integer.valueOf(i)),
