@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.reexec;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -29,6 +30,10 @@ import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.plan.mapper.SessionStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +50,8 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   private Driver coreDriver;
 
   private OperatorStatsReaderHook statsReaderHook;
+
+  private boolean alwaysCollectStats;
 
   class LocalHook implements ExecuteWithHookContext {
 
@@ -76,8 +83,25 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
     statsReaderHook = new OperatorStatsReaderHook();
     coreDriver.getHookRunner().addOnFailureHook(statsReaderHook);
     coreDriver.getHookRunner().addPostHook(statsReaderHook);
-    statsReaderHook.setCollectOnSuccess(
-        driver.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS));
+    alwaysCollectStats = driver.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS);
+    statsReaderHook.setCollectOnSuccess(alwaysCollectStats);
+    coreDriver.setStatsSource(getStatsSource(driver.getConf()));
+  }
+
+  private StatsSource getStatsSource(HiveConf conf) {
+
+    if (false) {
+    SessionState ss = SessionState.get();
+    SessionStatsSource statsSource = (SessionStatsSource) ss.getSessionStatsSource();
+    if (statsSource == null) {
+      statsSource = new SessionStatsSource(conf);
+      ss.setSessionStatsSource(statsSource);
+    }
+    return statsSource;
+    } else {
+      return new StatsSources.MapBackedStatsSource();
+    }
+
   }
 
   @Override
@@ -89,6 +113,8 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   public void prepareToReExecute() {
     statsReaderHook.setCollectOnSuccess(true);
     retryPossible = false;
+    coreDriver.setStatsSource(
+        StatsSources.getStatsSourceContaining(coreDriver.getStatsSource(), coreDriver.getPlanMapper()));
   }
 
   @Override
@@ -135,6 +161,10 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
 
   @Override
   public void afterExecute(PlanMapper planMapper, boolean success) {
+    if (alwaysCollectStats) {
+      coreDriver.setStatsSource(
+          StatsSources.getStatsSourceContaining(coreDriver.getStatsSource(), planMapper));
+    }
   }
 
 }

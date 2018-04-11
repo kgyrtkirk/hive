@@ -22,7 +22,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
@@ -31,6 +33,30 @@ import org.slf4j.LoggerFactory;
 
 
 public class StatsSources {
+
+  public static class MapBackedStatsSource implements StatsSource {
+
+    private Map<OpTreeSignature, OperatorStats> map = new HashMap<>();
+
+    @Override
+    public boolean canProvideStatsFor(Class<?> clazz) {
+      if (Operator.class.isAssignableFrom(clazz)) {
+        return true;
+      }
+      return false;
+    }
+
+    @Override
+    public Optional<OperatorStats> lookup(OpTreeSignature treeSig) {
+      return Optional.ofNullable(map.get(treeSig));
+    }
+
+    @Override
+    public void putAll(Map<OpTreeSignature, OperatorStats> map) {
+      map.putAll(map);
+    }
+
+  }
 
   private static final Logger LOG = LoggerFactory.getLogger(StatsSources.class);
 

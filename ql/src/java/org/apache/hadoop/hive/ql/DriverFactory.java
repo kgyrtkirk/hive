@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.reexec.IReExecutionPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
 import org.apache.hadoop.hive.ql.reexec.ReExecutionOverlayPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReOptimizePlugin;
-import org.apache.hadoop.hive.ql.reexec.SessionStatsPlugin;
 
 import com.google.common.base.Strings;
 
@@ -48,7 +47,6 @@ public class DriverFactory {
     String strategies = queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES);
     strategies = Strings.nullToEmpty(strategies).trim().toLowerCase();
     ArrayList<IReExecutionPlugin> plugins = new ArrayList<>();
-    plugins.add(new SessionStatsPlugin());
     for (String string : strategies.split(",")) {
       if (string.trim().isEmpty()) {
         continue;
@@ -65,9 +63,6 @@ public class DriverFactory {
     }
     if (name.equals("reoptimize")) {
       return new ReOptimizePlugin();
-    }
-    if (name.equals("sessionstats")) {
-      return new SessionStatsPlugin();
     }
     throw new RuntimeException(
         "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
