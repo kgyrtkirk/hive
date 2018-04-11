@@ -8525,7 +8525,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public void store_runtime_stats(RuntimeStat stat) throws TException {
+    public void add_runtime_stats(RuntimeStat stat, int maxRetained) throws TException {
       startFunction("store_runtime_stats");
       Exception ex = null;
       boolean success = false;

@@ -3335,7 +3335,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public void addRuntimeStat(RuntimeStat stat) throws TException {
+  public void addRuntimeStat(RuntimeStat stat, int maxRetained) throws TException {
     throw new UnsupportedOperationException();
   }
 

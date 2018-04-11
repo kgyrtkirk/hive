@@ -3216,8 +3216,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void addRuntimeStat(RuntimeStat stat) throws TException {
-    client.store_runtime_stats(stat);
+  public void addRuntimeStat(RuntimeStat stat, int maxRetained) throws TException {
+    client.add_runtime_stats(stat, maxRetained);
   }
 
   @Override
