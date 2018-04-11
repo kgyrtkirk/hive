@@ -136,10 +136,15 @@ public class TestOperatorSignature {
 
     assertEquals(sig, sig2);
 
+    {
+      OpTreeSignature p0 = sig.getParentSig().get(0).getParentSig().get(0);
+      OpTreeSignature p1 = sig.getParentSig().get(1).getParentSig().get(0);
+      assertTrue("Xhave to be the same instance; to store graphs reliably", p0 == p1);
+    }
     OpTreeSignature p0 = sig2.getParentSig().get(0).getParentSig().get(0);
     OpTreeSignature p1 = sig2.getParentSig().get(1).getParentSig().get(0);
 
-    assertTrue("have to be the same instance; to store graphs reliably", p0 == p1);
+    assertEquals(p0, p1);
 
   }
 
