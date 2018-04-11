@@ -103,6 +103,7 @@ public class TestRuntimeStatsPersistence {
 
     OpTreeSignature p0 = sig2.getParentSig().get(0).getParentSig().get(0);
     OpTreeSignature p1 = sig2.getParentSig().get(1).getParentSig().get(0);
+
     assertTrue("these have to be the same instance", p0 == p1);
 
     assertEquals(p0, p1);
