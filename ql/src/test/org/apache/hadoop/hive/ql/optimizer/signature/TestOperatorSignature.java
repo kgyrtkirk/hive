@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.signature.SignatureUtils.SignaturePersister;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -94,6 +95,30 @@ public class TestOperatorSignature {
     checkNotEquals(t1, t2);
   }
 
+  @Test
+  public void checkPersistingSigWorks() throws Exception {
+    OpSignature sig = OpSignature.of(getTsOp(3));
+
+    SignaturePersister sp = SignatureUtils.getSignaturePersister();
+    String stored = sp.encode(sig);
+
+    OpSignature sig2 = sp.decode(stored, OpSignature.class);
+
+    assertEquals(sig, sig2);
+  }
+
+  @Test
+  public void checkPersistingTreeSigWorks() throws Exception {
+    OpTreeSignature sig = OpTreeSignature.of(getFilTsOp(3, 4));
+
+    SignaturePersister sp = SignatureUtils.getSignaturePersister();
+    String stored = sp.encode(sig);
+
+    OpTreeSignature sig2 = sp.decode(stored, OpTreeSignature.class);
+
+    assertEquals(sig, sig2);
+  }
+
   public static void checkEquals(Operator<?> o1, Operator<?> o2) {
     assertTrue(o1.logicalEquals(o2));
     OpSignature s1 = OpSignature.of(o1);
@@ -155,6 +180,7 @@ public class TestOperatorSignature {
     Operator<TableScanDesc> ts = OperatorFactory.get(cCtx, desc);
     return ts;
   }
+
 
 
 }
