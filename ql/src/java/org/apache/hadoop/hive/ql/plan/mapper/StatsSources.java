@@ -46,12 +46,12 @@ public class StatsSources {
   }
 
   public static void loadFromPlanMapper(SessionStatsSource sessionStatsSource, PlanMapper pm) {
-    Map<OpTreeSignature, OperatorStats> map = extractMapFromPlanMapper(pm);
+    Map<OpTreeSignature, OperatorStats> map = extractStatMapFromPlanMapper(pm);
     sessionStatsSource.putAll(map);
   }
 
 
-  private static Map<OpTreeSignature, OperatorStats> extractMapFromPlanMapper(PlanMapper pm) {
+  private static Map<OpTreeSignature, OperatorStats> extractStatMapFromPlanMapper(PlanMapper pm) {
     Map<OpTreeSignature, OperatorStats> map = new HashMap<OpTreeSignature, OperatorStats>();
     Iterator<EquivGroup> it = pm.iterateGroups();
     while (it.hasNext()) {
