@@ -18,12 +18,10 @@
 package org.apache.hadoop.hive.metastore.cache;
 
 
-import java.io.Closeable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,8 +31,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -91,6 +87,7 @@ import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -100,7 +97,6 @@ import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SchemaVersion;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.Type;
@@ -214,7 +210,9 @@ public class CachedStore implements RawStore, Configurable {
         LOG.info("Going to cache catalogs: " +
             org.apache.commons.lang.StringUtils.join(catalogsToCache, ", "));
         List<Catalog> catalogs = new ArrayList<>(catalogsToCache.size());
-        for (String catName : catalogsToCache) catalogs.add(rawStore.getCatalog(catName));
+        for (String catName : catalogsToCache) {
+          catalogs.add(rawStore.getCatalog(catName));
+        }
         sharedCache.populateCatalogsInCache(catalogs);
       } catch (MetaException|NoSuchObjectException e) {
         LOG.warn("Failed to populate catalogs in cache, going to try again", e);
@@ -2118,6 +2116,7 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.addNotNullConstraints(nns);
   }
 
+  @Override
   public List<String> addDefaultConstraints(List<SQLDefaultConstraint> nns)
       throws InvalidObjectException, MetaException {
     // TODO constraintCache
@@ -2138,6 +2137,7 @@ public class CachedStore implements RawStore, Configurable {
     rawStore.createISchema(schema);
   }
 
+  @Override
   public List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName)
       throws MetaException, NoSuchObjectException {
     return rawStore.getPartitionColStatsForDatabase(catName, dbName);
@@ -2408,5 +2408,15 @@ public class CachedStore implements RawStore, Configurable {
   void resetCatalogCache() {
     sharedCache.resetCatalogCache();
     setCachePrewarmedState(false);
+  }
+
+  @Override
+  public void addRuntimeStat(RuntimeStat stat) throws MetaException {
+    rawStore.addRuntimeStat(stat);
+  }
+
+  @Override
+  public List<RuntimeStat> getRuntimeStats() throws MetaException {
+    return rawStore.getRuntimeStats();
   }
 }
