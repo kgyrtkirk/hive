@@ -18,14 +18,17 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 public class StatsSources {
 
@@ -43,6 +46,13 @@ public class StatsSources {
   }
 
   public static void loadFromPlanMapper(SessionStatsSource sessionStatsSource, PlanMapper pm) {
+    Map<OpTreeSignature, OperatorStats> map = extractMapFromPlanMapper(pm);
+    sessionStatsSource.putAll(map);
+  }
+
+
+  private static Map<OpTreeSignature, OperatorStats> extractMapFromPlanMapper(PlanMapper pm) {
+    Map<OpTreeSignature, OperatorStats> map = new HashMap<OpTreeSignature, OperatorStats>();
     Iterator<EquivGroup> it = pm.iterateGroups();
     while (it.hasNext()) {
       EquivGroup e = it.next();
@@ -63,9 +73,10 @@ public class StatsSources {
         LOG.debug(sb.toString());
       }
       if (stat.size() >= 1 && sig.size() >= 1) {
-        sessionStatsSource.put(sig.get(0), stat.get(0));
+        map.put(sig.get(0), stat.get(0));
       }
     }
+    return map;
   }
 
 }

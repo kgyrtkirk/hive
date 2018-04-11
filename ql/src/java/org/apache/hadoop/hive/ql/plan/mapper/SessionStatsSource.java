@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -54,6 +56,12 @@ public class SessionStatsSource implements StatsSource {
       return true;
     }
     return false;
+  }
+
+  public void putAll(Map<OpTreeSignature, OperatorStats> map) {
+    for (Entry<OpTreeSignature, OperatorStats> entry : map.entrySet()) {
+      put(entry.getKey(), entry.getValue());
+    }
   }
 
 }
