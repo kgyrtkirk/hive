@@ -36,6 +36,7 @@ public class SessionStatsSource implements StatsSource {
 
   private final Cache<OpTreeSignature, OperatorStats> cache;
 
+  // FIXME: consider not requesting hiveconf
   public SessionStatsSource(HiveConf conf) {
     int size = conf.getIntVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE);
     cache = CacheBuilder.newBuilder().maximumSize(size).build();
@@ -58,6 +59,7 @@ public class SessionStatsSource implements StatsSource {
     return false;
   }
 
+  @Override
   public void putAll(Map<OpTreeSignature, OperatorStats> map) {
     for (Entry<OpTreeSignature, OperatorStats> entry : map.entrySet()) {
       put(entry.getKey(), entry.getValue());

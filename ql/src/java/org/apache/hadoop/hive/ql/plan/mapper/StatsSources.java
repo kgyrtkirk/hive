@@ -18,16 +18,25 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
+import org.apache.hadoop.hive.ql.optimizer.signature.RuntimeStatsPersister;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,6 +111,58 @@ public class StatsSources {
       }
     }
     return map;
+  }
+
+  private static StatsSource globalStatsSource;
+
+  public static StatsSource globalStatsSource(HiveConf conf) {
+    if (globalStatsSource == null) {
+      globalStatsSource = new SessionStatsSource(conf);
+    }
+    return globalStatsSource;
+  }
+
+  private static class MetastoreStatsConnector implements StatsSource {
+
+    private final StatsSource ss;
+    private final int maxRetained;
+
+    public MetastoreStatsConnector(StatsSource ss, HiveConf conf) {
+      this.ss = ss;
+      maxRetained = conf.getIntVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE);
+
+    }
+
+    @Override
+    public boolean canProvideStatsFor(Class<?> clazz) {
+      return ss.canProvideStatsFor(clazz);
+    }
+
+    @Override
+    public Optional<OperatorStats> lookup(OpTreeSignature treeSig) {
+      return ss.lookup(treeSig);
+    }
+
+    @Override
+    public void putAll(Map<OpTreeSignature, OperatorStats> map) {
+      try {
+        RuntimeStat rec = buildThriftStat(map);
+        Hive.get().getMSC().addRuntimeStat(rec, maxRetained);
+      } catch (TException | HiveException | IOException e) {
+
+      }
+      ss.putAll(map);
+    }
+
+    private RuntimeStat buildThriftStat(Map<OpTreeSignature, OperatorStats> map) throws IOException {
+      String payload = RuntimeStatsPersister.INSTANCE.encode(map);
+      return new RuntimeStat(payload.length(), ByteBuffer.wrap(payload.getBytes()));
+    }
+
+  }
+
+  public static StatsSource metastoreBackedStatsSource(HiveConf conf, StatsSource parent) {
+    return new MetastoreStatsConnector(parent, conf);
   }
 
 }

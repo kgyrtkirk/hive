@@ -4256,8 +4256,14 @@ public class HiveConf extends Configuration {
     HIVE_QUERY_REEXECUTION_STRATEGIES("hive.query.reexecution.strategies", "overlay,reoptimize",
         "comma separated list of plugin can be used:\n"
             + "  overlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of an execution errors out\n"
-            + "  reoptimize: collects operator statistics during execution and recompile the query after a failure\n"
-            + "  sessionstats: session level stats caching"),
+            + "  reoptimize: collects operator statistics during execution and recompile the query after a failure"),
+    HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE("hive.query.reexecution.stats.persist.scope", "query",
+        new StringSet("query", "hiveserver", "metastore"),
+        "Sets the persistence scope of runtime statistics\n"
+            + "  query: runtime statistics are only used during re-execution\n"
+            + "  hiveserver: runtime statistics are persisted in the hiveserver - all sessions share it\n"
+            + "  metastore: runtime statistics are persisted in the metastore as well"),
+
     HIVE_QUERY_MAX_REEXECUTION_COUNT("hive.query.reexecution.max.count", 1,
         "Maximum number of re-executions for a single query."),
     HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS("hive.query.reexecution.always.collect.operator.stats", false,
