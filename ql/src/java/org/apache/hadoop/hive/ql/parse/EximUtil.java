@@ -49,7 +49,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -90,7 +89,7 @@ public class EximUtil {
     private Hive db;
     private HashSet<ReadEntity> inputs;
     private HashSet<WriteEntity> outputs;
-    private List<Task<? extends Serializable>> tasks;
+    private List<Task<?>> tasks;
     private Logger LOG;
     private Context ctx;
     private DumpType eventType = DumpType.EVENT_UNKNOWN;
@@ -111,7 +110,7 @@ public class EximUtil {
       return outputs;
     }
 
-    public List<Task<? extends Serializable>> getTasks() {
+    public List<Task<?>> getTasks() {
       return tasks;
     }
 
@@ -134,7 +133,7 @@ public class EximUtil {
     public SemanticAnalyzerWrapperContext(HiveConf conf, Hive db,
                                           HashSet<ReadEntity> inputs,
                                           HashSet<WriteEntity> outputs,
-                                          List<Task<? extends Serializable>> tasks,
+                                          List<Task<?>> tasks,
                                           Logger LOG, Context ctx){
       this.conf = conf;
       this.db = db;
