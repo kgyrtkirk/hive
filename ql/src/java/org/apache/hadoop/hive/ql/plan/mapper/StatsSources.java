@@ -40,6 +40,7 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 
 public class StatsSources {
 
@@ -165,4 +166,8 @@ public class StatsSources {
     return new MetastoreStatsConnector(parent, conf);
   }
 
+  @VisibleForTesting
+  public void clearAllStats() {
+    globalStatsSource = null;
+  }
 }
