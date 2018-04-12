@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -27,18 +25,14 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
-import org.apache.hadoop.hive.ql.optimizer.signature.RuntimeStatsPersister;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
-import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 
 public class StatsSources {
 
@@ -119,5 +113,10 @@ public class StatsSources {
       globalStatsSource = new SessionStatsSource(conf);
     }
     return globalStatsSource;
+  }
+
+  @VisibleForTesting
+  public void clearAllStats() {
+    globalStatsSource = null;
   }
 }

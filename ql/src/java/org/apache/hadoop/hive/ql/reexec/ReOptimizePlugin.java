@@ -84,23 +84,22 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
     alwaysCollectStats = driver.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS);
     statsReaderHook.setCollectOnSuccess(alwaysCollectStats);
 
-    StatsSource0 ss0 = StatsSource0.valueOf(driver.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE));
-
-    coreDriver.setStatsSource(getStatsSource(ss0, driver.getConf()));
+    coreDriver.setStatsSource(getStatsSource(driver.getConf()));
   }
 
-  static enum StatsSource0 {
+  static enum StatsSourceMode {
     query, hiveserver;
   }
 
-  private StatsSource getStatsSource(StatsSource0 ss0, HiveConf conf) {
-    switch (ss0) {
+  private StatsSource getStatsSource(HiveConf conf) {
+    StatsSourceMode mode = StatsSourceMode.valueOf(conf.getVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE));
+    switch (mode) {
     case query:
       return new StatsSources.MapBackedStatsSource();
     case hiveserver:
       return StatsSources.globalStatsSource(conf);
     }
-    throw new RuntimeException("invalid StatsSource setting: " + ss0);
+    throw new RuntimeException("Unknown StatsSource setting: " + mode);
   }
 
   @Override
