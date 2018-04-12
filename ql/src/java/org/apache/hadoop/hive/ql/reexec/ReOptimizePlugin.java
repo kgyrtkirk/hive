@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.reexec;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -29,6 +30,7 @@ import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.slf4j.Logger;
@@ -46,6 +48,8 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   private Driver coreDriver;
 
   private OperatorStatsReaderHook statsReaderHook;
+
+  private boolean alwaysCollectStats;
 
   class LocalHook implements ExecuteWithHookContext {
 
@@ -77,8 +81,28 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
     statsReaderHook = new OperatorStatsReaderHook();
     coreDriver.getHookRunner().addOnFailureHook(statsReaderHook);
     coreDriver.getHookRunner().addPostHook(statsReaderHook);
-    statsReaderHook.setCollectOnSuccess(
-        driver.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS));
+    alwaysCollectStats = driver.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS);
+    statsReaderHook.setCollectOnSuccess(alwaysCollectStats);
+
+    StatsSource0 ss0 = StatsSource0.valueOf(driver.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE));
+
+    coreDriver.setStatsSource(getStatsSource(ss0, driver.getConf()));
+  }
+
+  static enum StatsSource0 {
+    query, hiveserver, metastore;
+  }
+
+  private StatsSource getStatsSource(StatsSource0 ss0, HiveConf conf) {
+    switch (ss0) {
+    case query:
+      return new StatsSources.MapBackedStatsSource();
+    case hiveserver:
+      return StatsSources.globalStatsSource(conf);
+    case metastore:
+      return StatsSources.metastoreBackedStatsSource(conf, StatsSources.globalStatsSource(conf));
+    }
+    throw new RuntimeException("invalid StatsSource setting: " + ss0);
   }
 
   @Override
@@ -89,9 +113,9 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   @Override
   public void prepareToReExecute() {
     statsReaderHook.setCollectOnSuccess(true);
-    PlanMapper pm = coreDriver.getContext().getPlanMapper();
-    coreDriver.setStatsSource(StatsSources.getStatsSourceContaining(coreDriver.getStatsSource(), pm));
     retryPossible = false;
+    coreDriver.setStatsSource(
+        StatsSources.getStatsSourceContaining(coreDriver.getStatsSource(), coreDriver.getPlanMapper()));
   }
 
   @Override
@@ -137,7 +161,11 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   }
 
   @Override
-  public void afterExecute(PlanMapper planMapper) {
+  public void afterExecute(PlanMapper planMapper, boolean success) {
+    if (alwaysCollectStats) {
+      coreDriver.setStatsSource(
+          StatsSources.getStatsSourceContaining(coreDriver.getStatsSource(), planMapper));
+    }
   }
 
 }

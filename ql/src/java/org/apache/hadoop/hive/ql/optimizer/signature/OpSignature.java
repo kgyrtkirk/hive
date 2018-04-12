@@ -25,17 +25,27 @@ import java.util.Map.Entry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Signature of the operator(non-recursive).
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public class OpSignature {
 
   /**
    * Holds the signature of the operator; the keys are are the methods name marked by {@link Signature}.
    */
+  @JsonProperty
   private Map<String, Object> sigMap;
+
+  // need this for Jackson to work
+  @SuppressWarnings("unused")
+  private OpSignature() {
+  }
 
   private OpSignature(Operator<? extends OperatorDesc> op) {
     sigMap = new HashMap<>();
@@ -103,4 +113,9 @@ public class OpSignature {
     }
     return sb.toString();
   }
+
+  public Map<String, Object> getSigMap() {
+    return sigMap;
+  }
+
 }

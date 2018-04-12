@@ -81,7 +81,7 @@ public class ReExecutionOverlayPlugin implements IReExecutionPlugin {
   }
 
   @Override
-  public void afterExecute(PlanMapper planMapper) {
+  public void afterExecute(PlanMapper planMapper, boolean success) {
   }
 
 }

@@ -16,34 +16,33 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan.mapper;
+package org.apache.hadoop.hive.ql.optimizer.signature;
 
-import java.util.Map;
-import java.util.Optional;
+import java.io.IOException;
 
-import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
-import org.apache.hadoop.hive.ql.stats.OperatorStats;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
-public class EmptyStatsSource implements StatsSource {
+/**
+ * Enables to encode/decode runtime statistics values into textual form.
+ */
+public class RuntimeStatsPersister {
+  public static RuntimeStatsPersister INSTANCE = new RuntimeStatsPersister();
 
-  public static StatsSource INSTANCE = new EmptyStatsSource();
+  private final ObjectMapper om;
 
-  private EmptyStatsSource() {
+  RuntimeStatsPersister() {
+    om = new ObjectMapper();
+    om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+    om.configure(SerializationFeature.INDENT_OUTPUT, true);
   }
 
-  @Override
-  public boolean canProvideStatsFor(Class<?> class1) {
-    return false;
+  public <T> String encode(T input) throws IOException {
+    return om.writeValueAsString(input);
   }
 
-  @Override
-  public Optional<OperatorStats> lookup(OpTreeSignature treeSig) {
-    return Optional.empty();
-  }
-
-  @Override
-  public void putAll(Map<OpTreeSignature, OperatorStats> map) {
-    throw new RuntimeException("This is an empty source!");
+  public <T> T decode(String input, Class<T> clazz) throws IOException {
+    return om.readValue(input, clazz);
   }
 
 }

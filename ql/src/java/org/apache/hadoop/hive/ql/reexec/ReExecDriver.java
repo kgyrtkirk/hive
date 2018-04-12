@@ -157,7 +157,7 @@ public class ReExecDriver implements IDriver {
       CommandProcessorResponse cpr = coreDriver.run();
 
       PlanMapper oldPlanMapper = coreDriver.getPlanMapper();
-      afterExecute(oldPlanMapper);
+      afterExecute(oldPlanMapper, cpr.getResponseCode() == 0);
 
       boolean shouldReExecute = explainReOptimization && executionIndex==1;
       shouldReExecute |= cpr.getResponseCode() != 0 && shouldReExecute();
@@ -183,9 +183,9 @@ public class ReExecDriver implements IDriver {
     }
   }
 
-  private void afterExecute(PlanMapper planMapper) {
+  private void afterExecute(PlanMapper planMapper, boolean success) {
     for (IReExecutionPlugin p : plugins) {
-      p.afterExecute(planMapper);
+      p.afterExecute(planMapper, success);
     }
   }
 
