@@ -4261,8 +4261,7 @@ public class HiveConf extends Configuration {
         new StringSet("query", "hiveserver", "metastore"),
         "Sets the persistence scope of runtime statistics\n"
             + "  query: runtime statistics are only used during re-execution\n"
-            + "  hiveserver: runtime statistics are persisted in the hiveserver - all sessions share it\n"
-            + "  metastore: runtime statistics are persisted in the metastore as well"),
+            + "  hiveserver: runtime statistics are persisted in the hiveserver - all sessions share it"),
 
     HIVE_QUERY_MAX_REEXECUTION_COUNT("hive.query.reexecution.max.count", 1,
         "Maximum number of re-executions for a single query."),

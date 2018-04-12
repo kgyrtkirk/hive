@@ -90,7 +90,7 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   }
 
   static enum StatsSource0 {
-    query, hiveserver, metastore;
+    query, hiveserver;
   }
 
   private StatsSource getStatsSource(StatsSource0 ss0, HiveConf conf) {
@@ -99,8 +99,6 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
       return new StatsSources.MapBackedStatsSource();
     case hiveserver:
       return StatsSources.globalStatsSource(conf);
-    case metastore:
-      return StatsSources.metastoreBackedStatsSource(conf, StatsSources.globalStatsSource(conf));
     }
     throw new RuntimeException("invalid StatsSource setting: " + ss0);
   }
