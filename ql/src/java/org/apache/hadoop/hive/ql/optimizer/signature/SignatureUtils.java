@@ -77,12 +77,25 @@ public class SignatureUtils {
         for (Method method : sigMethods) {
           try {
             Object res = method.invoke(o);
-            ret.put(method.getName(), res);
+            if (handleRaw(res)) {
+              ret.put(method.getName(), res);
+            } else {
+              HashMap<String, Object> valueMap = new HashMap<>();
+              write(valueMap, res);
+              ret.put(method.getName(), res);
+            }
           } catch (Exception e) {
-            throw new RuntimeException("Error invoking signature method", e);
+            throw new RuntimeException("Error invoking signature method: ", e);
           }
         }
       }
+    }
+
+    private boolean handleRaw(Object res) {
+      return res == null ||
+          res.getClass().isPrimitive() ||
+          res.getClass() == String.class;
+
     }
 
   }
