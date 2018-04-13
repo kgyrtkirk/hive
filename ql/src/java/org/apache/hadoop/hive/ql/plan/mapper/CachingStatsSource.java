@@ -31,13 +31,13 @@ import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-public class SessionStatsSource implements StatsSource {
+public class CachingStatsSource implements StatsSource {
 
 
   private final Cache<OpTreeSignature, OperatorStats> cache;
 
   // FIXME: consider not requesting hiveconf
-  public SessionStatsSource(HiveConf conf) {
+  public CachingStatsSource(HiveConf conf) {
     int size = conf.getIntVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE);
     cache = CacheBuilder.newBuilder().maximumSize(size).build();
   }

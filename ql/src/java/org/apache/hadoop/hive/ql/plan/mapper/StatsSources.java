@@ -72,8 +72,8 @@ public class StatsSources {
   private static final Logger LOG = LoggerFactory.getLogger(StatsSources.class);
 
   public static StatsSource getStatsSourceContaining(StatsSource currentStatsSource, PlanMapper pm) {
-    if (currentStatsSource instanceof SessionStatsSource) {
-      SessionStatsSource sessionStatsSource = (SessionStatsSource) currentStatsSource;
+    if (currentStatsSource instanceof CachingStatsSource) {
+      CachingStatsSource sessionStatsSource = (CachingStatsSource) currentStatsSource;
       loadFromPlanMapper(sessionStatsSource, pm);
       return sessionStatsSource;
     } else {
@@ -81,7 +81,7 @@ public class StatsSources {
     }
   }
 
-  public static void loadFromPlanMapper(SessionStatsSource sessionStatsSource, PlanMapper pm) {
+  public static void loadFromPlanMapper(CachingStatsSource sessionStatsSource, PlanMapper pm) {
     Map<OpTreeSignature, OperatorStats> map = extractStatMapFromPlanMapper(pm);
     sessionStatsSource.putAll(map);
   }
@@ -180,7 +180,7 @@ public class StatsSources {
 
   public static StatsSource globalStatsSource(HiveConf conf) {
     if (globalStatsSource == null) {
-      globalStatsSource = new SessionStatsSource(conf);
+      globalStatsSource = new CachingStatsSource(conf);
     }
     return globalStatsSource;
   }
