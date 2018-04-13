@@ -188,7 +188,7 @@ public class StatsSources {
   }
 
   @VisibleForTesting
-  public void clearGlobalStats() {
+  public static void clearGlobalStats() {
     globalStatsSource = null;
     metastoreStatsConnector = null;
   }

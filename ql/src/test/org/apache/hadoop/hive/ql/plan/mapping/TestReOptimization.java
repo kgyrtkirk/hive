@@ -27,15 +27,18 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.apache.hive.testutils.HiveTestEnvSetup;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -76,6 +79,11 @@ public class TestReOptimization {
   public static void afterClass() throws Exception {
     IDriver driver = createDriver("");
     dropTables(driver);
+  }
+
+  @After
+  public void after() {
+    StatsSources.clearGlobalStats();
   }
 
   public static void dropTables(IDriver driver) throws Exception {
@@ -148,6 +156,93 @@ public class TestReOptimization {
   }
 
   @Test
+  public void testStatCachingQuery() throws Exception {
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE, "query");
+    conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS, true);
+
+    extracted(false, false, false);
+  }
+
+  @Test
+  public void testStatCachingHS2() throws Exception {
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE, "hiveserver");
+    conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS, true);
+
+    extracted(true, true, false);
+  }
+
+  @Test
+  public void testStatCachingMetaStore() throws Exception {
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE, "metastore");
+    conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS, true);
+
+    extracted(true, true, true);
+  }
+
+  private void extracted(boolean expectInSameSession, boolean expectNewHs2Session, boolean expectHs2Instance)
+      throws CommandProcessorResponse {
+    {
+      // same session
+      IDriver driver = createDriver("reoptimize");
+      checkUsageOfRuntimeStats(driver, false);
+      driver = DriverFactory.newDriver(env_setup.getTestCtx().hiveConf);
+      checkUsageOfRuntimeStats(driver, expectInSameSession);
+    }
+    {
+      // new session
+      IDriver driver = createDriver("reoptimize");
+      checkUsageOfRuntimeStats(driver, expectNewHs2Session);
+    }
+    StatsSources.clearGlobalStats();
+    {
+      // new hs2 instance session
+      IDriver driver = createDriver("reoptimize");
+      checkUsageOfRuntimeStats(driver, expectHs2Instance);
+    }
+  }
+
+
+  @Test
+  public void testStatCachingHs2() throws Exception {
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE, "hiveserver");
+    conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS, true);
+
+    {
+      // same session
+      IDriver driver = createDriver("reoptimize");
+      checkUsageOfRuntimeStats(driver, false);
+      checkUsageOfRuntimeStats(driver, true);
+    }
+    {
+      // new session
+      IDriver driver = createDriver("reoptimize");
+      checkUsageOfRuntimeStats(driver, true);
+    }
+    StatsSources.clearGlobalStats();
+    {
+      // new hs2 instance session
+      IDriver driver = createDriver("reoptimize");
+      checkUsageOfRuntimeStats(driver, false);
+    }
+  }
+
+  private void checkUsageOfRuntimeStats(IDriver driver, boolean expected) throws CommandProcessorResponse {
+    String query = "select sum(u) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
+    PlanMapper pm = getMapperForQuery(driver, query);
+    assertEquals(1, driver.getContext().getExecutionIndex());
+    List<CommonJoinOperator> allJoin = pm.getAll(CommonJoinOperator.class);
+    CommonJoinOperator join = allJoin.iterator().next();
+    Statistics joinStat = join.getStatistics();
+
+    assertEquals("expectation of the usage of runtime stats doesn't match", expected,
+        joinStat.isRuntimeStats());
+  }
+
+  @Test
   public void testExplainSupport() throws Exception {
 
     IDriver driver = createDriver("overlay,reoptimize");
@@ -164,6 +259,7 @@ public class TestReOptimization {
         res.stream().filter(line -> line.contains("TS") && line.contains("runtime")).count());
 
   }
+
 
   private static IDriver createDriver(String strategies) {
     HiveConf conf = env_setup.getTestCtx().hiveConf;

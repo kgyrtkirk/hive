@@ -216,7 +216,6 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   }
 
   @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  @Signature
   public TableDesc getTableInfo() {
     return tableInfo;
   }
