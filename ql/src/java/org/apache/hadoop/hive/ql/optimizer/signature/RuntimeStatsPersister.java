@@ -45,4 +45,8 @@ public class RuntimeStatsPersister {
     return om.readValue(input, clazz);
   }
 
+  public <T> T decode(byte[] input, Class<T> clazz) throws IOException {
+    return om.readValue(input, clazz);
+  }
+
 }

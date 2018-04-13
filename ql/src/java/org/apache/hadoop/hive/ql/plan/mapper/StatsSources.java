@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
+import org.apache.hadoop.hive.ql.optimizer.signature.RuntimeStatsMap;
 import org.apache.hadoop.hive.ql.optimizer.signature.RuntimeStatsPersister;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
@@ -132,6 +133,19 @@ public class StatsSources {
       this.ss = ss;
       maxRetained = conf.getIntVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE);
 
+      try {
+        List<RuntimeStat> rs = Hive.get().getMSC().getRuntimeStats();
+        for (RuntimeStat thriftStat : rs) {
+          try {
+            ss.putAll(decodeThriftStat(thriftStat));
+          } catch (IOException e) {
+            logException("Exception while loading runtime stats", e);
+          }
+        }
+      } catch (TException | HiveException e) {
+        logException("Exception while reading metastore runtime stats", e);
+      }
+
     }
 
     @Override
@@ -150,18 +164,25 @@ public class StatsSources {
         RuntimeStat rec = buildThriftStat(map);
         Hive.get().getMSC().addRuntimeStat(rec, maxRetained);
       } catch (TException | HiveException | IOException e) {
-
+        String msg = "Exception while persisting runtime stat";
+        logException(msg, e);
       }
       ss.putAll(map);
     }
 
+    @Deprecated
     private RuntimeStat buildThriftStat(Map<OpTreeSignature, OperatorStats> map) throws IOException {
-      String payload = RuntimeStatsPersister.INSTANCE.encode(map);
+      String payload = RuntimeStatsPersister.INSTANCE.encode(new RuntimeStatsMap(map));
       return new RuntimeStat(payload.length(), ByteBuffer.wrap(payload.getBytes()));
     }
 
-  }
+    @Deprecated
+    private Map<OpTreeSignature, OperatorStats> decodeThriftStat(RuntimeStat rs) throws IOException {
+      RuntimeStatsMap rsm = RuntimeStatsPersister.INSTANCE.decode(rs.getPayload(), RuntimeStatsMap.class);
+      return rsm.toMap();
+    }
 
+  }
   public static StatsSource metastoreBackedStatsSource(HiveConf conf, StatsSource parent) {
     return new MetastoreStatsConnector(parent, conf);
   }
@@ -170,4 +191,13 @@ public class StatsSources {
   public void clearAllStats() {
     globalStatsSource = null;
   }
+
+  private static void logException(String msg, Exception e) {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(msg, e);
+    } else {
+      LOG.info(msg + ": " + e.getMessage());
+    }
+  }
+
 }
