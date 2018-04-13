@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer.signature;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
