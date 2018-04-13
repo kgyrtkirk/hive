@@ -88,7 +88,7 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   }
 
   static enum StatsSourceMode {
-    query, hiveserver;
+    query, hiveserver, metastore;
   }
 
   private StatsSource getStatsSource(HiveConf conf) {
