@@ -161,7 +161,7 @@ public class TestReOptimization {
     conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE, "query");
     conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS, true);
 
-    extracted(false, false, false);
+    checkRuntimeStatsReuse(false, false, false);
   }
 
   @Test
@@ -170,7 +170,7 @@ public class TestReOptimization {
     conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE, "hiveserver");
     conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS, true);
 
-    extracted(true, true, false);
+    checkRuntimeStatsReuse(true, true, false);
   }
 
   @Test
@@ -179,10 +179,10 @@ public class TestReOptimization {
     conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE, "metastore");
     conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS, true);
 
-    extracted(true, true, true);
+    checkRuntimeStatsReuse(true, true, true);
   }
 
-  private void extracted(boolean expectInSameSession, boolean expectNewHs2Session, boolean expectHs2Instance)
+  private void checkRuntimeStatsReuse(boolean expectInSameSession, boolean expectNewHs2Session, boolean expectHs2Instance)
       throws CommandProcessorResponse {
     {
       // same session
@@ -201,32 +201,6 @@ public class TestReOptimization {
       // new hs2 instance session
       IDriver driver = createDriver("reoptimize");
       checkUsageOfRuntimeStats(driver, expectHs2Instance);
-    }
-  }
-
-
-  @Test
-  public void testStatCachingHs2() throws Exception {
-    HiveConf conf = env_setup.getTestCtx().hiveConf;
-    conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE, "hiveserver");
-    conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS, true);
-
-    {
-      // same session
-      IDriver driver = createDriver("reoptimize");
-      checkUsageOfRuntimeStats(driver, false);
-      checkUsageOfRuntimeStats(driver, true);
-    }
-    {
-      // new session
-      IDriver driver = createDriver("reoptimize");
-      checkUsageOfRuntimeStats(driver, true);
-    }
-    StatsSources.clearGlobalStats();
-    {
-      // new hs2 instance session
-      IDriver driver = createDriver("reoptimize");
-      checkUsageOfRuntimeStats(driver, false);
     }
   }
 
