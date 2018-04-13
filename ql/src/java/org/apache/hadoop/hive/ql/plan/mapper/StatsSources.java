@@ -64,7 +64,7 @@ public class StatsSources {
 
     @Override
     public void putAll(Map<OpTreeSignature, OperatorStats> map) {
-      map.putAll(map);
+      this.map.putAll(map);
     }
 
   }
