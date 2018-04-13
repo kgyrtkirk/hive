@@ -74,18 +74,13 @@ public class StatsSources {
   public static StatsSource getStatsSourceContaining(StatsSource currentStatsSource, PlanMapper pm) {
     if (currentStatsSource instanceof CachingStatsSource) {
       CachingStatsSource sessionStatsSource = (CachingStatsSource) currentStatsSource;
-      loadFromPlanMapper(sessionStatsSource, pm);
+      Map<OpTreeSignature, OperatorStats> statMap = extractStatMapFromPlanMapper(pm);
+      sessionStatsSource.putAll(statMap);
       return sessionStatsSource;
     } else {
       return new SimpleRuntimeStatsSource(pm);
     }
   }
-
-  public static void loadFromPlanMapper(CachingStatsSource sessionStatsSource, PlanMapper pm) {
-    Map<OpTreeSignature, OperatorStats> map = extractStatMapFromPlanMapper(pm);
-    sessionStatsSource.putAll(map);
-  }
-
 
   private static Map<OpTreeSignature, OperatorStats> extractStatMapFromPlanMapper(PlanMapper pm) {
     Map<OpTreeSignature, OperatorStats> map = new HashMap<OpTreeSignature, OperatorStats>();
@@ -115,6 +110,9 @@ public class StatsSources {
     return map;
   }
 
+  /**
+   * Decorates a StatSource to be loaded and persisted in the metastore as well.
+   */
   private static class MetastoreStatsConnector implements StatsSource {
 
     private final StatsSource ss;
@@ -136,7 +134,6 @@ public class StatsSources {
       } catch (TException | HiveException e) {
         logException("Exception while reading metastore runtime stats", e);
       }
-
     }
 
     @Override
@@ -151,6 +148,7 @@ public class StatsSources {
 
     @Override
     public void putAll(Map<OpTreeSignature, OperatorStats> map) {
+      ss.putAll(map);
       try {
         RuntimeStat rec = encode(map);
         Hive.get().getMSC().addRuntimeStat(rec, maxRetained);
@@ -158,7 +156,6 @@ public class StatsSources {
         String msg = "Exception while persisting runtime stat";
         logException(msg, e);
       }
-      ss.putAll(map);
     }
 
     private RuntimeStat encode(Map<OpTreeSignature, OperatorStats> map) throws IOException {
