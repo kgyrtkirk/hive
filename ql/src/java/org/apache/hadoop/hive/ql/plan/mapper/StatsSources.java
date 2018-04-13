@@ -115,15 +115,6 @@ public class StatsSources {
     return map;
   }
 
-  private static StatsSource globalStatsSource;
-
-  public static StatsSource globalStatsSource(HiveConf conf) {
-    if (globalStatsSource == null) {
-      globalStatsSource = new SessionStatsSource(conf);
-    }
-    return globalStatsSource;
-  }
-
   private static class MetastoreStatsConnector implements StatsSource {
 
     private final StatsSource ss;
@@ -183,13 +174,28 @@ public class StatsSources {
     }
 
   }
+
+  private static StatsSource globalStatsSource;
+  private static StatsSource metastoreStatsConnector;
+
+  public static StatsSource globalStatsSource(HiveConf conf) {
+    if (globalStatsSource == null) {
+      globalStatsSource = new SessionStatsSource(conf);
+    }
+    return globalStatsSource;
+  }
+
   public static StatsSource metastoreBackedStatsSource(HiveConf conf, StatsSource parent) {
-    return new MetastoreStatsConnector(parent, conf);
+    if (metastoreStatsConnector == null) {
+      metastoreStatsConnector = new MetastoreStatsConnector(parent, conf);
+    }
+    return metastoreStatsConnector;
   }
 
   @VisibleForTesting
-  public void clearAllStats() {
+  public void clearGlobalStats() {
     globalStatsSource = null;
+    metastoreStatsConnector = null;
   }
 
   private static void logException(String msg, Exception e) {
