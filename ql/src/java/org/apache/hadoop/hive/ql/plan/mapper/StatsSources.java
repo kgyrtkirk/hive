@@ -128,7 +128,7 @@ public class StatsSources {
         List<RuntimeStat> rs = Hive.get().getMSC().getRuntimeStats();
         for (RuntimeStat thriftStat : rs) {
           try {
-            ss.putAll(decodeThriftStat(thriftStat));
+            ss.putAll(decode(thriftStat));
           } catch (IOException e) {
             logException("Exception while loading runtime stats", e);
           }
@@ -152,7 +152,7 @@ public class StatsSources {
     @Override
     public void putAll(Map<OpTreeSignature, OperatorStats> map) {
       try {
-        RuntimeStat rec = buildThriftStat(map);
+        RuntimeStat rec = encode(map);
         Hive.get().getMSC().addRuntimeStat(rec, maxRetained);
       } catch (TException | HiveException | IOException e) {
         String msg = "Exception while persisting runtime stat";
@@ -161,14 +161,12 @@ public class StatsSources {
       ss.putAll(map);
     }
 
-    @Deprecated
-    private RuntimeStat buildThriftStat(Map<OpTreeSignature, OperatorStats> map) throws IOException {
+    private RuntimeStat encode(Map<OpTreeSignature, OperatorStats> map) throws IOException {
       String payload = RuntimeStatsPersister.INSTANCE.encode(new RuntimeStatsMap(map));
       return new RuntimeStat(payload.length(), ByteBuffer.wrap(payload.getBytes()));
     }
 
-    @Deprecated
-    private Map<OpTreeSignature, OperatorStats> decodeThriftStat(RuntimeStat rs) throws IOException {
+    private Map<OpTreeSignature, OperatorStats> decode(RuntimeStat rs) throws IOException {
       RuntimeStatsMap rsm = RuntimeStatsPersister.INSTANCE.decode(rs.getPayload(), RuntimeStatsMap.class);
       return rsm.toMap();
     }
