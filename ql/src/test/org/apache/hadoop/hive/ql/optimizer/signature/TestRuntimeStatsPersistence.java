@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
@@ -62,6 +63,13 @@ public class TestRuntimeStatsPersistence {
   private void connectOperators(Operator<?> parent, Operator<?> child) {
     parent.getChildOperators().add(child);
     child.getParentOperators().add(parent);
+  }
+
+  @Test
+  public void checkPersistJoinCondDesc() throws Exception {
+    JoinCondDesc jcd = new JoinCondDesc(1, 2, 3);
+    JoinCondDesc jcd2 = persistenceLoop(jcd, JoinCondDesc.class);
+    assertEquals(jcd, jcd2);
   }
 
   OpTreeSignatureFactory signatureFactory = OpTreeSignatureFactory.newCache();

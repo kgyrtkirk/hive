@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.signature;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -35,6 +36,7 @@ public class RuntimeStatsPersister {
     om = new ObjectMapper();
     om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
     om.configure(SerializationFeature.INDENT_OUTPUT, true);
+    om.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
   }
 
   public <T> String encode(T input) throws IOException {
