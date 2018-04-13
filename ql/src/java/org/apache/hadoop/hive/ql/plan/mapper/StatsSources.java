@@ -45,6 +45,8 @@ import com.google.common.annotations.VisibleForTesting;
 
 public class StatsSources {
 
+  private static final Logger LOG = LoggerFactory.getLogger(StatsSources.class);
+
   public static class MapBackedStatsSource implements StatsSource {
 
     private Map<OpTreeSignature, OperatorStats> map = new HashMap<>();
@@ -66,20 +68,18 @@ public class StatsSources {
     public void putAll(Map<OpTreeSignature, OperatorStats> map) {
       this.map.putAll(map);
     }
-
   }
 
-  private static final Logger LOG = LoggerFactory.getLogger(StatsSources.class);
 
   public static StatsSource getStatsSourceContaining(StatsSource currentStatsSource, PlanMapper pm) {
-    if (currentStatsSource instanceof CachingStatsSource) {
-      CachingStatsSource sessionStatsSource = (CachingStatsSource) currentStatsSource;
-      Map<OpTreeSignature, OperatorStats> statMap = extractStatMapFromPlanMapper(pm);
-      sessionStatsSource.putAll(statMap);
-      return sessionStatsSource;
-    } else {
-      return new SimpleRuntimeStatsSource(pm);
+    StatsSource statsSource = currentStatsSource;
+    if (currentStatsSource  == EmptyStatsSource.INSTANCE) {
+      statsSource = new MapBackedStatsSource();
     }
+
+    Map<OpTreeSignature, OperatorStats> statMap = extractStatMapFromPlanMapper(pm);
+    statsSource.putAll(statMap);
+    return statsSource;
   }
 
   private static Map<OpTreeSignature, OperatorStats> extractStatMapFromPlanMapper(PlanMapper pm) {
