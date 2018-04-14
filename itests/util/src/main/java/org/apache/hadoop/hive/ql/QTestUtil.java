@@ -148,6 +148,7 @@ public class QTestUtil {
   private static final String BUILD_DIR_PROPERTY = "build.dir"; // typically target
 
   public static final String TEST_SRC_TABLES_PROPERTY = "test.src.tables";
+  public static final String TEST_HIVE_USER_PROPERTY = "test.hive.user";
 
   private String testWarehouse;
   private final String testFiles;
@@ -208,7 +209,7 @@ public class QTestUtil {
     getSrcTables().add(table);
     storeSrcTables();
   }
-
+  
   public static Set<String> initSrcTables() {
     if (srcTables == null){
       initSrcTablesFromSystemProperty();
@@ -226,17 +227,11 @@ public class QTestUtil {
     srcTables = new HashSet<String>();
     // FIXME: moved default value to here...for now
     // i think this features is never really used from the command line
-    String defaultTestSrcTables = "src,src1,srcbucket,srcbucket2,src_json,src_thrift," +
-        "src_sequencefile,srcpart,alltypesorc,src_hbase,cbo_t1,cbo_t2,cbo_t3,src_cbo,part," +
-        "lineitem,alltypesparquet";
-    for (String srcTable : System.getProperty(TEST_SRC_TABLES_PROPERTY, defaultTestSrcTables).trim().split(",")) {
+    for (String srcTable : System.getProperty(TEST_SRC_TABLES_PROPERTY, "").trim().split(",")) {
       srcTable = srcTable.trim();
       if (!srcTable.isEmpty()) {
         srcTables.add(srcTable);
       }
-    }
-    if (srcTables.isEmpty()) {
-      throw new RuntimeException("Source tables cannot be empty");
     }
   }
 
@@ -1074,6 +1069,16 @@ public class QTestUtil {
     clearKeysCreatedInTests();
     StatsSources.clearGlobalStats();
   }
+  
+  protected void clearSettingsCreatedInTests() throws IOException {
+    getCliDriver().processLine(String.format("set hive.security.authorization.enabled=false;"));
+    getCliDriver().processLine(String.format("set user.name=%s;",
+        System.getProperty(TEST_HIVE_USER_PROPERTY, "hive_test_user")));
+    
+    getCliDriver().processLine("set hive.metastore.partition.name.whitelist.pattern=;");
+    getCliDriver().processLine("set hive.test.mode=false;");
+    getCliDriver().processLine("set hive.mapred.mode=nonstrict;");
+  }
 
 
   protected void initConfFromSetup() throws Exception {
@@ -1096,7 +1101,7 @@ public class QTestUtil {
     clearTablesCreatedDuringTests();
     clearUDFsCreatedDuringTests();
     clearKeysCreatedInTests();
-
+    
     cleanupFromFile();
 
     // delete any contents in the warehouse dir
@@ -1204,7 +1209,7 @@ public class QTestUtil {
     }
   }
 
-  private void initDataset(String table) {
+  protected synchronized void initDataset(String table) {
     if (getSrcTables().contains(table)){
       return;
     }
@@ -1267,6 +1272,7 @@ public class QTestUtil {
       createSources(fileName);
     }
 
+    clearSettingsCreatedInTests();
     initDataSetForTest(file);
 
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
