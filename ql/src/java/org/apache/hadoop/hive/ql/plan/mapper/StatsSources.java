@@ -175,7 +175,8 @@ public class StatsSources {
 
   public static StatsSource globalStatsSource(HiveConf conf) {
     if (globalStatsSource == null) {
-      globalStatsSource = new CachingStatsSource(conf);
+      int cacheSize = conf.getIntVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE);
+      globalStatsSource = new CachingStatsSource(cacheSize);
     }
     return globalStatsSource;
   }
