@@ -25,6 +25,7 @@ import java.util.Optional;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.optimizer.signature.OpSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
@@ -48,6 +49,35 @@ public class CachingStatsSource implements StatsSource {
 
   @Override
   public Optional<OperatorStats> lookup(OpTreeSignature treeSig) {
+
+    if (cache.size() > 0 && cache.getIfPresent(treeSig) == null) {
+      for (OpTreeSignature s : cache.asMap().keySet()) {
+        if (treeSig.hashCode() == s.hashCode()) {
+
+          OpTreeSignature oo = s;
+          OpTreeSignature t0 = treeSig;
+          OpTreeSignature t1 = oo;
+          OpSignature s0 = treeSig.getSig();
+          OpSignature s1 = oo.getSig();
+          boolean eq = s0.equals(s1);
+          boolean eq1 = t0.equals(t1);
+          boolean eq2 = treeSig.toString().equals(oo.toString());
+          for (int i = 0; i < t0.getParentSig().size(); i++) {
+            OpTreeSignature p0 = t0.getParentSig().get(i);
+            OpTreeSignature p1 = t1.getParentSig().get(i);
+            boolean eqX = p0.equals(p1);
+            if (!eqX) {
+              int asd1 = 1;
+            }
+          }
+
+          t0.getSig().proveEquals(t1.getSig());
+          boolean eq3 = t0.getSig().equals(t1.getSig());
+          int asd = 2;
+        }
+      }
+    }
+
     return Optional.ofNullable(cache.getIfPresent(treeSig));
   }
 
