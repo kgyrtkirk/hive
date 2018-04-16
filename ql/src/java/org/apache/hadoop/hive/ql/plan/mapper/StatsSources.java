@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -118,9 +116,9 @@ public class StatsSources {
     private final StatsSource ss;
     private final int maxRetained;
 
-    public MetastoreStatsConnector(StatsSource ss, HiveConf conf) {
+    public MetastoreStatsConnector(StatsSource ss, int cacheSize) {
       this.ss = ss;
-      maxRetained = conf.getIntVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE);
+      maxRetained = cacheSize;
 
       try {
         List<RuntimeStat> rs = Hive.get().getMSC().getRuntimeStats();
@@ -173,17 +171,16 @@ public class StatsSources {
   private static StatsSource globalStatsSource;
   private static StatsSource metastoreStatsConnector;
 
-  public static StatsSource globalStatsSource(HiveConf conf) {
+  public static StatsSource globalStatsSource(int cacheSize) {
     if (globalStatsSource == null) {
-      int cacheSize = conf.getIntVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE);
       globalStatsSource = new CachingStatsSource(cacheSize);
     }
     return globalStatsSource;
   }
 
-  public static StatsSource metastoreBackedStatsSource(HiveConf conf, StatsSource parent) {
+  public static StatsSource metastoreBackedStatsSource(int cacheSize, StatsSource parent) {
     if (metastoreStatsConnector == null) {
-      metastoreStatsConnector = new MetastoreStatsConnector(parent, conf);
+      metastoreStatsConnector = new MetastoreStatsConnector(parent, cacheSize);
     }
     return metastoreStatsConnector;
   }

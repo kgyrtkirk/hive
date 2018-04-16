@@ -93,13 +93,15 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
 
   private StatsSource getStatsSource(HiveConf conf) {
     StatsSourceMode mode = StatsSourceMode.valueOf(conf.getVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE));
+    int cacheSize = conf.getIntVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE);
+
     switch (mode) {
     case query:
       return new StatsSources.MapBackedStatsSource();
     case hiveserver:
-      return StatsSources.globalStatsSource(conf);
+      return StatsSources.globalStatsSource(cacheSize);
     case metastore:
-      return StatsSources.metastoreBackedStatsSource(conf, StatsSources.globalStatsSource(conf));
+      return StatsSources.metastoreBackedStatsSource(cacheSize, StatsSources.globalStatsSource(cacheSize));
     }
     throw new RuntimeException("Unknown StatsSource setting: " + mode);
   }

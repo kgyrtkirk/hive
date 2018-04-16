@@ -34,7 +34,7 @@ public class CachingStatsSource implements StatsSource {
 
   private final Cache<OpTreeSignature, OperatorStats> cache;
 
-  public CachingStatsSource(long cacheSize) {
+  public CachingStatsSource(int cacheSize) {
     cache = CacheBuilder.newBuilder().maximumSize(cacheSize).build();
   }
 
