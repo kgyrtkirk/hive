@@ -38,8 +38,8 @@ public class CachingStatsSource implements StatsSource {
 
   // FIXME: consider not requesting hiveconf
   public CachingStatsSource(HiveConf conf) {
-    int size = conf.getIntVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE);
-    cache = CacheBuilder.newBuilder().maximumSize(size).build();
+    int cacheSize = conf.getIntVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE);
+    cache = CacheBuilder.newBuilder().maximumSize(cacheSize).build();
   }
 
   public void put(OpTreeSignature sig, OperatorStats opStat) {
