@@ -116,7 +116,7 @@ public class StatsSources {
   }
 
   @VisibleForTesting
-  public void clearAllStats() {
+  public static void clearAllStats() {
     globalStatsSource = null;
   }
 }
