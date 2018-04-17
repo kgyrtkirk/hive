@@ -49246,6 +49246,14 @@ uint32_t ThriftHiveMetastore_add_runtime_stats_args::read(::apache::thrift::prot
           xfer += iprot->skip(ftype);
         }
         break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->maxRetainSecs);
+          this->__isset.maxRetainSecs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -49271,6 +49279,10 @@ uint32_t ThriftHiveMetastore_add_runtime_stats_args::write(::apache::thrift::pro
   xfer += oprot->writeI32(this->maxRetained);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("maxRetainSecs", ::apache::thrift::protocol::T_I32, 3);
+  xfer += oprot->writeI32(this->maxRetainSecs);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -49292,6 +49304,10 @@ uint32_t ThriftHiveMetastore_add_runtime_stats_pargs::write(::apache::thrift::pr
 
   xfer += oprot->writeFieldBegin("maxRetained", ::apache::thrift::protocol::T_I32, 2);
   xfer += oprot->writeI32((*(this->maxRetained)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("maxRetainSecs", ::apache::thrift::protocol::T_I32, 3);
+  xfer += oprot->writeI32((*(this->maxRetainSecs)));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -62360,13 +62376,13 @@ bool ThriftHiveMetastoreClient::recv_heartbeat_lock_materialization_rebuild()
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "heartbeat_lock_materialization_rebuild failed: unknown result");
 }
 
-void ThriftHiveMetastoreClient::add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained)
+void ThriftHiveMetastoreClient::add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained, const int32_t maxRetainSecs)
 {
-  send_add_runtime_stats(stat, maxRetained);
+  send_add_runtime_stats(stat, maxRetained, maxRetainSecs);
   recv_add_runtime_stats();
 }
 
-void ThriftHiveMetastoreClient::send_add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained)
+void ThriftHiveMetastoreClient::send_add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained, const int32_t maxRetainSecs)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("add_runtime_stats", ::apache::thrift::protocol::T_CALL, cseqid);
@@ -62374,6 +62390,7 @@ void ThriftHiveMetastoreClient::send_add_runtime_stats(const RuntimeStat& stat, 
   ThriftHiveMetastore_add_runtime_stats_pargs args;
   args.stat = &stat;
   args.maxRetained = &maxRetained;
+  args.maxRetainSecs = &maxRetainSecs;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -74520,7 +74537,7 @@ void ThriftHiveMetastoreProcessor::process_add_runtime_stats(int32_t seqid, ::ap
 
   ThriftHiveMetastore_add_runtime_stats_result result;
   try {
-    iface_->add_runtime_stats(args.stat, args.maxRetained);
+    iface_->add_runtime_stats(args.stat, args.maxRetained, args.maxRetainSecs);
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
       this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.add_runtime_stats");
@@ -92985,13 +93002,13 @@ bool ThriftHiveMetastoreConcurrentClient::recv_heartbeat_lock_materialization_re
   } // end while(true)
 }
 
-void ThriftHiveMetastoreConcurrentClient::add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained)
+void ThriftHiveMetastoreConcurrentClient::add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained, const int32_t maxRetainSecs)
 {
-  int32_t seqid = send_add_runtime_stats(stat, maxRetained);
+  int32_t seqid = send_add_runtime_stats(stat, maxRetained, maxRetainSecs);
   recv_add_runtime_stats(seqid);
 }
 
-int32_t ThriftHiveMetastoreConcurrentClient::send_add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained)
+int32_t ThriftHiveMetastoreConcurrentClient::send_add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained, const int32_t maxRetainSecs)
 {
   int32_t cseqid = this->sync_.generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
@@ -93000,6 +93017,7 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_add_runtime_stats(const Runtim
   ThriftHiveMetastore_add_runtime_stats_pargs args;
   args.stat = &stat;
   args.maxRetained = &maxRetained;
+  args.maxRetainSecs = &maxRetainSecs;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();

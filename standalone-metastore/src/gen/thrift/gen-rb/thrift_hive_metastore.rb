@@ -3378,13 +3378,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'heartbeat_lock_materialization_rebuild failed: unknown result')
     end
 
-    def add_runtime_stats(stat, maxRetained)
-      send_add_runtime_stats(stat, maxRetained)
+    def add_runtime_stats(stat, maxRetained, maxRetainSecs)
+      send_add_runtime_stats(stat, maxRetained, maxRetainSecs)
       recv_add_runtime_stats()
     end
 
-    def send_add_runtime_stats(stat, maxRetained)
-      send_message('add_runtime_stats', Add_runtime_stats_args, :stat => stat, :maxRetained => maxRetained)
+    def send_add_runtime_stats(stat, maxRetained, maxRetainSecs)
+      send_message('add_runtime_stats', Add_runtime_stats_args, :stat => stat, :maxRetained => maxRetained, :maxRetainSecs => maxRetainSecs)
     end
 
     def recv_add_runtime_stats()
@@ -5951,7 +5951,7 @@ module ThriftHiveMetastore
     def process_add_runtime_stats(seqid, iprot, oprot)
       args = read_args(iprot, Add_runtime_stats_args)
       result = Add_runtime_stats_result.new()
-      @handler.add_runtime_stats(args.stat, args.maxRetained)
+      @handler.add_runtime_stats(args.stat, args.maxRetained, args.maxRetainSecs)
       write_result(result, oprot, 'add_runtime_stats', seqid)
     end
 
@@ -13464,10 +13464,12 @@ module ThriftHiveMetastore
     include ::Thrift::Struct, ::Thrift::Struct_Union
     STAT = 1
     MAXRETAINED = 2
+    MAXRETAINSECS = 3
 
     FIELDS = {
       STAT => {:type => ::Thrift::Types::STRUCT, :name => 'stat', :class => ::RuntimeStat},
-      MAXRETAINED => {:type => ::Thrift::Types::I32, :name => 'maxRetained'}
+      MAXRETAINED => {:type => ::Thrift::Types::I32, :name => 'maxRetained'},
+      MAXRETAINSECS => {:type => ::Thrift::Types::I32, :name => 'maxRetainSecs'}
     }
 
     def struct_fields; FIELDS; end

@@ -149,7 +149,7 @@ public class StatsSources {
       ss.putAll(map);
       try {
         RuntimeStat rec = encode(map);
-        Hive.get().getMSC().addRuntimeStat(rec, maxRetained);
+        Hive.get().getMSC().addRuntimeStat(rec, maxRetained, -1);
       } catch (TException | HiveException | IOException e) {
         String msg = "Exception while persisting runtime stat";
         logException(msg, e);

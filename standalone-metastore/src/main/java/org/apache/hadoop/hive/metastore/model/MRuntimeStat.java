@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.metastore.model;
 
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 
+@SuppressWarnings("unused")
 public class MRuntimeStat {
 
+  private int createTime;
   private int weight;
   private byte[] payload;
 
@@ -29,6 +31,7 @@ public class MRuntimeStat {
     MRuntimeStat ret = new MRuntimeStat();
     ret.weight = stat.getWeight();
     ret.payload = stat.getPayload();
+    ret.createTime = (int) (System.currentTimeMillis() / 1000);
     return ret;
   }
 

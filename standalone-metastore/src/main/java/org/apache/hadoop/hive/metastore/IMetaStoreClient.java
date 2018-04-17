@@ -3646,10 +3646,9 @@ public interface IMetaStoreClient {
 
   /** Adds a RuntimeStat for persistence
    * @throws TException */
-  void addRuntimeStat(RuntimeStat stat, int maxRetained) throws TException;
+  void addRuntimeStat(RuntimeStat stat, int maxRetained, int maxRetainSecs) throws TException;
 
   /** Reads all the runtime statistics */
   List<RuntimeStat> getRuntimeStats() throws TException;
-
 
 }

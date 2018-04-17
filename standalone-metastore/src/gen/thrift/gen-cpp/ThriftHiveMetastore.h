@@ -224,7 +224,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_serde(SerDeInfo& _return, const GetSerdeRequest& rqst) = 0;
   virtual void get_lock_materialization_rebuild(LockResponse& _return, const std::string& dbName, const std::string& tableName, const int64_t txnId) = 0;
   virtual bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId) = 0;
-  virtual void add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained) = 0;
+  virtual void add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained, const int32_t maxRetainSecs) = 0;
   virtual void get_runtime_stats(std::vector<RuntimeStat> & _return) = 0;
 };
 
@@ -889,7 +889,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     bool _return = false;
     return _return;
   }
-  void add_runtime_stats(const RuntimeStat& /* stat */, const int32_t /* maxRetained */) {
+  void add_runtime_stats(const RuntimeStat& /* stat */, const int32_t /* maxRetained */, const int32_t /* maxRetainSecs */) {
     return;
   }
   void get_runtime_stats(std::vector<RuntimeStat> & /* _return */) {
@@ -25653,9 +25653,10 @@ class ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_presult {
 };
 
 typedef struct _ThriftHiveMetastore_add_runtime_stats_args__isset {
-  _ThriftHiveMetastore_add_runtime_stats_args__isset() : stat(false), maxRetained(false) {}
+  _ThriftHiveMetastore_add_runtime_stats_args__isset() : stat(false), maxRetained(false), maxRetainSecs(false) {}
   bool stat :1;
   bool maxRetained :1;
+  bool maxRetainSecs :1;
 } _ThriftHiveMetastore_add_runtime_stats_args__isset;
 
 class ThriftHiveMetastore_add_runtime_stats_args {
@@ -25663,12 +25664,13 @@ class ThriftHiveMetastore_add_runtime_stats_args {
 
   ThriftHiveMetastore_add_runtime_stats_args(const ThriftHiveMetastore_add_runtime_stats_args&);
   ThriftHiveMetastore_add_runtime_stats_args& operator=(const ThriftHiveMetastore_add_runtime_stats_args&);
-  ThriftHiveMetastore_add_runtime_stats_args() : maxRetained(0) {
+  ThriftHiveMetastore_add_runtime_stats_args() : maxRetained(0), maxRetainSecs(0) {
   }
 
   virtual ~ThriftHiveMetastore_add_runtime_stats_args() throw();
   RuntimeStat stat;
   int32_t maxRetained;
+  int32_t maxRetainSecs;
 
   _ThriftHiveMetastore_add_runtime_stats_args__isset __isset;
 
@@ -25676,11 +25678,15 @@ class ThriftHiveMetastore_add_runtime_stats_args {
 
   void __set_maxRetained(const int32_t val);
 
+  void __set_maxRetainSecs(const int32_t val);
+
   bool operator == (const ThriftHiveMetastore_add_runtime_stats_args & rhs) const
   {
     if (!(stat == rhs.stat))
       return false;
     if (!(maxRetained == rhs.maxRetained))
+      return false;
+    if (!(maxRetainSecs == rhs.maxRetainSecs))
       return false;
     return true;
   }
@@ -25703,6 +25709,7 @@ class ThriftHiveMetastore_add_runtime_stats_pargs {
   virtual ~ThriftHiveMetastore_add_runtime_stats_pargs() throw();
   const RuntimeStat* stat;
   const int32_t* maxRetained;
+  const int32_t* maxRetainSecs;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -26454,8 +26461,8 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId);
   void send_heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId);
   bool recv_heartbeat_lock_materialization_rebuild();
-  void add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained);
-  void send_add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained);
+  void add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained, const int32_t maxRetainSecs);
+  void send_add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained, const int32_t maxRetainSecs);
   void recv_add_runtime_stats();
   void get_runtime_stats(std::vector<RuntimeStat> & _return);
   void send_get_runtime_stats();
@@ -28857,13 +28864,13 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return ifaces_[i]->heartbeat_lock_materialization_rebuild(dbName, tableName, txnId);
   }
 
-  void add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained) {
+  void add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained, const int32_t maxRetainSecs) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->add_runtime_stats(stat, maxRetained);
+      ifaces_[i]->add_runtime_stats(stat, maxRetained, maxRetainSecs);
     }
-    ifaces_[i]->add_runtime_stats(stat, maxRetained);
+    ifaces_[i]->add_runtime_stats(stat, maxRetained, maxRetainSecs);
   }
 
   void get_runtime_stats(std::vector<RuntimeStat> & _return) {
@@ -29498,8 +29505,8 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId);
   int32_t send_heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId);
   bool recv_heartbeat_lock_materialization_rebuild(const int32_t seqid);
-  void add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained);
-  int32_t send_add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained);
+  void add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained, const int32_t maxRetainSecs);
+  int32_t send_add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained, const int32_t maxRetainSecs);
   void recv_add_runtime_stats(const int32_t seqid);
   void get_runtime_stats(std::vector<RuntimeStat> & _return);
   int32_t send_get_runtime_stats();

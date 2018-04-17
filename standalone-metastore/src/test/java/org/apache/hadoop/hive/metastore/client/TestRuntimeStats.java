@@ -68,16 +68,16 @@ public class TestRuntimeStats extends MetaStoreClientTest {
     assertEquals(0, rs0.size());
 
     RuntimeStat stat = createStat(1);
-    client.addRuntimeStat(stat, maxRetained);
+    client.addRuntimeStat(stat, maxRetained, -1);
 
     List<RuntimeStat> rs1 = client.getRuntimeStats();
     assertNotNull(rs1);
     assertEquals(1, rs1.size());
     assertEquals(stat, rs1.get(0));
 
-    client.addRuntimeStat(createStat(2), maxRetained);
-    client.addRuntimeStat(createStat(3), maxRetained);
-    client.addRuntimeStat(createStat(4), maxRetained);
+    client.addRuntimeStat(createStat(2), maxRetained, -1);
+    client.addRuntimeStat(createStat(3), maxRetained, -1);
+    client.addRuntimeStat(createStat(4), maxRetained, -1);
 
     List<RuntimeStat> rs2 = client.getRuntimeStats();
     assertEquals(4, rs2.size());

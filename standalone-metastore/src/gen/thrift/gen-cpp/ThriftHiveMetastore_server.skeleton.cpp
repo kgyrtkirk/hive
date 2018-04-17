@@ -1032,7 +1032,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("heartbeat_lock_materialization_rebuild\n");
   }
 
-  void add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained) {
+  void add_runtime_stats(const RuntimeStat& stat, const int32_t maxRetained, const int32_t maxRetainSecs) {
     // Your implementation goes here
     printf("add_runtime_stats\n");
   }
