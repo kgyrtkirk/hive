@@ -1209,4 +1209,9 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public List<RuntimeStat> getRuntimeStats() throws MetaException {
     return objectStore.getRuntimeStats();
   }
+
+  @Override
+  public void runtimeStatRetention(int maxRetained, int maxRetainSecs) {
+  }
+
 }
