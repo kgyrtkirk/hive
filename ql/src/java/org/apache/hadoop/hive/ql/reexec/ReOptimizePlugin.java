@@ -94,6 +94,7 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   private StatsSource getStatsSource(HiveConf conf) {
     StatsSourceMode mode = StatsSourceMode.valueOf(conf.getVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE));
     int cacheSize = conf.getIntVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE);
+    int maxRetentionTime = conf.getIntVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_RETENTION_TIME);
 
     switch (mode) {
     case query:
@@ -101,7 +102,8 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
     case hiveserver:
       return StatsSources.globalStatsSource(cacheSize);
     case metastore:
-      return StatsSources.metastoreBackedStatsSource(cacheSize, StatsSources.globalStatsSource(cacheSize));
+      return StatsSources.metastoreBackedStatsSource(cacheSize, StatsSources.globalStatsSource(cacheSize),
+          maxRetentionTime);
     }
     throw new RuntimeException("Unknown StatsSource setting: " + mode);
   }

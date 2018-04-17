@@ -115,10 +115,12 @@ public class StatsSources {
 
     private final StatsSource ss;
     private final int maxRetained;
+    private final int maxRetentionTime;
 
-    public MetastoreStatsConnector(StatsSource ss, int cacheSize) {
+    public MetastoreStatsConnector(StatsSource ss, int cacheSize, int maxRetentionTime1) {
       this.ss = ss;
       maxRetained = cacheSize;
+      maxRetentionTime = maxRetentionTime1;
 
       try {
         List<RuntimeStat> rs = Hive.get().getMSC().getRuntimeStats();
@@ -178,9 +180,9 @@ public class StatsSources {
     return globalStatsSource;
   }
 
-  public static StatsSource metastoreBackedStatsSource(int cacheSize, StatsSource parent) {
+  public static StatsSource metastoreBackedStatsSource(int cacheSize, StatsSource parent, int maxRetentionTime) {
     if (metastoreStatsConnector == null) {
-      metastoreStatsConnector = new MetastoreStatsConnector(parent, cacheSize);
+      metastoreStatsConnector = new MetastoreStatsConnector(parent, cacheSize, maxRetentionTime);
     }
     return metastoreStatsConnector;
   }
