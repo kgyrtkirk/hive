@@ -44,4 +44,12 @@ public class MRuntimeStat {
     return ret;
   }
 
+  public int getWeight() {
+    return weight;
+  }
+
+  public int getCreatedTime() {
+    return createTime;
+  }
+
 }

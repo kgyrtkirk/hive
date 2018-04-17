@@ -11621,15 +11621,29 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void addRuntimeStat(RuntimeStat stat) throws MetaException {
-    boolean committed = false;
-    try {
-      openTransaction();
-      MRuntimeStat mStat = MRuntimeStat.fromThrift(stat);
-      pm.makePersistent(mStat);
-      committed = commitTransaction();
-    } finally {
-      if (!committed) {
-        rollbackTransaction();
+    LOG.debug("runtimeStat: " + stat);
+    MRuntimeStat mStat = MRuntimeStat.fromThrift(stat);
+    pm.makePersistent(mStat);
+  }
+
+  @Override
+  public void runtimeStatRetention(int maxRetainedWeight, int maxRetainSecs) throws MetaException {
+    List<MRuntimeStat> all = getMRuntimeStats();
+    int retentionTime = 0;
+    if (maxRetainSecs >= 0) {
+      retentionTime = (int) (System.currentTimeMillis() / 1000) - maxRetainSecs;
+    }
+    if (maxRetainedWeight < 0) {
+      maxRetainedWeight = Integer.MAX_VALUE;
+    }
+
+    Object maxIdToRemove = null;
+    long totalWeight = 0;
+    for (MRuntimeStat mRuntimeStat : all) {
+      totalWeight += mRuntimeStat.getWeight();
+      if (totalWeight > maxRetainedWeight || mRuntimeStat.getCreatedTime() < retentionTime) {
+        LOG.debug("removing runtime stat: " + mRuntimeStat);
+        pm.deletePersistent(mRuntimeStat);
       }
     }
   }
@@ -11652,8 +11666,10 @@ public class ObjectStore implements RawStore, Configurable {
 
   private List<MRuntimeStat> getMRuntimeStats() {
     Query<MRuntimeStat> query = pm.newQuery(MRuntimeStat.class);
+    query.setOrdering("createTime descending");
     List<MRuntimeStat> res = (List<MRuntimeStat>) query.execute();
     pm.retrieveAll(res);
     return res;
   }
+
 }

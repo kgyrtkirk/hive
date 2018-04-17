@@ -1160,4 +1160,8 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public List<RuntimeStat> getRuntimeStats() throws MetaException {
     return Collections.emptyList();
   }
+
+  @Override
+  public void runtimeStatRetention(int maxRetained, int maxRetainSecs) throws MetaException {
+  }
 }

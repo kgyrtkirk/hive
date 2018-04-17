@@ -8540,8 +8540,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ms.openTransaction();
         ms.addRuntimeStat(stat);
+        ms.runtimeStatRetention(maxRetained, maxRetainSecs);
         success = ms.commitTransaction();
-      } catch (MetaException e) {
+      } catch (Exception e) {
         LOG.error("Caught exception", e);
         ex = e;
         throw e;

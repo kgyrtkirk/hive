@@ -22,7 +22,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -2453,5 +2452,10 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public List<RuntimeStat> getRuntimeStats() throws MetaException {
     return rawStore.getRuntimeStats();
+  }
+
+  @Override
+  public void runtimeStatRetention(int maxRetained, int maxRetainSecs) throws MetaException {
+    rawStore.runtimeStatRetention(maxRetained, maxRetainSecs);
   }
 }

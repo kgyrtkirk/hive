@@ -4,7 +4,6 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
-import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,7 +60,7 @@ public class TestRuntimeStats extends MetaStoreClientTest {
   }
 
   @Test
-  public void storeAndRead() throws TException {
+  public void testRuntimeStatHandling() throws Exception {
     int maxRetained = 100;
     List<RuntimeStat> rs0 = client.getRuntimeStats();
     assertNotNull(rs0);
@@ -81,6 +80,30 @@ public class TestRuntimeStats extends MetaStoreClientTest {
 
     List<RuntimeStat> rs2 = client.getRuntimeStats();
     assertEquals(4, rs2.size());
+
+    // keep 1
+    client.addRuntimeStat(createStat(5), 5, -1);
+    List<RuntimeStat> rs3 = client.getRuntimeStats();
+    assertEquals(1, rs3.size());
+    assertEquals(5, rs3.get(0).getWeight());
+
+    // keep 0
+    client.addRuntimeStat(createStat(5), 1, -1);
+    List<RuntimeStat> rs4 = client.getRuntimeStats();
+    assertEquals(0, rs4.size());
+
+    // retention ignore
+    client.addRuntimeStat(createStat(6), -1, -1);
+    List<RuntimeStat> rs5 = client.getRuntimeStats();
+    assertEquals(1, rs5.size());
+
+    // sleep 1s
+    Thread.sleep(2000);
+
+    // retention ignore
+    client.addRuntimeStat(createStat(6), -1, 1);
+    List<RuntimeStat> rs6 = client.getRuntimeStats();
+    assertEquals(1, rs6.size());
 
   }
 
