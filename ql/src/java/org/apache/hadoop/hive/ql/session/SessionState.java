@@ -79,7 +79,6 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.AuthorizationMetaStoreFilterHook;
@@ -120,7 +119,6 @@ public class SessionState {
   private final Map<String, Map<String, Table>> tempTables = new HashMap<String, Map<String, Table>>();
   private final Map<String, Map<String, ColumnStatisticsObj>> tempTableColStats =
       new HashMap<String, Map<String, ColumnStatisticsObj>>();
-  private StatsSource sessionStatsSource;
 
   protected ClassLoader parentLoader;
 
@@ -2012,15 +2010,6 @@ public class SessionState {
 
   public Map<String, FunctionInfo> getCurrentFunctionsInUse() {
     return currentFunctionsInUse;
-  }
-
-  public StatsSource getSessionStatsSource() {
-    return sessionStatsSource;
-  }
-
-
-  public void setSessionStatsSource(StatsSource sessionStatsSource) {
-    this.sessionStatsSource = sessionStatsSource;
   }
 
 }
