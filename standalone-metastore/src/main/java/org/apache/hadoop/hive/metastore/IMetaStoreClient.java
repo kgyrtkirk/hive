@@ -2883,6 +2883,16 @@ public interface IMetaStoreClient {
   List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName) throws TException;
 
   /**
+   * Allocate a per table write ID and associate it with the given transaction. Used by replication load task.
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table to which the write ID to be allocated
+   * @param replPolicy Used by replication task to identify the source cluster.
+   * @param srcTxnToWriteIdList List of txn to write id map sent from the source cluster.
+   * @throws TException
+   */
+  List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
+                                                    List<TxnToWriteId> srcTxnToWriteIdList) throws TException;
+  /**
    * Show the list of currently open transactions.  This is for use by "show transactions" in the
    * grammar, not for applications that want to find a list of current transactions to work with.
    * Those wishing the latter should call {@link #getValidTxns()}.
