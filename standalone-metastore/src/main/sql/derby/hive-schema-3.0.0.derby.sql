@@ -684,6 +684,7 @@ INSERT INTO "APP"."VERSION" (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1,
 
 CREATE TABLE "APP"."RUNTIME_STATS" (
   "RS_ID" bigint primary key,
+  "CREATE_TIME" integer not null,
   "WEIGHT" integer not null,
   "PAYLOAD" BLOB
 );
