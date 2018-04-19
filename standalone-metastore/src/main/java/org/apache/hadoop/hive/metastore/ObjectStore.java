@@ -11612,7 +11612,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void runtimeStatRetention(int maxRetainedWeight, int maxRetainSecs) throws MetaException {
-    List<MRuntimeStat> all = getMRuntimeStats();
+    List<MRuntimeStat> all = getMRuntimeStats(-1, -1);
     int retentionTime = 0;
     if (maxRetainSecs >= 0) {
       retentionTime = (int) (System.currentTimeMillis() / 1000) - maxRetainSecs;
@@ -11633,11 +11633,11 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<RuntimeStat> getRuntimeStats() throws MetaException {
+  public List<RuntimeStat> getRuntimeStats(int minCreateTime, int maxCount) throws MetaException {
     boolean committed = false;
     try {
       openTransaction();
-      List<MRuntimeStat> mStats = getMRuntimeStats();
+      List<MRuntimeStat> mStats = getMRuntimeStats(minCreateTime,maxCount);
       List<RuntimeStat> stats = mStats.stream().map(MRuntimeStat::toThrift).collect(Collectors.toList());
       committed = commitTransaction();
       return stats;
@@ -11648,9 +11648,15 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private List<MRuntimeStat> getMRuntimeStats() {
+  private List<MRuntimeStat> getMRuntimeStats(int minCreateTime, int maxCount) {
     Query<MRuntimeStat> query = pm.newQuery(MRuntimeStat.class);
     query.setOrdering("createTime descending");
+    if (maxCount > 0) {
+      query.setRange(0, maxCount);
+    }
+    if (minCreateTime > 0) {
+      query.setFilter("createTime > " + minCreateTime);
+    }
     List<MRuntimeStat> res = (List<MRuntimeStat>) query.execute();
     pm.retrieveAll(res);
     return res;

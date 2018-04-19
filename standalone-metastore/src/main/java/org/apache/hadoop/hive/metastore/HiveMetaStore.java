@@ -8555,13 +8555,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public List<RuntimeStat> get_runtime_stats(int minCreateTime, int maxCount) throws TException {
-      if (minCreateTime >= 0 || maxCount >= 0) {
-        throw new MetaException("not yet supported");
-      }
       startFunction("get_runtime_stats");
       Exception ex = null;
       try {
-        List<RuntimeStat> res = getMS().getRuntimeStats();
+        List<RuntimeStat> res = getMS().getRuntimeStats(minCreateTime, maxCount);
         return res;
       } catch (MetaException e) {
         LOG.error("Caught exception", e);
