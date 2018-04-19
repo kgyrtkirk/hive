@@ -156,6 +156,7 @@ public class CachedStore implements RawStore, Configurable {
   public void setConf(Configuration conf) {
     setConfInternal(conf);
     initBlackListWhiteList(conf);
+    initSharedCache(conf);
     startCacheUpdateService(conf, false, true);
   }
 
@@ -167,6 +168,7 @@ public class CachedStore implements RawStore, Configurable {
   void setConfForTest(Configuration conf) {
     setConfInternal(conf);
     initBlackListWhiteList(conf);
+    initSharedCache(conf);
   }
 
   private void setConfInternal(Configuration conf) {
@@ -186,6 +188,16 @@ public class CachedStore implements RawStore, Configurable {
       LOG.warn("Unexpected setConf when we were already configured");
     } else {
       expressionProxy = PartFilterExprUtil.createExpressionProxy(conf);
+    }
+  }
+
+  private void initSharedCache(Configuration conf) {
+    long maxSharedCacheSizeInBytes =
+        MetastoreConf.getSizeVar(conf, ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY);
+    sharedCache.initialize(maxSharedCacheSizeInBytes);
+    if (maxSharedCacheSizeInBytes > 0) {
+      LOG.info("Maximum memory that the cache will use: {} GB",
+          maxSharedCacheSizeInBytes / (1024 * 1024 * 1024));
     }
   }
 
@@ -238,7 +250,7 @@ public class CachedStore implements RawStore, Configurable {
         }
       }
       sharedCache.populateDatabasesInCache(databases);
-      LOG.debug(
+      LOG.info(
           "Databases cache is now prewarmed. Now adding tables, partitions and statistics to the cache");
       int numberOfDatabasesCachedSoFar = 0;
       for (Database db : databases) {
@@ -322,8 +334,19 @@ public class CachedStore implements RawStore, Configurable {
                     rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames);
                 Deadline.stopTimer();
               }
-              sharedCache.populateTableInCache(table, tableColStats, partitions, partitionColStats,
-                  aggrStatsAllPartitions, aggrStatsAllButDefaultPartition);
+              // If the table could not cached due to memory limit, stop prewarm
+              boolean isSuccess = sharedCache.populateTableInCache(table, tableColStats, partitions,
+                  partitionColStats, aggrStatsAllPartitions, aggrStatsAllButDefaultPartition);
+              if (isSuccess) {
+                LOG.trace("Cached Database: {}'s Table: {}.", dbName, tblName);
+              } else {
+                LOG.info(
+                    "Unable to cache Database: {}'s Table: {}, since the cache memory is full. "
+                        + "Will stop attempting to cache any more tables.",
+                    dbName, tblName);
+                completePrewarm(startTime);
+                return;
+              }
             } catch (MetaException | NoSuchObjectException e) {
               // Continue with next table
               continue;
@@ -338,8 +361,12 @@ public class CachedStore implements RawStore, Configurable {
         LOG.debug("Processed database: {}. Cached {} / {} databases so far.", dbName,
             ++numberOfDatabasesCachedSoFar, databases.size());
       }
-      isCachePrewarmed.set(true);
+      completePrewarm(startTime);
     }
+  }
+
+  private static void completePrewarm(long startTime) {
+    isCachePrewarmed.set(true);
     LOG.info("CachedStore initialized");
     long endTime = System.nanoTime();
     LOG.info("Time taken in prewarming = " + (endTime - startTime) / 1000000 + "ms");
