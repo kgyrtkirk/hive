@@ -4275,9 +4275,6 @@ public class HiveConf extends Configuration {
     HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS("hive.query.reexecution.always.collect.operator.stats", false,
         "If sessionstats are enabled; this option can be used to collect statistics all the time"),
 
-    HIVE_METASTORE_RUNTIME_STATS_MAX_WEIGHT("hive.metastore.runtime.stats.max.weight", 100_000,
-        "Sum weight of runtime stats to keep; unit is operator stat infos - a complicated query has ~100 of these"),
-
     HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
         "If the query results cache is enabled. This will keep results of previously executed queries " +
         "to be reused if the same query is executed again."),

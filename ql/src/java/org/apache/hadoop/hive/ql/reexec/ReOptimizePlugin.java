@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
@@ -93,7 +94,7 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
 
   private StatsSource getStatsSource(HiveConf conf) {
     StatsSourceMode mode = StatsSourceMode.valueOf(conf.getVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE));
-    int cacheSize = conf.getIntVar(ConfVars.HIVE_METASTORE_RUNTIME_STATS_MAX_WEIGHT);
+    int cacheSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.RUNTIME_STATS_MAX_WEIGHT);
 
     switch (mode) {
     case query:
