@@ -35,13 +35,12 @@ public class RuntimeStatsCleanerTask implements MetastoreTaskThread {
 
   @Override
   public long runFrequency(TimeUnit unit) {
-    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_FREQ, unit);
+    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.RUNTIME_STATS_CLEAN_FREQUENCY, unit);
   }
 
   @Override
   public void setConf(Configuration configuration) {
     conf = configuration;
-
   }
 
   @Override
@@ -54,7 +53,11 @@ public class RuntimeStatsCleanerTask implements MetastoreTaskThread {
 
     try {
       RawStore ms = HiveMetaStore.HMSHandler.getMSForConf(conf);
-      long deleteCnt = ms.cleanupEvents();
+      int maxRetained  = 1;
+      int maxRetainSecs=(int) MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.RUNTIME_STATS_MAX_AGE, TimeUnit.SECONDS);
+      //FIXME: there should be this deleted?
+      long deleteCnt = -11;
+      ms.runtimeStatRetention(maxRetained, maxRetainSecs);
 
       if (deleteCnt > 0L){
         LOG.info("Number of events deleted from event Table: "+deleteCnt);
