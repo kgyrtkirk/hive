@@ -102,8 +102,7 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
     case hiveserver:
       return StatsSources.globalStatsSource(cacheSize);
     case metastore:
-      return StatsSources.metastoreBackedStatsSource(cacheSize, StatsSources.globalStatsSource(cacheSize),
-          maxRetentionTime);
+      return StatsSources.metastoreBackedStatsSource(StatsSources.globalStatsSource(cacheSize));
     }
     throw new RuntimeException("Unknown StatsSource setting: " + mode);
   }

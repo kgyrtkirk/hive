@@ -176,7 +176,7 @@ public class StatsSources {
     return globalStatsSource;
   }
 
-  public static StatsSource metastoreBackedStatsSource(int cacheSize, StatsSource parent, int maxRetentionTime) {
+  public static StatsSource metastoreBackedStatsSource(StatsSource parent) {
     if (metastoreStatsConnector == null) {
       metastoreStatsConnector = new MetastoreStatsConnector(parent);
     }
