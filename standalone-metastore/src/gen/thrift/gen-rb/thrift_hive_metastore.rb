@@ -3392,13 +3392,13 @@ module ThriftHiveMetastore
       return
     end
 
-    def get_runtime_stats(createTime, maxCount)
-      send_get_runtime_stats(createTime, maxCount)
+    def get_runtime_stats(minCreateTime, maxCount)
+      send_get_runtime_stats(minCreateTime, maxCount)
       return recv_get_runtime_stats()
     end
 
-    def send_get_runtime_stats(createTime, maxCount)
-      send_message('get_runtime_stats', Get_runtime_stats_args, :createTime => createTime, :maxCount => maxCount)
+    def send_get_runtime_stats(minCreateTime, maxCount)
+      send_message('get_runtime_stats', Get_runtime_stats_args, :minCreateTime => minCreateTime, :maxCount => maxCount)
     end
 
     def recv_get_runtime_stats()
@@ -5958,7 +5958,7 @@ module ThriftHiveMetastore
     def process_get_runtime_stats(seqid, iprot, oprot)
       args = read_args(iprot, Get_runtime_stats_args)
       result = Get_runtime_stats_result.new()
-      result.success = @handler.get_runtime_stats(args.createTime, args.maxCount)
+      result.success = @handler.get_runtime_stats(args.minCreateTime, args.maxCount)
       write_result(result, oprot, 'get_runtime_stats', seqid)
     end
 
@@ -13493,11 +13493,11 @@ module ThriftHiveMetastore
 
   class Get_runtime_stats_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    CREATETIME = 1
+    MINCREATETIME = 1
     MAXCOUNT = 2
 
     FIELDS = {
-      CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime'},
+      MINCREATETIME => {:type => ::Thrift::Types::I32, :name => 'minCreateTime'},
       MAXCOUNT => {:type => ::Thrift::Types::I32, :name => 'maxCount'}
     }
 

@@ -1573,10 +1573,10 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
-  def get_runtime_stats(self, createTime, maxCount):
+  def get_runtime_stats(self, minCreateTime, maxCount):
     """
     Parameters:
-     - createTime
+     - minCreateTime
      - maxCount
     """
     pass
@@ -8843,19 +8843,19 @@ class Client(fb303.FacebookService.Client, Iface):
     iprot.readMessageEnd()
     return
 
-  def get_runtime_stats(self, createTime, maxCount):
+  def get_runtime_stats(self, minCreateTime, maxCount):
     """
     Parameters:
-     - createTime
+     - minCreateTime
      - maxCount
     """
-    self.send_get_runtime_stats(createTime, maxCount)
+    self.send_get_runtime_stats(minCreateTime, maxCount)
     return self.recv_get_runtime_stats()
 
-  def send_get_runtime_stats(self, createTime, maxCount):
+  def send_get_runtime_stats(self, minCreateTime, maxCount):
     self._oprot.writeMessageBegin('get_runtime_stats', TMessageType.CALL, self._seqid)
     args = get_runtime_stats_args()
-    args.createTime = createTime
+    args.minCreateTime = minCreateTime
     args.maxCount = maxCount
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
@@ -14121,7 +14121,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     iprot.readMessageEnd()
     result = get_runtime_stats_result()
     try:
-      result.success = self._handler.get_runtime_stats(args.createTime, args.maxCount)
+      result.success = self._handler.get_runtime_stats(args.minCreateTime, args.maxCount)
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
@@ -47953,18 +47953,18 @@ class add_runtime_stats_result:
 class get_runtime_stats_args:
   """
   Attributes:
-   - createTime
+   - minCreateTime
    - maxCount
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.I32, 'createTime', None, None, ), # 1
+    (1, TType.I32, 'minCreateTime', None, None, ), # 1
     (2, TType.I32, 'maxCount', None, None, ), # 2
   )
 
-  def __init__(self, createTime=None, maxCount=None,):
-    self.createTime = createTime
+  def __init__(self, minCreateTime=None, maxCount=None,):
+    self.minCreateTime = minCreateTime
     self.maxCount = maxCount
 
   def read(self, iprot):
@@ -47978,7 +47978,7 @@ class get_runtime_stats_args:
         break
       if fid == 1:
         if ftype == TType.I32:
-          self.createTime = iprot.readI32()
+          self.minCreateTime = iprot.readI32()
         else:
           iprot.skip(ftype)
       elif fid == 2:
@@ -47996,9 +47996,9 @@ class get_runtime_stats_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('get_runtime_stats_args')
-    if self.createTime is not None:
-      oprot.writeFieldBegin('createTime', TType.I32, 1)
-      oprot.writeI32(self.createTime)
+    if self.minCreateTime is not None:
+      oprot.writeFieldBegin('minCreateTime', TType.I32, 1)
+      oprot.writeI32(self.minCreateTime)
       oprot.writeFieldEnd()
     if self.maxCount is not None:
       oprot.writeFieldBegin('maxCount', TType.I32, 2)
@@ -48013,7 +48013,7 @@ class get_runtime_stats_args:
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.createTime)
+    value = (value * 31) ^ hash(self.minCreateTime)
     value = (value * 31) ^ hash(self.maxCount)
     return value
 

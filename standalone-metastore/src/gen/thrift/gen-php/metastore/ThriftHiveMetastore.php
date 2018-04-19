@@ -1533,11 +1533,11 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
    */
   public function add_runtime_stats(\metastore\RuntimeStat $stat);
   /**
-   * @param int $createTime
+   * @param int $minCreateTime
    * @param int $maxCount
    * @return \metastore\RuntimeStat[]
    */
-  public function get_runtime_stats($createTime, $maxCount);
+  public function get_runtime_stats($minCreateTime, $maxCount);
 }
 
 class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metastore\ThriftHiveMetastoreIf {
@@ -13065,16 +13065,16 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     return;
   }
 
-  public function get_runtime_stats($createTime, $maxCount)
+  public function get_runtime_stats($minCreateTime, $maxCount)
   {
-    $this->send_get_runtime_stats($createTime, $maxCount);
+    $this->send_get_runtime_stats($minCreateTime, $maxCount);
     return $this->recv_get_runtime_stats();
   }
 
-  public function send_get_runtime_stats($createTime, $maxCount)
+  public function send_get_runtime_stats($minCreateTime, $maxCount)
   {
     $args = new \metastore\ThriftHiveMetastore_get_runtime_stats_args();
-    $args->createTime = $createTime;
+    $args->minCreateTime = $minCreateTime;
     $args->maxCount = $maxCount;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
@@ -58744,7 +58744,7 @@ class ThriftHiveMetastore_get_runtime_stats_args {
   /**
    * @var int
    */
-  public $createTime = null;
+  public $minCreateTime = null;
   /**
    * @var int
    */
@@ -58754,7 +58754,7 @@ class ThriftHiveMetastore_get_runtime_stats_args {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         1 => array(
-          'var' => 'createTime',
+          'var' => 'minCreateTime',
           'type' => TType::I32,
           ),
         2 => array(
@@ -58764,8 +58764,8 @@ class ThriftHiveMetastore_get_runtime_stats_args {
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['createTime'])) {
-        $this->createTime = $vals['createTime'];
+      if (isset($vals['minCreateTime'])) {
+        $this->minCreateTime = $vals['minCreateTime'];
       }
       if (isset($vals['maxCount'])) {
         $this->maxCount = $vals['maxCount'];
@@ -58794,7 +58794,7 @@ class ThriftHiveMetastore_get_runtime_stats_args {
       {
         case 1:
           if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->createTime);
+            $xfer += $input->readI32($this->minCreateTime);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -58819,9 +58819,9 @@ class ThriftHiveMetastore_get_runtime_stats_args {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_runtime_stats_args');
-    if ($this->createTime !== null) {
-      $xfer += $output->writeFieldBegin('createTime', TType::I32, 1);
-      $xfer += $output->writeI32($this->createTime);
+    if ($this->minCreateTime !== null) {
+      $xfer += $output->writeFieldBegin('minCreateTime', TType::I32, 1);
+      $xfer += $output->writeI32($this->minCreateTime);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->maxCount !== null) {

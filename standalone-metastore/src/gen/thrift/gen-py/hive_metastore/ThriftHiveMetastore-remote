@@ -227,7 +227,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  LockResponse get_lock_materialization_rebuild(string dbName, string tableName, i64 txnId)')
   print('  bool heartbeat_lock_materialization_rebuild(string dbName, string tableName, i64 txnId)')
   print('  void add_runtime_stats(RuntimeStat stat)')
-  print('   get_runtime_stats(i32 createTime, i32 maxCount)')
+  print('   get_runtime_stats(i32 minCreateTime, i32 maxCount)')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')

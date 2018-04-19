@@ -1037,7 +1037,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_runtime_stats\n");
   }
 
-  void get_runtime_stats(std::vector<RuntimeStat> & _return, const int32_t createTime, const int32_t maxCount) {
+  void get_runtime_stats(std::vector<RuntimeStat> & _return, const int32_t minCreateTime, const int32_t maxCount) {
     // Your implementation goes here
     printf("get_runtime_stats\n");
   }

@@ -49388,8 +49388,8 @@ uint32_t ThriftHiveMetastore_get_runtime_stats_args::read(::apache::thrift::prot
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          xfer += iprot->readI32(this->createTime);
-          this->__isset.createTime = true;
+          xfer += iprot->readI32(this->minCreateTime);
+          this->__isset.minCreateTime = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -49419,8 +49419,8 @@ uint32_t ThriftHiveMetastore_get_runtime_stats_args::write(::apache::thrift::pro
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_runtime_stats_args");
 
-  xfer += oprot->writeFieldBegin("createTime", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32(this->createTime);
+  xfer += oprot->writeFieldBegin("minCreateTime", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->minCreateTime);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("maxCount", ::apache::thrift::protocol::T_I32, 2);
@@ -49442,8 +49442,8 @@ uint32_t ThriftHiveMetastore_get_runtime_stats_pargs::write(::apache::thrift::pr
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_runtime_stats_pargs");
 
-  xfer += oprot->writeFieldBegin("createTime", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32((*(this->createTime)));
+  xfer += oprot->writeFieldBegin("minCreateTime", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32((*(this->minCreateTime)));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("maxCount", ::apache::thrift::protocol::T_I32, 2);
@@ -62434,19 +62434,19 @@ void ThriftHiveMetastoreClient::recv_add_runtime_stats()
   return;
 }
 
-void ThriftHiveMetastoreClient::get_runtime_stats(std::vector<RuntimeStat> & _return, const int32_t createTime, const int32_t maxCount)
+void ThriftHiveMetastoreClient::get_runtime_stats(std::vector<RuntimeStat> & _return, const int32_t minCreateTime, const int32_t maxCount)
 {
-  send_get_runtime_stats(createTime, maxCount);
+  send_get_runtime_stats(minCreateTime, maxCount);
   recv_get_runtime_stats(_return);
 }
 
-void ThriftHiveMetastoreClient::send_get_runtime_stats(const int32_t createTime, const int32_t maxCount)
+void ThriftHiveMetastoreClient::send_get_runtime_stats(const int32_t minCreateTime, const int32_t maxCount)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("get_runtime_stats", ::apache::thrift::protocol::T_CALL, cseqid);
 
   ThriftHiveMetastore_get_runtime_stats_pargs args;
-  args.createTime = &createTime;
+  args.minCreateTime = &minCreateTime;
   args.maxCount = &maxCount;
   args.write(oprot_);
 
@@ -74595,7 +74595,7 @@ void ThriftHiveMetastoreProcessor::process_get_runtime_stats(int32_t seqid, ::ap
 
   ThriftHiveMetastore_get_runtime_stats_result result;
   try {
-    iface_->get_runtime_stats(result.success, args.createTime, args.maxCount);
+    iface_->get_runtime_stats(result.success, args.minCreateTime, args.maxCount);
     result.__isset.success = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
@@ -93085,20 +93085,20 @@ void ThriftHiveMetastoreConcurrentClient::recv_add_runtime_stats(const int32_t s
   } // end while(true)
 }
 
-void ThriftHiveMetastoreConcurrentClient::get_runtime_stats(std::vector<RuntimeStat> & _return, const int32_t createTime, const int32_t maxCount)
+void ThriftHiveMetastoreConcurrentClient::get_runtime_stats(std::vector<RuntimeStat> & _return, const int32_t minCreateTime, const int32_t maxCount)
 {
-  int32_t seqid = send_get_runtime_stats(createTime, maxCount);
+  int32_t seqid = send_get_runtime_stats(minCreateTime, maxCount);
   recv_get_runtime_stats(_return, seqid);
 }
 
-int32_t ThriftHiveMetastoreConcurrentClient::send_get_runtime_stats(const int32_t createTime, const int32_t maxCount)
+int32_t ThriftHiveMetastoreConcurrentClient::send_get_runtime_stats(const int32_t minCreateTime, const int32_t maxCount)
 {
   int32_t cseqid = this->sync_.generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
   oprot_->writeMessageBegin("get_runtime_stats", ::apache::thrift::protocol::T_CALL, cseqid);
 
   ThriftHiveMetastore_get_runtime_stats_pargs args;
-  args.createTime = &createTime;
+  args.minCreateTime = &minCreateTime;
   args.maxCount = &maxCount;
   args.write(oprot_);
 
