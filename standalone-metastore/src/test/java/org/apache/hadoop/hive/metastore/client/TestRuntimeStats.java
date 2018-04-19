@@ -81,29 +81,30 @@ public class TestRuntimeStats extends MetaStoreClientTest {
     List<RuntimeStat> rs2 = client.getRuntimeStats(-1, -1);
     assertEquals(4, rs2.size());
 
-    // keep 1
-    client.addRuntimeStat(createStat(5));
-    List<RuntimeStat> rs3 = client.getRuntimeStats(-1, -1);
-    assertEquals(1, rs3.size());
-    assertEquals(5, rs3.get(0).getWeight());
-
-    // keep 0
-    client.addRuntimeStat(createStat(5));
-    List<RuntimeStat> rs4 = client.getRuntimeStats(-1, -1);
-    assertEquals(0, rs4.size());
-
-    // retention ignore
-    client.addRuntimeStat(createStat(6));
-    List<RuntimeStat> rs5 = client.getRuntimeStats(-1, -1);
-    assertEquals(1, rs5.size());
-
-    // sleep 1s
-    Thread.sleep(2000);
-
-    // retention ignore
-    client.addRuntimeStat(createStat(6));
-    List<RuntimeStat> rs6 = client.getRuntimeStats(-1, -1);
-    assertEquals(1, rs6.size());
+    //    // keep 1
+    //    metaStore.start();
+    //    client.addRuntimeStat(createStat(5));
+    //    List<RuntimeStat> rs3 = client.getRuntimeStats(-1, -1);
+    //    assertEquals(1, rs3.size());
+    //    assertEquals(5, rs3.get(0).getWeight());
+    //
+    //    // keep 0
+    //    client.addRuntimeStat(createStat(5));
+    //    List<RuntimeStat> rs4 = client.getRuntimeStats(-1, -1);
+    //    assertEquals(0, rs4.size());
+    //
+    //    // retention ignore
+    //    client.addRuntimeStat(createStat(6));
+    //    List<RuntimeStat> rs5 = client.getRuntimeStats(-1, -1);
+    //    assertEquals(1, rs5.size());
+    //
+    //    // sleep 1s
+    //    Thread.sleep(2000);
+    //
+    //    // retention ignore
+    //    client.addRuntimeStat(createStat(6));
+    //    List<RuntimeStat> rs6 = client.getRuntimeStats(-1, -1);
+    //    assertEquals(1, rs6.size());
 
   }
 
