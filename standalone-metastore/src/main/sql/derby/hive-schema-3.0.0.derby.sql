@@ -676,11 +676,6 @@ CREATE TABLE REPL_TXN_MAP (
   RTM_TARGET_TXN_ID bigint NOT NULL,
   PRIMARY KEY (RTM_REPL_POLICY, RTM_SRC_TXN_ID)
 );
--- -----------------------------------------------------------------
--- Record schema version. Should be the last step in the init script
--- -----------------------------------------------------------------
-INSERT INTO "APP"."VERSION" (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '3.0.0', 'Hive release version 3.0.0');
-
 
 CREATE TABLE "APP"."RUNTIME_STATS" (
   "RS_ID" bigint primary key,
@@ -689,3 +684,9 @@ CREATE TABLE "APP"."RUNTIME_STATS" (
   "PAYLOAD" BLOB
 );
 
+CREATE INDEX IDX_RUNTIME_STATS_CREATE_TIME ON RUNTIME_STATS(CREATE_TIME);
+
+-- -----------------------------------------------------------------
+-- Record schema version. Should be the last step in the init script
+-- -----------------------------------------------------------------
+INSERT INTO "APP"."VERSION" (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '3.0.0', 'Hive release version 3.0.0');
