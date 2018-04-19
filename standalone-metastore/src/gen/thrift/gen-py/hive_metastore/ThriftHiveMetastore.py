@@ -1566,16 +1566,19 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
-  def add_runtime_stats(self, stat, maxRetained, maxRetainSecs):
+  def add_runtime_stats(self, stat):
     """
     Parameters:
      - stat
-     - maxRetained
-     - maxRetainSecs
     """
     pass
 
-  def get_runtime_stats(self):
+  def get_runtime_stats(self, createTime, maxCount):
+    """
+    Parameters:
+     - createTime
+     - maxCount
+    """
     pass
 
 
@@ -8811,22 +8814,18 @@ class Client(fb303.FacebookService.Client, Iface):
       return result.success
     raise TApplicationException(TApplicationException.MISSING_RESULT, "heartbeat_lock_materialization_rebuild failed: unknown result")
 
-  def add_runtime_stats(self, stat, maxRetained, maxRetainSecs):
+  def add_runtime_stats(self, stat):
     """
     Parameters:
      - stat
-     - maxRetained
-     - maxRetainSecs
     """
-    self.send_add_runtime_stats(stat, maxRetained, maxRetainSecs)
+    self.send_add_runtime_stats(stat)
     self.recv_add_runtime_stats()
 
-  def send_add_runtime_stats(self, stat, maxRetained, maxRetainSecs):
+  def send_add_runtime_stats(self, stat):
     self._oprot.writeMessageBegin('add_runtime_stats', TMessageType.CALL, self._seqid)
     args = add_runtime_stats_args()
     args.stat = stat
-    args.maxRetained = maxRetained
-    args.maxRetainSecs = maxRetainSecs
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -8844,13 +8843,20 @@ class Client(fb303.FacebookService.Client, Iface):
     iprot.readMessageEnd()
     return
 
-  def get_runtime_stats(self):
-    self.send_get_runtime_stats()
+  def get_runtime_stats(self, createTime, maxCount):
+    """
+    Parameters:
+     - createTime
+     - maxCount
+    """
+    self.send_get_runtime_stats(createTime, maxCount)
     return self.recv_get_runtime_stats()
 
-  def send_get_runtime_stats(self):
+  def send_get_runtime_stats(self, createTime, maxCount):
     self._oprot.writeMessageBegin('get_runtime_stats', TMessageType.CALL, self._seqid)
     args = get_runtime_stats_args()
+    args.createTime = createTime
+    args.maxCount = maxCount
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -14096,7 +14102,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     iprot.readMessageEnd()
     result = add_runtime_stats_result()
     try:
-      self._handler.add_runtime_stats(args.stat, args.maxRetained, args.maxRetainSecs)
+      self._handler.add_runtime_stats(args.stat)
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
@@ -14115,7 +14121,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     iprot.readMessageEnd()
     result = get_runtime_stats_result()
     try:
-      result.success = self._handler.get_runtime_stats()
+      result.success = self._handler.get_runtime_stats(args.createTime, args.maxCount)
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
@@ -47836,21 +47842,15 @@ class add_runtime_stats_args:
   """
   Attributes:
    - stat
-   - maxRetained
-   - maxRetainSecs
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'stat', (RuntimeStat, RuntimeStat.thrift_spec), None, ), # 1
-    (2, TType.I32, 'maxRetained', None, None, ), # 2
-    (3, TType.I32, 'maxRetainSecs', None, None, ), # 3
   )
 
-  def __init__(self, stat=None, maxRetained=None, maxRetainSecs=None,):
+  def __init__(self, stat=None,):
     self.stat = stat
-    self.maxRetained = maxRetained
-    self.maxRetainSecs = maxRetainSecs
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -47867,16 +47867,6 @@ class add_runtime_stats_args:
           self.stat.read(iprot)
         else:
           iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.I32:
-          self.maxRetained = iprot.readI32()
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.I32:
-          self.maxRetainSecs = iprot.readI32()
-        else:
-          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -47891,14 +47881,6 @@ class add_runtime_stats_args:
       oprot.writeFieldBegin('stat', TType.STRUCT, 1)
       self.stat.write(oprot)
       oprot.writeFieldEnd()
-    if self.maxRetained is not None:
-      oprot.writeFieldBegin('maxRetained', TType.I32, 2)
-      oprot.writeI32(self.maxRetained)
-      oprot.writeFieldEnd()
-    if self.maxRetainSecs is not None:
-      oprot.writeFieldBegin('maxRetainSecs', TType.I32, 3)
-      oprot.writeI32(self.maxRetainSecs)
-      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -47909,8 +47891,6 @@ class add_runtime_stats_args:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.stat)
-    value = (value * 31) ^ hash(self.maxRetained)
-    value = (value * 31) ^ hash(self.maxRetainSecs)
     return value
 
   def __repr__(self):
@@ -47971,9 +47951,21 @@ class add_runtime_stats_result:
     return not (self == other)
 
 class get_runtime_stats_args:
+  """
+  Attributes:
+   - createTime
+   - maxCount
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'createTime', None, None, ), # 1
+    (2, TType.I32, 'maxCount', None, None, ), # 2
   )
+
+  def __init__(self, createTime=None, maxCount=None,):
+    self.createTime = createTime
+    self.maxCount = maxCount
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -47984,6 +47976,16 @@ class get_runtime_stats_args:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.createTime = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.maxCount = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -47994,6 +47996,14 @@ class get_runtime_stats_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('get_runtime_stats_args')
+    if self.createTime is not None:
+      oprot.writeFieldBegin('createTime', TType.I32, 1)
+      oprot.writeI32(self.createTime)
+      oprot.writeFieldEnd()
+    if self.maxCount is not None:
+      oprot.writeFieldBegin('maxCount', TType.I32, 2)
+      oprot.writeI32(self.maxCount)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -48003,6 +48013,8 @@ class get_runtime_stats_args:
 
   def __hash__(self):
     value = 17
+    value = (value * 31) ^ hash(self.createTime)
+    value = (value * 31) ^ hash(self.maxCount)
     return value
 
   def __repr__(self):

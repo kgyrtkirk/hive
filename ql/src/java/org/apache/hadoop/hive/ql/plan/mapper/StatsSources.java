@@ -123,7 +123,7 @@ public class StatsSources {
       maxRetentionTime = maxRetentionTime1;
 
       try {
-        List<RuntimeStat> rs = Hive.get().getMSC().getRuntimeStats();
+        List<RuntimeStat> rs = Hive.get().getMSC().getRuntimeStats(-1, -1);
         for (RuntimeStat thriftStat : rs) {
           try {
             ss.putAll(decode(thriftStat));
@@ -151,7 +151,7 @@ public class StatsSources {
       ss.putAll(map);
       try {
         RuntimeStat rec = encode(map);
-        Hive.get().getMSC().addRuntimeStat(rec, maxRetained, -1);
+        Hive.get().getMSC().addRuntimeStat(rec);
       } catch (TException | HiveException | IOException e) {
         String msg = "Exception while persisting runtime stat";
         logException(msg, e);

@@ -1530,14 +1530,14 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
   public function heartbeat_lock_materialization_rebuild($dbName, $tableName, $txnId);
   /**
    * @param \metastore\RuntimeStat $stat
-   * @param int $maxRetained
-   * @param int $maxRetainSecs
    */
-  public function add_runtime_stats(\metastore\RuntimeStat $stat, $maxRetained, $maxRetainSecs);
+  public function add_runtime_stats(\metastore\RuntimeStat $stat);
   /**
+   * @param int $createTime
+   * @param int $maxCount
    * @return \metastore\RuntimeStat[]
    */
-  public function get_runtime_stats();
+  public function get_runtime_stats($createTime, $maxCount);
 }
 
 class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metastore\ThriftHiveMetastoreIf {
@@ -13017,18 +13017,16 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     throw new \Exception("heartbeat_lock_materialization_rebuild failed: unknown result");
   }
 
-  public function add_runtime_stats(\metastore\RuntimeStat $stat, $maxRetained, $maxRetainSecs)
+  public function add_runtime_stats(\metastore\RuntimeStat $stat)
   {
-    $this->send_add_runtime_stats($stat, $maxRetained, $maxRetainSecs);
+    $this->send_add_runtime_stats($stat);
     $this->recv_add_runtime_stats();
   }
 
-  public function send_add_runtime_stats(\metastore\RuntimeStat $stat, $maxRetained, $maxRetainSecs)
+  public function send_add_runtime_stats(\metastore\RuntimeStat $stat)
   {
     $args = new \metastore\ThriftHiveMetastore_add_runtime_stats_args();
     $args->stat = $stat;
-    $args->maxRetained = $maxRetained;
-    $args->maxRetainSecs = $maxRetainSecs;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -13067,15 +13065,17 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     return;
   }
 
-  public function get_runtime_stats()
+  public function get_runtime_stats($createTime, $maxCount)
   {
-    $this->send_get_runtime_stats();
+    $this->send_get_runtime_stats($createTime, $maxCount);
     return $this->recv_get_runtime_stats();
   }
 
-  public function send_get_runtime_stats()
+  public function send_get_runtime_stats($createTime, $maxCount)
   {
     $args = new \metastore\ThriftHiveMetastore_get_runtime_stats_args();
+    $args->createTime = $createTime;
+    $args->maxCount = $maxCount;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -58615,14 +58615,6 @@ class ThriftHiveMetastore_add_runtime_stats_args {
    * @var \metastore\RuntimeStat
    */
   public $stat = null;
-  /**
-   * @var int
-   */
-  public $maxRetained = null;
-  /**
-   * @var int
-   */
-  public $maxRetainSecs = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -58632,25 +58624,11 @@ class ThriftHiveMetastore_add_runtime_stats_args {
           'type' => TType::STRUCT,
           'class' => '\metastore\RuntimeStat',
           ),
-        2 => array(
-          'var' => 'maxRetained',
-          'type' => TType::I32,
-          ),
-        3 => array(
-          'var' => 'maxRetainSecs',
-          'type' => TType::I32,
-          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['stat'])) {
         $this->stat = $vals['stat'];
-      }
-      if (isset($vals['maxRetained'])) {
-        $this->maxRetained = $vals['maxRetained'];
-      }
-      if (isset($vals['maxRetainSecs'])) {
-        $this->maxRetainSecs = $vals['maxRetainSecs'];
       }
     }
   }
@@ -58682,20 +58660,6 @@ class ThriftHiveMetastore_add_runtime_stats_args {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 2:
-          if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->maxRetained);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 3:
-          if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->maxRetainSecs);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -58715,16 +58679,6 @@ class ThriftHiveMetastore_add_runtime_stats_args {
       }
       $xfer += $output->writeFieldBegin('stat', TType::STRUCT, 1);
       $xfer += $this->stat->write($output);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->maxRetained !== null) {
-      $xfer += $output->writeFieldBegin('maxRetained', TType::I32, 2);
-      $xfer += $output->writeI32($this->maxRetained);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->maxRetainSecs !== null) {
-      $xfer += $output->writeFieldBegin('maxRetainSecs', TType::I32, 3);
-      $xfer += $output->writeI32($this->maxRetainSecs);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -58787,11 +58741,35 @@ class ThriftHiveMetastore_add_runtime_stats_result {
 class ThriftHiveMetastore_get_runtime_stats_args {
   static $_TSPEC;
 
+  /**
+   * @var int
+   */
+  public $createTime = null;
+  /**
+   * @var int
+   */
+  public $maxCount = null;
 
-  public function __construct() {
+  public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
+        1 => array(
+          'var' => 'createTime',
+          'type' => TType::I32,
+          ),
+        2 => array(
+          'var' => 'maxCount',
+          'type' => TType::I32,
+          ),
         );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['createTime'])) {
+        $this->createTime = $vals['createTime'];
+      }
+      if (isset($vals['maxCount'])) {
+        $this->maxCount = $vals['maxCount'];
+      }
     }
   }
 
@@ -58814,6 +58792,20 @@ class ThriftHiveMetastore_get_runtime_stats_args {
       }
       switch ($fid)
       {
+        case 1:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->createTime);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->maxCount);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -58827,6 +58819,16 @@ class ThriftHiveMetastore_get_runtime_stats_args {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_runtime_stats_args');
+    if ($this->createTime !== null) {
+      $xfer += $output->writeFieldBegin('createTime', TType::I32, 1);
+      $xfer += $output->writeI32($this->createTime);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->maxCount !== null) {
+      $xfer += $output->writeFieldBegin('maxCount', TType::I32, 2);
+      $xfer += $output->writeI32($this->maxCount);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;

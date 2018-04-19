@@ -3378,13 +3378,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'heartbeat_lock_materialization_rebuild failed: unknown result')
     end
 
-    def add_runtime_stats(stat, maxRetained, maxRetainSecs)
-      send_add_runtime_stats(stat, maxRetained, maxRetainSecs)
+    def add_runtime_stats(stat)
+      send_add_runtime_stats(stat)
       recv_add_runtime_stats()
     end
 
-    def send_add_runtime_stats(stat, maxRetained, maxRetainSecs)
-      send_message('add_runtime_stats', Add_runtime_stats_args, :stat => stat, :maxRetained => maxRetained, :maxRetainSecs => maxRetainSecs)
+    def send_add_runtime_stats(stat)
+      send_message('add_runtime_stats', Add_runtime_stats_args, :stat => stat)
     end
 
     def recv_add_runtime_stats()
@@ -3392,13 +3392,13 @@ module ThriftHiveMetastore
       return
     end
 
-    def get_runtime_stats()
-      send_get_runtime_stats()
+    def get_runtime_stats(createTime, maxCount)
+      send_get_runtime_stats(createTime, maxCount)
       return recv_get_runtime_stats()
     end
 
-    def send_get_runtime_stats()
-      send_message('get_runtime_stats', Get_runtime_stats_args)
+    def send_get_runtime_stats(createTime, maxCount)
+      send_message('get_runtime_stats', Get_runtime_stats_args, :createTime => createTime, :maxCount => maxCount)
     end
 
     def recv_get_runtime_stats()
@@ -5951,14 +5951,14 @@ module ThriftHiveMetastore
     def process_add_runtime_stats(seqid, iprot, oprot)
       args = read_args(iprot, Add_runtime_stats_args)
       result = Add_runtime_stats_result.new()
-      @handler.add_runtime_stats(args.stat, args.maxRetained, args.maxRetainSecs)
+      @handler.add_runtime_stats(args.stat)
       write_result(result, oprot, 'add_runtime_stats', seqid)
     end
 
     def process_get_runtime_stats(seqid, iprot, oprot)
       args = read_args(iprot, Get_runtime_stats_args)
       result = Get_runtime_stats_result.new()
-      result.success = @handler.get_runtime_stats()
+      result.success = @handler.get_runtime_stats(args.createTime, args.maxCount)
       write_result(result, oprot, 'get_runtime_stats', seqid)
     end
 
@@ -13463,13 +13463,9 @@ module ThriftHiveMetastore
   class Add_runtime_stats_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     STAT = 1
-    MAXRETAINED = 2
-    MAXRETAINSECS = 3
 
     FIELDS = {
-      STAT => {:type => ::Thrift::Types::STRUCT, :name => 'stat', :class => ::RuntimeStat},
-      MAXRETAINED => {:type => ::Thrift::Types::I32, :name => 'maxRetained'},
-      MAXRETAINSECS => {:type => ::Thrift::Types::I32, :name => 'maxRetainSecs'}
+      STAT => {:type => ::Thrift::Types::STRUCT, :name => 'stat', :class => ::RuntimeStat}
     }
 
     def struct_fields; FIELDS; end
@@ -13497,9 +13493,12 @@ module ThriftHiveMetastore
 
   class Get_runtime_stats_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
+    CREATETIME = 1
+    MAXCOUNT = 2
 
     FIELDS = {
-
+      CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime'},
+      MAXCOUNT => {:type => ::Thrift::Types::I32, :name => 'maxCount'}
     }
 
     def struct_fields; FIELDS; end

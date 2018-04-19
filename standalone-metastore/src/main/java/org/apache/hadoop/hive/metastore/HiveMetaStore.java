@@ -8532,7 +8532,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public void add_runtime_stats(RuntimeStat stat, int maxRetained, int maxRetainSecs) throws TException {
+    public void add_runtime_stats(RuntimeStat stat) throws TException {
       startFunction("store_runtime_stats");
       Exception ex = null;
       boolean success = false;
@@ -8540,7 +8540,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ms.openTransaction();
         ms.addRuntimeStat(stat);
-        ms.runtimeStatRetention(maxRetained, maxRetainSecs);
         success = ms.commitTransaction();
       } catch (Exception e) {
         LOG.error("Caught exception", e);
@@ -8555,7 +8554,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public List<RuntimeStat> get_runtime_stats() throws TException {
+    public List<RuntimeStat> get_runtime_stats(int minCreateTime, int maxCount) throws TException {
+      if (minCreateTime >= 0 || maxCount >= 0) {
+        throw new MetaException("not yet supported");
+      }
       startFunction("get_runtime_stats");
       Exception ex = null;
       try {

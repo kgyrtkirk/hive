@@ -62,47 +62,47 @@ public class TestRuntimeStats extends MetaStoreClientTest {
   @Test
   public void testRuntimeStatHandling() throws Exception {
     int maxRetained = 100;
-    List<RuntimeStat> rs0 = client.getRuntimeStats();
+    List<RuntimeStat> rs0 = client.getRuntimeStats(-1, -1);
     assertNotNull(rs0);
     assertEquals(0, rs0.size());
 
     RuntimeStat stat = createStat(1);
-    client.addRuntimeStat(stat, maxRetained, -1);
+    client.addRuntimeStat(stat);
 
-    List<RuntimeStat> rs1 = client.getRuntimeStats();
+    List<RuntimeStat> rs1 = client.getRuntimeStats(-1, -1);
     assertNotNull(rs1);
     assertEquals(1, rs1.size());
     assertEquals(stat, rs1.get(0));
 
-    client.addRuntimeStat(createStat(2), maxRetained, -1);
-    client.addRuntimeStat(createStat(3), maxRetained, -1);
-    client.addRuntimeStat(createStat(4), maxRetained, -1);
+    client.addRuntimeStat(createStat(2));
+    client.addRuntimeStat(createStat(3));
+    client.addRuntimeStat(createStat(4));
 
-    List<RuntimeStat> rs2 = client.getRuntimeStats();
+    List<RuntimeStat> rs2 = client.getRuntimeStats(-1, -1);
     assertEquals(4, rs2.size());
 
     // keep 1
-    client.addRuntimeStat(createStat(5), 5, -1);
-    List<RuntimeStat> rs3 = client.getRuntimeStats();
+    client.addRuntimeStat(createStat(5));
+    List<RuntimeStat> rs3 = client.getRuntimeStats(-1, -1);
     assertEquals(1, rs3.size());
     assertEquals(5, rs3.get(0).getWeight());
 
     // keep 0
-    client.addRuntimeStat(createStat(5), 1, -1);
-    List<RuntimeStat> rs4 = client.getRuntimeStats();
+    client.addRuntimeStat(createStat(5));
+    List<RuntimeStat> rs4 = client.getRuntimeStats(-1, -1);
     assertEquals(0, rs4.size());
 
     // retention ignore
-    client.addRuntimeStat(createStat(6), -1, -1);
-    List<RuntimeStat> rs5 = client.getRuntimeStats();
+    client.addRuntimeStat(createStat(6));
+    List<RuntimeStat> rs5 = client.getRuntimeStats(-1, -1);
     assertEquals(1, rs5.size());
 
     // sleep 1s
     Thread.sleep(2000);
 
     // retention ignore
-    client.addRuntimeStat(createStat(6), -1, 1);
-    List<RuntimeStat> rs6 = client.getRuntimeStats();
+    client.addRuntimeStat(createStat(6));
+    List<RuntimeStat> rs6 = client.getRuntimeStats(-1, -1);
     assertEquals(1, rs6.size());
 
   }
