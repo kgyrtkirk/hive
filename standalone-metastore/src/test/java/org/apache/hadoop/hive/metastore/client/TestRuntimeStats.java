@@ -10,9 +10,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -38,7 +35,6 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(Parameterized.class)
 @Category(MetastoreUnitTest.class)
 public class TestRuntimeStats extends MetaStoreClientTest {
-  private static final Logger LOG = LoggerFactory.getLogger(TestRuntimeStats.class);
   private final AbstractMetaStoreService metaStore;
   private IMetaStoreClient client;
 
@@ -61,7 +57,6 @@ public class TestRuntimeStats extends MetaStoreClientTest {
 
   @Test
   public void testRuntimeStatHandling() throws Exception {
-    int maxRetained = 100;
     List<RuntimeStat> rs0 = client.getRuntimeStats(-1, -1);
     assertNotNull(rs0);
     assertEquals(0, rs0.size());
@@ -80,31 +75,6 @@ public class TestRuntimeStats extends MetaStoreClientTest {
 
     List<RuntimeStat> rs2 = client.getRuntimeStats(-1, -1);
     assertEquals(4, rs2.size());
-
-    //    // keep 1
-    //    metaStore.start();
-    //    client.addRuntimeStat(createStat(5));
-    //    List<RuntimeStat> rs3 = client.getRuntimeStats(-1, -1);
-    //    assertEquals(1, rs3.size());
-    //    assertEquals(5, rs3.get(0).getWeight());
-    //
-    //    // keep 0
-    //    client.addRuntimeStat(createStat(5));
-    //    List<RuntimeStat> rs4 = client.getRuntimeStats(-1, -1);
-    //    assertEquals(0, rs4.size());
-    //
-    //    // retention ignore
-    //    client.addRuntimeStat(createStat(6));
-    //    List<RuntimeStat> rs5 = client.getRuntimeStats(-1, -1);
-    //    assertEquals(1, rs5.size());
-    //
-    //    // sleep 1s
-    //    Thread.sleep(2000);
-    //
-    //    // retention ignore
-    //    client.addRuntimeStat(createStat(6));
-    //    List<RuntimeStat> rs6 = client.getRuntimeStats(-1, -1);
-    //    assertEquals(1, rs6.size());
 
   }
 
