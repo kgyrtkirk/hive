@@ -4278,14 +4278,6 @@ public class HiveConf extends Configuration {
     HIVE_METASTORE_RUNTIME_STATS_MAX_WEIGHT("hive.metastore.runtime.stats.max.weight", 100_000,
         "Sum weight of runtime stats to keep; unit is operator stat infos - a complicated query has ~100 of these"),
 
-    @Deprecated
-    HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE("hive.query.reexecution.stats.cache.size", 100_000,
-        "Size of the runtime statistics cache. Unit is: OperatorStat entry; a query plan consist about a 100 of these"),
-    @Deprecated
-    HIVE_QUERY_REEXECUTION_STATS_RETENTION_TIME("hive.query.reexecution.stats.cache.retention.time", -1,
-        "Runtime statistics retention time in seconds; negative values disables the feature"),
-
-
     HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
         "If the query results cache is enabled. This will keep results of previously executed queries " +
         "to be reused if the same query is executed again."),
