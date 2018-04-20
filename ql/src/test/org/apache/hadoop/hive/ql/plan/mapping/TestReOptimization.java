@@ -143,7 +143,7 @@ public class TestReOptimization {
     IDriver driver = createDriver("overlay,reoptimize");
     String query =
         "select assert_true_oom(${hiveconf:zzz}>sum(1)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
-    PlanMapper pm = getMapperForQuery(driver, query);
+    getMapperForQuery(driver, query);
 
   }
 
@@ -153,7 +153,7 @@ public class TestReOptimization {
     String query =
         "select assert_true(${hiveconf:zzz}>sum(1)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
 
-    PlanMapper pm = getMapperForQuery(driver, query);
+    getMapperForQuery(driver, query);
     assertEquals(1, driver.getContext().getExecutionIndex());
   }
 
@@ -226,7 +226,7 @@ public class TestReOptimization {
 
     IDriver driver = createDriver("overlay,reoptimize");
     String query = "explain reoptimization select 1 from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
-    PlanMapper pm = getMapperForQuery(driver, query);
+    getMapperForQuery(driver, query);
     List<String> res = new ArrayList<>();
     List<String> res1 = new ArrayList<>();
     while (driver.getResults(res1)) {
