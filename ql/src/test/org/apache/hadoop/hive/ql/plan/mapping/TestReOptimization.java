@@ -58,7 +58,7 @@ public class TestReOptimization {
   public static void beforeClass() throws Exception {
     IDriver driver = createDriver("");
     dropTables(driver);
-    String cmds[] = {
+    String[] cmds = {
         // @formatter:off
         "create table tu(id_uv int,id_uw int,u int)",
         "create table tv(id_uv int,v int)",
@@ -87,7 +87,7 @@ public class TestReOptimization {
   }
 
   public static void dropTables(IDriver driver) throws Exception {
-    String tables[] = { "tu", "tv", "tw" };
+    String[] tables = new String[] {"tu", "tv", "tw" };
     for (String t : tables) {
       int ret = driver.run("drop table if exists " + t).getResponseCode();
       assertEquals("Checking command success", 0, ret);
@@ -106,7 +106,9 @@ public class TestReOptimization {
   @Test
   public void testStatsAreSetInReopt() throws Exception {
     IDriver driver = createDriver("overlay,reoptimize");
-    String query = "select assert_true_oom(${hiveconf:zzz} > sum(u*v)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
+    String query = "select assert_true_oom(${hiveconf:zzz} > sum(u*v))"
+        + " from tu join tv on (tu.id_uv=tv.id_uv)"
+        + " where u<10 and v>1";
 
     PlanMapper pm = getMapperForQuery(driver, query);
     Iterator<EquivGroup> itG = pm.iterateGroups();
@@ -182,8 +184,10 @@ public class TestReOptimization {
     checkRuntimeStatsReuse(true, true, true);
   }
 
-  private void checkRuntimeStatsReuse(boolean expectInSameSession, boolean expectNewHs2Session, boolean expectHs2Instance)
-      throws CommandProcessorResponse {
+  private void checkRuntimeStatsReuse(
+      boolean expectInSameSession,
+      boolean expectNewHs2Session,
+      boolean expectHs2Instance) throws CommandProcessorResponse {
     {
       // same session
       IDriver driver = createDriver("reoptimize");
@@ -204,6 +208,7 @@ public class TestReOptimization {
     }
   }
 
+  @SuppressWarnings("rawtypes")
   private void checkUsageOfRuntimeStats(IDriver driver, boolean expected) throws CommandProcessorResponse {
     String query = "select sum(u) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
     PlanMapper pm = getMapperForQuery(driver, query);
