@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.model;
 
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 
-@SuppressWarnings("unused")
 public class MRuntimeStat {
 
   private int createTime;
