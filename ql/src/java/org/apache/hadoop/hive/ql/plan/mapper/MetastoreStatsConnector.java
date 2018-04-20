@@ -37,6 +37,8 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Charsets;
+
 /**
  * Decorates a StatSource to be loaded and persisted in the metastore as well.
  */
@@ -126,7 +128,7 @@ class MetastoreStatsConnector implements StatsSource {
     String payload = RuntimeStatsPersister.INSTANCE.encode(new RuntimeStatsMap(map));
     RuntimeStat rs = new RuntimeStat();
     rs.setWeight(map.size());
-    rs.setPayload(ByteBuffer.wrap(payload.getBytes()));
+    rs.setPayload(ByteBuffer.wrap(payload.getBytes(Charsets.UTF_8)));
     return rs;
   }
 

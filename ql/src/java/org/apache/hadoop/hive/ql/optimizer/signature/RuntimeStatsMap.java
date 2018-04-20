@@ -36,7 +36,7 @@ import com.google.common.base.Objects;
  * Instead of getting into convincing Jackson to store the map with serializers and typefactory tricks;
  * this class is a simple "repacker" to and from list.
  */
-public class RuntimeStatsMap {
+public final class RuntimeStatsMap {
   @JsonProperty
   private List<OpTreeSignature> sigs;
   @JsonProperty
