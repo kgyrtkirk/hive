@@ -135,14 +135,20 @@ public class StatsSources {
   private static class MetastoreStatsConnector implements StatsSource {
 
     private final StatsSource ss;
+    int lastCreateTime = -1;
 
     public MetastoreStatsConnector(StatsSource ss) {
       this.ss = ss;
 
+      runUpdate();
+    }
+
+    private void runUpdate() {
       try {
-        List<RuntimeStat> rs = Hive.get().getMSC().getRuntimeStats(-1, -1);
+        List<RuntimeStat> rs = Hive.get().getMSC().getRuntimeStats(lastCreateTime, -1);
         for (RuntimeStat thriftStat : rs) {
           try {
+            //            thriftStat.getCreateTime();
             ss.putAll(decode(thriftStat));
           } catch (IOException e) {
             logException("Exception while loading runtime stats", e);
@@ -184,7 +190,6 @@ public class StatsSources {
       RuntimeStatsMap rsm = RuntimeStatsPersister.INSTANCE.decode(rs.getPayload(), RuntimeStatsMap.class);
       return rsm.toMap();
     }
-
   }
 
   private static StatsSource globalStatsSource;
