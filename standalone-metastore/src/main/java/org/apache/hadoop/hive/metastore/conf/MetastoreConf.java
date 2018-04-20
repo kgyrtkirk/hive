@@ -742,7 +742,7 @@ public class MetastoreConf {
             + "The only supported special character right now is '/'. This flag applies only to quoted table names.\n"
             + "The default value is true."),
     TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
-        EventCleanerTask.class.getName() + "," + new RuntimeStatsCleanerTask() + "," +
+        EventCleanerTask.class.getName() + "," + RuntimeStatsCleanerTask.class.getName() + "," +
         "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask" + "," +
         MaterializationsCacheCleanerTask.class.getName() + "," +
             MaterializationsRebuildLockCleanerTask.class.getName() + "," + RuntimeStatsCleanerTask.class.getName(),
