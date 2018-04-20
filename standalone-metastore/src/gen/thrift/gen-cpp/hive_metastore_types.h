@@ -661,6 +661,8 @@ class GetSerdeRequest;
 
 class RuntimeStat;
 
+class GetRuntimeStatsRequest;
+
 class MetaException;
 
 class UnknownTableException;
@@ -12976,6 +12978,58 @@ class RuntimeStat {
 void swap(RuntimeStat &a, RuntimeStat &b);
 
 inline std::ostream& operator<<(std::ostream& out, const RuntimeStat& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _GetRuntimeStatsRequest__isset {
+  _GetRuntimeStatsRequest__isset() : minCreateTime(false), maxCount(false) {}
+  bool minCreateTime :1;
+  bool maxCount :1;
+} _GetRuntimeStatsRequest__isset;
+
+class GetRuntimeStatsRequest {
+ public:
+
+  GetRuntimeStatsRequest(const GetRuntimeStatsRequest&);
+  GetRuntimeStatsRequest& operator=(const GetRuntimeStatsRequest&);
+  GetRuntimeStatsRequest() : minCreateTime(0), maxCount(0) {
+  }
+
+  virtual ~GetRuntimeStatsRequest() throw();
+  int32_t minCreateTime;
+  int32_t maxCount;
+
+  _GetRuntimeStatsRequest__isset __isset;
+
+  void __set_minCreateTime(const int32_t val);
+
+  void __set_maxCount(const int32_t val);
+
+  bool operator == (const GetRuntimeStatsRequest & rhs) const
+  {
+    if (!(minCreateTime == rhs.minCreateTime))
+      return false;
+    if (!(maxCount == rhs.maxCount))
+      return false;
+    return true;
+  }
+  bool operator != (const GetRuntimeStatsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetRuntimeStatsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetRuntimeStatsRequest &a, GetRuntimeStatsRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetRuntimeStatsRequest& obj)
 {
   obj.printTo(out);
   return out;

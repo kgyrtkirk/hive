@@ -29820,6 +29820,104 @@ class RuntimeStat {
 
 }
 
+class GetRuntimeStatsRequest {
+  static $_TSPEC;
+
+  /**
+   * @var int
+   */
+  public $minCreateTime = null;
+  /**
+   * @var int
+   */
+  public $maxCount = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'minCreateTime',
+          'type' => TType::I32,
+          ),
+        2 => array(
+          'var' => 'maxCount',
+          'type' => TType::I32,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['minCreateTime'])) {
+        $this->minCreateTime = $vals['minCreateTime'];
+      }
+      if (isset($vals['maxCount'])) {
+        $this->maxCount = $vals['maxCount'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'GetRuntimeStatsRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->minCreateTime);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->maxCount);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('GetRuntimeStatsRequest');
+    if ($this->minCreateTime !== null) {
+      $xfer += $output->writeFieldBegin('minCreateTime', TType::I32, 1);
+      $xfer += $output->writeI32($this->minCreateTime);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->maxCount !== null) {
+      $xfer += $output->writeFieldBegin('maxCount', TType::I32, 2);
+      $xfer += $output->writeI32($this->maxCount);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class MetaException extends TException {
   static $_TSPEC;
 

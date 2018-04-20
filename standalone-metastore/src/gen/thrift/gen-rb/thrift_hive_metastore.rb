@@ -3389,21 +3389,23 @@ module ThriftHiveMetastore
 
     def recv_add_runtime_stats()
       result = receive_message(Add_runtime_stats_result)
+      raise result.o1 unless result.o1.nil?
       return
     end
 
-    def get_runtime_stats(minCreateTime, maxCount)
-      send_get_runtime_stats(minCreateTime, maxCount)
+    def get_runtime_stats(rqst)
+      send_get_runtime_stats(rqst)
       return recv_get_runtime_stats()
     end
 
-    def send_get_runtime_stats(minCreateTime, maxCount)
-      send_message('get_runtime_stats', Get_runtime_stats_args, :minCreateTime => minCreateTime, :maxCount => maxCount)
+    def send_get_runtime_stats(rqst)
+      send_message('get_runtime_stats', Get_runtime_stats_args, :rqst => rqst)
     end
 
     def recv_get_runtime_stats()
       result = receive_message(Get_runtime_stats_result)
       return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_runtime_stats failed: unknown result')
     end
 
@@ -5951,14 +5953,22 @@ module ThriftHiveMetastore
     def process_add_runtime_stats(seqid, iprot, oprot)
       args = read_args(iprot, Add_runtime_stats_args)
       result = Add_runtime_stats_result.new()
-      @handler.add_runtime_stats(args.stat)
+      begin
+        @handler.add_runtime_stats(args.stat)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
       write_result(result, oprot, 'add_runtime_stats', seqid)
     end
 
     def process_get_runtime_stats(seqid, iprot, oprot)
       args = read_args(iprot, Get_runtime_stats_args)
       result = Get_runtime_stats_result.new()
-      result.success = @handler.get_runtime_stats(args.minCreateTime, args.maxCount)
+      begin
+        result.success = @handler.get_runtime_stats(args.rqst)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
       write_result(result, oprot, 'get_runtime_stats', seqid)
     end
 
@@ -13478,9 +13488,10 @@ module ThriftHiveMetastore
 
   class Add_runtime_stats_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
 
     FIELDS = {
-
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end
@@ -13493,12 +13504,10 @@ module ThriftHiveMetastore
 
   class Get_runtime_stats_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    MINCREATETIME = 1
-    MAXCOUNT = 2
+    RQST = 1
 
     FIELDS = {
-      MINCREATETIME => {:type => ::Thrift::Types::I32, :name => 'minCreateTime'},
-      MAXCOUNT => {:type => ::Thrift::Types::I32, :name => 'maxCount'}
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::GetRuntimeStatsRequest}
     }
 
     def struct_fields; FIELDS; end
@@ -13512,9 +13521,11 @@ module ThriftHiveMetastore
   class Get_runtime_stats_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
+    O1 = 1
 
     FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::RuntimeStat}}
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::RuntimeStat}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

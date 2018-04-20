@@ -8578,7 +8578,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public List<RuntimeStat> get_runtime_stats(int minCreateTime, int maxCount) throws TException {
+    public List<RuntimeStat> get_runtime_stats(GetRuntimeStatsRequest rqst) throws TException {
+      int minCreateTime = -1;
+      int maxCount = -1;
+      if (rqst.isSetMinCreateTime()) {
+        minCreateTime = rqst.getMinCreateTime();
+      }
+      if (rqst.isSetMaxCount()) {
+        minCreateTime = rqst.getMaxCount();
+      }
+
       startFunction("get_runtime_stats");
       Exception ex = null;
       try {

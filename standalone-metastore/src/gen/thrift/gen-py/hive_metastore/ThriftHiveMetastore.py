@@ -1573,11 +1573,10 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
-  def get_runtime_stats(self, minCreateTime, maxCount):
+  def get_runtime_stats(self, rqst):
     """
     Parameters:
-     - minCreateTime
-     - maxCount
+     - rqst
     """
     pass
 
@@ -8841,22 +8840,22 @@ class Client(fb303.FacebookService.Client, Iface):
     result = add_runtime_stats_result()
     result.read(iprot)
     iprot.readMessageEnd()
+    if result.o1 is not None:
+      raise result.o1
     return
 
-  def get_runtime_stats(self, minCreateTime, maxCount):
+  def get_runtime_stats(self, rqst):
     """
     Parameters:
-     - minCreateTime
-     - maxCount
+     - rqst
     """
-    self.send_get_runtime_stats(minCreateTime, maxCount)
+    self.send_get_runtime_stats(rqst)
     return self.recv_get_runtime_stats()
 
-  def send_get_runtime_stats(self, minCreateTime, maxCount):
+  def send_get_runtime_stats(self, rqst):
     self._oprot.writeMessageBegin('get_runtime_stats', TMessageType.CALL, self._seqid)
     args = get_runtime_stats_args()
-    args.minCreateTime = minCreateTime
-    args.maxCount = maxCount
+    args.rqst = rqst
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -8874,6 +8873,8 @@ class Client(fb303.FacebookService.Client, Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.o1 is not None:
+      raise result.o1
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_runtime_stats failed: unknown result")
 
 
@@ -14106,6 +14107,9 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
+    except MetaException as o1:
+      msg_type = TMessageType.REPLY
+      result.o1 = o1
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -14121,10 +14125,13 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     iprot.readMessageEnd()
     result = get_runtime_stats_result()
     try:
-      result.success = self._handler.get_runtime_stats(args.minCreateTime, args.maxCount)
+      result.success = self._handler.get_runtime_stats(args.rqst)
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
+    except MetaException as o1:
+      msg_type = TMessageType.REPLY
+      result.o1 = o1
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -47905,9 +47912,18 @@ class add_runtime_stats_args:
     return not (self == other)
 
 class add_runtime_stats_result:
+  """
+  Attributes:
+   - o1
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'o1', (MetaException, MetaException.thrift_spec), None, ), # 1
   )
+
+  def __init__(self, o1=None,):
+    self.o1 = o1
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -47918,6 +47934,12 @@ class add_runtime_stats_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.o1 = MetaException()
+          self.o1.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -47928,6 +47950,10 @@ class add_runtime_stats_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('add_runtime_stats_result')
+    if self.o1 is not None:
+      oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+      self.o1.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -47937,6 +47963,7 @@ class add_runtime_stats_result:
 
   def __hash__(self):
     value = 17
+    value = (value * 31) ^ hash(self.o1)
     return value
 
   def __repr__(self):
@@ -47953,19 +47980,16 @@ class add_runtime_stats_result:
 class get_runtime_stats_args:
   """
   Attributes:
-   - minCreateTime
-   - maxCount
+   - rqst
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.I32, 'minCreateTime', None, None, ), # 1
-    (2, TType.I32, 'maxCount', None, None, ), # 2
+    (1, TType.STRUCT, 'rqst', (GetRuntimeStatsRequest, GetRuntimeStatsRequest.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, minCreateTime=None, maxCount=None,):
-    self.minCreateTime = minCreateTime
-    self.maxCount = maxCount
+  def __init__(self, rqst=None,):
+    self.rqst = rqst
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -47977,13 +48001,9 @@ class get_runtime_stats_args:
       if ftype == TType.STOP:
         break
       if fid == 1:
-        if ftype == TType.I32:
-          self.minCreateTime = iprot.readI32()
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.I32:
-          self.maxCount = iprot.readI32()
+        if ftype == TType.STRUCT:
+          self.rqst = GetRuntimeStatsRequest()
+          self.rqst.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -47996,13 +48016,9 @@ class get_runtime_stats_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('get_runtime_stats_args')
-    if self.minCreateTime is not None:
-      oprot.writeFieldBegin('minCreateTime', TType.I32, 1)
-      oprot.writeI32(self.minCreateTime)
-      oprot.writeFieldEnd()
-    if self.maxCount is not None:
-      oprot.writeFieldBegin('maxCount', TType.I32, 2)
-      oprot.writeI32(self.maxCount)
+    if self.rqst is not None:
+      oprot.writeFieldBegin('rqst', TType.STRUCT, 1)
+      self.rqst.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -48013,8 +48029,7 @@ class get_runtime_stats_args:
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.minCreateTime)
-    value = (value * 31) ^ hash(self.maxCount)
+    value = (value * 31) ^ hash(self.rqst)
     return value
 
   def __repr__(self):
@@ -48032,14 +48047,17 @@ class get_runtime_stats_result:
   """
   Attributes:
    - success
+   - o1
   """
 
   thrift_spec = (
     (0, TType.LIST, 'success', (TType.STRUCT,(RuntimeStat, RuntimeStat.thrift_spec)), None, ), # 0
+    (1, TType.STRUCT, 'o1', (MetaException, MetaException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, o1=None,):
     self.success = success
+    self.o1 = o1
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -48061,6 +48079,12 @@ class get_runtime_stats_result:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.o1 = MetaException()
+          self.o1.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -48078,6 +48102,10 @@ class get_runtime_stats_result:
         iter1326.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
+    if self.o1 is not None:
+      oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+      self.o1.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -48088,6 +48116,7 @@ class get_runtime_stats_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.o1)
     return value
 
   def __repr__(self):

@@ -1530,14 +1530,15 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
   public function heartbeat_lock_materialization_rebuild($dbName, $tableName, $txnId);
   /**
    * @param \metastore\RuntimeStat $stat
+   * @throws \metastore\MetaException
    */
   public function add_runtime_stats(\metastore\RuntimeStat $stat);
   /**
-   * @param int $minCreateTime
-   * @param int $maxCount
+   * @param \metastore\GetRuntimeStatsRequest $rqst
    * @return \metastore\RuntimeStat[]
+   * @throws \metastore\MetaException
    */
-  public function get_runtime_stats($minCreateTime, $maxCount);
+  public function get_runtime_stats(\metastore\GetRuntimeStatsRequest $rqst);
 }
 
 class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metastore\ThriftHiveMetastoreIf {
@@ -13062,20 +13063,22 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
+    if ($result->o1 !== null) {
+      throw $result->o1;
+    }
     return;
   }
 
-  public function get_runtime_stats($minCreateTime, $maxCount)
+  public function get_runtime_stats(\metastore\GetRuntimeStatsRequest $rqst)
   {
-    $this->send_get_runtime_stats($minCreateTime, $maxCount);
+    $this->send_get_runtime_stats($rqst);
     return $this->recv_get_runtime_stats();
   }
 
-  public function send_get_runtime_stats($minCreateTime, $maxCount)
+  public function send_get_runtime_stats(\metastore\GetRuntimeStatsRequest $rqst)
   {
     $args = new \metastore\ThriftHiveMetastore_get_runtime_stats_args();
-    $args->minCreateTime = $minCreateTime;
-    $args->maxCount = $maxCount;
+    $args->rqst = $rqst;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -13113,6 +13116,9 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     }
     if ($result->success !== null) {
       return $result->success;
+    }
+    if ($result->o1 !== null) {
+      throw $result->o1;
     }
     throw new \Exception("get_runtime_stats failed: unknown result");
   }
@@ -58691,11 +58697,25 @@ class ThriftHiveMetastore_add_runtime_stats_args {
 class ThriftHiveMetastore_add_runtime_stats_result {
   static $_TSPEC;
 
+  /**
+   * @var \metastore\MetaException
+   */
+  public $o1 = null;
 
-  public function __construct() {
+  public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
+        1 => array(
+          'var' => 'o1',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\MetaException',
+          ),
         );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
+      }
     }
   }
 
@@ -58718,6 +58738,14 @@ class ThriftHiveMetastore_add_runtime_stats_result {
       }
       switch ($fid)
       {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->o1 = new \metastore\MetaException();
+            $xfer += $this->o1->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -58731,6 +58759,11 @@ class ThriftHiveMetastore_add_runtime_stats_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_add_runtime_stats_result');
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
+      $xfer += $this->o1->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -58742,33 +58775,23 @@ class ThriftHiveMetastore_get_runtime_stats_args {
   static $_TSPEC;
 
   /**
-   * @var int
+   * @var \metastore\GetRuntimeStatsRequest
    */
-  public $minCreateTime = null;
-  /**
-   * @var int
-   */
-  public $maxCount = null;
+  public $rqst = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         1 => array(
-          'var' => 'minCreateTime',
-          'type' => TType::I32,
-          ),
-        2 => array(
-          'var' => 'maxCount',
-          'type' => TType::I32,
+          'var' => 'rqst',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\GetRuntimeStatsRequest',
           ),
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['minCreateTime'])) {
-        $this->minCreateTime = $vals['minCreateTime'];
-      }
-      if (isset($vals['maxCount'])) {
-        $this->maxCount = $vals['maxCount'];
+      if (isset($vals['rqst'])) {
+        $this->rqst = $vals['rqst'];
       }
     }
   }
@@ -58793,15 +58816,9 @@ class ThriftHiveMetastore_get_runtime_stats_args {
       switch ($fid)
       {
         case 1:
-          if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->minCreateTime);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 2:
-          if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->maxCount);
+          if ($ftype == TType::STRUCT) {
+            $this->rqst = new \metastore\GetRuntimeStatsRequest();
+            $xfer += $this->rqst->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -58819,14 +58836,12 @@ class ThriftHiveMetastore_get_runtime_stats_args {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_runtime_stats_args');
-    if ($this->minCreateTime !== null) {
-      $xfer += $output->writeFieldBegin('minCreateTime', TType::I32, 1);
-      $xfer += $output->writeI32($this->minCreateTime);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->maxCount !== null) {
-      $xfer += $output->writeFieldBegin('maxCount', TType::I32, 2);
-      $xfer += $output->writeI32($this->maxCount);
+    if ($this->rqst !== null) {
+      if (!is_object($this->rqst)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('rqst', TType::STRUCT, 1);
+      $xfer += $this->rqst->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -58843,6 +58858,10 @@ class ThriftHiveMetastore_get_runtime_stats_result {
    * @var \metastore\RuntimeStat[]
    */
   public $success = null;
+  /**
+   * @var \metastore\MetaException
+   */
+  public $o1 = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -58856,11 +58875,19 @@ class ThriftHiveMetastore_get_runtime_stats_result {
             'class' => '\metastore\RuntimeStat',
             ),
           ),
+        1 => array(
+          'var' => 'o1',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\MetaException',
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['success'])) {
         $this->success = $vals['success'];
+      }
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
       }
     }
   }
@@ -58902,6 +58929,14 @@ class ThriftHiveMetastore_get_runtime_stats_result {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->o1 = new \metastore\MetaException();
+            $xfer += $this->o1->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -58930,6 +58965,11 @@ class ThriftHiveMetastore_get_runtime_stats_result {
         }
         $output->writeListEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
+      $xfer += $this->o1->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

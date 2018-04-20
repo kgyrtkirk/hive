@@ -4845,6 +4845,24 @@ class RuntimeStat
   ::Thrift::Struct.generate_accessors self
 end
 
+class GetRuntimeStatsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  MINCREATETIME = 1
+  MAXCOUNT = 2
+
+  FIELDS = {
+    MINCREATETIME => {:type => ::Thrift::Types::I32, :name => 'minCreateTime'},
+    MAXCOUNT => {:type => ::Thrift::Types::I32, :name => 'maxCount'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class MetaException < ::Thrift::Exception
   include ::Thrift::Struct, ::Thrift::Struct_Union
   def initialize(message=nil)

@@ -225,7 +225,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_lock_materialization_rebuild(LockResponse& _return, const std::string& dbName, const std::string& tableName, const int64_t txnId) = 0;
   virtual bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId) = 0;
   virtual void add_runtime_stats(const RuntimeStat& stat) = 0;
-  virtual void get_runtime_stats(std::vector<RuntimeStat> & _return, const int32_t minCreateTime, const int32_t maxCount) = 0;
+  virtual void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -892,7 +892,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void add_runtime_stats(const RuntimeStat& /* stat */) {
     return;
   }
-  void get_runtime_stats(std::vector<RuntimeStat> & /* _return */, const int32_t /* minCreateTime */, const int32_t /* maxCount */) {
+  void get_runtime_stats(std::vector<RuntimeStat> & /* _return */, const GetRuntimeStatsRequest& /* rqst */) {
     return;
   }
 };
@@ -25701,6 +25701,10 @@ class ThriftHiveMetastore_add_runtime_stats_pargs {
 
 };
 
+typedef struct _ThriftHiveMetastore_add_runtime_stats_result__isset {
+  _ThriftHiveMetastore_add_runtime_stats_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_add_runtime_stats_result__isset;
 
 class ThriftHiveMetastore_add_runtime_stats_result {
  public:
@@ -25711,9 +25715,16 @@ class ThriftHiveMetastore_add_runtime_stats_result {
   }
 
   virtual ~ThriftHiveMetastore_add_runtime_stats_result() throw();
+  MetaException o1;
 
-  bool operator == (const ThriftHiveMetastore_add_runtime_stats_result & /* rhs */) const
+  _ThriftHiveMetastore_add_runtime_stats_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_add_runtime_stats_result & rhs) const
   {
+    if (!(o1 == rhs.o1))
+      return false;
     return true;
   }
   bool operator != (const ThriftHiveMetastore_add_runtime_stats_result &rhs) const {
@@ -25727,21 +25738,27 @@ class ThriftHiveMetastore_add_runtime_stats_result {
 
 };
 
+typedef struct _ThriftHiveMetastore_add_runtime_stats_presult__isset {
+  _ThriftHiveMetastore_add_runtime_stats_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_add_runtime_stats_presult__isset;
 
 class ThriftHiveMetastore_add_runtime_stats_presult {
  public:
 
 
   virtual ~ThriftHiveMetastore_add_runtime_stats_presult() throw();
+  MetaException o1;
+
+  _ThriftHiveMetastore_add_runtime_stats_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
 };
 
 typedef struct _ThriftHiveMetastore_get_runtime_stats_args__isset {
-  _ThriftHiveMetastore_get_runtime_stats_args__isset() : minCreateTime(false), maxCount(false) {}
-  bool minCreateTime :1;
-  bool maxCount :1;
+  _ThriftHiveMetastore_get_runtime_stats_args__isset() : rqst(false) {}
+  bool rqst :1;
 } _ThriftHiveMetastore_get_runtime_stats_args__isset;
 
 class ThriftHiveMetastore_get_runtime_stats_args {
@@ -25749,24 +25766,19 @@ class ThriftHiveMetastore_get_runtime_stats_args {
 
   ThriftHiveMetastore_get_runtime_stats_args(const ThriftHiveMetastore_get_runtime_stats_args&);
   ThriftHiveMetastore_get_runtime_stats_args& operator=(const ThriftHiveMetastore_get_runtime_stats_args&);
-  ThriftHiveMetastore_get_runtime_stats_args() : minCreateTime(0), maxCount(0) {
+  ThriftHiveMetastore_get_runtime_stats_args() {
   }
 
   virtual ~ThriftHiveMetastore_get_runtime_stats_args() throw();
-  int32_t minCreateTime;
-  int32_t maxCount;
+  GetRuntimeStatsRequest rqst;
 
   _ThriftHiveMetastore_get_runtime_stats_args__isset __isset;
 
-  void __set_minCreateTime(const int32_t val);
-
-  void __set_maxCount(const int32_t val);
+  void __set_rqst(const GetRuntimeStatsRequest& val);
 
   bool operator == (const ThriftHiveMetastore_get_runtime_stats_args & rhs) const
   {
-    if (!(minCreateTime == rhs.minCreateTime))
-      return false;
-    if (!(maxCount == rhs.maxCount))
+    if (!(rqst == rhs.rqst))
       return false;
     return true;
   }
@@ -25787,16 +25799,16 @@ class ThriftHiveMetastore_get_runtime_stats_pargs {
 
 
   virtual ~ThriftHiveMetastore_get_runtime_stats_pargs() throw();
-  const int32_t* minCreateTime;
-  const int32_t* maxCount;
+  const GetRuntimeStatsRequest* rqst;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
 typedef struct _ThriftHiveMetastore_get_runtime_stats_result__isset {
-  _ThriftHiveMetastore_get_runtime_stats_result__isset() : success(false) {}
+  _ThriftHiveMetastore_get_runtime_stats_result__isset() : success(false), o1(false) {}
   bool success :1;
+  bool o1 :1;
 } _ThriftHiveMetastore_get_runtime_stats_result__isset;
 
 class ThriftHiveMetastore_get_runtime_stats_result {
@@ -25809,14 +25821,19 @@ class ThriftHiveMetastore_get_runtime_stats_result {
 
   virtual ~ThriftHiveMetastore_get_runtime_stats_result() throw();
   std::vector<RuntimeStat>  success;
+  MetaException o1;
 
   _ThriftHiveMetastore_get_runtime_stats_result__isset __isset;
 
   void __set_success(const std::vector<RuntimeStat> & val);
 
+  void __set_o1(const MetaException& val);
+
   bool operator == (const ThriftHiveMetastore_get_runtime_stats_result & rhs) const
   {
     if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
       return false;
     return true;
   }
@@ -25832,8 +25849,9 @@ class ThriftHiveMetastore_get_runtime_stats_result {
 };
 
 typedef struct _ThriftHiveMetastore_get_runtime_stats_presult__isset {
-  _ThriftHiveMetastore_get_runtime_stats_presult__isset() : success(false) {}
+  _ThriftHiveMetastore_get_runtime_stats_presult__isset() : success(false), o1(false) {}
   bool success :1;
+  bool o1 :1;
 } _ThriftHiveMetastore_get_runtime_stats_presult__isset;
 
 class ThriftHiveMetastore_get_runtime_stats_presult {
@@ -25842,6 +25860,7 @@ class ThriftHiveMetastore_get_runtime_stats_presult {
 
   virtual ~ThriftHiveMetastore_get_runtime_stats_presult() throw();
   std::vector<RuntimeStat> * success;
+  MetaException o1;
 
   _ThriftHiveMetastore_get_runtime_stats_presult__isset __isset;
 
@@ -26469,8 +26488,8 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void add_runtime_stats(const RuntimeStat& stat);
   void send_add_runtime_stats(const RuntimeStat& stat);
   void recv_add_runtime_stats();
-  void get_runtime_stats(std::vector<RuntimeStat> & _return, const int32_t minCreateTime, const int32_t maxCount);
-  void send_get_runtime_stats(const int32_t minCreateTime, const int32_t maxCount);
+  void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst);
+  void send_get_runtime_stats(const GetRuntimeStatsRequest& rqst);
   void recv_get_runtime_stats(std::vector<RuntimeStat> & _return);
 };
 
@@ -28878,13 +28897,13 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->add_runtime_stats(stat);
   }
 
-  void get_runtime_stats(std::vector<RuntimeStat> & _return, const int32_t minCreateTime, const int32_t maxCount) {
+  void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->get_runtime_stats(_return, minCreateTime, maxCount);
+      ifaces_[i]->get_runtime_stats(_return, rqst);
     }
-    ifaces_[i]->get_runtime_stats(_return, minCreateTime, maxCount);
+    ifaces_[i]->get_runtime_stats(_return, rqst);
     return;
   }
 
@@ -29513,8 +29532,8 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void add_runtime_stats(const RuntimeStat& stat);
   int32_t send_add_runtime_stats(const RuntimeStat& stat);
   void recv_add_runtime_stats(const int32_t seqid);
-  void get_runtime_stats(std::vector<RuntimeStat> & _return, const int32_t minCreateTime, const int32_t maxCount);
-  int32_t send_get_runtime_stats(const int32_t minCreateTime, const int32_t maxCount);
+  void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst);
+  int32_t send_get_runtime_stats(const GetRuntimeStatsRequest& rqst);
   void recv_get_runtime_stats(std::vector<RuntimeStat> & _return, const int32_t seqid);
 };
 

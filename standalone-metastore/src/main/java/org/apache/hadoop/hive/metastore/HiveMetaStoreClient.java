@@ -649,7 +649,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   public Partition add_partition(Partition new_part, EnvironmentContext envContext)
       throws TException {
-    if (new_part != null && !new_part.isSetCatName()) new_part.setCatName(getDefaultCatalog(conf));
+    if (new_part != null && !new_part.isSetCatName()) {
+      new_part.setCatName(getDefaultCatalog(conf));
+    }
     Partition p = client.add_partition_with_environment_context(new_part, envContext);
     return deepCopy(p);
   }
@@ -697,7 +699,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (partitionSpec == null) {
       throw new MetaException("PartitionSpec cannot be null.");
     }
-    if (partitionSpec.getCatName() == null) partitionSpec.setCatName(getDefaultCatalog(conf));
+    if (partitionSpec.getCatName() == null) {
+      partitionSpec.setCatName(getDefaultCatalog(conf));
+    }
     return client.add_partitions_pspec(partitionSpec.toPartitionSpec());
   }
 
@@ -3246,6 +3250,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public List<RuntimeStat> getRuntimeStats(int createTime, int maxCount) throws TException {
-    return client.get_runtime_stats(createTime, maxCount);
+    return client.get_runtime_stats(new GetRuntimeStatsRequest(createTime, maxCount));
   }
 }
