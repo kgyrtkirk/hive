@@ -20,6 +20,12 @@ package org.apache.hadoop.hive.metastore.model;
 
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 
+/**
+ * Represents a runtime stat query entry.
+ *
+ * As a query may contain a large number of operatorstat entries; they are stored together in a single row in the metastore.
+ * The number of operator stat entries this entity has; is shown in the weight column.
+ */
 public class MRuntimeStat {
 
   private int createTime;

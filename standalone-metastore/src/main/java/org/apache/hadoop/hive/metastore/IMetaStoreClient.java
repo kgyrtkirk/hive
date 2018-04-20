@@ -3644,11 +3644,10 @@ public interface IMetaStoreClient {
    */
   boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException;
 
-  /** Adds a RuntimeStat for persistence
-   * @throws TException */
+  /** Adds a RuntimeStat for metastore persistence. */
   void addRuntimeStat(RuntimeStat stat) throws TException;
 
-  /** Reads all the runtime statistics */
+  /** Reads runtime statistics. */
   List<RuntimeStat> getRuntimeStats(int createTime, int maxCount) throws TException;
 
 }
