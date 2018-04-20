@@ -1202,7 +1202,6 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public void addRuntimeStat(RuntimeStat stat) throws MetaException {
     objectStore.addRuntimeStat(stat);
-    ;
   }
 
   @Override
