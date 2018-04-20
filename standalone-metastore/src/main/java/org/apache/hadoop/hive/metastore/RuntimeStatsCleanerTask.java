@@ -53,17 +53,15 @@ public class RuntimeStatsCleanerTask implements MetastoreTaskThread {
 
     try {
       RawStore ms = HiveMetaStore.HMSHandler.getMSForConf(conf);
-      int maxRetained  = 1;
+      int maxRetained = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.RUNTIME_STATS_MAX_WEIGHT);
       int maxRetainSecs=(int) MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.RUNTIME_STATS_MAX_AGE, TimeUnit.SECONDS);
-      //FIXME: there should be this deleted?
-      long deleteCnt = -11;
-      ms.deleteRuntimeStats(maxRetained, maxRetainSecs);
+      int deleteCnt = ms.deleteRuntimeStats(maxRetained, maxRetainSecs);
 
       if (deleteCnt > 0L){
-        LOG.info("Number of events deleted from event Table: "+deleteCnt);
+        LOG.info("Number of deleted entries: " + deleteCnt);
       }
     } catch (Exception e) {
-      LOG.error("Exception while trying to delete events ", e);
+      LOG.error("Exception while trying to delete: " + e.getMessage(), e);
     }
   }
 }
