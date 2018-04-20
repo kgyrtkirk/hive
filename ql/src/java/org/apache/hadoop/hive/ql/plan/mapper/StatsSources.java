@@ -75,6 +75,11 @@ public class StatsSources {
     query, hiveserver, metastore;
   }
 
+  public static void initialize(HiveConf hiveConf) {
+    // requesting for the stats source will implicitly initialize it
+    getStatsSource(hiveConf);
+  }
+
   public static StatsSource getStatsSource(HiveConf conf) {
     StatsSourceMode mode = StatsSourceMode.valueOf(conf.getVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE));
     int cacheSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.RUNTIME_STATS_MAX_ENTRIES);
@@ -149,7 +154,6 @@ public class StatsSources {
         List<RuntimeStat> rs = Hive.get().getMSC().getRuntimeStats(lastCreateTime, -1);
         for (RuntimeStat thriftStat : rs) {
           try {
-            //            thriftStat.getCreateTime();
             ss.putAll(decode(thriftStat));
           } catch (IOException e) {
             logException("Exception while loading runtime stats", e);
