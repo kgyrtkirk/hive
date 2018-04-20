@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
@@ -85,26 +84,7 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
     alwaysCollectStats = driver.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS);
     statsReaderHook.setCollectOnSuccess(alwaysCollectStats);
 
-    coreDriver.setStatsSource(getStatsSource(driver.getConf()));
-  }
-
-  static enum StatsSourceMode {
-    query, hiveserver, metastore;
-  }
-
-  private StatsSource getStatsSource(HiveConf conf) {
-    StatsSourceMode mode = StatsSourceMode.valueOf(conf.getVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE));
-    int cacheSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.RUNTIME_STATS_MAX_ENTRIES);
-
-    switch (mode) {
-    case query:
-      return new StatsSources.MapBackedStatsSource();
-    case hiveserver:
-      return StatsSources.globalStatsSource(cacheSize);
-    case metastore:
-      return StatsSources.metastoreBackedStatsSource(StatsSources.globalStatsSource(cacheSize));
-    }
-    throw new RuntimeException("Unknown StatsSource setting: " + mode);
+    coreDriver.setStatsSource(StatsSources.getStatsSource(driver.getConf()));
   }
 
   @Override

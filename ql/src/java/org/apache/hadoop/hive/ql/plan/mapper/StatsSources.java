@@ -26,7 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -68,6 +71,24 @@ public class StatsSources {
     }
   }
 
+  static enum StatsSourceMode {
+    query, hiveserver, metastore;
+  }
+
+  public static StatsSource getStatsSource(HiveConf conf) {
+    StatsSourceMode mode = StatsSourceMode.valueOf(conf.getVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE));
+    int cacheSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.RUNTIME_STATS_MAX_ENTRIES);
+
+    switch (mode) {
+    case query:
+      return new StatsSources.MapBackedStatsSource();
+    case hiveserver:
+      return StatsSources.globalStatsSource(cacheSize);
+    case metastore:
+      return StatsSources.metastoreBackedStatsSource(StatsSources.globalStatsSource(cacheSize));
+    }
+    throw new RuntimeException("Unknown StatsSource setting: " + mode);
+  }
 
   public static StatsSource getStatsSourceContaining(StatsSource currentStatsSource, PlanMapper pm) {
     StatsSource statsSource = currentStatsSource;
