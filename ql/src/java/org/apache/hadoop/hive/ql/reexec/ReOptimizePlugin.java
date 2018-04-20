@@ -94,7 +94,7 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
 
   private StatsSource getStatsSource(HiveConf conf) {
     StatsSourceMode mode = StatsSourceMode.valueOf(conf.getVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE));
-    int cacheSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.RUNTIME_STATS_MAX_WEIGHT);
+    int cacheSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.RUNTIME_STATS_MAX_ENTRIES);
 
     switch (mode) {
     case query:
