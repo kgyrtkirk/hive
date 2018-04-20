@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * Enables to encode/decode runtime statistics values into textual form.
  */
 public class RuntimeStatsPersister {
-  public static RuntimeStatsPersister INSTANCE = new RuntimeStatsPersister();
+  public static final RuntimeStatsPersister INSTANCE = new RuntimeStatsPersister();
 
   private final ObjectMapper om;
 
