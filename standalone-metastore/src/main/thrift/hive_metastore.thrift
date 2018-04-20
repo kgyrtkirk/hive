@@ -2177,8 +2177,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   LockResponse get_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
   bool heartbeat_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
   
-  void add_runtime_stats(1: RuntimeStat stat)
-  list<RuntimeStat> get_runtime_stats(1: i32 minCreateTime, 2: i32 maxCount)
+  void add_runtime_stats(1: RuntimeStat stat) throws(1:MetaException o1)
+  list<RuntimeStat> get_runtime_stats(1: i32 minCreateTime, 2: i32 maxCount) throws(1:MetaException o1)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,
