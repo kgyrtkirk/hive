@@ -12944,20 +12944,25 @@ class RuntimeStat {
 
   RuntimeStat(const RuntimeStat&);
   RuntimeStat& operator=(const RuntimeStat&);
-  RuntimeStat() : weight(0), payload() {
+  RuntimeStat() : weight(0), createTime(0), payload() {
   }
 
   virtual ~RuntimeStat() throw();
   int32_t weight;
+  int32_t createTime;
   std::string payload;
 
   void __set_weight(const int32_t val);
+
+  void __set_createTime(const int32_t val);
 
   void __set_payload(const std::string& val);
 
   bool operator == (const RuntimeStat & rhs) const
   {
     if (!(weight == rhs.weight))
+      return false;
+    if (!(createTime == rhs.createTime))
       return false;
     if (!(payload == rhs.payload))
       return false;

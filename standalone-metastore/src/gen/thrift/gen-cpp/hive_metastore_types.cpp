@@ -30559,6 +30559,10 @@ void RuntimeStat::__set_weight(const int32_t val) {
   this->weight = val;
 }
 
+void RuntimeStat::__set_createTime(const int32_t val) {
+  this->createTime = val;
+}
+
 void RuntimeStat::__set_payload(const std::string& val) {
   this->payload = val;
 }
@@ -30576,6 +30580,7 @@ uint32_t RuntimeStat::read(::apache::thrift::protocol::TProtocol* iprot) {
   using ::apache::thrift::protocol::TProtocolException;
 
   bool isset_weight = false;
+  bool isset_createTime = false;
   bool isset_payload = false;
 
   while (true)
@@ -30595,6 +30600,14 @@ uint32_t RuntimeStat::read(::apache::thrift::protocol::TProtocol* iprot) {
         }
         break;
       case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->createTime);
+          isset_createTime = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readBinary(this->payload);
           isset_payload = true;
@@ -30613,6 +30626,8 @@ uint32_t RuntimeStat::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   if (!isset_weight)
     throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_createTime)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
   if (!isset_payload)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
@@ -30627,7 +30642,11 @@ uint32_t RuntimeStat::write(::apache::thrift::protocol::TProtocol* oprot) const 
   xfer += oprot->writeI32(this->weight);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("payload", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeFieldBegin("createTime", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->createTime);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("payload", ::apache::thrift::protocol::T_STRING, 3);
   xfer += oprot->writeBinary(this->payload);
   xfer += oprot->writeFieldEnd();
 
@@ -30639,15 +30658,18 @@ uint32_t RuntimeStat::write(::apache::thrift::protocol::TProtocol* oprot) const 
 void swap(RuntimeStat &a, RuntimeStat &b) {
   using ::std::swap;
   swap(a.weight, b.weight);
+  swap(a.createTime, b.createTime);
   swap(a.payload, b.payload);
 }
 
 RuntimeStat::RuntimeStat(const RuntimeStat& other1157) {
   weight = other1157.weight;
+  createTime = other1157.createTime;
   payload = other1157.payload;
 }
 RuntimeStat& RuntimeStat::operator=(const RuntimeStat& other1158) {
   weight = other1158.weight;
+  createTime = other1158.createTime;
   payload = other1158.payload;
   return *this;
 }
@@ -30655,6 +30677,7 @@ void RuntimeStat::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "RuntimeStat(";
   out << "weight=" << to_string(weight);
+  out << ", " << "createTime=" << to_string(createTime);
   out << ", " << "payload=" << to_string(payload);
   out << ")";
 }

@@ -37,9 +37,8 @@ public class MRuntimeStat {
 
   public static RuntimeStat toThrift(MRuntimeStat stat) {
     RuntimeStat ret = new RuntimeStat();
-    ret.setWeightIsSet(true);
     ret.setWeight(stat.weight);
-    ret.setPayloadIsSet(true);
+    ret.setCreateTime(stat.createTime);
     ret.setPayload(stat.payload);
     return ret;
   }

@@ -29730,6 +29730,10 @@ class RuntimeStat {
    */
   public $weight = null;
   /**
+   * @var int
+   */
+  public $createTime = null;
+  /**
    * @var string
    */
   public $payload = null;
@@ -29742,6 +29746,10 @@ class RuntimeStat {
           'type' => TType::I32,
           ),
         2 => array(
+          'var' => 'createTime',
+          'type' => TType::I32,
+          ),
+        3 => array(
           'var' => 'payload',
           'type' => TType::STRING,
           ),
@@ -29750,6 +29758,9 @@ class RuntimeStat {
     if (is_array($vals)) {
       if (isset($vals['weight'])) {
         $this->weight = $vals['weight'];
+      }
+      if (isset($vals['createTime'])) {
+        $this->createTime = $vals['createTime'];
       }
       if (isset($vals['payload'])) {
         $this->payload = $vals['payload'];
@@ -29784,6 +29795,13 @@ class RuntimeStat {
           }
           break;
         case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->createTime);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->payload);
           } else {
@@ -29808,8 +29826,13 @@ class RuntimeStat {
       $xfer += $output->writeI32($this->weight);
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->createTime !== null) {
+      $xfer += $output->writeFieldBegin('createTime', TType::I32, 2);
+      $xfer += $output->writeI32($this->createTime);
+      $xfer += $output->writeFieldEnd();
+    }
     if ($this->payload !== null) {
-      $xfer += $output->writeFieldBegin('payload', TType::STRING, 2);
+      $xfer += $output->writeFieldBegin('payload', TType::STRING, 3);
       $xfer += $output->writeString($this->payload);
       $xfer += $output->writeFieldEnd();
     }

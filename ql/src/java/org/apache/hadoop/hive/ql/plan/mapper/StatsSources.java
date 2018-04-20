@@ -183,7 +183,10 @@ public class StatsSources {
 
     private RuntimeStat encode(Map<OpTreeSignature, OperatorStats> map) throws IOException {
       String payload = RuntimeStatsPersister.INSTANCE.encode(new RuntimeStatsMap(map));
-      return new RuntimeStat(payload.length(), ByteBuffer.wrap(payload.getBytes()));
+      RuntimeStat rs = new RuntimeStat();
+      rs.setWeight(map.size());
+      rs.setPayload(ByteBuffer.wrap(payload.getBytes()));
+      return rs;
     }
 
     private Map<OpTreeSignature, OperatorStats> decode(RuntimeStat rs) throws IOException {
