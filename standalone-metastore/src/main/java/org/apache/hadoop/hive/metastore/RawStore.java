@@ -1626,12 +1626,12 @@ public interface RawStore extends Configurable {
    */
   void addSerde(SerDeInfo serde) throws AlreadyExistsException, MetaException;
 
-  /** Adds a RuntimeStat for persistence */
+  /** Adds a RuntimeStat for persistence. */
   void addRuntimeStat(RuntimeStat stat) throws MetaException;
 
-  /** Reads all the runtime statistics */
+  /** Reads runtime statistic entries. */
   List<RuntimeStat> getRuntimeStats(int minCreateTime, int maxCount) throws MetaException;
 
-  /** Removes outdated statistics */
+  /** Removes outdated statistics. */
   int deleteRuntimeStats(int maxRetained, int maxRetainSecs) throws MetaException;
 }

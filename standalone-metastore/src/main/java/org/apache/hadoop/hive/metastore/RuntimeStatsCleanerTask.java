@@ -19,15 +19,15 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
-import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.RawStore;
-
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Metastore task to handle RuntimeStat related expiration.
+ */
 public class RuntimeStatsCleanerTask implements MetastoreTaskThread {
   private static final Logger LOG = LoggerFactory.getLogger(RuntimeStatsCleanerTask.class);
 
