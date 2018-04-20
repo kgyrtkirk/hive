@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 public class MapBackedStatsSource implements StatsSource {
 
-  private Map<OpTreeSignature, OperatorStats> map = new HashMap<>();
+  private Map<OpTreeSignature, OperatorStats> map = new ConcurrentHashMap<>();
 
   @Override
   public boolean canProvideStatsFor(Class<?> clazz) {

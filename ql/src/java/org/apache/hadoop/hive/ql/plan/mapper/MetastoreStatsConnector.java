@@ -23,7 +23,9 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -45,24 +47,35 @@ class MetastoreStatsConnector implements StatsSource {
   private final StatsSource ss;
   int lastCreateTime = -1;
 
+  private ExecutorService executor;
+
   MetastoreStatsConnector(StatsSource ss) {
     this.ss = ss;
+    executor = Executors.newSingleThreadExecutor(
+        new BasicThreadFactory.Builder()
+            .namingPattern("Metastore-RuntimeStats-Thread-%d")
+            .daemon(true)
+            .build());
 
-    runUpdate();
+    executor.submit(new Updater());
   }
 
-  private void runUpdate() {//
-    try {
-      List<RuntimeStat> rs = Hive.get().getMSC().getRuntimeStats(lastCreateTime, -1);
-      for (RuntimeStat thriftStat : rs) {
-        try {
-          ss.putAll(decode(thriftStat));
-        } catch (IOException e) {
-          logException("Exception while loading runtime stats", e);
+  private class Updater implements Runnable {
+
+    @Override
+    public void run() {
+      try {
+        List<RuntimeStat> rs = Hive.get().getMSC().getRuntimeStats(lastCreateTime, -1);
+        for (RuntimeStat thriftStat : rs) {
+          try {
+            ss.putAll(decode(thriftStat));
+          } catch (IOException e) {
+            logException("Exception while loading runtime stats", e);
+          }
         }
+      } catch (TException | HiveException e) {
+        logException("Exception while reading metastore runtime stats", e);
       }
-    } catch (TException | HiveException e) {
-      logException("Exception while reading metastore runtime stats", e);
     }
   }
 
