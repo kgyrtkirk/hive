@@ -49,8 +49,11 @@ class MetastoreStatsConnector implements StatsSource {
 
   private ExecutorService executor;
 
-  MetastoreStatsConnector(StatsSource ss) {
+  private int batchSize;
+
+  MetastoreStatsConnector(StatsSource ss, int msBatchSize) {
     this.ss = ss;
+    this.batchSize = msBatchSize;
     executor = Executors.newSingleThreadExecutor(
         new BasicThreadFactory.Builder()
             .namingPattern("Metastore-RuntimeStats-Thread-%d")
@@ -65,14 +68,19 @@ class MetastoreStatsConnector implements StatsSource {
     @Override
     public void run() {
       try {
-        List<RuntimeStat> rs = Hive.get().getMSC().getRuntimeStats(lastCreateTime, -1);
-        for (RuntimeStat thriftStat : rs) {
-          try {
-            ss.putAll(decode(thriftStat));
-          } catch (IOException e) {
-            logException("Exception while loading runtime stats", e);
+        boolean shouldRun = false;
+        do {
+          List<RuntimeStat> rs = Hive.get().getMSC().getRuntimeStats(lastCreateTime, batchSize);
+          for (RuntimeStat thriftStat : rs) {
+            try {
+              lastCreateTime = Math.max(thriftStat.getCreateTime() + 1, lastCreateTime);
+              ss.putAll(decode(thriftStat));
+            } catch (IOException e) {
+              logException("Exception while loading runtime stats", e);
+            }
           }
-        }
+          shouldRun = batchSize > 0 && rs != null && rs.size() > 0;
+        } while (shouldRun);
       } catch (TException | HiveException e) {
         logException("Exception while reading metastore runtime stats", e);
       }
