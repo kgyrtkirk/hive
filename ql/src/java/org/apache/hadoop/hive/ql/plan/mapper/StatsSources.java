@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 
 public class StatsSources {
 
@@ -75,7 +76,7 @@ public class StatsSources {
   }
 
   private static Map<OpTreeSignature, OperatorStats> extractStatMapFromPlanMapper(PlanMapper pm) {
-    Map<OpTreeSignature, OperatorStats> map = new HashMap<OpTreeSignature, OperatorStats>();
+    Builder<OpTreeSignature, OperatorStats> map = ImmutableMap.builder();
     Iterator<EquivGroup> it = pm.iterateGroups();
     while (it.hasNext()) {
       EquivGroup e = it.next();
@@ -99,7 +100,7 @@ public class StatsSources {
         map.put(sig.get(0), stat.get(0));
       }
     }
-    return map;
+    return map.build();
   }
 
   private static StatsSource globalStatsSource;

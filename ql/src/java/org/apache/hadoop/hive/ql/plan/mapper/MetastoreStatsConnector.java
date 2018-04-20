@@ -100,11 +100,25 @@ class MetastoreStatsConnector implements StatsSource {
   @Override
   public void putAll(Map<OpTreeSignature, OperatorStats> map) {
     ss.putAll(map);
-    try {
-      RuntimeStat rec = encode(map);
-      Hive.get().getMSC().addRuntimeStat(rec);
-    } catch (TException | HiveException | IOException e) {
-      logException("Exception while persisting runtime stat", e);
+    executor.submit(new Submitter(map));
+  }
+
+  class Submitter implements Runnable {
+
+    private Map<OpTreeSignature, OperatorStats> map;
+
+    public Submitter(Map<OpTreeSignature, OperatorStats> map) {
+      this.map = map;
+    }
+
+    @Override
+    public void run() {
+      try {
+        RuntimeStat rec = encode(map);
+        Hive.get().getMSC().addRuntimeStat(rec);
+      } catch (TException | HiveException | IOException e) {
+        logException("Exception while persisting runtime stat", e);
+      }
     }
   }
 
