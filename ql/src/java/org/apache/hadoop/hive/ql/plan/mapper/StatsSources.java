@@ -86,8 +86,9 @@ public class StatsSources {
       return StatsSources.globalStatsSource(cacheSize);
     case metastore:
       return StatsSources.metastoreBackedStatsSource(StatsSources.globalStatsSource(cacheSize));
+    default:
+      throw new RuntimeException("Unknown StatsSource setting: " + mode);
     }
-    throw new RuntimeException("Unknown StatsSource setting: " + mode);
   }
 
   public static StatsSource getStatsSourceContaining(StatsSource currentStatsSource, PlanMapper pm) {
@@ -137,7 +138,7 @@ public class StatsSources {
     private final StatsSource ss;
     int lastCreateTime = -1;
 
-    public MetastoreStatsConnector(StatsSource ss) {
+    MetastoreStatsConnector(StatsSource ss) {
       this.ss = ss;
 
       runUpdate();
