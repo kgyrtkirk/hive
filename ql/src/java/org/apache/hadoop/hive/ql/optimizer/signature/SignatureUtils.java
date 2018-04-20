@@ -31,15 +31,20 @@ import com.google.common.collect.Sets;
  * Enables to calculate the signature of an object.
  *
  * If the object has methods annotated with {@link Signature}, they will be used.
- * If the object has no methods marked with the annotation; the object itself is used in the signature to prevent incorrect matches.
+ * If the object has no methods marked with the annotation;
+ * the object itself is used in the signature to prevent incorrect matches.
  */
-public class SignatureUtils {
+public final class SignatureUtils {
 
   private static Map<Class<?>, SignatureMapper> mappers = new HashMap<>();
 
   public static void write(Map<String, Object> ret, Object o) {
     SignatureMapper mapper = getSigMapper(o.getClass());
     mapper.write(ret, o);
+  }
+
+  /** Prevent construction. */
+  private SignatureUtils() {
   }
 
   static class SignatureMapper {
@@ -50,7 +55,7 @@ public class SignatureUtils {
 
     private String classLabel;
 
-    public SignatureMapper(Class<?> o) {
+    SignatureMapper(Class<?> o) {
       Method[] f = o.getMethods();
       sigMethods = new ArrayList<>();
       for (Method method : f) {

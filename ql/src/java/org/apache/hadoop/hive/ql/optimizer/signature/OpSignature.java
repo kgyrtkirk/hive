@@ -34,7 +34,7 @@ import com.google.common.annotations.VisibleForTesting;
  * Signature of the operator(non-recursive).
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
-public class OpSignature {
+public final class OpSignature {
 
   /**
    * Holds the signature of the operator; the keys are are the methods name marked by {@link Signature}.
@@ -80,7 +80,7 @@ public class OpSignature {
 
   @VisibleForTesting
   public void proveEquals(OpSignature other) {
-    proveEquals(sigMap,other.sigMap);
+    proveEquals(sigMap, other.sigMap);
   }
 
   private static void proveEquals(Map<String, Object> m1, Map<String, Object> m2) {
