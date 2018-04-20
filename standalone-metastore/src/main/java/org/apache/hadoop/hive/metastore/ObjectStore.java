@@ -11611,7 +11611,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void runtimeStatRetention(int maxRetainedWeight, int maxRetainSecs) throws MetaException {
+  public void deleteRuntimeStats(int maxRetainedWeight, int maxRetainSecs) throws MetaException {
     List<MRuntimeStat> all = getMRuntimeStats(-1, -1);
     int retentionTime = 0;
     if (maxRetainSecs >= 0) {

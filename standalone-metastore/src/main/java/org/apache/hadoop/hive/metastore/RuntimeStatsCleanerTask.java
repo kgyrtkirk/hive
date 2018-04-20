@@ -57,7 +57,7 @@ public class RuntimeStatsCleanerTask implements MetastoreTaskThread {
       int maxRetainSecs=(int) MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.RUNTIME_STATS_MAX_AGE, TimeUnit.SECONDS);
       //FIXME: there should be this deleted?
       long deleteCnt = -11;
-      ms.runtimeStatRetention(maxRetained, maxRetainSecs);
+      ms.deleteRuntimeStats(maxRetained, maxRetainSecs);
 
       if (deleteCnt > 0L){
         LOG.info("Number of events deleted from event Table: "+deleteCnt);
