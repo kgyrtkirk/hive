@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import com.google.common.collect.Sets;
 
 /**
  * Enables to calculate the signature of an object.
@@ -49,8 +46,6 @@ public final class SignatureUtils {
 
   static class SignatureMapper {
 
-    static final Set<String> acceptedSignatureTypes = Sets.newHashSet();
-
     private List<Method> sigMethods;
 
     private String classLabel;
@@ -60,11 +55,6 @@ public final class SignatureUtils {
       sigMethods = new ArrayList<>();
       for (Method method : f) {
         if (method.isAnnotationPresent(Signature.class)) {
-          Class<?> rType = method.getReturnType();
-          String rTypeName = rType.getName();
-          if (!rType.isPrimitive() && acceptedSignatureTypes.contains(rTypeName)) {
-            throw new RuntimeException("unxepected type (" + rTypeName + ") used in signature");
-          }
           sigMethods.add(method);
         }
       }
