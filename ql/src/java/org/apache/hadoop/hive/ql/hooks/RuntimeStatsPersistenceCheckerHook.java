@@ -24,11 +24,15 @@ import java.util.List;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.RuntimeStatsPersister;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This hook adds a persistence loop-back ensure that runtime statistics could be used.
  */
 public class RuntimeStatsPersistenceCheckerHook implements ExecuteWithHookContext {
+
+  private static final Logger LOG = LoggerFactory.getLogger(RuntimeStatsPersistenceCheckerHook.class);
 
   @Override
   public void run(HookContext hookContext) throws Exception {
@@ -44,7 +48,7 @@ public class RuntimeStatsPersistenceCheckerHook implements ExecuteWithHookContex
         throw new RuntimeException("signature mismatch");
       }
     }
-
+    LOG.info("signature checked: " + sigs.size());
   }
 
   private <T> T persistenceLoop(T sig, Class<T> clazz) throws IOException {
