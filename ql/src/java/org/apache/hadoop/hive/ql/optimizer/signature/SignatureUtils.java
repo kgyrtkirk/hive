@@ -58,7 +58,6 @@ public final class SignatureUtils {
           sigMethods.add(method);
         }
       }
-
       classLabel = o.getName();
     }
 
