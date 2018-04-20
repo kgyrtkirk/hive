@@ -2482,7 +2482,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void deleteRuntimeStats(int maxRetained, int maxRetainSecs) throws MetaException {
-    rawStore.deleteRuntimeStats(maxRetained, maxRetainSecs);
+  public int deleteRuntimeStats(int maxRetained, int maxRetainSecs) throws MetaException {
+    return rawStore.deleteRuntimeStats(maxRetained, maxRetainSecs);
   }
 }

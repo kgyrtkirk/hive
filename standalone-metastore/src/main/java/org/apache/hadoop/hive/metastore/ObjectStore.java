@@ -11611,7 +11611,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void deleteRuntimeStats(int maxRetainedWeight, int maxRetainSecs) throws MetaException {
+  public int deleteRuntimeStats(int maxRetainedWeight, int maxRetainSecs) throws MetaException {
     List<MRuntimeStat> all = getMRuntimeStats(-1, -1);
     int retentionTime = 0;
     if (maxRetainSecs >= 0) {
@@ -11623,13 +11623,16 @@ public class ObjectStore implements RawStore, Configurable {
 
     Object maxIdToRemove = null;
     long totalWeight = 0;
+    int deleted = 0;
     for (MRuntimeStat mRuntimeStat : all) {
       totalWeight += mRuntimeStat.getWeight();
       if (totalWeight > maxRetainedWeight || mRuntimeStat.getCreatedTime() < retentionTime) {
         LOG.debug("removing runtime stat: " + mRuntimeStat);
         pm.deletePersistent(mRuntimeStat);
+        deleted++;
       }
     }
+    return deleted;
   }
 
   @Override

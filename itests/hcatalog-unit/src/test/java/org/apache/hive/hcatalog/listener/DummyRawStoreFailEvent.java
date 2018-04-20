@@ -1211,7 +1211,8 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public void deleteRuntimeStats(int maxRetained, int maxRetainSecs) {
+  public int deleteRuntimeStats(int maxRetained, int maxRetainSecs) {
+    return 0;
   }
 
 }
