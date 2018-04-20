@@ -18,27 +18,17 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
-import org.apache.hadoop.hive.ql.optimizer.signature.RuntimeStatsMap;
-import org.apache.hadoop.hive.ql.optimizer.signature.RuntimeStatsPersister;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
-import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,29 +37,6 @@ import com.google.common.annotations.VisibleForTesting;
 public class StatsSources {
 
   private static final Logger LOG = LoggerFactory.getLogger(StatsSources.class);
-
-  public static class MapBackedStatsSource implements StatsSource {
-
-    private Map<OpTreeSignature, OperatorStats> map = new HashMap<>();
-
-    @Override
-    public boolean canProvideStatsFor(Class<?> clazz) {
-      if (Operator.class.isAssignableFrom(clazz)) {
-        return true;
-      }
-      return false;
-    }
-
-    @Override
-    public Optional<OperatorStats> lookup(OpTreeSignature treeSig) {
-      return Optional.ofNullable(map.get(treeSig));
-    }
-
-    @Override
-    public void putAll(Map<OpTreeSignature, OperatorStats> map) {
-      this.map.putAll(map);
-    }
-  }
 
   static enum StatsSourceMode {
     query, hiveserver, metastore;
@@ -86,7 +53,7 @@ public class StatsSources {
 
     switch (mode) {
     case query:
-      return new StatsSources.MapBackedStatsSource();
+      return new MapBackedStatsSource();
     case hiveserver:
       return StatsSources.globalStatsSource(cacheSize);
     case metastore:
@@ -135,73 +102,8 @@ public class StatsSources {
     return map;
   }
 
-  /**
-   * Decorates a StatSource to be loaded and persisted in the metastore as well.
-   */
-  private static class MetastoreStatsConnector implements StatsSource {
-
-    private final StatsSource ss;
-    int lastCreateTime = -1;
-
-    MetastoreStatsConnector(StatsSource ss) {
-      this.ss = ss;
-
-      runUpdate();
-    }
-
-    private void runUpdate() {
-      try {
-        List<RuntimeStat> rs = Hive.get().getMSC().getRuntimeStats(lastCreateTime, -1);
-        for (RuntimeStat thriftStat : rs) {
-          try {
-            ss.putAll(decode(thriftStat));
-          } catch (IOException e) {
-            logException("Exception while loading runtime stats", e);
-          }
-        }
-      } catch (TException | HiveException e) {
-        logException("Exception while reading metastore runtime stats", e);
-      }
-    }
-
-    @Override
-    public boolean canProvideStatsFor(Class<?> clazz) {
-      return ss.canProvideStatsFor(clazz);
-    }
-
-    @Override
-    public Optional<OperatorStats> lookup(OpTreeSignature treeSig) {
-      return ss.lookup(treeSig);
-    }
-
-    @Override
-    public void putAll(Map<OpTreeSignature, OperatorStats> map) {
-      ss.putAll(map);
-      try {
-        RuntimeStat rec = encode(map);
-        Hive.get().getMSC().addRuntimeStat(rec);
-      } catch (TException | HiveException | IOException e) {
-        String msg = "Exception while persisting runtime stat";
-        logException(msg, e);
-      }
-    }
-
-    private RuntimeStat encode(Map<OpTreeSignature, OperatorStats> map) throws IOException {
-      String payload = RuntimeStatsPersister.INSTANCE.encode(new RuntimeStatsMap(map));
-      RuntimeStat rs = new RuntimeStat();
-      rs.setWeight(map.size());
-      rs.setPayload(ByteBuffer.wrap(payload.getBytes()));
-      return rs;
-    }
-
-    private Map<OpTreeSignature, OperatorStats> decode(RuntimeStat rs) throws IOException {
-      RuntimeStatsMap rsm = RuntimeStatsPersister.INSTANCE.decode(rs.getPayload(), RuntimeStatsMap.class);
-      return rsm.toMap();
-    }
-  }
-
   private static StatsSource globalStatsSource;
-  private static StatsSource metastoreStatsConnector;
+  private static MetastoreStatsConnector metastoreStatsConnector;
 
   public static StatsSource globalStatsSource(int cacheSize) {
     if (globalStatsSource == null) {
@@ -219,16 +121,11 @@ public class StatsSources {
 
   @VisibleForTesting
   public static void clearGlobalStats() {
+    if (metastoreStatsConnector != null) {
+      metastoreStatsConnector.destroy();
+    }
     globalStatsSource = null;
     metastoreStatsConnector = null;
-  }
-
-  private static void logException(String msg, Exception e) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(msg, e);
-    } else {
-      LOG.info(msg + ": " + e.getMessage());
-    }
   }
 
 }
