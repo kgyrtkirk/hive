@@ -55,9 +55,9 @@ public class PlanMapper {
 
     Map<K, V> comparedMap = new HashMap<>();
     Map<K, V> identityMap = new IdentityHashMap<>();
-    final HashSet<Class<?>> typeCompared;
+    final Set<Class<?>> typeCompared;
 
-    public CompositeMap(Class<?>... comparedTypes) {
+    CompositeMap(Class<?>... comparedTypes) {
       for (Class<?> class1 : comparedTypes) {
         if (!Modifier.isFinal(class1.getModifiers())) {
           throw new RuntimeException(class1 + " is not final...for this to reliably work; it should be");
@@ -120,14 +120,14 @@ public class PlanMapper {
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {
       for (Entry<? extends K, ? extends V> e : m.entrySet()) {
-        put(e.getKey(),e.getValue());
+        put(e.getKey(), e.getValue());
       }
     }
 
     @Override
     public void clear() {
-     comparedMap.clear();
-     identityMap.clear();
+      comparedMap.clear();
+      identityMap.clear();
     }
 
     @Override
@@ -157,7 +157,7 @@ public class PlanMapper {
    *   there might be more than one, since an optimization may replace an operator with a new one
    *   <li> Signature - to enable inter-plan look up of the same data
    *   <li> OperatorStats - collected runtime information
-   * <ul>
+   * </ul>
    */
   public class EquivGroup {
     Set<Object> members = new HashSet<>();
@@ -218,7 +218,7 @@ public class PlanMapper {
 
   private Object getKeyFor(Object o) {
     if (o instanceof Operator) {
-      Operator operator = (Operator) o;
+      Operator<?> operator = (Operator<?>) o;
       return signatureCache.getSignature(operator);
     }
     return o;
