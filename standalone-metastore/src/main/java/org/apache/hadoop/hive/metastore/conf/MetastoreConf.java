@@ -1112,8 +1112,10 @@ public class MetastoreConf {
   }
 
   public static Configuration newMetastoreConf() {
+    return newMetastoreConf(new Configuration());
+  }
 
-    Configuration conf = new Configuration();
+  public static Configuration newMetastoreConf(Configuration conf) {
 
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     if (classLoader == null) {
