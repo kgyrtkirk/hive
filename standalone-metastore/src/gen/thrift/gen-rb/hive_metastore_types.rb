@@ -4827,13 +4827,13 @@ end
 
 class RuntimeStat
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  WEIGHT = 1
-  CREATETIME = 2
+  CREATETIME = 1
+  WEIGHT = 2
   PAYLOAD = 3
 
   FIELDS = {
+    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime', :optional => true},
     WEIGHT => {:type => ::Thrift::Types::I32, :name => 'weight'},
-    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime'},
     PAYLOAD => {:type => ::Thrift::Types::STRING, :name => 'payload', :binary => true}
   }
 
@@ -4841,7 +4841,6 @@ class RuntimeStat
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field weight is unset!') unless @weight
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field createTime is unset!') unless @createTime
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field payload is unset!') unless @payload
   end
 

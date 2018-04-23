@@ -12938,31 +12938,39 @@ inline std::ostream& operator<<(std::ostream& out, const GetSerdeRequest& obj)
   return out;
 }
 
+typedef struct _RuntimeStat__isset {
+  _RuntimeStat__isset() : createTime(false) {}
+  bool createTime :1;
+} _RuntimeStat__isset;
 
 class RuntimeStat {
  public:
 
   RuntimeStat(const RuntimeStat&);
   RuntimeStat& operator=(const RuntimeStat&);
-  RuntimeStat() : weight(0), createTime(0), payload() {
+  RuntimeStat() : createTime(0), weight(0), payload() {
   }
 
   virtual ~RuntimeStat() throw();
-  int32_t weight;
   int32_t createTime;
+  int32_t weight;
   std::string payload;
 
-  void __set_weight(const int32_t val);
+  _RuntimeStat__isset __isset;
 
   void __set_createTime(const int32_t val);
+
+  void __set_weight(const int32_t val);
 
   void __set_payload(const std::string& val);
 
   bool operator == (const RuntimeStat & rhs) const
   {
-    if (!(weight == rhs.weight))
+    if (__isset.createTime != rhs.__isset.createTime)
       return false;
-    if (!(createTime == rhs.createTime))
+    else if (__isset.createTime && !(createTime == rhs.createTime))
+      return false;
+    if (!(weight == rhs.weight))
       return false;
     if (!(payload == rhs.payload))
       return false;

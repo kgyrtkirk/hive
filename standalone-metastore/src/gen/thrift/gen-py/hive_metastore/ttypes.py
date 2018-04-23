@@ -21239,21 +21239,21 @@ class GetSerdeRequest:
 class RuntimeStat:
   """
   Attributes:
-   - weight
    - createTime
+   - weight
    - payload
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.I32, 'weight', None, None, ), # 1
-    (2, TType.I32, 'createTime', None, None, ), # 2
+    (1, TType.I32, 'createTime', None, None, ), # 1
+    (2, TType.I32, 'weight', None, None, ), # 2
     (3, TType.STRING, 'payload', None, None, ), # 3
   )
 
-  def __init__(self, weight=None, createTime=None, payload=None,):
-    self.weight = weight
+  def __init__(self, createTime=None, weight=None, payload=None,):
     self.createTime = createTime
+    self.weight = weight
     self.payload = payload
 
   def read(self, iprot):
@@ -21267,12 +21267,12 @@ class RuntimeStat:
         break
       if fid == 1:
         if ftype == TType.I32:
-          self.weight = iprot.readI32()
+          self.createTime = iprot.readI32()
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.I32:
-          self.createTime = iprot.readI32()
+          self.weight = iprot.readI32()
         else:
           iprot.skip(ftype)
       elif fid == 3:
@@ -21290,13 +21290,13 @@ class RuntimeStat:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('RuntimeStat')
-    if self.weight is not None:
-      oprot.writeFieldBegin('weight', TType.I32, 1)
-      oprot.writeI32(self.weight)
-      oprot.writeFieldEnd()
     if self.createTime is not None:
-      oprot.writeFieldBegin('createTime', TType.I32, 2)
+      oprot.writeFieldBegin('createTime', TType.I32, 1)
       oprot.writeI32(self.createTime)
+      oprot.writeFieldEnd()
+    if self.weight is not None:
+      oprot.writeFieldBegin('weight', TType.I32, 2)
+      oprot.writeI32(self.weight)
       oprot.writeFieldEnd()
     if self.payload is not None:
       oprot.writeFieldBegin('payload', TType.STRING, 3)
@@ -21308,8 +21308,6 @@ class RuntimeStat:
   def validate(self):
     if self.weight is None:
       raise TProtocol.TProtocolException(message='Required field weight is unset!')
-    if self.createTime is None:
-      raise TProtocol.TProtocolException(message='Required field createTime is unset!')
     if self.payload is None:
       raise TProtocol.TProtocolException(message='Required field payload is unset!')
     return
@@ -21317,8 +21315,8 @@ class RuntimeStat:
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.weight)
     value = (value * 31) ^ hash(self.createTime)
+    value = (value * 31) ^ hash(self.weight)
     value = (value * 31) ^ hash(self.payload)
     return value
 

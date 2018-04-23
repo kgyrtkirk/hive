@@ -1518,8 +1518,8 @@ struct GetSerdeRequest {
 }
 
 struct RuntimeStat {
-  1: required i32 weight,
-  2: required i32 createTime,
+  1: optional i32 createTime,
+  2: required i32 weight,
   3: required binary payload
 }
 

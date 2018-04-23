@@ -38,8 +38,8 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class RuntimeStat implements org.apache.thrift.TBase<RuntimeStat, RuntimeStat._Fields>, java.io.Serializable, Cloneable, Comparable<RuntimeStat> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("RuntimeStat");
 
-  private static final org.apache.thrift.protocol.TField WEIGHT_FIELD_DESC = new org.apache.thrift.protocol.TField("weight", org.apache.thrift.protocol.TType.I32, (short)1);
-  private static final org.apache.thrift.protocol.TField CREATE_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("createTime", org.apache.thrift.protocol.TType.I32, (short)2);
+  private static final org.apache.thrift.protocol.TField CREATE_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("createTime", org.apache.thrift.protocol.TType.I32, (short)1);
+  private static final org.apache.thrift.protocol.TField WEIGHT_FIELD_DESC = new org.apache.thrift.protocol.TField("weight", org.apache.thrift.protocol.TType.I32, (short)2);
   private static final org.apache.thrift.protocol.TField PAYLOAD_FIELD_DESC = new org.apache.thrift.protocol.TField("payload", org.apache.thrift.protocol.TType.STRING, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
@@ -48,14 +48,14 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new RuntimeStatTupleSchemeFactory());
   }
 
+  private int createTime; // optional
   private int weight; // required
-  private int createTime; // required
   private ByteBuffer payload; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    WEIGHT((short)1, "weight"),
-    CREATE_TIME((short)2, "createTime"),
+    CREATE_TIME((short)1, "createTime"),
+    WEIGHT((short)2, "weight"),
     PAYLOAD((short)3, "payload");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -71,10 +71,10 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // WEIGHT
-          return WEIGHT;
-        case 2: // CREATE_TIME
+        case 1: // CREATE_TIME
           return CREATE_TIME;
+        case 2: // WEIGHT
+          return WEIGHT;
         case 3: // PAYLOAD
           return PAYLOAD;
         default:
@@ -117,15 +117,16 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final int __WEIGHT_ISSET_ID = 0;
-  private static final int __CREATETIME_ISSET_ID = 1;
+  private static final int __CREATETIME_ISSET_ID = 0;
+  private static final int __WEIGHT_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.CREATE_TIME};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.WEIGHT, new org.apache.thrift.meta_data.FieldMetaData("weight", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.CREATE_TIME, new org.apache.thrift.meta_data.FieldMetaData("createTime", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.CREATE_TIME, new org.apache.thrift.meta_data.FieldMetaData("createTime", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.WEIGHT, new org.apache.thrift.meta_data.FieldMetaData("weight", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.PAYLOAD, new org.apache.thrift.meta_data.FieldMetaData("payload", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
@@ -138,14 +139,11 @@ import org.slf4j.LoggerFactory;
 
   public RuntimeStat(
     int weight,
-    int createTime,
     ByteBuffer payload)
   {
     this();
     this.weight = weight;
     setWeightIsSet(true);
-    this.createTime = createTime;
-    setCreateTimeIsSet(true);
     this.payload = org.apache.thrift.TBaseHelper.copyBinary(payload);
   }
 
@@ -154,8 +152,8 @@ import org.slf4j.LoggerFactory;
    */
   public RuntimeStat(RuntimeStat other) {
     __isset_bitfield = other.__isset_bitfield;
-    this.weight = other.weight;
     this.createTime = other.createTime;
+    this.weight = other.weight;
     if (other.isSetPayload()) {
       this.payload = org.apache.thrift.TBaseHelper.copyBinary(other.payload);
     }
@@ -167,33 +165,11 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
-    setWeightIsSet(false);
-    this.weight = 0;
     setCreateTimeIsSet(false);
     this.createTime = 0;
+    setWeightIsSet(false);
+    this.weight = 0;
     this.payload = null;
-  }
-
-  public int getWeight() {
-    return this.weight;
-  }
-
-  public void setWeight(int weight) {
-    this.weight = weight;
-    setWeightIsSet(true);
-  }
-
-  public void unsetWeight() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __WEIGHT_ISSET_ID);
-  }
-
-  /** Returns true if field weight is set (has been assigned a value) and false otherwise */
-  public boolean isSetWeight() {
-    return EncodingUtils.testBit(__isset_bitfield, __WEIGHT_ISSET_ID);
-  }
-
-  public void setWeightIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __WEIGHT_ISSET_ID, value);
   }
 
   public int getCreateTime() {
@@ -216,6 +192,28 @@ import org.slf4j.LoggerFactory;
 
   public void setCreateTimeIsSet(boolean value) {
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __CREATETIME_ISSET_ID, value);
+  }
+
+  public int getWeight() {
+    return this.weight;
+  }
+
+  public void setWeight(int weight) {
+    this.weight = weight;
+    setWeightIsSet(true);
+  }
+
+  public void unsetWeight() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __WEIGHT_ISSET_ID);
+  }
+
+  /** Returns true if field weight is set (has been assigned a value) and false otherwise */
+  public boolean isSetWeight() {
+    return EncodingUtils.testBit(__isset_bitfield, __WEIGHT_ISSET_ID);
+  }
+
+  public void setWeightIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __WEIGHT_ISSET_ID, value);
   }
 
   public byte[] getPayload() {
@@ -252,19 +250,19 @@ import org.slf4j.LoggerFactory;
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case WEIGHT:
-      if (value == null) {
-        unsetWeight();
-      } else {
-        setWeight((Integer)value);
-      }
-      break;
-
     case CREATE_TIME:
       if (value == null) {
         unsetCreateTime();
       } else {
         setCreateTime((Integer)value);
+      }
+      break;
+
+    case WEIGHT:
+      if (value == null) {
+        unsetWeight();
+      } else {
+        setWeight((Integer)value);
       }
       break;
 
@@ -281,11 +279,11 @@ import org.slf4j.LoggerFactory;
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case WEIGHT:
-      return getWeight();
-
     case CREATE_TIME:
       return getCreateTime();
+
+    case WEIGHT:
+      return getWeight();
 
     case PAYLOAD:
       return getPayload();
@@ -301,10 +299,10 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
-    case WEIGHT:
-      return isSetWeight();
     case CREATE_TIME:
       return isSetCreateTime();
+    case WEIGHT:
+      return isSetWeight();
     case PAYLOAD:
       return isSetPayload();
     }
@@ -324,21 +322,21 @@ import org.slf4j.LoggerFactory;
     if (that == null)
       return false;
 
+    boolean this_present_createTime = true && this.isSetCreateTime();
+    boolean that_present_createTime = true && that.isSetCreateTime();
+    if (this_present_createTime || that_present_createTime) {
+      if (!(this_present_createTime && that_present_createTime))
+        return false;
+      if (this.createTime != that.createTime)
+        return false;
+    }
+
     boolean this_present_weight = true;
     boolean that_present_weight = true;
     if (this_present_weight || that_present_weight) {
       if (!(this_present_weight && that_present_weight))
         return false;
       if (this.weight != that.weight)
-        return false;
-    }
-
-    boolean this_present_createTime = true;
-    boolean that_present_createTime = true;
-    if (this_present_createTime || that_present_createTime) {
-      if (!(this_present_createTime && that_present_createTime))
-        return false;
-      if (this.createTime != that.createTime)
         return false;
     }
 
@@ -358,15 +356,15 @@ import org.slf4j.LoggerFactory;
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
 
+    boolean present_createTime = true && (isSetCreateTime());
+    list.add(present_createTime);
+    if (present_createTime)
+      list.add(createTime);
+
     boolean present_weight = true;
     list.add(present_weight);
     if (present_weight)
       list.add(weight);
-
-    boolean present_createTime = true;
-    list.add(present_createTime);
-    if (present_createTime)
-      list.add(createTime);
 
     boolean present_payload = true && (isSetPayload());
     list.add(present_payload);
@@ -384,22 +382,22 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
-    lastComparison = Boolean.valueOf(isSetWeight()).compareTo(other.isSetWeight());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetWeight()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.weight, other.weight);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = Boolean.valueOf(isSetCreateTime()).compareTo(other.isSetCreateTime());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetCreateTime()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.createTime, other.createTime);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetWeight()).compareTo(other.isSetWeight());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetWeight()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.weight, other.weight);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -434,12 +432,14 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("RuntimeStat(");
     boolean first = true;
 
+    if (isSetCreateTime()) {
+      sb.append("createTime:");
+      sb.append(this.createTime);
+      first = false;
+    }
+    if (!first) sb.append(", ");
     sb.append("weight:");
     sb.append(this.weight);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("createTime:");
-    sb.append(this.createTime);
     first = false;
     if (!first) sb.append(", ");
     sb.append("payload:");
@@ -457,10 +457,6 @@ import org.slf4j.LoggerFactory;
     // check for required fields
     if (!isSetWeight()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'weight' is unset! Struct:" + toString());
-    }
-
-    if (!isSetCreateTime()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'createTime' is unset! Struct:" + toString());
     }
 
     if (!isSetPayload()) {
@@ -506,18 +502,18 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
-          case 1: // WEIGHT
+          case 1: // CREATE_TIME
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.weight = iprot.readI32();
-              struct.setWeightIsSet(true);
+              struct.createTime = iprot.readI32();
+              struct.setCreateTimeIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // CREATE_TIME
+          case 2: // WEIGHT
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.createTime = iprot.readI32();
-              struct.setCreateTimeIsSet(true);
+              struct.weight = iprot.readI32();
+              struct.setWeightIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -543,11 +539,13 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (struct.isSetCreateTime()) {
+        oprot.writeFieldBegin(CREATE_TIME_FIELD_DESC);
+        oprot.writeI32(struct.createTime);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldBegin(WEIGHT_FIELD_DESC);
       oprot.writeI32(struct.weight);
-      oprot.writeFieldEnd();
-      oprot.writeFieldBegin(CREATE_TIME_FIELD_DESC);
-      oprot.writeI32(struct.createTime);
       oprot.writeFieldEnd();
       if (struct.payload != null) {
         oprot.writeFieldBegin(PAYLOAD_FIELD_DESC);
@@ -572,8 +570,15 @@ import org.slf4j.LoggerFactory;
     public void write(org.apache.thrift.protocol.TProtocol prot, RuntimeStat struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeI32(struct.weight);
-      oprot.writeI32(struct.createTime);
       oprot.writeBinary(struct.payload);
+      BitSet optionals = new BitSet();
+      if (struct.isSetCreateTime()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetCreateTime()) {
+        oprot.writeI32(struct.createTime);
+      }
     }
 
     @Override
@@ -581,10 +586,13 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.weight = iprot.readI32();
       struct.setWeightIsSet(true);
-      struct.createTime = iprot.readI32();
-      struct.setCreateTimeIsSet(true);
       struct.payload = iprot.readBinary();
       struct.setPayloadIsSet(true);
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.createTime = iprot.readI32();
+        struct.setCreateTimeIsSet(true);
+      }
     }
   }
 
