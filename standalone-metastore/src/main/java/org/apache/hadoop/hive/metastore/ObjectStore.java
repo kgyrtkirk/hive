@@ -11638,7 +11638,7 @@ public class ObjectStore implements RawStore, Configurable {
     boolean committed = false;
     try {
       openTransaction();
-      List<MRuntimeStat> mStats = getMRuntimeStats(minCreateTime,maxCount);
+      List<MRuntimeStat> mStats = getMRuntimeStats(minCreateTime, maxCount);
       List<RuntimeStat> stats = mStats.stream().map(MRuntimeStat::toThrift).collect(Collectors.toList());
       committed = commitTransaction();
       return stats;
