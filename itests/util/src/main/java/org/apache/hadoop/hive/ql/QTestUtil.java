@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -76,8 +74,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapItUtils;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
-import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -1209,25 +1205,29 @@ public class QTestUtil {
   }
 
   protected synchronized void initDataset(String table) {
-    if (getSrcTables().contains(table)){
-      return;
-    }
-
-    File tableFile = new File(new File(datasetDir, table), Dataset.INIT_FILE_NAME);
-    String commands = null;
     try {
-      commands = readEntireFileIntoString(tableFile);
-    } catch (IOException e) {
-      throw new RuntimeException(String.format("dataset file not found %s", tableFile), e);
-    }
+      if (getSrcTables().contains(table)) {
+        return;
+      }
 
-    int result = getCliDriver().processLine(commands);
-    LOG.info("Result from cliDrriver.processLine in initFromDatasets=" + result);
-    if (result != 0) {
-      Assert.fail("Failed during initFromDatasets processLine with code=" + result);
-    }
+      File tableFile = new File(new File(datasetDir, table), Dataset.INIT_FILE_NAME);
+      String commands = null;
+      try {
+        commands = readEntireFileIntoString(tableFile);
+      } catch (IOException e) {
+        throw new RuntimeException(String.format("dataset file not found %s", tableFile), e);
+      }
 
-    addSrcTable(table);
+      int result = getCliDriver().processLine(commands);
+      LOG.info("Result from cliDrriver.processLine in initFromDatasets=" + result);
+      if (result != 0) {
+        throw new RuntimeException("Failed during initFromDatasets processLine with code=" + result);
+      }
+
+      addSrcTable(table);
+    } catch (Exception e) {
+      throw new RuntimeException("Error while initializing dataset: " + table, e);
+    }
   }
 
   public void init() throws Exception {
