@@ -31,6 +31,7 @@ import org.junit.runners.Parameterized;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(Parameterized.class)
@@ -68,7 +69,10 @@ public class TestRuntimeStats extends MetaStoreClientTest {
     List<RuntimeStat> rs1 = client.getRuntimeStats();
     assertNotNull(rs1);
     assertEquals(1, rs1.size());
-    assertEquals(stat, rs1.get(0));
+    assertEquals(stat.getPayload(), rs1.get(0).getPayload());
+    assertEquals(stat.getWeight(), rs1.get(0).getWeight());
+    // server sets createtime
+    assertNotEquals(stat.getCreateTime(), rs1.get(0).getCreateTime());
 
     client.addRuntimeStat(createStat(2));
     client.addRuntimeStat(createStat(3));
