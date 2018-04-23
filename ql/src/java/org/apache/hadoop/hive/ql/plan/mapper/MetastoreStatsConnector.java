@@ -47,7 +47,6 @@ class MetastoreStatsConnector implements StatsSource {
   private static final Logger LOG = LoggerFactory.getLogger(MetastoreStatsConnector.class);
 
   private final StatsSource ss;
-  int lastCreateTime = -1;
 
   private ExecutorService executor;
 
@@ -58,14 +57,16 @@ class MetastoreStatsConnector implements StatsSource {
     this.batchSize = msBatchSize;
     executor = Executors.newSingleThreadExecutor(
         new BasicThreadFactory.Builder()
-            .namingPattern("Metastore-RuntimeStats-Thread-%d")
+            .namingPattern("Metastore-RuntimeStats-Loader-%d")
             .daemon(true)
             .build());
 
-    executor.submit(new Updater());
+    executor.submit(new RuntimeStatsLoader());
   }
 
-  private class Updater implements Runnable {
+  private class RuntimeStatsLoader implements Runnable {
+
+    int lastCreateTime = -1;
 
     @Override
     public void run() {
@@ -102,14 +103,14 @@ class MetastoreStatsConnector implements StatsSource {
   @Override
   public void putAll(Map<OpTreeSignature, OperatorStats> map) {
     ss.putAll(map);
-    executor.submit(new Submitter(map));
+    executor.submit(new RuntimeStatsSubmitter(map));
   }
 
-  class Submitter implements Runnable {
+  class RuntimeStatsSubmitter implements Runnable {
 
     private Map<OpTreeSignature, OperatorStats> map;
 
-    public Submitter(Map<OpTreeSignature, OperatorStats> map) {
+    public RuntimeStatsSubmitter(Map<OpTreeSignature, OperatorStats> map) {
       this.map = map;
     }
 
