@@ -45,6 +45,13 @@ public class RuntimeStatsPersistenceCheckerHook implements ExecuteWithHookContex
       try {
         OpTreeSignature sig2 = persistenceLoop(sig, OpTreeSignature.class);
         sig.getSig().proveEquals(sig2.getSig());
+      } catch (Exception e) {
+        throw new RuntimeException("while checking the signature of: " + sig.getSig(), e);
+      }
+    }
+    for (OpTreeSignature sig : sigs) {
+      try {
+        OpTreeSignature sig2 = persistenceLoop(sig, OpTreeSignature.class);
         if (!sig.equals(sig2)) {
           throw new RuntimeException("signature mismatch");
         }
