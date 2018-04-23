@@ -129,7 +129,7 @@ class MetastoreStatsConnector implements StatsSource {
   }
 
   public void destroy() {
-    throw new RuntimeException();
+    executor.shutdown();
   }
 
   static void logException(String msg, Exception e) {
