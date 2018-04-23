@@ -11605,15 +11605,6 @@ public class ObjectStore implements RawStore, Configurable {
   public void addRuntimeStat(RuntimeStat stat) throws MetaException {
     LOG.debug("runtimeStat: " + stat);
     MRuntimeStat mStat = MRuntimeStat.fromThrift(stat);
-
-    Query query = pm.newQuery("select max(weightCounter) from " + MPartition.class.getName());
-    Integer maxWeight = (Integer) query.execute();
-    if (maxWeight == null) {
-      maxWeight = 0;
-    }
-    query.closeAll();
-    mStat.setWeightCounter(maxWeight + stat.getWeight());
-
     pm.makePersistent(mStat);
   }
 
