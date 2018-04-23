@@ -30687,14 +30687,6 @@ GetRuntimeStatsRequest::~GetRuntimeStatsRequest() throw() {
 }
 
 
-void GetRuntimeStatsRequest::__set_minCreateTime(const int32_t val) {
-  this->minCreateTime = val;
-}
-
-void GetRuntimeStatsRequest::__set_maxCount(const int32_t val) {
-  this->maxCount = val;
-}
-
 uint32_t GetRuntimeStatsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -30714,28 +30706,7 @@ uint32_t GetRuntimeStatsRequest::read(::apache::thrift::protocol::TProtocol* ipr
     if (ftype == ::apache::thrift::protocol::T_STOP) {
       break;
     }
-    switch (fid)
-    {
-      case 1:
-        if (ftype == ::apache::thrift::protocol::T_I32) {
-          xfer += iprot->readI32(this->minCreateTime);
-          this->__isset.minCreateTime = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 2:
-        if (ftype == ::apache::thrift::protocol::T_I32) {
-          xfer += iprot->readI32(this->maxCount);
-          this->__isset.maxCount = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
+    xfer += iprot->skip(ftype);
     xfer += iprot->readFieldEnd();
   }
 
@@ -30749,14 +30720,6 @@ uint32_t GetRuntimeStatsRequest::write(::apache::thrift::protocol::TProtocol* op
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("GetRuntimeStatsRequest");
 
-  xfer += oprot->writeFieldBegin("minCreateTime", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32(this->minCreateTime);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("maxCount", ::apache::thrift::protocol::T_I32, 2);
-  xfer += oprot->writeI32(this->maxCount);
-  xfer += oprot->writeFieldEnd();
-
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -30764,27 +30727,20 @@ uint32_t GetRuntimeStatsRequest::write(::apache::thrift::protocol::TProtocol* op
 
 void swap(GetRuntimeStatsRequest &a, GetRuntimeStatsRequest &b) {
   using ::std::swap;
-  swap(a.minCreateTime, b.minCreateTime);
-  swap(a.maxCount, b.maxCount);
-  swap(a.__isset, b.__isset);
+  (void) a;
+  (void) b;
 }
 
 GetRuntimeStatsRequest::GetRuntimeStatsRequest(const GetRuntimeStatsRequest& other1159) {
-  minCreateTime = other1159.minCreateTime;
-  maxCount = other1159.maxCount;
-  __isset = other1159.__isset;
+  (void) other1159;
 }
 GetRuntimeStatsRequest& GetRuntimeStatsRequest::operator=(const GetRuntimeStatsRequest& other1160) {
-  minCreateTime = other1160.minCreateTime;
-  maxCount = other1160.maxCount;
-  __isset = other1160.__isset;
+  (void) other1160;
   return *this;
 }
 void GetRuntimeStatsRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "GetRuntimeStatsRequest(";
-  out << "minCreateTime=" << to_string(minCreateTime);
-  out << ", " << "maxCount=" << to_string(maxCount);
   out << ")";
 }
 

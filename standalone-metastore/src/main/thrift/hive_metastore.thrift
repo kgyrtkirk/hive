@@ -1524,8 +1524,6 @@ struct RuntimeStat {
 }
 
 struct GetRuntimeStatsRequest {
-	1: i32 minCreateTime
-	2: i32 maxCount
 }
 
 // Exceptions.

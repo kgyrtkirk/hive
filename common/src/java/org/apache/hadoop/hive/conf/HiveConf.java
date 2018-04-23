@@ -4270,9 +4270,6 @@ public class HiveConf extends Configuration {
             + "  hiveserver: runtime statistics are persisted in the hiveserver - all sessions share it\n"
             + "  metastore: runtime statistics are persisted in the metastore as well"),
 
-    HIVE_RUNTIME_STATS_LOAD_BATCH_SIZE("hive.runtime.stats.load.batch.size", -1,
-        "When runtime stats are loaded from the metastore; the stats are batched into requests with this size."),
-
     HIVE_QUERY_MAX_REEXECUTION_COUNT("hive.query.reexecution.max.count", 1,
         "Maximum number of re-executions for a single query."),
     HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS("hive.query.reexecution.always.collect.operator.stats", false,

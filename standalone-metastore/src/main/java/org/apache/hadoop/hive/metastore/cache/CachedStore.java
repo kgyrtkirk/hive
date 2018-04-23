@@ -2477,8 +2477,8 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<RuntimeStat> getRuntimeStats(int minCreateTime, int maxCount) throws MetaException {
-    return rawStore.getRuntimeStats(minCreateTime, maxCount);
+  public List<RuntimeStat> getRuntimeStats() throws MetaException {
+    return rawStore.getRuntimeStats();
   }
 
   @Override

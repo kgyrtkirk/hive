@@ -58,14 +58,14 @@ public class TestRuntimeStats extends MetaStoreClientTest {
 
   @Test
   public void testRuntimeStatHandling() throws Exception {
-    List<RuntimeStat> rs0 = client.getRuntimeStats(-1, -1);
+    List<RuntimeStat> rs0 = client.getRuntimeStats();
     assertNotNull(rs0);
     assertEquals(0, rs0.size());
 
     RuntimeStat stat = createStat(1);
     client.addRuntimeStat(stat);
 
-    List<RuntimeStat> rs1 = client.getRuntimeStats(-1, -1);
+    List<RuntimeStat> rs1 = client.getRuntimeStats();
     assertNotNull(rs1);
     assertEquals(1, rs1.size());
     assertEquals(stat, rs1.get(0));
@@ -74,7 +74,7 @@ public class TestRuntimeStats extends MetaStoreClientTest {
     client.addRuntimeStat(createStat(3));
     client.addRuntimeStat(createStat(4));
 
-    List<RuntimeStat> rs2 = client.getRuntimeStats(-1, -1);
+    List<RuntimeStat> rs2 = client.getRuntimeStats();
     assertEquals(4, rs2.size());
 
   }

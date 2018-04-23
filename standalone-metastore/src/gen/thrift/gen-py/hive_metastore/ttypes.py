@@ -21334,21 +21334,9 @@ class RuntimeStat:
     return not (self == other)
 
 class GetRuntimeStatsRequest:
-  """
-  Attributes:
-   - minCreateTime
-   - maxCount
-  """
 
   thrift_spec = (
-    None, # 0
-    (1, TType.I32, 'minCreateTime', None, None, ), # 1
-    (2, TType.I32, 'maxCount', None, None, ), # 2
   )
-
-  def __init__(self, minCreateTime=None, maxCount=None,):
-    self.minCreateTime = minCreateTime
-    self.maxCount = maxCount
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -21359,16 +21347,6 @@ class GetRuntimeStatsRequest:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
-      if fid == 1:
-        if ftype == TType.I32:
-          self.minCreateTime = iprot.readI32()
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.I32:
-          self.maxCount = iprot.readI32()
-        else:
-          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -21379,14 +21357,6 @@ class GetRuntimeStatsRequest:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('GetRuntimeStatsRequest')
-    if self.minCreateTime is not None:
-      oprot.writeFieldBegin('minCreateTime', TType.I32, 1)
-      oprot.writeI32(self.minCreateTime)
-      oprot.writeFieldEnd()
-    if self.maxCount is not None:
-      oprot.writeFieldBegin('maxCount', TType.I32, 2)
-      oprot.writeI32(self.maxCount)
-      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -21396,8 +21366,6 @@ class GetRuntimeStatsRequest:
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.minCreateTime)
-    value = (value * 31) ^ hash(self.maxCount)
     return value
 
   def __repr__(self):

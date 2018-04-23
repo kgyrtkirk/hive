@@ -50,14 +50,13 @@ public class StatsSources {
   public static StatsSource getStatsSource(HiveConf conf) {
     String mode = conf.getVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE);
     int cacheSize = conf.getIntVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE);
-    int msBatchSize = conf.getIntVar(ConfVars.HIVE_RUNTIME_STATS_LOAD_BATCH_SIZE);
     switch (mode) {
     case "query":
       return new MapBackedStatsSource();
     case "hiveserver":
       return StatsSources.globalStatsSource(cacheSize);
     case "metastore":
-      return StatsSources.metastoreBackedStatsSource(StatsSources.globalStatsSource(cacheSize), msBatchSize);
+      return StatsSources.metastoreBackedStatsSource(StatsSources.globalStatsSource(cacheSize));
     default:
       throw new RuntimeException("Unknown StatsSource setting: " + mode);
     }
@@ -112,9 +111,9 @@ public class StatsSources {
     return globalStatsSource;
   }
 
-  public static StatsSource metastoreBackedStatsSource(StatsSource parent, int msBatchSize) {
+  public static StatsSource metastoreBackedStatsSource(StatsSource parent) {
     if (metastoreStatsConnector == null) {
-      metastoreStatsConnector = new MetastoreStatsConnector(parent, msBatchSize);
+      metastoreStatsConnector = new MetastoreStatsConnector(parent);
     }
     return metastoreStatsConnector;
   }

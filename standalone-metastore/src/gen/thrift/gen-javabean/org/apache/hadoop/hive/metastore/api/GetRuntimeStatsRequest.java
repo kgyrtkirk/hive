@@ -38,8 +38,6 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class GetRuntimeStatsRequest implements org.apache.thrift.TBase<GetRuntimeStatsRequest, GetRuntimeStatsRequest._Fields>, java.io.Serializable, Cloneable, Comparable<GetRuntimeStatsRequest> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("GetRuntimeStatsRequest");
 
-  private static final org.apache.thrift.protocol.TField MIN_CREATE_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("minCreateTime", org.apache.thrift.protocol.TType.I32, (short)1);
-  private static final org.apache.thrift.protocol.TField MAX_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("maxCount", org.apache.thrift.protocol.TType.I32, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,13 +45,10 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new GetRuntimeStatsRequestTupleSchemeFactory());
   }
 
-  private int minCreateTime; // required
-  private int maxCount; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    MIN_CREATE_TIME((short)1, "minCreateTime"),
-    MAX_COUNT((short)2, "maxCount");
+;
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -68,10 +63,6 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // MIN_CREATE_TIME
-          return MIN_CREATE_TIME;
-        case 2: // MAX_COUNT
-          return MAX_COUNT;
         default:
           return null;
       }
@@ -110,18 +101,9 @@ import org.slf4j.LoggerFactory;
       return _fieldName;
     }
   }
-
-  // isset id assignments
-  private static final int __MINCREATETIME_ISSET_ID = 0;
-  private static final int __MAXCOUNT_ISSET_ID = 1;
-  private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.MIN_CREATE_TIME, new org.apache.thrift.meta_data.FieldMetaData("minCreateTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.MAX_COUNT, new org.apache.thrift.meta_data.FieldMetaData("maxCount", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetRuntimeStatsRequest.class, metaDataMap);
   }
@@ -129,24 +111,10 @@ import org.slf4j.LoggerFactory;
   public GetRuntimeStatsRequest() {
   }
 
-  public GetRuntimeStatsRequest(
-    int minCreateTime,
-    int maxCount)
-  {
-    this();
-    this.minCreateTime = minCreateTime;
-    setMinCreateTimeIsSet(true);
-    this.maxCount = maxCount;
-    setMaxCountIsSet(true);
-  }
-
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public GetRuntimeStatsRequest(GetRuntimeStatsRequest other) {
-    __isset_bitfield = other.__isset_bitfield;
-    this.minCreateTime = other.minCreateTime;
-    this.maxCount = other.maxCount;
   }
 
   public GetRuntimeStatsRequest deepCopy() {
@@ -155,85 +123,15 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
-    setMinCreateTimeIsSet(false);
-    this.minCreateTime = 0;
-    setMaxCountIsSet(false);
-    this.maxCount = 0;
-  }
-
-  public int getMinCreateTime() {
-    return this.minCreateTime;
-  }
-
-  public void setMinCreateTime(int minCreateTime) {
-    this.minCreateTime = minCreateTime;
-    setMinCreateTimeIsSet(true);
-  }
-
-  public void unsetMinCreateTime() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __MINCREATETIME_ISSET_ID);
-  }
-
-  /** Returns true if field minCreateTime is set (has been assigned a value) and false otherwise */
-  public boolean isSetMinCreateTime() {
-    return EncodingUtils.testBit(__isset_bitfield, __MINCREATETIME_ISSET_ID);
-  }
-
-  public void setMinCreateTimeIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __MINCREATETIME_ISSET_ID, value);
-  }
-
-  public int getMaxCount() {
-    return this.maxCount;
-  }
-
-  public void setMaxCount(int maxCount) {
-    this.maxCount = maxCount;
-    setMaxCountIsSet(true);
-  }
-
-  public void unsetMaxCount() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __MAXCOUNT_ISSET_ID);
-  }
-
-  /** Returns true if field maxCount is set (has been assigned a value) and false otherwise */
-  public boolean isSetMaxCount() {
-    return EncodingUtils.testBit(__isset_bitfield, __MAXCOUNT_ISSET_ID);
-  }
-
-  public void setMaxCountIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __MAXCOUNT_ISSET_ID, value);
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case MIN_CREATE_TIME:
-      if (value == null) {
-        unsetMinCreateTime();
-      } else {
-        setMinCreateTime((Integer)value);
-      }
-      break;
-
-    case MAX_COUNT:
-      if (value == null) {
-        unsetMaxCount();
-      } else {
-        setMaxCount((Integer)value);
-      }
-      break;
-
     }
   }
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case MIN_CREATE_TIME:
-      return getMinCreateTime();
-
-    case MAX_COUNT:
-      return getMaxCount();
-
     }
     throw new IllegalStateException();
   }
@@ -245,10 +143,6 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
-    case MIN_CREATE_TIME:
-      return isSetMinCreateTime();
-    case MAX_COUNT:
-      return isSetMaxCount();
     }
     throw new IllegalStateException();
   }
@@ -266,40 +160,12 @@ import org.slf4j.LoggerFactory;
     if (that == null)
       return false;
 
-    boolean this_present_minCreateTime = true;
-    boolean that_present_minCreateTime = true;
-    if (this_present_minCreateTime || that_present_minCreateTime) {
-      if (!(this_present_minCreateTime && that_present_minCreateTime))
-        return false;
-      if (this.minCreateTime != that.minCreateTime)
-        return false;
-    }
-
-    boolean this_present_maxCount = true;
-    boolean that_present_maxCount = true;
-    if (this_present_maxCount || that_present_maxCount) {
-      if (!(this_present_maxCount && that_present_maxCount))
-        return false;
-      if (this.maxCount != that.maxCount)
-        return false;
-    }
-
     return true;
   }
 
   @Override
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
-
-    boolean present_minCreateTime = true;
-    list.add(present_minCreateTime);
-    if (present_minCreateTime)
-      list.add(minCreateTime);
-
-    boolean present_maxCount = true;
-    list.add(present_maxCount);
-    if (present_maxCount)
-      list.add(maxCount);
 
     return list.hashCode();
   }
@@ -312,26 +178,6 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
-    lastComparison = Boolean.valueOf(isSetMinCreateTime()).compareTo(other.isSetMinCreateTime());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetMinCreateTime()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.minCreateTime, other.minCreateTime);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetMaxCount()).compareTo(other.isSetMaxCount());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetMaxCount()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.maxCount, other.maxCount);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     return 0;
   }
 
@@ -352,13 +198,6 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("GetRuntimeStatsRequest(");
     boolean first = true;
 
-    sb.append("minCreateTime:");
-    sb.append(this.minCreateTime);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("maxCount:");
-    sb.append(this.maxCount);
-    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -378,8 +217,6 @@ import org.slf4j.LoggerFactory;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
-      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -404,22 +241,6 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
-          case 1: // MIN_CREATE_TIME
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.minCreateTime = iprot.readI32();
-              struct.setMinCreateTimeIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 2: // MAX_COUNT
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.maxCount = iprot.readI32();
-              struct.setMaxCountIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -433,12 +254,6 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldBegin(MIN_CREATE_TIME_FIELD_DESC);
-      oprot.writeI32(struct.minCreateTime);
-      oprot.writeFieldEnd();
-      oprot.writeFieldBegin(MAX_COUNT_FIELD_DESC);
-      oprot.writeI32(struct.maxCount);
-      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -456,34 +271,11 @@ import org.slf4j.LoggerFactory;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, GetRuntimeStatsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
-      BitSet optionals = new BitSet();
-      if (struct.isSetMinCreateTime()) {
-        optionals.set(0);
-      }
-      if (struct.isSetMaxCount()) {
-        optionals.set(1);
-      }
-      oprot.writeBitSet(optionals, 2);
-      if (struct.isSetMinCreateTime()) {
-        oprot.writeI32(struct.minCreateTime);
-      }
-      if (struct.isSetMaxCount()) {
-        oprot.writeI32(struct.maxCount);
-      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, GetRuntimeStatsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(2);
-      if (incoming.get(0)) {
-        struct.minCreateTime = iprot.readI32();
-        struct.setMinCreateTimeIsSet(true);
-      }
-      if (incoming.get(1)) {
-        struct.maxCount = iprot.readI32();
-        struct.setMaxCountIsSet(true);
-      }
     }
   }
 

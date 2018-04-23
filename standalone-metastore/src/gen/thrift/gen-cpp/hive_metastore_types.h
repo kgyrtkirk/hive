@@ -12988,36 +12988,19 @@ inline std::ostream& operator<<(std::ostream& out, const RuntimeStat& obj)
   return out;
 }
 
-typedef struct _GetRuntimeStatsRequest__isset {
-  _GetRuntimeStatsRequest__isset() : minCreateTime(false), maxCount(false) {}
-  bool minCreateTime :1;
-  bool maxCount :1;
-} _GetRuntimeStatsRequest__isset;
 
 class GetRuntimeStatsRequest {
  public:
 
   GetRuntimeStatsRequest(const GetRuntimeStatsRequest&);
   GetRuntimeStatsRequest& operator=(const GetRuntimeStatsRequest&);
-  GetRuntimeStatsRequest() : minCreateTime(0), maxCount(0) {
+  GetRuntimeStatsRequest() {
   }
 
   virtual ~GetRuntimeStatsRequest() throw();
-  int32_t minCreateTime;
-  int32_t maxCount;
 
-  _GetRuntimeStatsRequest__isset __isset;
-
-  void __set_minCreateTime(const int32_t val);
-
-  void __set_maxCount(const int32_t val);
-
-  bool operator == (const GetRuntimeStatsRequest & rhs) const
+  bool operator == (const GetRuntimeStatsRequest & /* rhs */) const
   {
-    if (!(minCreateTime == rhs.minCreateTime))
-      return false;
-    if (!(maxCount == rhs.maxCount))
-      return false;
     return true;
   }
   bool operator != (const GetRuntimeStatsRequest &rhs) const {
