@@ -68,12 +68,10 @@ public class StatsCollectionContext {
     this.task = task;
   }
 
-  @Deprecated
   public int getIndexForTezUnion() {
     return indexForTezUnion;
   }
 
-  @Deprecated
   public void setIndexForTezUnion(int indexForTezUnion) {
     this.indexForTezUnion = indexForTezUnion;
   }
