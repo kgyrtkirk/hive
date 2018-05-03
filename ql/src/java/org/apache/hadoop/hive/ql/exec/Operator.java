@@ -1540,6 +1540,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     StatsCollectionContext sContext = new StatsCollectionContext(hconf);
     sContext.setIndexForTezUnion(indexForTezUnion);
     sContext.setStatsTmpDir(conf.getRuntimeStatsTmpDir());
+    sContext.setContextSuffix(getOperatorId());
 
     if (!statsPublisher.connect(sContext)) {
       LOG.error("StatsPublishing error: cannot connect to database");

@@ -95,8 +95,8 @@ public class FSStatsPublisher implements StatsPublisher {
   public boolean closeConnection(StatsCollectionContext context) {
     List<String> statsDirs = context.getStatsTmpDirs();
     assert statsDirs.size() == 1 : "Found multiple stats dirs: " + statsDirs;
-    if (context.getContextSuffix() != null) {
-      throw new RuntimeException("ContextSuffix should be set before publishing!");
+    if (context.getContextSuffix() == null) {
+      throw new RuntimeException("ContextSuffix must be set before publishing!");
     }
 
     Path statsDir = new Path(statsDirs.get(0));
