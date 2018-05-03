@@ -1,10 +1,10 @@
  
 set hive.optimize.metadataonly=true;
 
-create table t1 (a int) stored as orc;
+create table t1 (a int) ;
 insert into t1 values (1);
 
-create table t2a stored as orc as 
+create table t2a  as 
 	select * from t1
 	union all
 	select * from t1
@@ -12,7 +12,7 @@ create table t2a stored as orc as
 
 select 2,count(*) from t2a;
 
-create table t2b stored as orc as select * from
+create table t2b  as select * from
 (
 	select * from (select * from t1) sq1
 	union all

@@ -1,8 +1,8 @@
-PREHOOK: query: create table t1 (a int) stored as orc
+PREHOOK: query: create table t1 (a int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1 (a int) stored as orc
+POSTHOOK: query: create table t1 (a int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
@@ -15,7 +15,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t1
 POSTHOOK: Lineage: t1.a SCRIPT []
-PREHOOK: query: create table t2a stored as orc as 
+PREHOOK: query: create table t2a  as 
 	select * from t1
 	union all
 	select * from t1
@@ -23,7 +23,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@t1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t2a
-POSTHOOK: query: create table t2a stored as orc as 
+POSTHOOK: query: create table t2a  as 
 	select * from t1
 	union all
 	select * from t1
@@ -41,7 +41,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2a
 #### A masked pattern was here ####
 2	1
-PREHOOK: query: create table t2b stored as orc as select * from
+PREHOOK: query: create table t2b  as select * from
 (
 	select * from (select * from t1) sq1
 	union all
@@ -51,7 +51,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@t1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t2b
-POSTHOOK: query: create table t2b stored as orc as select * from
+POSTHOOK: query: create table t2b  as select * from
 (
 	select * from (select * from t1) sq1
 	union all
