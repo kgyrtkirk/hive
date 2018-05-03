@@ -60,7 +60,14 @@ create table small_alltypesorc_a stored as orc as select * from
 
 desc formatted small_alltypesorc_a;
 
+set hive.optimize.metadataonly=true;
+--select assert_true(15=count(*)) from small_alltypesorc_a;
+select 15,count(*) from small_alltypesorc_a;
+
 ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS;
+
+-- select assert_true(15=count(*)) from small_alltypesorc_a;
+select 15,count(*) from small_alltypesorc_a;
 
 desc formatted small_alltypesorc_a;
 
