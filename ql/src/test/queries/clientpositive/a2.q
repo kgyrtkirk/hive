@@ -4,6 +4,8 @@ set hive.optimize.metadataonly=true;
 create table t1 (a int) stored as orc;
 insert into t1 values (1);
 
+analyze table t1 compute statistics for columns;
+
 create table t2a stored as orc as
 	select * from t1
 	union all
