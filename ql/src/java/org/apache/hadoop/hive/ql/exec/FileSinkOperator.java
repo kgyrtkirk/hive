@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -82,26 +81,12 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.common.util.HiveStringUtils;
-import org.apache.hive.common.util.Murmur3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 import java.util.function.BiFunction;
-
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
 
 /**
  * File Sink operator implementation.
@@ -325,7 +310,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           // affects some less obscure scenario.
           try {
             FileSystem fpfs = finalPath.getFileSystem(hconf);
-            if (fpfs.exists(finalPath)) throw new RuntimeException(finalPath + " already exists");
+            if (fpfs.exists(finalPath)) {
+              throw new RuntimeException(finalPath + " already exists");
+            }
           } catch (IOException e) {
             throw new RuntimeException(e);
           }
@@ -358,7 +345,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
 
     public Path buildTaskOutputTempPath() {
-      if (taskOutputTempPathRoot == null) return null;
+      if (taskOutputTempPathRoot == null) {
+        return null;
+      }
       assert subdirForTxn == null;
       String pathStr = taskOutputTempPathRoot.toString();
       if (subdirBeforeTxn != null) {
@@ -429,7 +418,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     // 'Parent'
     boolean isLinked = conf.isLinkedFileSink();
     if (!isLinked) {
-      // Simple case - no union. 
+      // Simple case - no union.
       specPath = conf.getDirName();
       unionPath = null;
     } else {
@@ -1491,6 +1480,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
     }
     sContext.setIndexForTezUnion(this.getIndexForTezUnion());
+    sContext.setContextSuffix(getOperatorId());
+
     if (!statsPublisher.closeConnection(sContext)) {
       LOG.error("Failed to close stats");
       // The original exception is lost.

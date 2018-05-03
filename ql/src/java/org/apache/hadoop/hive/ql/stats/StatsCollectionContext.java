@@ -29,13 +29,14 @@ import org.apache.hadoop.hive.ql.exec.Task;
 
 
 @InterfaceAudience.Public
-@InterfaceStability.Stable
+@InterfaceStability.Unstable
 public class StatsCollectionContext {
 
   private final Configuration hiveConf;
   private Task task;
   private List<String> statsTmpDirs;
   private int indexForTezUnion;
+  private String contextSuffix;
 
   public List<String> getStatsTmpDirs() {
     return statsTmpDirs;
@@ -67,11 +68,21 @@ public class StatsCollectionContext {
     this.task = task;
   }
 
+  @Deprecated
   public int getIndexForTezUnion() {
     return indexForTezUnion;
   }
 
+  @Deprecated
   public void setIndexForTezUnion(int indexForTezUnion) {
     this.indexForTezUnion = indexForTezUnion;
+  }
+
+  public void setContextSuffix(String suffix) {
+    this.contextSuffix = suffix;
+  }
+
+  public String getContextSuffix() {
+    return contextSuffix;
   }
 }

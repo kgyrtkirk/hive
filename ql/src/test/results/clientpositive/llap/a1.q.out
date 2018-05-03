@@ -40,7 +40,7 @@ POSTHOOK: query: select 2,count(*) from t2a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2a
 #### A masked pattern was here ####
-2	1
+2	2
 PREHOOK: query: create table t2b  as select * from
 (
 	select * from (select * from t1) sq1
@@ -70,4 +70,4 @@ POSTHOOK: query: select 2,count(*) from t2b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2b
 #### A masked pattern was here ####
-2	1
+2	2

@@ -98,6 +98,9 @@ public class FSStatsPublisher implements StatsPublisher {
     Path statsDir = new Path(statsDirs.get(0));
     try {
       Path statsFile = null;
+      if(context.getContextSuffix()!=null ) {
+        statsFile = new Path(statsDir, StatsSetupConst.STATS_FILE_PREFIX+ "_" + context.getContextSuffix());
+      } else 
       if (context.getIndexForTezUnion() != -1) {
         statsFile = new Path(statsDir, StatsSetupConst.STATS_FILE_PREFIX
             + conf.getInt("mapred.task.partition", 0) + "_" + context.getIndexForTezUnion());
