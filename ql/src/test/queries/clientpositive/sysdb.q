@@ -1,4 +1,5 @@
---! qt:dataset:alltypesorc
+--! qt:dataset:alltypesorc,alltypesparquet,part,src,src1,srcbucket,srcbucket2,src_cbo,src_json,src_sequencefile,src_thrift,srcpart,cbo_t1,cbo_t2,cbo_t3,lineitem
+
 set hive.strict.checks.cartesian.product=false;
 
 set hive.compute.query.using.stats=false;
@@ -63,8 +64,6 @@ select principal_name, grantor from role_map order by principal_name, grantor li
 select count(*) from sds;
 
 select param_key, param_value from sd_params order by param_key, param_value limit 5;
-
-select sequence_name from sequence_table order by sequence_name limit 5;
 
 select name, slib from serdes order by name, slib limit 5;
 
