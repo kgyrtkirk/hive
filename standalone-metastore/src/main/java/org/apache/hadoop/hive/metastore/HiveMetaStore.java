@@ -5794,6 +5794,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                             final String tblName, final String filter)
             throws TException {
       String[] parsedDbName = parseDbName(dbName, conf);
+      if (parsedDbName[DB_NAME] == null || tblName == null) {
+        throw new MetaException("The DB and table name cannot be null.");
+      }
       startTableFunction("get_num_partitions_by_filter", parsedDbName[CAT_NAME],
           parsedDbName[DB_NAME], tblName);
 
@@ -6182,6 +6185,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw new MetaException("Unknown request type " + request.getRequestType());
       }
 
+      return response;
+    }
+
+    @Override
+    public GrantRevokePrivilegeResponse refresh_privileges(HiveObjectRef objToRefresh,
+        GrantRevokePrivilegeRequest grantRequest)
+        throws TException {
+      incrementCounter("refresh_privileges");
+      firePreEvent(new PreAuthorizationCallEvent(this));
+      GrantRevokePrivilegeResponse response = new GrantRevokePrivilegeResponse();
+      try {
+        boolean result = getMS().refreshPrivileges(objToRefresh, grantRequest.getPrivileges());
+        response.setSuccess(result);
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
       return response;
     }
 

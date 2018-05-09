@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.hadoop.hive.accumulo;
+package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -52,13 +52,12 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 /**
- * Accumulo doesn't have a TableMapReduceUtil.addDependencyJars method like HBase which is very
- * helpful
+ * Utilities to ship containing jars to the backend. Borrowed from
+ * Hbase TableMapReduceUtil.addDependencyJars
  */
-public class Utils {
-  private static final Logger log = LoggerFactory.getLogger(Utils.class);
+public class JarUtils {
+  private static final Logger log = LoggerFactory.getLogger(JarUtils.class);
 
-  // Thanks, HBase
   public static void addDependencyJars(Configuration conf, List<Class<?>> classes) throws IOException {
     FileSystem localFs = FileSystem.getLocal(conf);
     Set<String> jars = new HashSet<String>();
@@ -139,18 +138,13 @@ public class Utils {
     if (StringUtils.isEmpty(jar)) {
       return;
     }
-    ZipFile zip = null;
-    try {
-      zip = new ZipFile(jar);
+    try (ZipFile zip = new ZipFile(jar)){
       for (Enumeration<? extends ZipEntry> iter = zip.entries(); iter.hasMoreElements();) {
         ZipEntry entry = iter.nextElement();
         if (entry.getName().endsWith("class")) {
           packagedClasses.put(entry.getName(), jar);
         }
       }
-    } finally {
-      if (null != zip)
-        zip.close();
     }
   }
 
