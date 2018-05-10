@@ -84,7 +84,6 @@ public class TestOperatorCmp2 {
     return pm0;
   }
 
-  @Ignore
   @Test
   public void testFilterStringIn() throws ParseException {
     IDriver driver = createDriver();
@@ -97,10 +96,10 @@ public class TestOperatorCmp2 {
     assertEquals(1, fos.size());
     FilterOperator fop = fos.get(0);
 
-    System.out.println(fop.getStatistics());
-
+    assertEquals(10, fop.getStatistics().getNumRows());
   }
 
+  @Ignore
   @Test
   public void testFilterIntIn() throws ParseException {
     IDriver driver = createDriver();
