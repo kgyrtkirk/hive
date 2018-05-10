@@ -202,4 +202,8 @@ public class ColStatistics {
     this.bitVectors = bitVectors;
   }
 
+  public byte[] getBitVectors() {
+    return bitVectors;
+  }
+
 }

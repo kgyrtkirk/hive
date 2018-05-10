@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.optimizer.stats.annotation;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +32,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
+import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
+import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
+import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog.HyperLogLogBuilder;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -503,14 +507,43 @@ public class StatsRulesProcFactory {
       double factor = 1d;
       for (int i = 0; i < columnStats.size(); i++) {
         long dvs = columnStats.get(i) == null ? 0 : columnStats.get(i).getCountDistint();
-        int intersectionSize = values.get(i).size();
+        long intersectionSize = estimateIntersectionSize(columnStats.get(i), values.get(i));
         // (num of distinct vals for col in IN clause  / num of distinct vals for col )
         double columnFactor = dvs == 0 ? 0.5d : ((double) intersectionSize / dvs);
         // max can be 1, even when ndv is larger in IN clause than in column stats
         factor *= columnFactor > 1d ? 1d : columnFactor;
       }
+      factor = Double.max(factor, HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_IN_MIN_RATIO));
       float inFactor = HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_IN_CLAUSE_FACTOR);
       return Math.round( numRows * factor * inFactor);
+    }
+
+    private long estimateIntersectionSize(ColStatistics colStatistics, Set<ExprNodeDescEqualityWrapper> values) {
+      byte[] bitVector = colStatistics.getBitVectors();
+      if (bitVector == null) {
+        return values.size();
+      }
+      NumDistinctValueEstimator sketch = NumDistinctValueEstimatorFactory.getNumDistinctValueEstimator(bitVector);
+      if (!(sketch instanceof HyperLogLog)) {
+        return values.size();
+      }
+      HyperLogLog hllCol = (HyperLogLog) sketch;
+      HyperLogLog hllVals = new HyperLogLogBuilder().build();
+
+      for (ExprNodeDescEqualityWrapper b : values) {
+        hllVals.add(b.hashCode());
+      }
+
+      long cntA = hllCol.count();
+      long cntB = hllVals.count();
+      hllCol.merge(hllVals);
+      long cntU = hllCol.count();
+
+      long cntI = cntA + cntB - cntU;
+      if (cntI < 0) {
+        return 0;
+      }
+      return cntI;
     }
 
     static class RangeOps {
