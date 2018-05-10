@@ -32,6 +32,7 @@ import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -83,8 +84,9 @@ public class TestOperatorCmp2 {
     return pm0;
   }
 
+  @Ignore
   @Test
-  public void testUnrelatedFiltersAreNotMatched0() throws ParseException {
+  public void testFilterStringIn() throws ParseException {
     IDriver driver = createDriver();
     String query = "explain select a from t2 where b NOT IN ('XXX', 'UUU') order by a";
 
@@ -97,6 +99,21 @@ public class TestOperatorCmp2 {
 
     System.out.println(fop.getStatistics());
 
+  }
+
+  @Test
+  public void testFilterIntIn() throws ParseException {
+    IDriver driver = createDriver();
+    String query = "explain select a from t2 where a IN (1,2,3,20,30,40) order by a";
+
+    PlanMapper pm = getMapperForQuery(driver, query);
+    List<FilterOperator> fos = pm.getAll(FilterOperator.class);
+    // the same operator is present 2 times
+    fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
+    assertEquals(1, fos.size());
+    FilterOperator fop = fos.get(0);
+
+    System.out.println(fop.getStatistics());
 
   }
 

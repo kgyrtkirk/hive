@@ -618,9 +618,9 @@ public class StatsRulesProcFactory {
       Iterator<ExprNodeDescEqualityWrapper> valueIt = values.iterator();
       while (valueIt.hasNext()) {
         ExprNodeDescEqualityWrapper v = valueIt.next();
-        if (colRange.contains(v.getExprNodeDesc())) {
+        if (!colRange.contains(v.getExprNodeDesc())) {
           // outside of the range
-          //          continue;
+          continue;
         }
         ret.add(v);
       }
