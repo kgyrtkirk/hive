@@ -503,8 +503,9 @@ public class StatsRulesProcFactory {
       double factor = 1d;
       for (int i = 0; i < columnStats.size(); i++) {
         long dvs = columnStats.get(i) == null ? 0 : columnStats.get(i).getCountDistint();
+        int intersectionSize = values.get(i).size();
         // (num of distinct vals for col in IN clause  / num of distinct vals for col )
-        double columnFactor = dvs == 0 ? 0.5d : ((double) values.get(i).size() / dvs);
+        double columnFactor = dvs == 0 ? 0.5d : ((double) intersectionSize / dvs);
         // max can be 1, even when ndv is larger in IN clause than in column stats
         factor *= columnFactor > 1d ? 1d : columnFactor;
       }
@@ -618,7 +619,7 @@ public class StatsRulesProcFactory {
       Iterator<ExprNodeDescEqualityWrapper> valueIt = values.iterator();
       while (valueIt.hasNext()) {
         ExprNodeDescEqualityWrapper v = valueIt.next();
-        if (!colRange.contains(v.getExprNodeDesc())) {
+        if (colRange != null && !colRange.contains(v.getExprNodeDesc())) {
           // outside of the range
           continue;
         }
