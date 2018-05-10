@@ -206,6 +206,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -253,6 +254,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -302,6 +304,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -348,6 +351,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	fear                	factor              
 #### A masked pattern was here ####
 	 	 
@@ -397,6 +401,7 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	biggest             	loser               
+	bucketing_version   	2                   
 	fear                	factor              
 #### A masked pattern was here ####
 	 	 
@@ -739,6 +744,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -814,6 +820,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -889,6 +896,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -957,6 +965,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1030,6 +1039,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1103,6 +1113,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1183,6 +1194,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1212,18 +1224,18 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
 POSTHOOK: Input: default@view13
 #### A masked pattern was here ####
-0
-0
-0
-0
-0
-5
-5
-5
-5
-10
-10
-15
+1
+8
+8
+16
+16
+18
+18
+21
+21
+21
+21
+24
 PREHOOK: query: CREATE VIEW view14 AS
 SELECT unionsrc1.key as k1, unionsrc1.value as v1,
        unionsrc2.key as k2, unionsrc2.value as v2
@@ -1288,6 +1300,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1400,6 +1413,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1482,6 +1496,7 @@ Database:           	default
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

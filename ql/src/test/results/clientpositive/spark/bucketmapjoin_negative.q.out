@@ -101,6 +101,7 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       Position of Big Table: 0
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -139,6 +140,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -199,6 +201,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value1":"true","value2":"true"}}
                                 bucket_count -1
+                                bucketing_version 2
                                 column.name.delimiter ,
                                 columns key,value1,value2
                                 columns.comments 
@@ -218,6 +221,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: true
                           MultiFileSpray: false
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -231,6 +235,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 2
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -252,6 +257,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -283,6 +289,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value1":"true","value2":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value1,value2
                 columns.comments 

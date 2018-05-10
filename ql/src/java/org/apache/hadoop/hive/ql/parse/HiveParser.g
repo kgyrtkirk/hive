@@ -422,6 +422,7 @@ TOK_ADD_TRIGGER;
 TOK_REPLACE;
 TOK_LIKERP;
 TOK_UNMANAGED;
+TOK_INPUTFORMAT;
 }
 
 
@@ -490,6 +491,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_CLUSTER", "CLUSTER");
     xlateMap.put("KW_DISTRIBUTE", "DISTRIBUTE");
     xlateMap.put("KW_SORT", "SORT");
+    xlateMap.put("KW_SYNC", "SYNC");
     xlateMap.put("KW_UNION", "UNION");
     xlateMap.put("KW_INTERSECT", "INTERSECT");
     xlateMap.put("KW_EXCEPT", "EXCEPT");
@@ -834,8 +836,8 @@ execStatement
 loadStatement
 @init { pushMsg("load statement", state); }
 @after { popMsg(state); }
-    : KW_LOAD KW_DATA (islocal=KW_LOCAL)? KW_INPATH (path=StringLiteral) (isoverwrite=KW_OVERWRITE)? KW_INTO KW_TABLE (tab=tableOrPartition)
-    -> ^(TOK_LOAD $path $tab $islocal? $isoverwrite?)
+    : KW_LOAD KW_DATA (islocal=KW_LOCAL)? KW_INPATH (path=StringLiteral) (isoverwrite=KW_OVERWRITE)? KW_INTO KW_TABLE (tab=tableOrPartition) inputFileFormat?
+    -> ^(TOK_LOAD $path $tab $islocal? $isoverwrite? inputFileFormat?)
     ;
 
 replicationClause
@@ -1488,6 +1490,13 @@ fileFormat
     | genericSpec=identifier -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
     ;
 
+inputFileFormat
+@init { pushMsg("Load Data input file format specification", state); }
+@after { popMsg(state); }
+    : KW_INPUTFORMAT inFmt=StringLiteral KW_SERDE serdeCls=StringLiteral
+      -> ^(TOK_INPUTFORMAT $inFmt $serdeCls)
+    ;
+
 tabTypeExpr
 @init { pushMsg("specifying table types", state); }
 @after { popMsg(state); }
@@ -1807,8 +1816,11 @@ withAdminOption
 metastoreCheck
 @init { pushMsg("metastore check statement", state); }
 @after { popMsg(state); }
-    : KW_MSCK (repair=KW_REPAIR)? (KW_TABLE tableName partitionSpec? (COMMA partitionSpec)*)?
-    -> ^(TOK_MSCK $repair? (tableName partitionSpec*)?)
+    : KW_MSCK (repair=KW_REPAIR)?
+      (KW_TABLE tableName
+        ((add=KW_ADD | drop=KW_DROP | sync=KW_SYNC) (parts=KW_PARTITIONS))? |
+        (partitionSpec)?)
+    -> ^(TOK_MSCK $repair? tableName? $add? $drop? $sync? (partitionSpec*)?)
     ;
 
 resourceList
@@ -2207,17 +2219,36 @@ relySpecification
 createConstraint
 @init { pushMsg("pk or uk or nn constraint", state); }
 @after { popMsg(state); }
-    : (KW_CONSTRAINT constraintName=identifier)? tableConstraintType pkCols=columnParenthesesList constraintOptsCreate?
+    : (KW_CONSTRAINT constraintName=identifier)? tableLevelConstraint constraintOptsCreate?
     -> {$constraintName.tree != null}?
-            ^(tableConstraintType $pkCols ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsCreate?)
-    -> ^(tableConstraintType $pkCols constraintOptsCreate?)
+            ^({$tableLevelConstraint.tree} ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsCreate?)
+    -> ^({$tableLevelConstraint.tree} constraintOptsCreate?)
     ;
 
 alterConstraintWithName
 @init { pushMsg("pk or uk or nn constraint with name", state); }
 @after { popMsg(state); }
-    : KW_CONSTRAINT constraintName=identifier tableConstraintType pkCols=columnParenthesesList constraintOptsAlter?
-    -> ^(tableConstraintType $pkCols ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsAlter?)
+    : KW_CONSTRAINT constraintName=identifier tableLevelConstraint constraintOptsAlter?
+    ->^({$tableLevelConstraint.tree} ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsAlter?)
+    ;
+
+tableLevelConstraint
+    : pkUkConstraint
+    | checkConstraint
+    ;
+
+pkUkConstraint
+@init { pushMsg("pk or uk table level constraint", state); }
+@after { popMsg(state); }
+    : tableConstraintType pkCols=columnParenthesesList
+    -> ^(tableConstraintType $pkCols)
+    ;
+
+checkConstraint
+@init { pushMsg("CHECK constraint", state); }
+@after { popMsg(state); }
+    : KW_CHECK expression
+    -> ^(TOK_CHECK_CONSTRAINT expression)
     ;
 
 createForeignKey
@@ -2422,7 +2453,7 @@ alterColConstraint
 columnConstraintType
     : KW_NOT KW_NULL       ->    TOK_NOT_NULL
     | KW_DEFAULT defaultVal->    ^(TOK_DEFAULT_VALUE defaultVal)
-    | KW_CHECK expression  ->    ^(TOK_CHECK_CONSTRAINT expression)
+    | checkConstraint
     | tableConstraintType
     ;
 

@@ -31,6 +31,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -60,7 +61,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -110,7 +111,7 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: UDFToByte(VALUE._col0) (type: tinyint), VALUE._col1 (type: smallint), VALUE._col2 (type: int), VALUE._col3 (type: bigint), VALUE._col4 (type: double), VALUE._col5 (type: decimal(9,2))
@@ -205,7 +206,7 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), VALUE._col2 (type: int), VALUE._col3 (type: bigint), UDFToDouble(VALUE._col4) (type: double), CAST( VALUE._col5 AS decimal(9,2)) (type: decimal(9,2))
@@ -301,6 +302,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -319,19 +321,19 @@ Storage Desc Params:
 # Default Constraints	 	 
 Table:              	default.table1      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:d1      	Default Value:CURRENT_DATE()	 
+Column Name:d1      	Default Value:current_date()	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:d       	Default Value:DATE'2018-02-14'	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:t       	Default Value:TIMESTAMP'2016-02-22 12:45:07.0'	 
+Column Name:t       	Default Value:TIMESTAMP'2016-02-22 12:45:07.000000000'	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:t1      	Default Value:CURRENT_TIMESTAMP()	 
+Column Name:t1      	Default Value:current_timestamp()	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:tz      	Default Value:TIMESTAMPLOCALTZ'2016-01-03 12:26:34.0 America/Los_Angeles'	 
+Column Name:tz      	Default Value:TIMESTAMPLOCALTZ'2016-01-03 12:26:34 America/Los_Angeles'	 
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO table1(t) values ("1985-12-31 12:45:07")
 PREHOOK: type: QUERY
@@ -530,6 +532,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -550,16 +553,16 @@ Storage Desc Params:
 # Default Constraints	 	 
 Table:              	default.table2      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:j       	Default Value:CURRENT_USER()	 
+Column Name:j       	Default Value:current_user()	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:k       	Default Value:'Current_User()'	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:v       	Default Value:CAST( 'varchar_default_value' AS varchar(350))	 
+Column Name:v       	Default Value:cast('varchar_default_value' as varchar(350))	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:c       	Default Value:CAST( 'char_value' AS CHAR(20))	 
+Column Name:c       	Default Value:cast('char_value' as char(20))	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:i       	Default Value:'current_database()'	 
@@ -606,7 +609,7 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: varchar(350)), VALUE._col4 (type: char(20))
@@ -700,7 +703,7 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), CAST( VALUE._col3 AS varchar(350)) (type: varchar(350)), CAST( VALUE._col4 AS CHAR(20)) (type: char(20))
@@ -788,6 +791,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -811,7 +815,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:b       	Default Value:true  	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b1      	Default Value:CAST( 'bin' AS BINARY)	 
+Column Name:b1      	Default Value:cast('bin' as binary)	 
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO misc(b) values(false)
 PREHOOK: type: QUERY
@@ -855,7 +859,7 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: boolean), VALUE._col1 (type: binary)
@@ -946,7 +950,7 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: boolean), CAST( VALUE._col1 AS BINARY) (type: binary)
@@ -1059,6 +1063,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1077,46 +1082,46 @@ Storage Desc Params:
 # Default Constraints	 	 
 Table:              	default.t11         	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:tz1     	Default Value:CAST( '2016-01-03 12:26:34 America/Los_Angeles' AS timestamp with local time zone)	 
+Column Name:tz1     	Default Value:cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b1      	Default Value:UDFToBoolean('true')	 
+Column Name:b1      	Default Value:cast ('true' as boolean)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:i       	Default Value:UDFToInteger(UDFToDouble(4))	 
+Column Name:i       	Default Value:cast(cast(4 as double) as int)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b2      	Default Value:UDFToInteger(5.67)	 
+Column Name:b2      	Default Value:cast (5.67 as int)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:j       	Default Value:CAST( CURRENT_TIMESTAMP() AS varchar(50))	 
+Column Name:j       	Default Value:cast(current_timestamp() as varchar(50))	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b3      	Default Value:UDFToByte(45)	 
+Column Name:b3      	Default Value:cast (45 as tinyint)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:k       	Default Value:UDFToString(CAST( CURRENT_USER() AS varchar(50)))	 
+Column Name:k       	Default Value:cast(cast(current_user() as varchar(50)) as string)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b4      	Default Value:UDFToFloat(45.4)	 
+Column Name:b4      	Default Value:cast (45.4 as float)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b5      	Default Value:UDFToLong(567)	 
+Column Name:b5      	Default Value:cast (567 as bigint)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b6      	Default Value:UDFToShort(88)	 
+Column Name:b6      	Default Value:cast (88 as smallint)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:c2      	Default Value:UDFToDouble(5)	 
+Column Name:c2      	Default Value:cast(5 as double)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:c4      	Default Value:CAST( CAST( 'ab' AS varchar(2)) AS CHAR(2))	 
+Column Name:c4      	Default Value:cast(cast(cast('ab' as string) as varchar(2)) as char(2))	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:ts      	Default Value:CAST( '2016-01-01 12:01:01' AS TIMESTAMP)	 
+Column Name:ts      	Default Value:cast('2016-01-01 12:01:01' as timestamp)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:dc      	Default Value:CAST( 4.5 AS decimal(8,2))	 
+Column Name:dc      	Default Value:cast(4.5 as decimal(8,2))	 
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO t11(c4) values('vi')
 PREHOOK: type: QUERY
@@ -1336,6 +1341,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1365,7 +1371,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -1412,7 +1418,7 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), UDFToShort(VALUE._col1) (type: smallint), VALUE._col2 (type: int), VALUE._col3 (type: bigint), VALUE._col4 (type: double), VALUE._col5 (type: decimal(9,2))
@@ -1490,7 +1496,9 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{}                  
+	bucketing_version   	2                   
+	numFiles            	1                   
+	totalSize           	1070                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1527,7 +1535,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -1574,7 +1582,7 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), UDFToShort(VALUE._col1) (type: smallint), VALUE._col2 (type: int), VALUE._col3 (type: bigint), VALUE._col4 (type: double), VALUE._col5 (type: decimal(9,2))
@@ -1657,8 +1665,10 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{}                  
+	bucketing_version   	2                   
 #### A masked pattern was here ####
+	numFiles            	2                   
+	totalSize           	2140                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1701,7 +1711,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -1735,8 +1745,10 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{}                  
+	bucketing_version   	2                   
 #### A masked pattern was here ####
+	numFiles            	2                   
+	totalSize           	2140                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1779,7 +1791,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -1832,7 +1844,7 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), VALUE._col2 (type: int), VALUE._col3 (type: bigint), VALUE._col4 (type: double), CAST( VALUE._col5 AS decimal(9,2)) (type: decimal(9,2))
@@ -1910,8 +1922,10 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{}                  
+	bucketing_version   	2                   
 #### A masked pattern was here ####
+	numFiles            	3                   
+	totalSize           	3199                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1954,7 +1968,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -1987,8 +2001,10 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{}                  
+	bucketing_version   	2                   
 #### A masked pattern was here ####
+	numFiles            	3                   
+	totalSize           	3199                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2031,7 +2047,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -2065,8 +2081,10 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{}                  
+	bucketing_version   	2                   
 #### A masked pattern was here ####
+	numFiles            	3                   
+	totalSize           	3199                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2109,7 +2127,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -2162,7 +2180,7 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), VALUE._col2 (type: int), VALUE._col3 (type: bigint), VALUE._col4 (type: double), CAST( VALUE._col5 AS decimal(9,2)) (type: decimal(9,2))
@@ -2253,6 +2271,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -2484,6 +2503,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2513,7 +2533,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -2560,7 +2580,7 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), UDFToShort(VALUE._col1) (type: smallint), VALUE._col2 (type: int), VALUE._col3 (type: bigint), VALUE._col4 (type: double), VALUE._col5 (type: decimal(9,2))
@@ -2638,7 +2658,9 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{}                  
+	bucketing_version   	2                   
+	numFiles            	1                   
+	totalSize           	1070                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2675,7 +2697,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -2722,7 +2744,7 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), UDFToShort(VALUE._col1) (type: smallint), VALUE._col2 (type: int), VALUE._col3 (type: bigint), VALUE._col4 (type: double), VALUE._col5 (type: decimal(9,2))

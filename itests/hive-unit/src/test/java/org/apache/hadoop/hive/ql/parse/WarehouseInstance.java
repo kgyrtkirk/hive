@@ -129,7 +129,7 @@ public class WarehouseInstance implements Closeable {
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
 
-    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
+    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf, true);
 
     Path testPath = new Path(hiveWarehouseLocation);
     FileSystem testPathFileSystem = FileSystem.get(testPath.toUri(), hiveConf);
@@ -229,6 +229,11 @@ public class WarehouseInstance implements Closeable {
     run("EXPLAIN " + replLoadCmd);
     printOutput();
     return run(replLoadCmd);
+  }
+
+  WarehouseInstance status(String replicatedDbName) throws Throwable {
+    String replStatusCmd = "REPL STATUS " + replicatedDbName;
+    return run(replStatusCmd);
   }
 
   WarehouseInstance status(String replicatedDbName, List<String> withClauseOptions) throws Throwable {

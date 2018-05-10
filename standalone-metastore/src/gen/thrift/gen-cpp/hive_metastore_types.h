@@ -443,6 +443,8 @@ class AbortTxnsRequest;
 
 class CommitTxnRequest;
 
+class ReplTblWriteIdStateRequest;
+
 class GetValidWriteIdsRequest;
 
 class TableValidWriteIds;
@@ -658,6 +660,10 @@ class MapSchemaVersionToSerdeRequest;
 class SetSchemaVersionStateRequest;
 
 class GetSerdeRequest;
+
+class RuntimeStat;
+
+class GetRuntimeStatsRequest;
 
 class MetaException;
 
@@ -3035,7 +3041,7 @@ inline std::ostream& operator<<(std::ostream& out, const StorageDescriptor& obj)
 }
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -3053,6 +3059,7 @@ typedef struct _Table__isset {
   bool rewriteEnabled :1;
   bool creationMetadata :1;
   bool catName :1;
+  bool ownerType :1;
 } _Table__isset;
 
 class Table {
@@ -3060,7 +3067,9 @@ class Table {
 
   Table(const Table&);
   Table& operator=(const Table&);
-  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), catName() {
+  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), catName(), ownerType((PrincipalType::type)1) {
+    ownerType = (PrincipalType::type)1;
+
   }
 
   virtual ~Table() throw();
@@ -3081,6 +3090,7 @@ class Table {
   bool rewriteEnabled;
   CreationMetadata creationMetadata;
   std::string catName;
+  PrincipalType::type ownerType;
 
   _Table__isset __isset;
 
@@ -3117,6 +3127,8 @@ class Table {
   void __set_creationMetadata(const CreationMetadata& val);
 
   void __set_catName(const std::string& val);
+
+  void __set_ownerType(const PrincipalType::type val);
 
   bool operator == (const Table & rhs) const
   {
@@ -3163,6 +3175,10 @@ class Table {
     if (__isset.catName != rhs.__isset.catName)
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (__isset.ownerType != rhs.__isset.ownerType)
+      return false;
+    else if (__isset.ownerType && !(ownerType == rhs.ownerType))
       return false;
     return true;
   }
@@ -3890,22 +3906,22 @@ class Decimal {
 
   Decimal(const Decimal&);
   Decimal& operator=(const Decimal&);
-  Decimal() : unscaled(), scale(0) {
+  Decimal() : scale(0), unscaled() {
   }
 
   virtual ~Decimal() throw();
-  std::string unscaled;
   int16_t scale;
-
-  void __set_unscaled(const std::string& val);
+  std::string unscaled;
 
   void __set_scale(const int16_t val);
 
+  void __set_unscaled(const std::string& val);
+
   bool operator == (const Decimal & rhs) const
   {
-    if (!(unscaled == rhs.unscaled))
-      return false;
     if (!(scale == rhs.scale))
+      return false;
+    if (!(unscaled == rhs.unscaled))
       return false;
     return true;
   }
@@ -6961,6 +6977,79 @@ inline std::ostream& operator<<(std::ostream& out, const CommitTxnRequest& obj)
   return out;
 }
 
+typedef struct _ReplTblWriteIdStateRequest__isset {
+  _ReplTblWriteIdStateRequest__isset() : partNames(false) {}
+  bool partNames :1;
+} _ReplTblWriteIdStateRequest__isset;
+
+class ReplTblWriteIdStateRequest {
+ public:
+
+  ReplTblWriteIdStateRequest(const ReplTblWriteIdStateRequest&);
+  ReplTblWriteIdStateRequest& operator=(const ReplTblWriteIdStateRequest&);
+  ReplTblWriteIdStateRequest() : validWriteIdlist(), user(), hostName(), dbName(), tableName() {
+  }
+
+  virtual ~ReplTblWriteIdStateRequest() throw();
+  std::string validWriteIdlist;
+  std::string user;
+  std::string hostName;
+  std::string dbName;
+  std::string tableName;
+  std::vector<std::string>  partNames;
+
+  _ReplTblWriteIdStateRequest__isset __isset;
+
+  void __set_validWriteIdlist(const std::string& val);
+
+  void __set_user(const std::string& val);
+
+  void __set_hostName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableName(const std::string& val);
+
+  void __set_partNames(const std::vector<std::string> & val);
+
+  bool operator == (const ReplTblWriteIdStateRequest & rhs) const
+  {
+    if (!(validWriteIdlist == rhs.validWriteIdlist))
+      return false;
+    if (!(user == rhs.user))
+      return false;
+    if (!(hostName == rhs.hostName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    if (__isset.partNames != rhs.__isset.partNames)
+      return false;
+    else if (__isset.partNames && !(partNames == rhs.partNames))
+      return false;
+    return true;
+  }
+  bool operator != (const ReplTblWriteIdStateRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ReplTblWriteIdStateRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ReplTblWriteIdStateRequest &a, ReplTblWriteIdStateRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ReplTblWriteIdStateRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
 
 class GetValidWriteIdsRequest {
  public:
@@ -7114,33 +7203,57 @@ inline std::ostream& operator<<(std::ostream& out, const GetValidWriteIdsRespons
   return out;
 }
 
+typedef struct _AllocateTableWriteIdsRequest__isset {
+  _AllocateTableWriteIdsRequest__isset() : txnIds(false), replPolicy(false), srcTxnToWriteIdList(false) {}
+  bool txnIds :1;
+  bool replPolicy :1;
+  bool srcTxnToWriteIdList :1;
+} _AllocateTableWriteIdsRequest__isset;
 
 class AllocateTableWriteIdsRequest {
  public:
 
   AllocateTableWriteIdsRequest(const AllocateTableWriteIdsRequest&);
   AllocateTableWriteIdsRequest& operator=(const AllocateTableWriteIdsRequest&);
-  AllocateTableWriteIdsRequest() : dbName(), tableName() {
+  AllocateTableWriteIdsRequest() : dbName(), tableName(), replPolicy() {
   }
 
   virtual ~AllocateTableWriteIdsRequest() throw();
-  std::vector<int64_t>  txnIds;
   std::string dbName;
   std::string tableName;
+  std::vector<int64_t>  txnIds;
+  std::string replPolicy;
+  std::vector<TxnToWriteId>  srcTxnToWriteIdList;
 
-  void __set_txnIds(const std::vector<int64_t> & val);
+  _AllocateTableWriteIdsRequest__isset __isset;
 
   void __set_dbName(const std::string& val);
 
   void __set_tableName(const std::string& val);
 
+  void __set_txnIds(const std::vector<int64_t> & val);
+
+  void __set_replPolicy(const std::string& val);
+
+  void __set_srcTxnToWriteIdList(const std::vector<TxnToWriteId> & val);
+
   bool operator == (const AllocateTableWriteIdsRequest & rhs) const
   {
-    if (!(txnIds == rhs.txnIds))
-      return false;
     if (!(dbName == rhs.dbName))
       return false;
     if (!(tableName == rhs.tableName))
+      return false;
+    if (__isset.txnIds != rhs.__isset.txnIds)
+      return false;
+    else if (__isset.txnIds && !(txnIds == rhs.txnIds))
+      return false;
+    if (__isset.replPolicy != rhs.__isset.replPolicy)
+      return false;
+    else if (__isset.replPolicy && !(replPolicy == rhs.replPolicy))
+      return false;
+    if (__isset.srcTxnToWriteIdList != rhs.__isset.srcTxnToWriteIdList)
+      return false;
+    else if (__isset.srcTxnToWriteIdList && !(srcTxnToWriteIdList == rhs.srcTxnToWriteIdList))
       return false;
     return true;
   }
@@ -12905,6 +13018,109 @@ class GetSerdeRequest {
 void swap(GetSerdeRequest &a, GetSerdeRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const GetSerdeRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _RuntimeStat__isset {
+  _RuntimeStat__isset() : createTime(false) {}
+  bool createTime :1;
+} _RuntimeStat__isset;
+
+class RuntimeStat {
+ public:
+
+  RuntimeStat(const RuntimeStat&);
+  RuntimeStat& operator=(const RuntimeStat&);
+  RuntimeStat() : createTime(0), weight(0), payload() {
+  }
+
+  virtual ~RuntimeStat() throw();
+  int32_t createTime;
+  int32_t weight;
+  std::string payload;
+
+  _RuntimeStat__isset __isset;
+
+  void __set_createTime(const int32_t val);
+
+  void __set_weight(const int32_t val);
+
+  void __set_payload(const std::string& val);
+
+  bool operator == (const RuntimeStat & rhs) const
+  {
+    if (__isset.createTime != rhs.__isset.createTime)
+      return false;
+    else if (__isset.createTime && !(createTime == rhs.createTime))
+      return false;
+    if (!(weight == rhs.weight))
+      return false;
+    if (!(payload == rhs.payload))
+      return false;
+    return true;
+  }
+  bool operator != (const RuntimeStat &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RuntimeStat & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(RuntimeStat &a, RuntimeStat &b);
+
+inline std::ostream& operator<<(std::ostream& out, const RuntimeStat& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class GetRuntimeStatsRequest {
+ public:
+
+  GetRuntimeStatsRequest(const GetRuntimeStatsRequest&);
+  GetRuntimeStatsRequest& operator=(const GetRuntimeStatsRequest&);
+  GetRuntimeStatsRequest() : maxWeight(0), maxCreateTime(0) {
+  }
+
+  virtual ~GetRuntimeStatsRequest() throw();
+  int32_t maxWeight;
+  int32_t maxCreateTime;
+
+  void __set_maxWeight(const int32_t val);
+
+  void __set_maxCreateTime(const int32_t val);
+
+  bool operator == (const GetRuntimeStatsRequest & rhs) const
+  {
+    if (!(maxWeight == rhs.maxWeight))
+      return false;
+    if (!(maxCreateTime == rhs.maxCreateTime))
+      return false;
+    return true;
+  }
+  bool operator != (const GetRuntimeStatsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetRuntimeStatsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetRuntimeStatsRequest &a, GetRuntimeStatsRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetRuntimeStatsRequest& obj)
 {
   obj.printTo(out);
   return out;

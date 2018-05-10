@@ -106,6 +106,8 @@ public class OrcRecordUpdater implements RecordUpdater {
   // This records how many rows have been inserted or deleted.  It is separate from insertedRows
   // because that is monotonically increasing to give new unique row ids.
   private long rowCountDelta = 0;
+  // used only for insert events, this is the number of rows held in memory before flush() is invoked
+  private long bufferedRows = 0;
   private final KeyIndexBuilder indexBuilder = new KeyIndexBuilder("insert");
   private KeyIndexBuilder deleteEventIndexBuilder;
   private StructField recIdField = null; // field to look for the record identifier in
@@ -231,8 +233,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       fs = partitionRoot.getFileSystem(options.getConfiguration());
     }
     this.fs = fs;
-    if (options.getMinimumWriteId() != options.getMaximumWriteId()
-        && !options.isWritingBase()) {
+    if (options.getMinimumWriteId() != options.getMaximumWriteId() && !options.isWritingBase()) {
       //throw if file already exists as that should never happen
       flushLengths = fs.create(OrcAcidUtils.getSideFile(this.path), false, 8,
           options.getReporter());
@@ -294,6 +295,13 @@ public class OrcRecordUpdater implements RecordUpdater {
       writerOptions.bufferSize(baseBufferSizeValue / ratio);
       writerOptions.stripeSize(baseStripeSizeValue / ratio);
       writerOptions.blockPadding(false);
+      if (optionsCloneForDelta.getConfiguration().getBoolean(
+        HiveConf.ConfVars.HIVE_ORC_DELTA_STREAMING_OPTIMIZATIONS_ENABLED.varname, false)) {
+        writerOptions.compress(CompressionKind.NONE);
+        writerOptions.encodingStrategy(org.apache.orc.OrcFile.EncodingStrategy.SPEED);
+        writerOptions.rowIndexStride(0);
+        writerOptions.getConfiguration().set(OrcConf.DICTIONARY_KEY_SIZE_THRESHOLD.getAttribute(), "-1.0");
+      }
     }
     writerOptions.fileSystem(fs).callback(indexBuilder);
     rowInspector = (StructObjectInspector)options.getInspector();
@@ -432,6 +440,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       addSimpleEvent(INSERT_OPERATION, currentWriteId, insertedRows++, row);
     }
     rowCountDelta++;
+    bufferedRows++;
   }
 
   @Override
@@ -461,17 +470,21 @@ public class OrcRecordUpdater implements RecordUpdater {
 
   @Override
   public void flush() throws IOException {
-    // We only support flushes on files with multiple transactions, because
-    // flushes create significant overhead in HDFS. Record updaters with a
-    // single transaction should be closed rather than flushed.
-    if (flushLengths == null) {
-      throw new IllegalStateException("Attempting to flush a RecordUpdater on "
-         + path + " with a single transaction.");
-    }
     initWriter();
-    long len = writer.writeIntermediateFooter();
-    flushLengths.writeLong(len);
-    OrcInputFormat.SHIMS.hflush(flushLengths);
+    // streaming ingest writer with single transaction batch size, in which case the transaction is
+    // either committed or aborted. In either cases we don't need flush length file but we need to
+    // flush intermediate footer to reduce memory pressure. Also with HIVE-19206, streaming writer does
+    // automatic memory management which would require flush of open files without actually closing it.
+    if (flushLengths == null) {
+      // transaction batch size = 1 case
+      writer.writeIntermediateFooter();
+    } else {
+      // transaction batch size > 1 case
+      long len = writer.writeIntermediateFooter();
+      flushLengths.writeLong(len);
+      OrcInputFormat.SHIMS.hflush(flushLengths);
+    }
+    bufferedRows = 0;
     //multiple transactions only happen for streaming ingest which only allows inserts
     assert deleteEventWriter == null : "unexpected delete writer for " + path;
   }
@@ -528,6 +541,11 @@ public class OrcRecordUpdater implements RecordUpdater {
     // Don't worry about setting raw data size diff.  I have no idea how to calculate that
     // without finding the row we are updating or deleting, which would be a mess.
     return stats;
+  }
+
+  @Override
+  public long getBufferedRowCount() {
+    return bufferedRows;
   }
 
   static RecordIdentifier[] parseKeyIndex(Reader reader) {

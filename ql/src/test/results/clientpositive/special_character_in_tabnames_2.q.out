@@ -27,12 +27,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@s/c
 POSTHOOK: Output: default@s/c
 PREHOOK: query: ANALYZE TABLE `s/c` COMPUTE STATISTICS FOR COLUMNS key,value
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@s/c
 PREHOOK: Output: default@s/c
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE `s/c` COMPUTE STATISTICS FOR COLUMNS key,value
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@s/c
 POSTHOOK: Output: default@s/c
 #### A masked pattern was here ####
@@ -92,6 +92,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

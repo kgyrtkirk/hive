@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.PathUtils;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
@@ -41,16 +42,18 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
+import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
@@ -179,16 +182,15 @@ public class LoadTable {
         tracker.addTask(alterTableTask);
       } else {
         Task<?> loadTableTask =
-            loadTableTask(table, replicationSpec, event.metadataPath(), event.metadataPath());
+            loadTableTask(table, replicationSpec, table.getDataLocation(), event.metadataPath());
         alterTableTask.addDependentTask(loadTableTask);
         tracker.addTask(alterTableTask);
       }
     }
   }
 
-  private void newTableTasks(ImportTableDesc tblDesc) throws SemanticException {
-    Table table;
-    table = new Table(tblDesc.getDatabaseName(), tblDesc.getTableName());
+  private void newTableTasks(ImportTableDesc tblDesc) throws Exception {
+    Table table = tblDesc.toTable(context.hiveConf);
     // Either we're dropping and re-creating, or the table didn't exist, and we're creating.
     Task<?> createTableTask =
         tblDesc.getCreateTableTask(new HashSet<>(), new HashSet<>(), context.hiveConf);
@@ -196,12 +198,22 @@ public class LoadTable {
       tracker.addTask(createTableTask);
       return;
     }
+
+    Task<?> parentTask = createTableTask;
+    if (event.replicationSpec().isTransactionalTableDump()) {
+      List<String> partNames = isPartitioned(tblDesc) ? event.partitions(tblDesc) : null;
+      ReplTxnWork replTxnWork = new ReplTxnWork(tblDesc.getDatabaseName(), tblDesc.getTableName(), partNames,
+              event.replicationSpec().getValidWriteIdList(), ReplTxnWork.OperationType.REPL_WRITEID_STATE);
+      Task<?> replTxnTask = TaskFactory.get(replTxnWork, context.hiveConf);
+      createTableTask.addDependentTask(replTxnTask);
+      parentTask = replTxnTask;
+    }
     if (!isPartitioned(tblDesc)) {
-      LOG.debug("adding dependent CopyWork/MoveWork for table");
+      LOG.debug("adding dependent ReplTxnTask/CopyWork/MoveWork for table");
       Task<?> loadTableTask =
           loadTableTask(table, event.replicationSpec(), new Path(tblDesc.getLocation()),
               event.metadataPath());
-      createTableTask.addDependentTask(loadTableTask);
+      parentTask.addDependentTask(loadTableTask);
     }
     tracker.addTask(createTableTask);
   }
@@ -226,14 +238,20 @@ public class LoadTable {
     Task<?> copyTask =
         ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, tmpPath, context.hiveConf);
 
-    LoadTableDesc loadTableWork = new LoadTableDesc(
-        tmpPath, Utilities.getTableDesc(table), new TreeMap<>(),
-        replicationSpec.isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING,
-        //todo: what is the point of this?  If this is for replication, who would have opened a txn?
-        SessionState.get().getTxnMgr().getCurrentTxnId()
-    );
-    MoveWork moveWork =
-        new MoveWork(new HashSet<>(), new HashSet<>(), loadTableWork, null, false);
+    MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
+    if (AcidUtils.isTransactionalTable(table)) {
+      LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
+              Collections.singletonList(tmpPath),
+              Collections.singletonList(tgtPath),
+              true, null, null);
+      moveWork.setMultiFilesDesc(loadFilesWork);
+    } else {
+      LoadTableDesc loadTableWork = new LoadTableDesc(
+              tmpPath, Utilities.getTableDesc(table), new TreeMap<>(),
+              replicationSpec.isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING, 0L
+      );
+      moveWork.setLoadTableWork(loadTableWork);
+    }
     Task<?> loadTableTask = TaskFactory.get(moveWork, context.hiveConf);
     copyTask.addDependentTask(loadTableTask);
     return copyTask;

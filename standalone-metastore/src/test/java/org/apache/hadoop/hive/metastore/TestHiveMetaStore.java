@@ -39,6 +39,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -98,7 +100,7 @@ import static org.junit.Assert.fail;
 public abstract class TestHiveMetaStore {
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveMetaStore.class);
   protected static HiveMetaStoreClient client;
-  protected static Configuration conf;
+  protected static Configuration conf = MetastoreConf.newMetastoreConf();
   protected static Warehouse warehouse;
   protected static boolean isThriftClient = false;
 
@@ -111,7 +113,6 @@ public abstract class TestHiveMetaStore {
 
   @Before
   public void setUp() throws Exception {
-    conf = MetastoreConf.newMetastoreConf();
     warehouse = new Warehouse(conf);
 
     // set some values to use for getting conf. vars
@@ -2708,6 +2709,18 @@ public abstract class TestHiveMetaStore {
         .create(client, conf);
   }
 
+  private void createMaterializedView(String dbName, String tableName, Set<String> tablesUsed)
+      throws TException {
+    Table t = new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(tableName)
+        .setType(TableType.MATERIALIZED_VIEW.name())
+        .addMaterializedViewReferencedTables(tablesUsed)
+        .addCol("foo", "string")
+        .addCol("bar", "string")
+        .create(client, conf);
+  }
+
   private List<Partition> createPartitions(String dbName, Table tbl,
       List<List<String>> values)  throws Throwable {
     int i = 1;
@@ -2814,6 +2827,7 @@ public abstract class TestHiveMetaStore {
     for (String tableName : tableNames) {
       createTable(dbName, tableName);
     }
+    createMaterializedView(dbName, "mv1", Sets.newHashSet("db.table1", "db.table2"));
 
     // Test
     List<Table> tableObjs = client.getTableObjectsByName(dbName, tableNames);
@@ -2826,6 +2840,44 @@ public abstract class TestHiveMetaStore {
 
     // Cleanup
     client.dropDatabase(dbName, true, true, true);
+  }
+
+  @Test
+  public void testDropDatabaseCascadeMVMultiDB() throws Exception {
+    String dbName1 = "db1";
+    String tableName1 = "table1";
+    String dbName2 = "db2";
+    String tableName2 = "table2";
+    String mvName = "mv1";
+
+    // Setup
+    silentDropDatabase(dbName1);
+    silentDropDatabase(dbName2);
+
+    Database db1 = new Database();
+    db1.setName(dbName1);
+    client.createDatabase(db1);
+    createTable(dbName1, tableName1);
+    Database db2 = new Database();
+    db2.setName(dbName2);
+    client.createDatabase(db2);
+    createTable(dbName2, tableName2);
+
+    createMaterializedView(dbName2, mvName, Sets.newHashSet("db1.table1", "db2.table2"));
+
+    boolean exceptionFound = false;
+    try {
+      // Cannot drop db1 because mv1 uses one of its tables
+      // TODO: Error message coming from metastore is currently not very concise
+      // (foreign key violation), we should make it easily understandable
+      client.dropDatabase(dbName1, true, true, true);
+    } catch (Exception e) {
+      exceptionFound = true;
+    }
+    assertTrue(exceptionFound);
+
+    client.dropDatabase(dbName2, true, true, true);
+    client.dropDatabase(dbName1, true, true, true);
   }
 
   @Test
@@ -2875,18 +2927,18 @@ public abstract class TestHiveMetaStore {
   @Test
   public void testRetriableClientWithConnLifetime() throws Exception {
 
-    Configuration conf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setTimeVar(conf, ConfVars.CLIENT_SOCKET_LIFETIME, 4, TimeUnit.SECONDS);
-    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    Configuration newConf = MetastoreConf.newMetastoreConf(new Configuration(this.conf));
+    MetastoreConf.setTimeVar(newConf, ConfVars.CLIENT_SOCKET_LIFETIME, 4, TimeUnit.SECONDS);
+    MetaStoreTestUtils.setConfForStandloneMode(newConf);
     long timeout = 5 * 1000; // Lets use a timeout more than the socket lifetime to simulate a reconnect
 
     // Test a normal retriable client
-    IMetaStoreClient client = RetryingMetaStoreClient.getProxy(conf, getHookLoader(), HiveMetaStoreClient.class.getName());
+    IMetaStoreClient client = RetryingMetaStoreClient.getProxy(newConf, getHookLoader(), HiveMetaStoreClient.class.getName());
     client.getAllDatabases();
     client.close();
 
     // Connect after the lifetime, there should not be any failures
-    client = RetryingMetaStoreClient.getProxy(conf, getHookLoader(), HiveMetaStoreClient.class.getName());
+    client = RetryingMetaStoreClient.getProxy(newConf, getHookLoader(), HiveMetaStoreClient.class.getName());
     Thread.sleep(timeout);
     client.getAllDatabases();
     client.close();

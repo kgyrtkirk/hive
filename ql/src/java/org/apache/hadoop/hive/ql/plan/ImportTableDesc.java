@@ -60,7 +60,7 @@ public class ImportTableDesc {
         this.createTblDesc = new CreateTableDesc(dbName,
                 table.getTableName(),
                 false, // isExternal: set to false here, can be overwritten by the IMPORT stmt
-                table.isTemporary(),
+                false,
                 table.getSd().getCols(),
                 table.getPartitionKeys(),
                 table.getSd().getBucketCols(),
@@ -347,5 +347,16 @@ public class ImportTableDesc {
       return TableType.MATERIALIZED_VIEW;
     }
     return TableType.MANAGED_TABLE;
+  }
+
+  public Table toTable(HiveConf conf) throws Exception {
+    switch (getDescType()) {
+      case TABLE:
+        return createTblDesc.toTable(conf);
+      case VIEW:
+        return createViewDesc.toTable(conf);
+      default:
+        return null;
+    }
   }
 }

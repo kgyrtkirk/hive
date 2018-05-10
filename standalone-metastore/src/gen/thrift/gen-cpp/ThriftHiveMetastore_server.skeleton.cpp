@@ -657,6 +657,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("grant_revoke_privileges\n");
   }
 
+  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest) {
+    // Your implementation goes here
+    printf("refresh_privileges\n");
+  }
+
   void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names) {
     // Your implementation goes here
     printf("set_ugi\n");
@@ -745,6 +750,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void commit_txn(const CommitTxnRequest& rqst) {
     // Your implementation goes here
     printf("commit_txn\n");
+  }
+
+  void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst) {
+    // Your implementation goes here
+    printf("repl_tbl_writeid_state\n");
   }
 
   void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst) {
@@ -1030,6 +1040,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId) {
     // Your implementation goes here
     printf("heartbeat_lock_materialization_rebuild\n");
+  }
+
+  void add_runtime_stats(const RuntimeStat& stat) {
+    // Your implementation goes here
+    printf("add_runtime_stats\n");
+  }
+
+  void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst) {
+    // Your implementation goes here
+    printf("get_runtime_stats\n");
   }
 
 };

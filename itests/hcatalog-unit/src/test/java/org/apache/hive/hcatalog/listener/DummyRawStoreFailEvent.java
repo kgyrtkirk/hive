@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.ISchema;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -69,6 +70,7 @@ import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -295,6 +297,7 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
     objectStore.updateCreationMetadata(catName, dbname, tablename, cm);
   }
 
+  @Override
   public void alterTable(String catName, String dbName, String name, Table newTable)
       throws InvalidObjectException, MetaException {
     if (shouldEventSucceed) {
@@ -538,6 +541,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public boolean revokePrivileges(PrivilegeBag privileges, boolean grantOption)
       throws InvalidObjectException, MetaException, NoSuchObjectException {
     return objectStore.revokePrivileges(privileges, grantOption);
+  }
+
+  @Override
+  public boolean refreshPrivileges(HiveObjectRef objToRefresh, PrivilegeBag grantPrivileges)
+      throws InvalidObjectException, MetaException, NoSuchObjectException {
+    return objectStore.refreshPrivileges(objToRefresh, grantPrivileges);
   }
 
   @Override
@@ -1126,6 +1135,7 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
     return null;
   }
 
+  @Override
   public void createISchema(ISchema schema) throws AlreadyExistsException, MetaException,
       NoSuchObjectException {
     objectStore.createISchema(schema);
@@ -1195,4 +1205,20 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public void addSerde(SerDeInfo serde) throws AlreadyExistsException, MetaException {
     objectStore.addSerde(serde);
   }
+
+  @Override
+  public void addRuntimeStat(RuntimeStat stat) throws MetaException {
+    objectStore.addRuntimeStat(stat);
+  }
+
+  @Override
+  public List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) throws MetaException {
+    return objectStore.getRuntimeStats(maxEntries, maxCreateTime);
+  }
+
+  @Override
+  public int deleteRuntimeStats(int maxRetainSecs) throws MetaException {
+    return objectStore.deleteRuntimeStats(maxRetainSecs);
+  }
+
 }

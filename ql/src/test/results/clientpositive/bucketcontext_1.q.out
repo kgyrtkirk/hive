@@ -146,6 +146,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -216,6 +217,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: _col0 (type: bigint)
                     auto parallelism: false
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -255,6 +257,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 4
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -304,6 +307,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 4
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -450,6 +454,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 4
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -499,6 +504,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 4
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 

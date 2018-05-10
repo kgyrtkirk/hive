@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
-import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -91,6 +91,7 @@ import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.StringJoiner;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -642,70 +643,63 @@ public class MetaStoreUtils {
     return false;
   }
 
-  public static boolean updateTableStatsFast(Database db, Table tbl, Warehouse wh, boolean madeDir,
-      boolean forceRecompute, EnvironmentContext environmentContext, boolean isCreate) throws MetaException {
-    if (tbl.getPartitionKeysSize() != 0) return false;
-    // Update stats only when unpartitioned
-    // TODO: this is also invalid for ACID tables, except for the create case by coincidence;
-    //       because the methods in metastore get all the files in the table directory without
-    //       regard for ACID state.
-    List<FileStatus> fileStatuses = wh.getFileStatusesForUnpartitionedTable(db, tbl);
-    return updateTableStatsFast(
-        tbl, fileStatuses, madeDir, forceRecompute, environmentContext, isCreate);
-  }
-
   /**
    * Updates the numFiles and totalSize parameters for the passed Table by querying
    * the warehouse if the passed Table does not already have values for these parameters.
-   * @param tbl
-   * @param fileStatus
+   * NOTE: This function is rather expensive since it needs to traverse the file system to get all
+   * the information.
+   *
    * @param newDir if true, the directory was just created and can be assumed to be empty
    * @param forceRecompute Recompute stats even if the passed Table already has
    * these parameters set
-   * @return true if the stats were updated, false otherwise
    */
-  private static boolean updateTableStatsFast(Table tbl, List<FileStatus> fileStatus,
-      boolean newDir, boolean forceRecompute, EnvironmentContext environmentContext,
-      boolean isCreate) throws MetaException {
-
+  public static void updateTableStatsSlow(Database db, Table tbl, Warehouse wh,
+                                          boolean newDir, boolean forceRecompute,
+                                          EnvironmentContext environmentContext) throws MetaException {
+    // DO_NOT_UPDATE_STATS is supposed to be a transient parameter that is only passed via RPC
+    // We want to avoid this property from being persistent.
+    //
+    // NOTE: If this property *is* set as table property we will remove it which is incorrect but
+    // we can't distinguish between these two cases
+    //
+    // This problem was introduced by HIVE-10228. A better approach would be to pass the property
+    // via the environment context.
     Map<String,String> params = tbl.getParameters();
-
-    if ((params!=null) && params.containsKey(StatsSetupConst.DO_NOT_UPDATE_STATS)){
-      boolean doNotUpdateStats = Boolean.valueOf(params.get(StatsSetupConst.DO_NOT_UPDATE_STATS));
+    boolean updateStats = true;
+    if ((params != null) && params.containsKey(StatsSetupConst.DO_NOT_UPDATE_STATS)) {
+      updateStats = !Boolean.valueOf(params.get(StatsSetupConst.DO_NOT_UPDATE_STATS));
       params.remove(StatsSetupConst.DO_NOT_UPDATE_STATS);
-      tbl.setParameters(params); // to make sure we remove this marker property
-      if (doNotUpdateStats){
-        return false;
-      }
     }
 
-    if (!forceRecompute && params != null && containsAllFastStats(params)) return false;
+    if (!updateStats || newDir || tbl.getPartitionKeysSize() != 0) {
+      return;
+    }
+
+    // If stats are already present and forceRecompute isn't set, nothing to do
+    if (!forceRecompute && params != null && containsAllFastStats(params)) {
+      return;
+    }
+
+    // NOTE: wh.getFileStatusesForUnpartitionedTable() can be REALLY slow
+    List<FileStatus> fileStatus = wh.getFileStatusesForUnpartitionedTable(db, tbl);
     if (params == null) {
       params = new HashMap<>();
-    }
-    if (!isCreate && MetaStoreUtils.isTransactionalTable(tbl.getParameters())) {
-      // TODO: we should use AcidUtils.getAcidFilesForStats, but cannot access it from metastore.
-      LOG.warn("Not updating fast stats for a transactional table " + tbl.getTableName());
       tbl.setParameters(params);
-      return true;
     }
-    if (!newDir) {
-      // The table location already exists and may contain data.
-      // Let's try to populate those stats that don't require full scan.
-      LOG.info("Updating table stats fast for " + tbl.getTableName());
-      populateQuickStats(fileStatus, params);
-      LOG.info("Updated size of table " + tbl.getTableName() +" to "+ params.get(StatsSetupConst.TOTAL_SIZE));
-      if (environmentContext != null
-          && environmentContext.isSetProperties()
-          && StatsSetupConst.TASK.equals(environmentContext.getProperties().get(
-          StatsSetupConst.STATS_GENERATED))) {
-        StatsSetupConst.setBasicStatsState(params, StatsSetupConst.TRUE);
-      } else {
-        StatsSetupConst.setBasicStatsState(params, StatsSetupConst.FALSE);
-      }
+    // The table location already exists and may contain data.
+    // Let's try to populate those stats that don't require full scan.
+    LOG.info("Updating table stats for {}", tbl.getTableName());
+    populateQuickStats(fileStatus, params);
+    LOG.info("Updated size of table {} to {}",
+        tbl.getTableName(), params.get(StatsSetupConst.TOTAL_SIZE));
+    if (environmentContext != null
+        && environmentContext.isSetProperties()
+        && StatsSetupConst.TASK.equals(environmentContext.getProperties().get(
+        StatsSetupConst.STATS_GENERATED))) {
+      StatsSetupConst.setBasicStatsState(params, StatsSetupConst.TRUE);
+    } else {
+      StatsSetupConst.setBasicStatsState(params, StatsSetupConst.FALSE);
     }
-    tbl.setParameters(params);
-    return true;
   }
 
   /** This method is invalid for MM and ACID tables unless fileStatus comes from AcidUtils. */
@@ -933,6 +927,26 @@ public class MetaStoreUtils {
       pvals.add(val);
     }
     return pvals;
+  }
+  public static String makePartNameMatcher(Table table, List<String> partVals) throws MetaException {
+    List<FieldSchema> partCols = table.getPartitionKeys();
+    int numPartKeys = partCols.size();
+    if (partVals.size() > numPartKeys) {
+      throw new MetaException("Incorrect number of partition values."
+          + " numPartKeys=" + numPartKeys + ", part_val=" + partVals);
+    }
+    partCols = partCols.subList(0, partVals.size());
+    // Construct a pattern of the form: partKey=partVal/partKey2=partVal2/...
+    // where partVal is either the escaped partition value given as input,
+    // or a regex of the form ".*"
+    // This works because the "=" and "/" separating key names and partition key/values
+    // are not escaped.
+    String partNameMatcher = Warehouse.makePartName(partCols, partVals, ".*");
+    // add ".*" to the regex to match anything else afterwards the partial spec.
+    if (partVals.size() < numPartKeys) {
+      partNameMatcher += ".*";
+    }
+    return partNameMatcher;
   }
 
   /**
@@ -1252,7 +1266,7 @@ public class MetaStoreUtils {
 
     if (sd.getBucketCols() != null && sd.getBucketCols().size() > 0) {
       schema.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_FIELD_NAME,
-          sd.getBucketCols().get(0));
+        Joiner.on(",").join(sd.getBucketCols()));
     }
 
     // SerdeInfo
@@ -1359,8 +1373,8 @@ public class MetaStoreUtils {
             .toString(sd.getNumBuckets()));
     if (sd.getBucketCols() != null && sd.getBucketCols().size() > 0) {
       schema.setProperty(
-          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_FIELD_NAME, sd
-              .getBucketCols().get(0));
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_FIELD_NAME,
+        Joiner.on(",").join(sd.getBucketCols()));
     }
     if (sd.getSerdeInfo() != null) {
       for (Map.Entry<String,String> param : sd.getSerdeInfo().getParameters().entrySet()) {

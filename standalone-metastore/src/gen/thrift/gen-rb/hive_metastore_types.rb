@@ -1041,6 +1041,7 @@ class Table
   REWRITEENABLED = 15
   CREATIONMETADATA = 16
   CATNAME = 17
+  OWNERTYPE = 18
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -1059,12 +1060,16 @@ class Table
     TEMPORARY => {:type => ::Thrift::Types::BOOL, :name => 'temporary', :default => false, :optional => true},
     REWRITEENABLED => {:type => ::Thrift::Types::BOOL, :name => 'rewriteEnabled', :optional => true},
     CREATIONMETADATA => {:type => ::Thrift::Types::STRUCT, :name => 'creationMetadata', :class => ::CreationMetadata, :optional => true},
-    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
+    OWNERTYPE => {:type => ::Thrift::Types::I32, :name => 'ownerType', :default =>     1, :optional => true, :enum_class => ::PrincipalType}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
+    unless @ownerType.nil? || ::PrincipalType::VALID_VALUES.include?(@ownerType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field ownerType!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -1320,19 +1325,19 @@ end
 
 class Decimal
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  UNSCALED = 1
   SCALE = 3
+  UNSCALED = 1
 
   FIELDS = {
-    UNSCALED => {:type => ::Thrift::Types::STRING, :name => 'unscaled', :binary => true},
-    SCALE => {:type => ::Thrift::Types::I16, :name => 'scale'}
+    SCALE => {:type => ::Thrift::Types::I16, :name => 'scale'},
+    UNSCALED => {:type => ::Thrift::Types::STRING, :name => 'unscaled', :binary => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field unscaled is unset!') unless @unscaled
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scale is unset!') unless @scale
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field unscaled is unset!') unless @unscaled
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -2572,6 +2577,37 @@ class CommitTxnRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class ReplTblWriteIdStateRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  VALIDWRITEIDLIST = 1
+  USER = 2
+  HOSTNAME = 3
+  DBNAME = 4
+  TABLENAME = 5
+  PARTNAMES = 6
+
+  FIELDS = {
+    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdlist'},
+    USER => {:type => ::Thrift::Types::STRING, :name => 'user'},
+    HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+    PARTNAMES => {:type => ::Thrift::Types::LIST, :name => 'partNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field validWriteIdlist is unset!') unless @validWriteIdlist
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field user is unset!') unless @user
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field hostName is unset!') unless @hostName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class GetValidWriteIdsRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   FULLTABLENAMES = 1
@@ -2639,20 +2675,23 @@ end
 
 class AllocateTableWriteIdsRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  TXNIDS = 1
-  DBNAME = 2
-  TABLENAME = 3
+  DBNAME = 1
+  TABLENAME = 2
+  TXNIDS = 3
+  REPLPOLICY = 4
+  SRCTXNTOWRITEIDLIST = 5
 
   FIELDS = {
-    TXNIDS => {:type => ::Thrift::Types::LIST, :name => 'txnIds', :element => {:type => ::Thrift::Types::I64}},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
-    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'}
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+    TXNIDS => {:type => ::Thrift::Types::LIST, :name => 'txnIds', :element => {:type => ::Thrift::Types::I64}, :optional => true},
+    REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true},
+    SRCTXNTOWRITEIDLIST => {:type => ::Thrift::Types::LIST, :name => 'srcTxnToWriteIdList', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TxnToWriteId}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnIds is unset!') unless @txnIds
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
   end
@@ -4817,6 +4856,48 @@ class GetSerdeRequest
   def struct_fields; FIELDS; end
 
   def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class RuntimeStat
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CREATETIME = 1
+  WEIGHT = 2
+  PAYLOAD = 3
+
+  FIELDS = {
+    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime', :optional => true},
+    WEIGHT => {:type => ::Thrift::Types::I32, :name => 'weight'},
+    PAYLOAD => {:type => ::Thrift::Types::STRING, :name => 'payload', :binary => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field weight is unset!') unless @weight
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field payload is unset!') unless @payload
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetRuntimeStatsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  MAXWEIGHT = 1
+  MAXCREATETIME = 2
+
+  FIELDS = {
+    MAXWEIGHT => {:type => ::Thrift::Types::I32, :name => 'maxWeight'},
+    MAXCREATETIME => {:type => ::Thrift::Types::I32, :name => 'maxCreateTime'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field maxWeight is unset!') unless @maxWeight
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field maxCreateTime is unset!') unless @maxCreateTime
   end
 
   ::Thrift::Struct.generate_accessors self

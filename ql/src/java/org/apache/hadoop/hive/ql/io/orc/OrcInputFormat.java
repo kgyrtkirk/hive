@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.apache.hadoop.hive.ql.plan.DynamicValue.NoDynamicValuesException;
+import org.apache.hadoop.hive.common.NoDynamicValuesException;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 
@@ -555,9 +555,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       return false;
     }
     for (FileStatus file : files) {
-      // 0 length files cannot be ORC files
-      if (file.getLen() == 0) {
-        return false;
+      if (!HiveConf.getVar(conf, ConfVars.HIVE_EXECUTION_ENGINE).equals("mr")) {
+        // 0 length files cannot be ORC files, not valid for MR.
+        if (file.getLen() == 0) {
+          return false;
+        }
       }
       try {
         OrcFile.createReader(file.getPath(),
@@ -2199,6 +2201,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         } else {
           // column statistics at index 0 contains only the number of rows
           ColumnStatistics stats = stripeStatistics.getColumnStatistics()[filterColumns[pred]];
+          // if row count is 0 and where there are no nulls it means index is disabled and we don't have stats
+          if (stats.getNumberOfValues() == 0 && !stats.hasNull()) {
+            truthValues[pred] = TruthValue.YES_NO_NULL;
+            continue;
+          }
           PredicateLeaf leaf = predLeaves.get(pred);
           try {
             truthValues[pred] = RecordReaderImpl.evaluatePredicate(stats, leaf, null);

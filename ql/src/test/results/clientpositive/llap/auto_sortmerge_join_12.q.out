@@ -202,6 +202,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -268,6 +269,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -351,6 +353,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -399,6 +402,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -431,7 +435,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       tag: 1
                       auto parallelism: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -470,6 +474,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -512,7 +517,7 @@ STAGE PLANS:
                     value expressions: _col0 (type: bigint)
                     auto parallelism: false
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator

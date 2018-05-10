@@ -423,7 +423,8 @@ struct Table {
   14: optional bool temporary=false,
   15: optional bool rewriteEnabled,     // rewrite enabled or not
   16: optional CreationMetadata creationMetadata,   // only for MVs, it stores table names used and txn list at MV creation
-  17: optional string catName          // Name of the catalog the table is in
+  17: optional string catName,          // Name of the catalog the table is in
+  18: optional PrincipalType ownerType = PrincipalType.USER // owner type of this table (default to USER for backward compatibility)
 }
 
 struct Partition {
@@ -506,8 +507,8 @@ struct BinaryColumnStatsData {
 
 
 struct Decimal {
-1: required binary unscaled,
-3: required i16 scale
+3: required i16 scale, // force using scale first in Decimal.compareTo
+1: required binary unscaled
 }
 
 struct DecimalColumnStatsData {
@@ -862,6 +863,15 @@ struct CommitTxnRequest {
     2: optional string replPolicy,
 }
 
+struct ReplTblWriteIdStateRequest {
+    1: required string validWriteIdlist,
+    2: required string user,
+    3: required string hostName,
+    4: required string dbName,
+    5: required string tableName,
+    6: optional list<string> partNames,
+}
+
 // Request msg to get the valid write ids list for the given list of tables wrt to input validTxnList
 struct GetValidWriteIdsRequest {
     1: required list<string> fullTableNames, // Full table names of format <db_name>.<table_name>
@@ -884,9 +894,14 @@ struct GetValidWriteIdsResponse {
 
 // Request msg to allocate table write ids for the given list of txns
 struct AllocateTableWriteIdsRequest {
-    1: required list<i64> txnIds,
-    2: required string dbName,
-    3: required string tableName,
+    1: required string dbName,
+    2: required string tableName,
+    // Either txnIds or replPolicy+srcTxnToWriteIdList can exist in a call. txnIds is used by normal flow and
+    // replPolicy+srcTxnToWriteIdList is used by replication task.
+    3: optional list<i64> txnIds,
+    4: optional string replPolicy,
+    // The list is assumed to be sorted by both txnids and write ids. The write id list is assumed to be contiguous.
+    5: optional list<TxnToWriteId> srcTxnToWriteIdList,
 }
 
 // Map for allocated write id against the txn for which it is allocated
@@ -1512,6 +1527,17 @@ struct GetSerdeRequest {
   1: string serdeName
 }
 
+struct RuntimeStat {
+  1: optional i32 createTime,
+  2: required i32 weight,
+  3: required binary payload
+}
+
+struct GetRuntimeStatsRequest {
+  1: required i32 maxWeight,
+  2: required i32 maxCreateTime
+}
+
 // Exceptions.
 
 exception MetaException {
@@ -1995,6 +2021,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // Deprecated, use grant_revoke_privileges()
   bool revoke_privileges(1:PrivilegeBag privileges) throws(1:MetaException o1)
   GrantRevokePrivilegeResponse grant_revoke_privileges(1:GrantRevokePrivilegeRequest request) throws(1:MetaException o1);
+  // Revokes all privileges for the object and adds the newly granted privileges for it.
+  GrantRevokePrivilegeResponse refresh_privileges(1:HiveObjectRef objToRefresh, 2:GrantRevokePrivilegeRequest grantRequest) throws(1:MetaException o1);
 
   // this is used by metastore client to send UGI information to metastore server immediately
   // after setting up a connection.
@@ -2046,6 +2074,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void abort_txn(1:AbortTxnRequest rqst) throws (1:NoSuchTxnException o1)
   void abort_txns(1:AbortTxnsRequest rqst) throws (1:NoSuchTxnException o1)
   void commit_txn(1:CommitTxnRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
+  void repl_tbl_writeid_state(1: ReplTblWriteIdStateRequest rqst)
   GetValidWriteIdsResponse get_valid_write_ids(1:GetValidWriteIdsRequest rqst)
       throws (1:NoSuchTxnException o1, 2:MetaException o2)
   AllocateTableWriteIdsResponse allocate_table_write_ids(1:AllocateTableWriteIdsRequest rqst)
@@ -2166,6 +2195,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   LockResponse get_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
   bool heartbeat_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
+  
+  void add_runtime_stats(1: RuntimeStat stat) throws(1:MetaException o1)
+  list<RuntimeStat> get_runtime_stats(1: GetRuntimeStatsRequest rqst) throws(1:MetaException o1)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,
@@ -2204,5 +2236,5 @@ const string META_TABLE_STORAGE   = "storage_handler",
 const string TABLE_IS_TRANSACTIONAL = "transactional",
 const string TABLE_NO_AUTO_COMPACT = "no_auto_compaction",
 const string TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties",
-
+const string TABLE_BUCKETING_VERSION = "bucketing_version",
 

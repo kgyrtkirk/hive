@@ -188,6 +188,9 @@ public class Table implements Serializable {
       // set create time
       t.setCreateTime((int) (System.currentTimeMillis() / 1000));
     }
+    // Explictly set the bucketing version
+    t.getParameters().put(hive_metastoreConstants.TABLE_BUCKETING_VERSION,
+        "2");
     return t;
   }
 
@@ -366,14 +369,17 @@ public class Table implements Serializable {
   final public void validatePartColumnNames(
       Map<String, String> spec, boolean shouldBeFull) throws SemanticException {
     List<FieldSchema> partCols = tTable.getPartitionKeys();
+    final String tableName = Warehouse.getQualifiedName(tTable);
     if (partCols == null || (partCols.size() == 0)) {
       if (spec != null) {
-        throw new ValidationFailureSemanticException("table is not partitioned but partition spec exists: " + spec);
+        throw new ValidationFailureSemanticException(tableName +
+            " table is not partitioned but partition spec exists: " + spec);
       }
       return;
     } else if (spec == null) {
       if (shouldBeFull) {
-        throw new ValidationFailureSemanticException("table is partitioned but partition spec is not specified");
+        throw new ValidationFailureSemanticException(tableName +
+            " table is partitioned but partition spec is not specified");
       }
       return;
     }
@@ -387,10 +393,11 @@ public class Table implements Serializable {
       }
     }
     if (columnsFound < spec.size()) {
-      throw new ValidationFailureSemanticException("Partition spec " + spec + " contains non-partition columns");
+      throw new ValidationFailureSemanticException(tableName + ": Partition spec " + spec +
+          " contains non-partition columns");
     }
     if (shouldBeFull && (spec.size() != partCols.size())) {
-      throw new ValidationFailureSemanticException("partition spec " + spec
+      throw new ValidationFailureSemanticException(tableName + ": partition spec " + spec
           + " doesn't contain all (" + partCols.size() + ") partition columns");
     }
   }
@@ -399,6 +406,9 @@ public class Table implements Serializable {
     tTable.getParameters().put(name, value);
   }
 
+  // Please note : Be very careful in using this function. If not used carefully,
+  // you may end up overwriting all the existing properties. If the usecase is to
+  // add or update certain properties use setProperty() instead.
   public void setParameters(Map<String, String> params) {
     tTable.setParameters(params);
   }
@@ -448,6 +458,11 @@ public class Table implements Serializable {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public int getBucketingVersion() {
+    return Utilities.getBucketingVersion(
+        getProperty(hive_metastoreConstants.TABLE_BUCKETING_VERSION));
   }
 
    @Override
@@ -519,7 +534,7 @@ public class Table implements Serializable {
   }
 
   public boolean isPartitionKey(String colName) {
-    return getPartColByName(colName) == null ? false : true;
+    return getPartColByName(colName) != null;
   }
 
   // TODO merge this with getBucketCols function
@@ -1009,8 +1024,8 @@ public class Table implements Serializable {
   public static void validateColumns(List<FieldSchema> columns, List<FieldSchema> partCols)
       throws HiveException {
     Set<String> colNames = new HashSet<>();
-    for (FieldSchema partCol: columns) {
-      String colName = normalize(partCol.getName());
+    for (FieldSchema col: columns) {
+      String colName = normalize(col.getName());
       if (colNames.contains(colName)) {
         throw new HiveException("Duplicate column name " + colName
             + " in the table definition.");

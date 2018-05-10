@@ -249,7 +249,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     DriverCleanup driverCleanup = new DriverCleanup(driver, txnManager, splitsAppId.toString());
     boolean needsCleanup = true;
     try {
-      CommandProcessorResponse cpr = driver.compileAndRespond(query, true);
+      CommandProcessorResponse cpr = driver.compileAndRespond(query, false);
       if (cpr.getResponseCode() != 0) {
         throw new HiveException("Failed to compile query: " + cpr.getException());
       }
@@ -268,7 +268,8 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
         String tableName = "table_"+UUID.randomUUID().toString().replaceAll("[^A-Za-z0-9 ]", "");
 
-        String ctas = "create temporary table " + tableName + " as " + query;
+        String storageFormatString = getTempTableStorageFormatString(conf);
+        String ctas = "create temporary table " + tableName + " " + storageFormatString + " as " + query;
         LOG.info("Materializing the query for LLAPIF; CTAS: " + ctas);
         driver.releaseResources();
         HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, originalMode);
@@ -508,6 +509,10 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
   private SplitLocationInfo[] makeLocationHints(TaskLocationHint hint) {
     Set<String> hosts = hint.getHosts();
+    if (hosts == null) {
+      LOG.warn("No hosts");
+      return new SplitLocationInfo[0];
+    }
     if (hosts.size() != 1) {
       LOG.warn("Bad # of locations: " + hosts.size());
     }
@@ -635,6 +640,18 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     }
     Schema Schema = new Schema(colDescs);
     return Schema;
+  }
+
+  private String getTempTableStorageFormatString(HiveConf conf) {
+    String formatString = "";
+    String storageFormatOption =
+        conf.getVar(HiveConf.ConfVars.LLAP_EXTERNAL_SPLITS_TEMP_TABLE_STORAGE_FORMAT).toLowerCase();
+    if (storageFormatOption.equals("text")) {
+      formatString = "stored as textfile";
+    } else if (storageFormatOption.equals("orc")) {
+      formatString = "stored as orc";
+    }
+    return formatString;
   }
 
   @Override

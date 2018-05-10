@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -29,6 +30,7 @@ import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
+
 import java.util.List;
 
 /**
@@ -55,7 +57,7 @@ public interface HiveTxnManager {
    * @return The new transaction id.
    * @throws LockException in case of failure to start the transaction.
    */
-  List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user)  throws LockException;
+  List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user) throws LockException;
 
   /**
    * Commit the transaction in target cluster.
@@ -63,7 +65,7 @@ public interface HiveTxnManager {
    * @param srcTxnId The id of the transaction at the source cluster
    * @throws LockException in case of failure to commit the transaction.
    */
-  void replCommitTxn(String replPolicy, long srcTxnId)  throws LockException;
+  void replCommitTxn(String replPolicy, long srcTxnId) throws LockException;
 
  /**
    * Abort the transaction in target cluster.
@@ -71,7 +73,18 @@ public interface HiveTxnManager {
    * @param srcTxnId The id of the transaction at the source cluster
    * @throws LockException in case of failure to abort the transaction.
    */
-  void replRollbackTxn(String replPolicy, long srcTxnId)  throws LockException;
+  void replRollbackTxn(String replPolicy, long srcTxnId) throws LockException;
+
+ /**
+  * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.
+  * @param validWriteIdList Snapshot of writeid list when the table/partition is dumped.
+  * @param dbName Database name
+  * @param tableName Table which is written.
+  * @param partNames List of partitions being written.
+  * @throws LockException in case of failure.
+  */
+  void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
+          throws LockException;
 
   /**
    * Get the lock manager.  This must be used rather than instantiating an
@@ -252,7 +265,7 @@ public interface HiveTxnManager {
   boolean recordSnapshot(QueryPlan queryPlan);
 
   boolean isImplicitTransactionOpen();
-  
+
   boolean isTxnOpen();
   /**
    * if {@code isTxnOpen()}, returns the currently active transaction ID.
@@ -263,6 +276,17 @@ public interface HiveTxnManager {
    * if {@code isTxnOpen()}, returns the table write ID associated with current active transaction.
    */
   long getTableWriteId(String dbName, String tableName) throws LockException;
+
+  /**
+   * Allocates write id for each transaction in the list.
+   * @param dbName database name
+   * @param tableName the name of the table to allocate the write id
+   * @param replPolicy used by replication task to identify the source cluster
+   * @param srcTxnToWriteIdList List of txn id to write id Map
+   * @throws LockException
+   */
+  void replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
+                                      List<TxnToWriteId> srcTxnToWriteIdList) throws LockException;
 
   /**
    * Should be though of more as a unique write operation ID in a given txn (at QueryPlan level).

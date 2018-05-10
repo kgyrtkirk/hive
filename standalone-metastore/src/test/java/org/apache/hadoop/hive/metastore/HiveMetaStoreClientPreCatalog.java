@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -53,7 +54,6 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -2032,6 +2032,31 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public boolean refresh_privileges(HiveObjectRef objToRefresh,
+      PrivilegeBag grantPrivileges) throws MetaException,
+      TException {
+    String defaultCat = getDefaultCatalog(conf);
+    objToRefresh.setCatName(defaultCat);
+
+    if (grantPrivileges.getPrivileges() != null) {
+      for (HiveObjectPrivilege priv : grantPrivileges.getPrivileges()) {
+        if (!priv.getHiveObject().isSetCatName()) {
+          priv.getHiveObject().setCatName(defaultCat);
+        }
+      }
+    }
+    GrantRevokePrivilegeRequest grantReq = new GrantRevokePrivilegeRequest();
+    grantReq.setRequestType(GrantRevokeType.GRANT);
+    grantReq.setPrivileges(grantPrivileges);
+
+    GrantRevokePrivilegeResponse res = client.refresh_privileges(objToRefresh, grantReq);
+    if (!res.isSetSuccess()) {
+      throw new MetaException("GrantRevokePrivilegeResponse missing success field");
+    }
+    return res.isSuccess();
+  }
+
+  @Override
   public PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject,
       String userName, List<String> groupNames) throws MetaException,
       TException {
@@ -2140,10 +2165,10 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public ValidTxnWriteIdList getValidWriteIds(Long currentTxnId, List<String> tablesList, String validTxnList)
+  public List<TableValidWriteIds> getValidWriteIds(List<String> tablesList, String validTxnList)
           throws TException {
     GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(tablesList, validTxnList);
-    return TxnUtils.createValidTxnWriteIdList(currentTxnId, client.get_valid_write_ids(rqst));
+    return client.get_valid_write_ids(rqst).getTblValidWriteIds();
   }
 
   @Override
@@ -2224,6 +2249,33 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
+          throws TException {
+    String user;
+    try {
+      user = UserGroupInformation.getCurrentUser().getUserName();
+    } catch (IOException e) {
+      LOG.error("Unable to resolve current user name " + e.getMessage());
+      throw new RuntimeException(e);
+    }
+
+    String hostName;
+    try {
+      hostName = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      LOG.error("Unable to resolve my host name " + e.getMessage());
+      throw new RuntimeException(e);
+    }
+
+    ReplTblWriteIdStateRequest rqst
+            = new ReplTblWriteIdStateRequest(validWriteIdList, user, hostName, dbName, tableName);
+    if (partNames != null) {
+      rqst.setPartNames(partNames);
+    }
+    client.repl_tbl_writeid_state(rqst);
+  }
+
+  @Override
   public long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException {
     return allocateTableWriteIdsBatch(Collections.singletonList(txnId), dbName, tableName).get(0).getWriteId();
   }
@@ -2231,9 +2283,22 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName)
           throws TException {
-    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(txnIds, dbName, tableName);
-    AllocateTableWriteIdsResponse writeIds = client.allocate_table_write_ids(rqst);
-    return writeIds.getTxnToWriteIds();
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
+    rqst.setTxnIds(txnIds);
+    return allocateTableWriteIdsBatchIntr(rqst);
+  }
+
+  @Override
+  public List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName,
+                                         String replPolicy, List<TxnToWriteId> srcTxnToWriteIdList) throws TException {
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
+    rqst.setReplPolicy(replPolicy);
+    rqst.setSrcTxnToWriteIdList(srcTxnToWriteIdList);
+    return allocateTableWriteIdsBatchIntr(rqst);
+  }
+
+  private List<TxnToWriteId> allocateTableWriteIdsBatchIntr(AllocateTableWriteIdsRequest rqst) throws TException {
+    return client.allocate_table_write_ids(rqst).getTxnToWriteIds();
   }
 
   @Override
@@ -2370,19 +2435,25 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     rqst.setMaxEvents(maxEvents);
     NotificationEventResponse rsp = client.get_next_notification(rqst);
     LOG.debug("Got back " + rsp.getEventsSize() + " events");
-    if (filter == null) {
-      return rsp;
-    } else {
-      NotificationEventResponse filtered = new NotificationEventResponse();
-      if (rsp != null && rsp.getEvents() != null) {
-        for (NotificationEvent e : rsp.getEvents()) {
-          if (filter.accept(e)) {
-            filtered.addToEvents(e);
-          }
+    NotificationEventResponse filtered = new NotificationEventResponse();
+    if (rsp != null && rsp.getEvents() != null) {
+      long nextEventId = lastEventId + 1;
+      for (NotificationEvent e : rsp.getEvents()) {
+        if (e.getEventId() != nextEventId) {
+          LOG.error("Requested events are found missing in NOTIFICATION_LOG table. Expected: {}, Actual: {}. "
+                  + "Probably, cleaner would've cleaned it up. "
+                  + "Try setting higher value for hive.metastore.event.db.listener.timetolive. "
+                  + "Also, bootstrap the system again to get back the consistent replicated state.",
+                  nextEventId, e.getEventId());
+          throw new IllegalStateException("Notification events are missing.");
         }
+        if ((filter != null) && filter.accept(e)) {
+          filtered.addToEvents(e);
+        }
+        nextEventId++;
       }
-      return filtered;
     }
+    return (filter != null) ? filtered : rsp;
   }
 
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
@@ -3331,6 +3402,16 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   /** {@inheritDoc} */
   @Override
   public boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void addRuntimeStat(RuntimeStat stat) throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<RuntimeStat> getRuntimeStats(int maxWeight, int maxCreateTime) throws TException {
     throw new UnsupportedOperationException();
   }
 }

@@ -1,3 +1,4 @@
+SET hive.vectorized.execution.enabled=false;
 CREATE TABLE druid_kafka_test(`__time` timestamp, page string, `user` string, language string, added int, deleted int)
         STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
         TBLPROPERTIES (
@@ -8,7 +9,7 @@ CREATE TABLE druid_kafka_test(`__time` timestamp, page string, `user` string, la
         "druid.kafka.ingestion.useEarliestOffset" = "true",
         "druid.kafka.ingestion.maxRowsInMemory" = "5",
         "druid.kafka.ingestion.startDelay" = "PT1S",
-        "druid.kafka.ingestion.taskDuration" = "PT30S",
+        "druid.kafka.ingestion.taskDuration" = "PT20S",
         "druid.kafka.ingestion.period" = "PT1S"
         );
 
@@ -17,7 +18,7 @@ ALTER TABLE druid_kafka_test SET TBLPROPERTIES('druid.kafka.ingestion' = 'START'
 !curl -ss http://localhost:8081/druid/indexer/v1/supervisor;
 
 -- Sleep for some time for ingestion tasks to ingest events
-!sleep 50;
+!sleep 60;
 
 DESCRIBE druid_kafka_test;
 DESCRIBE EXTENDED druid_kafka_test;
@@ -31,7 +32,7 @@ Select page FROM druid_kafka_test order by page;
 ALTER TABLE druid_kafka_test SET TBLPROPERTIES('druid.kafka.ingestion' = 'RESET');
 
 -- Sleep for some time for ingestion tasks to ingest events
-!sleep 50;
+!sleep 60;
 
 DESCRIBE druid_kafka_test;
 DESCRIBE EXTENDED druid_kafka_test;

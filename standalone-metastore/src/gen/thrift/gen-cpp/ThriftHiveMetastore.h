@@ -149,6 +149,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual bool grant_privileges(const PrivilegeBag& privileges) = 0;
   virtual bool revoke_privileges(const PrivilegeBag& privileges) = 0;
   virtual void grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const GrantRevokePrivilegeRequest& request) = 0;
+  virtual void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest) = 0;
   virtual void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names) = 0;
   virtual void get_delegation_token(std::string& _return, const std::string& token_owner, const std::string& renewer_kerberos_principal_name) = 0;
   virtual int64_t renew_delegation_token(const std::string& token_str_form) = 0;
@@ -167,6 +168,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void abort_txn(const AbortTxnRequest& rqst) = 0;
   virtual void abort_txns(const AbortTxnsRequest& rqst) = 0;
   virtual void commit_txn(const CommitTxnRequest& rqst) = 0;
+  virtual void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst) = 0;
   virtual void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst) = 0;
   virtual void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst) = 0;
   virtual void lock(LockResponse& _return, const LockRequest& rqst) = 0;
@@ -224,6 +226,8 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_serde(SerDeInfo& _return, const GetSerdeRequest& rqst) = 0;
   virtual void get_lock_materialization_rebuild(LockResponse& _return, const std::string& dbName, const std::string& tableName, const int64_t txnId) = 0;
   virtual bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId) = 0;
+  virtual void add_runtime_stats(const RuntimeStat& stat) = 0;
+  virtual void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -656,6 +660,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void grant_revoke_privileges(GrantRevokePrivilegeResponse& /* _return */, const GrantRevokePrivilegeRequest& /* request */) {
     return;
   }
+  void refresh_privileges(GrantRevokePrivilegeResponse& /* _return */, const HiveObjectRef& /* objToRefresh */, const GrantRevokePrivilegeRequest& /* grantRequest */) {
+    return;
+  }
   void set_ugi(std::vector<std::string> & /* _return */, const std::string& /* user_name */, const std::vector<std::string> & /* group_names */) {
     return;
   }
@@ -713,6 +720,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void commit_txn(const CommitTxnRequest& /* rqst */) {
+    return;
+  }
+  void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& /* rqst */) {
     return;
   }
   void get_valid_write_ids(GetValidWriteIdsResponse& /* _return */, const GetValidWriteIdsRequest& /* rqst */) {
@@ -886,6 +896,12 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   bool heartbeat_lock_materialization_rebuild(const std::string& /* dbName */, const std::string& /* tableName */, const int64_t /* txnId */) {
     bool _return = false;
     return _return;
+  }
+  void add_runtime_stats(const RuntimeStat& /* stat */) {
+    return;
+  }
+  void get_runtime_stats(std::vector<RuntimeStat> & /* _return */, const GetRuntimeStatsRequest& /* rqst */) {
+    return;
   }
 };
 
@@ -17156,6 +17172,125 @@ class ThriftHiveMetastore_grant_revoke_privileges_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_refresh_privileges_args__isset {
+  _ThriftHiveMetastore_refresh_privileges_args__isset() : objToRefresh(false), grantRequest(false) {}
+  bool objToRefresh :1;
+  bool grantRequest :1;
+} _ThriftHiveMetastore_refresh_privileges_args__isset;
+
+class ThriftHiveMetastore_refresh_privileges_args {
+ public:
+
+  ThriftHiveMetastore_refresh_privileges_args(const ThriftHiveMetastore_refresh_privileges_args&);
+  ThriftHiveMetastore_refresh_privileges_args& operator=(const ThriftHiveMetastore_refresh_privileges_args&);
+  ThriftHiveMetastore_refresh_privileges_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_refresh_privileges_args() throw();
+  HiveObjectRef objToRefresh;
+  GrantRevokePrivilegeRequest grantRequest;
+
+  _ThriftHiveMetastore_refresh_privileges_args__isset __isset;
+
+  void __set_objToRefresh(const HiveObjectRef& val);
+
+  void __set_grantRequest(const GrantRevokePrivilegeRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_refresh_privileges_args & rhs) const
+  {
+    if (!(objToRefresh == rhs.objToRefresh))
+      return false;
+    if (!(grantRequest == rhs.grantRequest))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_refresh_privileges_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_refresh_privileges_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_refresh_privileges_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_refresh_privileges_pargs() throw();
+  const HiveObjectRef* objToRefresh;
+  const GrantRevokePrivilegeRequest* grantRequest;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_refresh_privileges_result__isset {
+  _ThriftHiveMetastore_refresh_privileges_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_refresh_privileges_result__isset;
+
+class ThriftHiveMetastore_refresh_privileges_result {
+ public:
+
+  ThriftHiveMetastore_refresh_privileges_result(const ThriftHiveMetastore_refresh_privileges_result&);
+  ThriftHiveMetastore_refresh_privileges_result& operator=(const ThriftHiveMetastore_refresh_privileges_result&);
+  ThriftHiveMetastore_refresh_privileges_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_refresh_privileges_result() throw();
+  GrantRevokePrivilegeResponse success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_refresh_privileges_result__isset __isset;
+
+  void __set_success(const GrantRevokePrivilegeResponse& val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_refresh_privileges_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_refresh_privileges_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_refresh_privileges_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_refresh_privileges_presult__isset {
+  _ThriftHiveMetastore_refresh_privileges_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_refresh_privileges_presult__isset;
+
+class ThriftHiveMetastore_refresh_privileges_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_refresh_privileges_presult() throw();
+  GrantRevokePrivilegeResponse* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_refresh_privileges_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_set_ugi_args__isset {
   _ThriftHiveMetastore_set_ugi_args__isset() : user_name(false), group_names(false) {}
   bool user_name :1;
@@ -19051,6 +19186,92 @@ class ThriftHiveMetastore_commit_txn_presult {
   TxnAbortedException o2;
 
   _ThriftHiveMetastore_commit_txn_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_repl_tbl_writeid_state_args__isset {
+  _ThriftHiveMetastore_repl_tbl_writeid_state_args__isset() : rqst(false) {}
+  bool rqst :1;
+} _ThriftHiveMetastore_repl_tbl_writeid_state_args__isset;
+
+class ThriftHiveMetastore_repl_tbl_writeid_state_args {
+ public:
+
+  ThriftHiveMetastore_repl_tbl_writeid_state_args(const ThriftHiveMetastore_repl_tbl_writeid_state_args&);
+  ThriftHiveMetastore_repl_tbl_writeid_state_args& operator=(const ThriftHiveMetastore_repl_tbl_writeid_state_args&);
+  ThriftHiveMetastore_repl_tbl_writeid_state_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_repl_tbl_writeid_state_args() throw();
+  ReplTblWriteIdStateRequest rqst;
+
+  _ThriftHiveMetastore_repl_tbl_writeid_state_args__isset __isset;
+
+  void __set_rqst(const ReplTblWriteIdStateRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_repl_tbl_writeid_state_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_repl_tbl_writeid_state_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_repl_tbl_writeid_state_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_repl_tbl_writeid_state_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_repl_tbl_writeid_state_pargs() throw();
+  const ReplTblWriteIdStateRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_repl_tbl_writeid_state_result {
+ public:
+
+  ThriftHiveMetastore_repl_tbl_writeid_state_result(const ThriftHiveMetastore_repl_tbl_writeid_state_result&);
+  ThriftHiveMetastore_repl_tbl_writeid_state_result& operator=(const ThriftHiveMetastore_repl_tbl_writeid_state_result&);
+  ThriftHiveMetastore_repl_tbl_writeid_state_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_repl_tbl_writeid_state_result() throw();
+
+  bool operator == (const ThriftHiveMetastore_repl_tbl_writeid_state_result & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_repl_tbl_writeid_state_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_repl_tbl_writeid_state_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_repl_tbl_writeid_state_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_repl_tbl_writeid_state_presult() throw();
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -25644,6 +25865,222 @@ class ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_add_runtime_stats_args__isset {
+  _ThriftHiveMetastore_add_runtime_stats_args__isset() : stat(false) {}
+  bool stat :1;
+} _ThriftHiveMetastore_add_runtime_stats_args__isset;
+
+class ThriftHiveMetastore_add_runtime_stats_args {
+ public:
+
+  ThriftHiveMetastore_add_runtime_stats_args(const ThriftHiveMetastore_add_runtime_stats_args&);
+  ThriftHiveMetastore_add_runtime_stats_args& operator=(const ThriftHiveMetastore_add_runtime_stats_args&);
+  ThriftHiveMetastore_add_runtime_stats_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_runtime_stats_args() throw();
+  RuntimeStat stat;
+
+  _ThriftHiveMetastore_add_runtime_stats_args__isset __isset;
+
+  void __set_stat(const RuntimeStat& val);
+
+  bool operator == (const ThriftHiveMetastore_add_runtime_stats_args & rhs) const
+  {
+    if (!(stat == rhs.stat))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_runtime_stats_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_runtime_stats_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_add_runtime_stats_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_runtime_stats_pargs() throw();
+  const RuntimeStat* stat;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_runtime_stats_result__isset {
+  _ThriftHiveMetastore_add_runtime_stats_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_add_runtime_stats_result__isset;
+
+class ThriftHiveMetastore_add_runtime_stats_result {
+ public:
+
+  ThriftHiveMetastore_add_runtime_stats_result(const ThriftHiveMetastore_add_runtime_stats_result&);
+  ThriftHiveMetastore_add_runtime_stats_result& operator=(const ThriftHiveMetastore_add_runtime_stats_result&);
+  ThriftHiveMetastore_add_runtime_stats_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_runtime_stats_result() throw();
+  MetaException o1;
+
+  _ThriftHiveMetastore_add_runtime_stats_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_add_runtime_stats_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_runtime_stats_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_runtime_stats_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_runtime_stats_presult__isset {
+  _ThriftHiveMetastore_add_runtime_stats_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_add_runtime_stats_presult__isset;
+
+class ThriftHiveMetastore_add_runtime_stats_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_runtime_stats_presult() throw();
+  MetaException o1;
+
+  _ThriftHiveMetastore_add_runtime_stats_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_runtime_stats_args__isset {
+  _ThriftHiveMetastore_get_runtime_stats_args__isset() : rqst(false) {}
+  bool rqst :1;
+} _ThriftHiveMetastore_get_runtime_stats_args__isset;
+
+class ThriftHiveMetastore_get_runtime_stats_args {
+ public:
+
+  ThriftHiveMetastore_get_runtime_stats_args(const ThriftHiveMetastore_get_runtime_stats_args&);
+  ThriftHiveMetastore_get_runtime_stats_args& operator=(const ThriftHiveMetastore_get_runtime_stats_args&);
+  ThriftHiveMetastore_get_runtime_stats_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_runtime_stats_args() throw();
+  GetRuntimeStatsRequest rqst;
+
+  _ThriftHiveMetastore_get_runtime_stats_args__isset __isset;
+
+  void __set_rqst(const GetRuntimeStatsRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_runtime_stats_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_runtime_stats_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_runtime_stats_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_runtime_stats_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_runtime_stats_pargs() throw();
+  const GetRuntimeStatsRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_runtime_stats_result__isset {
+  _ThriftHiveMetastore_get_runtime_stats_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_runtime_stats_result__isset;
+
+class ThriftHiveMetastore_get_runtime_stats_result {
+ public:
+
+  ThriftHiveMetastore_get_runtime_stats_result(const ThriftHiveMetastore_get_runtime_stats_result&);
+  ThriftHiveMetastore_get_runtime_stats_result& operator=(const ThriftHiveMetastore_get_runtime_stats_result&);
+  ThriftHiveMetastore_get_runtime_stats_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_runtime_stats_result() throw();
+  std::vector<RuntimeStat>  success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_runtime_stats_result__isset __isset;
+
+  void __set_success(const std::vector<RuntimeStat> & val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_runtime_stats_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_runtime_stats_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_runtime_stats_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_runtime_stats_presult__isset {
+  _ThriftHiveMetastore_get_runtime_stats_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_runtime_stats_presult__isset;
+
+class ThriftHiveMetastore_get_runtime_stats_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_runtime_stats_presult() throw();
+  std::vector<RuntimeStat> * success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_runtime_stats_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  ::facebook::fb303::FacebookServiceClient {
  public:
   ThriftHiveMetastoreClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -26036,6 +26473,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const GrantRevokePrivilegeRequest& request);
   void send_grant_revoke_privileges(const GrantRevokePrivilegeRequest& request);
   void recv_grant_revoke_privileges(GrantRevokePrivilegeResponse& _return);
+  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest);
+  void send_refresh_privileges(const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest);
+  void recv_refresh_privileges(GrantRevokePrivilegeResponse& _return);
   void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names);
   void send_set_ugi(const std::string& user_name, const std::vector<std::string> & group_names);
   void recv_set_ugi(std::vector<std::string> & _return);
@@ -26090,6 +26530,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void commit_txn(const CommitTxnRequest& rqst);
   void send_commit_txn(const CommitTxnRequest& rqst);
   void recv_commit_txn();
+  void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst);
+  void send_repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst);
+  void recv_repl_tbl_writeid_state();
   void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst);
   void send_get_valid_write_ids(const GetValidWriteIdsRequest& rqst);
   void recv_get_valid_write_ids(GetValidWriteIdsResponse& _return);
@@ -26261,6 +26704,12 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId);
   void send_heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId);
   bool recv_heartbeat_lock_materialization_rebuild();
+  void add_runtime_stats(const RuntimeStat& stat);
+  void send_add_runtime_stats(const RuntimeStat& stat);
+  void recv_add_runtime_stats();
+  void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst);
+  void send_get_runtime_stats(const GetRuntimeStatsRequest& rqst);
+  void recv_get_runtime_stats(std::vector<RuntimeStat> & _return);
 };
 
 class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceProcessor {
@@ -26398,6 +26847,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_grant_privileges(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_revoke_privileges(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_grant_revoke_privileges(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_refresh_privileges(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_set_ugi(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_delegation_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_renew_delegation_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -26416,6 +26866,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_abort_txn(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_abort_txns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_commit_txn(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_repl_tbl_writeid_state(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_valid_write_ids(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_allocate_table_write_ids(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_lock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -26473,6 +26924,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_serde(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_lock_materialization_rebuild(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_heartbeat_lock_materialization_rebuild(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_add_runtime_stats(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_runtime_stats(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ThriftHiveMetastoreProcessor(boost::shared_ptr<ThriftHiveMetastoreIf> iface) :
      ::facebook::fb303::FacebookServiceProcessor(iface),
@@ -26604,6 +27057,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["grant_privileges"] = &ThriftHiveMetastoreProcessor::process_grant_privileges;
     processMap_["revoke_privileges"] = &ThriftHiveMetastoreProcessor::process_revoke_privileges;
     processMap_["grant_revoke_privileges"] = &ThriftHiveMetastoreProcessor::process_grant_revoke_privileges;
+    processMap_["refresh_privileges"] = &ThriftHiveMetastoreProcessor::process_refresh_privileges;
     processMap_["set_ugi"] = &ThriftHiveMetastoreProcessor::process_set_ugi;
     processMap_["get_delegation_token"] = &ThriftHiveMetastoreProcessor::process_get_delegation_token;
     processMap_["renew_delegation_token"] = &ThriftHiveMetastoreProcessor::process_renew_delegation_token;
@@ -26622,6 +27076,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["abort_txn"] = &ThriftHiveMetastoreProcessor::process_abort_txn;
     processMap_["abort_txns"] = &ThriftHiveMetastoreProcessor::process_abort_txns;
     processMap_["commit_txn"] = &ThriftHiveMetastoreProcessor::process_commit_txn;
+    processMap_["repl_tbl_writeid_state"] = &ThriftHiveMetastoreProcessor::process_repl_tbl_writeid_state;
     processMap_["get_valid_write_ids"] = &ThriftHiveMetastoreProcessor::process_get_valid_write_ids;
     processMap_["allocate_table_write_ids"] = &ThriftHiveMetastoreProcessor::process_allocate_table_write_ids;
     processMap_["lock"] = &ThriftHiveMetastoreProcessor::process_lock;
@@ -26679,6 +27134,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_serde"] = &ThriftHiveMetastoreProcessor::process_get_serde;
     processMap_["get_lock_materialization_rebuild"] = &ThriftHiveMetastoreProcessor::process_get_lock_materialization_rebuild;
     processMap_["heartbeat_lock_materialization_rebuild"] = &ThriftHiveMetastoreProcessor::process_heartbeat_lock_materialization_rebuild;
+    processMap_["add_runtime_stats"] = &ThriftHiveMetastoreProcessor::process_add_runtime_stats;
+    processMap_["get_runtime_stats"] = &ThriftHiveMetastoreProcessor::process_get_runtime_stats;
   }
 
   virtual ~ThriftHiveMetastoreProcessor() {}
@@ -27928,6 +28385,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->refresh_privileges(_return, objToRefresh, grantRequest);
+    }
+    ifaces_[i]->refresh_privileges(_return, objToRefresh, grantRequest);
+    return;
+  }
+
   void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -28096,6 +28563,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->commit_txn(rqst);
     }
     ifaces_[i]->commit_txn(rqst);
+  }
+
+  void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->repl_tbl_writeid_state(rqst);
+    }
+    ifaces_[i]->repl_tbl_writeid_state(rqst);
   }
 
   void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst) {
@@ -28654,6 +29130,25 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return ifaces_[i]->heartbeat_lock_materialization_rebuild(dbName, tableName, txnId);
   }
 
+  void add_runtime_stats(const RuntimeStat& stat) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->add_runtime_stats(stat);
+    }
+    ifaces_[i]->add_runtime_stats(stat);
+  }
+
+  void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_runtime_stats(_return, rqst);
+    }
+    ifaces_[i]->get_runtime_stats(_return, rqst);
+    return;
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -29051,6 +29546,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const GrantRevokePrivilegeRequest& request);
   int32_t send_grant_revoke_privileges(const GrantRevokePrivilegeRequest& request);
   void recv_grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const int32_t seqid);
+  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest);
+  int32_t send_refresh_privileges(const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest);
+  void recv_refresh_privileges(GrantRevokePrivilegeResponse& _return, const int32_t seqid);
   void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names);
   int32_t send_set_ugi(const std::string& user_name, const std::vector<std::string> & group_names);
   void recv_set_ugi(std::vector<std::string> & _return, const int32_t seqid);
@@ -29105,6 +29603,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void commit_txn(const CommitTxnRequest& rqst);
   int32_t send_commit_txn(const CommitTxnRequest& rqst);
   void recv_commit_txn(const int32_t seqid);
+  void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst);
+  int32_t send_repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst);
+  void recv_repl_tbl_writeid_state(const int32_t seqid);
   void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst);
   int32_t send_get_valid_write_ids(const GetValidWriteIdsRequest& rqst);
   void recv_get_valid_write_ids(GetValidWriteIdsResponse& _return, const int32_t seqid);
@@ -29276,6 +29777,12 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId);
   int32_t send_heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId);
   bool recv_heartbeat_lock_materialization_rebuild(const int32_t seqid);
+  void add_runtime_stats(const RuntimeStat& stat);
+  int32_t send_add_runtime_stats(const RuntimeStat& stat);
+  void recv_add_runtime_stats(const int32_t seqid);
+  void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst);
+  int32_t send_get_runtime_stats(const GetRuntimeStatsRequest& rqst);
+  void recv_get_runtime_stats(std::vector<RuntimeStat> & _return, const int32_t seqid);
 };
 
 #ifdef _WIN32

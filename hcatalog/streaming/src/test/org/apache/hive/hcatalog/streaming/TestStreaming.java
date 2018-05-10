@@ -67,6 +67,8 @@ import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -353,10 +355,10 @@ public class TestStreaming {
     //todo: why does it need transactional_properties?
     queryTable(driver, "create table default.streamingnobuckets (a string, b string) stored as orc TBLPROPERTIES('transactional'='true', 'transactional_properties'='default')");
     queryTable(driver, "insert into default.streamingnobuckets values('foo','bar')");
-    List<String> rs = queryTable(driver, "select * from default.streamingnobuckets");
+    List<String> rs = queryTable(driver, "select * from default.streamingNoBuckets");
     Assert.assertEquals(1, rs.size());
     Assert.assertEquals("foo\tbar", rs.get(0));
-    HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, "default", "streamingnobuckets", null);
+    HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, "Default", "StreamingNoBuckets", null);
     String[] colNames1 = new String[] { "a", "b" };
     StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
     DelimitedInputWriter wr = new DelimitedInputWriter(colNames1,",",  endPt, connection);
@@ -365,6 +367,11 @@ public class TestStreaming {
     txnBatch.beginNextTransaction();
     txnBatch.write("a1,b2".getBytes());
     txnBatch.write("a3,b4".getBytes());
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    ShowLocksResponse resp = txnHandler.showLocks(new ShowLocksRequest());
+    Assert.assertEquals(resp.getLocksSize(), 1);
+    Assert.assertEquals("streamingnobuckets", resp.getLocks().get(0).getTablename());
+    Assert.assertEquals("default", resp.getLocks().get(0).getDbname());
     txnBatch.commit();
     txnBatch.beginNextTransaction();
     txnBatch.write("a5,b6".getBytes());
@@ -432,68 +439,75 @@ public class TestStreaming {
     String tableLoc  = "'" + dbUri + Path.SEPARATOR + "streamedtable" + "'";
     String tableLoc2 = "'" + dbUri + Path.SEPARATOR + "finaltable" + "'";
     String tableLoc3 = "'" + dbUri + Path.SEPARATOR + "nobucket" + "'";
+    // disabling vectorization as this test yields incorrect results with vectorization
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    try (IDriver driver = DriverFactory.newDriver(conf)) {
+      runDDL(driver, "create database testBucketing3");
+      runDDL(driver, "use testBucketing3");
+      runDDL(driver, "create table streamedtable ( key1 string,key2 int,data string ) clustered by ( key1,key2 ) into "
+        + bucketCount + " buckets  stored as orc  location " + tableLoc + " TBLPROPERTIES ('transactional'='true')");
+      //  In 'nobucket' table we capture bucketid from streamedtable to workaround a hive bug that prevents joins two identically bucketed tables
+      runDDL(driver, "create table nobucket ( bucketid int, key1 string,key2 int,data string ) location " + tableLoc3);
+      runDDL(driver,
+        "create table finaltable ( bucketid int, key1 string,key2 int,data string ) clustered by ( key1,key2 ) into "
+          + bucketCount + " buckets  stored as orc location " + tableLoc2 + " TBLPROPERTIES ('transactional'='true')");
 
-    runDDL(driver, "create database testBucketing3");
-    runDDL(driver, "use testBucketing3");
-    runDDL(driver, "create table streamedtable ( key1 string,key2 int,data string ) clustered by ( key1,key2 ) into "
-            + bucketCount + " buckets  stored as orc  location " + tableLoc + " TBLPROPERTIES ('transactional'='true')") ;
-//  In 'nobucket' table we capture bucketid from streamedtable to workaround a hive bug that prevents joins two identically bucketed tables
-    runDDL(driver, "create table nobucket ( bucketid int, key1 string,key2 int,data string ) location " + tableLoc3) ;
-    runDDL(driver, "create table finaltable ( bucketid int, key1 string,key2 int,data string ) clustered by ( key1,key2 ) into "
-            + bucketCount + " buckets  stored as orc location " + tableLoc2 + " TBLPROPERTIES ('transactional'='true')");
 
+      String[] records = new String[]{
+        "PSFAHYLZVC,29,EPNMA",
+        "PPPRKWAYAU,96,VUTEE",
+        "MIAOFERCHI,3,WBDSI",
+        "CEGQAZOWVN,0,WCUZL",
+        "XWAKMNSVQF,28,YJVHU",
+        "XBWTSAJWME,2,KDQFO",
+        "FUVLQTAXAY,5,LDSDG",
+        "QTQMDJMGJH,6,QBOMA",
+        "EFLOTLWJWN,71,GHWPS",
+        "PEQNAOJHCM,82,CAAFI",
+        "MOEKQLGZCP,41,RUACR",
+        "QZXMCOPTID,37,LFLWE",
+        "EYALVWICRD,13,JEZLC",
+        "VYWLZAYTXX,16,DMVZX",
+        "OSALYSQIXR,47,HNZVE",
+        "JGKVHKCEGQ,25,KSCJB",
+        "WQFMMYDHET,12,DTRWA",
+        "AJOVAYZKZQ,15,YBKFO",
+        "YAQONWCUAU,31,QJNHZ",
+        "DJBXUEUOEB,35,IYCBL"
+      };
 
-    String[] records = new String[] {
-    "PSFAHYLZVC,29,EPNMA",
-    "PPPRKWAYAU,96,VUTEE",
-    "MIAOFERCHI,3,WBDSI",
-    "CEGQAZOWVN,0,WCUZL",
-    "XWAKMNSVQF,28,YJVHU",
-    "XBWTSAJWME,2,KDQFO",
-    "FUVLQTAXAY,5,LDSDG",
-    "QTQMDJMGJH,6,QBOMA",
-    "EFLOTLWJWN,71,GHWPS",
-    "PEQNAOJHCM,82,CAAFI",
-    "MOEKQLGZCP,41,RUACR",
-    "QZXMCOPTID,37,LFLWE",
-    "EYALVWICRD,13,JEZLC",
-    "VYWLZAYTXX,16,DMVZX",
-    "OSALYSQIXR,47,HNZVE",
-    "JGKVHKCEGQ,25,KSCJB",
-    "WQFMMYDHET,12,DTRWA",
-    "AJOVAYZKZQ,15,YBKFO",
-    "YAQONWCUAU,31,QJNHZ",
-    "DJBXUEUOEB,35,IYCBL"
-    };
+      HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, "testBucketing3", "streamedtable", null);
+      String[] colNames1 = new String[]{"key1", "key2", "data"};
+      DelimitedInputWriter wr = new DelimitedInputWriter(colNames1, ",", endPt);
+      StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
 
-    HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, "testBucketing3", "streamedtable", null);
-    String[] colNames1 = new String[] { "key1", "key2", "data" };
-    DelimitedInputWriter wr = new DelimitedInputWriter(colNames1,",",  endPt);
-    StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
+      TransactionBatch txnBatch = connection.fetchTransactionBatch(2, wr);
+      txnBatch.beginNextTransaction();
 
-    TransactionBatch txnBatch =  connection.fetchTransactionBatch(2, wr);
-    txnBatch.beginNextTransaction();
+      for (String record : records) {
+        txnBatch.write(record.toString().getBytes());
+      }
 
-    for (String record : records) {
-      txnBatch.write(record.toString().getBytes());
+      txnBatch.commit();
+      txnBatch.close();
+      connection.close();
+
+      ArrayList<String> res1 = queryTable(driver, "select row__id.bucketid, * from streamedtable order by key2");
+      for (String re : res1) {
+        System.out.println(re);
+      }
+
+      driver.run("insert into nobucket select row__id.bucketid,* from streamedtable");
+      runDDL(driver, " insert into finaltable select * from nobucket");
+      ArrayList<String> res2 = queryTable(driver,
+        "select row__id.bucketid,* from finaltable where row__id.bucketid<>bucketid");
+      for (String s : res2) {
+        LOG.error(s);
+      }
+      Assert.assertTrue(res2.isEmpty());
+    } finally {
+      conf.unset(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname);
     }
-
-    txnBatch.commit();
-    txnBatch.close();
-    connection.close();
-
-    ArrayList<String> res1 = queryTable(driver, "select row__id.bucketid, * from streamedtable order by key2");
-    for (String re : res1) {
-      System.out.println(re);
-    }
-
-    driver.run("insert into nobucket select row__id.bucketid,* from streamedtable");
-    runDDL(driver, " insert into finaltable select * from nobucket");
-    ArrayList<String> res2 = queryTable(driver, "select row__id.bucketid,* from finaltable where row__id.bucketid<>bucketid");
-    for (String s : res2) {
-      LOG.error(s);
-    }
-    Assert.assertTrue(res2.isEmpty());
   }
 
 
@@ -1484,9 +1498,9 @@ public class TestStreaming {
 
     // assert bucket listing is as expected
     Assert.assertEquals("number of buckets does not match expectation", actual1.values().size(), 3);
-    Assert.assertEquals("records in bucket does not match expectation", actual1.get(0).size(), 2);
+    Assert.assertTrue("bucket 0 shouldn't have been created", actual1.get(0) == null);
     Assert.assertEquals("records in bucket does not match expectation", actual1.get(1).size(), 1);
-    Assert.assertTrue("bucket 2 shouldn't have been created", actual1.get(2) == null);
+    Assert.assertEquals("records in bucket does not match expectation", actual1.get(2).size(), 2);
     Assert.assertEquals("records in bucket does not match expectation", actual1.get(3).size(), 1);
   }
   private void runCmdOnDriver(String cmd) throws QueryFailedException {
@@ -1617,7 +1631,7 @@ public class TestStreaming {
       } else if (file.contains("bucket_00001")) {
         corruptDataFile(file, conf, -1);
       } else if (file.contains("bucket_00002")) {
-        Assert.assertFalse("bucket 2 shouldn't have been created", true);
+        corruptDataFile(file, conf, 100);
       } else if (file.contains("bucket_00003")) {
         corruptDataFile(file, conf, 100);
       }
@@ -1647,9 +1661,9 @@ public class TestStreaming {
     System.setErr(origErr);
 
     errDump = new String(myErr.toByteArray());
-    Assert.assertEquals(true, errDump.contains("bucket_00000 recovered successfully!"));
-    Assert.assertEquals(true, errDump.contains("No readable footers found. Creating empty orc file."));
     Assert.assertEquals(true, errDump.contains("bucket_00001 recovered successfully!"));
+    Assert.assertEquals(true, errDump.contains("No readable footers found. Creating empty orc file."));
+    Assert.assertEquals(true, errDump.contains("bucket_00002 recovered successfully!"));
     Assert.assertEquals(true, errDump.contains("bucket_00003 recovered successfully!"));
     Assert.assertEquals(false, errDump.contains("Exception"));
     Assert.assertEquals(false, errDump.contains("is still open for writes."));

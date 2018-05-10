@@ -381,6 +381,7 @@ CREATE TABLE "TBLS" (
     "DB_ID" bigint,
     "LAST_ACCESS_TIME" bigint NOT NULL,
     "OWNER" character varying(767) DEFAULT NULL::character varying,
+    "OWNER_TYPE" character varying(10) DEFAULT NULL::character varying,
     "RETENTION" bigint NOT NULL,
     "SD_ID" bigint,
     "TBL_NAME" character varying(256) DEFAULT NULL::character varying,
@@ -633,7 +634,7 @@ CREATE TABLE "KEY_CONSTRAINTS"
   "CHILD_CD_ID" BIGINT,
   "CHILD_INTEGER_IDX" BIGINT,
   "CHILD_TBL_ID" BIGINT,
-  "PARENT_CD_ID" BIGINT NOT NULL,
+  "PARENT_CD_ID" BIGINT,
   "PARENT_INTEGER_IDX" BIGINT NOT NULL,
   "PARENT_TBL_ID" BIGINT NOT NULL,
   "POSITION" BIGINT NOT NULL,
@@ -680,7 +681,7 @@ CREATE TABLE "WM_TRIGGER" (
     "NAME" character varying(128) NOT NULL,
     "TRIGGER_EXPRESSION" character varying(1024) DEFAULT NULL::character varying,
     "ACTION_EXPRESSION" character varying(1024) DEFAULT NULL::character varying,
-    "IS_IN_UNMANAGED" boolean NOT NULL DEFAULT false
+    "IS_IN_UNMANAGED" smallint NOT NULL DEFAULT 0
 );
 
 CREATE TABLE "WM_POOL_TO_TRIGGER" (
@@ -1644,7 +1645,7 @@ CREATE TABLE TXNS (
 );
 
 CREATE TABLE TXN_COMPONENTS (
-  TC_TXNID bigint REFERENCES TXNS (TXN_ID),
+  TC_TXNID bigint NOT NULL REFERENCES TXNS (TXN_ID),
   TC_DATABASE varchar(128) NOT NULL,
   TC_TABLE varchar(128),
   TC_PARTITION varchar(767) DEFAULT NULL,
@@ -1655,7 +1656,7 @@ CREATE TABLE TXN_COMPONENTS (
 CREATE INDEX TC_TXNID_INDEX ON TXN_COMPONENTS USING hash (TC_TXNID);
 
 CREATE TABLE COMPLETED_TXN_COMPONENTS (
-  CTC_TXNID bigint,
+  CTC_TXNID bigint NOT NULL,
   CTC_DATABASE varchar(128) NOT NULL,
   CTC_TABLE varchar(256),
   CTC_PARTITION varchar(767),
@@ -1810,6 +1811,17 @@ CREATE TABLE REPL_TXN_MAP (
   RTM_TARGET_TXN_ID bigint NOT NULL,
   PRIMARY KEY (RTM_REPL_POLICY, RTM_SRC_TXN_ID)
 );
+
+
+CREATE TABLE RUNTIME_STATS (
+ RS_ID bigint primary key,
+ CREATE_TIME bigint NOT NULL,
+ WEIGHT bigint NOT NULL,
+ PAYLOAD bytea
+);
+
+CREATE INDEX IDX_RUNTIME_STATS_CREATE_TIME ON RUNTIME_STATS(CREATE_TIME);
+
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script

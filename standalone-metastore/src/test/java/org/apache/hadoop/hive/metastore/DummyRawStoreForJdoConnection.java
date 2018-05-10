@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.ISchema;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -64,6 +65,7 @@ import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -276,6 +278,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
       throws MetaException {
   }
 
+  @Override
   public List<String> getTables(String catName, String dbName, String pattern) throws MetaException {
     return Collections.emptyList();
   }
@@ -515,6 +518,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public boolean revokePrivileges(PrivilegeBag privileges, boolean grantOption)
       throws InvalidObjectException, MetaException, NoSuchObjectException {
 
+    return false;
+  }
+
+  @Override
+  public boolean refreshPrivileges(HiveObjectRef objToRefresh, PrivilegeBag grantPrivileges)
+      throws InvalidObjectException, MetaException, NoSuchObjectException {
     return false;
   }
 
@@ -1080,6 +1089,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     return null;
   }
 
+  @Override
   public void createISchema(ISchema schema) throws AlreadyExistsException, MetaException {
 
   }
@@ -1147,5 +1157,19 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public void addSerde(SerDeInfo serde) throws AlreadyExistsException, MetaException {
 
+  }
+
+  @Override
+  public void addRuntimeStat(RuntimeStat stat) throws MetaException {
+  }
+
+  @Override
+  public List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) throws MetaException {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public int deleteRuntimeStats(int maxRetainSecs) throws MetaException {
+    return 0;
   }
 }

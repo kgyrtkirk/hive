@@ -27,16 +27,13 @@ import java.util.Map.Entry;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
-import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.CmRecycleRequest;
@@ -96,6 +93,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -111,6 +109,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
+import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
@@ -127,7 +126,6 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.thrift.TException;
 
@@ -1894,6 +1892,7 @@ public interface IMetaStoreClient {
    * @throws TException Thrift transport error.
    * @deprecated Use {@link #dropPartitions(String, String, String, List, boolean, boolean, boolean)}
    */
+  @Deprecated
   List<Partition> dropPartitions(String dbName, String tblName,
       List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData,
       boolean ifExists, boolean needResults) throws NoSuchObjectException, MetaException, TException;
@@ -2567,6 +2566,16 @@ public interface IMetaStoreClient {
       throws MetaException, TException;
 
   /**
+   * @param revokePrivileges
+   * @param objToRefresh
+   * @return true on success
+   * @throws MetaException
+   * @throws TException
+   */
+  boolean refresh_privileges(HiveObjectRef objToRefresh, PrivilegeBag grantPrivileges)
+      throws MetaException, TException;
+
+  /**
    * This is expected to be a no-op when in local mode,
    * which means that the implementation will return null.
    * @param owner the intended owner for the token
@@ -2750,14 +2759,13 @@ public interface IMetaStoreClient {
 
   /**
    * Get a structure that details valid write ids list for all tables read by current txn.
-   * @param currentTxnId current txn ID for which we try to get valid write ids list
    * @param tablesList list of tables (format: <db_name>.<table_name>) read from the current transaction
    *                   for which needs to populate the valid write ids
    * @param validTxnList snapshot of valid txns for the current txn
    * @return list of valid write ids for the given list of tables.
    * @throws TException
    */
-  ValidTxnWriteIdList getValidWriteIds(Long currentTxnId, List<String> tablesList, String validTxnList)
+  List<TableValidWriteIds> getValidWriteIds(List<String> tablesList, String validTxnList)
           throws TException;
 
   /**
@@ -2821,14 +2829,14 @@ public interface IMetaStoreClient {
   /**
    * Rollback a transaction.  This will also unlock any locks associated with
    * this transaction.
-   * @param txnid id of transaction to be rolled back.
+   * @param srcTxnid id of transaction at source while is rolled back and to be replicated.
    * @param replPolicy the replication policy to identify the source cluster
    * @throws NoSuchTxnException if the requested transaction does not exist.
    * Note that this can result from the transaction having timed out and been
    * deleted.
    * @throws TException
    */
-  void replRollbackTxn(long txnid, String replPolicy) throws NoSuchTxnException, TException;
+  void replRollbackTxn(long srcTxnid, String replPolicy) throws NoSuchTxnException, TException;
 
   /**
    * Commit a transaction.  This will also unlock any locks associated with
@@ -2847,7 +2855,7 @@ public interface IMetaStoreClient {
   /**
    * Commit a transaction.  This will also unlock any locks associated with
    * this transaction.
-   * @param txnid id of transaction to be committed.
+   * @param srcTxnid id of transaction at source which is committed and to be replicated.
    * @param replPolicy the replication policy to identify the source cluster
    * @throws NoSuchTxnException if the requested transaction does not exist.
    * This can result fro the transaction having timed out and been deleted by
@@ -2856,7 +2864,7 @@ public interface IMetaStoreClient {
    * aborted.  This can result from the transaction timing out.
    * @throws TException
    */
-  void replCommitTxn(long txnid, String replPolicy)
+  void replCommitTxn(long srcTxnid, String replPolicy)
           throws NoSuchTxnException, TxnAbortedException, TException;
 
   /**
@@ -2875,6 +2883,17 @@ public interface IMetaStoreClient {
   long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException;
 
   /**
+   * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.
+   * @param validWriteIdList Snapshot of writeid list when the table/partition is dumped.
+   * @param dbName Database name
+   * @param tableName Table which is written.
+   * @param partNames List of partitions being written.
+   * @throws TException in case of failure to replicate the writeid state
+   */
+  void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
+          throws TException;
+
+  /**
    * Allocate a per table write ID and associate it with the given transaction.
    * @param txnIds ids of transaction batchto which the allocated write ID to be associated.
    * @param dbName name of DB in which the table belongs.
@@ -2883,6 +2902,16 @@ public interface IMetaStoreClient {
    */
   List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName) throws TException;
 
+  /**
+   * Allocate a per table write ID and associate it with the given transaction. Used by replication load task.
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table to which the write ID to be allocated
+   * @param replPolicy Used by replication task to identify the source cluster.
+   * @param srcTxnToWriteIdList List of txn to write id map sent from the source cluster.
+   * @throws TException
+   */
+  List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
+                                                    List<TxnToWriteId> srcTxnToWriteIdList) throws TException;
   /**
    * Show the list of currently open transactions.  This is for use by "show transactions" in the
    * grammar, not for applications that want to find a list of current transactions to work with.
@@ -3634,4 +3663,11 @@ public interface IMetaStoreClient {
    * @return true if the lock could be renewed, false otherwise
    */
   boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException;
+
+  /** Adds a RuntimeStat for metastore persistence. */
+  void addRuntimeStat(RuntimeStat stat) throws TException;
+
+  /** Reads runtime statistics. */
+  List<RuntimeStat> getRuntimeStats(int maxWeight, int maxCreateTime) throws TException;
+
 }

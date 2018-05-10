@@ -59,6 +59,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: _col1 (type: bigint)
                     auto parallelism: false
+      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -84,6 +85,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,cnt
                     columns.comments 
@@ -142,6 +144,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -181,6 +184,7 @@ STAGE PLANS:
               tag: -1
               value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -312,6 +316,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: _col1 (type: bigint)
                     auto parallelism: false
+      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -337,6 +342,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,cnt
                     columns.comments 
@@ -395,6 +401,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -434,6 +441,7 @@ STAGE PLANS:
               tag: -1
               value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -552,6 +560,7 @@ STAGE PLANS:
                   tag: -1
                   value expressions: _col1 (type: bigint)
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -586,6 +595,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -628,6 +638,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,cnt
                     columns.comments 
@@ -686,6 +697,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -725,6 +737,7 @@ STAGE PLANS:
               tag: -1
               value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

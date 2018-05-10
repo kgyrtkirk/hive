@@ -170,6 +170,7 @@ STAGE PLANS:
               properties:
                 EXTERNAL TRUE
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns x,y
                 columns.comments 
@@ -251,6 +252,7 @@ STAGE PLANS:
               properties:
                 EXTERNAL TRUE
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns x,y
                 columns.comments 
@@ -331,6 +333,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: _col1 (type: bigint)
                     auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -364,6 +367,7 @@ STAGE PLANS:
               properties:
                 EXTERNAL TRUE
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns x,y
                 columns.comments 
@@ -466,6 +470,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: _col1 (type: bigint)
                     auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -499,6 +504,7 @@ STAGE PLANS:
               properties:
                 EXTERNAL TRUE
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns x,y
                 columns.comments 

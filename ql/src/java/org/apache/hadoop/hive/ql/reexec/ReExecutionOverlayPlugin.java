@@ -42,7 +42,7 @@ public class ReExecutionOverlayPlugin implements IReExecutionPlugin {
       if (hookContext.getHookType() == HookType.ON_FAILURE_HOOK) {
         Throwable exception = hookContext.getException();
         if (exception != null) {
-          if (exception.getMessage().contains("Vertex failed,")) {
+          if (exception.getMessage() != null && exception.getMessage().contains("Vertex failed,")) {
             retryPossible = true;
           }
         }
@@ -78,6 +78,10 @@ public class ReExecutionOverlayPlugin implements IReExecutionPlugin {
 
   @Override
   public void beforeExecute(int executionIndex, boolean explainReOptimization) {
+  }
+
+  @Override
+  public void afterExecute(PlanMapper planMapper, boolean success) {
   }
 
 }

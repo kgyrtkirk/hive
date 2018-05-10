@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.PathUtils;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -44,10 +45,10 @@ import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
+import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.datanucleus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +56,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -136,8 +138,7 @@ public class LoadPartitions {
 
       if (table == null) {
         //new table
-
-        table = new Table(tableDesc.getDatabaseName(), tableDesc.getTableName());
+        table = tableDesc.toTable(context.hiveConf);
         if (isPartitioned(tableDesc)) {
           updateReplicationState(initialReplicationState());
           if (!forNewTable().hasReplicationState()) {
@@ -148,7 +149,6 @@ public class LoadPartitions {
         }
       } else {
         // existing
-
         if (table.isPartitioned()) {
           List<AddPartitionDesc> partitionDescs = event.partitionDescriptions(tableDesc);
           if (!event.replicationSpec().isMetadataOnly() && !partitionDescs.isEmpty()) {
@@ -237,18 +237,24 @@ public class LoadPartitions {
   /**
    * This will create the move of partition data from temp path to actual path
    */
-  private Task<?> movePartitionTask(Table table, AddPartitionDesc.OnePartitionDesc partSpec,
-      Path tmpPath) {
-    // Note: this sets LoadFileType incorrectly for ACID; is that relevant for load?
-    //       See setLoadFileType and setIsAcidIow calls elsewhere for an example.
-    LoadTableDesc loadTableWork = new LoadTableDesc(
-        tmpPath, Utilities.getTableDesc(table), partSpec.getPartSpec(),
-        event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING,
-        SessionState.get().getTxnMgr().getCurrentTxnId()
-    );
-    loadTableWork.setInheritTableSpecs(false);
-    MoveWork work = new MoveWork(new HashSet<>(), new HashSet<>(), loadTableWork, null, false);
-    return TaskFactory.get(work, context.hiveConf);
+  private Task<?> movePartitionTask(Table table, AddPartitionDesc.OnePartitionDesc partSpec, Path tmpPath) {
+    MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
+    if (AcidUtils.isTransactionalTable(table)) {
+      LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
+              Collections.singletonList(tmpPath),
+              Collections.singletonList(new Path(partSpec.getLocation())),
+              true, null, null);
+      moveWork.setMultiFilesDesc(loadFilesWork);
+    } else {
+      LoadTableDesc loadTableWork = new LoadTableDesc(
+              tmpPath, Utilities.getTableDesc(table), partSpec.getPartSpec(),
+              event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING, 0L
+      );
+      loadTableWork.setInheritTableSpecs(false);
+      moveWork.setLoadTableWork(loadTableWork);
+    }
+
+    return TaskFactory.get(moveWork, context.hiveConf);
   }
 
   private Path locationOnReplicaWarehouse(Table table, AddPartitionDesc.OnePartitionDesc partSpec)

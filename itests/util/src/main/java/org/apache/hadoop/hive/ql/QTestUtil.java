@@ -91,12 +91,14 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.events.NotificationEventPoll;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -146,6 +148,7 @@ public class QTestUtil {
   private static final String BUILD_DIR_PROPERTY = "build.dir"; // typically target
 
   public static final String TEST_SRC_TABLES_PROPERTY = "test.src.tables";
+  public static final String TEST_HIVE_USER_PROPERTY = "test.hive.user";
 
   private String testWarehouse;
   private final String testFiles;
@@ -224,17 +227,11 @@ public class QTestUtil {
     srcTables = new HashSet<String>();
     // FIXME: moved default value to here...for now
     // i think this features is never really used from the command line
-    String defaultTestSrcTables = "src,src1,srcbucket,srcbucket2,src_json,src_thrift," +
-        "src_sequencefile,srcpart,alltypesorc,src_hbase,cbo_t1,cbo_t2,cbo_t3,src_cbo,part," +
-        "lineitem,alltypesparquet";
-    for (String srcTable : System.getProperty(TEST_SRC_TABLES_PROPERTY, defaultTestSrcTables).trim().split(",")) {
+    for (String srcTable : System.getProperty(TEST_SRC_TABLES_PROPERTY, "").trim().split(",")) {
       srcTable = srcTable.trim();
       if (!srcTable.isEmpty()) {
         srcTables.add(srcTable);
       }
-    }
-    if (srcTables.isEmpty()) {
-      throw new RuntimeException("Source tables cannot be empty");
     }
   }
 
@@ -1055,6 +1052,7 @@ public class QTestUtil {
     }
 
     // Remove any cached results from the previous test.
+    NotificationEventPoll.shutdown();
     QueryResultsCache.cleanupInstance();
 
     // allocate and initialize a new conf since a test can
@@ -1069,6 +1067,17 @@ public class QTestUtil {
     clearTablesCreatedDuringTests();
     clearUDFsCreatedDuringTests();
     clearKeysCreatedInTests();
+    StatsSources.clearGlobalStats();
+  }
+
+  protected void clearSettingsCreatedInTests() throws IOException {
+    getCliDriver().processLine(String.format("set hive.security.authorization.enabled=false;"));
+    getCliDriver().processLine(String.format("set user.name=%s;",
+        System.getProperty(TEST_HIVE_USER_PROPERTY, "hive_test_user")));
+
+    getCliDriver().processLine("set hive.metastore.partition.name.whitelist.pattern=;");
+    getCliDriver().processLine("set hive.test.mode=false;");
+    getCliDriver().processLine("set hive.mapred.mode=nonstrict;");
   }
 
   protected void initConfFromSetup() throws Exception {
@@ -1199,7 +1208,7 @@ public class QTestUtil {
     }
   }
 
-  private void initDataset(String table) {
+  protected synchronized void initDataset(String table) {
     if (getSrcTables().contains(table)){
       return;
     }
@@ -1262,6 +1271,7 @@ public class QTestUtil {
       createSources(fileName);
     }
 
+    clearSettingsCreatedInTests();
     initDataSetForTest(file);
 
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
@@ -1604,6 +1614,32 @@ public class QTestUtil {
 
     QTestProcessExecResult result = executeDiffCommand(outf.getPath(), expf, false,
                                      qSortSet.contains(qf.getName()));
+    if (overWrite) {
+      overwriteResults(outf.getPath(), expf);
+      return QTestProcessExecResult.createWithoutOutput(0);
+    }
+
+    return result;
+  }
+
+  public QTestProcessExecResult checkNegativeResults(String tname, Error e) throws Exception {
+
+    String outFileExtension = getOutFileExtension(tname);
+
+    File qf = new File(outDir, tname);
+    String expf = outPath(outDir.toString(), tname.concat(outFileExtension));
+
+    File outf = null;
+    outf = new File(logDir);
+    outf = new File(outf, qf.getName().concat(outFileExtension));
+
+    FileWriter outfd = new FileWriter(outf, true);
+
+    outfd
+        .write("FAILED: " + e.getClass().getSimpleName() + " " + e.getClass().getName() + ": " + e.getMessage() + "\n");
+    outfd.close();
+
+    QTestProcessExecResult result = executeDiffCommand(outf.getPath(), expf, false, qSortSet.contains(qf.getName()));
     if (overWrite) {
       overwriteResults(outf.getPath(), expf);
       return QTestProcessExecResult.createWithoutOutput(0);
@@ -2229,5 +2265,9 @@ public class QTestUtil {
 
   public QOutProcessor getQOutProcessor() {
     return qOutProcessor;
+  }
+
+  public static void initEventNotificationPoll() throws Exception {
+    NotificationEventPoll.initialize(SessionState.get().getConf());
   }
 }

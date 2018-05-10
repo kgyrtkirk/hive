@@ -17,64 +17,6 @@
  */
 package org.apache.hadoop.hive.druid;
 
-import io.druid.data.input.impl.DimensionSchema;
-import io.druid.data.input.impl.StringDimensionSchema;
-import io.druid.jackson.DefaultObjectMapper;
-import io.druid.java.util.common.Pair;
-import io.druid.java.util.common.granularity.Granularity;
-import io.druid.math.expr.ExprMacroTable;
-import io.druid.metadata.MetadataStorageTablesConfig;
-import io.druid.metadata.SQLMetadataConnector;
-import io.druid.metadata.storage.mysql.MySQLConnector;
-import io.druid.query.expression.LikeExprMacro;
-import io.druid.query.expression.RegexpExtractExprMacro;
-import io.druid.query.expression.TimestampCeilExprMacro;
-import io.druid.query.expression.TimestampExtractExprMacro;
-import io.druid.query.expression.TimestampFloorExprMacro;
-import io.druid.query.expression.TimestampFormatExprMacro;
-import io.druid.query.expression.TimestampParseExprMacro;
-import io.druid.query.expression.TimestampShiftExprMacro;
-import io.druid.query.expression.TrimExprMacro;
-import io.druid.query.select.SelectQueryConfig;
-import io.druid.segment.IndexIO;
-import io.druid.segment.IndexMergerV9;
-import io.druid.query.aggregation.AggregatorFactory;
-import io.druid.query.aggregation.DoubleSumAggregatorFactory;
-import io.druid.query.aggregation.LongSumAggregatorFactory;
-import io.druid.segment.IndexSpec;
-import io.druid.segment.data.ConciseBitmapSerdeFactory;
-import io.druid.segment.data.RoaringBitmapSerdeFactory;
-import io.druid.segment.indexing.granularity.GranularitySpec;
-import io.druid.segment.indexing.granularity.UniformGranularitySpec;
-import io.druid.segment.loading.DataSegmentPusher;
-import io.druid.segment.realtime.appenderator.SegmentIdentifier;
-import io.druid.storage.hdfs.HdfsDataSegmentPusher;
-import io.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
-import io.druid.timeline.DataSegment;
-import io.druid.timeline.TimelineObjectHolder;
-import io.druid.timeline.VersionedIntervalTimeline;
-import io.druid.timeline.partition.LinearShardSpec;
-import io.druid.timeline.partition.NoneShardSpec;
-import io.druid.timeline.partition.NumberedShardSpec;
-import io.druid.timeline.partition.PartitionChunk;
-import io.druid.timeline.partition.ShardSpec;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.Constants;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.druid.serde.HiveDruidSerializationModule;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.io.retry.RetryPolicies;
-import org.apache.hadoop.io.retry.RetryProxy;
-import org.apache.hadoop.util.StringUtils;
-
 import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
@@ -96,7 +38,66 @@ import com.metamx.emitter.service.ServiceEmitter;
 import com.metamx.http.client.HttpClient;
 import com.metamx.http.client.Request;
 import com.metamx.http.client.response.InputStreamResponseHandler;
-
+import io.druid.data.input.impl.DimensionSchema;
+import io.druid.data.input.impl.StringDimensionSchema;
+import io.druid.jackson.DefaultObjectMapper;
+import io.druid.java.util.common.Pair;
+import io.druid.java.util.common.granularity.Granularity;
+import io.druid.math.expr.ExprMacroTable;
+import io.druid.metadata.MetadataStorageTablesConfig;
+import io.druid.metadata.SQLMetadataConnector;
+import io.druid.metadata.storage.mysql.MySQLConnector;
+import io.druid.query.Druids;
+import io.druid.query.aggregation.AggregatorFactory;
+import io.druid.query.aggregation.DoubleSumAggregatorFactory;
+import io.druid.query.aggregation.LongSumAggregatorFactory;
+import io.druid.query.expression.LikeExprMacro;
+import io.druid.query.expression.RegexpExtractExprMacro;
+import io.druid.query.expression.TimestampCeilExprMacro;
+import io.druid.query.expression.TimestampExtractExprMacro;
+import io.druid.query.expression.TimestampFloorExprMacro;
+import io.druid.query.expression.TimestampFormatExprMacro;
+import io.druid.query.expression.TimestampParseExprMacro;
+import io.druid.query.expression.TimestampShiftExprMacro;
+import io.druid.query.expression.TrimExprMacro;
+import io.druid.query.select.PagingSpec;
+import io.druid.query.select.SelectQueryConfig;
+import io.druid.query.spec.MultipleIntervalSegmentSpec;
+import io.druid.segment.IndexIO;
+import io.druid.segment.IndexMergerV9;
+import io.druid.segment.IndexSpec;
+import io.druid.segment.data.ConciseBitmapSerdeFactory;
+import io.druid.segment.data.RoaringBitmapSerdeFactory;
+import io.druid.segment.indexing.granularity.GranularitySpec;
+import io.druid.segment.indexing.granularity.UniformGranularitySpec;
+import io.druid.segment.loading.DataSegmentPusher;
+import io.druid.segment.realtime.appenderator.SegmentIdentifier;
+import io.druid.segment.writeout.TmpFileSegmentWriteOutMediumFactory;
+import io.druid.storage.hdfs.HdfsDataSegmentPusher;
+import io.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
+import io.druid.timeline.DataSegment;
+import io.druid.timeline.TimelineObjectHolder;
+import io.druid.timeline.VersionedIntervalTimeline;
+import io.druid.timeline.partition.LinearShardSpec;
+import io.druid.timeline.partition.NoneShardSpec;
+import io.druid.timeline.partition.NumberedShardSpec;
+import io.druid.timeline.partition.PartitionChunk;
+import io.druid.timeline.partition.ShardSpec;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.druid.serde.HiveDruidSerializationModule;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.io.retry.RetryPolicies;
+import org.apache.hadoop.io.retry.RetryProxy;
+import org.apache.hadoop.util.StringUtils;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.joda.time.DateTime;
@@ -113,7 +114,6 @@ import org.skife.jdbi.v2.util.ByteArrayMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -124,8 +124,10 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -168,6 +170,7 @@ public final class DruidStorageHandlerUtils {
    * Mapper to use to serialize/deserialize Druid objects (SMILE)
    */
   public static final ObjectMapper SMILE_MAPPER = new DefaultObjectMapper(new SmileFactory());
+  private static final int DEFAULT_MAX_TRIES = 10;
 
   static {
     // This is needed for serde of PagingSpec as it uses JacksonInject for injecting SelectQueryConfig
@@ -187,7 +190,8 @@ public final class DruidStorageHandlerUtils {
                 new TrimExprMacro.LeftTrimExprMacro(),
                 new TrimExprMacro.RightTrimExprMacro()
             )))
-            .addValue(ObjectMapper.class, JSON_MAPPER);
+        .addValue(ObjectMapper.class, JSON_MAPPER)
+        .addValue(DataSegment.PruneLoadSpecHolder.class, DataSegment.PruneLoadSpecHolder.DEFAULT);
 
     JSON_MAPPER.setInjectableValues(injectableValues);
     SMILE_MAPPER.setInjectableValues(injectableValues);
@@ -214,13 +218,14 @@ public final class DruidStorageHandlerUtils {
   /**
    * Used by druid to perform IO on indexes
    */
-  public static final IndexIO INDEX_IO = new IndexIO(JSON_MAPPER, () -> 0);
+  public static final IndexIO INDEX_IO =
+      new IndexIO(JSON_MAPPER, TmpFileSegmentWriteOutMediumFactory.instance(), () -> 0);
 
   /**
    * Used by druid to merge indexes
    */
   public static final IndexMergerV9 INDEX_MERGER_V9 = new IndexMergerV9(JSON_MAPPER,
-          DruidStorageHandlerUtils.INDEX_IO
+          DruidStorageHandlerUtils.INDEX_IO,TmpFileSegmentWriteOutMediumFactory.instance()
   );
 
   /**
@@ -290,14 +295,7 @@ public final class DruidStorageHandlerUtils {
     ImmutableList.Builder<DataSegment> publishedSegmentsBuilder = ImmutableList.builder();
     FileSystem fs = taskDir.getFileSystem(conf);
     FileStatus[] fss;
-    try {
-      fss = fs.listStatus(taskDir);
-    } catch (FileNotFoundException e) {
-      // This is a CREATE TABLE statement or query executed for CTAS/INSERT
-      // did not produce any result. We do not need to do anything, this is
-      // expected behavior.
-      return publishedSegmentsBuilder.build();
-    }
+    fss = fs.listStatus(taskDir);
     for (FileStatus fileStatus : fss) {
       final DataSegment segment = JSON_MAPPER
               .readValue((InputStream) fs.open(fileStatus.getPath()), DataSegment.class);
@@ -606,7 +604,7 @@ public final class DruidStorageHandlerUtils {
                               }
                             }
                     )
-            , 3, SQLMetadataConnector.DEFAULT_MAX_TRIES);
+            , 3, DEFAULT_MAX_TRIES);
     return segmentList;
   }
 
@@ -635,6 +633,19 @@ public final class DruidStorageHandlerUtils {
             segmentsDescriptorDir,
             String.format("%s.json", pushedSegment.getIdentifier().replace(":", ""))
     );
+  }
+
+  public static String createSelectStarQuery(String dataSource) throws IOException {
+    // Create Select query
+    Druids.SelectQueryBuilder builder = new Druids.SelectQueryBuilder();
+    builder.dataSource(dataSource);
+    final List<Interval> intervals = Arrays.asList(DEFAULT_INTERVAL);
+    builder.intervals(new MultipleIntervalSegmentSpec(intervals));
+    builder.pagingSpec(PagingSpec.newSpec(1));
+    Map<String, Object> context = new HashMap<>();
+    context.put(Constants.DRUID_QUERY_FETCH, false);
+    builder.context(context);
+    return JSON_MAPPER.writeValueAsString(builder.build());
   }
 
   /**

@@ -20,38 +20,52 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
+import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+//TODO: this object is created once to call one method and then immediately destroyed.
+//So it's basically just a roundabout way to pass arguments to a static method. Simplify?
 public class FileOperations {
   private static Logger logger = LoggerFactory.getLogger(FileOperations.class);
-  private final Path dataFileListPath;
+  private final List<Path> dataPathList;
   private final Path exportRootDataDir;
   private final String distCpDoAsUser;
   private HiveConf hiveConf;
   private final FileSystem dataFileSystem, exportFileSystem;
+  private final MmContext mmCtx;
 
-  public FileOperations(Path dataFileListPath, Path exportRootDataDir,
-                        String distCpDoAsUser, HiveConf hiveConf) throws IOException {
-    this.dataFileListPath = dataFileListPath;
+  public FileOperations(List<Path> dataPathList, Path exportRootDataDir, String distCpDoAsUser,
+      HiveConf hiveConf, MmContext mmCtx) throws IOException {
+    this.dataPathList = dataPathList;
     this.exportRootDataDir = exportRootDataDir;
     this.distCpDoAsUser = distCpDoAsUser;
     this.hiveConf = hiveConf;
-    dataFileSystem = dataFileListPath.getFileSystem(hiveConf);
+    this.mmCtx = mmCtx;
+    if ((dataPathList != null) && !dataPathList.isEmpty()) {
+      dataFileSystem = dataPathList.get(0).getFileSystem(hiveConf);
+    } else {
+      dataFileSystem = null;
+    }
     exportFileSystem = exportRootDataDir.getFileSystem(hiveConf);
   }
 
@@ -67,14 +81,58 @@ public class FileOperations {
    * This writes the actual data in the exportRootDataDir from the source.
    */
   private void copyFiles() throws IOException, LoginException {
-    FileStatus[] fileStatuses =
-        LoadSemanticAnalyzer.matchFilesOrDir(dataFileSystem, dataFileListPath);
+    if (mmCtx == null) {
+      for (Path dataPath : dataPathList) {
+        copyOneDataPath(dataPath, exportRootDataDir);
+      }
+    } else {
+      copyMmPath();
+    }
+  }
+
+  private void copyOneDataPath(Path fromPath, Path toPath) throws IOException, LoginException {
+    FileStatus[] fileStatuses = LoadSemanticAnalyzer.matchFilesOrDir(dataFileSystem, fromPath);
     List<Path> srcPaths = new ArrayList<>();
     for (FileStatus fileStatus : fileStatuses) {
       srcPaths.add(fileStatus.getPath());
     }
-    new CopyUtils(distCpDoAsUser, hiveConf).doCopy(exportRootDataDir, srcPaths);
+
+    new CopyUtils(distCpDoAsUser, hiveConf).doCopy(toPath, srcPaths);
   }
+
+  private void copyMmPath() throws LoginException, IOException {
+    assert dataPathList.size() == 1;
+    ValidWriteIdList ids = AcidUtils.getTableValidWriteIdList(hiveConf, mmCtx.getFqTableName());
+    Path fromPath = dataFileSystem.makeQualified(dataPathList.get(0));
+    List<Path> validPaths = getMmValidPaths(ids, fromPath);
+    String fromPathStr = fromPath.toString();
+    if (!fromPathStr.endsWith(Path.SEPARATOR)) {
+       fromPathStr += Path.SEPARATOR;
+    }
+    for (Path validPath : validPaths) {
+      // Export valid directories with a modified name so they don't look like bases/deltas.
+      // We could also dump the delta contents all together and rename the files if names collide.
+      String mmChildPath = "export_old_" + validPath.toString().substring(fromPathStr.length());
+      Path destPath = new Path(exportRootDataDir, mmChildPath);
+      exportFileSystem.mkdirs(destPath);
+      copyOneDataPath(validPath, destPath);
+    }
+  }
+
+  private List<Path> getMmValidPaths(ValidWriteIdList ids, Path fromPath) throws IOException {
+    Utilities.FILE_OP_LOGGER.trace("Looking for valid MM paths under {}", fromPath);
+    AcidUtils.Directory acidState = AcidUtils.getAcidState(fromPath, hiveConf, ids);
+    List<Path> validPaths = new ArrayList<>();
+    Path base = acidState.getBaseDirectory();
+    if (base != null) {
+      validPaths.add(base);
+    }
+    for (ParsedDelta pd : acidState.getCurrentDirectories()) {
+      validPaths.add(pd.getPath());
+    }
+    return validPaths;
+  }
+
 
   /**
    * This needs the root data directory to which the data needs to be exported to.
@@ -83,13 +141,42 @@ public class FileOperations {
    */
   private void exportFilesAsList() throws SemanticException, IOException {
     try (BufferedWriter writer = writer()) {
-      FileStatus[] fileStatuses =
-          LoadSemanticAnalyzer.matchFilesOrDir(dataFileSystem, dataFileListPath);
-      for (FileStatus fileStatus : fileStatuses) {
-        writer.write(encodedUri(fileStatus));
+      if (mmCtx != null) {
+        assert dataPathList.size() == 1;
+        Path dataPath = dataPathList.get(0);
+        ValidWriteIdList ids = AcidUtils.getTableValidWriteIdList(
+            hiveConf, mmCtx.getFqTableName());
+        List<Path> validPaths = getMmValidPaths(ids, dataPath);
+        for (Path mmPath : validPaths) {
+          writeFilesList(listFilesInDir(mmPath), writer, AcidUtils.getAcidSubDir(dataPath));
+        }
+      } else {
+        for (Path dataPath : dataPathList) {
+          writeFilesList(listFilesInDir(dataPath), writer, AcidUtils.getAcidSubDir(dataPath));
+        }
+      }
+    }
+  }
+
+  private void writeFilesList(FileStatus[] fileStatuses, BufferedWriter writer, String encodedSubDirs)
+          throws IOException {
+    for (FileStatus fileStatus : fileStatuses) {
+      if (fileStatus.isDirectory()) {
+        // Write files inside the sub-directory.
+        Path subDir = fileStatus.getPath();
+        writeFilesList(listFilesInDir(subDir), writer, encodedSubDir(encodedSubDirs, subDir));
+      } else {
+        writer.write(encodedUri(fileStatus, encodedSubDirs));
         writer.newLine();
       }
     }
+  }
+
+  private FileStatus[] listFilesInDir(Path path) throws IOException {
+    return dataFileSystem.listStatus(path, p -> {
+      String name = p.getName();
+      return !name.startsWith("_") && !name.startsWith(".");
+    });
   }
 
   private BufferedWriter writer() throws IOException {
@@ -97,17 +184,25 @@ public class FileOperations {
     if (exportFileSystem.exists(exportToFile)) {
       throw new IllegalArgumentException(
           exportToFile.toString() + " already exists and cant export data from path(dir) "
-              + dataFileListPath);
+              + dataPathList);
     }
-    logger.debug("exporting data files in dir : " + dataFileListPath + " to " + exportToFile);
+    logger.debug("exporting data files in dir : " + dataPathList + " to " + exportToFile);
     return new BufferedWriter(
         new OutputStreamWriter(exportFileSystem.create(exportToFile))
     );
   }
 
-  private String encodedUri(FileStatus fileStatus) throws IOException {
+  private String encodedSubDir(String encodedParentDirs, Path subDir) {
+    if (null == encodedParentDirs) {
+      return subDir.getName();
+    } else {
+      return encodedParentDirs + Path.SEPARATOR + subDir.getName();
+    }
+  }
+
+  private String encodedUri(FileStatus fileStatus, String encodedSubDir) throws IOException {
     Path currentDataFilePath = fileStatus.getPath();
     String checkSum = ReplChangeManager.checksumFor(currentDataFilePath, dataFileSystem);
-    return ReplChangeManager.encodeFileUri(currentDataFilePath.toString(), checkSum);
+    return ReplChangeManager.encodeFileUri(currentDataFilePath.toString(), checkSum, encodedSubDir);
   }
 }

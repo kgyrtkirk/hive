@@ -98,7 +98,7 @@ public class Context {
   // Keeps track of scratch directories created for different scheme/authority
   private final Map<String, Path> fsScratchDirs = new HashMap<String, Path>();
 
-  private final Configuration conf;
+  private Configuration conf;
   protected int pathid = 10000;
   protected ExplainConfiguration explainConfig = null;
   protected String cboInfo;
@@ -159,8 +159,11 @@ public class Context {
 
   private boolean isExplainPlan = false;
   private PlanMapper planMapper = new PlanMapper();
-  private StatsSource runtimeStatsSource;
+  private StatsSource statsSource;
   private int executionIndex;
+
+  // Load data rewrite
+  private Table tempTableForLoad;
 
   public void setOperation(Operation operation) {
     this.operation = operation;
@@ -516,7 +519,6 @@ public class Context {
    * - If path is on HDFS, then create a staging directory inside the path
    *
    * @param path Path used to verify the Filesystem to use for temporary directory
-   * @param isFinalJob true if the required {@link Path} will be used for the final job (e.g. the final FSOP)
    *
    * @return A path to the new temporary directory
    */
@@ -1047,16 +1049,16 @@ public class Context {
     return planMapper;
   }
 
-  public void setStatsSource(StatsSource runtimeStatsSource) {
-    this.runtimeStatsSource = runtimeStatsSource;
+  public void setStatsSource(StatsSource statsSource) {
+    this.statsSource = statsSource;
   }
 
   public StatsSource getStatsSource() {
-    if (runtimeStatsSource != null) {
-      return runtimeStatsSource;
+    if (statsSource != null) {
+      return statsSource;
     } else {
       // hierarchical; add def stats also here
-      return new EmptyStatsSource();
+      return EmptyStatsSource.INSTANCE;
     }
   }
 
@@ -1066,5 +1068,17 @@ public class Context {
 
   public void setExecutionIndex(int executionIndex) {
     this.executionIndex = executionIndex;
+  }
+
+  public void setConf(HiveConf conf) {
+    this.conf = conf;
+  }
+
+  public Table getTempTableForLoad() {
+    return tempTableForLoad;
+  }
+
+  public void setTempTableForLoad(Table tempTableForLoad) {
+    this.tempTableForLoad = tempTableForLoad;
   }
 }

@@ -35,6 +35,21 @@ public class DatabaseAccessorFactory {
     case MYSQL:
       accessor = new MySqlDatabaseAccessor();
       break;
+    case JETHRO_DATA:
+      accessor = new JethroDatabaseAccessor();
+      break;
+
+    case POSTGRES:
+      accessor = new PostgresDatabaseAccessor();
+      break;
+
+    case ORACLE:
+      accessor = new OracleDatabaseAccessor();
+      break;
+
+    case MSSQL:
+      accessor = new MsSqlDatabaseAccessor();
+      break;
 
     default:
       accessor = new GenericJdbcDatabaseAccessor();
