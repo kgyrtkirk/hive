@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,6 +61,7 @@ import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -492,6 +494,11 @@ public class StatsRulesProcFactory {
         }
       }
 
+      for (int i = 0; i < columnStats.size(); i++) {
+        Set<ExprNodeDescEqualityWrapper> prunedValues = pruneImprobableValues(columnStats.get(i), values.get(i));
+        values.set(i, prunedValues);
+      }
+
       // 3. Calculate IN selectivity
       double factor = 1d;
       for (int i = 0; i < columnStats.size(); i++) {
@@ -503,6 +510,49 @@ public class StatsRulesProcFactory {
       }
       float inFactor = HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_IN_CLAUSE_FACTOR);
       return Math.round( numRows * factor * inFactor);
+    }
+
+    static class RangeOps {
+
+      private Range range;
+
+      public RangeOps(Range range) {
+        this.range = range;
+      }
+
+      public static RangeOps build(String type, Range range) {
+        if (range == null) {
+          return null;
+        }
+        return new RangeOps(range);
+      }
+
+      public boolean contains(ExprNodeDesc value) {
+        if (!(value instanceof ExprNodeConstantDesc)) {
+          return false;
+        }
+        ExprNodeConstantDesc constantDesc = (ExprNodeConstantDesc) value;
+        String stringVal = constantDesc.getValue().toString();
+
+        return false;
+      }
+
+    }
+
+    /** removes all values which are outside of the scope of the column
+     * @return */
+    private Set<ExprNodeDescEqualityWrapper> pruneImprobableValues(ColStatistics colStatistics,
+        Set<ExprNodeDescEqualityWrapper> values) {
+      Set<ExprNodeDescEqualityWrapper> ret = new HashSet<>();
+      RangeOps colRange = RangeOps.build(colStatistics.getColumnType(), colStatistics.getRange());
+      Iterator<ExprNodeDescEqualityWrapper> valueIt = values.iterator();
+      while (valueIt.hasNext()) {
+        ExprNodeDescEqualityWrapper v = valueIt.next();
+        if (colRange != null) {
+          colRange.contains(v.getExprNodeDesc());
+        }
+      }
+      return values;
     }
 
     private long evaluateBetweenExpr(Statistics stats, ExprNodeDesc pred, long currNumRows, AnnotateStatsProcCtx aspCtx,
