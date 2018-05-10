@@ -149,19 +149,19 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_30]
             Group By Operator [GBY_29] (rows=1 width=8)
               Output:["_col0"],aggregations:["sum(_col5)"]
-              Select Operator [SEL_28] (rows=15616947 width=88)
+              Select Operator [SEL_28] (rows=31233897 width=88)
                 Output:["_col5"]
-                Filter Operator [FIL_27] (rows=15616947 width=88)
-                  predicate:(((_col14) IN ('KY', 'GA', 'NM') and _col7 BETWEEN 0 AND 2000) or ((_col14) IN ('MT', 'OR', 'IN') and _col7 BETWEEN 150 AND 3000) or ((_col14) IN ('WI', 'MO', 'WV') and _col7 BETWEEN 50 AND 25000))
+                Filter Operator [FIL_27] (rows=31233897 width=88)
+                  predicate:((((_col14 = 'KY') or (_col14 = 'GA') or (_col14 = 'NM')) and _col7 BETWEEN 0 AND 2000) or (((_col14 = 'MT') or (_col14 = 'OR') or (_col14 = 'IN')) and _col7 BETWEEN 150 AND 3000) or (((_col14 = 'WI') or (_col14 = 'MO') or (_col14 = 'WV')) and _col7 BETWEEN 50 AND 25000))
                   Merge Join Operator [MERGEJOIN_56] (rows=93701693 width=88)
                     Conds:RS_24._col3=RS_71._col0(Inner),Output:["_col5","_col7","_col14"]
                   <-Map 10 [SIMPLE_EDGE] vectorized
                     SHUFFLE [RS_71]
                       PartitionCols:_col0
-                      Select Operator [SEL_70] (rows=10000000 width=1014)
+                      Select Operator [SEL_70] (rows=20000000 width=1014)
                         Output:["_col0","_col1"]
-                        Filter Operator [FIL_69] (rows=10000000 width=1014)
-                          predicate:((ca_country = 'United States') and (ca_state) IN ('KY', 'GA', 'NM', 'MT', 'OR', 'IN', 'WI', 'MO', 'WV') and ca_address_sk is not null)
+                        Filter Operator [FIL_69] (rows=20000000 width=1014)
+                          predicate:(((ca_state = 'KY') or (ca_state = 'GA') or (ca_state = 'NM') or (ca_state = 'MT') or (ca_state = 'OR') or (ca_state = 'IN') or (ca_state = 'WI') or (ca_state = 'MO') or (ca_state = 'WV')) and (ca_country = 'United States') and ca_address_sk is not null)
                           TableScan [TS_12] (rows=40000000 width=1014)
                             default@customer_address,customer_address,Tbl:COMPLETE,Col:NONE,Output:["ca_address_sk","ca_state","ca_country"]
                   <-Reducer 4 [SIMPLE_EDGE]

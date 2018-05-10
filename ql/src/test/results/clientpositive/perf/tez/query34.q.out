@@ -110,10 +110,10 @@ Stage-0
                             <-Map 11 [SIMPLE_EDGE] vectorized
                               SHUFFLE [RS_72]
                                 PartitionCols:_col0
-                                Select Operator [SEL_71] (rows=852 width=1910)
+                                Select Operator [SEL_71] (rows=1704 width=1910)
                                   Output:["_col0"]
-                                  Filter Operator [FIL_70] (rows=852 width=1910)
-                                    predicate:((s_county) IN ('Mobile County', 'Maverick County', 'Huron County', 'Kittitas County', 'Fairfield County', 'Jackson County', 'Barrow County', 'Pennington County') and s_store_sk is not null)
+                                  Filter Operator [FIL_70] (rows=1704 width=1910)
+                                    predicate:(((s_county = 'Mobile County') or (s_county = 'Maverick County') or (s_county = 'Huron County') or (s_county = 'Kittitas County') or (s_county = 'Fairfield County') or (s_county = 'Jackson County') or (s_county = 'Barrow County') or (s_county = 'Pennington County')) and s_store_sk is not null)
                                     TableScan [TS_12] (rows=1704 width=1910)
                                       default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_county"]
                             <-Reducer 6 [SIMPLE_EDGE]
@@ -147,10 +147,10 @@ Stage-0
                                     <-Map 9 [SIMPLE_EDGE] vectorized
                                       SHUFFLE [RS_69]
                                         PartitionCols:_col0
-                                        Select Operator [SEL_68] (rows=8116 width=1119)
+                                        Select Operator [SEL_68] (rows=16232 width=1119)
                                           Output:["_col0"]
-                                          Filter Operator [FIL_67] (rows=8116 width=1119)
-                                            predicate:((d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and (d_year) IN (2000, 2001, 2002) and d_date_sk is not null)
+                                          Filter Operator [FIL_67] (rows=16232 width=1119)
+                                            predicate:(((d_year = 2000) or (d_year = 2001) or (d_year = 2002)) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and d_date_sk is not null)
                                             TableScan [TS_6] (rows=73049 width=1119)
                                               default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_dom"]
 

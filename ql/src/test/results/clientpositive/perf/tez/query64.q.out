@@ -535,10 +535,10 @@ Stage-0
                                                                         <-Map 36 [SIMPLE_EDGE] vectorized
                                                                           SHUFFLE [RS_648]
                                                                             PartitionCols:_col0
-                                                                            Select Operator [SEL_647] (rows=2851 width=1436)
+                                                                            Select Operator [SEL_647] (rows=5703 width=1436)
                                                                               Output:["_col0","_col3"]
-                                                                              Filter Operator [FIL_646] (rows=2851 width=1436)
-                                                                                predicate:((i_color) IN ('maroon', 'burnished', 'dim', 'steel', 'navajo', 'chocolate') and i_current_price BETWEEN 35 AND 45 and i_current_price BETWEEN 36 AND 50 and i_item_sk is not null)
+                                                                              Filter Operator [FIL_646] (rows=5703 width=1436)
+                                                                                predicate:(((i_color = 'maroon') or (i_color = 'burnished') or (i_color = 'dim') or (i_color = 'steel') or (i_color = 'navajo') or (i_color = 'chocolate')) and i_current_price BETWEEN 35 AND 45 and i_current_price BETWEEN 36 AND 50 and i_item_sk is not null)
                                                                                 TableScan [TS_34] (rows=462000 width=1436)
                                                                                   default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_item_sk","i_current_price","i_color","i_product_name"]
                 <-Reducer 9 [SIMPLE_EDGE] vectorized

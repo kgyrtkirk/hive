@@ -511,7 +511,7 @@ Stage-0
                                           Select Operator [SEL_136] (rows=1 width=0)
                                             Output:["_col0"]
                                             Filter Operator [FIL_135] (rows=1 width=0)
-                                              predicate:((sm_carrier) IN ('DIAMOND', 'AIRBORNE') and sm_ship_mode_sk is not null)
+                                              predicate:(((sm_carrier = 'DIAMOND') or (sm_carrier = 'AIRBORNE')) and sm_ship_mode_sk is not null)
                                               TableScan [TS_9] (rows=1 width=0)
                                                 default@ship_mode,ship_mode,Tbl:PARTIAL,Col:NONE,Output:["sm_ship_mode_sk","sm_carrier"]
                                       <-Reducer 12 [SIMPLE_EDGE]
