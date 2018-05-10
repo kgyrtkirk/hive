@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.SimpleRuntimeStatsSource;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -139,6 +140,42 @@ public class TestCounterMapping {
 
     assertEquals("original check", 7, filter1.getStatistics().getNumRows());
     assertEquals("optimized check", 6, filter2.getStatistics().getNumRows());
+
+  }
+
+  @Test
+  public void testLoop() throws ParseException {
+    String query =
+        "explain analyze select sum(id_uv) from tu where u in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50) and u=2 and u=2 and 2=u group by u";
+
+    IDriver driver = createDriver();
+    CommandProcessorResponse res = driver.compileAndRespond(query);
+
+    assertEquals("Checking command success", 0, res.getResponseCode());
+
+  }
+
+  @Test
+  public void testNonLoop() throws ParseException {
+    String query =
+        "explain analyze select sum(id_uv) from tu where u in (1,2,3) and u=2 and u=2 and 2=u group by u";
+
+    IDriver driver = createDriver();
+    CommandProcessorResponse res = driver.compileAndRespond(query);
+
+    assertEquals("Checking command success", 0, res.getResponseCode());
+
+  }
+
+  @Test
+  public void testNonLoop0() throws ParseException {
+    String query =
+        "explain analyze select sum(id_uv) from tu where u =1  and (u=2 or u=1) group by u";
+
+    IDriver driver = createDriver();
+    CommandProcessorResponse res = driver.compileAndRespond(query);
+
+    assertEquals("Checking command success", 0, res.getResponseCode());
 
   }
 
