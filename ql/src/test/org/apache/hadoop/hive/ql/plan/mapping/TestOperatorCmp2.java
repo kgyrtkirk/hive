@@ -104,7 +104,7 @@ public class TestOperatorCmp2 {
   @Test
   public void testFilterIntIn() throws ParseException {
     IDriver driver = createDriver();
-    String query = "explain select a from t2 where a IN (1,2,3,20,30,40) order by a";
+    String query = "explain select a from t2 where a IN (-1,0,1,2,10,20,30,40) order by a";
 
     PlanMapper pm = getMapperForQuery(driver, query);
     List<FilterOperator> fos = pm.getAll(FilterOperator.class);
@@ -113,7 +113,8 @@ public class TestOperatorCmp2 {
     assertEquals(1, fos.size());
     FilterOperator fop = fos.get(0);
 
-    System.out.println(fop.getStatistics());
+    // all outside elements should be ignored from stat estimation
+    assertEquals(3, fop.getStatistics().getNumRows());
 
   }
 
