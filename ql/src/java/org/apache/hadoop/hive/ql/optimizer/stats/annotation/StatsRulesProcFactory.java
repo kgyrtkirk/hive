@@ -523,7 +523,7 @@ public class StatsRulesProcFactory {
       }
 
       public static RangeOps build(String colType, Range range) {
-        if (range == null) {
+        if (range == null || range.minValue == null || range.maxValue == null) {
           return null;
         }
         return new RangeOps(colType, range);
@@ -549,7 +549,12 @@ public class StatsRulesProcFactory {
         }
       }
 
-      public RangeResult contains(ExprNodeDesc exprNode) {
+      public boolean contains(ExprNodeDesc exprNode) {
+        RangeResult intersection = intersect(exprNode);
+        return intersection != RangeResult.ABOVE && intersection != RangeResult.BELOW;
+      }
+
+      public RangeResult intersect(ExprNodeDesc exprNode) {
         if (!(exprNode instanceof ExprNodeConstantDesc)) {
           return null;
         }
@@ -613,11 +618,13 @@ public class StatsRulesProcFactory {
       Iterator<ExprNodeDescEqualityWrapper> valueIt = values.iterator();
       while (valueIt.hasNext()) {
         ExprNodeDescEqualityWrapper v = valueIt.next();
-        if (colRange != null) {
-          colRange.contains(v.getExprNodeDesc());
+        if (colRange.contains(v.getExprNodeDesc())) {
+          // outside of the range
+          //          continue;
         }
+        ret.add(v);
       }
-      return values;
+      return ret;
     }
 
     private long evaluateBetweenExpr(Statistics stats, ExprNodeDesc pred, long currNumRows, AnnotateStatsProcCtx aspCtx,
