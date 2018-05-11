@@ -3513,22 +3513,6 @@ POSTHOOK: query: select param_key, param_value from sd_params order by param_key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sd_params
 #### A masked pattern was here ####
-<<<<<<< HEAD
-=======
-PREHOOK: query: select sequence_name from sequence_table order by sequence_name limit 5
-PREHOOK: type: QUERY
-PREHOOK: Input: sys@sequence_table
-#### A masked pattern was here ####
-POSTHOOK: query: select sequence_name from sequence_table order by sequence_name limit 5
-POSTHOOK: type: QUERY
-POSTHOOK: Input: sys@sequence_table
-#### A masked pattern was here ####
-org.apache.hadoop.hive.metastore.model.MCatalog
-org.apache.hadoop.hive.metastore.model.MColumnDescriptor
-org.apache.hadoop.hive.metastore.model.MDatabase
-org.apache.hadoop.hive.metastore.model.MFunction
-org.apache.hadoop.hive.metastore.model.MGlobalPrivilege
->>>>>>> asf/master
 PREHOOK: query: select name, slib from serdes order by name, slib limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@serdes
@@ -3732,19 +3716,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@table_params
 POSTHOOK: Input: sys@table_stats_view
 #### A masked pattern was here ####
-<<<<<<< HEAD
-{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","rp_name":"true","trigger_expression":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"cd_id":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"create_time":"true","last_access_time":"true","part_id":"true","part_name":"true","sd_id":"true","tbl_id":"true"}}	0	0	0	0
-=======
-{"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","rp_name":"true","trigger_expression":"true"}}	0	0	0	0
-#### A masked pattern was here ####
-{"BASIC_STATS":"true","COLUMN_STATS":{"db_id":"true","param_key":"true","param_value":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"param_key":"true","param_value":"true","serde_id":"true"}}	0	0	0	0
->>>>>>> asf/master
 PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM PARTITION_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_params
@@ -3819,7 +3795,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
-            Execution mode: vectorized, llap
+            Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: vectorized, llap
@@ -3979,21 +3955,12 @@ hive_test_user	hive_test_user	default	default	alltypesorc	DELETE	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	INSERT	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	SELECT	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	UPDATE	YES	NO
-<<<<<<< HEAD
 hive_test_user	hive_test_user	default	default	alltypesparquet	DELETE	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesparquet	INSERT	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesparquet	SELECT	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesparquet	UPDATE	YES	NO
 hive_test_user	hive_test_user	default	default	cbo_t1	DELETE	YES	NO
 hive_test_user	hive_test_user	default	default	cbo_t1	INSERT	YES	NO
-=======
-hive_test_user	hive_test_user	default	default	moretypes	DELETE	YES	NO
-hive_test_user	hive_test_user	default	default	moretypes	INSERT	YES	NO
-hive_test_user	hive_test_user	default	default	moretypes	SELECT	YES	NO
-hive_test_user	hive_test_user	default	default	moretypes	UPDATE	YES	NO
-hive_test_user	hive_test_user	default	default	scr_txn	DELETE	YES	NO
-hive_test_user	hive_test_user	default	default	scr_txn	INSERT	YES	NO
->>>>>>> asf/master
 Warning: Shuffle Join MERGEJOIN[82][tables = [c, s, t, d, p]] in Stage 'Reducer 5' is a cross product
 PREHOOK: query: select * from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
 PREHOOK: type: QUERY
