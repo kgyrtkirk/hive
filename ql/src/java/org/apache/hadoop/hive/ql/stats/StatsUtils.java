@@ -944,21 +944,25 @@ public class StatsUtils {
       cs.setNumNulls(csd.getLongStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive1());
       cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
+      cs.setBitVectors(csd.getLongStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
       cs.setCountDistint(csd.getLongStats().getNumDVs());
       cs.setNumNulls(csd.getLongStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive2());
       cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
+      cs.setBitVectors(csd.getLongStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
       cs.setCountDistint(csd.getDoubleStats().getNumDVs());
       cs.setNumNulls(csd.getDoubleStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive1());
       cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
+      cs.setBitVectors(csd.getDoubleStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
       cs.setCountDistint(csd.getDoubleStats().getNumDVs());
       cs.setNumNulls(csd.getDoubleStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive2());
       cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
+      cs.setBitVectors(csd.getDoubleStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
@@ -976,9 +980,11 @@ public class StatsUtils {
       cs.setNumFalses(csd.getBooleanStats().getNumFalses());
       cs.setNumNulls(csd.getBooleanStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive1());
+      cs.setBitVectors(csd.getBooleanStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)) {
       cs.setAvgColLen(csd.getBinaryStats().getAvgColLen());
       cs.setNumNulls(csd.getBinaryStats().getNumNulls());
+      cs.setBitVectors(csd.getBinaryStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||
         colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
@@ -999,6 +1005,7 @@ public class StatsUtils {
           cs.setRange(minVal, maxVal);
         }
       }
+      cs.setBitVectors(csd.getDecimalStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDate());
       cs.setNumNulls(csd.getDateStats().getNumNulls());
@@ -1007,6 +1014,7 @@ public class StatsUtils {
       Long highVal = (csd.getDateStats().getHighValue() != null) ? csd.getDateStats().getHighValue()
           .getDaysSinceEpoch() : null;
       cs.setRange(lowVal, highVal);
+      cs.setBitVectors(csd.getDateStats().getBitVectors());
     } else {
       // Columns statistics for complex datatypes are not supported yet
       return null;

@@ -531,6 +531,7 @@ public class StatsRulesProcFactory {
       HyperLogLog hllVals = new HyperLogLogBuilder().build();
 
       for (ExprNodeDescEqualityWrapper b : values) {
+
         hllVals.add(b.hashCode());
       }
 
