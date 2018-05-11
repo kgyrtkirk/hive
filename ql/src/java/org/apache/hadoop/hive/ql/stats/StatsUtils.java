@@ -980,11 +980,9 @@ public class StatsUtils {
       cs.setNumFalses(csd.getBooleanStats().getNumFalses());
       cs.setNumNulls(csd.getBooleanStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive1());
-      cs.setBitVectors(csd.getBooleanStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)) {
       cs.setAvgColLen(csd.getBinaryStats().getAvgColLen());
       cs.setNumNulls(csd.getBinaryStats().getNumNulls());
-      cs.setBitVectors(csd.getBinaryStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||
         colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());

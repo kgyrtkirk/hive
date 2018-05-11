@@ -106,7 +106,9 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -519,32 +521,40 @@ public class StatsRulesProcFactory {
     }
 
     private long estimateIntersectionSize(ColStatistics colStatistics, Set<ExprNodeDescEqualityWrapper> values) {
-      byte[] bitVector = colStatistics.getBitVectors();
-      if (bitVector == null) {
-        return values.size();
-      }
-      NumDistinctValueEstimator sketch = NumDistinctValueEstimatorFactory.getNumDistinctValueEstimator(bitVector);
-      if (!(sketch instanceof HyperLogLog)) {
-        return values.size();
-      }
-      HyperLogLog hllCol = (HyperLogLog) sketch;
-      HyperLogLog hllVals = new HyperLogLogBuilder().build();
+      try {
+        byte[] bitVector = colStatistics.getBitVectors();
+        if (bitVector == null) {
+          return values.size();
+        }
+        NumDistinctValueEstimator sketch = NumDistinctValueEstimatorFactory.getNumDistinctValueEstimator(bitVector);
+        if (!(sketch instanceof HyperLogLog)) {
+          return values.size();
+        }
+        HyperLogLog hllCol = (HyperLogLog) sketch;
+        HyperLogLog hllVals = new HyperLogLogBuilder().build();
 
-      for (ExprNodeDescEqualityWrapper b : values) {
+        for (ExprNodeDescEqualityWrapper b : values) {
+          ObjectInspector oi = b.getExprNodeDesc().getWritableObjectInspector();
+          HiveMurmur3Adapter hma = new HiveMurmur3Adapter((PrimitiveObjectInspector) oi);
+          ExprNodeConstantDesc c = (ExprNodeConstantDesc) b.getExprNodeDesc();
 
-        hllVals.add(b.hashCode());
+          hllVals.add(hma.murmur3(c.getWritableObjectInspector().getWritableConstantValue()));
+        }
+
+        long cntA = hllCol.count();
+        long cntB = hllVals.count();
+        hllCol.merge(hllVals);
+        long cntU = hllCol.count();
+
+        long cntI = cntA + cntB - cntU;
+        if (cntI < 0) {
+          return 0;
+        }
+        return cntI;
+      } catch (HiveException e) {
+        throw new RuntimeException("checking!", e);
       }
 
-      long cntA = hllCol.count();
-      long cntB = hllVals.count();
-      hllCol.merge(hllVals);
-      long cntU = hllCol.count();
-
-      long cntI = cntA + cntB - cntU;
-      if (cntI < 0) {
-        return 0;
-      }
-      return cntI;
     }
 
     static class RangeOps {
