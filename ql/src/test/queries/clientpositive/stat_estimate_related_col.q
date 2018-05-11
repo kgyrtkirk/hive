@@ -1,5 +1,5 @@
 set hive.explain.user=true;
-set hive.query.results.cache.enabled=false;
+set hive.strict.checks.cartesian.product=false;
 
 drop table if exists t1;
 drop table if exists t8;
