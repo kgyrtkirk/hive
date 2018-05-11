@@ -3407,6 +3407,95 @@ POSTHOOK: query: select principal_name, grantor from role_map order by principal
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@role_map
 #### A masked pattern was here ####
+PREHOOK: query: explain vectorization detail
+select count(*) from sds
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select count(*) from sds
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: sds
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: false
+                enabledConditionsNotMet: hive.vectorized.use.row.serde.deserialize IS true AND hive.vectorized.row.serde.inputformat.excludes NOT CONTAINS org.apache.hive.storage.jdbc.JdbcInputFormat IS false, hive.vectorized.use.row.serde.deserialize IS false
+                inputFileFormats: org.apache.hive.storage.jdbc.JdbcInputFormat
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: select count(*) from sds
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sds
@@ -3424,6 +3513,22 @@ POSTHOOK: query: select param_key, param_value from sd_params order by param_key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sd_params
 #### A masked pattern was here ####
+<<<<<<< HEAD
+=======
+PREHOOK: query: select sequence_name from sequence_table order by sequence_name limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@sequence_table
+#### A masked pattern was here ####
+POSTHOOK: query: select sequence_name from sequence_table order by sequence_name limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@sequence_table
+#### A masked pattern was here ####
+org.apache.hadoop.hive.metastore.model.MCatalog
+org.apache.hadoop.hive.metastore.model.MColumnDescriptor
+org.apache.hadoop.hive.metastore.model.MDatabase
+org.apache.hadoop.hive.metastore.model.MFunction
+org.apache.hadoop.hive.metastore.model.MGlobalPrivilege
+>>>>>>> asf/master
 PREHOOK: query: select name, slib from serdes order by name, slib limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@serdes
@@ -3627,11 +3732,19 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@table_params
 POSTHOOK: Input: sys@table_stats_view
 #### A masked pattern was here ####
+<<<<<<< HEAD
 {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","rp_name":"true","trigger_expression":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"cd_id":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"create_time":"true","last_access_time":"true","part_id":"true","part_name":"true","sd_id":"true","tbl_id":"true"}}	0	0	0	0
+=======
+{"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","rp_name":"true","trigger_expression":"true"}}	0	0	0	0
+#### A masked pattern was here ####
+{"BASIC_STATS":"true","COLUMN_STATS":{"db_id":"true","param_key":"true","param_value":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"param_key":"true","param_value":"true","serde_id":"true"}}	0	0	0	0
+>>>>>>> asf/master
 PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM PARTITION_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_params
@@ -3866,12 +3979,21 @@ hive_test_user	hive_test_user	default	default	alltypesorc	DELETE	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	INSERT	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	SELECT	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	UPDATE	YES	NO
+<<<<<<< HEAD
 hive_test_user	hive_test_user	default	default	alltypesparquet	DELETE	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesparquet	INSERT	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesparquet	SELECT	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesparquet	UPDATE	YES	NO
 hive_test_user	hive_test_user	default	default	cbo_t1	DELETE	YES	NO
 hive_test_user	hive_test_user	default	default	cbo_t1	INSERT	YES	NO
+=======
+hive_test_user	hive_test_user	default	default	moretypes	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	INSERT	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	SELECT	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	UPDATE	YES	NO
+hive_test_user	hive_test_user	default	default	scr_txn	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	scr_txn	INSERT	YES	NO
+>>>>>>> asf/master
 Warning: Shuffle Join MERGEJOIN[82][tables = [c, s, t, d, p]] in Stage 'Reducer 5' is a cross product
 PREHOOK: query: select * from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
 PREHOOK: type: QUERY
