@@ -18,6 +18,8 @@
 
 package org.apache.hive.streaming;
 
+import java.io.InputStream;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 
 public interface StreamingConnection extends ConnectionInfo, PartitionHandler {
@@ -44,6 +46,14 @@ public interface StreamingConnection extends ConnectionInfo, PartitionHandler {
   void write(byte[] record) throws StreamingException;
 
   /**
+   * Write record using RecordWriter.
+   *
+   * @param inputStream - input stream of records
+   * @throws StreamingException - if there are errors when writing
+   */
+  void write(InputStream inputStream) throws StreamingException;
+
+  /**
    * Commit a transaction to make the writes visible for readers.
    *
    * @throws StreamingException - if there are errors when committing the open transaction
@@ -61,4 +71,11 @@ public interface StreamingConnection extends ConnectionInfo, PartitionHandler {
    * Closes streaming connection.
    */
   void close();
+
+  /**
+   * Gets stats about the streaming connection.
+   *
+   * @return - connection stats
+   */
+  ConnectionStats getConnectionStats();
 }

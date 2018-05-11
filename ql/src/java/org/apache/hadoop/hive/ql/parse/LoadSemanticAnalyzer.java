@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.net.URLCodec;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import java.io.IOException;
 import java.io.Serializable;
@@ -31,7 +33,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import org.antlr.runtime.tree.Tree;
-import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -62,6 +63,7 @@ import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.mapred.InputFormat;
 
 import com.google.common.collect.Lists;
+import org.apache.hadoop.mapred.TextInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +80,8 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
   // AST specific data
   private Tree fromTree, tableTree;
   private boolean isLocal = false, isOverWrite = false;
+  private String inputFormatClassName = null;
+  private String serDeClassName = null;
 
   public LoadSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -106,8 +110,8 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     return (srcs);
   }
 
-  private URI initializeFromURI(String fromPath, boolean isLocal) throws IOException,
-      URISyntaxException {
+  private URI initializeFromURI(String fromPath, boolean isLocal)
+      throws IOException, URISyntaxException, SemanticException {
     URI fromURI = new Path(fromPath).toUri();
 
     String fromScheme = fromURI.getScheme();
@@ -118,8 +122,13 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     // directory
     if (!path.startsWith("/")) {
       if (isLocal) {
-        path = URIUtil.decode(
-            new Path(System.getProperty("user.dir"), fromPath).toUri().toString());
+        try {
+          path = new String(URLCodec.decodeUrl(
+              new Path(System.getProperty("user.dir"), fromPath).toUri().toString()
+                  .getBytes("US-ASCII")), "US-ASCII");
+        } catch (DecoderException de) {
+          throw new SemanticException("URL Decode failed", de);
+        }
       } else {
         path = new Path(new Path("/user/" + System.getProperty("user.name")),
           path).toString();
@@ -172,8 +181,6 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
         if (oneSrc.isDir()) {
           reparseAndSuperAnalyze(table, fromURI);
           return null;
-/*          throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(fromTree,
-              "source contains directory: " + oneSrc.getPath().toString()));*/
         }
       }
       validateAcidFiles(table, srcs, fileSystem);
@@ -258,12 +265,30 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     fromTree = ast.getChild(0);
     tableTree = ast.getChild(1);
 
-    if (ast.getChildCount() == 4) {
+    boolean inputInfo = false;
+    // Check the last node
+    ASTNode child = (ASTNode)ast.getChild(ast.getChildCount() - 1);
+    if (child.getToken().getType() == HiveParser.TOK_INPUTFORMAT) {
+      if (child.getChildCount() != 2) {
+        throw new SemanticException("FileFormat should contain both input format and Serde");
+      }
+      try {
+        inputFormatClassName = stripQuotes(child.getChild(0).getText());
+        serDeClassName = stripQuotes(child.getChild(1).getText());
+        inputInfo = true;
+      } catch (Exception e) {
+        throw new SemanticException("FileFormat inputFormatClassName or serDeClassName is incorrect");
+      }
+    }
+
+    if ((!inputInfo && ast.getChildCount() == 4) ||
+        (inputInfo && ast.getChildCount() == 5)) {
       isLocal = true;
       isOverWrite = true;
     }
 
-    if (ast.getChildCount() == 3) {
+    if ((!inputInfo && ast.getChildCount() == 3) ||
+        (inputInfo && ast.getChildCount() == 4)) {
       if (ast.getChild(2).getText().toLowerCase().equals("local")) {
         isLocal = true;
       } else {
@@ -449,8 +474,16 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     // wipe out partition columns
     tempTableObj.setPartCols(new ArrayList<>());
 
-    // Set data location
+    // Set data location and input format, it must be text
     tempTableObj.setDataLocation(new Path(fromURI));
+    if (inputFormatClassName != null && serDeClassName != null) {
+      try {
+        tempTableObj.setInputFormatClass(inputFormatClassName);
+        tempTableObj.setSerializationLib(serDeClassName);
+      } catch (HiveException e) {
+        throw new SemanticException("Load Data: Failed to set inputFormat or SerDe");
+      }
+    }
 
     // Step 2 : create the Insert query
     StringBuilder rewrittenQueryStr = new StringBuilder();

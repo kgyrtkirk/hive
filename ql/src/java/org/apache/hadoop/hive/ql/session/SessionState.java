@@ -1261,6 +1261,13 @@ public class SessionState {
     return null;
   }
 
+  public static List<String> getGroupsFromAuthenticator() {
+    if (SessionState.get() != null && SessionState.get().getAuthenticator() != null) {
+      return SessionState.get().getAuthenticator().getGroupNames();
+    }
+    return null;
+  }
+
   static void validateFiles(List<String> newFiles) throws IllegalArgumentException {
     SessionState ss = SessionState.get();
     Configuration conf = (ss == null) ? new Configuration() : ss.getConf();
@@ -1917,6 +1924,7 @@ public class SessionState {
    */
   public void setupQueryCurrentTimestamp() {
     queryCurrentTimestamp = new Timestamp(System.currentTimeMillis());
+    sessionConf.setLongVar(ConfVars.HIVE_QUERY_TIMESTAMP, queryCurrentTimestamp.getTime());
 
     // Provide a facility to set current timestamp during tests
     if (sessionConf.getBoolVar(ConfVars.HIVE_IN_TEST)) {

@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,25 +16,28 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 
-@Explain(displayName = "Insert", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })
-public class InsertTableDesc extends DDLDesc {
-  private final Table table;
-  private final boolean overwrite;
+/**
+ * Cast a decimal to float based on decimal to double function.
+ *
+ */
+public class CastDecimalToFloat extends FuncDecimalToDouble {
 
-  public InsertTableDesc(Table table, boolean overwrite) {
-    this.table = table;
-    this.overwrite = overwrite;
+  private static final long serialVersionUID = 1L;
+
+  public CastDecimalToFloat() {
+    super();
   }
 
-  public Table getTable() {
-    return table;
+  public CastDecimalToFloat(int inputCol, int outputColumnNum) {
+    super(inputCol, outputColumnNum);
   }
 
-  public boolean isOverwrite() {
-    return overwrite;
+  protected void func(DoubleColumnVector outV, DecimalColumnVector inV, int i) {
+    outV.vector[i] = inV.vector[i].floatValue();
   }
 }

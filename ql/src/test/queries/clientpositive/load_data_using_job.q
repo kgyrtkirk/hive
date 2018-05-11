@@ -81,3 +81,14 @@ explain load data local inpath '../../data/files/load_data_job/partitions/load_d
 load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin;
 select * from srcbucket_mapjoin;
 drop table srcbucket_mapjoin;
+
+-- Load into ORC table using text files
+CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) STORED AS ORC;
+explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin
+INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
+SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe';
+load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin
+INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
+SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe';
+select * from srcbucket_mapjoin;
+drop table srcbucket_mapjoin;

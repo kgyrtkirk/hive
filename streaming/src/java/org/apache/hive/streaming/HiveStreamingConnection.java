@@ -19,6 +19,7 @@
 package org.apache.hive.streaming;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -89,7 +90,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
  *                                      .withFieldDelimiter(',')
  *                                      .build();
- *
  * // create and open streaming connection (default.src table has to exist already)
  * StreamingConnection connection = HiveStreamingConnection.newBuilder()
  *                                    .withDatabase("default")
@@ -98,19 +98,16 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  *                                    .withRecordWriter(writer)
  *                                    .withHiveConf(hiveConf)
  *                                    .connect();
- *
  * // begin a transaction, write records and commit 1st transaction
  * connection.beginTransaction();
  * connection.write("key1,val1".getBytes());
  * connection.write("key2,val2".getBytes());
  * connection.commitTransaction();
- *
  * // begin another transaction, write more records and commit 2nd transaction
  * connection.beginTransaction();
  * connection.write("key3,val3".getBytes());
  * connection.write("key4,val4".getBytes());
  * connection.commitTransaction();
- *
  * // close the streaming connection
  * connection.close();
  * }
@@ -158,6 +155,7 @@ public class HiveStreamingConnection implements StreamingConnection {
   private final boolean secureMode;
   private Table tableObject = null;
   private String metastoreUri;
+  private ConnectionStats connectionStats;
 
   private HiveStreamingConnection(Builder builder) throws StreamingException {
     this.database = builder.database.toLowerCase();
@@ -181,6 +179,7 @@ public class HiveStreamingConnection implements StreamingConnection {
     }
     this.transactionBatchSize = builder.transactionBatchSize;
     this.recordWriter = builder.recordWriter;
+    this.connectionStats = new ConnectionStats();
     if (agentInfo == null) {
       try {
         agentInfo = username + ":" + InetAddress.getLocalHost().getHostName() + ":" + Thread.currentThread().getName();
@@ -194,10 +193,10 @@ public class HiveStreamingConnection implements StreamingConnection {
     }
     overrideConfSettings(conf);
     this.metastoreUri = conf.get(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName());
-    this.msClient = getMetaStoreClient(conf, metastoreUri, secureMode);
+    this.msClient = getMetaStoreClient(conf, metastoreUri, secureMode, "streaming-connection");
     // We use a separate metastore client for heartbeat calls to ensure heartbeat RPC calls are
     // isolated from the other transaction related RPC calls.
-    this.heartbeatMSClient = getMetaStoreClient(conf, metastoreUri, secureMode);
+    this.heartbeatMSClient = getMetaStoreClient(conf, metastoreUri, secureMode, "streaming-connection-heartbeat");
     validateTable();
     LOG.info("STREAMING CONNECTION INFO: {}", toConnectionInfoString());
   }
@@ -369,19 +368,29 @@ public class HiveStreamingConnection implements StreamingConnection {
       partLocation = new Path(tableObject.getDataLocation(), Warehouse.makePartPath(partSpec)).toString();
       addPartitionDesc.addPartition(partSpec, partLocation);
       Partition partition = Hive.convertAddSpecToMetaPartition(tableObject, addPartitionDesc.getPartition(0), conf);
-      msClient.add_partition(partition);
+      getMSC().add_partition(partition);
     } catch (AlreadyExistsException e) {
       exists = true;
     } catch (HiveException | TException e) {
       throw new StreamingException("Unable to creation partition for values: " + partitionValues + " connection: " +
-        toConnectionInfoString());
+        toConnectionInfoString(), e);
     }
     return new PartitionInfo(partName, partLocation, exists);
   }
 
+  IMetaStoreClient getMSC() {
+    connectionStats.incrementMetastoreCalls();
+    return msClient;
+  }
+
+  IMetaStoreClient getHeatbeatMSC() {
+    connectionStats.incrementMetastoreCalls();
+    return heartbeatMSClient;
+  }
+
   private void validateTable() throws InvalidTable, ConnectionError {
     try {
-      tableObject = new Table(msClient.getTable(database, table));
+      tableObject = new Table(getMSC().getTable(database, table));
     } catch (Exception e) {
       LOG.warn("Unable to validate the table for connection: " + toConnectionInfoString(), e);
       throw new InvalidTable(database, table, e);
@@ -408,15 +417,15 @@ public class HiveStreamingConnection implements StreamingConnection {
   }
 
   private static class HeartbeatRunnable implements Runnable {
-    private final IMetaStoreClient heartbeatMSClient;
+    private final HiveStreamingConnection conn;
     private final AtomicLong minTxnId;
     private final long maxTxnId;
     private final ReentrantLock transactionLock;
     private final AtomicBoolean isTxnClosed;
 
-    HeartbeatRunnable(final IMetaStoreClient heartbeatMSClient, final AtomicLong minTxnId, final long maxTxnId,
+    HeartbeatRunnable(final HiveStreamingConnection conn, final AtomicLong minTxnId, final long maxTxnId,
       final ReentrantLock transactionLock, final AtomicBoolean isTxnClosed) {
-      this.heartbeatMSClient = heartbeatMSClient;
+      this.conn = conn;
       this.minTxnId = minTxnId;
       this.maxTxnId = maxTxnId;
       this.transactionLock = transactionLock;
@@ -428,7 +437,7 @@ public class HiveStreamingConnection implements StreamingConnection {
       transactionLock.lock();
       try {
         if (minTxnId.get() > 0) {
-          HeartbeatTxnRangeResponse resp = heartbeatMSClient.heartbeatTxnRange(minTxnId.get(), maxTxnId);
+          HeartbeatTxnRangeResponse resp = conn.getHeatbeatMSC().heartbeatTxnRange(minTxnId.get(), maxTxnId);
           if (!resp.getAborted().isEmpty() || !resp.getNosuch().isEmpty()) {
             LOG.error("Heartbeat failure: {}", resp.toString());
             isTxnClosed.set(true);
@@ -451,7 +460,7 @@ public class HiveStreamingConnection implements StreamingConnection {
     }
 
     if (currentTransactionBatch.isClosed()) {
-      throw new IllegalStateException("Cannot begin next transaction on a closed streaming connection");
+      throw new StreamingException("Cannot begin next transaction on a closed streaming connection");
     }
 
     if (currentTransactionBatch.remainingTransactions() == 0) {
@@ -485,12 +494,6 @@ public class HiveStreamingConnection implements StreamingConnection {
   }
 
   @Override
-  public void write(final byte[] record) throws StreamingException {
-    checkState();
-    currentTransactionBatch.write(record);
-  }
-
-  @Override
   public void beginTransaction() throws StreamingException {
     checkClosedState();
     beginNextTransaction();
@@ -500,14 +503,31 @@ public class HiveStreamingConnection implements StreamingConnection {
   public void commitTransaction() throws StreamingException {
     checkState();
     currentTransactionBatch.commit();
+    connectionStats.incrementCommittedTransactions();
   }
 
   @Override
   public void abortTransaction() throws StreamingException {
     checkState();
     currentTransactionBatch.abort();
+    connectionStats.incrementAbortedTransactions();
   }
 
+  @Override
+  public void write(final byte[] record) throws StreamingException {
+    checkState();
+    currentTransactionBatch.write(record);
+  }
+
+  @Override
+  public void write(final InputStream inputStream) throws StreamingException {
+    checkState();
+    currentTransactionBatch.write(inputStream);
+  }
+
+  /**
+   * Close connection
+   */
   @Override
   public void close() {
     if (isConnectionClosed.get()) {
@@ -521,12 +541,19 @@ public class HiveStreamingConnection implements StreamingConnection {
     } catch (StreamingException e) {
       LOG.error("Unable to close current transaction batch: " + currentTransactionBatch, e);
     } finally {
-      msClient.close();
-      heartbeatMSClient.close();
+      getMSC().close();
+      getHeatbeatMSC().close();
     }
+    LOG.info("Closed streaming connection. Agent: {} Stats: {}", getAgentInfo(), getConnectionStats());
   }
 
-  private static IMetaStoreClient getMetaStoreClient(HiveConf conf, String metastoreUri, boolean secureMode)
+  @Override
+  public ConnectionStats getConnectionStats() {
+    return connectionStats;
+  }
+
+  private static IMetaStoreClient getMetaStoreClient(HiveConf conf, String metastoreUri, boolean secureMode,
+    String owner)
     throws ConnectionError {
     if (metastoreUri != null) {
       conf.set(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(), metastoreUri);
@@ -535,6 +562,7 @@ public class HiveStreamingConnection implements StreamingConnection {
       conf.setBoolean(MetastoreConf.ConfVars.USE_THRIFT_SASL.getHiveName(), true);
     }
     try {
+      LOG.info("Creating metastore client for {}", owner);
       return HiveMetaStoreUtils.getHiveMetastoreClient(conf);
     } catch (MetaException | IOException e) {
       throw new ConnectionError("Error connecting to Hive Metastore URI: "
@@ -560,8 +588,6 @@ public class HiveStreamingConnection implements StreamingConnection {
   private static class TransactionBatch {
     private String username;
     private HiveStreamingConnection conn;
-    private IMetaStoreClient msClient;
-    private IMetaStoreClient heartbeatMSClient;
     private ScheduledExecutorService scheduledExecutorService;
     private RecordWriter recordWriter;
     private String partNameForLock = null;
@@ -614,16 +640,14 @@ public class HiveStreamingConnection implements StreamingConnection {
         }
         this.conn = conn;
         this.username = conn.username;
-        this.msClient = conn.msClient;
-        this.heartbeatMSClient = conn.heartbeatMSClient;
         this.recordWriter = conn.recordWriter;
         this.agentInfo = conn.agentInfo;
         this.numTxns = conn.transactionBatchSize;
 
         setupHeartBeatThread();
 
-        List<Long> txnIds = openTxnImpl(msClient, username, numTxns);
-        txnToWriteIds = allocateWriteIdsImpl(msClient, txnIds);
+        List<Long> txnIds = openTxnImpl(username, numTxns);
+        txnToWriteIds = allocateWriteIdsImpl(txnIds);
         assert (txnToWriteIds.size() == numTxns);
 
         txnStatus = new TxnState[numTxns];
@@ -664,19 +688,17 @@ public class HiveStreamingConnection implements StreamingConnection {
       initialDelay = (long) (heartBeatInterval * 0.75 * Math.random());
       LOG.info("Starting heartbeat thread with interval: {} ms initialDelay: {} ms for agentInfo: {}",
         heartBeatInterval, initialDelay, conn.agentInfo);
-      Runnable runnable = new HeartbeatRunnable(heartbeatMSClient, minTxnId, maxTxnId, transactionLock, isTxnClosed);
+      Runnable runnable = new HeartbeatRunnable(conn, minTxnId, maxTxnId, transactionLock, isTxnClosed);
       this.scheduledExecutorService.scheduleWithFixedDelay(runnable, initialDelay, heartBeatInterval, TimeUnit
         .MILLISECONDS);
     }
 
-    private List<Long> openTxnImpl(final IMetaStoreClient msClient, final String user, final int numTxns)
-      throws TException {
-      return msClient.openTxns(user, numTxns).getTxn_ids();
+    private List<Long> openTxnImpl(final String user, final int numTxns) throws TException {
+      return conn.getMSC().openTxns(user, numTxns).getTxn_ids();
     }
 
-    private List<TxnToWriteId> allocateWriteIdsImpl(final IMetaStoreClient msClient,
-      final List<Long> txnIds) throws TException {
-      return msClient.allocateTableWriteIdsBatch(txnIds, conn.database, conn.table);
+    private List<TxnToWriteId> allocateWriteIdsImpl(final List<Long> txnIds) throws TException {
+      return conn.getMSC().allocateTableWriteIdsBatch(txnIds, conn.database, conn.table);
     }
 
     @Override
@@ -714,7 +736,7 @@ public class HiveStreamingConnection implements StreamingConnection {
       lastTxnUsed = getCurrentTxnId();
       lockRequest = createLockRequest(conn, partNameForLock, username, getCurrentTxnId(), agentInfo);
       try {
-        LockResponse res = msClient.lock(lockRequest);
+        LockResponse res = conn.getMSC().lock(lockRequest);
         if (res.getState() != LockState.ACQUIRED) {
           throw new TransactionError("Unable to acquire lock on " + conn);
         }
@@ -759,6 +781,24 @@ public class HiveStreamingConnection implements StreamingConnection {
         //this exception indicates that a {@code record} could not be parsed and the
         //caller can decide whether to drop it or send it to dead letter queue.
         //rolling back the txn and retrying won't help since the tuple will be exactly the same
+        //when it's replayed.
+        success = true;
+        throw ex;
+      } finally {
+        markDead(success);
+      }
+    }
+
+    public void write(final InputStream inputStream) throws StreamingException {
+      checkIsClosed();
+      boolean success = false;
+      try {
+        recordWriter.write(getCurrentWriteId(), inputStream);
+        success = true;
+      } catch (SerializationError ex) {
+        //this exception indicates that a {@code record} could not be parsed and the
+        //caller can decide whether to drop it or send it to dead letter queue.
+        //rolling back the txn and retrying won'table help since the tuple will be exactly the same
         //when it's replayed.
         success = true;
         throw ex;
@@ -813,12 +853,12 @@ public class HiveStreamingConnection implements StreamingConnection {
         TxnToWriteId txnToWriteId = txnToWriteIds.get(currentTxnIndex);
         if (conn.isDynamicPartitioning()) {
           List<String> partNames = new ArrayList<>(recordWriter.getPartitions());
-          msClient.addDynamicPartitions(txnToWriteId.getTxnId(), txnToWriteId.getWriteId(), conn.database, conn.table,
+          conn.getMSC().addDynamicPartitions(txnToWriteId.getTxnId(), txnToWriteId.getWriteId(), conn.database, conn.table,
             partNames, DataOperationType.INSERT);
         }
         transactionLock.lock();
         try {
-          msClient.commitTxn(txnToWriteId.getTxnId());
+          conn.getMSC().commitTxn(txnToWriteId.getTxnId());
           // increment the min txn id so that heartbeat thread will heartbeat only from the next open transaction.
           // the current transaction is going to committed or fail, so don't need heartbeat for current transaction.
           if (currentTxnIndex + 1 < txnToWriteIds.size()) {
@@ -873,7 +913,7 @@ public class HiveStreamingConnection implements StreamingConnection {
             (state == TxnState.ABORTED || state == TxnState.COMMITTED ? 1 : 0), 0);
           for (currentTxnIndex = minOpenTxnIndex;
             currentTxnIndex < txnToWriteIds.size(); currentTxnIndex++) {
-            msClient.rollbackTxn(txnToWriteIds.get(currentTxnIndex).getTxnId());
+            conn.getMSC().rollbackTxn(txnToWriteIds.get(currentTxnIndex).getTxnId());
             txnStatus[currentTxnIndex] = TxnState.ABORTED;
           }
           currentTxnIndex--;//since the loop left it == txnToWriteIds.size()
@@ -888,7 +928,7 @@ public class HiveStreamingConnection implements StreamingConnection {
           }
           long currTxnId = getCurrentTxnId();
           if (currTxnId > 0) {
-            msClient.rollbackTxn(currTxnId);
+            conn.getMSC().rollbackTxn(currTxnId);
             txnStatus[currentTxnIndex] = TxnState.ABORTED;
           }
         }
@@ -1008,13 +1048,8 @@ public class HiveStreamingConnection implements StreamingConnection {
   }
 
   @Override
-  public String getDatabase() {
-    return database;
-  }
-
-  @Override
-  public String getTable() {
-    return table;
+  public Table getTable() {
+    return tableObject;
   }
 
   @Override

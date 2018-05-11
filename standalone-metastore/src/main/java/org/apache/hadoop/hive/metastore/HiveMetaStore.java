@@ -241,6 +241,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private final Configuration conf; // stores datastore (jpox) properties,
                                      // right now they come from jpox.properties
 
+    // Flag to control that always threads are initialized only once
+    // instead of multiple times
+    private final static AtomicBoolean alwaysThreadsInitialized =
+        new AtomicBoolean(false);
+
     private static String currentUrl;
     private FileMetadataManager fileMetadataManager;
     private PartitionExpressionProxy expressionProxy;
@@ -558,19 +563,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         partitionValidationPattern = null;
       }
 
-      ThreadPool.initialize(conf);
-      Collection<String> taskNames =
-          MetastoreConf.getStringCollection(conf, ConfVars.TASK_THREADS_ALWAYS);
-      for (String taskName : taskNames) {
-        MetastoreTaskThread task =
-            JavaUtils.newInstance(JavaUtils.getClass(taskName, MetastoreTaskThread.class));
-        task.setConf(conf);
-        long freq = task.runFrequency(TimeUnit.MILLISECONDS);
-        // For backwards compatibility, since some threads used to be hard coded but only run if
-        // frequency was > 0
-        if (freq > 0) {
-          ThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
-
+      // We only initialize once the tasks that need to be run periodically
+      if (alwaysThreadsInitialized.compareAndSet(false, true)) {
+        ThreadPool.initialize(conf);
+        Collection<String> taskNames =
+            MetastoreConf.getStringCollection(conf, ConfVars.TASK_THREADS_ALWAYS);
+        for (String taskName : taskNames) {
+          MetastoreTaskThread task =
+              JavaUtils.newInstance(JavaUtils.getClass(taskName, MetastoreTaskThread.class));
+          task.setConf(conf);
+          long freq = task.runFrequency(TimeUnit.MILLISECONDS);
+          // For backwards compatibility, since some threads used to be hard coded but only run if
+          // frequency was > 0
+          if (freq > 0) {
+            ThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
+          }
         }
       }
       expressionProxy = PartFilterExprUtil.createExpressionProxy(conf);
@@ -5794,6 +5801,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                             final String tblName, final String filter)
             throws TException {
       String[] parsedDbName = parseDbName(dbName, conf);
+      if (parsedDbName[DB_NAME] == null || tblName == null) {
+        throw new MetaException("The DB and table name cannot be null.");
+      }
       startTableFunction("get_num_partitions_by_filter", parsedDbName[CAT_NAME],
           parsedDbName[DB_NAME], tblName);
 
@@ -6182,6 +6192,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw new MetaException("Unknown request type " + request.getRequestType());
       }
 
+      return response;
+    }
+
+    @Override
+    public GrantRevokePrivilegeResponse refresh_privileges(HiveObjectRef objToRefresh,
+        GrantRevokePrivilegeRequest grantRequest)
+        throws TException {
+      incrementCounter("refresh_privileges");
+      firePreEvent(new PreAuthorizationCallEvent(this));
+      GrantRevokePrivilegeResponse response = new GrantRevokePrivilegeResponse();
+      try {
+        boolean result = getMS().refreshPrivileges(objToRefresh, grantRequest.getPrivileges());
+        response.setSuccess(result);
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
       return response;
     }
 

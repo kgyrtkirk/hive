@@ -21,7 +21,6 @@ package org.apache.hive.streaming;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.RegexSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -39,6 +38,7 @@ public class StrictRegexWriter extends AbstractRecordWriter {
   private RegexSerDe serde;
 
   private StrictRegexWriter(final Builder builder) {
+    super(builder.lineDelimiter);
     this.regex = builder.regex;
   }
 
@@ -48,9 +48,15 @@ public class StrictRegexWriter extends AbstractRecordWriter {
 
   public static class Builder {
     private String regex;
+    private String lineDelimiter;
 
     public Builder withRegex(final String regex) {
       this.regex = regex;
+      return this;
+    }
+
+    public Builder withLineDelimiterPattern(final String lineDelimiter) {
+      this.lineDelimiter = lineDelimiter;
       return this;
     }
 
@@ -67,7 +73,7 @@ public class StrictRegexWriter extends AbstractRecordWriter {
   @Override
   public RegexSerDe createSerde() throws SerializationError {
     try {
-      Properties tableProps = MetaStoreUtils.getTableMetadata(tbl);
+      Properties tableProps = table.getMetadata();
       tableProps.setProperty(RegexSerDe.INPUT_REGEX, regex);
       tableProps.setProperty(serdeConstants.LIST_COLUMNS, StringUtils.join(inputColumns, ","));
       RegexSerDe serde = new RegexSerDe();

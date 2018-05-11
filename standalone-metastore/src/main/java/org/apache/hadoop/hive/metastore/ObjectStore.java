@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -69,6 +70,7 @@ import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 import javax.sql.DataSource;
 
+import com.google.common.base.Strings;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -226,6 +228,7 @@ import org.slf4j.LoggerFactory;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -1903,6 +1906,15 @@ public class ObjectStore implements RawStore, Configurable {
         .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
         convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
         mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
+
+    if (Strings.isNullOrEmpty(mtbl.getOwnerType())) {
+      // Before the ownerType exists in an old Hive schema, USER was the default type for owner.
+      // Let's set the default to USER to keep backward compatibility.
+      t.setOwnerType(PrincipalType.USER);
+    } else {
+      t.setOwnerType(PrincipalType.valueOf(mtbl.getOwnerType()));
+    }
+
     t.setRewriteEnabled(mtbl.isRewriteEnabled());
     t.setCatName(mtbl.getDatabase().getCatalogName());
     return t;
@@ -1938,9 +1950,12 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
 
+    PrincipalType ownerPrincipalType = tbl.getOwnerType();
+    String ownerType = (ownerPrincipalType == null) ? PrincipalType.USER.name() : ownerPrincipalType.name();
+
     // A new table is always created with a new column descriptor
     return new MTable(normalizeIdentifier(tbl.getTableName()), mdb,
-        convertToMStorageDescriptor(tbl.getSd()), tbl.getOwner(), tbl
+        convertToMStorageDescriptor(tbl.getSd()), tbl.getOwner(), ownerType, tbl
         .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(), tbl.isRewriteEnabled(),
@@ -3145,7 +3160,7 @@ public class ObjectStore implements RawStore, Configurable {
           "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3");
       query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
       query.setOrdering("partitionName ascending");
-      if (max > 0) {
+      if (max >= 0) {
         query.setRange(0, max);
       }
       mparts = (List<MPartition>) query.execute(tableName, dbName, catName);
@@ -3926,6 +3941,7 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setTableName(normalizeIdentifier(newt.getTableName()));
       oldt.setParameters(newt.getParameters());
       oldt.setOwner(newt.getOwner());
+      oldt.setOwnerType(newt.getOwnerType());
       // Fully copy over the contents of the new SD into the old SD,
       // so we don't create an extra SD in the metastore db that has no references.
       MColumnDescriptor oldCD = null;
@@ -6050,6 +6066,88 @@ public class ObjectStore implements RawStore, Configurable {
         } else {
           pm.deletePersistentAll(persistentObjs);
         }
+      }
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+    return committed;
+  }
+
+  class PrivilegeWithoutCreateTimeComparator implements Comparator<HiveObjectPrivilege> {
+    @Override
+    public int compare(HiveObjectPrivilege o1, HiveObjectPrivilege o2) {
+      int createTime1 = o1.getGrantInfo().getCreateTime();
+      int createTime2 = o2.getGrantInfo().getCreateTime();
+      o1.getGrantInfo().setCreateTime(0);
+      o2.getGrantInfo().setCreateTime(0);
+      int result = o1.compareTo(o2);
+      o1.getGrantInfo().setCreateTime(createTime1);
+      o2.getGrantInfo().setCreateTime(createTime2);
+      return result;
+    }
+  }
+
+  @Override
+  public boolean refreshPrivileges(HiveObjectRef objToRefresh, PrivilegeBag grantPrivileges)
+      throws InvalidObjectException, MetaException, NoSuchObjectException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      Set<HiveObjectPrivilege> revokePrivilegeSet
+          = new TreeSet<HiveObjectPrivilege>(new PrivilegeWithoutCreateTimeComparator());
+      Set<HiveObjectPrivilege> grantPrivilegeSet
+          = new TreeSet<HiveObjectPrivilege>(new PrivilegeWithoutCreateTimeComparator());
+
+      List<HiveObjectPrivilege> grants = null;
+      String catName = objToRefresh.isSetCatName() ? objToRefresh.getCatName() :
+          getDefaultCatalog(conf);
+      switch (objToRefresh.getObjectType()) {
+      case DATABASE:
+        grants = this.listDBGrantsAll(catName, objToRefresh.getDbName());
+        break;
+      case TABLE:
+        grants = listTableGrantsAll(catName, objToRefresh.getDbName(), objToRefresh.getObjectName());
+        break;
+      case COLUMN:
+        Preconditions.checkArgument(objToRefresh.getColumnName()==null, "columnName must be null");
+        grants = convertTableCols(listTableAllColumnGrants(catName,
+            objToRefresh.getDbName(), objToRefresh.getObjectName()));
+        break;
+      default:
+        throw new MetaException("Unexpected object type " + objToRefresh.getObjectType());
+      }
+      if (grants != null) {
+        for (HiveObjectPrivilege grant : grants) {
+          revokePrivilegeSet.add(grant);
+        }
+      }
+
+      // Optimize revoke/grant list, remove the overlapping
+      if (grantPrivileges.getPrivileges() != null) {
+        for (HiveObjectPrivilege grantPrivilege : grantPrivileges.getPrivileges()) {
+          if (revokePrivilegeSet.contains(grantPrivilege)) {
+            revokePrivilegeSet.remove(grantPrivilege);
+          } else {
+            grantPrivilegeSet.add(grantPrivilege);
+          }
+        }
+      }
+      if (!revokePrivilegeSet.isEmpty()) {
+        PrivilegeBag remainingRevokePrivileges = new PrivilegeBag();
+        for (HiveObjectPrivilege revokePrivilege : revokePrivilegeSet) {
+          remainingRevokePrivileges.addToPrivileges(revokePrivilege);
+        }
+        revokePrivileges(remainingRevokePrivileges, false);
+      }
+      if (!grantPrivilegeSet.isEmpty()) {
+        PrivilegeBag remainingGrantPrivileges = new PrivilegeBag();
+        for (HiveObjectPrivilege grantPrivilege : grantPrivilegeSet) {
+          remainingGrantPrivileges.addToPrivileges(grantPrivilege);
+        }
+        grantPrivileges(remainingGrantPrivileges);
       }
       committed = commitTransaction();
     } finally {

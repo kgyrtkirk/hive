@@ -19,9 +19,10 @@
 package org.apache.hive.streaming;
 
 
+import java.io.InputStream;
 import java.util.Properties;
+import java.util.Scanner;
 
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -45,6 +46,7 @@ public class StrictDelimitedInputWriter extends AbstractRecordWriter {
   private LazySimpleSerDe serde;
 
   private StrictDelimitedInputWriter(Builder builder) {
+    super(builder.lineDelimiter);
     this.fieldDelimiter = builder.fieldDelimiter;
     this.collectionDelimiter = builder.collectionDelimiter;
     this.mapKeyDelimiter = builder.mapKeyDelimiter;
@@ -58,6 +60,7 @@ public class StrictDelimitedInputWriter extends AbstractRecordWriter {
     private char fieldDelimiter = (char) LazySerDeParameters.DefaultSeparators[0];
     private char collectionDelimiter = (char) LazySerDeParameters.DefaultSeparators[1];
     private char mapKeyDelimiter = (char) LazySerDeParameters.DefaultSeparators[2];
+    private String lineDelimiter;
 
     public Builder withFieldDelimiter(final char fieldDelimiter) {
       this.fieldDelimiter = fieldDelimiter;
@@ -71,6 +74,11 @@ public class StrictDelimitedInputWriter extends AbstractRecordWriter {
 
     public Builder withMapKeyDelimiter(final char mapKeyDelimiter) {
       this.mapKeyDelimiter = mapKeyDelimiter;
+      return this;
+    }
+
+    public Builder withLineDelimiterPattern(final String lineDelimiter) {
+      this.lineDelimiter = lineDelimiter;
       return this;
     }
 
@@ -93,7 +101,7 @@ public class StrictDelimitedInputWriter extends AbstractRecordWriter {
   @Override
   public LazySimpleSerDe createSerde() throws SerializationError {
     try {
-      Properties tableProps = MetaStoreUtils.getTableMetadata(tbl);
+      Properties tableProps = table.getMetadata();
       tableProps.setProperty(serdeConstants.LIST_COLUMNS, Joiner.on(",").join(inputColumns));
       tableProps.setProperty(serdeConstants.LIST_COLUMN_TYPES, Joiner.on(":").join(inputTypes));
       tableProps.setProperty(serdeConstants.FIELD_DELIM, String.valueOf(fieldDelimiter));
