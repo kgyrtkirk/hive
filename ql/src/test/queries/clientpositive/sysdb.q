@@ -9,8 +9,6 @@ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 set hive.cbo.enable=false;
 
--- SORT_QUERY_RESULTS
-
 create table src_buck (key int, value string) clustered by(value) into 2 buckets;
 
 create table src_skew (key int) skewed by (key) on (1,2,3);
