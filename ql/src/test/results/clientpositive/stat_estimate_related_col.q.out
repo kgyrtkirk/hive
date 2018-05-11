@@ -359,11 +359,11 @@ STAGE PLANS:
             Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((b = 2) and (b) IN (2, 3)) (type: boolean)
-              Statistics: Num rows: 3/8 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 8/8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a (type: int)
                 outputColumnNames: _col1
-                Statistics: Num rows: 3/8 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 8/8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(_col1)
                   keys: 2 (type: int)
@@ -589,11 +589,11 @@ STAGE PLANS:
             Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((b = 1) or (b = 2)) and (b = 2)) (type: boolean)
-              Statistics: Num rows: 4/8 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 8/8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a (type: int)
                 outputColumnNames: _col1
-                Statistics: Num rows: 4/8 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 8/8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(_col1)
                   keys: 2 (type: int)
@@ -657,11 +657,11 @@ STAGE PLANS:
             Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((b = 1) or (b = 2)) and ((b = 1) or (b = 3)) and (b = 2)) (type: boolean)
-              Statistics: Num rows: 2/0 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 8/0 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a (type: int)
                 outputColumnNames: _col1
-                Statistics: Num rows: 2/0 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 8/0 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(_col1)
                   keys: 2 (type: int)
@@ -741,9 +741,9 @@ STAGE PLANS:
             Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((a = 3) or (a = 4)) and ((b = 1) or (b = 2)) and (a = 3) and (b = 2)) (type: boolean)
-              Statistics: Num rows: 1/0 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 8/0 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 1/0 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 8/0 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(3)
                   keys: 2 (type: int)
