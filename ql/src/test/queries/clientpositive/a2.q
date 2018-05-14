@@ -1,8 +1,7 @@
-
 -- set hive.merge.mapfiles=true;
 -- set hive.merge.mapredfiles=true;
 set hive.merge.tezfiles=true;
- 
+
 set hive.optimize.metadataonly=true;
 
 create table t1 (a int) stored as orc;
