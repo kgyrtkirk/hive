@@ -571,6 +571,9 @@ public class StatsRulesProcFactory {
       }
 
       public static RangeOps build(String colType, Range range) {
+        if(colType == serdeConstants.DATE_TYPE_NAME) {
+          return null;
+        }
         if (range == null || range.minValue == null || range.maxValue == null) {
           return null;
         }
