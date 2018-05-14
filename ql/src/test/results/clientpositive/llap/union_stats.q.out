@@ -236,7 +236,7 @@ POSTHOOK: query: select count(1) from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
-500
+1000
 PREHOOK: query: desc formatted t
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@t
@@ -257,8 +257,8 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	2                   
-	numRows             	500                 
-	rawDataSize         	5312                
+	numRows             	1000                
+	rawDataSize         	10624               
 	totalSize           	11624               
 #### A masked pattern was here ####
 	 	 
@@ -306,8 +306,8 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	2                   
-	numRows             	1000                
-	rawDataSize         	10624               
+	numRows             	1500                
+	rawDataSize         	15936               
 	totalSize           	17436               
 #### A masked pattern was here ####
 	 	 
@@ -363,8 +363,8 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	2                   
-	numRows             	1000                
-	rawDataSize         	10624               
+	numRows             	1500                
+	rawDataSize         	15936               
 	totalSize           	17436               
 #### A masked pattern was here ####
 	 	 
