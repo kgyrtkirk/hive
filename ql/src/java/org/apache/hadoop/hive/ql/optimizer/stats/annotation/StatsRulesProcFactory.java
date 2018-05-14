@@ -522,6 +522,9 @@ public class StatsRulesProcFactory {
 
     private long estimateIntersectionSize(ColStatistics colStatistics, Set<ExprNodeDescEqualityWrapper> values) {
       try {
+        if (colStatistics == null) {
+          return values.size();
+        }
         byte[] bitVector = colStatistics.getBitVectors();
         if (bitVector == null) {
           return values.size();
@@ -654,12 +657,17 @@ public class StatsRulesProcFactory {
 
     }
 
-    /** removes all values which are outside of the scope of the column
-     * @return */
+    /** removes all values which are outside of the scope of the column */
     private Set<ExprNodeDescEqualityWrapper> pruneImprobableValues(ColStatistics colStatistics,
         Set<ExprNodeDescEqualityWrapper> values) {
+      if (colStatistics == null) {
+        return values;
+      }
       Set<ExprNodeDescEqualityWrapper> ret = new HashSet<>();
       RangeOps colRange = RangeOps.build(colStatistics.getColumnType(), colStatistics.getRange());
+      if (colRange == null) {
+        return values;
+      }
       Iterator<ExprNodeDescEqualityWrapper> valueIt = values.iterator();
       while (valueIt.hasNext()) {
         ExprNodeDescEqualityWrapper v = valueIt.next();
