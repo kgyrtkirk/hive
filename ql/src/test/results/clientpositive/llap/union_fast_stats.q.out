@@ -178,8 +178,8 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	3                   
-	numRows             	5                   
-	rawDataSize         	1069                
+	numRows             	15                  
+	rawDataSize         	3483                
 	totalSize           	4033                
 #### A masked pattern was here ####
 	 	 
@@ -511,8 +511,8 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	1                   
-	numRows             	5                   
-	rawDataSize         	1069                
+	numRows             	15                  
+	rawDataSize         	3483                
 	totalSize           	3241                
 #### A masked pattern was here ####
 	 	 
@@ -534,7 +534,7 @@ POSTHOOK: query: select 15,count(*) from small_alltypesorc_a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a
 #### A masked pattern was here ####
-15	5
+15	15
 PREHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a
