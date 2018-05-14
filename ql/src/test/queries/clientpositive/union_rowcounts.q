@@ -22,6 +22,7 @@ create table t2b  as select * from
 
 select 2,count(*) from t2b;
 
+drop table if exists t1;
 drop table if exists t2a;
 drop table if exists t2b;
 
