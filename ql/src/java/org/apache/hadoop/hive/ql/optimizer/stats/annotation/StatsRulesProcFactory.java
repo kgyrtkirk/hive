@@ -609,12 +609,14 @@ public class StatsRulesProcFactory {
         if (!(exprNode instanceof ExprNodeConstantDesc)) {
           return null;
         }
-        ExprNodeConstantDesc constantDesc = (ExprNodeConstantDesc) exprNode;
-        String stringVal = constantDesc.getValue().toString();
-
-        @Deprecated
-        String boundValue = stringVal;
         try {
+
+          ExprNodeConstantDesc constantDesc = (ExprNodeConstantDesc) exprNode;
+
+          String stringVal = constantDesc.getValue().toString();
+
+          @Deprecated
+          String boundValue = stringVal;
           switch (colType) {
           case serdeConstants.TINYINT_TYPE_NAME: {
             byte value = new Byte(stringVal);
@@ -628,9 +630,8 @@ public class StatsRulesProcFactory {
             short minValue = range.minValue.shortValue();
             return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
           }
-          case serdeConstants.INT_TYPE_NAME:
-          case serdeConstants.DATE_TYPE_NAME: {
-            // Date is an integer internally
+          case serdeConstants.DATE_TYPE_NAME:
+          case serdeConstants.INT_TYPE_NAME: {
             int value = new Integer(boundValue);
             int maxValue = range.maxValue.intValue();
             int minValue = range.minValue.intValue();
