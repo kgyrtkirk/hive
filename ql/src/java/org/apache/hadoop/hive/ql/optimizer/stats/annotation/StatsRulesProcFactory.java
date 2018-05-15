@@ -106,6 +106,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -571,9 +572,6 @@ public class StatsRulesProcFactory {
       }
 
       public static RangeOps build(String colType, Range range) {
-        if(colType == serdeConstants.DATE_TYPE_NAME) {
-          return null;
-        }
         if (range == null || range.minValue == null || range.maxValue == null) {
           return null;
         }
@@ -630,7 +628,13 @@ public class StatsRulesProcFactory {
             short minValue = range.minValue.shortValue();
             return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
           }
-          case serdeConstants.DATE_TYPE_NAME:
+          case serdeConstants.DATE_TYPE_NAME: {
+            DateWritable dateWriteable = new DateWritable(java.sql.Date.valueOf(boundValue));
+            int value = dateWriteable.getDays();
+            int maxValue = range.maxValue.intValue();
+            int minValue = range.minValue.intValue();
+            return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
+          }
           case serdeConstants.INT_TYPE_NAME: {
             int value = new Integer(boundValue);
             int maxValue = range.maxValue.intValue();
