@@ -1,5 +1,3 @@
-set hive.optimize.metadataonly=true;
-
 create table t1 (a int) ;
 insert into t1 values (1);
 
@@ -27,7 +25,6 @@ drop table if exists t2a;
 drop table if exists t2b;
 
 set hive.merge.tezfiles=true;
-set hive.optimize.metadataonly=true;
 
 create table t1 (a int) stored as orc;
 insert into t1 values (1);
