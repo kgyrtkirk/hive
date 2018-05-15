@@ -516,8 +516,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	2                   
-	numRows             	500                 
-	rawDataSize         	5312                
+	numRows             	1000                
+	rawDataSize         	10624               
 	totalSize           	11624               
 #### A masked pattern was here ####
 	 	 
@@ -550,8 +550,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	2                   
-	numRows             	500                 
-	rawDataSize         	5312                
+	numRows             	1000                
+	rawDataSize         	10624               
 	totalSize           	11624               
 #### A masked pattern was here ####
 	 	 
@@ -573,4 +573,4 @@ POSTHOOK: query: select count(1) from t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-500
+1000
