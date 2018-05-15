@@ -35,6 +35,7 @@ public class StatsCollectionContext {
   private final Configuration hiveConf;
   private Task task;
   private List<String> statsTmpDirs;
+  private int indexForTezUnion;
   private String contextSuffix;
 
   public List<String> getStatsTmpDirs() {
@@ -65,6 +66,14 @@ public class StatsCollectionContext {
 
   public void setTask(Task task) {
     this.task = task;
+  }
+
+  public int getIndexForTezUnion() {
+    return indexForTezUnion;
+  }
+
+  public void setIndexForTezUnion(int indexForTezUnion) {
+    this.indexForTezUnion = indexForTezUnion;
   }
 
   public void setContextSuffix(String suffix) {

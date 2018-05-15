@@ -47,6 +47,8 @@ import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -223,7 +225,6 @@ public class SerializationUtilities {
   private static final Object FAKE_REFERENCE = new Object();
 
   private static KryoFactory factory = new KryoFactory() {
-    @Override
     public Kryo create() {
       KryoWithHooks kryo = new KryoWithHooks();
       kryo.register(java.sql.Date.class, new SqlDateSerializer());
@@ -656,6 +657,28 @@ public class SerializationUtilities {
     LinkedList<Operator<?>> newOps = new LinkedList<>(result);
     while (!newOps.isEmpty()) {
       Operator<?> newOp = newOps.poll();
+      newOp.setCompilationOpContext(ctx);
+      List<Operator<?>> children = newOp.getChildOperators();
+      if (children != null) {
+        newOps.addAll(children);
+      }
+    }
+    return result;
+  }
+
+  public static List<Operator<?>> cloneOperatorTree(List<Operator<?>> roots, int indexForTezUnion) {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
+    CompilationOpContext ctx = roots.isEmpty() ? null : roots.get(0).getCompilationOpContext();
+    serializePlan(roots, baos, true);
+    @SuppressWarnings("unchecked")
+    List<Operator<?>> result =
+        deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
+            roots.getClass(), true);
+    // Restore the context.
+    LinkedList<Operator<?>> newOps = new LinkedList<>(result);
+    while (!newOps.isEmpty()) {
+      Operator<?> newOp = newOps.poll();
+      newOp.setIndexForTezUnion(indexForTezUnion);
       newOp.setCompilationOpContext(ctx);
       List<Operator<?>> children = newOp.getChildOperators();
       if (children != null) {

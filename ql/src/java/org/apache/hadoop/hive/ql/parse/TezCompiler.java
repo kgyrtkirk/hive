@@ -562,8 +562,9 @@ public class TezCompiler extends TaskCompiler {
     }
 
     // we need to clone some operator plans and remove union operators still
+    int indexForTezUnion = 0;
     for (BaseWork w: procCtx.workWithUnionOperators) {
-      GenTezUtils.removeUnionOperators(procCtx, w);
+      GenTezUtils.removeUnionOperators(procCtx, w, indexForTezUnion++);
     }
 
     // then we make sure the file sink operators are set up right
