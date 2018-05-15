@@ -1843,7 +1843,6 @@ public class HiveConf extends Configuration {
     TESTMODE_BUCKET_CODEC_VERSION("hive.test.bucketcodec.version", 1,
       "For testing only.  Will make ACID subsystem write RecordIdentifier.bucketId in specified\n" +
         "format", false),
-    HIVE_QUERY_TIMESTAMP("hive.query.timestamp", System.currentTimeMillis(), "query execute time."),
 
     HIVEMERGEMAPFILES("hive.merge.mapfiles", true,
         "Merge small files at the end of a map-only job"),
@@ -1912,6 +1911,9 @@ public class HiveConf extends Configuration {
       "Hive streaming ingest has auto flush mechanism to flush all open record updaters under memory pressure.\n" +
         "When memory usage exceed hive.heap.memory.monitor.default.usage.threshold, the auto-flush mechanism will \n" +
         "wait until this size (default 100Mb) of records are ingested before triggering flush."),
+    HIVE_CLASSLOADER_SHADE_PREFIX("hive.classloader.shade.prefix", "", "During reflective instantiation of a class\n" +
+      "(input, output formats, serde etc.), when classloader throws ClassNotFoundException, as a fallback this\n" +
+      "shade prefix will be used before class reference and retried."),
 
     HIVE_ORC_MS_FOOTER_CACHE_ENABLED("hive.orc.splits.ms.footer.cache.enabled", false,
         "Whether to enable using file metadata cache in metastore for ORC file footers."),
@@ -2688,9 +2690,6 @@ public class HiveConf extends Configuration {
             "Wait time in ms default to 30 seconds."
     ),
     HIVE_DRUID_BITMAP_FACTORY_TYPE("hive.druid.bitmap.type", "roaring", new PatternSet("roaring", "concise"), "Coding algorithm use to encode the bitmaps"),
-    HIVE_DRUID_APPROX_RESULT("hive.druid.approx.result", false,
-        "Whether to allow approximate results from druid. \n" +
-        "When set to true decimals will be stored as double and druid is allowed to return approximate results for decimal columns."),
     // For HBase storage handler
     HIVE_HBASE_WAL_ENABLED("hive.hbase.wal.enabled", true,
         "Whether writes to HBase should be forced to the write-ahead log. \n" +

@@ -135,7 +135,7 @@ public class SessionState {
   /**
    * current configuration.
    */
-  private final HiveConf sessionConf;
+  private HiveConf sessionConf;
 
   /**
    * silent mode.
@@ -308,6 +308,9 @@ public class SessionState {
     return sessionConf;
   }
 
+  public void setConf(HiveConf conf) {
+    this.sessionConf = conf;
+  }
 
   public File getTmpOutputFile() {
     return tmpOutputFile;
@@ -1924,7 +1927,6 @@ public class SessionState {
    */
   public void setupQueryCurrentTimestamp() {
     queryCurrentTimestamp = new Timestamp(System.currentTimeMillis());
-    sessionConf.setLongVar(ConfVars.HIVE_QUERY_TIMESTAMP, queryCurrentTimestamp.getTime());
 
     // Provide a facility to set current timestamp during tests
     if (sessionConf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
