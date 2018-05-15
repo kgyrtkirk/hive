@@ -614,46 +614,52 @@ public class StatsRulesProcFactory {
 
         @Deprecated
         String boundValue = stringVal;
-        switch (colType) {
-        case serdeConstants.TINYINT_TYPE_NAME: {
-          byte value = new Byte(stringVal);
-          byte maxValue = range.maxValue.byteValue();
-          byte minValue = range.minValue.byteValue();
-          return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
-        }
-        case serdeConstants.SMALLINT_TYPE_NAME: {
-          short value = new Short(boundValue);
-          short maxValue = range.maxValue.shortValue();
-          short minValue = range.minValue.shortValue();
-          return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
-        }
-        case serdeConstants.INT_TYPE_NAME:
-        case serdeConstants.DATE_TYPE_NAME: {
-          // Date is an integer internally
-          int value = new Integer(boundValue);
-          int maxValue = range.maxValue.intValue();
-          int minValue = range.minValue.intValue();
-          return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
-        }
-        case serdeConstants.BIGINT_TYPE_NAME: {
-          long value = new Long(boundValue);
-          long maxValue = range.maxValue.longValue();
-          long minValue = range.minValue.longValue();
-          return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
-        }
-        case serdeConstants.FLOAT_TYPE_NAME: {
-          float value = new Float(boundValue);
-          float maxValue = range.maxValue.floatValue();
-          float minValue = range.minValue.floatValue();
-          return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
-        }
-        case serdeConstants.DOUBLE_TYPE_NAME: {
-          double value = new Double(boundValue);
-          double maxValue = range.maxValue.doubleValue();
-          double minValue = range.minValue.doubleValue();
-          return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
-        }
-        default:
+        try {
+          switch (colType) {
+          case serdeConstants.TINYINT_TYPE_NAME: {
+            byte value = new Byte(stringVal);
+            byte maxValue = range.maxValue.byteValue();
+            byte minValue = range.minValue.byteValue();
+            return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
+          }
+          case serdeConstants.SMALLINT_TYPE_NAME: {
+            short value = new Short(boundValue);
+            short maxValue = range.maxValue.shortValue();
+            short minValue = range.minValue.shortValue();
+            return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
+          }
+          case serdeConstants.INT_TYPE_NAME:
+          case serdeConstants.DATE_TYPE_NAME: {
+            // Date is an integer internally
+            int value = new Integer(boundValue);
+            int maxValue = range.maxValue.intValue();
+            int minValue = range.minValue.intValue();
+            return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
+          }
+          case serdeConstants.BIGINT_TYPE_NAME: {
+            long value = new Long(boundValue);
+            long maxValue = range.maxValue.longValue();
+            long minValue = range.minValue.longValue();
+            return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
+          }
+          case serdeConstants.FLOAT_TYPE_NAME: {
+            float value = new Float(boundValue);
+            float maxValue = range.maxValue.floatValue();
+            float minValue = range.minValue.floatValue();
+            return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
+          }
+          case serdeConstants.DOUBLE_TYPE_NAME: {
+            double value = new Double(boundValue);
+            double maxValue = range.maxValue.doubleValue();
+            double minValue = range.minValue.doubleValue();
+            return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
+          }
+          default:
+            return null;
+          }
+        } catch (Exception e) {
+          // NumberFormatException value out of range
+          // other unknown cases
           return null;
         }
       }
