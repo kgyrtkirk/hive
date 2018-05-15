@@ -20,6 +20,11 @@ desc formatted tt;
 create table t1 like src;
 create table t2 like src;
 
+set hive.explain.user=true;
+explain from (select * from src union all select * from src)s
+insert overwrite table t1 select *
+insert overwrite table t2 select *;
+
 from (select * from src union all select * from src)s
 insert overwrite table t1 select *
 insert overwrite table t2 select *;
