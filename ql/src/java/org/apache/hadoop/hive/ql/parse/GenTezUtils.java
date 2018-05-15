@@ -208,7 +208,7 @@ public class GenTezUtils {
   }
 
   // removes any union operator and clones the plan
-  public static void removeUnionOperators(GenTezProcContext context, BaseWork work, int indexForTezUnion)
+  public static void removeUnionOperators(GenTezProcContext context, BaseWork work)
     throws SemanticException {
 
     List<Operator<?>> roots = new ArrayList<Operator<?>>();
@@ -219,7 +219,7 @@ public class GenTezUtils {
     roots.addAll(context.eventOperatorSet);
 
     // need to clone the plan.
-    List<Operator<?>> newRoots = SerializationUtilities.cloneOperatorTree(roots, indexForTezUnion);
+    List<Operator<?>> newRoots = SerializationUtilities.cloneOperatorTree(roots);
 
     // we're cloning the operator plan but we're retaining the original work. That means
     // that root operators have to be replaced with the cloned ops. The replacement map

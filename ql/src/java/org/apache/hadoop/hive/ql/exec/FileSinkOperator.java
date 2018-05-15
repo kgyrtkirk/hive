@@ -1479,7 +1479,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
     }
-    sContext.setIndexForTezUnion(this.getIndexForTezUnion());
     sContext.setContextSuffix(getOperatorId());
 
     if (!statsPublisher.closeConnection(sContext)) {
