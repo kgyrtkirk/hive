@@ -83,22 +83,6 @@ public class TestStatEstimations {
   }
 
   @Test
-  public void testFilterStringIn() throws ParseException {
-    IDriver driver = createDriver();
-    String query = "explain select a from t2 where b NOT IN ('XXX', 'UUU') order by a";
-
-    PlanMapper pm = getMapperForQuery(driver, query);
-    List<FilterOperator> fos = pm.getAll(FilterOperator.class);
-    // the same operator is present 2 times
-    fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
-    assertEquals(1, fos.size());
-    FilterOperator fop = fos.get(0);
-
-    // any estimation near 10 is ok...currently 9
-    assertEquals(9, fop.getStatistics().getNumRows());
-  }
-
-  @Test
   public void testFilterIntIn() throws ParseException {
     IDriver driver = createDriver();
     String query = "explain select a from t2 where a IN (-1,0,1,2,10,20,30,40) order by a";

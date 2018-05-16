@@ -30,7 +30,6 @@ public class ColStatistics {
   private Range range;
   private boolean isPrimaryKey;
   private boolean isEstimated;
-  private byte[] bitVectors;
 
   public ColStatistics(String colName, String colType) {
     this.setColumnName(colName);
@@ -197,13 +196,4 @@ public class ColStatistics {
       return sb.toString();
     }
   }
-
-  public void setBitVectors(byte[] bitVectors) {
-    this.bitVectors = bitVectors;
-  }
-
-  public byte[] getBitVectors() {
-    return bitVectors;
-  }
-
 }
