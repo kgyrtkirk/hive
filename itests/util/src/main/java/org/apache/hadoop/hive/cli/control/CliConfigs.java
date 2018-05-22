@@ -230,7 +230,6 @@ public class CliConfigs {
         excludeQuery("tez_smb_1.q"); // Disabled in HIVE-19509
         excludeQuery("schema_evol_orc_acidvec_part.q"); // Disabled in HIVE-19509
         excludeQuery("schema_evol_orc_vec_part_llap_io.q"); // Disabled in HIVE-19509
-        excludeQuery("tez_dynpart_hashjoin_1.q"); // Disabled in HIVE-19509
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
@@ -371,8 +370,6 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "minimr.query.negative.files");
         excludesFrom(testConfigProps, "spark.only.query.negative.files");
         excludeQuery("authorization_uri_import.q");
-        excludeQuery("merge_negative_5.q"); // Disabled in HIVE-19509
-        excludeQuery("mm_concatenate.q"); // Disabled in HIVE-19509
 
         setResultsDir("ql/src/test/results/clientnegative");
         setLogDir("itests/qtest/target/qfile-results/clientnegative");
