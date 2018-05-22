@@ -44,6 +44,9 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Checks whenever operator ids are not reused.
+ */
 public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
 
   private static final Logger LOG = LoggerFactory.getLogger(NoOperatorReuseCheckerHook.class);
