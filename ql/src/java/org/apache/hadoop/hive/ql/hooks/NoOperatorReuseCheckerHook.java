@@ -37,6 +37,9 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +61,7 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
       if (found != null) {
         throw new RuntimeException("operator id reuse found: " + opKey);
       }
+      opMap.put(opKey, op);
       return null;
     }
   }
@@ -71,6 +75,17 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
     for (Task<? extends Serializable> task : roots) {
 
       Object work = task.getWork();
+      if (work instanceof MapredWork) {
+        MapredWork mapredWork = (MapredWork) work;
+        MapWork mapWork = mapredWork.getMapWork();
+        if (mapWork != null) {
+          rootOps.addAll(mapWork.getAllRootOperators());
+        }
+        ReduceWork reduceWork = mapredWork.getReduceWork();
+        if (reduceWork != null) {
+          rootOps.addAll(reduceWork.getAllRootOperators());
+        }
+      }
       if (work instanceof TezWork) {
         for (BaseWork bw : ((TezWork) work).getAllWorkUnsorted()) {
           rootOps.addAll(bw.getAllRootOperators());
