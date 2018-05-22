@@ -526,43 +526,33 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-<<<<<<< HEAD
-PREHOOK: query: select 15,count(*) from small_alltypesorc_a
+PREHOOK: query: select 15,count(*) from small_alltypesorc_a_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@small_alltypesorc_a
+PREHOOK: Input: default@small_alltypesorc_a_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select 15,count(*) from small_alltypesorc_a
+POSTHOOK: query: select 15,count(*) from small_alltypesorc_a_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@small_alltypesorc_a
+POSTHOOK: Input: default@small_alltypesorc_a_n2
 #### A masked pattern was here ####
 15	15
-PREHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS
-=======
 PREHOOK: query: ANALYZE TABLE small_alltypesorc_a_n2 COMPUTE STATISTICS
->>>>>>> kgyrtkirk/HIVE-19237-oid-once
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a_n2
 PREHOOK: Output: default@small_alltypesorc_a_n2
 POSTHOOK: query: ANALYZE TABLE small_alltypesorc_a_n2 COMPUTE STATISTICS
 POSTHOOK: type: QUERY
-<<<<<<< HEAD
-POSTHOOK: Input: default@small_alltypesorc_a
-POSTHOOK: Output: default@small_alltypesorc_a
-PREHOOK: query: select 15,count(*) from small_alltypesorc_a
-PREHOOK: type: QUERY
-PREHOOK: Input: default@small_alltypesorc_a
-#### A masked pattern was here ####
-POSTHOOK: query: select 15,count(*) from small_alltypesorc_a
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@small_alltypesorc_a
-#### A masked pattern was here ####
-15	15
-PREHOOK: query: desc formatted small_alltypesorc_a
-=======
 POSTHOOK: Input: default@small_alltypesorc_a_n2
 POSTHOOK: Output: default@small_alltypesorc_a_n2
+PREHOOK: query: select 15,count(*) from small_alltypesorc_a_n2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@small_alltypesorc_a_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select 15,count(*) from small_alltypesorc_a_n2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@small_alltypesorc_a_n2
+#### A masked pattern was here ####
+15	15
 PREHOOK: query: desc formatted small_alltypesorc_a_n2
->>>>>>> kgyrtkirk/HIVE-19237-oid-once
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@small_alltypesorc_a_n2
 POSTHOOK: query: desc formatted small_alltypesorc_a_n2
