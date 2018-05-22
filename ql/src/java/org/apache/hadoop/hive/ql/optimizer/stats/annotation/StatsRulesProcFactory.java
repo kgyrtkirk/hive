@@ -24,14 +24,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -495,9 +493,17 @@ public class StatsRulesProcFactory {
         }
       }
 
+      boolean allColsFilteredByStats = true;
       for (int i = 0; i < columnStats.size(); i++) {
-        Set<ExprNodeDescEqualityWrapper> prunedValues = pruneImprobableValues(columnStats.get(i), values.get(i));
-        values.set(i, prunedValues);
+        ValuePruner vp = new ValuePruner(columnStats.get(i));
+        allColsFilteredByStats &= vp.isValid();
+        Set<ExprNodeDescEqualityWrapper> newValues = Sets.newHashSet();
+        for (ExprNodeDescEqualityWrapper v : values.get(i)) {
+          if (vp.accept(v)) {
+            newValues.add(v);
+          }
+        }
+        values.set(i, newValues);
       }
 
       // 3. Calculate IN selectivity
@@ -509,7 +515,9 @@ public class StatsRulesProcFactory {
         // max can be 1, even when ndv is larger in IN clause than in column stats
         factor *= columnFactor > 1d ? 1d : columnFactor;
       }
-      factor = Double.max(factor, HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_IN_MIN_RATIO));
+      if (!allColsFilteredByStats) {
+        factor = Double.max(factor, HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_IN_MIN_RATIO));
+      }
       float inFactor = HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_IN_CLAUSE_FACTOR);
       return Math.round( numRows * factor * inFactor);
     }
@@ -624,27 +632,32 @@ public class StatsRulesProcFactory {
 
     }
 
-    /** removes all values which are outside of the scope of the column */
-    private Set<ExprNodeDescEqualityWrapper> pruneImprobableValues(ColStatistics colStatistics,
-        Set<ExprNodeDescEqualityWrapper> values) {
-      if (colStatistics == null) {
-        return values;
-      }
-      Set<ExprNodeDescEqualityWrapper> ret = new HashSet<>();
-      RangeOps colRange = RangeOps.build(colStatistics.getColumnType(), colStatistics.getRange());
-      if (colRange == null) {
-        return values;
-      }
-      Iterator<ExprNodeDescEqualityWrapper> valueIt = values.iterator();
-      while (valueIt.hasNext()) {
-        ExprNodeDescEqualityWrapper v = valueIt.next();
-        if (colRange != null && !colRange.contains(v.getExprNodeDesc())) {
-          // outside of the range
-          continue;
+    private static class ValuePruner {
+
+      private boolean valid;
+      private RangeOps colRange;
+
+      ValuePruner(ColStatistics colStatistics) {
+        if (colStatistics == null) {
+          valid = false;
+          return;
         }
-        ret.add(v);
+        colRange = RangeOps.build(colStatistics.getColumnType(), colStatistics.getRange());
+        if (colRange == null) {
+          valid = false;
+          return;
+        }
+        valid = true;
       }
-      return ret;
+
+      public boolean isValid() {
+        return valid;
+      }
+
+      public boolean accept(ExprNodeDescEqualityWrapper e) {
+        /** removes all values which are outside of the scope of the column */
+        return !valid || colRange.contains(e.getExprNodeDesc());
+      }
     }
 
     private long evaluateBetweenExpr(Statistics stats, ExprNodeDesc pred, long currNumRows, AnnotateStatsProcCtx aspCtx,
