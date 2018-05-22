@@ -57,7 +57,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColumnInList(col 3:date, values [-67, -171])
                     predicate: (cdate) IN (DATE'1969-10-26', DATE'1969-07-14') (type: boolean)
-                    Statistics: Num rows: 614 Data size: 32668 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 53 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdate (type: date)
                       outputColumnNames: _col0
@@ -65,7 +65,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [3]
-                      Statistics: Num rows: 614 Data size: 32668 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 53 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
                         sort order: +
@@ -73,7 +73,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 614 Data size: 32668 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 53 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -101,13 +101,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 614 Data size: 32668 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 53 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 614 Data size: 32668 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 53 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -152,13 +152,13 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsFalse(col 5:boolean)(children: LongColumnInList(col 3, values [-67, -171, 20]) -> 5:boolean)
                     predicate: (not (cdate) IN (DATE'1969-10-26', DATE'1969-07-14', DATE'1970-01-21')) (type: boolean)
-                    Statistics: Num rows: 11675 Data size: 621187 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12284 Data size: 653589 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: []
-                      Statistics: Num rows: 11675 Data size: 621187 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12284 Data size: 653589 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
@@ -261,7 +261,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterDecimalColumnInList(col 1:decimal(20,10), values [2365.8945945946, 881.0135135135, -3367.6517567568])
                     predicate: (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568) (type: boolean)
-                    Statistics: Num rows: 614 Data size: 65337 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 1596 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdecimal1 (type: decimal(20,10))
                       outputColumnNames: _col0
@@ -269,7 +269,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [1]
-                      Statistics: Num rows: 614 Data size: 65337 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 15 Data size: 1596 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(20,10))
                         sort order: +
@@ -277,7 +277,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 614 Data size: 65337 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 15 Data size: 1596 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -305,13 +305,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 614 Data size: 65337 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 15 Data size: 1596 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 614 Data size: 65337 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 1596 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -356,13 +356,13 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsFalse(col 5:boolean)(children: DecimalColumnInList(col 1:decimal(20,10), values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> 5:boolean)
                     predicate: (not (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568)) (type: boolean)
-                    Statistics: Num rows: 11675 Data size: 1242374 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12274 Data size: 1306115 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: []
-                      Statistics: Num rows: 11675 Data size: 1242374 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12274 Data size: 1306115 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
