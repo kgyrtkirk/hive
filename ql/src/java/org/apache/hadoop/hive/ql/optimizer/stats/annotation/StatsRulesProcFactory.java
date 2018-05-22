@@ -494,14 +494,6 @@ public class StatsRulesProcFactory {
         }
       }
 
-      VXPruner pruner = new VXPruner(columnStats);
-      for (int j = 0; j < values.get(0).size(); j++) {
-        List<ExprNodeDescEqualityWrapper> rec = new ArrayList<>();
-        for (int i = 0; i < columnStats.size(); i++) {
-          rec.add(values.get(i));
-        }
-      }
-
       for (int i = 0; i < columnStats.size(); i++) {
         Set<ExprNodeDescEqualityWrapper> prunedValues = pruneImprobableValues(columnStats.get(i), values.get(i));
         values.set(i, prunedValues);
@@ -627,37 +619,6 @@ public class StatsRulesProcFactory {
           // other unknown cases
           return null;
         }
-      }
-
-    }
-
-    static class VXPruner {
-
-      private List<RangeOps> ranges = new ArrayList<>();
-      private boolean operational;
-
-      public VXPruner(List<ColStatistics> columnStats) {
-        for (ColStatistics colStatistics : columnStats) {
-          RangeOps r = RangeOps.build(colStatistics.getColumnType(), colStatistics.getRange());
-          ranges.add(r);
-          if (r != null) {
-            operational = true;
-          }
-        }
-      }
-
-      public boolean isOperational() {
-        return operational;
-      }
-
-      boolean accept(List<ExprNodeDesc> record) {
-        for (int i = 0; i < record.size(); i++) {
-          ExprNodeDesc e = record.get(i);
-          if (!ranges.get(i).contains(e)) {
-            return false;
-          }
-        }
-        return true;
       }
 
     }
