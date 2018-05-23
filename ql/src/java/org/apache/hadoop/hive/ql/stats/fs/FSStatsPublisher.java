@@ -105,9 +105,6 @@ public class FSStatsPublisher implements StatsPublisher {
       if (context.getContextSuffix() != null) {
         suffix += "_" + context.getContextSuffix();
       }
-      if (context.getIndexForTezUnion() != -1) {
-        suffix += "_" + Integer.toString(context.getIndexForTezUnion());
-      }
       Path statsFile = new Path(statsDir, StatsSetupConst.STATS_FILE_PREFIX + suffix);
       Utilities.FILE_OP_LOGGER.trace("About to create stats file for this task : {}", statsFile);
       Output output = new Output(statsFile.getFileSystem(conf).create(statsFile,true));
