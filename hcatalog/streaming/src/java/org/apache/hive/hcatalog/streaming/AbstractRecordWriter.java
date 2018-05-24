@@ -19,6 +19,7 @@
 package org.apache.hive.hcatalog.streaming;
 
 
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -51,7 +53,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
-
+/**
+ * @deprecated as of Hive 3.0.0, replaced by {@link org.apache.hive.streaming.AbstractRecordWriter}
+ */
+@Deprecated
 public abstract class AbstractRecordWriter implements RecordWriter {
   static final private Logger LOG = LoggerFactory.getLogger(AbstractRecordWriter.class.getName());
 
@@ -185,7 +190,12 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     }
     ObjectInspector[] inspectors = getBucketObjectInspectors();
     Object[] bucketFields = getBucketFields(row);
-    return ObjectInspectorUtils.getBucketNumber(bucketFields, inspectors, totalBuckets);
+    int bucketingVersion = Utilities.getBucketingVersion(
+        tbl.getParameters().get(hive_metastoreConstants.TABLE_BUCKETING_VERSION));
+
+    return bucketingVersion == 2 ?
+        ObjectInspectorUtils.getBucketNumber(bucketFields, inspectors, totalBuckets) :
+        ObjectInspectorUtils.getBucketNumberOld(bucketFields, inspectors, totalBuckets);
   }
 
   @Override

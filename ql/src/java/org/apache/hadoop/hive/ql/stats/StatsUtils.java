@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -1009,6 +1010,12 @@ public class StatsUtils {
     // Retrieve stats from metastore
     String dbName = table.getDbName();
     String tabName = table.getTableName();
+    if (SemanticAnalyzer.DUMMY_DATABASE.equals(dbName) &&
+        SemanticAnalyzer.DUMMY_TABLE.equals(tabName)) {
+      // insert into values gets written into insert from select dummy_table
+      // This table is dummy and has no stats
+      return null;
+    }
     List<ColStatistics> stats = null;
     try {
       List<ColumnStatisticsObj> colStat = Hive.get().getTableColumnStatistics(

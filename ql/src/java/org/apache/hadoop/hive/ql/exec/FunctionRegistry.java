@@ -214,7 +214,7 @@ public final class FunctionRegistry {
     system.registerUDF("rand", UDFRand.class, false);
     system.registerGenericUDF("abs", GenericUDFAbs.class);
     system.registerGenericUDF("sq_count_check", GenericUDFSQCountCheck.class);
-    system.registerGenericUDF("enforce_constraint", GenericUDFEnforceNotNullConstraint.class);
+    system.registerGenericUDF("enforce_constraint", GenericUDFEnforceConstraint.class);
     system.registerGenericUDF("pmod", GenericUDFPosMod.class);
 
     system.registerUDF("ln", UDFLn.class, false);
@@ -356,7 +356,9 @@ public final class FunctionRegistry {
     system.registerGenericUDF("current_date", GenericUDFCurrentDate.class);
     system.registerGenericUDF("current_timestamp", GenericUDFCurrentTimestamp.class);
     system.registerGenericUDF("current_user", GenericUDFCurrentUser.class);
+    system.registerGenericUDF("current_groups", GenericUDFCurrentGroups.class);
     system.registerGenericUDF("logged_in_user", GenericUDFLoggedInUser.class);
+    system.registerGenericUDF("restrict_information_schema", GenericUDFRestrictInformationSchema.class);
 
     system.registerGenericUDF("isnull", GenericUDFOPNull.class);
     system.registerGenericUDF("isnotnull", GenericUDFOPNotNull.class);
@@ -478,6 +480,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("when", GenericUDFWhen.class);
     system.registerGenericUDF("nullif", GenericUDFNullif.class);
     system.registerGenericUDF("hash", GenericUDFHash.class);
+    system.registerGenericUDF("murmur_hash", GenericUDFMurmurHash.class);
     system.registerGenericUDF("coalesce", GenericUDFCoalesce.class);
     system.registerGenericUDF("index", GenericUDFIndex.class);
     system.registerGenericUDF("in_file", GenericUDFInFile.class);

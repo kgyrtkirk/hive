@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
@@ -127,6 +128,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   private static transient Logger LOG = LoggerFactory.getLogger(ReduceSinkDesc.class);
 
+  private AcidUtils.Operation writeType;
+
   public ReduceSinkDesc() {
   }
 
@@ -137,7 +140,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       List<List<Integer>> distinctColumnIndices,
       ArrayList<String> outputValueColumnNames, int tag,
       ArrayList<ExprNodeDesc> partitionCols, int numReducers,
-      final TableDesc keySerializeInfo, final TableDesc valueSerializeInfo) {
+      final TableDesc keySerializeInfo, final TableDesc valueSerializeInfo,
+      AcidUtils.Operation writeType) {
     this.keyCols = keyCols;
     this.numDistributionKeys = numDistributionKeys;
     this.valueCols = valueCols;
@@ -151,6 +155,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.distinctColumnIndices = distinctColumnIndices;
     this.setNumBuckets(-1);
     this.setBucketCols(null);
+    this.writeType = writeType;
   }
 
   @Override
@@ -203,11 +208,11 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "key expressions")
+  @Signature
   public String getKeyColString() {
     return PlanUtils.getExprListString(keyCols);
   }
 
-  @Signature
   public java.util.ArrayList<ExprNodeDesc> getKeyCols() {
     return keyCols;
   }
@@ -225,11 +230,11 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "value expressions")
+  @Signature
   public String getValueColsString() {
     return PlanUtils.getExprListString(valueCols);
   }
 
-  @Signature
   public java.util.ArrayList<ExprNodeDesc> getValueCols() {
     return valueCols;
   }
@@ -244,11 +249,11 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "PartitionCols", explainLevels = { Level.USER })
+  @Signature
   public String getUserLevelExplainParitionColsString() {
     return PlanUtils.getExprListString(partitionCols, true);
   }
 
-  @Signature
   public java.util.ArrayList<ExprNodeDesc> getPartitionCols() {
     return partitionCols;
   }
@@ -444,7 +449,6 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return forwarding;
   }
 
-  @Signature
   @Explain(displayName = "auto parallelism", explainLevels = { Level.EXTENDED })
   public final boolean isAutoParallel() {
     return (this.reduceTraits.contains(ReducerTraits.AUTOPARALLEL));
@@ -670,4 +674,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return false;
   }
 
+  public AcidUtils.Operation getWriteType() {
+    return writeType;
+  }
 }

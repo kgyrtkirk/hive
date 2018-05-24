@@ -18,7 +18,21 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import com.google.common.annotations.VisibleForTesting;
+import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -27,6 +41,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -36,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
@@ -47,7 +63,6 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hive.common.util.Ref;
 import org.apache.orc.FileFormatException;
 import org.apache.orc.impl.OrcAcidUtils;
@@ -55,9 +70,11 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,6 +85,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
+
 
 /**
  * Utilities that are shared by all of the ACID input and output formats. They
@@ -132,6 +150,7 @@ public class AcidUtils {
   public static final int MAX_STATEMENTS_PER_TXN = 10000;
   public static final Pattern BUCKET_DIGIT_PATTERN = Pattern.compile("[0-9]{5}$");
   public static final Pattern   LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{6}");
+
   /**
    * A write into a non-aicd table produces files like 0000_0 or 0000_0_copy_1
    * (Unless via Load Data statement)
@@ -363,6 +382,57 @@ public class AcidUtils {
     }
     return result;
   }
+
+  public static final class DirectoryImpl implements Directory {
+    private final List<FileStatus> abortedDirectories;
+    private final boolean isBaseInRawFormat;
+    private final List<HdfsFileStatusWithId> original;
+    private final List<FileStatus> obsolete;
+    private final List<ParsedDelta> deltas;
+    private final Path base;
+
+    public DirectoryImpl(List<FileStatus> abortedDirectories,
+        boolean isBaseInRawFormat, List<HdfsFileStatusWithId> original,
+        List<FileStatus> obsolete, List<ParsedDelta> deltas, Path base) {
+      this.abortedDirectories = abortedDirectories;
+      this.isBaseInRawFormat = isBaseInRawFormat;
+      this.original = original;
+      this.obsolete = obsolete;
+      this.deltas = deltas;
+      this.base = base;
+    }
+
+    @Override
+    public Path getBaseDirectory() {
+      return base;
+    }
+
+    @Override
+    public boolean isBaseInRawFormat() {
+      return isBaseInRawFormat;
+    }
+
+    @Override
+    public List<HdfsFileStatusWithId> getOriginalFiles() {
+      return original;
+    }
+
+    @Override
+    public List<ParsedDelta> getCurrentDirectories() {
+      return deltas;
+    }
+
+    @Override
+    public List<FileStatus> getObsolete() {
+      return obsolete;
+    }
+
+    @Override
+    public List<FileStatus> getAbortedDirectories() {
+      return abortedDirectories;
+    }
+  }
+
   //This is used for (full) Acid tables.  InsertOnly use NOT_ACID
   public enum Operation implements Serializable {
     NOT_ACID, INSERT, UPDATE, DELETE;
@@ -957,7 +1027,7 @@ public class AcidUtils {
       // Okay, we're going to need these originals.  Recurse through them and figure out what we
       // really need.
       for (FileStatus origDir : originalDirectories) {
-        findOriginals(fs, origDir, original, useFileIds, ignoreEmptyFiles);
+        findOriginals(fs, origDir, original, useFileIds, ignoreEmptyFiles, true);
       }
     }
 
@@ -1029,7 +1099,7 @@ public class AcidUtils {
      * If this sort order is changed and there are tables that have been converted to transactional
      * and have had any update/delete/merge operations performed but not yet MAJOR compacted, it
      * may result in data loss since it may change how
-     * {@link org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger.OriginalReaderPair} assigns 
+     * {@link org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger.OriginalReaderPair} assigns
      * {@link RecordIdentifier#rowId} for read (that have happened) and compaction (yet to happen).
      */
     Collections.sort(original, (HdfsFileStatusWithId o1, HdfsFileStatusWithId o2) -> {
@@ -1039,37 +1109,8 @@ public class AcidUtils {
 
     // Note: isRawFormat is invalid for non-ORC tables. It will always return true, so we're good.
     final boolean isBaseInRawFormat = base != null && MetaDataFile.isRawFormat(base, fs);
-    return new Directory() {
-
-      @Override
-      public Path getBaseDirectory() {
-        return base;
-      }
-      @Override
-      public boolean isBaseInRawFormat() {
-        return isBaseInRawFormat;
-      }
-
-      @Override
-      public List<HdfsFileStatusWithId> getOriginalFiles() {
-        return original;
-      }
-
-      @Override
-      public List<ParsedDelta> getCurrentDirectories() {
-        return deltas;
-      }
-
-      @Override
-      public List<FileStatus> getObsolete() {
-        return obsolete;
-      }
-
-      @Override
-      public List<FileStatus> getAbortedDirectories() {
-        return abortedDirectories;
-      }
-    };
+    return new DirectoryImpl(abortedDirectories, isBaseInRawFormat, original,
+        obsolete, deltas, base);
   }
   /**
    * We can only use a 'base' if it doesn't have an open txn (from specific reader's point of view)
@@ -1181,8 +1222,9 @@ public class AcidUtils {
    * @param original the list of original files
    * @throws IOException
    */
-  private static void findOriginals(FileSystem fs, FileStatus stat,
-      List<HdfsFileStatusWithId> original, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles) throws IOException {
+  public static void findOriginals(FileSystem fs, FileStatus stat,
+      List<HdfsFileStatusWithId> original, Ref<Boolean> useFileIds,
+      boolean ignoreEmptyFiles, boolean recursive) throws IOException {
     assert stat.isDir();
     List<HdfsFileStatusWithId> childrenWithId = null;
     Boolean val = useFileIds.value;
@@ -1201,8 +1243,10 @@ public class AcidUtils {
     }
     if (childrenWithId != null) {
       for (HdfsFileStatusWithId child : childrenWithId) {
-        if (child.getFileStatus().isDir()) {
-          findOriginals(fs, child.getFileStatus(), original, useFileIds, ignoreEmptyFiles);
+        if (child.getFileStatus().isDirectory()) {
+          if (recursive) {
+            findOriginals(fs, child.getFileStatus(), original, useFileIds, ignoreEmptyFiles, true);
+          }
         } else {
           if(!ignoreEmptyFiles || child.getFileStatus().getLen() > 0) {
             original.add(child);
@@ -1213,7 +1257,9 @@ public class AcidUtils {
       List<FileStatus> children = HdfsUtils.listLocatedStatus(fs, stat.getPath(), hiddenFileFilter);
       for (FileStatus child : children) {
         if (child.isDir()) {
-          findOriginals(fs, child, original, useFileIds, ignoreEmptyFiles);
+          if (recursive) {
+            findOriginals(fs, child, original, useFileIds, ignoreEmptyFiles, true);
+          }
         } else {
           if(!ignoreEmptyFiles || child.getLen() > 0) {
             original.add(createOriginalObj(null, child));
@@ -1222,6 +1268,7 @@ public class AcidUtils {
       }
     }
   }
+
 
   public static boolean isTablePropertyTransactional(Properties props) {
     String resultStr = props.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
@@ -1289,6 +1336,10 @@ public class AcidUtils {
   public static boolean isFullAcidTable(org.apache.hadoop.hive.metastore.api.Table table) {
     return isTransactionalTable(table) &&
         !isInsertOnlyTable(table.getParameters());
+  }
+
+  public static boolean isFullAcidTable(Map<String, String> params) {
+    return isTransactionalTable(params) && !isInsertOnlyTable(params);
   }
 
   public static boolean isTransactionalTable(org.apache.hadoop.hive.metastore.api.Table table) {
@@ -1467,7 +1518,7 @@ public class AcidUtils {
    /**
     * The method for altering table props; may set the table to MM, non-MM, or not affect MM.
     * todo: All such validation logic should be TransactionValidationListener
-    * @param tbl object image before alter table command
+    * @param tbl object image before alter table command (or null if not retrieved yet).
     * @param props prop values set in this alter table command
     */
   public static Boolean isToInsertOnlyTable(Table tbl, Map<String, String> props) {
@@ -1483,17 +1534,18 @@ public class AcidUtils {
       return null;
     }
 
-    if(transactional == null) {
+    if (transactional == null && tbl != null) {
       transactional = tbl.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
     }
     boolean isSetToTxn = "true".equalsIgnoreCase(transactional);
     if (transactionalProp == null) {
-      if (isSetToTxn) return false; // Assume the full ACID table.
+      if (isSetToTxn || tbl == null) return false; // Assume the full ACID table.
       throw new RuntimeException("Cannot change '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL
           + "' without '" + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "'");
     }
     if (!"insert_only".equalsIgnoreCase(transactionalProp)) return false; // Not MM.
     if (!isSetToTxn) {
+      if (tbl == null) return true; // No table information yet; looks like it could be valid.
       throw new RuntimeException("Cannot set '"
           + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "' to 'insert_only' without "
           + "setting '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL + "' to 'true'");
@@ -1508,11 +1560,19 @@ public class AcidUtils {
   }
 
   /**
+   * Get the ValidTxnWriteIdList saved in the configuration.
+   */
+  public static ValidTxnWriteIdList getValidTxnWriteIdList(Configuration conf) {
+    String txnString = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
+    ValidTxnWriteIdList validTxnList = new ValidTxnWriteIdList(txnString);
+    return validTxnList;
+  }
+
+  /**
    * Extract the ValidWriteIdList for the given table from the list of tables' ValidWriteIdList.
    */
   public static ValidWriteIdList getTableValidWriteIdList(Configuration conf, String fullTableName) {
-    String txnString = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
-    ValidTxnWriteIdList validTxnList = new ValidTxnWriteIdList(txnString);
+    ValidTxnWriteIdList validTxnList = getValidTxnWriteIdList(conf);
     return validTxnList.getTableValidWriteIdList(fullTableName);
   }
 
@@ -1653,6 +1713,9 @@ public class AcidUtils {
         //directory is empty or doesn't have any that could have been produced by load data
         return false;
       }
+      return isRawFormatFile(dataFile, fs);
+    }
+    public static boolean isRawFormatFile(Path dataFile, FileSystem fs) throws IOException {
       try {
         Reader reader = OrcFile.createReader(dataFile, OrcFile.readerOptions(fs.getConf()));
         /*
@@ -1685,6 +1748,7 @@ public class AcidUtils {
   public static final class OrcAcidVersion {
     private static final String ACID_VERSION_KEY = "hive.acid.version";
     private static final String ACID_FORMAT = "_orc_acid_version";
+    private static final Charset UTF8 = Charset.forName("UTF-8");
     public static final int ORC_ACID_VERSION_DEFAULT = 0;
     /**
      * 2 is the version of Acid released in Hive 3.0.
@@ -1696,9 +1760,7 @@ public class AcidUtils {
      */
     public static void setAcidVersionInDataFile(Writer writer) {
       //so that we know which version wrote the file
-      ByteBuffer bf = ByteBuffer.allocate(4).putInt(ORC_ACID_VERSION);
-      bf.rewind(); //don't ask - some ByteBuffer weridness. w/o this, empty buffer is written
-      writer.addUserMetadata(ACID_VERSION_KEY, bf);
+      writer.addUserMetadata(ACID_VERSION_KEY, UTF8.encode(String.valueOf(ORC_ACID_VERSION)));
     }
     /**
      * This is smart enough to handle streaming ingest where there could be a
@@ -1715,8 +1777,10 @@ public class AcidUtils {
               .filesystem(fs)
               //make sure to check for side file in case streaming ingest died
               .maxLength(getLogicalLength(fs, fileStatus)));
-      if(orcReader.hasMetadataValue(ACID_VERSION_KEY)) {
-        return orcReader.getMetadataValue(ACID_VERSION_KEY).getInt();
+      if (orcReader.hasMetadataValue(ACID_VERSION_KEY)) {
+        char[] versionChar = UTF8.decode(orcReader.getMetadataValue(ACID_VERSION_KEY)).array();
+        String version = new String(versionChar);
+        return Integer.valueOf(version);
       }
       return ORC_ACID_VERSION_DEFAULT;
     }
@@ -1728,7 +1792,7 @@ public class AcidUtils {
       Path formatFile = getVersionFilePath(deltaOrBaseDir);
       if(!fs.exists(formatFile)) {
         try (FSDataOutputStream strm = fs.create(formatFile, false)) {
-          strm.writeInt(ORC_ACID_VERSION);
+          strm.write(UTF8.encode(String.valueOf(ORC_ACID_VERSION)).array());
         } catch (IOException ioe) {
           LOG.error("Failed to create " + formatFile + " due to: " + ioe.getMessage(), ioe);
           throw ioe;
@@ -1747,7 +1811,13 @@ public class AcidUtils {
         return ORC_ACID_VERSION_DEFAULT;
       }
       try (FSDataInputStream inputStream = fs.open(formatFile)) {
-        return inputStream.readInt();
+        byte[] bytes = new byte[1];
+        int read = inputStream.read(bytes);
+        if (read != -1) {
+          String version = new String(bytes, UTF8);
+          return Integer.valueOf(version);
+        }
+        return ORC_ACID_VERSION_DEFAULT;
       }
       catch(IOException ex) {
         LOG.error(formatFile + " is unreadable due to: " + ex.getMessage(), ex);
@@ -1767,7 +1837,7 @@ public class AcidUtils {
       return null;
     }
     Directory acidInfo = AcidUtils.getAcidState(dir, jc, idList);
-    // Assume that for an MM table, or if there's only the base directory, we are good. 
+    // Assume that for an MM table, or if there's only the base directory, we are good.
     if (!acidInfo.getCurrentDirectories().isEmpty() && AcidUtils.isFullAcidTable(table)) {
       Utilities.FILE_OP_LOGGER.warn(
           "Computing stats for an ACID table; stats may be inaccurate");
@@ -1790,5 +1860,111 @@ public class AcidUtils {
       }
     }
     return fileList;
+  }
+
+  public static List<Path> getValidDataPaths(Path dataPath, Configuration conf, String validWriteIdStr)
+          throws IOException {
+    List<Path> pathList = new ArrayList<>();
+    if ((validWriteIdStr == null) || validWriteIdStr.isEmpty()) {
+      // If Non-Acid case, then all files would be in the base data path. So, just return it.
+      pathList.add(dataPath);
+      return pathList;
+    }
+
+    // If ACID/MM tables, then need to find the valid state wrt to given ValidWriteIdList.
+    ValidWriteIdList validWriteIdList = new ValidReaderWriteIdList(validWriteIdStr);
+    Directory acidInfo = AcidUtils.getAcidState(dataPath, conf, validWriteIdList);
+
+    for (HdfsFileStatusWithId hfs : acidInfo.getOriginalFiles()) {
+      pathList.add(hfs.getFileStatus().getPath());
+    }
+    for (ParsedDelta delta : acidInfo.getCurrentDirectories()) {
+      pathList.add(delta.getPath());
+    }
+    if (acidInfo.getBaseDirectory() != null) {
+      pathList.add(acidInfo.getBaseDirectory());
+    }
+    return pathList;
+  }
+
+  public static String getAcidSubDir(Path dataPath) {
+    String dataDir = dataPath.getName();
+    if (dataDir.startsWith(AcidUtils.BASE_PREFIX)
+            || dataDir.startsWith(AcidUtils.DELTA_PREFIX)
+            || dataDir.startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
+      return dataDir;
+    }
+    return null;
+  }
+
+  public static boolean isAcidEnabled(HiveConf hiveConf) {
+    String txnMgr = hiveConf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER);
+    boolean concurrency =  hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+    String dbTxnMgr = "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager";
+    if (txnMgr.equals(dbTxnMgr) && concurrency) {
+      return true;
+    }
+    return false;
+  }
+
+  public static class AnyIdDirFilter implements PathFilter {
+     @Override
+     public boolean accept(Path path) {
+       return extractWriteId(path) != null;
+     }
+  }
+
+  public static class IdPathFilter implements PathFilter {
+    private String baseDirName, deltaDirName;
+    private final boolean isDeltaPrefix;
+
+    public IdPathFilter(long writeId, int stmtId) {
+      String deltaDirName = null;
+      deltaDirName = DELTA_PREFIX + String.format(DELTA_DIGITS, writeId) + "_" +
+              String.format(DELTA_DIGITS, writeId);
+      isDeltaPrefix = (stmtId < 0);
+      if (!isDeltaPrefix) {
+        deltaDirName += "_" + String.format(STATEMENT_DIGITS, stmtId);
+      }
+
+      this.baseDirName = BASE_PREFIX + String.format(DELTA_DIGITS, writeId);
+      this.deltaDirName = deltaDirName;
+    }
+
+    @Override
+    public boolean accept(Path path) {
+      String name = path.getName();
+      return name.equals(baseDirName) || (isDeltaPrefix && name.startsWith(deltaDirName))
+          || (!isDeltaPrefix && name.equals(deltaDirName));
+    }
+  }
+
+
+  public static Long extractWriteId(Path file) {
+    String fileName = file.getName();
+    if (!fileName.startsWith(DELTA_PREFIX) && !fileName.startsWith(BASE_PREFIX)) {
+      LOG.trace("Cannot extract write ID for a MM table: {}", file);
+      return null;
+    }
+    String[] parts = fileName.split("_", 4);  // e.g. delta_0000001_0000001_0000 or base_0000022
+    if (parts.length < 2) {
+      LOG.debug("Cannot extract write ID for a MM table: " + file
+          + " (" + Arrays.toString(parts) + ")");
+      return null;
+    }
+    long writeId = -1;
+    try {
+      writeId = Long.parseLong(parts[1]);
+    } catch (NumberFormatException ex) {
+      LOG.debug("Cannot extract write ID for a MM table: " + file
+          + "; parsing " + parts[1] + " got " + ex.getMessage());
+      return null;
+    }
+    return writeId;
+  }
+
+  public static void setNonTransactional(Map<String, String> tblProps) {
+    tblProps.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false");
+    tblProps.remove(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
   }
 }

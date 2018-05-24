@@ -18,9 +18,13 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +32,11 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignatureFactory;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
 
 /**
  * Enables to connect related objects to eachother.
@@ -37,13 +45,127 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public class PlanMapper {
 
-  Set<LinkGroup> groups = new HashSet<>();
-  private Map<Object, LinkGroup> objectMap = new HashMap<>();
+  Set<EquivGroup> groups = new HashSet<>();
+  private Map<Object, EquivGroup> objectMap = new CompositeMap<>(OpTreeSignature.class);
 
-  public class LinkGroup {
+  /**
+   * Specialized class which can compare by identity or value; based on the key type.
+   */
+  private static class CompositeMap<K, V> implements Map<K, V> {
+
+    Map<K, V> comparedMap = new HashMap<>();
+    Map<K, V> identityMap = new IdentityHashMap<>();
+    final Set<Class<?>> typeCompared;
+
+    CompositeMap(Class<?>... comparedTypes) {
+      for (Class<?> class1 : comparedTypes) {
+        if (!Modifier.isFinal(class1.getModifiers())) {
+          throw new RuntimeException(class1 + " is not final...for this to reliably work; it should be");
+        }
+      }
+      typeCompared = Sets.newHashSet(comparedTypes);
+    }
+
+    @Override
+    public int size() {
+      return comparedMap.size() + identityMap.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return comparedMap.isEmpty() && identityMap.isEmpty();
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+      return comparedMap.containsKey(key) || identityMap.containsKey(key);
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+      return comparedMap.containsValue(value) || identityMap.containsValue(value);
+    }
+
+    @Override
+    public V get(Object key) {
+      V v0 = comparedMap.get(key);
+      if (v0 != null) {
+        return v0;
+      }
+      return identityMap.get(key);
+    }
+
+    @Override
+    public V put(K key, V value) {
+      if (shouldCompare(key.getClass())) {
+        return comparedMap.put(key, value);
+      } else {
+        return identityMap.put(key, value);
+      }
+    }
+
+    @Override
+    public V remove(Object key) {
+      if (shouldCompare(key.getClass())) {
+        return comparedMap.remove(key);
+      } else {
+        return identityMap.remove(key);
+      }
+    }
+
+    private boolean shouldCompare(Class<?> key) {
+      return typeCompared.contains(key);
+    }
+
+    @Override
+    public void putAll(Map<? extends K, ? extends V> m) {
+      for (Entry<? extends K, ? extends V> e : m.entrySet()) {
+        put(e.getKey(), e.getValue());
+      }
+    }
+
+    @Override
+    public void clear() {
+      comparedMap.clear();
+      identityMap.clear();
+    }
+
+    @Override
+    public Set<K> keySet() {
+      return Sets.union(comparedMap.keySet(), identityMap.keySet());
+    }
+
+    @Override
+    public Collection<V> values() {
+      throw new UnsupportedOperationException("This method is not supported");
+    }
+
+    @Override
+    public Set<Entry<K, V>> entrySet() {
+      return Sets.union(comparedMap.entrySet(), identityMap.entrySet());
+    }
+
+  }
+
+  /**
+   * A set of objects which are representing the same thing.
+   *
+   * A Group may contain different kind of things which are connected by their purpose;
+   * For example currently a group may contain the following objects:
+   * <ul>
+   *   <li> Operator(s) - which are doing the actual work;
+   *   there might be more than one, since an optimization may replace an operator with a new one
+   *   <li> Signature - to enable inter-plan look up of the same data
+   *   <li> OperatorStats - collected runtime information
+   * </ul>
+   */
+  public class EquivGroup {
     Set<Object> members = new HashSet<>();
 
     public void add(Object o) {
+      if (members.contains(o)) {
+        return;
+      }
       members.add(o);
       objectMap.put(o, this);
     }
@@ -60,34 +182,64 @@ public class PlanMapper {
     }
   }
 
+  /**
+   * States that the two objects are representing the same.
+   *
+   * For example if during an optimization Operator_A is replaced by a specialized Operator_A1;
+   * then those two can be linked.
+   */
   public void link(Object o1, Object o2) {
-    LinkGroup g1 = objectMap.get(o1);
-    LinkGroup g2 = objectMap.get(o2);
-    if (g1 != null && g2 != null && g1 != g2) {
+
+    Set<Object> keySet = Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());
+    keySet.add(o1);
+    keySet.add(o2);
+    keySet.add(getKeyFor(o1));
+    keySet.add(getKeyFor(o2));
+
+    Set<EquivGroup> mGroups = Collections.newSetFromMap(new IdentityHashMap<EquivGroup, Boolean>());
+
+    for (Object object : keySet) {
+      EquivGroup group = objectMap.get(object);
+      if (group != null) {
+        mGroups.add(group);
+      }
+    }
+    if (mGroups.size() > 1) {
       throw new RuntimeException("equivalence mapping violation");
     }
-    LinkGroup targetGroup = (g1 != null) ? g1 : (g2 != null ? g2 : new LinkGroup());
+    EquivGroup targetGroup = mGroups.isEmpty() ? new EquivGroup() : mGroups.iterator().next();
     groups.add(targetGroup);
     targetGroup.add(o1);
     targetGroup.add(o2);
+
+  }
+
+  private OpTreeSignatureFactory signatureCache = OpTreeSignatureFactory.newCache();
+
+  private Object getKeyFor(Object o) {
+    if (o instanceof Operator) {
+      Operator<?> operator = (Operator<?>) o;
+      return signatureCache.getSignature(operator);
+    }
+    return o;
   }
 
   public <T> List<T> getAll(Class<T> clazz) {
     List<T> ret = new ArrayList<>();
-    for (LinkGroup g : groups) {
+    for (EquivGroup g : groups) {
       ret.addAll(g.getAll(clazz));
     }
     return ret;
   }
 
   public void runMapper(GroupTransformer mapper) {
-    for (LinkGroup equivGroup : groups) {
+    for (EquivGroup equivGroup : groups) {
       mapper.map(equivGroup);
     }
   }
 
   public <T> List<T> lookupAll(Class<T> clazz, Object key) {
-    LinkGroup group = objectMap.get(key);
+    EquivGroup group = objectMap.get(key);
     if (group == null) {
       throw new NoSuchElementException(Objects.toString(key));
     }
@@ -104,9 +256,14 @@ public class PlanMapper {
   }
 
   @VisibleForTesting
-  public Iterator<LinkGroup> iterateGroups() {
+  public Iterator<EquivGroup> iterateGroups() {
     return groups.iterator();
 
+  }
+
+  public OpTreeSignature getSignatureOf(Operator<?> op) {
+    OpTreeSignature sig = signatureCache.getSignature(op);
+    return sig;
   }
 
 }

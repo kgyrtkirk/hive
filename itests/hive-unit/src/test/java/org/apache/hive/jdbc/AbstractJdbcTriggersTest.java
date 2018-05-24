@@ -66,6 +66,7 @@ public abstract class AbstractJdbcTriggersTest {
     System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
 
     conf = new HiveConf();
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     conf.setVar(ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES, "default");
@@ -89,7 +90,7 @@ public abstract class AbstractJdbcTriggersTest {
 
   @Before
   public void setUp() throws Exception {
-    hs2Conn = TestJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
+    hs2Conn = BaseJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
   }
 
   @After
@@ -123,7 +124,7 @@ public abstract class AbstractJdbcTriggersTest {
     throws Exception {
 
     Connection con = hs2Conn;
-    TestJdbcWithMiniLlap.createTestTable(con, null, tableName, kvDataFilePath.toString());
+    BaseJdbcWithMiniLlap.createTestTable(con, null, tableName, kvDataFilePath.toString());
     createSleepUDF();
 
     final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -160,7 +161,7 @@ public abstract class AbstractJdbcTriggersTest {
       if (errCaptureExpect != null && !errCaptureExpect.isEmpty()) {
         // failure hooks are run after HiveStatement is closed. wait sometime for failure hook to execute
         String stdErrStr = "";
-        while (!stdErrStr.contains(errCaptureExpect.get(0))) {
+        while (!stdErrStr.contains(errCaptureExpect.get(errCaptureExpect.size() - 1))) {
           baos.flush();
           stdErrStr = baos.toString();
           Thread.sleep(500);

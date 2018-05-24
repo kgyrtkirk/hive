@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -351,6 +352,8 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
    * if loaded data is not bucketed properly.  This test is to capture that this is still the default.
    * If the default is changed, Load Data should probably do more validation to ensure data is
    * properly distributed into files and files are named correctly.
+   * With the availability of new feature to rewrite such "load data" commands into insert-as-select,
+   * the test should let the load data pass.
    */
   @Test
   public void testValidations() throws Exception {
@@ -363,7 +366,8 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     //this creates an ORC data file with correct schema under table root
     runStatementOnDriver("insert into Tstage values(1,2),(3,4)");
     CommandProcessorResponse cpr = runStatementOnDriverNegative("load data local inpath '" + getWarehouseDir() + "' into table T");
-    Assert.assertTrue(cpr.getErrorMessage().contains("Load into bucketed tables are disabled"));
+    // This condition should not occur with the new support of rewriting load into IAS.
+    Assert.assertFalse(cpr.getErrorMessage().contains("Load into bucketed tables are disabled"));
   }
   private void checkExpected(List<String> rs, String[][] expected, String msg) {
     super.checkExpected(rs, expected, msg, LOG, true);
@@ -447,15 +451,28 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     };
     checkResult(expected, testQuery, isVectorized, "load data inpath");
   }
-  /**
-   * We have to use a different query to check results for Vectorized tests because to get the
-   * file name info we need to use {@link org.apache.hadoop.hive.ql.metadata.VirtualColumn#FILENAME}
-   * which will currently make the query non-vectorizable.  This means we can't check the file name
-   * for vectorized version of the test.
-   */
-  private void checkResult(String[][] expectedResult, String query, boolean isVectorized, String msg) throws Exception{
-    List<String> rs = runStatementOnDriver(query);
-    checkExpected(rs, expectedResult, msg + (isVectorized ? " vect" : ""), LOG, !isVectorized);
-    assertVectorized(isVectorized, query);
+  void checkResult(String[][] expectedResult, String query, boolean isVectorized,
+      String msg) throws Exception{
+    checkResult(expectedResult, query, isVectorized, msg, LOG);
+  }
+  @Test
+  public void testLoadAcidFile() throws Exception {
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
+    runStatementOnDriver("drop table if exists T");
+    runStatementOnDriver("drop table if exists T2");
+    runStatementOnDriver(
+        "create table T (a int, b int) stored as orc");
+    //This is just a simple way to generate test data
+    runStatementOnDriver("create table T2(a int, b int) stored as orc");
+    runStatementOnDriver("insert into T values(1,2)");
+    List<String> rs = runStatementOnDriver("select INPUT__FILE__NAME from T");
+    Assert.assertEquals(1, rs.size());
+    Assert.assertTrue("Unexpcted file name", rs.get(0)
+        .endsWith("t/delta_0000001_0000001_0000/bucket_00000"));
+    //T2 is an acid table so this should fail
+    CommandProcessorResponse cpr = runStatementOnDriverNegative(
+        "load data local inpath '" + rs.get(0) + "' into table T2");
+    Assert.assertEquals("Unexpected error code",
+        ErrorMsg.LOAD_DATA_ACID_FILE.getErrorCode(), cpr.getErrorCode());
   }
 }

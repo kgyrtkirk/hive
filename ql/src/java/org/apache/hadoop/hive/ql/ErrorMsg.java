@@ -457,6 +457,14 @@ public enum ErrorMsg {
   HIVE_GROUPING_SETS_SIZE_LIMIT(10411,
     "Grouping sets size cannot be greater than 64"),
   REBUILD_NO_MATERIALIZED_VIEW(10412, "Rebuild command only valid for materialized views"),
+  LOAD_DATA_ACID_FILE(10413,
+      "\"{0}\" was created created by Acid write - it cannot be loaded into anther Acid table",
+      true),
+  ACID_OP_ON_INSERTONLYTRAN_TABLE(10414, "Attempt to do update or delete on table {0} that is " +
+    "insert-only transactional", true),
+  LOAD_DATA_LAUNCH_JOB_IO_ERROR(10415, "Encountered I/O error while parsing rewritten load data into insert query"),
+  LOAD_DATA_LAUNCH_JOB_PARSE_ERROR(10416, "Encountered parse error while parsing rewritten load data into insert query"),
+
 
   //========================== 20000 range starts here ========================//
 
@@ -487,8 +495,8 @@ public enum ErrorMsg {
   FILE_NOT_FOUND(20012, "File not found: {0}", "64000", true),
   WRONG_FILE_FORMAT(20013, "Wrong file format. Please check the file's format.", "64000", true),
 
-  SPARK_CREATE_CLIENT_INVALID_QUEUE(20014, "Spark job is submitted to an invalid queue: {0}."
-      + " Please fix and try again.", true),
+  SPARK_CREATE_CLIENT_INVALID_QUEUE(20014, "Spark app for session {0} was submitted to an invalid" +
+          " queue: {1}. Please fix and try again.", true),
   SPARK_RUNTIME_OOM(20015, "Spark job failed because of out of memory."),
 
   // An exception from runtime that will show the full stack to client
@@ -566,13 +574,13 @@ public enum ErrorMsg {
   SPARK_CREATE_CLIENT_TIMEOUT(30038,
       "Timed out while creating Spark client for session {0}.", true),
   SPARK_CREATE_CLIENT_QUEUE_FULL(30039,
-      "Failed to create Spark client because job queue is full: {0}.", true),
+      "Failed to create Spark client for session {0} because job queue is full: {1}.", true),
   SPARK_CREATE_CLIENT_INTERRUPTED(30040,
       "Interrupted while creating Spark client for session {0}", true),
   SPARK_CREATE_CLIENT_ERROR(30041,
-      "Failed to create Spark client for Spark session {0}", true),
+      "Failed to create Spark client for Spark session {0}: {1}", true),
   SPARK_CREATE_CLIENT_INVALID_RESOURCE_REQUEST(30042,
-      "Failed to create Spark client due to invalid resource request: {0}", true),
+      "Failed to create Spark client for session {0} due to invalid resource request: {1}", true),
   SPARK_CREATE_CLIENT_CLOSED_SESSION(30043,
       "Cannot create Spark client on a closed session {0}", true),
 
@@ -580,8 +588,8 @@ public enum ErrorMsg {
 
   //========================== 40000 range starts here ========================//
 
-  SPARK_JOB_RUNTIME_ERROR(40001,
-      "Spark job failed during runtime. Please check stacktrace for the root cause.")
+  SPARK_JOB_RUNTIME_ERROR(40001, "Spark job failed due to: {0}", true),
+  SPARK_TASK_RUNTIME_ERROR(40002, "Spark job failed due to task failures: {0}", true)
   ;
 
   private int errorCode;

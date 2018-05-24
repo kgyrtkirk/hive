@@ -48,8 +48,9 @@ struct SQLPrimaryKey {
   4: i32 key_seq,        // sequence number within primary key
   5: string pk_name,     // primary key name
   6: bool enable_cstr,   // Enable/Disable
-  7: bool validate_cstr,  // Validate/No validate
-  8: bool rely_cstr      // Rely/No Rely
+  7: bool validate_cstr, // Validate/No validate
+  8: bool rely_cstr,     // Rely/No Rely
+  9: optional string catName
 }
 
 struct SQLForeignKey {
@@ -66,39 +67,55 @@ struct SQLForeignKey {
   11: string pk_name,      // primary key name
   12: bool enable_cstr,    // Enable/Disable
   13: bool validate_cstr,  // Validate/No validate
-  14: bool rely_cstr       // Rely/No Rely
+  14: bool rely_cstr,      // Rely/No Rely
+  15: optional string catName
 }
 
 struct SQLUniqueConstraint {
-  1: string table_db,    // table schema
-  2: string table_name,  // table name
-  3: string column_name, // column name
-  4: i32 key_seq,        // sequence number within unique constraint
-  5: string uk_name,     // unique key name
-  6: bool enable_cstr,   // Enable/Disable
-  7: bool validate_cstr, // Validate/No validate
-  8: bool rely_cstr      // Rely/No Rely
+  1: string catName,     // table catalog
+  2: string table_db,    // table schema
+  3: string table_name,  // table name
+  4: string column_name, // column name
+  5: i32 key_seq,        // sequence number within unique constraint
+  6: string uk_name,     // unique key name
+  7: bool enable_cstr,   // Enable/Disable
+  8: bool validate_cstr, // Validate/No validate
+  9: bool rely_cstr,     // Rely/No Rely
 }
 
 struct SQLNotNullConstraint {
-  1: string table_db,    // table schema
-  2: string table_name,  // table name
-  3: string column_name, // column name
-  4: string nn_name,     // not null name
-  5: bool enable_cstr,   // Enable/Disable
-  6: bool validate_cstr, // Validate/No validate
-  7: bool rely_cstr      // Rely/No Rely
+  1: string catName,     // table catalog
+  2: string table_db,    // table schema
+  3: string table_name,  // table name
+  4: string column_name, // column name
+  5: string nn_name,     // not null name
+  6: bool enable_cstr,   // Enable/Disable
+  7: bool validate_cstr, // Validate/No validate
+  8: bool rely_cstr,     // Rely/No Rely
 }
 
 struct SQLDefaultConstraint {
-  1: string table_db,    // table schema
-  2: string table_name,  // table name
-  3: string column_name, // column name
-  4: string default_value,// default value
-  5: string dc_name,     // default name
-  6: bool enable_cstr,   // Enable/Disable
-  7: bool validate_cstr, // Validate/No validate
-  8: bool rely_cstr      // Rely/No Rely
+  1: string catName,     // catalog name
+  2: string table_db,    // table schema
+  3: string table_name,  // table name
+  4: string column_name, // column name
+  5: string default_value,// default value
+  6: string dc_name,     // default name
+  7: bool enable_cstr,   // Enable/Disable
+  8: bool validate_cstr, // Validate/No validate
+  9: bool rely_cstr      // Rely/No Rely
+}
+
+struct SQLCheckConstraint {
+  1: string catName,     // catalog name
+  2: string table_db,    // table schema
+  3: string table_name,  // table name
+  4: string column_name, // column name
+  5: string check_expression,// check expression
+  6: string dc_name,     // default name
+  7: bool enable_cstr,   // Enable/Disable
+  8: bool validate_cstr, // Validate/No validate
+  9: bool rely_cstr      // Rely/No Rely
 }
 
 struct Type {
@@ -222,6 +239,7 @@ struct HiveObjectRef{
   3: string objectName,
   4: list<string> partValues,
   5: string columnName,
+  6: optional string catName
 }
 
 struct PrivilegeGrantInfo {
@@ -307,6 +325,34 @@ struct GrantRevokeRoleResponse {
   1: optional bool success;
 }
 
+struct Catalog {
+  1: string name,                    // Name of the catalog
+  2: optional string description,    // description of the catalog
+  3: string locationUri              // default storage location.  When databases are created in
+                                     // this catalog, if they do not specify a location, they will
+                                     // be placed in this location.
+}
+
+struct CreateCatalogRequest {
+  1: Catalog catalog
+}
+
+struct GetCatalogRequest {
+  1: string name
+}
+
+struct GetCatalogResponse {
+  1: Catalog catalog
+}
+
+struct GetCatalogsResponse {
+  1: list<string> names
+}
+
+struct DropCatalogRequest {
+  1: string name
+}
+
 // namespace for tables
 struct Database {
   1: string name,
@@ -315,7 +361,8 @@ struct Database {
   4: map<string, string> parameters, // properties associated with the database
   5: optional PrincipalPrivilegeSet privileges,
   6: optional string ownerName,
-  7: optional PrincipalType ownerType
+  7: optional PrincipalType ownerType,
+  8: optional string catalogName
 }
 
 // This object holds the information needed by SerDes
@@ -375,7 +422,9 @@ struct Table {
   13: optional PrincipalPrivilegeSet privileges,
   14: optional bool temporary=false,
   15: optional bool rewriteEnabled,     // rewrite enabled or not
-  16: optional CreationMetadata creationMetadata   // only for MVs, it stores table names used and txn list at MV creation
+  16: optional CreationMetadata creationMetadata,   // only for MVs, it stores table names used and txn list at MV creation
+  17: optional string catName,          // Name of the catalog the table is in
+  18: optional PrincipalType ownerType = PrincipalType.USER // owner type of this table (default to USER for backward compatibility)
 }
 
 struct Partition {
@@ -386,7 +435,8 @@ struct Partition {
   5: i32          lastAccessTime,
   6: StorageDescriptor   sd,
   7: map<string, string> parameters,
-  8: optional PrincipalPrivilegeSet privileges
+  8: optional PrincipalPrivilegeSet privileges,
+  9: optional string catName
 }
 
 struct PartitionWithoutSD {
@@ -412,7 +462,8 @@ struct PartitionSpec {
   2: string tableName,
   3: string rootPath,
   4: optional PartitionSpecWithSharedSD sharedSDPartitionSpec,
-  5: optional PartitionListComposingSpec partitionList
+  5: optional PartitionListComposingSpec partitionList,
+  6: optional string catName
 }
 
 // column statistics
@@ -456,8 +507,8 @@ struct BinaryColumnStatsData {
 
 
 struct Decimal {
-1: required binary unscaled,
-3: required i16 scale
+3: required i16 scale, // force using scale first in Decimal.compareTo
+1: required binary unscaled
 }
 
 struct DecimalColumnStatsData {
@@ -501,7 +552,8 @@ struct ColumnStatisticsDesc {
 2: required string dbName,
 3: required string tableName,
 4: optional string partName,
-5: optional i64 lastAnalyzed
+5: optional i64 lastAnalyzed,
+6: optional string catName
 }
 
 struct ColumnStatistics {
@@ -536,7 +588,8 @@ struct EnvironmentContext {
 
 struct PrimaryKeysRequest {
   1: required string db_name,
-  2: required string tbl_name
+  2: required string tbl_name,
+  3: optional string catName
 }
 
 struct PrimaryKeysResponse {
@@ -548,6 +601,7 @@ struct ForeignKeysRequest {
   2: string parent_tbl_name,
   3: string foreign_db_name,
   4: string foreign_tbl_name
+  5: optional string catName          // No cross catalog constraints
 }
 
 struct ForeignKeysResponse {
@@ -555,8 +609,9 @@ struct ForeignKeysResponse {
 }
 
 struct UniqueConstraintsRequest {
-  1: required string db_name,
-  2: required string tbl_name
+  1: required string catName,
+  2: required string db_name,
+  3: required string tbl_name,
 }
 
 struct UniqueConstraintsResponse {
@@ -564,8 +619,9 @@ struct UniqueConstraintsResponse {
 }
 
 struct NotNullConstraintsRequest {
-  1: required string db_name,
-  2: required string tbl_name
+  1: required string catName,
+  2: required string db_name,
+  3: required string tbl_name,
 }
 
 struct NotNullConstraintsResponse {
@@ -573,19 +629,31 @@ struct NotNullConstraintsResponse {
 }
 
 struct DefaultConstraintsRequest {
-  1: required string db_name,
-  2: required string tbl_name
+  1: required string catName,
+  2: required string db_name,
+  3: required string tbl_name
 }
 
 struct DefaultConstraintsResponse {
   1: required list<SQLDefaultConstraint> defaultConstraints
 }
 
+struct CheckConstraintsRequest {
+  1: required string catName,
+  2: required string db_name,
+  3: required string tbl_name
+}
+
+struct CheckConstraintsResponse {
+  1: required list<SQLCheckConstraint> checkConstraints
+}
+
 
 struct DropConstraintRequest {
   1: required string dbname, 
   2: required string tablename,
-  3: required string constraintname
+  3: required string constraintname,
+  4: optional string catName
 }
 
 struct AddPrimaryKeyRequest {
@@ -608,6 +676,10 @@ struct AddDefaultConstraintRequest {
   1: required list<SQLDefaultConstraint> defaultConstraintCols
 }
 
+struct AddCheckConstraintRequest {
+  1: required list<SQLCheckConstraint> checkConstraintCols
+}
+
 // Return type for get_partitions_by_expr
 struct PartitionsByExprResult {
   1: required list<Partition> partitions,
@@ -621,6 +693,7 @@ struct PartitionsByExprRequest {
   3: required binary expr,
   4: optional string defaultPartitionName,
   5: optional i16 maxParts=-1
+  6: optional string catName
 }
 
 struct TableStatsResult {
@@ -635,13 +708,15 @@ struct TableStatsRequest {
  1: required string dbName,
  2: required string tblName,
  3: required list<string> colNames
+ 4: optional string catName
 }
 
 struct PartitionsStatsRequest {
  1: required string dbName,
  2: required string tblName,
  3: required list<string> colNames,
- 4: required list<string> partNames
+ 4: required list<string> partNames,
+ 5: optional string catName
 }
 
 // Return type for add_partitions_req
@@ -655,7 +730,8 @@ struct AddPartitionsRequest {
   2: required string tblName,
   3: required list<Partition> parts,
   4: required bool ifNotExists,
-  5: optional bool needResult=true
+  5: optional bool needResult=true,
+  6: optional string catName
 }
 
 // Return type for drop_partitions_req
@@ -683,7 +759,8 @@ struct DropPartitionsRequest {
   5: optional bool ifExists=true, // currently verified on client
   6: optional bool ignoreProtection,
   7: optional EnvironmentContext environmentContext,
-  8: optional bool needResult=true
+  8: optional bool needResult=true,
+  9: optional string catName
 }
 
 struct PartitionValuesRequest {
@@ -695,6 +772,7 @@ struct PartitionValuesRequest {
   6: optional list<FieldSchema> partitionOrder;
   7: optional bool ascending = true;
   8: optional i64 maxParts = -1;
+  9: optional string catName
 }
 
 struct PartitionValuesRow {
@@ -730,6 +808,7 @@ struct Function {
   6: i32              createTime,
   7: FunctionType     functionType,
   8: list<ResourceUri> resourceUris,
+  9: optional string  catName
 }
 
 // Structs for transaction and locks
@@ -762,6 +841,8 @@ struct OpenTxnRequest {
     2: required string user,
     3: required string hostname,
     4: optional string agentInfo = "Unknown",
+    5: optional string replPolicy,
+    6: optional list<i64> replSrcTxnIds,
 }
 
 struct OpenTxnsResponse {
@@ -770,6 +851,7 @@ struct OpenTxnsResponse {
 
 struct AbortTxnRequest {
     1: required i64 txnid,
+    2: optional string replPolicy,
 }
 
 struct AbortTxnsRequest {
@@ -778,6 +860,16 @@ struct AbortTxnsRequest {
 
 struct CommitTxnRequest {
     1: required i64 txnid,
+    2: optional string replPolicy,
+}
+
+struct ReplTblWriteIdStateRequest {
+    1: required string validWriteIdlist,
+    2: required string user,
+    3: required string hostName,
+    4: required string dbName,
+    5: required string tableName,
+    6: optional list<string> partNames,
 }
 
 // Request msg to get the valid write ids list for the given list of tables wrt to input validTxnList
@@ -802,9 +894,14 @@ struct GetValidWriteIdsResponse {
 
 // Request msg to allocate table write ids for the given list of txns
 struct AllocateTableWriteIdsRequest {
-    1: required list<i64> txnIds,
-    2: required string dbName,
-    3: required string tableName,
+    1: required string dbName,
+    2: required string tableName,
+    // Either txnIds or replPolicy+srcTxnToWriteIdList can exist in a call. txnIds is used by normal flow and
+    // replPolicy+srcTxnToWriteIdList is used by replication task.
+    3: optional list<i64> txnIds,
+    4: optional string replPolicy,
+    // The list is assumed to be sorted by both txnids and write ids. The write id list is assumed to be contiguous.
+    5: optional list<TxnToWriteId> srcTxnToWriteIdList,
 }
 
 // Map for allocated write id against the txn for which it is allocated
@@ -953,10 +1050,11 @@ struct BasicTxnInfo {
 }
 
 struct CreationMetadata {
-    1: required string dbName,
-    2: required string tblName,
-    3: required set<string> tablesUsed,
-    4: optional string validTxnList
+    1: required string catName
+    2: required string dbName,
+    3: required string tblName,
+    4: required set<string> tablesUsed,
+    5: optional string validTxnList,
 }
 
 struct NotificationEventRequest {
@@ -972,6 +1070,7 @@ struct NotificationEvent {
     5: optional string tableName,
     6: required string message,
     7: optional string messageFormat,
+    8: optional string catName
 }
 
 struct NotificationEventResponse {
@@ -985,6 +1084,7 @@ struct CurrentNotificationEventId {
 struct NotificationEventsCountRequest {
     1: required i64 fromEventId,
     2: required string dbName,
+    3: optional string catName
 }
 
 struct NotificationEventsCountResponse {
@@ -1010,6 +1110,7 @@ struct FireEventRequest {
     3: optional string dbName,
     4: optional string tableName,
     5: optional list<string> partitionVals,
+    6: optional string catName,
 }
 
 struct FireEventResponse {
@@ -1101,7 +1202,8 @@ struct ClientCapabilities {
 struct GetTableRequest {
   1: required string dbName,
   2: required string tblName,
-  3: optional ClientCapabilities capabilities
+  3: optional ClientCapabilities capabilities,
+  4: optional string catName
 }
 
 struct GetTableResult {
@@ -1111,7 +1213,8 @@ struct GetTableResult {
 struct GetTablesRequest {
   1: required string dbName,
   2: optional list<string> tblNames,
-  3: optional ClientCapabilities capabilities
+  3: optional ClientCapabilities capabilities,
+  4: optional string catName
 }
 
 struct GetTablesResult {
@@ -1133,12 +1236,14 @@ struct TableMeta {
   2: required string tableName;
   3: required string tableType;
   4: optional string comments;
+  5: optional string catName;
 }
 
 struct Materialization {
   1: required set<string> tablesUsed;
   2: optional string validTxnList
-  3: required i64 invalidationTime;
+  3: optional i64 invalidationTime;
+  4: optional bool sourceTablesUpdateDeleteModified;
 }
 
 // Data types for workload management.
@@ -1162,7 +1267,7 @@ struct WMResourcePlan {
 }
 
 struct WMNullableResourcePlan {
-  1: required string name;
+  1: optional string name;
   2: optional WMResourcePlanStatus status;
   4: optional i32 queryParallelism;
   5: optional bool isSetQueryParallelism;
@@ -1360,17 +1465,19 @@ struct WMCreateOrDropTriggerToPoolMappingResponse {
 struct ISchema {
   1: SchemaType schemaType,
   2: string name,
-  3: string dbName,
-  4: SchemaCompatibility compatibility,
-  5: SchemaValidation validationLevel,
-  6: bool canEvolve,
-  7: optional string schemaGroup,
-  8: optional string description
+  3: string catName,
+  4: string dbName,
+  5: SchemaCompatibility compatibility,
+  6: SchemaValidation validationLevel,
+  7: bool canEvolve,
+  8: optional string schemaGroup,
+  9: optional string description
 }
 
 struct ISchemaName {
-  1: string dbName,
-  2: string schemaName
+  1: string catName,
+  2: string dbName,
+  3: string schemaName
 }
 
 struct AlterISchemaRequest {
@@ -1418,6 +1525,17 @@ struct SetSchemaVersionStateRequest {
 
 struct GetSerdeRequest {
   1: string serdeName
+}
+
+struct RuntimeStat {
+  1: optional i32 createTime,
+  2: required i32 weight,
+  3: required binary payload
+}
+
+struct GetRuntimeStatsRequest {
+  1: required i32 maxWeight,
+  2: required i32 maxCreateTime
 }
 
 // Exceptions.
@@ -1491,6 +1609,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   string getMetaConf(1:string key) throws(1:MetaException o1)
   void setMetaConf(1:string key, 2:string value) throws(1:MetaException o1)
 
+  void create_catalog(1: CreateCatalogRequest catalog) throws (1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3: MetaException o3)
+  GetCatalogResponse get_catalog(1: GetCatalogRequest catName) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  GetCatalogsResponse get_catalogs() throws (1:MetaException o1)
+  void drop_catalog(1: DropCatalogRequest catName) throws (1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+
   void create_database(1:Database database) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
   Database get_database(1:string name) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void drop_database(1:string name, 2:bool deleteData, 3:bool cascade) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
@@ -1530,7 +1653,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
               4:NoSuchObjectException o4)
   void create_table_with_constraints(1:Table tbl, 2: list<SQLPrimaryKey> primaryKeys, 3: list<SQLForeignKey> foreignKeys,
   4: list<SQLUniqueConstraint> uniqueConstraints, 5: list<SQLNotNullConstraint> notNullConstraints,
-  6: list<SQLDefaultConstraint> defaultConstraints)
+  6: list<SQLDefaultConstraint> defaultConstraints, 7: list<SQLCheckConstraint> checkConstraints)
       throws (1:AlreadyExistsException o1,
               2:InvalidObjectException o2, 3:MetaException o3,
               4:NoSuchObjectException o4)
@@ -1545,6 +1668,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void add_not_null_constraint(1:AddNotNullConstraintRequest req)
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void add_default_constraint(1:AddDefaultConstraintRequest req)
+      throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  void add_check_constraint(1:AddCheckConstraintRequest req)
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
 
   // drops the table and all the partitions associated with it if the table has partitions
@@ -1571,7 +1696,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
   map<string, Materialization> get_materialization_invalidation_info(1:string dbname, 2:list<string> tbl_names)
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
-  void update_creation_metadata(1:string dbname, 2:string tbl_name, 3:CreationMetadata creation_metadata)
+  void update_creation_metadata(1: string catName, 2:string dbname, 3:string tbl_name, 4:CreationMetadata creation_metadata)
                    throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
 
   // Get a list of table names that match a filter.
@@ -1796,6 +1921,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
   DefaultConstraintsResponse get_default_constraints(1:DefaultConstraintsRequest request)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  CheckConstraintsResponse get_check_constraints(1:CheckConstraintsRequest request)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // column statistics interfaces
 
@@ -1894,6 +2021,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // Deprecated, use grant_revoke_privileges()
   bool revoke_privileges(1:PrivilegeBag privileges) throws(1:MetaException o1)
   GrantRevokePrivilegeResponse grant_revoke_privileges(1:GrantRevokePrivilegeRequest request) throws(1:MetaException o1);
+  // Revokes all privileges for the object and adds the newly granted privileges for it.
+  GrantRevokePrivilegeResponse refresh_privileges(1:HiveObjectRef objToRefresh, 2:GrantRevokePrivilegeRequest grantRequest) throws(1:MetaException o1);
 
   // this is used by metastore client to send UGI information to metastore server immediately
   // after setting up a connection.
@@ -1945,6 +2074,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void abort_txn(1:AbortTxnRequest rqst) throws (1:NoSuchTxnException o1)
   void abort_txns(1:AbortTxnsRequest rqst) throws (1:NoSuchTxnException o1)
   void commit_txn(1:CommitTxnRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
+  void repl_tbl_writeid_state(1: ReplTblWriteIdStateRequest rqst)
   GetValidWriteIdsResponse get_valid_write_ids(1:GetValidWriteIdsRequest rqst)
       throws (1:NoSuchTxnException o1, 2:MetaException o2)
   AllocateTableWriteIdsResponse allocate_table_write_ids(1:AllocateTableWriteIdsRequest rqst)
@@ -2063,6 +2193,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void add_serde(1: SerDeInfo serde) throws(1:AlreadyExistsException o1, 2:MetaException o2)
   SerDeInfo get_serde(1: GetSerdeRequest rqst) throws(1:NoSuchObjectException o1, 2:MetaException o2)
 
+  LockResponse get_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
+  bool heartbeat_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
+  
+  void add_runtime_stats(1: RuntimeStat stat) throws(1:MetaException o1)
+  list<RuntimeStat> get_runtime_stats(1: GetRuntimeStatsRequest rqst) throws(1:MetaException o1)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,
@@ -2101,5 +2236,5 @@ const string META_TABLE_STORAGE   = "storage_handler",
 const string TABLE_IS_TRANSACTIONAL = "transactional",
 const string TABLE_NO_AUTO_COMPACT = "no_auto_compaction",
 const string TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties",
-
+const string TABLE_BUCKETING_VERSION = "bucketing_version",
 

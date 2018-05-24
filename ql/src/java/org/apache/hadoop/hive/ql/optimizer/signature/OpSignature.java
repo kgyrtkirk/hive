@@ -25,25 +25,31 @@ import java.util.Map.Entry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Signature of the operator(non-recursive).
  */
-public class OpSignature {
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
+public final class OpSignature {
 
   /**
    * Holds the signature of the operator; the keys are are the methods name marked by {@link Signature}.
    */
+  @JsonProperty
   private Map<String, Object> sigMap;
-  // FIXME: this is currently retained...
-  // but later the signature should be able to serve the same comparision granulaty level as op.logicalEquals right now
-  private Operator<? extends OperatorDesc> op;
+
+  // need this for Jackson to work
+  @SuppressWarnings("unused")
+  private OpSignature() {
+  }
 
   private OpSignature(Operator<? extends OperatorDesc> op) {
-    this.op = op;
     sigMap = new HashMap<>();
-    // FIXME: consider to operator info as well..not just conf?
+    // FIXME: consider other operator info as well..not just conf?
     SignatureUtils.write(sigMap, op.getConf());
   }
 
@@ -65,7 +71,7 @@ public class OpSignature {
       return true;
     }
     OpSignature o = (OpSignature) obj;
-    return op.logicalEquals(o.op);
+    return signatureCompare(o);
   }
 
   public boolean signatureCompare(OpSignature other) {
@@ -74,7 +80,7 @@ public class OpSignature {
 
   @VisibleForTesting
   public void proveEquals(OpSignature other) {
-    proveEquals(sigMap,other.sigMap);
+    proveEquals(sigMap, other.sigMap);
   }
 
   private static void proveEquals(Map<String, Object> m1, Map<String, Object> m2) {
@@ -89,6 +95,27 @@ public class OpSignature {
         throw new RuntimeException(String.format("equals fails: %s (%s!=%s)", key, v1, v2));
       }
     }
+  }
+
+  @Override
+  public String toString() {
+    return toString("");
+  }
+
+  public String toString(String pad) {
+    StringBuffer sb = new StringBuffer();
+    for (Entry<String, Object> e : sigMap.entrySet()) {
+      sb.append(pad);
+      sb.append(e.getKey());
+      sb.append(" = ");
+      sb.append(e.getValue());
+      sb.append('\n');
+    }
+    return sb.toString();
+  }
+
+  public Map<String, Object> getSigMap() {
+    return sigMap;
   }
 
 }

@@ -24,17 +24,29 @@ import java.util.Objects;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 /**
  * Operator tree signature.
  */
-public class OpTreeSignature {
-  private Operator<?> op;
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
+public final class OpTreeSignature {
+
+  @JsonProperty
   private int hashCode;
+  @JsonProperty
   private OpSignature sig;
+  @JsonProperty
   private ArrayList<OpTreeSignature> parentSig;
 
+  // need this for Jackson to work
+  @SuppressWarnings("unused")
+  private OpTreeSignature() {
+  }
+
   OpTreeSignature(Operator<?> op, OpTreeSignatureFactory osf) {
-    this.op = op;
     sig = OpSignature.of(op);
     parentSig = new ArrayList<>();
     for (Operator<? extends OperatorDesc> parentOp : op.getParentOperators()) {
@@ -65,26 +77,31 @@ public class OpTreeSignature {
       return true;
     }
     OpTreeSignature o = (OpTreeSignature) obj;
-    // TODO: this should be removed as soon as signatures are able to provide the same level of confidentiality as logicalEquals
-    return logicalEqualsTree(op, o.op);
+
+    return sig.equals(o.sig) && parentSig.equals(o.parentSig);
   }
 
-  // XXX: this is ain't cheap! :)
-  private final boolean logicalEqualsTree(Operator<?> o1, Operator<?> o) {
-    if (!o1.logicalEquals(o)) {
-      return false;
+  @Override
+  public String toString() {
+    return toString("");
+  }
+
+  public String toString(String pad) {
+    StringBuffer sb = new StringBuffer();
+    sb.append(pad + "hashcode:" + hashCode + "\n");
+    sb.append(sig.toString(pad));
+    for (OpTreeSignature p : parentSig) {
+      sb.append(p.toString(pad + " "));
     }
-    if (o.getNumParent() != o1.getNumParent()) {
-      return false;
-    }
-    for (int i = 0; i < o1.getNumParent(); i++) {
-      Operator<? extends OperatorDesc> copL = o1.getParentOperators().get(i);
-      Operator<? extends OperatorDesc> copR = o.getParentOperators().get(i);
-      if (!copL.logicalEquals(copR)) {
-        return false;
-      }
-    }
-    return true;
+    return sb.toString();
+  }
+
+  public OpSignature getSig() {
+    return sig;
+  }
+
+  public ArrayList<OpTreeSignature> getParentSig() {
+    return parentSig;
   }
 
 }

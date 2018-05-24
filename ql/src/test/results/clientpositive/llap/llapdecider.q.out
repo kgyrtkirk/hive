@@ -36,7 +36,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -50,6 +52,7 @@ STAGE PLANS:
                   Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: bigint)
@@ -69,21 +72,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: create table src_orc stored as orc as select * from src
+PREHOOK: query: create table src_orc_n2 stored as orc as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_orc
-POSTHOOK: query: create table src_orc stored as orc as select * from src
+PREHOOK: Output: default@src_orc_n2
+POSTHOOK: query: create table src_orc_n2 stored as orc as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_orc
-POSTHOOK: Lineage: src_orc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_orc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc GROUP BY key ORDER BY cnt
+POSTHOOK: Output: default@src_orc_n2
+POSTHOOK: Lineage: src_orc_n2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_orc_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc GROUP BY key ORDER BY cnt
+POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -101,7 +104,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n2
                   Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -119,7 +122,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -133,6 +138,7 @@ STAGE PLANS:
                   Statistics: Num rows: 250 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: bigint)
@@ -152,9 +158,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc GROUP BY key ORDER BY cnt
+PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc GROUP BY key ORDER BY cnt
+POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -172,7 +178,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n2
                   Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -190,10 +196,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -207,7 +213,7 @@ STAGE PLANS:
                   Statistics: Num rows: 250 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: bigint)
@@ -227,19 +233,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: analyze table src_orc compute statistics for columns
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src_orc
-PREHOOK: Output: default@src_orc
+PREHOOK: query: analyze table src_orc_n2 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@src_orc_n2
+PREHOOK: Output: default@src_orc_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: analyze table src_orc compute statistics for columns
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_orc
-POSTHOOK: Output: default@src_orc
+POSTHOOK: query: analyze table src_orc_n2 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@src_orc_n2
+POSTHOOK: Output: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc GROUP BY key ORDER BY cnt
+PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc GROUP BY key ORDER BY cnt
+POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -257,7 +263,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n2
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -275,10 +281,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -292,7 +298,7 @@ STAGE PLANS:
                   Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: bigint)
@@ -312,9 +318,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN SELECT * from src_orc join src on (src_orc.key = src.key) order by src.value
+PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 join src on (src_orc_n2.key = src.key) order by src.value
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT * from src_orc join src on (src_orc.key = src.key) order by src.value
+POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 join src on (src_orc_n2.key = src.key) order by src.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -332,7 +338,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n2
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -347,7 +353,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
@@ -367,6 +373,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator
@@ -383,6 +390,7 @@ STAGE PLANS:
                   Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
@@ -402,9 +410,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN SELECT * from src_orc s1 join src_orc s2 on (s1.key = s2.key) order by s2.value
+PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT * from src_orc s1 join src_orc s2 on (s1.key = s2.key) order by s2.value
+POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -437,7 +445,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
@@ -457,7 +465,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
@@ -476,7 +484,7 @@ STAGE PLANS:
                   Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
@@ -496,9 +504,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN SELECT * from src_orc join src on (src_orc.key = src.key) order by src.value
+PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 join src on (src_orc_n2.key = src.key) order by src.value
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT * from src_orc join src on (src_orc.key = src.key) order by src.value
+POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 join src on (src_orc_n2.key = src.key) order by src.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -516,7 +524,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n2
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -531,7 +539,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
@@ -551,6 +559,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -568,7 +577,7 @@ STAGE PLANS:
                   Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
@@ -588,9 +597,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN SELECT * from src_orc s1 join src_orc s2 on (s1.key = s2.key) order by s2.value
+PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT * from src_orc s1 join src_orc s2 on (s1.key = s2.key) order by s2.value
+POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -623,6 +632,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -641,6 +651,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator
@@ -657,6 +668,7 @@ STAGE PLANS:
                   Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
@@ -676,9 +688,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN SELECT * from src_orc s1 join src_orc s2 on (s1.key = s2.key) order by s2.value
+PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT * from src_orc s1 join src_orc s2 on (s1.key = s2.key) order by s2.value
+POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -711,6 +723,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -729,6 +742,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator
@@ -745,6 +759,7 @@ STAGE PLANS:
                   Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
@@ -764,9 +779,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN SELECT * from src_orc s1 join src_orc s2 on (s1.key = s2.key) order by s2.value
+PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT * from src_orc s1 join src_orc s2 on (s1.key = s2.key) order by s2.value
+POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -799,7 +814,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
@@ -819,7 +834,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Reduce Operator Tree:
@@ -837,6 +852,7 @@ STAGE PLANS:
                   Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
@@ -856,9 +872,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN SELECT * from src_orc s1 join src_orc s2 on (s1.key = s2.key) order by s2.value
+PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT * from src_orc s1 join src_orc s2 on (s1.key = s2.key) order by s2.value
+POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -891,6 +907,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -909,6 +926,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator
@@ -925,6 +943,7 @@ STAGE PLANS:
                   Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
@@ -944,9 +963,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN SELECT * from src_orc s1 join src_orc s2 on (s1.key = s2.key) order by s2.value
+PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT * from src_orc s1 join src_orc s2 on (s1.key = s2.key) order by s2.value
+POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -979,7 +998,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
@@ -999,7 +1018,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
@@ -1018,7 +1037,7 @@ STAGE PLANS:
                   Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
@@ -1044,9 +1063,9 @@ PREHOOK: Output: test_udf_get_java_string
 POSTHOOK: query: CREATE TEMPORARY FUNCTION test_udf_get_java_string AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaString'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: test_udf_get_java_string
-PREHOOK: query: EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc where cast(key as int) > 1
+PREHOOK: query: EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc_n2 where cast(key as int) > 1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc where cast(key as int) > 1
+POSTHOOK: query: EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc_n2 where cast(key as int) > 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1063,7 +1082,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n2
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToInteger(key) > 1) (type: boolean)
@@ -1081,10 +1100,10 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -1105,9 +1124,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc where cast(key as int) > 1
+PREHOOK: query: EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc_n2 where cast(key as int) > 1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc where cast(key as int) > 1
+POSTHOOK: query: EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc_n2 where cast(key as int) > 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1124,7 +1143,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n2
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToInteger(key) > 1) (type: boolean)
@@ -1142,7 +1161,9 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -1163,9 +1184,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc where cast(test_udf_get_java_string(cast(key as string)) as int) > 1
+PREHOOK: query: EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc_n2 where cast(test_udf_get_java_string(cast(key as string)) as int) > 1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc where cast(test_udf_get_java_string(cast(key as string)) as int) > 1
+POSTHOOK: query: EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc_n2 where cast(test_udf_get_java_string(cast(key as string)) as int) > 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1182,7 +1203,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n2
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToInteger(GenericUDFTestGetJavaString(key)) > 1) (type: boolean)
@@ -1200,7 +1221,9 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -1221,9 +1244,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc where cast(key as int) > 1
+PREHOOK: query: EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc_n2 where cast(key as int) > 1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc where cast(key as int) > 1
+POSTHOOK: query: EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc_n2 where cast(key as int) > 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1240,7 +1263,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n2
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToInteger(key) > 1) (type: boolean)
@@ -1258,10 +1281,10 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)

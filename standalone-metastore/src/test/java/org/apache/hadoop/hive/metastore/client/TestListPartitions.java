@@ -19,10 +19,14 @@
 package org.apache.hadoop.hive.metastore.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -33,9 +37,11 @@ import org.apache.hadoop.hive.metastore.api.PartitionValuesRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesRow;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
@@ -45,6 +51,7 @@ import org.apache.thrift.transport.TTransportException;
 import com.google.common.collect.Lists;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -96,22 +103,21 @@ public class TestListPartitions extends MetaStoreClientTest {
   }
 
   private void createDB(String dbName) throws TException {
-    Database db = new DatabaseBuilder().
+    new DatabaseBuilder().
             setName(dbName).
-            build();
-    client.createDatabase(db);
+            create(client, metaStore.getConf());
   }
 
-  private static Table createTestTable(IMetaStoreClient client, String dbName, String tableName,
+  private Table createTestTable(IMetaStoreClient client, String dbName, String tableName,
                                        List<String> partCols) throws Exception {
 
     return createTestTable(client, dbName, tableName, partCols, false);
   }
 
 
-  private static Table createTestTable(IMetaStoreClient client, String dbName, String tableName,
+  private Table createTestTable(IMetaStoreClient client, String dbName, String tableName,
                                        List<String> partCols, boolean setPartitionLevelPrivilages)
-          throws Exception {
+          throws TException {
     TableBuilder builder = new TableBuilder()
             .setDbName(dbName)
             .setTableName(tableName)
@@ -119,7 +125,7 @@ public class TestListPartitions extends MetaStoreClientTest {
             .addCol("name", "string");
 
     partCols.forEach(col -> builder.addPartCol(col, "string"));
-    Table table = builder.build();
+    Table table = builder.build(metaStore.getConf());
 
     if (setPartitionLevelPrivilages) {
       table.putToParameters("PARTITION_LEVEL_PRIVILEGE", "true");
@@ -129,25 +135,25 @@ public class TestListPartitions extends MetaStoreClientTest {
     return table;
   }
 
-  private static void addPartition(IMetaStoreClient client, Table table, List<String> values)
+  private void addPartition(IMetaStoreClient client, Table table, List<String> values)
           throws TException {
-    PartitionBuilder partitionBuilder = new PartitionBuilder().fromTable(table);
+    PartitionBuilder partitionBuilder = new PartitionBuilder().inTable(table);
     values.forEach(val -> partitionBuilder.addValue(val));
-    client.add_partition(partitionBuilder.build());
+    client.add_partition(partitionBuilder.build(metaStore.getConf()));
   }
 
-  private static void createTable3PartCols1PartGeneric(IMetaStoreClient client, boolean authOn)
-          throws Exception {
+  private void createTable3PartCols1PartGeneric(IMetaStoreClient client, boolean authOn)
+          throws TException {
     Table t = createTestTable(client, DB_NAME, TABLE_NAME, Lists.newArrayList("yyyy", "mm",
             "dd"), authOn);
     addPartition(client, t, Lists.newArrayList("1997", "05", "16"));
   }
 
-  private static void createTable3PartCols1Part(IMetaStoreClient client) throws Exception {
+  private void createTable3PartCols1Part(IMetaStoreClient client) throws TException {
     createTable3PartCols1PartGeneric(client, false);
   }
 
-  private static List<List<String>> createTable4PartColsPartsGeneric(IMetaStoreClient client,
+  private List<List<String>> createTable4PartColsPartsGeneric(IMetaStoreClient client,
                                                                      boolean authOn) throws
           Exception {
     Table t = createTestTable(client, DB_NAME, TABLE_NAME, Lists.newArrayList("yyyy", "mm", "dd"),
@@ -165,12 +171,12 @@ public class TestListPartitions extends MetaStoreClientTest {
     return testValues;
   }
 
-  private static List<List<String>> createTable4PartColsParts(IMetaStoreClient client) throws
+  private List<List<String>> createTable4PartColsParts(IMetaStoreClient client) throws
           Exception {
     return createTable4PartColsPartsGeneric(client, false);
   }
 
-  private static List<List<String>> createTable4PartColsPartsAuthOn(IMetaStoreClient client) throws
+  private List<List<String>> createTable4PartColsPartsAuthOn(IMetaStoreClient client) throws
           Exception {
     return createTable4PartColsPartsGeneric(client, true);
   }
@@ -236,7 +242,6 @@ public class TestListPartitions extends MetaStoreClientTest {
   /**
    * Testing listPartitions(String,String,short) ->
    *         get_partitions(String,String,short).
-   * @throws Exception
    */
   @Test
   public void testListPartitionsAll() throws Exception {
@@ -247,9 +252,8 @@ public class TestListPartitions extends MetaStoreClientTest {
     partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)1);
     assertPartitionsHaveCorrectValues(partitions, testValues.subList(0, 1));
 
-    partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)0);
+    partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short) 0);
     assertTrue(partitions.isEmpty());
-
   }
 
   @Test(expected = MetaException.class)
@@ -261,14 +265,14 @@ public class TestListPartitions extends MetaStoreClientTest {
 
   @Test
   public void testListPartitionsAllNoParts() throws Exception {
-    Table t = createTestTable(client, DB_NAME, TABLE_NAME, Lists.newArrayList("yyyy", "mm", "dd"));
+    createTestTable(client, DB_NAME, TABLE_NAME, Lists.newArrayList("yyyy", "mm", "dd"));
     List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
     assertTrue(partitions.isEmpty());
   }
 
   @Test(expected = NoSuchObjectException.class)
   public void testListPartitionsAllNoTable() throws Exception {
-    List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
+    client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
   }
 
   @Test(expected = NoSuchObjectException.class)
@@ -293,7 +297,7 @@ public class TestListPartitions extends MetaStoreClientTest {
   public void testListPartitionsAllNullTblName() throws Exception {
     try {
       createTable3PartCols1Part(client);
-      List<Partition> partitions = client.listPartitions(DB_NAME, null, (short)-1);
+      client.listPartitions(DB_NAME, (String)null, (short)-1);
       fail("Should have thrown exception");
     } catch (NullPointerException | TTransportException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
@@ -316,7 +320,6 @@ public class TestListPartitions extends MetaStoreClientTest {
   /**
    * Testing listPartitions(String,String,List(String),short) ->
    *         get_partitions(String,String,List(String),short).
-   * @throws Exception
    */
   @Test
   public void testListPartitionsByValues() throws Exception {
@@ -388,7 +391,7 @@ public class TestListPartitions extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   public void testListPartitionsByValuesNullValues() throws Exception {
     createTable3PartCols1Part(client);
-    client.listPartitions(DB_NAME, TABLE_NAME, null, (short)-1);
+    client.listPartitions(DB_NAME, TABLE_NAME, (List<String>)null, (short)-1);
   }
 
 
@@ -396,7 +399,6 @@ public class TestListPartitions extends MetaStoreClientTest {
   /**
    * Testing listPartitionSpecs(String,String,int) ->
    *         get_partitions_pspec(String,String,int).
-   * @throws Exception
    */
   @Test
   public void testListPartitionSpecs() throws Exception {
@@ -447,7 +449,7 @@ public class TestListPartitions extends MetaStoreClientTest {
       createTable4PartColsParts(client);
       client.listPartitionSpecs(null, TABLE_NAME,  -1);
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (MetaException | TTransportException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -468,7 +470,6 @@ public class TestListPartitions extends MetaStoreClientTest {
   /**
    * Testing listPartitionsWithAuthInfo(String,String,short,String,List(String)) ->
    *         get_partitions_with_auth(String,String,short,String,List(String)).
-   * @throws Exception
    */
   @Test
   public void testListPartitionsWithAuth() throws Exception {
@@ -539,9 +540,10 @@ public class TestListPartitions extends MetaStoreClientTest {
   public void testListPartitionsWithAuthNullTblName() throws Exception {
     try {
       createTable4PartColsParts(client);
-      client.listPartitionsWithAuthInfo(DB_NAME, null, (short)-1, "", Lists.newArrayList());
+      client.listPartitionsWithAuthInfo(DB_NAME, (String)null, (short)-1, "",
+          Lists.newArrayList());
       fail("Should have thrown exception");
-    } catch (AssertionError| TTransportException e) {
+    } catch (MetaException| TTransportException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -563,7 +565,6 @@ public class TestListPartitions extends MetaStoreClientTest {
   /**
    * Testing listPartitionsWithAuthInfo(String,String,List(String),short,String,List(String)) ->
    *         get_partitions_ps_with_auth(String,String,List(String),short,String,List(String)).
-   * @throws Exception
    */
   @Test
   public void testListPartitionsWithAuthByValues() throws Exception {
@@ -692,7 +693,7 @@ public class TestListPartitions extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   public void testListPartitionsWithAuthByValuesNullValues() throws Exception {
     createTable4PartColsParts(client);
-    client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, null,
+    client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, (List<String>)null,
             (short)-1, "", Lists.newArrayList());
   }
 
@@ -717,7 +718,6 @@ public class TestListPartitions extends MetaStoreClientTest {
   /**
    * Testing listPartitionsByFilter(String,String,String,short) ->
    *         get_partitions_by_filter(String,String,String,short).
-   * @throws Exception
    */
   @Test
   public void testListPartitionsByFilter() throws Exception {
@@ -737,12 +737,85 @@ public class TestListPartitions extends MetaStoreClientTest {
     assertTrue(partitions.isEmpty());
 
     partitions = client.listPartitionsByFilter(DB_NAME, TABLE_NAME,
-            "yYyY=\"2017\"", (short)-1);
-    assertPartitionsHaveCorrectValues(partitions, partValues.subList(2, 4));
-
-    partitions = client.listPartitionsByFilter(DB_NAME, TABLE_NAME,
             "yyyy=\"2017\" AND mm=\"99\"", (short)-1);
     assertTrue(partitions.isEmpty());
+  }
+
+  @Test
+  public void testListPartitionsByFilterCaseInsensitive() throws Exception {
+    String tableName = TABLE_NAME + "_caseinsensitive";
+    Table t = createTestTable(client, DB_NAME, tableName,
+        Lists.newArrayList("yyyy", "month", "day"), false);
+    List<List<String>> testValues = Lists.newArrayList(
+        Lists.newArrayList("2017", "march", "11"),
+        Lists.newArrayList("2017", "march", "15"),
+        Lists.newArrayList("2017", "may", "15"),
+        Lists.newArrayList("2018", "march", "11"),
+        Lists.newArrayList("2018", "september", "7"));
+
+    for(List<String> vals : testValues) {
+      addPartition(client, t, vals);
+    }
+
+    List<Partition> partitions = client.listPartitionsByFilter(DB_NAME, tableName,
+        "yYyY=\"2017\"", (short) -1);
+    assertPartitionsHaveCorrectValues(partitions, testValues.subList(0, 3));
+
+    partitions = client.listPartitionsByFilter(DB_NAME, tableName,
+        "yYyY=\"2017\" AND mOnTh=\"may\"", (short) -1);
+    assertPartitionsHaveCorrectValues(partitions, testValues.subList(2, 3));
+
+    partitions = client.listPartitionsByFilter(DB_NAME, tableName,
+        "yYyY!=\"2017\"", (short) -1);
+    assertPartitionsHaveCorrectValues(partitions, testValues.subList(3, 5));
+
+    partitions = client.listPartitionsByFilter(DB_NAME, tableName,
+        "mOnTh=\"september\"", (short) -1);
+    assertPartitionsHaveCorrectValues(partitions, testValues.subList(4, 5));
+
+    partitions = client.listPartitionsByFilter(DB_NAME, tableName,
+        "mOnTh like \"m.*\"", (short) -1);
+    assertPartitionsHaveCorrectValues(partitions, testValues.subList(0, 4));
+
+    partitions = client.listPartitionsByFilter(DB_NAME, tableName,
+        "yYyY=\"2018\" AND mOnTh like \"m.*\"", (short) -1);
+    assertPartitionsHaveCorrectValues(partitions, testValues.subList(3, 4));
+    client.dropTable(DB_NAME, tableName);
+  }
+
+  @Test
+  public void testListPartitionsByFilterCaseSensitive() throws Exception {
+    String tableName = TABLE_NAME + "_casesensitive";
+    Table t = createTestTable(client, DB_NAME, tableName,
+        Lists.newArrayList("yyyy", "month", "day"), false);
+    List<List<String>> testValues = Lists.newArrayList(
+        Lists.newArrayList("2017", "march", "11"),
+        Lists.newArrayList("2017", "march", "15"),
+        Lists.newArrayList("2017", "may", "15"),
+        Lists.newArrayList("2018", "march", "11"),
+        Lists.newArrayList("2018", "april", "7"));
+
+    for(List<String> vals : testValues) {
+      addPartition(client, t, vals);
+    }
+
+    List<Partition> partitions = client.listPartitionsByFilter(DB_NAME, tableName,
+        "month=\"mArCh\"", (short) -1);
+    Assert.assertTrue(partitions.isEmpty());
+
+    partitions = client.listPartitionsByFilter(DB_NAME, tableName,
+        "yyyy=\"2017\" AND month=\"May\"", (short) -1);
+    Assert.assertTrue(partitions.isEmpty());
+
+    partitions = client.listPartitionsByFilter(DB_NAME, tableName,
+        "yyyy=\"2017\" AND month!=\"mArCh\"", (short) -1);
+    assertPartitionsHaveCorrectValues(partitions, testValues.subList(0, 3));
+
+    partitions = client.listPartitionsByFilter(DB_NAME, tableName,
+        "month like \"M.*\"", (short) -1);
+    Assert.assertTrue(partitions.isEmpty());
+    client.dropTable(DB_NAME, tableName);
+
   }
 
   @Test(expected = MetaException.class)
@@ -822,7 +895,6 @@ public class TestListPartitions extends MetaStoreClientTest {
   /**
    * Testing listPartitionSpecsByFilter(String,String,String,int) ->
    *         get_part_specs_by_filter(String,String,String,int).
-   * @throws Exception
    */
   @Test
   public void testListPartitionsSpecsByFilter() throws Exception {
@@ -844,9 +916,12 @@ public class TestListPartitions extends MetaStoreClientTest {
             "yyyy=\"20177\"", -1);
     assertPartitionsSpecProxy(partSpecProxy, Lists.newArrayList());
 
-    partSpecProxy = client.listPartitionSpecsByFilter(DB_NAME, TABLE_NAME,
-            "yYyY=\"2017\"", -1);
-    assertPartitionsSpecProxy(partSpecProxy, testValues.subList(2, 4));
+    // HIVE-18977
+    if (MetastoreConf.getBoolVar(metaStore.getConf(), MetastoreConf.ConfVars.TRY_DIRECT_SQL)) {
+      partSpecProxy = client.listPartitionSpecsByFilter(DB_NAME, TABLE_NAME,
+          "yYyY=\"2017\"", -1);
+      assertPartitionsSpecProxy(partSpecProxy, testValues.subList(2, 4));
+    }
 
     partSpecProxy = client.listPartitionSpecsByFilter(DB_NAME, TABLE_NAME,
             "yyyy=\"2017\" AND mm=\"99\"", -1);
@@ -919,7 +994,6 @@ public class TestListPartitions extends MetaStoreClientTest {
   /**
    * Testing getNumPartitionsByFilter(String,String,String) ->
    *         get_num_partitions_by_filter(String,String,String).
-   * @throws Exception
    */
   @Test
   public void testGetNumPartitionsByFilter() throws Exception {
@@ -934,8 +1008,11 @@ public class TestListPartitions extends MetaStoreClientTest {
     n = client.getNumPartitionsByFilter(DB_NAME, TABLE_NAME, "yyyy=\"20177\"");
     assertEquals(0, n);
 
-    n = client.getNumPartitionsByFilter(DB_NAME, TABLE_NAME, "yYyY=\"2017\"");
-    assertEquals(2, n);
+    // HIVE-18977
+    if (MetastoreConf.getBoolVar(metaStore.getConf(), MetastoreConf.ConfVars.TRY_DIRECT_SQL)) {
+      n = client.getNumPartitionsByFilter(DB_NAME, TABLE_NAME, "yYyY=\"2017\"");
+      assertEquals(2, n);
+    }
 
     n = client.getNumPartitionsByFilter(DB_NAME, TABLE_NAME, "yyyy=\"2017\" AND mm=\"99\"");
     assertEquals(0, n);
@@ -971,15 +1048,10 @@ public class TestListPartitions extends MetaStoreClientTest {
     client.getNumPartitionsByFilter(DB_NAME, TABLE_NAME, "yyyy=\"2017\"");
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testGetNumPartitionsByFilterNullTblName() throws Exception {
-    try {
-      createTable4PartColsParts(client);
-      client.getNumPartitionsByFilter(DB_NAME, null, "yyyy=\"2017\"");
-      fail("Should have thrown exception");
-    } catch (AssertionError | TTransportException e) {
-      //TODO: should not throw different exceptions for different HMS deployment types
-    }
+    createTable4PartColsParts(client);
+    client.getNumPartitionsByFilter(DB_NAME, null, "yyyy=\"2017\"");
   }
 
   @Test(expected = MetaException.class)
@@ -1000,7 +1072,6 @@ public class TestListPartitions extends MetaStoreClientTest {
   /**
    * Testing listPartitionNames(String,String,short) ->
    *         get_partition_names(String,String,short).
-   * @throws Exception
    */
   @Test
   public void testListPartitionNames() throws Exception {
@@ -1061,7 +1132,7 @@ public class TestListPartitions extends MetaStoreClientTest {
   public void testListPartitionNamesNullTblName() throws Exception {
     try {
       createTable4PartColsParts(client);
-      client.listPartitionNames(DB_NAME, null, (short)-1);
+      client.listPartitionNames(DB_NAME, (String)null, (short)-1);
       fail("Should have thrown exception");
     } catch (NullPointerException | TTransportException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
@@ -1073,7 +1144,6 @@ public class TestListPartitions extends MetaStoreClientTest {
   /**
    * Testing listPartitionNames(String,String,List(String),short) ->
    *         get_partition_names_ps(String,String,List(String),short).
-   * @throws Exception
    */
   @Test
   public void testListPartitionNamesByValues() throws Exception {
@@ -1175,7 +1245,7 @@ public class TestListPartitions extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   public void testListPartitionNamesByValuesNullValues() throws Exception {
     createTable4PartColsParts(client);
-    client.listPartitionNames(DB_NAME, TABLE_NAME, null, (short)-1);
+    client.listPartitionNames(DB_NAME, TABLE_NAME, (List<String>)null, (short)-1);
   }
 
 
@@ -1183,7 +1253,6 @@ public class TestListPartitions extends MetaStoreClientTest {
   /**
    * Testing listPartitionValues(PartitionValuesRequest) ->
    *         get_partition_values(PartitionValuesRequest).
-   * @throws Exception
    */
   @Test
   public void testListPartitionValues() throws Exception {
@@ -1319,4 +1388,131 @@ public class TestListPartitions extends MetaStoreClientTest {
     }
   }
 
+  @Test
+  public void otherCatalog() throws TException {
+    String catName = "list_partition_catalog";
+    Catalog cat = new CatalogBuilder()
+        .setName(catName)
+        .setLocation(MetaStoreTestUtils.getTestWarehouseDir(catName))
+        .build();
+    client.createCatalog(cat);
+
+    String dbName = "list_partition_database_in_other_catalog";
+    Database db = new DatabaseBuilder()
+        .setName(dbName)
+        .setCatalogName(catName)
+        .create(client, metaStore.getConf());
+
+    String tableName = "table_in_other_catalog";
+    Table table = new TableBuilder()
+        .inDb(db)
+        .setTableName(tableName)
+        .addCol("id", "int")
+        .addCol("name", "string")
+        .addPartCol("partcol", "string")
+        .create(client, metaStore.getConf());
+
+    Partition[] parts = new Partition[5];
+    for (int i = 0; i < parts.length; i++) {
+      parts[i] = new PartitionBuilder()
+          .inTable(table)
+          .addValue("a" + i)
+          .build(metaStore.getConf());
+    }
+    client.add_partitions(Arrays.asList(parts));
+
+    List<Partition> fetched = client.listPartitions(catName, dbName, tableName, -1);
+    Assert.assertEquals(parts.length, fetched.size());
+    Assert.assertEquals(catName, fetched.get(0).getCatName());
+
+    fetched = client.listPartitions(catName, dbName, tableName,
+        Collections.singletonList("a0"), -1);
+    Assert.assertEquals(1, fetched.size());
+    Assert.assertEquals(catName, fetched.get(0).getCatName());
+
+    PartitionSpecProxy proxy = client.listPartitionSpecs(catName, dbName, tableName, -1);
+    Assert.assertEquals(parts.length, proxy.size());
+    Assert.assertEquals(catName, proxy.getCatName());
+
+    fetched = client.listPartitionsByFilter(catName, dbName, tableName, "partcol=\"a0\"", -1);
+    Assert.assertEquals(1, fetched.size());
+    Assert.assertEquals(catName, fetched.get(0).getCatName());
+
+    proxy = client.listPartitionSpecsByFilter(catName, dbName, tableName, "partcol=\"a0\"", -1);
+    Assert.assertEquals(1, proxy.size());
+    Assert.assertEquals(catName, proxy.getCatName());
+
+    Assert.assertEquals(1, client.getNumPartitionsByFilter(catName, dbName, tableName,
+        "partcol=\"a0\""));
+
+    List<String> names = client.listPartitionNames(catName, dbName, tableName, 57);
+    Assert.assertEquals(parts.length, names.size());
+
+    names = client.listPartitionNames(catName, dbName, tableName, Collections.singletonList("a0"),
+        Short.MAX_VALUE + 1);
+    Assert.assertEquals(1, names.size());
+
+    PartitionValuesRequest rqst = new PartitionValuesRequest(dbName,
+        tableName, Lists.newArrayList(new FieldSchema("partcol", "string", "")));
+    rqst.setCatName(catName);
+    PartitionValuesResponse rsp = client.listPartitionValues(rqst);
+    Assert.assertEquals(5, rsp.getPartitionValuesSize());
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void listPartitionsBogusCatalog() throws TException {
+    createTable3PartCols1Part(client);
+    client.listPartitions("bogus", DB_NAME, TABLE_NAME, -1);
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void listPartitionsWithPartialValuesBogusCatalog() throws TException {
+    createTable3PartCols1Part(client);
+    client.listPartitions("bogus", DB_NAME, TABLE_NAME, Collections.singletonList("a0"), -1);
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void listPartitionsSpecsBogusCatalog() throws TException {
+    createTable3PartCols1Part(client);
+    client.listPartitionSpecs("bogus", DB_NAME, TABLE_NAME, -1);
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void listPartitionsByFilterBogusCatalog() throws TException {
+    createTable3PartCols1Part(client);
+    client.listPartitionsByFilter("bogus", DB_NAME, TABLE_NAME, "partcol=\"a0\"", -1);
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void listPartitionSpecsByFilterBogusCatalog() throws TException {
+    createTable3PartCols1Part(client);
+    client.listPartitionSpecsByFilter("bogus", DB_NAME, TABLE_NAME, "partcol=\"a0\"", -1);
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void getNumPartitionsByFilterBogusCatalog() throws TException {
+    createTable3PartCols1Part(client);
+    client.getNumPartitionsByFilter("bogus", DB_NAME, TABLE_NAME, "partcol=\"a0\"");
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void listPartitionNamesBogusCatalog() throws TException {
+    createTable3PartCols1Part(client);
+    client.listPartitionNames("bogus", DB_NAME, TABLE_NAME, -1);
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void listPartitionNamesPartialValsBogusCatalog() throws TException {
+    createTable3PartCols1Part(client);
+    client.listPartitionNames("bogus", DB_NAME, TABLE_NAME, Collections.singletonList("a0"), -1);
+  }
+
+  @Test(expected = MetaException.class)
+  public void listPartitionValuesBogusCatalog() throws TException {
+    createTable3PartCols1Part(client);
+    PartitionValuesRequest rqst = new PartitionValuesRequest(DB_NAME,
+        TABLE_NAME, Lists.newArrayList(new FieldSchema("partcol", "string", "")));
+    rqst.setCatName("bogus");
+    client.listPartitionValues(rqst);
+  }
 }

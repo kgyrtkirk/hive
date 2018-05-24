@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -46,6 +48,43 @@ public interface HiveTxnManager {
    * @throws LockException if a transaction is already open.
    */
   long openTxn(Context ctx, String user) throws LockException;
+
+  /**
+   * Open a new transaction in target cluster.
+   * @param replPolicy Replication policy to uniquely identify the source cluster.
+   * @param srcTxnIds The ids of the transaction at the source cluster
+   * @param user The user who has fired the repl load command
+   * @return The new transaction id.
+   * @throws LockException in case of failure to start the transaction.
+   */
+  List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user) throws LockException;
+
+  /**
+   * Commit the transaction in target cluster.
+   * @param replPolicy Replication policy to uniquely identify the source cluster.
+   * @param srcTxnId The id of the transaction at the source cluster
+   * @throws LockException in case of failure to commit the transaction.
+   */
+  void replCommitTxn(String replPolicy, long srcTxnId) throws LockException;
+
+ /**
+   * Abort the transaction in target cluster.
+   * @param replPolicy Replication policy to uniquely identify the source cluster.
+   * @param srcTxnId The id of the transaction at the source cluster
+   * @throws LockException in case of failure to abort the transaction.
+   */
+  void replRollbackTxn(String replPolicy, long srcTxnId) throws LockException;
+
+ /**
+  * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.
+  * @param validWriteIdList Snapshot of writeid list when the table/partition is dumped.
+  * @param dbName Database name
+  * @param tableName Table which is written.
+  * @param partNames List of partitions being written.
+  * @throws LockException in case of failure.
+  */
+  void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
+          throws LockException;
 
   /**
    * Get the lock manager.  This must be used rather than instantiating an
@@ -226,7 +265,7 @@ public interface HiveTxnManager {
   boolean recordSnapshot(QueryPlan queryPlan);
 
   boolean isImplicitTransactionOpen();
-  
+
   boolean isTxnOpen();
   /**
    * if {@code isTxnOpen()}, returns the currently active transaction ID.
@@ -239,9 +278,30 @@ public interface HiveTxnManager {
   long getTableWriteId(String dbName, String tableName) throws LockException;
 
   /**
+   * Allocates write id for each transaction in the list.
+   * @param dbName database name
+   * @param tableName the name of the table to allocate the write id
+   * @param replPolicy used by replication task to identify the source cluster
+   * @param srcTxnToWriteIdList List of txn id to write id Map
+   * @throws LockException
+   */
+  void replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
+                                      List<TxnToWriteId> srcTxnToWriteIdList) throws LockException;
+
+  /**
    * Should be though of more as a unique write operation ID in a given txn (at QueryPlan level).
    * Each statement writing data within a multi statement txn should have a unique WriteId.
    * Even a single statement, (e.g. Merge, multi-insert may generates several writes).
    */
   int getStmtIdAndIncrement();
+
+  /**
+   * Acquire the materialization rebuild lock for a given view. We need to specify the fully
+   * qualified name of the materialized view and the open transaction ID so we can identify
+   * uniquely the lock.
+   * @return the response from the metastore, where the lock id is equal to the txn id and
+   * the status can be either ACQUIRED or NOT ACQUIRED
+   */
+  LockResponse acquireMaterializationRebuildLock(String dbName, String tableName, long txnId)
+      throws LockException;
 }

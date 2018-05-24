@@ -77,10 +77,14 @@ public class TestOperatorSignature {
     Operator<TableScanDesc> ts = getTsOp(i);
     Operator<? extends OperatorDesc> fil = getFilterOp(j);
 
-    ts.getChildOperators().add(fil);
-    fil.getParentOperators().add(ts);
+    connectOperators(ts, fil);
 
     return fil;
+  }
+
+  private void connectOperators(Operator<?> parent, Operator<?> child) {
+    parent.getChildOperators().add(child);
+    child.getParentOperators().add(parent);
   }
 
   @Test
@@ -94,7 +98,7 @@ public class TestOperatorSignature {
     checkNotEquals(t1, t2);
   }
 
-  private void checkEquals(Operator<?> o1, Operator<?> o2) {
+  public static void checkEquals(Operator<?> o1, Operator<?> o2) {
     assertTrue(o1.logicalEquals(o2));
     OpSignature s1 = OpSignature.of(o1);
     OpSignature s2 = OpSignature.of(o2);
@@ -106,7 +110,7 @@ public class TestOperatorSignature {
   }
 
 
-  private void checkNotEquals(Operator<? extends OperatorDesc> o1, Operator<? extends OperatorDesc> o2) {
+  public static void checkNotEquals(Operator<? extends OperatorDesc> o1, Operator<? extends OperatorDesc> o2) {
     assertFalse(o1.logicalEquals(o2));
     OpSignature s1 = OpSignature.of(o1);
     OpSignature s2 = OpSignature.of(o2);
@@ -117,7 +121,7 @@ public class TestOperatorSignature {
     assertNotEquals(s1, s2);
   }
 
-  private void checkTreeEquals(Operator<?> o1, Operator<?> o2) {
+  public static void checkTreeEquals(Operator<?> o1, Operator<?> o2) {
     OpTreeSignature ts1 = OpTreeSignature.of(o1);
     OpTreeSignature ts2 = OpTreeSignature.of(o2);
 
@@ -125,12 +129,13 @@ public class TestOperatorSignature {
     assertEquals(ts1, ts2);
   }
 
-  private void checkTreeNotEquals(Operator<? extends OperatorDesc> o1, Operator<? extends OperatorDesc> o2) {
+  public static void checkTreeNotEquals(Operator<? extends OperatorDesc> o1, Operator<? extends OperatorDesc> o2) {
 
     OpTreeSignature ts1 = OpTreeSignature.of(o1);
     OpTreeSignature ts2 = OpTreeSignature.of(o2);
 
     assertNotEquals(ts1.hashCode(), ts2.hashCode());
+    ts1.equals(ts2);
     assertNotEquals(ts1, ts2);
   }
 
@@ -154,6 +159,7 @@ public class TestOperatorSignature {
     Operator<TableScanDesc> ts = OperatorFactory.get(cCtx, desc);
     return ts;
   }
+
 
 
 }

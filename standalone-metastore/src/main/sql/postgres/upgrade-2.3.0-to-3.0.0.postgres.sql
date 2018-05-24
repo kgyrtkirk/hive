@@ -69,7 +69,7 @@ CREATE TABLE "WM_TRIGGER" (
     "NAME" character varying(128) NOT NULL,
     "TRIGGER_EXPRESSION" character varying(1024) DEFAULT NULL::character varying,
     "ACTION_EXPRESSION" character varying(1024) DEFAULT NULL::character varying,
-    "IS_IN_UNMANAGED" boolean NOT NULL DEFAULT false
+    "IS_IN_UNMANAGED" smallint NOT NULL DEFAULT 0
 );
 
 ALTER TABLE ONLY "WM_TRIGGER"
@@ -152,12 +152,10 @@ CREATE TABLE "SCHEMA_VERSION" (
 );
 
 
-UPDATE "VERSION" SET "SCHEMA_VERSION"='3.0.0', "VERSION_COMMENT"='Hive release version 3.0.0' where "VER_ID"=1;
-SELECT 'Finished upgrading MetaStore schema from 2.3.0 to 3.0.0';
-
 -- 047-HIVE-14498
 CREATE TABLE "MV_CREATION_METADATA" (
     "MV_CREATION_METADATA_ID" bigint NOT NULL,
+    "CAT_NAME" character varying(256) NOT NULL,
     "DB_NAME" character varying(128) NOT NULL,
     "TBL_NAME" character varying(256) NOT NULL,
     "TXN_LIST" text
@@ -181,6 +179,8 @@ ALTER TABLE ONLY "MV_TABLES_USED"
     ADD CONSTRAINT "MV_TABLES_USED_FK2" FOREIGN KEY ("TBL_ID") REFERENCES "TBLS" ("TBL_ID") DEFERRABLE;
 
 ALTER TABLE COMPLETED_TXN_COMPONENTS ADD COLUMN CTC_TIMESTAMP timestamp NULL;
+
+ALTER TABLE "TBLS" ADD COLUMN "OWNER_TYPE" character varying(10) DEFAULT NULL::character varying;
 
 UPDATE COMPLETED_TXN_COMPONENTS SET CTC_TIMESTAMP = CURRENT_TIMESTAMP;
 
@@ -237,5 +237,124 @@ ALTER TABLE COMPLETED_TXN_COMPONENTS ADD CTC_WRITEID bigint;
 -- HIVE-18726
 -- add a new column to support default value for DEFAULT constraint
 ALTER TABLE "KEY_CONSTRAINTS" ADD COLUMN "DEFAULT_VALUE" VARCHAR(400);
+ALTER TABLE "KEY_CONSTRAINTS" ALTER COLUMN "PARENT_CD_ID" DROP NOT NULL;
+
+ALTER TABLE COMPLETED_TXN_COMPONENTS ALTER COLUMN CTC_TIMESTAMP SET NOT NULL;
 
 ALTER TABLE HIVE_LOCKS ALTER COLUMN HL_TXNID SET NOT NULL;
+
+-- HIVE-18755, add catalogs
+-- new catalogs table
+CREATE TABLE "CTLGS" (
+    "CTLG_ID" BIGINT PRIMARY KEY,
+    "NAME" VARCHAR(256) UNIQUE,
+    "DESC" VARCHAR(4000),
+    "LOCATION_URI" VARCHAR(4000) NOT NULL
+);
+
+-- Insert a default value.  The location is TBD.  Hive will fix this when it starts
+INSERT INTO "CTLGS" VALUES (1, 'hive', 'Default catalog for Hive', 'TBD');
+
+-- Drop the unique index on DBS
+ALTER TABLE "DBS" DROP CONSTRAINT "UNIQUE_DATABASE";
+
+-- Add the new column to the DBS table, can't put in the not null constraint yet
+ALTER TABLE "DBS" ADD "CTLG_NAME" VARCHAR(256);
+
+-- Update all records in the DBS table to point to the Hive catalog
+UPDATE "DBS" 
+  SET "CTLG_NAME" = 'hive';
+
+-- Add the not null constraint
+ALTER TABLE "DBS" ALTER COLUMN "CTLG_NAME" SET NOT NULL;
+
+-- Put back the unique index 
+ALTER TABLE "DBS" ADD CONSTRAINT "UNIQUE_DATABASE" UNIQUE ("NAME", "CTLG_NAME");
+
+-- Add the foreign key
+ALTER TABLE "DBS" ADD CONSTRAINT "DBS_FK1" FOREIGN KEY ("CTLG_NAME") REFERENCES "CTLGS" ("NAME");
+
+-- Add columns to table stats and part stats
+ALTER TABLE "TAB_COL_STATS" ADD "CAT_NAME" varchar(256);
+ALTER TABLE "PART_COL_STATS" ADD "CAT_NAME" varchar(256);
+
+-- Set the existing column names to Hive
+UPDATE "TAB_COL_STATS"
+  SET "CAT_NAME" = 'hive';
+UPDATE "PART_COL_STATS"
+  SET "CAT_NAME" = 'hive';
+
+-- Add the not null constraint
+ALTER TABLE "TAB_COL_STATS" ALTER COLUMN "CAT_NAME" SET NOT NULL;
+ALTER TABLE "PART_COL_STATS" ALTER COLUMN "CAT_NAME" SET NOT NULL;
+
+-- Rebuild the index for Part col stats.  No such index for table stats, which seems weird
+DROP INDEX "PCS_STATS_IDX";
+CREATE INDEX "PCS_STATS_IDX" ON "PART_COL_STATS" ("CAT_NAME", "DB_NAME", "TABLE_NAME", "COLUMN_NAME", "PARTITION_NAME");
+
+-- Add column to partition event
+ALTER TABLE "PARTITION_EVENTS" ADD "CAT_NAME" varchar(256);
+UPDATE "PARTITION_EVENTS"
+  SET "CAT_NAME" = 'hive' WHERE "DB_NAME" IS NOT NULL;
+
+-- Add column to notification log
+ALTER TABLE "NOTIFICATION_LOG" ADD "CAT_NAME" varchar(256);
+UPDATE "NOTIFICATION_LOG"
+  SET "CAT_NAME" = 'hive' WHERE "DB_NAME" IS NOT NULL;
+
+CREATE TABLE REPL_TXN_MAP (
+  RTM_REPL_POLICY varchar(256) NOT NULL,
+  RTM_SRC_TXN_ID bigint NOT NULL,
+  RTM_TARGET_TXN_ID bigint NOT NULL,
+  PRIMARY KEY (RTM_REPL_POLICY, RTM_SRC_TXN_ID)
+);
+
+INSERT INTO "SEQUENCE_TABLE" ("SEQUENCE_NAME", "NEXT_VAL") SELECT 'org.apache.hadoop.hive.metastore.model.MNotificationLog',1 WHERE NOT EXISTS ( SELECT "NEXT_VAL" FROM "SEQUENCE_TABLE" WHERE "SEQUENCE_NAME" = 'org.apache.hadoop.hive.metastore.model.MNotificationLog');
+
+-- HIVE_18747
+CREATE TABLE MIN_HISTORY_LEVEL (
+  MHL_TXNID bigint NOT NULL,
+  MHL_MIN_OPEN_TXNID bigint NOT NULL,
+  PRIMARY KEY(MHL_TXNID)
+);
+
+CREATE INDEX MIN_HISTORY_LEVEL_IDX ON MIN_HISTORY_LEVEL (MHL_MIN_OPEN_TXNID);
+
+CREATE TABLE RUNTIME_STATS (
+ RS_ID bigint primary key,
+ CREATE_TIME bigint NOT NULL,
+ WEIGHT bigint NOT NULL,
+ PAYLOAD bytea
+);
+
+CREATE INDEX IDX_RUNTIME_STATS_CREATE_TIME ON RUNTIME_STATS(CREATE_TIME);
+
+-- HIVE-18193
+-- Populate NEXT_WRITE_ID for each Transactional table and set next write ID same as next txn ID
+INSERT INTO NEXT_WRITE_ID (NWI_DATABASE, NWI_TABLE, NWI_NEXT)
+    SELECT * FROM
+        (SELECT "DB"."NAME", "TBL_INFO"."TBL_NAME" FROM "DBS" "DB",
+            (SELECT "TBL"."DB_ID", "TBL"."TBL_NAME" FROM "TBLS" "TBL",
+                (SELECT "TBL_ID" FROM "TABLE_PARAMS" WHERE "PARAM_KEY"='transactional' AND "PARAM_VALUE"='true') "TBL_PARAM"
+            WHERE "TBL"."TBL_ID"="TBL_PARAM"."TBL_ID") "TBL_INFO"
+        where "DB"."DB_ID"="TBL_INFO"."DB_ID") "DB_TBL_NAME",
+        (SELECT NTXN_NEXT FROM NEXT_TXN_ID) "NEXT_WRITE";
+
+-- Populate TXN_TO_WRITE_ID for each aborted/open txns and set write ID equal to txn ID
+INSERT INTO TXN_TO_WRITE_ID (T2W_DATABASE, T2W_TABLE, T2W_TXNID, T2W_WRITEID)
+    SELECT * FROM
+        (SELECT "DB"."NAME", "TBL_INFO"."TBL_NAME" FROM "DBS" "DB",
+            (SELECT "TBL"."DB_ID", "TBL"."TBL_NAME" FROM "TBLS" "TBL",
+                (SELECT "TBL_ID" FROM "TABLE_PARAMS" WHERE "PARAM_KEY"='transactional' AND "PARAM_VALUE"='true') "TBL_PARAM"
+            WHERE "TBL"."TBL_ID"="TBL_PARAM"."TBL_ID") "TBL_INFO"
+        where "DB"."DB_ID"="TBL_INFO"."DB_ID") "DB_TBL_NAME",
+        (SELECT TXN_ID, TXN_ID as WRITE_ID FROM TXNS) "TXN_INFO";
+
+-- Update TXN_COMPONENTS and COMPLETED_TXN_COMPONENTS for write ID which is same as txn ID
+UPDATE TXN_COMPONENTS SET TC_WRITEID = TC_TXNID;
+UPDATE COMPLETED_TXN_COMPONENTS SET CTC_WRITEID = CTC_TXNID;
+
+-- These lines need to be last.  Insert any changes above.
+UPDATE "VERSION" SET "SCHEMA_VERSION"='3.0.0', "VERSION_COMMENT"='Hive release version 3.0.0' where "VER_ID"=1;
+SELECT 'Finished upgrading MetaStore schema from 2.3.0 to 3.0.0';
+

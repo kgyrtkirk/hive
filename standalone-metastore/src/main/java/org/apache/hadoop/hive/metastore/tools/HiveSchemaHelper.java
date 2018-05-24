@@ -44,6 +44,9 @@ public class HiveSchemaHelper {
   public static final String DB_MYSQL = "mysql";
   public static final String DB_POSTGRACE = "postgres";
   public static final String DB_ORACLE = "oracle";
+  public static final String EMBEDDED_HS2_URL = "jdbc:hive2://";
+  public static final String HIVE_JDBC_DRIVER = "org.apache.hive.jdbc.HiveDriver";
+  
 
   /***
    * Get JDBC connection to metastore db
@@ -60,7 +63,7 @@ public class HiveSchemaHelper {
   public static Connection getConnectionToMetastore(String userName, String password, String url,
       String driver, boolean printInfo, Configuration conf, String schema) throws HiveMetaException {
     try {
-      url = url == null ? getValidConfVar(MetastoreConf.ConfVars.CONNECTURLKEY, conf) : url;
+      url = url == null ? getValidConfVar(MetastoreConf.ConfVars.CONNECT_URL_KEY, conf) : url;
       driver = driver == null ? getValidConfVar(MetastoreConf.ConfVars.CONNECTION_DRIVER, conf) : driver;
       if (printInfo) {
         logAndPrintToStdout("Metastore connection URL:\t " + url);

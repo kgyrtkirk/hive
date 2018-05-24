@@ -65,7 +65,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
 
       context.log.debug("Loading function desc : {}", descToLoad.toString());
       Task<FunctionWork> createTask = TaskFactory.get(
-          new FunctionWork(descToLoad));
+          new FunctionWork(descToLoad), context.hiveConf);
       context.log.debug("Added create function task : {}:{},{}", createTask.getId(),
           descToLoad.getFunctionName(), descToLoad.getClassName());
       // This null check is specifically done as the same class is used to handle both incremental and
@@ -92,7 +92,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
          *  which should only happen when the last task is finished, at which point the child of the barrier task is picked up.
          */
         Task<? extends Serializable> barrierTask =
-            TaskFactory.get(new DependencyCollectionWork());
+            TaskFactory.get(new DependencyCollectionWork(), context.hiveConf);
         builder.replCopyTasks.forEach(t -> t.addDependentTask(barrierTask));
         barrierTask.addDependentTask(createTask);
         return builder.replCopyTasks;
@@ -181,16 +181,16 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
     ResourceUri destinationResourceUri(ResourceUri resourceUri)
         throws IOException, SemanticException {
       String sourceUri = resourceUri.getUri();
-      String[] split = sourceUri.split(Path.SEPARATOR);
+      String[] split = ReplChangeManager.decodeFileUri(sourceUri)[0].split(Path.SEPARATOR);
       PathBuilder pathBuilder = new PathBuilder(functionsRootDir);
       Path qualifiedDestinationPath = PathBuilder.fullyQualifiedHDFSUri(
           pathBuilder
               .addDescendant(destinationDbName.toLowerCase())
               .addDescendant(metadata.function.getFunctionName().toLowerCase())
               .addDescendant(String.valueOf(System.nanoTime()))
-              .addDescendant(ReplChangeManager.getFileWithChksumFromURI(split[split.length - 1])[0])
+              .addDescendant(split[split.length - 1])
               .build(),
-          FileSystem.get(context.hiveConf)
+          new Path(functionsRootDir).getFileSystem(context.hiveConf)
       );
 
       Task<?> copyTask = ReplCopyTask.getLoadCopyTask(

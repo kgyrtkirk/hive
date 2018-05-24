@@ -65,6 +65,7 @@ create_union
 cume_dist
 current_database
 current_date
+current_groups
 current_timestamp
 current_user
 date_add
@@ -164,6 +165,7 @@ minute
 mod
 month
 months_between
+murmur_hash
 named_struct
 negative
 next_day
@@ -211,6 +213,7 @@ regr_syy
 repeat
 replace
 replicate_rows
+restrict_information_schema
 reverse
 rlike
 round
@@ -318,6 +321,7 @@ create_union
 cume_dist
 current_database
 current_date
+current_groups
 current_timestamp
 current_user
 PREHOOK: query: SHOW FUNCTIONS '.*e$'
@@ -422,6 +426,7 @@ minute
 mod
 month
 months_between
+murmur_hash
 xpath
 xpath_boolean
 xpath_double

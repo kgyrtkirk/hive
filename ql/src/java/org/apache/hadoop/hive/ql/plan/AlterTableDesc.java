@@ -18,9 +18,12 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -32,9 +35,7 @@ import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-
 import com.google.common.collect.ImmutableList;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,7 +49,7 @@ import java.util.Set;
  *
  */
 @Explain(displayName = "Alter Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableDesc extends DDLDesc implements Serializable {
+public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDLDescWithWriteId {
   private static final long serialVersionUID = 1L;
 
   /**
@@ -64,7 +65,8 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     DROPPARTITION("drop partition"), RENAMEPARTITION("rename partition"), ADDSKEWEDBY("add skew column"),
     ALTERSKEWEDLOCATION("alter skew location"), ALTERBUCKETNUM("alter bucket number"),
     ALTERPARTITION("alter partition"), COMPACT("compact"),
-    TRUNCATE("truncate"), MERGEFILES("merge files"), DROPCONSTRAINT("drop constraint"), ADDCONSTRAINT("add constraint");
+    TRUNCATE("truncate"), MERGEFILES("merge files"), DROPCONSTRAINT("drop constraint"), ADDCONSTRAINT("add constraint"),
+    UPDATECOLUMNS("update columns"), OWNER("set owner");
     ;
 
     private final String name;
@@ -72,7 +74,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     public String getName() { return name; }
 
     public static final List<AlterTableTypes> nonNativeTableAllowedTypes = 
-        ImmutableList.of(ADDPROPS, DROPPROPS); 
+        ImmutableList.of(ADDPROPS, DROPPROPS, ADDCOLS);
   }
 
   public static enum ProtectModeType {
@@ -122,7 +124,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   boolean isStoredAsSubDirectories = false;
   List<String> skewedColNames;
   List<List<String>> skewedColValues;
-  Table table;
+  Table tableForSkewedColValidation;
   boolean isDropIfExists = false;
   boolean isTurnOffSorting = false;
   boolean isCascade = false;
@@ -133,7 +135,10 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   List<SQLUniqueConstraint> uniqueConstraintCols;
   List<SQLNotNullConstraint> notNullConstraintCols;
   List<SQLDefaultConstraint> defaultConstraintsCols;
+  List<SQLCheckConstraint> checkConstraintsCols;
   ReplicationSpec replicationSpec;
+  private Long writeId = null;
+  PrincipalDesc ownerPrincipal;
 
   public AlterTableDesc() {
   }
@@ -147,12 +152,13 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    *          new column name
    * @param newComment
    * @param newType
+   * @throws SemanticException
    */
   public AlterTableDesc(String tblName, HashMap<String, String> partSpec,
       String oldColName, String newColName, String newType, String newComment,
-      boolean first, String afterCol, boolean isCascade) {
+      boolean first, String afterCol, boolean isCascade) throws SemanticException {
     super();
-    oldName = tblName;
+    setOldName(tblName);
     this.partSpec = partSpec;
     this.oldColName = oldColName;
     this.newColName = newColName;
@@ -168,9 +174,10 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
       String oldColName, String newColName, String newType, String newComment,
       boolean first, String afterCol, boolean isCascade, List<SQLPrimaryKey> primaryKeyCols,
       List<SQLForeignKey> foreignKeyCols, List<SQLUniqueConstraint> uniqueConstraintCols,
-      List<SQLNotNullConstraint> notNullConstraintCols, List<SQLDefaultConstraint> defaultConstraints) {
+      List<SQLNotNullConstraint> notNullConstraintCols, List<SQLDefaultConstraint> defaultConstraints,
+                        List<SQLCheckConstraint> checkConstraints) throws SemanticException {
     super();
-    oldName = tblName;
+    setOldName(tblName);
     this.partSpec = partSpec;
     this.oldColName = oldColName;
     this.newColName = newColName;
@@ -185,6 +192,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     this.uniqueConstraintCols = uniqueConstraintCols;
     this.notNullConstraintCols = notNullConstraintCols;
     this.defaultConstraintsCols = defaultConstraints;
+    this.checkConstraintsCols = checkConstraints;
   }
 
   /**
@@ -196,10 +204,11 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    *          Flag to denote if current table can be a view
    * @param replicationSpec
    *          Replication specification with current event ID
+   * @throws SemanticException
    */
-  public AlterTableDesc(String oldName, String newName, boolean expectView, ReplicationSpec replicationSpec) {
+  public AlterTableDesc(String oldName, String newName, boolean expectView, ReplicationSpec replicationSpec) throws SemanticException {
     op = AlterTableTypes.RENAME;
-    this.oldName = oldName;
+    setOldName(oldName);
     this.newName = newName;
     this.expectView = expectView;
     this.replicationSpec = replicationSpec;
@@ -210,11 +219,12 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    *          name of the table
    * @param newCols
    *          new columns to be added
+   * @throws SemanticException
    */
   public AlterTableDesc(String name, HashMap<String, String> partSpec, List<FieldSchema> newCols,
-      AlterTableTypes alterType, boolean isCascade) {
+      AlterTableTypes alterType, boolean isCascade) throws SemanticException {
     op = alterType;
-    oldName = name;
+    setOldName(name);
     this.newCols = new ArrayList<FieldSchema>(newCols);
     this.partSpec = partSpec;
     this.isCascade = isCascade;
@@ -262,12 +272,13 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    * @param outputFormat
    *          new table output format
    * @param partSpec
+   * @throws SemanticException
    */
   public AlterTableDesc(String name, String inputFormat, String outputFormat,
-      String serdeName, String storageHandler, HashMap<String, String> partSpec) {
+      String serdeName, String storageHandler, HashMap<String, String> partSpec) throws SemanticException {
     super();
     op = AlterTableTypes.ADDFILEFORMAT;
-    oldName = name;
+    setOldName(name);
     this.inputFormat = inputFormat;
     this.outputFormat = outputFormat;
     this.serdeName = serdeName;
@@ -276,8 +287,8 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   }
 
   public AlterTableDesc(String tableName, int numBuckets,
-      List<String> bucketCols, List<Order> sortCols, HashMap<String, String> partSpec) {
-    oldName = tableName;
+      List<String> bucketCols, List<Order> sortCols, HashMap<String, String> partSpec) throws SemanticException {
+    setOldName(tableName);
     op = AlterTableTypes.ADDCLUSTERSORTCOLUMN;
     numberBuckets = numBuckets;
     bucketColumns = new ArrayList<String>(bucketCols);
@@ -285,47 +296,47 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     this.partSpec = partSpec;
   }
 
-  public AlterTableDesc(String tableName, boolean sortingOff, HashMap<String, String> partSpec) {
-    oldName = tableName;
+  public AlterTableDesc(String tableName, boolean sortingOff, HashMap<String, String> partSpec) throws SemanticException {
+    setOldName(tableName);
     op = AlterTableTypes.ADDCLUSTERSORTCOLUMN;
     isTurnOffSorting = sortingOff;
     this.partSpec = partSpec;
   }
 
   public AlterTableDesc(String tableName, String newLocation,
-      HashMap<String, String> partSpec) {
+      HashMap<String, String> partSpec) throws SemanticException {
     op = AlterTableTypes.ALTERLOCATION;
-    this.oldName = tableName;
+    setOldName(tableName);
     this.newLocation = newLocation;
     this.partSpec = partSpec;
   }
 
   public AlterTableDesc(String tableName, Map<List<String>, String> locations,
-      HashMap<String, String> partSpec) {
+      HashMap<String, String> partSpec) throws SemanticException {
     op = AlterTableTypes.ALTERSKEWEDLOCATION;
-    this.oldName = tableName;
+    setOldName(tableName);
     this.skewedLocations = locations;
     this.partSpec = partSpec;
   }
 
   public AlterTableDesc(String tableName, boolean turnOffSkewed,
-      List<String> skewedColNames, List<List<String>> skewedColValues) {
-    oldName = tableName;
+      List<String> skewedColNames, List<List<String>> skewedColValues) throws SemanticException {
+    setOldName(tableName);
     op = AlterTableTypes.ADDSKEWEDBY;
     this.isTurnOffSkewed = turnOffSkewed;
     this.skewedColNames = new ArrayList<String>(skewedColNames);
     this.skewedColValues = new ArrayList<List<String>>(skewedColValues);
   }
 
-  public AlterTableDesc(String tableName, HashMap<String, String> partSpec, int numBuckets) {
+  public AlterTableDesc(String tableName, HashMap<String, String> partSpec, int numBuckets) throws SemanticException {
     op = AlterTableTypes.ALTERBUCKETNUM;
-    this.oldName = tableName;
+    setOldName(tableName);
     this.partSpec = partSpec;
     this.numberBuckets = numBuckets;
   }
 
-  public AlterTableDesc(String tableName, String dropConstraintName, ReplicationSpec replicationSpec) {
-    this.oldName = tableName;
+  public AlterTableDesc(String tableName, String dropConstraintName, ReplicationSpec replicationSpec) throws SemanticException {
+    setOldName(tableName);
     this.dropConstraintName = dropConstraintName;
     this.replicationSpec = replicationSpec;
     op = AlterTableTypes.DROPCONSTRAINT;
@@ -333,8 +344,8 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
 
   public AlterTableDesc(String tableName, List<SQLPrimaryKey> primaryKeyCols,
           List<SQLForeignKey> foreignKeyCols, List<SQLUniqueConstraint> uniqueConstraintCols,
-          ReplicationSpec replicationSpec) {
-    this.oldName = tableName;
+          ReplicationSpec replicationSpec) throws SemanticException {
+    setOldName(tableName);
     this.primaryKeyCols = primaryKeyCols;
     this.foreignKeyCols = foreignKeyCols;
     this.uniqueConstraintCols = uniqueConstraintCols;
@@ -345,15 +356,34 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   public AlterTableDesc(String tableName, List<SQLPrimaryKey> primaryKeyCols,
       List<SQLForeignKey> foreignKeyCols, List<SQLUniqueConstraint> uniqueConstraintCols,
       List<SQLNotNullConstraint> notNullConstraintCols, List<SQLDefaultConstraint> defaultConstraints,
-                        ReplicationSpec replicationSpec) {
-    this.oldName = tableName;
+                        List<SQLCheckConstraint> checkConstraints, ReplicationSpec replicationSpec) throws SemanticException {
+    setOldName(tableName);
     this.primaryKeyCols = primaryKeyCols;
     this.foreignKeyCols = foreignKeyCols;
     this.uniqueConstraintCols = uniqueConstraintCols;
     this.notNullConstraintCols = notNullConstraintCols;
     this.defaultConstraintsCols = defaultConstraints;
+    this.checkConstraintsCols = checkConstraints;
     this.replicationSpec = replicationSpec;
     op = AlterTableTypes.ADDCONSTRAINT;
+  }
+
+  public AlterTableDesc(String tableName, PrincipalDesc ownerPrincipal) {
+    op  = AlterTableTypes.OWNER;
+    this.oldName = tableName;
+    this.ownerPrincipal = ownerPrincipal;
+  }
+
+  /**
+   * @param ownerPrincipal the owner principal of the table
+   */
+  public void setOwnerPrincipal(PrincipalDesc ownerPrincipal) {
+    this.ownerPrincipal = ownerPrincipal;
+  }
+
+  @Explain(displayName="owner")
+  public PrincipalDesc getOwnerPrincipal() {
+    return this.ownerPrincipal;
   }
 
   @Explain(displayName = "new columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -378,8 +408,9 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    * @param oldName
    *          the oldName to set
    */
-  public void setOldName(String oldName) {
-    this.oldName = oldName;
+  public void setOldName(String oldName) throws SemanticException {
+    // Make sure we qualify the name from the outset so there's no ambiguity.
+    this.oldName = String.join(".", Utilities.getDbTableName(oldName));
   }
 
   /**
@@ -550,6 +581,11 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   public List<SQLDefaultConstraint> getDefaultConstraintCols() {
     return defaultConstraintsCols;
   }
+
+  /**
+   * @return the check constraint cols
+   */
+  public List<SQLCheckConstraint> getCheckConstraintCols() { return checkConstraintsCols; }
 
   /**
    * @return the drop constraint name of the table
@@ -837,26 +873,19 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    * @throws SemanticException
    */
   public void validate() throws SemanticException {
-    if (null != table) {
+    if (null != tableForSkewedColValidation) {
       /* Validate skewed information. */
       ValidationUtility.validateSkewedInformation(
-          ParseUtils.validateColumnNameUniqueness(table.getCols()), this.getSkewedColNames(),
-          this.getSkewedColValues());
+          ParseUtils.validateColumnNameUniqueness(tableForSkewedColValidation.getCols()),
+          this.getSkewedColNames(), this.getSkewedColValues());
     }
-  }
-
-  /**
-   * @return the table
-   */
-  public Table getTable() {
-    return table;
   }
 
   /**
    * @param table the table to set
    */
   public void setTable(Table table) {
-    this.table = table;
+    this.tableForSkewedColValidation = table;
   }
 
   /**
@@ -894,6 +923,13 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     return isCascade;
   }
 
+  /**
+   * @param cascade the isCascade to set
+   */
+  public void setIsCascade(boolean isCascade) {
+    this.isCascade = isCascade;
+  }
+
   public static boolean doesAlterTableTypeSupportPartialPartitionSpec(AlterTableTypes type) {
     return alterTableTypesWithPartialSpec.contains(type);
   }
@@ -911,4 +947,24 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    * This can result in a "ALTER IF NEWER THAN" kind of semantic
    */
   public ReplicationSpec getReplicationSpec(){ return this.replicationSpec; }
+
+  @Override
+  public void setWriteId(long writeId) {
+    this.writeId = writeId;
+  }
+
+  @Override
+  public String getFullTableName() {
+    return getOldName();
+  }
+
+  @Override
+  public boolean mayNeedWriteId() {
+    return getOp() == AlterTableDesc.AlterTableTypes.ADDPROPS
+        && AcidUtils.isToInsertOnlyTable(null, getProps());
+  }
+
+  public Long getWriteId() {
+    return this.writeId;
+  }
 }

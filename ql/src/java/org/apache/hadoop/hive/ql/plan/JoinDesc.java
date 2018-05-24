@@ -231,14 +231,14 @@ public class JoinDesc extends AbstractOperatorDesc {
    */
   @Explain(displayName = "keys")
   @Signature
-  public Map<Byte, String> getKeysString() {
+  public Map<String, String> getKeysString() {
     if (joinKeys == null) {
       return null;
     }
 
-    Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
+    Map<String, String> keyMap = new LinkedHashMap<String, String>();
     for (byte i = 0; i < joinKeys.length; i++) {
-      keyMap.put(i, PlanUtils.getExprListString(Arrays.asList(joinKeys[i])));
+      keyMap.put(String.valueOf(i), PlanUtils.getExprListString(Arrays.asList(joinKeys[i])));
     }
     return keyMap;
   }
@@ -269,12 +269,12 @@ public class JoinDesc extends AbstractOperatorDesc {
    */
   @Explain(displayName = "filter predicates")
   @Signature
-  public Map<Byte, String> getFiltersStringMap() {
+  public Map<String, String> getFiltersStringMap() {
     if (getFilters() == null || getFilters().size() == 0) {
       return null;
     }
 
-    LinkedHashMap<Byte, String> ret = new LinkedHashMap<Byte, String>();
+    LinkedHashMap<String, String> ret = new LinkedHashMap<>();
     boolean filtersPresent = false;
 
     for (Map.Entry<Byte, List<ExprNodeDesc>> ent : getFilters().entrySet()) {
@@ -295,7 +295,7 @@ public class JoinDesc extends AbstractOperatorDesc {
           sb.append("}");
         }
       }
-      ret.put(ent.getKey(), sb.toString());
+      ret.put(String.valueOf(ent.getKey()), sb.toString());
     }
 
     if (filtersPresent) {
@@ -556,10 +556,10 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   protected Map<Integer, String> toCompactString(int[][] filterMap) {
+    filterMap = compactFilter(filterMap);
     if (filterMap == null) {
       return null;
     }
-    filterMap = compactFilter(filterMap);
     Map<Integer, String> result = new LinkedHashMap<Integer, String>();
     for (int i = 0 ; i < filterMap.length; i++) {
       if (filterMap[i] == null) {

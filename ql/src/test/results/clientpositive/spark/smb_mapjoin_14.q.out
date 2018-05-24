@@ -1,51 +1,51 @@
-PREHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE tbl1_n14(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@tbl1_n14
+POSTHOOK: query: CREATE TABLE tbl1_n14(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl1
-PREHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: Output: default@tbl1_n14
+PREHOOK: query: CREATE TABLE tbl2_n13(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@tbl2_n13
+POSTHOOK: query: CREATE TABLE tbl2_n13(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl2
-PREHOOK: query: insert overwrite table tbl1
+POSTHOOK: Output: default@tbl2_n13
+PREHOOK: query: insert overwrite table tbl1_n14
 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: insert overwrite table tbl1
+PREHOOK: Output: default@tbl1_n14
+POSTHOOK: query: insert overwrite table tbl1_n14
 select * from src where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl1
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table tbl2
+POSTHOOK: Output: default@tbl1_n14
+POSTHOOK: Lineage: tbl1_n14.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1_n14.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tbl2_n13
 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: insert overwrite table tbl2
+PREHOOK: Output: default@tbl2_n13
+POSTHOOK: query: insert overwrite table tbl2_n13
 select * from src where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl2
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@tbl2_n13
+POSTHOOK: Lineage: tbl2_n13.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2_n13.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 select count(*) from (
-  select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1_n14 a join tbl2_n13 b on a.key = b.key
 ) subq1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select count(*) from (
-  select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1_n14 a join tbl2_n13 b on a.key = b.key
 ) subq1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -77,6 +77,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -94,6 +95,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -113,6 +115,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -134,24 +137,24 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(*) from (
-  select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1_n14 a join tbl2_n13 b on a.key = b.key
 ) subq1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n14
+PREHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from (
-  select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1_n14 a join tbl2_n13 b on a.key = b.key
 ) subq1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n14
+POSTHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 22
 PREHOOK: query: explain
 select key, count(*) from 
 (
-  select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1_n14 a join tbl2_n13 b on a.key = b.key
 ) subq1
 group by key
 order by key
@@ -159,7 +162,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select key, count(*) from 
 (
-  select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1_n14 a join tbl2_n13 b on a.key = b.key
 ) subq1
 group by key
 order by key
@@ -194,6 +197,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -211,6 +215,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -234,6 +239,7 @@ STAGE PLANS:
                     Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -247,6 +253,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: bigint)
@@ -268,23 +275,23 @@ STAGE PLANS:
 
 PREHOOK: query: select key, count(*) from 
 (
-  select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1_n14 a join tbl2_n13 b on a.key = b.key
 ) subq1
 group by key
 order by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n14
+PREHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 POSTHOOK: query: select key, count(*) from 
 (
-  select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+  select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1_n14 a join tbl2_n13 b on a.key = b.key
 ) subq1
 group by key
 order by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n14
+POSTHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 0	9
 2	1
@@ -297,7 +304,7 @@ select count(*) from
 (
   select key, count(*) from 
   (
-    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1_n14 a join tbl2_n13 b on a.key = b.key
   ) subq1
   group by key
 ) subq2
@@ -307,7 +314,7 @@ select count(*) from
 (
   select key, count(*) from 
   (
-    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1_n14 a join tbl2_n13 b on a.key = b.key
   ) subq1
   group by key
 ) subq2
@@ -342,6 +349,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -359,6 +367,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -380,6 +389,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int)
@@ -398,6 +408,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint)
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -422,39 +433,39 @@ PREHOOK: query: select count(*) from
 (
   select key, count(*) from 
   (
-    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1_n14 a join tbl2_n13 b on a.key = b.key
   ) subq1
   group by key
 ) subq2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n14
+PREHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from
 (
   select key, count(*) from 
   (
-    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1_n14 a join tbl2_n13 b on a.key = b.key
   ) subq1
   group by key
 ) subq2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n14
+POSTHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 6
 PREHOOK: query: explain
 select /*+mapjoin(subq1)*/ count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+  (select a.key as key, a.value as value from tbl1_n14 a where key < 6) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n13 a where key < 6) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+mapjoin(subq1)*/ count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+  (select a.key as key, a.value as value from tbl1_n14 a where key < 6) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n13 a where key < 6) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -486,6 +497,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -503,6 +515,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -522,6 +535,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -543,22 +557,22 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+  (select a.key as key, a.value as value from tbl1_n14 a where key < 6) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n13 a where key < 6) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n14
+PREHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+  (select a.key as key, a.value as value from tbl1_n14 a where key < 6) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n13 a where key < 6) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n14
+POSTHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 20
 PREHOOK: query: explain
@@ -566,11 +580,11 @@ select /*+mapjoin(subq2)*/ count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n14 a where key < 8
     ) subq1 
   where key < 6
   ) subq2
-  join tbl2 b
+  join tbl2_n13 b
   on subq2.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
@@ -578,11 +592,11 @@ select /*+mapjoin(subq2)*/ count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n14 a where key < 8
     ) subq1 
   where key < 6
   ) subq2
-  join tbl2 b
+  join tbl2_n13 b
   on subq2.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -614,6 +628,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -631,6 +646,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -650,6 +666,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -674,29 +691,29 @@ PREHOOK: query: select /*+mapjoin(subq2)*/ count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n14 a where key < 8
     ) subq1 
   where key < 6
   ) subq2
-  join tbl2 b
+  join tbl2_n13 b
   on subq2.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n14
+PREHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(subq2)*/ count(*) from 
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n14 a where key < 8
     ) subq1 
   where key < 6
   ) subq2
-  join tbl2 b
+  join tbl2_n13 b
   on subq2.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n14
+POSTHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 20
 PREHOOK: query: explain
@@ -704,7 +721,7 @@ select /*+mapjoin(subq2)*/ count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n14 a where key < 8
     ) subq1 
   where key < 6
   ) subq2
@@ -712,7 +729,7 @@ select /*+mapjoin(subq2)*/ count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n14 a where key < 8
     ) subq3 
   where key < 6
   ) subq4
@@ -723,7 +740,7 @@ select /*+mapjoin(subq2)*/ count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n14 a where key < 8
     ) subq1 
   where key < 6
   ) subq2
@@ -731,7 +748,7 @@ select /*+mapjoin(subq2)*/ count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n14 a where key < 8
     ) subq3 
   where key < 6
   ) subq4
@@ -766,6 +783,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -783,6 +801,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -802,6 +821,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -826,7 +846,7 @@ PREHOOK: query: select /*+mapjoin(subq2)*/ count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n14 a where key < 8
     ) subq1 
   where key < 6
   ) subq2
@@ -834,19 +854,19 @@ PREHOOK: query: select /*+mapjoin(subq2)*/ count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n14 a where key < 8
     ) subq3 
   where key < 6
   ) subq4
   on subq2.key = subq4.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl1_n14
 #### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(subq2)*/ count(*) from 
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n14 a where key < 8
     ) subq1 
   where key < 6
   ) subq2
@@ -854,27 +874,27 @@ POSTHOOK: query: select /*+mapjoin(subq2)*/ count(*) from
   (
   select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n14 a where key < 8
     ) subq3 
   where key < 6
   ) subq4
   on subq2.key = subq4.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl1_n14
 #### A masked pattern was here ####
 20
 PREHOOK: query: explain
 select /*+mapjoin(subq1)*/ count(*) from 
-  (select a.key as key, concat(a.value, a.value) as value from tbl1 a where key < 8) subq1 
+  (select a.key as key, concat(a.value, a.value) as value from tbl1_n14 a where key < 8) subq1 
     join
-  (select a.key as key, concat(a.value, a.value) as value from tbl2 a where key < 8) subq2
+  (select a.key as key, concat(a.value, a.value) as value from tbl2_n13 a where key < 8) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+mapjoin(subq1)*/ count(*) from 
-  (select a.key as key, concat(a.value, a.value) as value from tbl1 a where key < 8) subq1 
+  (select a.key as key, concat(a.value, a.value) as value from tbl1_n14 a where key < 8) subq1 
     join
-  (select a.key as key, concat(a.value, a.value) as value from tbl2 a where key < 8) subq2
+  (select a.key as key, concat(a.value, a.value) as value from tbl2_n13 a where key < 8) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -906,6 +926,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -923,6 +944,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -942,6 +964,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -963,36 +986,36 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
-  (select a.key as key, concat(a.value, a.value) as value from tbl1 a where key < 8) subq1 
+  (select a.key as key, concat(a.value, a.value) as value from tbl1_n14 a where key < 8) subq1 
     join
-  (select a.key as key, concat(a.value, a.value) as value from tbl2 a where key < 8) subq2
+  (select a.key as key, concat(a.value, a.value) as value from tbl2_n13 a where key < 8) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n14
+PREHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
-  (select a.key as key, concat(a.value, a.value) as value from tbl1 a where key < 8) subq1 
+  (select a.key as key, concat(a.value, a.value) as value from tbl1_n14 a where key < 8) subq1 
     join
-  (select a.key as key, concat(a.value, a.value) as value from tbl2 a where key < 8) subq2
+  (select a.key as key, concat(a.value, a.value) as value from tbl2_n13 a where key < 8) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n14
+POSTHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 20
 PREHOOK: query: explain
 select /*+mapjoin(subq1)*/ count(*) from 
-  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1_n14 a) subq1 
     join
-  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2 a) subq2
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2_n13 a) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+mapjoin(subq1)*/ count(*) from 
-  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1_n14 a) subq1 
     join
-  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2 a) subq2
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2_n13 a) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1024,6 +1047,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1041,6 +1065,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -1060,6 +1085,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1081,33 +1107,33 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
-  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1_n14 a) subq1 
     join
-  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2 a) subq2
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2_n13 a) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n14
+PREHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
-  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl1_n14 a) subq1 
     join
-  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2 a) subq2
+  (select a.key +1 as key, concat(a.value, a.value) as value from tbl2_n13 a) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n14
+POSTHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 22
 PREHOOK: query: explain
 select /*+mapjoin(subq1)*/ count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
-    join tbl2 a on subq1.key = a.key
+  (select a.key as key, a.value as value from tbl1_n14 a where key < 6) subq1 
+    join tbl2_n13 a on subq1.key = a.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+mapjoin(subq1)*/ count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
-    join tbl2 a on subq1.key = a.key
+  (select a.key as key, a.value as value from tbl1_n14 a where key < 6) subq1 
+    join tbl2_n13 a on subq1.key = a.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1138,6 +1164,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1155,6 +1182,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -1174,6 +1202,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1195,29 +1224,29 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
-    join tbl2 a on subq1.key = a.key
+  (select a.key as key, a.value as value from tbl1_n14 a where key < 6) subq1 
+    join tbl2_n13 a on subq1.key = a.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n14
+PREHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
-    join tbl2 a on subq1.key = a.key
+  (select a.key as key, a.value as value from tbl1_n14 a where key < 6) subq1 
+    join tbl2_n13 a on subq1.key = a.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n14
+POSTHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 20
 PREHOOK: query: explain
 select /*+mapjoin(a)*/ count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
-    join tbl2 a on subq1.key = a.key
+  (select a.key as key, a.value as value from tbl1_n14 a where key < 6) subq1 
+    join tbl2_n13 a on subq1.key = a.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+mapjoin(a)*/ count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
-    join tbl2 a on subq1.key = a.key
+  (select a.key as key, a.value as value from tbl1_n14 a where key < 6) subq1 
+    join tbl2_n13 a on subq1.key = a.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1248,6 +1277,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1265,6 +1295,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -1284,6 +1315,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1305,38 +1337,38 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select /*+mapjoin(a)*/ count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
-    join tbl2 a on subq1.key = a.key
+  (select a.key as key, a.value as value from tbl1_n14 a where key < 6) subq1 
+    join tbl2_n13 a on subq1.key = a.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n14
+PREHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(a)*/ count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
-    join tbl2 a on subq1.key = a.key
+  (select a.key as key, a.value as value from tbl1_n14 a where key < 6) subq1 
+    join tbl2_n13 a on subq1.key = a.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n14
+POSTHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 20
 PREHOOK: query: explain
 select /*+mapjoin(subq1, subq2)*/ count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+  (select a.key as key, a.value as value from tbl1_n14 a where key < 6) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n13 a where key < 6) subq2
   on (subq1.key = subq2.key)
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq3
+  (select a.key as key, a.value as value from tbl2_n13 a where key < 6) subq3
   on (subq1.key = subq3.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+mapjoin(subq1, subq2)*/ count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+  (select a.key as key, a.value as value from tbl1_n14 a where key < 6) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n13 a where key < 6) subq2
   on (subq1.key = subq2.key)
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq3
+  (select a.key as key, a.value as value from tbl2_n13 a where key < 6) subq3
   on (subq1.key = subq3.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1368,6 +1400,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1385,6 +1418,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -1402,6 +1436,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -1423,6 +1458,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1444,28 +1480,28 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select /*+mapjoin(subq1, subq2)*/ count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+  (select a.key as key, a.value as value from tbl1_n14 a where key < 6) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n13 a where key < 6) subq2
   on subq1.key = subq2.key
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq3
+  (select a.key as key, a.value as value from tbl2_n13 a where key < 6) subq3
   on (subq1.key = subq3.key)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n14
+PREHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(subq1, subq2)*/ count(*) from 
-  (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
+  (select a.key as key, a.value as value from tbl1_n14 a where key < 6) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n13 a where key < 6) subq2
   on subq1.key = subq2.key
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq3
+  (select a.key as key, a.value as value from tbl2_n13 a where key < 6) subq3
   on (subq1.key = subq3.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n14
+POSTHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 56
 PREHOOK: query: explain
@@ -1474,11 +1510,11 @@ select count(*) from (
   (
     select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n14 a where key < 8
     ) subq1
     where key < 6
   ) subq2
-join tbl2 b
+join tbl2_n13 b
 on subq2.key = b.key) a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
@@ -1487,11 +1523,11 @@ select count(*) from (
   (
     select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n14 a where key < 8
     ) subq1
     where key < 6
   ) subq2
-join tbl2 b
+join tbl2_n13 b
 on subq2.key = b.key) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1523,6 +1559,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1540,6 +1577,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -1559,6 +1597,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1584,29 +1623,29 @@ PREHOOK: query: select count(*) from (
   (
     select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n14 a where key < 8
     ) subq1
     where key < 6
   ) subq2
-join tbl2 b
+join tbl2_n13 b
 on subq2.key = b.key) a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n14
+PREHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from (
   select /*+mapjoin(subq2)*/ subq2.key as key, subq2.value as value1, b.value as value2 from
   (
     select * from
     (
-      select a.key as key, a.value as value from tbl1 a where key < 8
+      select a.key as key, a.value as value from tbl1_n14 a where key < 8
     ) subq1
     where key < 6
   ) subq2
-join tbl2 b
+join tbl2_n13 b
 on subq2.key = b.key) a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n14
+POSTHOOK: Input: default@tbl2_n13
 #### A masked pattern was here ####
 20

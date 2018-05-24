@@ -103,9 +103,9 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   /**
    * Whether is a HiveServer query, and the destination table is
-   * indeed written using ThriftJDBCBinarySerDe
+   * indeed written using a row batching SerDe
    */
-  private boolean isUsingThriftJDBCBinarySerDe = false;
+  private boolean isUsingBatchingSerDe = false;
 
   private boolean isInsertOverwrite = false;
 
@@ -183,18 +183,22 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 	  this.isHiveServerQuery = isHiveServerQuery;
   }
 
-  public boolean isUsingThriftJDBCBinarySerDe() {
-	  return this.isUsingThriftJDBCBinarySerDe;
+  public boolean isUsingBatchingSerDe() {
+    return this.isUsingBatchingSerDe;
   }
 
-  public void setIsUsingThriftJDBCBinarySerDe(boolean isUsingThriftJDBCBinarySerDe) {
-	  this.isUsingThriftJDBCBinarySerDe = isUsingThriftJDBCBinarySerDe;
+  public void setIsUsingBatchingSerDe(boolean isUsingBatchingSerDe) {
+    this.isUsingBatchingSerDe = isUsingBatchingSerDe;
   }
 
   @Explain(displayName = "directory", explainLevels = { Level.EXTENDED })
-  @Signature
   public Path getDirName() {
     return dirName;
+  }
+
+  @Signature
+  public String getDirNameString() {
+    return dirName.toString();
   }
 
   public void setDirName(final Path dirName) {
@@ -216,7 +220,6 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   }
 
   @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  @Signature
   public TableDesc getTableInfo() {
     return tableInfo;
   }

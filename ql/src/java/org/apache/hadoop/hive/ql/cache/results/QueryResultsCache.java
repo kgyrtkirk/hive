@@ -23,6 +23,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,22 +44,39 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.EventUtils;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.events.EventConsumer;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.apache.hadoop.hive.ql.parse.TableAccessInfo;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hive.common.util.TxnIdUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,10 +90,12 @@ public final class QueryResultsCache {
 
   public static class LookupInfo {
     private String queryText;
+    private Supplier<ValidTxnWriteIdList> txnWriteIdListProvider;
 
-    public LookupInfo(String queryText) {
+    public LookupInfo(String queryText, Supplier<ValidTxnWriteIdList> txnWriteIdListProvider) {
       super();
       this.queryText = queryText;
+      this.txnWriteIdListProvider = txnWriteIdListProvider;
     }
 
     public String getQueryText() {
@@ -84,6 +104,7 @@ public final class QueryResultsCache {
   }
 
   public static class QueryInfo {
+    private long queryTime;
     private LookupInfo lookupInfo;
     private HiveOperation hiveOperation;
     private List<FieldSchema> resultSchema;
@@ -92,12 +113,14 @@ public final class QueryResultsCache {
     private Set<ReadEntity> inputs;
 
     public QueryInfo(
+        long queryTime,
         LookupInfo lookupInfo,
         HiveOperation hiveOperation,
         List<FieldSchema> resultSchema,
         TableAccessInfo tableAccessInfo,
         ColumnAccessInfo columnAccessInfo,
         Set<ReadEntity> inputs) {
+      this.queryTime = queryTime;
       this.lookupInfo = lookupInfo;
       this.hiveOperation = hiveOperation;
       this.resultSchema = resultSchema;
@@ -153,6 +176,14 @@ public final class QueryResultsCache {
     public void setInputs(Set<ReadEntity> inputs) {
       this.inputs = inputs;
     }
+
+    public long getQueryTime() {
+      return queryTime;
+    }
+
+    public void setQueryTime(long queryTime) {
+      this.queryTime = queryTime;
+    }
   }
 
   public enum CacheEntryStatus {
@@ -165,11 +196,11 @@ public final class QueryResultsCache {
     private Path cachedResultsPath;
 
     // Cache administration
-    private long createTime;
     private long size;
     private AtomicInteger readers = new AtomicInteger(0);
     private ScheduledFuture<?> invalidationFuture = null;
     private volatile CacheEntryStatus status = CacheEntryStatus.PENDING;
+    private ValidTxnWriteIdList txnWriteIdList;
 
     public void releaseReader() {
       int readerCount = 0;
@@ -213,11 +244,13 @@ public final class QueryResultsCache {
           invalidationFuture.cancel(false);
         }
         cleanupIfNeeded();
+        decrementMetric(MetricsConstant.QC_VALID_ENTRIES);
       } else if (prevStatus == CacheEntryStatus.PENDING) {
         // Need to notify any queries waiting on the change from pending status.
         synchronized (this) {
           this.notifyAll();
         }
+        decrementMetric(MetricsConstant.QC_PENDING_FAILS);
       }
     }
 
@@ -267,12 +300,21 @@ public final class QueryResultsCache {
       LOG.info("Waiting on pending cacheEntry");
       long timeout = 1000;
 
+      long startTime = System.nanoTime();
+      long endTime;
+
       while (true) {
         try {
           switch (status) {
           case VALID:
+            endTime = System.nanoTime();
+            incrementMetric(MetricsConstant.QC_PENDING_SUCCESS_WAIT_TIME,
+                TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS));
             return true;
           case INVALID:
+            endTime = System.nanoTime();
+            incrementMetric(MetricsConstant.QC_PENDING_FAILS_WAIT_TIME,
+                TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS));
             return false;
           case PENDING:
             // Status has not changed, continue waiting.
@@ -288,6 +330,12 @@ public final class QueryResultsCache {
         }
       }
     }
+
+    public Stream<String> getTableNames() {
+      return queryInfo.getInputs().stream()
+          .filter(readEntity -> readEntity.getType() == Type.TABLE)
+          .map(readEntity -> readEntity.getTable().getFullyQualifiedName());
+    }
   }
 
   // Allow lookup by query string
@@ -298,6 +346,9 @@ public final class QueryResultsCache {
   private final Map<CacheEntry, CacheEntry> lru = Collections.synchronizedMap(
       new LinkedHashMap<CacheEntry, CacheEntry>(INITIAL_LRU_SIZE, LRU_LOAD_FACTOR, true));
 
+  // Lookup of cache entries by table used in the query, for cache invalidation.
+  private final Map<String, Set<CacheEntry>> tableToEntryMap = new HashMap<>();
+
   private final HiveConf conf;
   private Path cacheDirPath;
   private Path zeroRowsPath;
@@ -306,6 +357,7 @@ public final class QueryResultsCache {
   private long maxEntrySize;
   private long maxEntryLifetime;
   private ReadWriteLock rwLock = new ReentrantReadWriteLock();
+  private ScheduledFuture<?> invalidationPollFuture;
 
   private QueryResultsCache(HiveConf configuration) throws IOException {
     this.conf = configuration;
@@ -344,6 +396,11 @@ public final class QueryResultsCache {
     if (!inited.getAndSet(true)) {
       try {
         instance = new QueryResultsCache(conf);
+
+        Metrics metrics = MetricsFactory.getInstance();
+        if (metrics != null) {
+          registerMetrics(metrics, instance);
+        }
       } catch (IOException err) {
         inited.set(false);
         throw err;
@@ -369,14 +426,20 @@ public final class QueryResultsCache {
 
     LOG.debug("QueryResultsCache lookup for query: {}", request.queryText);
 
+    boolean foundPending = false;
+    // Cannot entries while we currently hold read lock, so keep track of them to delete later.
+    Set<CacheEntry> entriesToRemove = new HashSet<CacheEntry>();
     Lock readLock = rwLock.readLock();
     try {
+      // Note: ReentrantReadWriteLock deos not allow upgrading a read lock to a write lock.
+      // Care must be taken while under read lock, to make sure we do not perform any actions
+      // which attempt to take a write lock.
       readLock.lock();
       Set<CacheEntry> candidates = queryMap.get(request.queryText);
       if (candidates != null) {
         CacheEntry pendingResult = null;
         for (CacheEntry candidate : candidates) {
-          if (entryMatches(request, candidate)) {
+          if (entryMatches(request, candidate, entriesToRemove)) {
             CacheEntryStatus entryStatus = candidate.status;
             if (entryStatus == CacheEntryStatus.VALID) {
               result = candidate;
@@ -390,6 +453,7 @@ public final class QueryResultsCache {
         // Try to find valid entry, but settle for pending entry if that is all we have.
         if (result == null && pendingResult != null) {
           result = pendingResult;
+          foundPending = true;
         }
 
         if (result != null) {
@@ -400,7 +464,20 @@ public final class QueryResultsCache {
       readLock.unlock();
     }
 
+    // Now that we have exited read lock it is safe to remove any invalid entries.
+    for (CacheEntry invalidEntry : entriesToRemove) {
+      removeEntry(invalidEntry);
+    }
+
     LOG.debug("QueryResultsCache lookup result: {}", result);
+    incrementMetric(MetricsConstant.QC_LOOKUPS);
+    if (result != null) {
+      if (foundPending) {
+        incrementMetric(MetricsConstant.QC_PENDING_HITS);
+      } else {
+        incrementMetric(MetricsConstant.QC_VALID_HITS);
+      }
+    }
 
     return result;
   }
@@ -411,11 +488,12 @@ public final class QueryResultsCache {
    * @param queryInfo
    * @return
    */
-  public CacheEntry addToCache(QueryInfo queryInfo) {
+  public CacheEntry addToCache(QueryInfo queryInfo, ValidTxnWriteIdList txnWriteIdList) {
     // Create placeholder entry with PENDING state.
     String queryText = queryInfo.getLookupInfo().getQueryText();
     CacheEntry addedEntry = new CacheEntry();
     addedEntry.queryInfo = queryInfo;
+    addedEntry.txnWriteIdList = txnWriteIdList;
 
     Lock writeLock = rwLock.writeLock();
     try {
@@ -424,13 +502,11 @@ public final class QueryResultsCache {
       LOG.info("Adding placeholder cache entry for query '{}'", queryText);
 
       // Add the entry to the cache structures while under write lock.
-      Set<CacheEntry> entriesForQuery = queryMap.get(queryText);
-      if (entriesForQuery == null) {
-        entriesForQuery = new HashSet<CacheEntry>();
-        queryMap.put(queryText, entriesForQuery);
-      }
-      entriesForQuery.add(addedEntry);
+      addToEntryMap(queryMap, queryText, addedEntry);
       lru.put(addedEntry, addedEntry);
+      // Index of entries by table usage.
+      addedEntry.getTableNames()
+          .forEach(tableName -> addToEntryMap(tableToEntryMap, tableName, addedEntry));
     } finally {
       writeLock.unlock();
     }
@@ -472,34 +548,43 @@ public final class QueryResultsCache {
         return false;
       }
 
-      if (requiresMove) {
-        // Move the query results to the query cache directory.
-        cachedResultsPath = moveResultsToCacheDirectory(queryResultsPath);
-        dataDirMoved = true;
-      }
-      LOG.info("Moved query results from {} to {} (size {}) for query '{}'",
-          queryResultsPath, cachedResultsPath, resultSize, queryText);
-
-      // Create a new FetchWork to reference the new cache location.
-      FetchWork fetchWorkForCache =
-          new FetchWork(cachedResultsPath, fetchWork.getTblDesc(), fetchWork.getLimit());
-      fetchWorkForCache.setCachedResult(true);
-      cacheEntry.fetchWork = fetchWorkForCache;
-      cacheEntry.cachedResultsPath = cachedResultsPath;
-      cacheEntry.size = resultSize;
-      this.cacheSize += resultSize;
-      cacheEntry.createTime = System.currentTimeMillis();
-
-      cacheEntry.setStatus(CacheEntryStatus.VALID);
-      // Mark this entry as being in use. Caller will need to release later.
-      cacheEntry.addReader();
-
-      scheduleEntryInvalidation(cacheEntry);
-
-      // Notify any queries waiting on this cacheEntry to become valid.
+      // Synchronize on the cache entry so that no one else can invalidate this entry
+      // while we are in the process of setting it to valid.
       synchronized (cacheEntry) {
+        if (cacheEntry.getStatus() == CacheEntryStatus.INVALID) {
+          // Entry either expired, or was invalidated due to table updates
+          return false;
+        }
+
+        if (requiresMove) {
+          // Move the query results to the query cache directory.
+          cachedResultsPath = moveResultsToCacheDirectory(queryResultsPath);
+          dataDirMoved = true;
+        }
+        LOG.info("Moved query results from {} to {} (size {}) for query '{}'",
+            queryResultsPath, cachedResultsPath, resultSize, queryText);
+
+        // Create a new FetchWork to reference the new cache location.
+        FetchWork fetchWorkForCache =
+            new FetchWork(cachedResultsPath, fetchWork.getTblDesc(), fetchWork.getLimit());
+        fetchWorkForCache.setCachedResult(true);
+        cacheEntry.fetchWork = fetchWorkForCache;
+        cacheEntry.cachedResultsPath = cachedResultsPath;
+        cacheEntry.size = resultSize;
+        this.cacheSize += resultSize;
+
+        cacheEntry.setStatus(CacheEntryStatus.VALID);
+        // Mark this entry as being in use. Caller will need to release later.
+        cacheEntry.addReader();
+
+        scheduleEntryInvalidation(cacheEntry);
+
+        // Notify any queries waiting on this cacheEntry to become valid.
         cacheEntry.notifyAll();
       }
+
+      incrementMetric(MetricsConstant.QC_VALID_ENTRIES);
+      incrementMetric(MetricsConstant.QC_TOTAL_ENTRIES_ADDED);
     } catch (Exception err) {
       LOG.error("Failed to create cache entry for query results for query: " + queryText, err);
 
@@ -531,7 +616,11 @@ public final class QueryResultsCache {
     try {
       writeLock.lock();
       LOG.info("Clearing the results cache");
-      for (CacheEntry entry : lru.keySet().toArray(EMPTY_CACHEENTRY_ARRAY)) {
+      CacheEntry[] allEntries = null;
+      synchronized (lru) {
+        allEntries = lru.keySet().toArray(EMPTY_CACHEENTRY_ARRAY);
+      }
+      for (CacheEntry entry : allEntries) {
         try {
           removeEntry(entry);
         } catch (Exception err) {
@@ -553,22 +642,92 @@ public final class QueryResultsCache {
     }
   }
 
+  public void notifyTableChanged(String dbName, String tableName, long updateTime) {
+    LOG.debug("Table changed: {}.{}, at {}", dbName, tableName, updateTime);
+    // Invalidate all cache entries using this table.
+    List<CacheEntry> entriesToInvalidate = null;
+    rwLock.writeLock().lock();
+    try {
+      String key = (dbName.toLowerCase() + "." + tableName.toLowerCase());
+      Set<CacheEntry> entriesForTable = tableToEntryMap.get(key);
+      if (entriesForTable != null) {
+        // Possible concurrent modification issues if we try to remove cache entries while
+        // traversing the cache structures. Save the entries to remove in a separate list.
+        entriesToInvalidate = new ArrayList<>(entriesForTable);
+      }
+      if (entriesToInvalidate != null) {
+        for (CacheEntry entry : entriesToInvalidate) {
+          // Ignore updates that occured before this cached query was created.
+          if (entry.getQueryInfo().getQueryTime() <= updateTime) {
+            removeEntry(entry);
+          }
+        }
+      }
+    } finally {
+      rwLock.writeLock().unlock();
+    }
+  }
+
   private static final int INITIAL_LRU_SIZE = 16;
   private static final float LRU_LOAD_FACTOR = 0.75f;
   private static final CacheEntry[] EMPTY_CACHEENTRY_ARRAY = {};
 
-  private boolean entryMatches(LookupInfo lookupInfo, CacheEntry entry) {
+  /**
+   * Check that the cache entry matches the lookupInfo.
+   * @param lookupInfo
+   * @param entry
+   * @param entriesToRemove Set of entries to be removed after exiting read lock section.
+   *                        If the entry is found to be invalid it will be added to this set.
+   * @return
+   */
+  private boolean entryMatches(LookupInfo lookupInfo, CacheEntry entry, Set<CacheEntry> entriesToRemove) {
     QueryInfo queryInfo = entry.getQueryInfo();
     for (ReadEntity readEntity : queryInfo.getInputs()) {
       // Check that the tables used do not resolve to temp tables.
       if (readEntity.getType() == Type.TABLE) {
         Table tableUsed = readEntity.getTable();
         Map<String, Table> tempTables =
-            SessionHiveMetaStoreClient.getTempTablesForDatabase(tableUsed.getDbName());
+            SessionHiveMetaStoreClient.getTempTablesForDatabase(tableUsed.getDbName(), tableUsed.getTableName());
         if (tempTables != null && tempTables.containsKey(tableUsed.getTableName())) {
           LOG.info("{} resolves to a temporary table in the current session. This query cannot use the cache.",
               tableUsed.getTableName());
           return false;
+        }
+
+        // Has the table changed since the query was cached?
+        // For transactional tables, can compare the table writeIDs of the current/cached query.
+        if (AcidUtils.isTransactionalTable(tableUsed)) {
+          boolean writeIdCheckPassed = false;
+          String tableName = tableUsed.getFullyQualifiedName();
+          ValidTxnWriteIdList currentTxnWriteIdList = lookupInfo.txnWriteIdListProvider.get();
+          if (currentTxnWriteIdList == null) {
+            LOG.warn("Current query's txnWriteIdList is null!");
+            return false;
+          }
+          if (entry.txnWriteIdList == null) {
+            LOG.warn("Cache entry's txnWriteIdList is null!");
+            return false;
+          }
+          ValidWriteIdList currentWriteIdForTable =
+              currentTxnWriteIdList.getTableValidWriteIdList(tableName);
+          ValidWriteIdList cachedWriteIdForTable = entry.txnWriteIdList.getTableValidWriteIdList(tableName);
+
+          LOG.debug("Checking writeIds for table {}: currentWriteIdForTable {}, cachedWriteIdForTable {}",
+              tableName, currentWriteIdForTable, cachedWriteIdForTable);
+          if (currentWriteIdForTable != null && cachedWriteIdForTable != null) {
+            if (TxnIdUtils.checkEquivalentWriteIds(currentWriteIdForTable, cachedWriteIdForTable)) {
+              writeIdCheckPassed = true;
+            }
+          }
+
+          if (!writeIdCheckPassed) {
+            LOG.debug("Cached query no longer valid due to table {}", tableUsed.getFullyQualifiedName());
+            // We can invalidate the entry now, but calling removeEntry() requires a write lock
+            // and we may already have read lock taken now. Add to entriesToRemove to delete later.
+            entriesToRemove.add(entry);
+            entry.invalidate();
+            return false;
+          }
         }
       }
     }
@@ -578,26 +737,26 @@ public final class QueryResultsCache {
 
   public void removeEntry(CacheEntry entry) {
     entry.invalidate();
-    removeFromLookup(entry);
-    lru.remove(entry);
-    // Should the cache size be updated here, or after the result data has actually been deleted?
-    cacheSize -= entry.size;
+    rwLock.writeLock().lock();
+    try {
+      removeFromLookup(entry);
+      lru.remove(entry);
+      // Should the cache size be updated here, or after the result data has actually been deleted?
+      cacheSize -= entry.size;
+    } finally {
+      rwLock.writeLock().unlock();
+    }
   }
 
   private void removeFromLookup(CacheEntry entry) {
     String queryString = entry.getQueryText();
-    Set<CacheEntry> entries = queryMap.get(queryString);
-    if (entries == null) {
-      LOG.warn("ResultsCache: no entry for {}", queryString);
-      return;
+    if (!removeFromEntryMap(queryMap, queryString, entry)) {
+      LOG.warn("Attempted to remove entry but it was not in the cache: {}", entry);
     }
-    boolean deleted = entries.remove(entry);
-    if (!deleted) {
-      LOG.warn("ResultsCache: Attempted to remove entry but it was not in the cache: {}", entry);
-    }
-    if (entries.isEmpty()) {
-      queryMap.remove(queryString);
-    }
+
+    // Remove this entry from the table usage mappings.
+    entry.getTableNames()
+        .forEach(tableName -> removeFromEntryMap(tableToEntryMap, tableName, entry));
   }
 
   private void calculateEntrySize(CacheEntry entry, FetchWork fetchWork) throws IOException {
@@ -614,6 +773,7 @@ public final class QueryResultsCache {
     // Assumes the cache lock has already been taken.
     if (maxEntrySize >= 0 && size > maxEntrySize) {
       LOG.debug("Cache entry size {} larger than max entry size ({})", size, maxEntrySize);
+      incrementMetric(MetricsConstant.QC_REJECTED_TOO_LARGE);
       return false;
     }
 
@@ -640,6 +800,20 @@ public final class QueryResultsCache {
     return true;
   }
 
+  private CacheEntry findEntryToRemove() {
+    // Entries should be in LRU order in the keyset iterator.
+    Set<CacheEntry> entries = lru.keySet();
+    synchronized (lru) {
+      for (CacheEntry removalCandidate : entries) {
+        if (removalCandidate.getStatus() != CacheEntryStatus.VALID) {
+          continue;
+        }
+        return removalCandidate;
+      }
+    }
+    return null;
+  }
+
   private boolean clearSpaceForCacheEntry(CacheEntry entry, long size) {
     if (hasSpaceForCacheEntry(entry, size)) {
       return true;
@@ -648,20 +822,14 @@ public final class QueryResultsCache {
     LOG.info("Clearing space for cache entry for query: [{}] with size {}",
         entry.getQueryText(), size);
 
-    // Entries should be in LRU order in the keyset iterator.
-    CacheEntry[] entries = lru.keySet().toArray(EMPTY_CACHEENTRY_ARRAY);
-    for (CacheEntry removalCandidate : entries) {
-      if (removalCandidate.getStatus() != CacheEntryStatus.VALID) {
-        // Only entries marked as valid should have results that can be removed.
-        continue;
-      }
-      // Only delete the entry if it has no readers.
-      if (!(removalCandidate.numReaders() > 0)) {
-        LOG.info("Removing entry: {}", removalCandidate);
-        removeEntry(removalCandidate);
-        if (hasSpaceForCacheEntry(entry, size)) {
-          return true;
-        }
+    CacheEntry removalCandidate;
+    while ((removalCandidate = findEntryToRemove()) != null) {
+      LOG.info("Removing entry: {}", removalCandidate);
+      removeEntry(removalCandidate);
+      // TODO: Should we wait for the entry to actually be deleted from HDFS? Would have to
+      // poll the reader count, waiting for it to reach 0, at which point cleanup should occur.
+      if (hasSpaceForCacheEntry(entry, size)) {
+        return true;
       }
     }
 
@@ -670,13 +838,42 @@ public final class QueryResultsCache {
     return false;
   }
 
+  private static void addToEntryMap(Map<String, Set<CacheEntry>> entryMap,
+      String key, CacheEntry entry) {
+    Set<CacheEntry> entriesForKey = entryMap.get(key);
+    if (entriesForKey == null) {
+      entriesForKey = new HashSet<CacheEntry>();
+      entryMap.put(key, entriesForKey);
+    }
+    entriesForKey.add(entry);
+  }
+
+  private static boolean removeFromEntryMap(Map<String, Set<CacheEntry>> entryMap,
+      String key, CacheEntry entry) {
+    Set<CacheEntry> entries = entryMap.get(key);
+    if (entries == null) {
+      return false;
+    }
+    boolean deleted = entries.remove(entry);
+    if (!deleted) {
+      return false;
+    }
+    if (entries.isEmpty()) {
+      entryMap.remove(key);
+    }
+    return true;
+  }
 
   @VisibleForTesting
   public static void cleanupInstance() {
     // This should only ever be called in testing scenarios.
     // There should not be any other users of the cache or its entries or this may mess up cleanup.
     if (inited.get()) {
-      getInstance().clear();
+      if (instance.invalidationPollFuture != null) {
+        instance.invalidationPollFuture.cancel(true);
+        instance.invalidationPollFuture = null;
+      }
+      instance.clear();
       instance = null;
       inited.set(false);
     }
@@ -724,6 +921,97 @@ public final class QueryResultsCache {
           }
         }
       });
+    }
+  }
+
+  public static void incrementMetric(String name, long count) {
+    Metrics metrics = MetricsFactory.getInstance();
+    if (metrics != null) {
+      metrics.incrementCounter(name, count);
+    }
+  }
+
+  public static void decrementMetric(String name, long count) {
+    Metrics metrics = MetricsFactory.getInstance();
+    if (metrics != null) {
+      metrics.decrementCounter(name, count);
+    }
+  }
+
+  public static void incrementMetric(String name) {
+    incrementMetric(name, 1);
+  }
+
+  public static void decrementMetric(String name) {
+    decrementMetric(name, 1);
+  }
+
+  private static void registerMetrics(Metrics metrics, final QueryResultsCache cache) {
+    MetricsVariable<Long> maxCacheSize = new MetricsVariable<Long>() {
+      @Override
+      public Long getValue() {
+        return cache.maxCacheSize;
+      }
+    };
+
+    MetricsVariable<Long> curCacheSize = new MetricsVariable<Long>() {
+      @Override
+      public Long getValue() {
+        return cache.cacheSize;
+      }
+    };
+
+    metrics.addGauge(MetricsConstant.QC_MAX_SIZE, maxCacheSize);
+    metrics.addGauge(MetricsConstant.QC_CURRENT_SIZE, curCacheSize);
+  }
+
+  // EventConsumer to invalidate cache entries based on metastore notification events (alter table, add partition, etc).
+  public static class InvalidationEventConsumer implements EventConsumer {
+    Configuration conf;
+
+    @Override
+    public Configuration getConf() {
+      return conf;
+    }
+
+    @Override
+    public void setConf(Configuration conf) {
+      this.conf = conf;
+    }
+
+    @Override
+    public void accept(NotificationEvent event) {
+      String dbName;
+      String tableName;
+
+      switch (event.getEventType()) {
+      case MessageFactory.ADD_PARTITION_EVENT:
+      case MessageFactory.ALTER_PARTITION_EVENT:
+      case MessageFactory.DROP_PARTITION_EVENT:
+      case MessageFactory.ALTER_TABLE_EVENT:
+      case MessageFactory.DROP_TABLE_EVENT:
+      case MessageFactory.INSERT_EVENT:
+        dbName = event.getDbName();
+        tableName = event.getTableName();
+        break;
+      default:
+        return;
+      }
+
+      if (dbName == null || tableName == null) {
+        LOG.info("Possibly malformed notification event, missing db or table name: {}", event);
+        return;
+      }
+
+      LOG.debug("Handling event {} on table {}.{}", event.getEventType(), dbName, tableName);
+
+      QueryResultsCache cache = QueryResultsCache.getInstance();
+      if (cache != null) {
+        long eventTime = event.getEventTime() * 1000L;
+        cache.notifyTableChanged(dbName, tableName, eventTime);
+      } else {
+        LOG.debug("Cache not instantiated, skipping event on {}.{}", dbName, tableName);
+      }
     }
   }
 }

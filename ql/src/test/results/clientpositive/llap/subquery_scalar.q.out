@@ -1,30 +1,30 @@
-PREHOOK: query: create table tnull(i int, c char(2))
+PREHOOK: query: create table tnull_n0(i int, c char(2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tnull
-POSTHOOK: query: create table tnull(i int, c char(2))
+PREHOOK: Output: default@tnull_n0
+POSTHOOK: query: create table tnull_n0(i int, c char(2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tnull
-PREHOOK: query: insert into tnull values(NULL, NULL), (NULL, NULL)
+POSTHOOK: Output: default@tnull_n0
+PREHOOK: query: insert into tnull_n0 values(NULL, NULL), (NULL, NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tnull
-POSTHOOK: query: insert into tnull values(NULL, NULL), (NULL, NULL)
+PREHOOK: Output: default@tnull_n0
+POSTHOOK: query: insert into tnull_n0 values(NULL, NULL), (NULL, NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tnull
-POSTHOOK: Lineage: tnull.c EXPRESSION []
-POSTHOOK: Lineage: tnull.i EXPRESSION []
-PREHOOK: query: create table tempty(c char(2))
+POSTHOOK: Output: default@tnull_n0
+POSTHOOK: Lineage: tnull_n0.c EXPRESSION []
+POSTHOOK: Lineage: tnull_n0.i EXPRESSION []
+PREHOOK: query: create table tempty_n0(c char(2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tempty
-POSTHOOK: query: create table tempty(c char(2))
+PREHOOK: Output: default@tempty_n0
+POSTHOOK: query: create table tempty_n0(c char(2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tempty
-PREHOOK: query: CREATE TABLE part_null(
+POSTHOOK: Output: default@tempty_n0
+PREHOOK: query: CREATE TABLE part_null_n0(
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -33,13 +33,13 @@ PREHOOK: query: CREATE TABLE part_null(
     p_size INT,
     p_container STRING,
     p_retailprice DOUBLE,
-    p_comment STRING
+    p_comment_n11 STRING
 )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ","
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_null
-POSTHOOK: query: CREATE TABLE part_null(
+PREHOOK: Output: default@part_null_n0
+POSTHOOK: query: CREATE TABLE part_null_n0(
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -48,41 +48,41 @@ POSTHOOK: query: CREATE TABLE part_null(
     p_size INT,
     p_container STRING,
     p_retailprice DOUBLE,
-    p_comment STRING
+    p_comment_n11 STRING
 )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ","
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_null
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny_nulls.txt' overwrite into table part_null
+POSTHOOK: Output: default@part_null_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny_nulls.txt' overwrite into table part_null_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@part_null
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny_nulls.txt' overwrite into table part_null
+PREHOOK: Output: default@part_null_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny_nulls.txt' overwrite into table part_null_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@part_null
-PREHOOK: query: insert into part_null values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith')
+POSTHOOK: Output: default@part_null_n0
+PREHOOK: query: insert into part_null_n0 values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part_null
-POSTHOOK: query: insert into part_null values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith')
+PREHOOK: Output: default@part_null_n0
+POSTHOOK: query: insert into part_null_n0 values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part_null
-POSTHOOK: Lineage: part_null.p_brand SCRIPT []
-POSTHOOK: Lineage: part_null.p_comment SCRIPT []
-POSTHOOK: Lineage: part_null.p_container SCRIPT []
-POSTHOOK: Lineage: part_null.p_mfgr SCRIPT []
-POSTHOOK: Lineage: part_null.p_name EXPRESSION []
-POSTHOOK: Lineage: part_null.p_partkey SCRIPT []
-POSTHOOK: Lineage: part_null.p_retailprice SCRIPT []
-POSTHOOK: Lineage: part_null.p_size SCRIPT []
-POSTHOOK: Lineage: part_null.p_type SCRIPT []
+POSTHOOK: Output: default@part_null_n0
+POSTHOOK: Lineage: part_null_n0.p_brand SCRIPT []
+POSTHOOK: Lineage: part_null_n0.p_comment_n11 SCRIPT []
+POSTHOOK: Lineage: part_null_n0.p_container SCRIPT []
+POSTHOOK: Lineage: part_null_n0.p_mfgr SCRIPT []
+POSTHOOK: Lineage: part_null_n0.p_name EXPRESSION []
+POSTHOOK: Lineage: part_null_n0.p_partkey SCRIPT []
+POSTHOOK: Lineage: part_null_n0.p_retailprice SCRIPT []
+POSTHOOK: Lineage: part_null_n0.p_size SCRIPT []
+POSTHOOK: Lineage: part_null_n0.p_type SCRIPT []
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null)
+PREHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null_n0)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null)
+POSTHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null_n0)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -110,27 +110,27 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: p_size (type: int)
                     outputColumnNames: p_size
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: avg(p_size)
+                      aggregations: sum(p_size), count(p_size)
                       mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: struct<count:bigint,sum:double,input:int>)
-            Execution mode: llap
+                        Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint), _col1 (type: bigint)
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -143,30 +143,34 @@ STAGE PLANS:
                   1 
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
                 residual filter predicates: {(UDFToDouble(_col5) > _col9)}
-                Statistics: Num rows: 8 Data size: 5600 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 8 Data size: 5120 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                  Statistics: Num rows: 8 Data size: 5600 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 5120 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 8 Data size: 5600 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 5120 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: avg(VALUE._col0)
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
                 mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: double)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: (_col0 / _col1) (type: double)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: double)
 
   Stage: Stage-0
     Fetch Operator
@@ -175,15 +179,15 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from part where p_size > (select avg(p_size) from part_null)
+PREHOOK: query: select * from part where p_size > (select avg(p_size) from part_null_n0)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part where p_size > (select avg(p_size) from part_null)
+POSTHOOK: query: select * from part where p_size > (select avg(p_size) from part_null_n0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
 144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
@@ -197,20 +201,20 @@ POSTHOOK: Input: default@part_null
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 Warning: Shuffle Join MERGEJOIN[18][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from part where p_size > (select * from tempty)
+PREHOOK: query: select * from part where p_size > (select * from tempty_n0)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@tempty
+PREHOOK: Input: default@tempty_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part where p_size > (select * from tempty)
+POSTHOOK: query: select * from part where p_size > (select * from tempty_n0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@tempty
+POSTHOOK: Input: default@tempty_n0
 #### A masked pattern was here ####
 Warning: Shuffle Join MERGEJOIN[18][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from part where p_size > (select * from tempty)
+PREHOOK: query: explain select * from part where p_size > (select * from tempty_n0)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part where p_size > (select * from tempty)
+POSTHOOK: query: explain select * from part where p_size > (select * from tempty_n0)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -238,12 +242,12 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: tempty
+                  alias: tempty_n0
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
@@ -256,12 +260,12 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: tempty
+                  alias: tempty_n0
                   Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: c (type: char(2))
@@ -271,7 +275,7 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: char(2))
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -299,7 +303,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -322,9 +326,9 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from part where p_name = (select p_name from part_null where p_name is null)
+PREHOOK: query: explain select * from part where p_name = (select p_name from part_null_n0 where p_name is null)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part where p_name = (select p_name from part_null where p_name is null)
+POSTHOOK: query: explain select * from part where p_name = (select p_name from part_null_n0 where p_name is null)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -355,12 +359,12 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 582 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_name is null (type: boolean)
@@ -379,7 +383,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -406,7 +410,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -429,21 +433,21 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from part where p_name = (select p_name from part_null where p_name is null)
+PREHOOK: query: select * from part where p_name = (select p_name from part_null_n0 where p_name is null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part where p_name = (select p_name from part_null where p_name is null)
+POSTHOOK: query: select * from part where p_name = (select p_name from part_null_n0 where p_name is null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: explain select * from part where (select i from tnull limit 1) is null
+PREHOOK: query: explain select * from part where (select i from tnull_n0 limit 1) is null
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part where (select i from tnull limit 1) is null
+POSTHOOK: query: explain select * from part where (select i from tnull_n0 limit 1) is null
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -474,12 +478,12 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: tnull
+                  alias: tnull_n0
                   Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -489,12 +493,12 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: tnull
+                  alias: tnull_n0
                   Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: i (type: int)
@@ -508,7 +512,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -551,7 +555,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
@@ -566,7 +570,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -582,7 +586,7 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 8 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int)
@@ -604,15 +608,15 @@ STAGE PLANS:
 
 Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: select * from part where (select i from tnull limit 1) is null
+PREHOOK: query: select * from part where (select i from tnull_n0 limit 1) is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@tnull
+PREHOOK: Input: default@tnull_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part where (select i from tnull limit 1) is null
+POSTHOOK: query: select * from part where (select i from tnull_n0 limit 1) is null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@tnull
+POSTHOOK: Input: default@tnull_n0
 #### A masked pattern was here ####
 105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
 110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
@@ -641,9 +645,9 @@ POSTHOOK: Input: default@tnull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from part where (select max(p_name) from part_null) is not null
+PREHOOK: query: explain select * from part where (select max(p_name) from part_null_n0) is not null
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part where (select max(p_name) from part_null) is not null
+POSTHOOK: query: explain select * from part where (select max(p_name) from part_null_n0) is not null
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -671,12 +675,12 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: p_name (type: string)
@@ -691,7 +695,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -712,7 +716,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -735,15 +739,15 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from part where (select max(p_name) from part_null) is not null
+PREHOOK: query: select * from part where (select max(p_name) from part_null_n0) is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part where (select max(p_name) from part_null) is not null
+POSTHOOK: query: select * from part where (select max(p_name) from part_null_n0) is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
 110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
@@ -805,7 +809,7 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -826,15 +830,15 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int)
                     Group By Operator
-                      aggregations: avg(p_size)
+                      aggregations: sum(p_size), count(p_size)
                       mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: struct<count:bigint,sum:double,input:int>)
-            Execution mode: llap
+                        Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint), _col1 (type: bigint)
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -877,7 +881,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -889,17 +893,21 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int)
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: avg(VALUE._col0)
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
                 mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  sort order: 
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: (_col0 / _col1) (type: double)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: double)
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: double)
 
   Stage: Stage-0
     Fetch Operator
@@ -970,7 +978,7 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -982,7 +990,7 @@ STAGE PLANS:
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
                     Statistics: Num rows: 26 Data size: 2652 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -1010,7 +1018,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: int)
@@ -1074,7 +1082,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.1
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1091,7 +1099,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1107,7 +1115,7 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 7 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
@@ -1196,7 +1204,7 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -1216,7 +1224,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -1242,7 +1250,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -1328,7 +1336,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 26 Data size: 3250 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -1350,7 +1358,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 13 Data size: 1625 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -1376,7 +1384,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1391,7 +1399,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -1457,7 +1465,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 26 Data size: 3146 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -1479,7 +1487,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 13 Data size: 1625 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -1501,7 +1509,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1516,7 +1524,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -1552,9 +1560,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 26
-PREHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null where part_null.p_type = part.p_type)
+PREHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null where part_null.p_type = part.p_type)
+POSTHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1584,29 +1592,29 @@ STAGE PLANS:
                       Map-reduce partition columns: _col4 (type: string)
                       Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_type is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: avg(p_size)
+                      aggregations: sum(p_size), count(p_size)
                       keys: p_type (type: string)
                       mode: hash
-                      outputColumnNames: _col0, _col1
+                      outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: struct<count:bigint,sum:double,input:int>)
-            Execution mode: llap
+                        value expressions: _col1 (type: bigint), _col2 (type: bigint)
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -1632,16 +1640,16 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: avg(VALUE._col0)
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: double), true (type: boolean), _col0 (type: string)
+                  expressions: (_col1 / _col2) (type: double), true (type: boolean), _col0 (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
@@ -1657,21 +1665,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from part where p_size > (select avg(p_size) from part_null where part_null.p_type = part.p_type)
+PREHOOK: query: select * from part where p_size > (select avg(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part where p_size > (select avg(p_size) from part_null where part_null.p_type = part.p_type)
+POSTHOOK: query: select * from part where p_size > (select avg(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
 Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: explain select * from part where p_size BETWEEN (select min(p_size) from part_null where part_null.p_type = part.p_type) AND (select max(p_size) from part_null)
+PREHOOK: query: explain select * from part where p_size BETWEEN (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND (select max(p_size) from part_null_n0)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part where p_size BETWEEN (select min(p_size) from part_null where part_null.p_type = part.p_type) AND (select max(p_size) from part_null)
+POSTHOOK: query: explain select * from part where p_size BETWEEN (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND (select max(p_size) from part_null_n0)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1703,12 +1711,12 @@ STAGE PLANS:
                       Map-reduce partition columns: _col4 (type: string)
                       Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_type is not null (type: boolean)
@@ -1725,12 +1733,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: p_size (type: int)
@@ -1745,7 +1753,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -1788,7 +1796,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -1807,7 +1815,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: int), _col1 (type: boolean)
         Reducer 7 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -1826,15 +1834,15 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: select * from part where p_size BETWEEN (select min(p_size) from part_null where part_null.p_type = part.p_type) AND (select max(p_size) from part_null)
+PREHOOK: query: select * from part where p_size BETWEEN (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND (select max(p_size) from part_null_n0)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part where p_size BETWEEN (select min(p_size) from part_null where part_null.p_type = part.p_type) AND (select max(p_size) from part_null)
+POSTHOOK: query: select * from part where p_size BETWEEN (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND (select max(p_size) from part_null_n0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
 110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
@@ -1863,9 +1871,9 @@ POSTHOOK: Input: default@part_null
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: explain select * from part where p_size >= (select min(p_size) from part_null where part_null.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null)
+PREHOOK: query: explain select * from part where p_size >= (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null_n0)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part where p_size >= (select min(p_size) from part_null where part_null.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null)
+POSTHOOK: query: explain select * from part where p_size >= (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null_n0)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1897,12 +1905,12 @@ STAGE PLANS:
                       Map-reduce partition columns: _col4 (type: string)
                       Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_type is not null (type: boolean)
@@ -1919,12 +1927,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: p_retailprice (type: double)
@@ -1939,7 +1947,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -1985,7 +1993,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -2004,7 +2012,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: int), _col1 (type: boolean)
         Reducer 7 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -2023,15 +2031,15 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: select * from part where p_size >= (select min(p_size) from part_null where part_null.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null)
+PREHOOK: query: select * from part where p_size >= (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null_n0)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part where p_size >= (select min(p_size) from part_null where part_null.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null)
+POSTHOOK: query: select * from part where p_size >= (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null_n0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
 110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
@@ -2094,7 +2102,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -2114,7 +2122,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
@@ -2138,7 +2146,7 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                           Statistics: Num rows: 13 Data size: 1404 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -2177,7 +2185,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -2259,7 +2267,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int), _col5 (type: int)
                       Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -2281,7 +2289,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 13 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -2309,7 +2317,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2402,7 +2410,7 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string), _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -2422,7 +2430,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 7 
             Map Operator Tree:
@@ -2456,10 +2464,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 10 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2504,7 +2512,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: bigint)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2542,7 +2550,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -2554,7 +2562,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string)
         Reducer 8 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
@@ -2573,7 +2581,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
         Reducer 9 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2655,7 +2663,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 13 Data size: 1456 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -2675,10 +2683,10 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -2718,7 +2726,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -2786,7 +2794,7 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 12 
             Map Operator Tree:
@@ -2806,7 +2814,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -2826,10 +2834,10 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 11 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2849,7 +2857,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
         Reducer 13 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2875,7 +2883,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
         Reducer 14 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2896,7 +2904,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
         Reducer 15 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2942,7 +2950,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2968,7 +2976,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2989,7 +2997,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
         Reducer 7 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -3016,7 +3024,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
         Reducer 8 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -3032,7 +3040,7 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 9 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -3114,7 +3122,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col2 (type: int)
                       Statistics: Num rows: 26 Data size: 3354 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -3134,7 +3142,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 26 Data size: 5850 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
@@ -3154,7 +3162,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -3203,7 +3211,7 @@ STAGE PLANS:
                     Statistics: Num rows: 14 Data size: 2632 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: string)
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -3257,9 +3265,9 @@ POSTHOOK: Input: default@part
 86428
 90681
 Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from part_null where p_name NOT LIKE (select min(p_name) from part_null) AND p_brand NOT IN (select p_name from part)
+PREHOOK: query: explain select * from part_null_n0 where p_name NOT LIKE (select min(p_name) from part_null_n0) AND p_brand NOT IN (select p_name from part)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part_null where p_name NOT LIKE (select min(p_name) from part_null) AND p_brand NOT IN (select p_name from part)
+POSTHOOK: query: explain select * from part_null_n0 where p_name NOT LIKE (select min(p_name) from part_null_n0) AND p_brand NOT IN (select p_name from part)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3280,22 +3288,22 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                    expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment_n11 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                     Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       sort order: 
                       Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: p_name (type: string)
@@ -3310,7 +3318,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
@@ -3340,7 +3348,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -3388,7 +3396,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -3400,7 +3408,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string)
         Reducer 7 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), count(VALUE._col1)
@@ -3412,7 +3420,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint)
         Reducer 8 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
@@ -3437,15 +3445,15 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from part_null where p_name NOT LIKE (select min(p_name) from part_null) AND p_brand NOT IN (select p_name from part)
+PREHOOK: query: select * from part_null_n0 where p_name NOT LIKE (select min(p_name) from part_null_n0) AND p_brand NOT IN (select p_name from part)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part_null where p_name NOT LIKE (select min(p_name) from part_null) AND p_brand NOT IN (select p_name from part)
+POSTHOOK: query: select * from part_null_n0 where p_name NOT LIKE (select min(p_name) from part_null_n0) AND p_brand NOT IN (select p_name from part)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
 110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
@@ -3473,9 +3481,9 @@ POSTHOOK: Input: default@part_null
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 Warning: Shuffle Join MERGEJOIN[42][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from part_null where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null pp where part_null.p_type = pp.p_type)
+PREHOOK: query: explain select * from part_null_n0 where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null_n0 pp where part_null_n0.p_type = pp.p_type)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part_null where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null pp where part_null.p_type = pp.p_type)
+POSTHOOK: query: explain select * from part_null_n0 where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null_n0 pp where part_null_n0.p_type = pp.p_type)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3497,17 +3505,17 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                    expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment_n11 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                     Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       sort order: 
                       Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -3537,7 +3545,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 8 
             Map Operator Tree:
@@ -3559,7 +3567,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -3626,7 +3634,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), count(VALUE._col1)
@@ -3638,7 +3646,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint)
         Reducer 7 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
@@ -3656,7 +3664,7 @@ STAGE PLANS:
                     Statistics: Num rows: 13 Data size: 1625 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: boolean)
         Reducer 9 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -3682,15 +3690,15 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[42][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from part_null where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null pp where part_null.p_type = pp.p_type)
+PREHOOK: query: select * from part_null_n0 where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null_n0 pp where part_null_n0.p_type = pp.p_type)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part_null where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null pp where part_null.p_type = pp.p_type)
+POSTHOOK: query: select * from part_null_n0 where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null_n0 pp where part_null_n0.p_type = pp.p_type)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 PREHOOK: query: explain select p.p_partkey, li.l_suppkey 
@@ -3736,7 +3744,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 50 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -3756,7 +3764,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
@@ -3782,10 +3790,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int)
@@ -3838,7 +3846,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 7 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -3945,7 +3953,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 50 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -3965,7 +3973,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
@@ -3991,10 +3999,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int)
@@ -4047,7 +4055,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 7 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -4147,7 +4155,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 100 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: double), _col2 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -4166,7 +4174,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -4177,18 +4185,18 @@ STAGE PLANS:
                     predicate: l_partkey is not null (type: boolean)
                     Statistics: Num rows: 100 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: avg(l_quantity)
+                      aggregations: sum(l_quantity), count(l_quantity)
                       keys: l_partkey (type: int)
                       mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 50 Data size: 4200 Basic stats: COMPLETE Column stats: COMPLETE
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 50 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 50 Data size: 4200 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: struct<count:bigint,sum:double,input:double>)
-            Execution mode: llap
+                        Statistics: Num rows: 50 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: double), _col2 (type: bigint)
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -4218,7 +4226,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -4233,16 +4241,16 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: avg(VALUE._col0)
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 50 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 50 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: double), _col0 (type: int)
+                  expressions: (_col1 / _col2) (type: double), _col0 (type: int)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 50 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
@@ -4269,9 +4277,9 @@ POSTHOOK: Input: default@lineitem
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 NULL
-PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
+PREHOOK: query: explain select * from part_null_n0 where p_name IN (select p_name from part where part.p_type = part_null_n0.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
+POSTHOOK: query: explain select * from part_null_n0 where p_name IN (select p_name from part where part.p_type = part_null_n0.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4290,13 +4298,13 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (p_name is not null and p_type is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment_n11 (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                       Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
@@ -4305,7 +4313,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: string), _col4 (type: string)
                         Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -4325,7 +4333,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col2 (type: string)
                         Statistics: Num rows: 26 Data size: 8242 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string), _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -4347,7 +4355,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 13 Data size: 3744 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -4397,7 +4405,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 3 Data size: 675 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -4422,180 +4430,180 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
+PREHOOK: query: select * from part_null_n0 where p_name IN (select p_name from part where part.p_type = part_null_n0.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
+POSTHOOK: query: select * from part_null_n0 where p_name IN (select p_name from part where part.p_type = part_null_n0.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
-PREHOOK: query: drop table tnull
+PREHOOK: query: drop table tnull_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@tnull
-PREHOOK: Output: default@tnull
-POSTHOOK: query: drop table tnull
+PREHOOK: Input: default@tnull_n0
+PREHOOK: Output: default@tnull_n0
+POSTHOOK: query: drop table tnull_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@tnull
-POSTHOOK: Output: default@tnull
-PREHOOK: query: drop table part_null
+POSTHOOK: Input: default@tnull_n0
+POSTHOOK: Output: default@tnull_n0
+PREHOOK: query: drop table part_null_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_null
-PREHOOK: Output: default@part_null
-POSTHOOK: query: drop table part_null
+PREHOOK: Input: default@part_null_n0
+PREHOOK: Output: default@part_null_n0
+POSTHOOK: query: drop table part_null_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_null
-POSTHOOK: Output: default@part_null
-PREHOOK: query: drop table tempty
+POSTHOOK: Input: default@part_null_n0
+POSTHOOK: Output: default@part_null_n0
+PREHOOK: query: drop table tempty_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@tempty
-PREHOOK: Output: default@tempty
-POSTHOOK: query: drop table tempty
+PREHOOK: Input: default@tempty_n0
+PREHOOK: Output: default@tempty_n0
+POSTHOOK: query: drop table tempty_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@tempty
-POSTHOOK: Output: default@tempty
-PREHOOK: query: create table EMPS(EMPNO int,NAME string,DEPTNO int,GENDER string,CITY string,EMPID int,AGE int,SLACKER boolean,MANAGER boolean,JOINEDAT date)
+POSTHOOK: Input: default@tempty_n0
+POSTHOOK: Output: default@tempty_n0
+PREHOOK: query: create table EMPS_n4(EMPNO int,NAME string,DEPTNO int,GENDER string,CITY string,EMPID int,AGE int,SLACKER boolean,MANAGER boolean,JOINEDAT date)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@EMPS
-POSTHOOK: query: create table EMPS(EMPNO int,NAME string,DEPTNO int,GENDER string,CITY string,EMPID int,AGE int,SLACKER boolean,MANAGER boolean,JOINEDAT date)
+PREHOOK: Output: default@EMPS_n4
+POSTHOOK: query: create table EMPS_n4(EMPNO int,NAME string,DEPTNO int,GENDER string,CITY string,EMPID int,AGE int,SLACKER boolean,MANAGER boolean,JOINEDAT date)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@EMPS
-PREHOOK: query: insert into EMPS values (100,'Fred',10,NULL,NULL,30,25,true,false,'1996-08-03')
+POSTHOOK: Output: default@EMPS_n4
+PREHOOK: query: insert into EMPS_n4 values (100,'Fred',10,NULL,NULL,30,25,true,false,'1996-08-03')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@emps
-POSTHOOK: query: insert into EMPS values (100,'Fred',10,NULL,NULL,30,25,true,false,'1996-08-03')
+PREHOOK: Output: default@emps_n4
+POSTHOOK: query: insert into EMPS_n4 values (100,'Fred',10,NULL,NULL,30,25,true,false,'1996-08-03')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@emps
-POSTHOOK: Lineage: emps.age SCRIPT []
-POSTHOOK: Lineage: emps.city EXPRESSION []
-POSTHOOK: Lineage: emps.deptno SCRIPT []
-POSTHOOK: Lineage: emps.empid SCRIPT []
-POSTHOOK: Lineage: emps.empno SCRIPT []
-POSTHOOK: Lineage: emps.gender EXPRESSION []
-POSTHOOK: Lineage: emps.joinedat SCRIPT []
-POSTHOOK: Lineage: emps.manager SCRIPT []
-POSTHOOK: Lineage: emps.name SCRIPT []
-POSTHOOK: Lineage: emps.slacker SCRIPT []
-PREHOOK: query: insert into EMPS values (110,'Eric',20,'M','San Francisco',3,80,NULL,false,'2001-01-01')
+POSTHOOK: Output: default@emps_n4
+POSTHOOK: Lineage: emps_n4.age SCRIPT []
+POSTHOOK: Lineage: emps_n4.city EXPRESSION []
+POSTHOOK: Lineage: emps_n4.deptno SCRIPT []
+POSTHOOK: Lineage: emps_n4.empid SCRIPT []
+POSTHOOK: Lineage: emps_n4.empno SCRIPT []
+POSTHOOK: Lineage: emps_n4.gender EXPRESSION []
+POSTHOOK: Lineage: emps_n4.joinedat SCRIPT []
+POSTHOOK: Lineage: emps_n4.manager SCRIPT []
+POSTHOOK: Lineage: emps_n4.name SCRIPT []
+POSTHOOK: Lineage: emps_n4.slacker SCRIPT []
+PREHOOK: query: insert into EMPS_n4 values (110,'Eric',20,'M','San Francisco',3,80,NULL,false,'2001-01-01')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@emps
-POSTHOOK: query: insert into EMPS values (110,'Eric',20,'M','San Francisco',3,80,NULL,false,'2001-01-01')
+PREHOOK: Output: default@emps_n4
+POSTHOOK: query: insert into EMPS_n4 values (110,'Eric',20,'M','San Francisco',3,80,NULL,false,'2001-01-01')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@emps
-POSTHOOK: Lineage: emps.age SCRIPT []
-POSTHOOK: Lineage: emps.city SCRIPT []
-POSTHOOK: Lineage: emps.deptno SCRIPT []
-POSTHOOK: Lineage: emps.empid SCRIPT []
-POSTHOOK: Lineage: emps.empno SCRIPT []
-POSTHOOK: Lineage: emps.gender SCRIPT []
-POSTHOOK: Lineage: emps.joinedat SCRIPT []
-POSTHOOK: Lineage: emps.manager SCRIPT []
-POSTHOOK: Lineage: emps.name SCRIPT []
-POSTHOOK: Lineage: emps.slacker EXPRESSION []
-PREHOOK: query: insert into EMPS values (110,'John',40,'M','Vancouver',2,NULL,false,true,'2002-05-03')
+POSTHOOK: Output: default@emps_n4
+POSTHOOK: Lineage: emps_n4.age SCRIPT []
+POSTHOOK: Lineage: emps_n4.city SCRIPT []
+POSTHOOK: Lineage: emps_n4.deptno SCRIPT []
+POSTHOOK: Lineage: emps_n4.empid SCRIPT []
+POSTHOOK: Lineage: emps_n4.empno SCRIPT []
+POSTHOOK: Lineage: emps_n4.gender SCRIPT []
+POSTHOOK: Lineage: emps_n4.joinedat SCRIPT []
+POSTHOOK: Lineage: emps_n4.manager SCRIPT []
+POSTHOOK: Lineage: emps_n4.name SCRIPT []
+POSTHOOK: Lineage: emps_n4.slacker EXPRESSION []
+PREHOOK: query: insert into EMPS_n4 values (110,'John',40,'M','Vancouver',2,NULL,false,true,'2002-05-03')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@emps
-POSTHOOK: query: insert into EMPS values (110,'John',40,'M','Vancouver',2,NULL,false,true,'2002-05-03')
+PREHOOK: Output: default@emps_n4
+POSTHOOK: query: insert into EMPS_n4 values (110,'John',40,'M','Vancouver',2,NULL,false,true,'2002-05-03')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@emps
-POSTHOOK: Lineage: emps.age EXPRESSION []
-POSTHOOK: Lineage: emps.city SCRIPT []
-POSTHOOK: Lineage: emps.deptno SCRIPT []
-POSTHOOK: Lineage: emps.empid SCRIPT []
-POSTHOOK: Lineage: emps.empno SCRIPT []
-POSTHOOK: Lineage: emps.gender SCRIPT []
-POSTHOOK: Lineage: emps.joinedat SCRIPT []
-POSTHOOK: Lineage: emps.manager SCRIPT []
-POSTHOOK: Lineage: emps.name SCRIPT []
-POSTHOOK: Lineage: emps.slacker SCRIPT []
-PREHOOK: query: insert into EMPS values (120,'Wilma',20,'F',NULL,1,5,NULL,true,'2005-09-07')
+POSTHOOK: Output: default@emps_n4
+POSTHOOK: Lineage: emps_n4.age EXPRESSION []
+POSTHOOK: Lineage: emps_n4.city SCRIPT []
+POSTHOOK: Lineage: emps_n4.deptno SCRIPT []
+POSTHOOK: Lineage: emps_n4.empid SCRIPT []
+POSTHOOK: Lineage: emps_n4.empno SCRIPT []
+POSTHOOK: Lineage: emps_n4.gender SCRIPT []
+POSTHOOK: Lineage: emps_n4.joinedat SCRIPT []
+POSTHOOK: Lineage: emps_n4.manager SCRIPT []
+POSTHOOK: Lineage: emps_n4.name SCRIPT []
+POSTHOOK: Lineage: emps_n4.slacker SCRIPT []
+PREHOOK: query: insert into EMPS_n4 values (120,'Wilma',20,'F',NULL,1,5,NULL,true,'2005-09-07')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@emps
-POSTHOOK: query: insert into EMPS values (120,'Wilma',20,'F',NULL,1,5,NULL,true,'2005-09-07')
+PREHOOK: Output: default@emps_n4
+POSTHOOK: query: insert into EMPS_n4 values (120,'Wilma',20,'F',NULL,1,5,NULL,true,'2005-09-07')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@emps
-POSTHOOK: Lineage: emps.age SCRIPT []
-POSTHOOK: Lineage: emps.city EXPRESSION []
-POSTHOOK: Lineage: emps.deptno SCRIPT []
-POSTHOOK: Lineage: emps.empid SCRIPT []
-POSTHOOK: Lineage: emps.empno SCRIPT []
-POSTHOOK: Lineage: emps.gender SCRIPT []
-POSTHOOK: Lineage: emps.joinedat SCRIPT []
-POSTHOOK: Lineage: emps.manager SCRIPT []
-POSTHOOK: Lineage: emps.name SCRIPT []
-POSTHOOK: Lineage: emps.slacker EXPRESSION []
-PREHOOK: query: insert into EMPS values (130,'Alice',40,'F','Vancouver',2,NULL,false,true,'2007-01-01')
+POSTHOOK: Output: default@emps_n4
+POSTHOOK: Lineage: emps_n4.age SCRIPT []
+POSTHOOK: Lineage: emps_n4.city EXPRESSION []
+POSTHOOK: Lineage: emps_n4.deptno SCRIPT []
+POSTHOOK: Lineage: emps_n4.empid SCRIPT []
+POSTHOOK: Lineage: emps_n4.empno SCRIPT []
+POSTHOOK: Lineage: emps_n4.gender SCRIPT []
+POSTHOOK: Lineage: emps_n4.joinedat SCRIPT []
+POSTHOOK: Lineage: emps_n4.manager SCRIPT []
+POSTHOOK: Lineage: emps_n4.name SCRIPT []
+POSTHOOK: Lineage: emps_n4.slacker EXPRESSION []
+PREHOOK: query: insert into EMPS_n4 values (130,'Alice',40,'F','Vancouver',2,NULL,false,true,'2007-01-01')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@emps
-POSTHOOK: query: insert into EMPS values (130,'Alice',40,'F','Vancouver',2,NULL,false,true,'2007-01-01')
+PREHOOK: Output: default@emps_n4
+POSTHOOK: query: insert into EMPS_n4 values (130,'Alice',40,'F','Vancouver',2,NULL,false,true,'2007-01-01')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@emps
-POSTHOOK: Lineage: emps.age EXPRESSION []
-POSTHOOK: Lineage: emps.city SCRIPT []
-POSTHOOK: Lineage: emps.deptno SCRIPT []
-POSTHOOK: Lineage: emps.empid SCRIPT []
-POSTHOOK: Lineage: emps.empno SCRIPT []
-POSTHOOK: Lineage: emps.gender SCRIPT []
-POSTHOOK: Lineage: emps.joinedat SCRIPT []
-POSTHOOK: Lineage: emps.manager SCRIPT []
-POSTHOOK: Lineage: emps.name SCRIPT []
-POSTHOOK: Lineage: emps.slacker SCRIPT []
-PREHOOK: query: create table DEPTS(deptno int, name string)
+POSTHOOK: Output: default@emps_n4
+POSTHOOK: Lineage: emps_n4.age EXPRESSION []
+POSTHOOK: Lineage: emps_n4.city SCRIPT []
+POSTHOOK: Lineage: emps_n4.deptno SCRIPT []
+POSTHOOK: Lineage: emps_n4.empid SCRIPT []
+POSTHOOK: Lineage: emps_n4.empno SCRIPT []
+POSTHOOK: Lineage: emps_n4.gender SCRIPT []
+POSTHOOK: Lineage: emps_n4.joinedat SCRIPT []
+POSTHOOK: Lineage: emps_n4.manager SCRIPT []
+POSTHOOK: Lineage: emps_n4.name SCRIPT []
+POSTHOOK: Lineage: emps_n4.slacker SCRIPT []
+PREHOOK: query: create table DEPTS_n3(deptno int, name string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEPTS
-POSTHOOK: query: create table DEPTS(deptno int, name string)
+PREHOOK: Output: default@DEPTS_n3
+POSTHOOK: query: create table DEPTS_n3(deptno int, name string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEPTS
-PREHOOK: query: insert into DEPTS values( 10,'Sales')
+POSTHOOK: Output: default@DEPTS_n3
+PREHOOK: query: insert into DEPTS_n3 values( 10,'Sales')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@depts
-POSTHOOK: query: insert into DEPTS values( 10,'Sales')
+PREHOOK: Output: default@depts_n3
+POSTHOOK: query: insert into DEPTS_n3 values( 10,'Sales')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@depts
-POSTHOOK: Lineage: depts.deptno SCRIPT []
-POSTHOOK: Lineage: depts.name SCRIPT []
-PREHOOK: query: insert into DEPTS values( 20,'Marketing')
+POSTHOOK: Output: default@depts_n3
+POSTHOOK: Lineage: depts_n3.deptno SCRIPT []
+POSTHOOK: Lineage: depts_n3.name SCRIPT []
+PREHOOK: query: insert into DEPTS_n3 values( 20,'Marketing')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@depts
-POSTHOOK: query: insert into DEPTS values( 20,'Marketing')
+PREHOOK: Output: default@depts_n3
+POSTHOOK: query: insert into DEPTS_n3 values( 20,'Marketing')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@depts
-POSTHOOK: Lineage: depts.deptno SCRIPT []
-POSTHOOK: Lineage: depts.name SCRIPT []
-PREHOOK: query: insert into DEPTS values( 30,'Accounts')
+POSTHOOK: Output: default@depts_n3
+POSTHOOK: Lineage: depts_n3.deptno SCRIPT []
+POSTHOOK: Lineage: depts_n3.name SCRIPT []
+PREHOOK: query: insert into DEPTS_n3 values( 30,'Accounts')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@depts
-POSTHOOK: query: insert into DEPTS values( 30,'Accounts')
+PREHOOK: Output: default@depts_n3
+POSTHOOK: query: insert into DEPTS_n3 values( 30,'Accounts')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@depts
-POSTHOOK: Lineage: depts.deptno SCRIPT []
-POSTHOOK: Lineage: depts.name SCRIPT []
-PREHOOK: query: explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name)
+POSTHOOK: Output: default@depts_n3
+POSTHOOK: Lineage: depts_n3.deptno SCRIPT []
+POSTHOOK: Lineage: depts_n3.name SCRIPT []
+PREHOOK: query: explain select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name)
+POSTHOOK: query: explain select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4613,7 +4621,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: emps
+                  alias: emps_n4
                   Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: empno (type: int), name (type: string), deptno (type: int), gender (type: string), city (type: string), empid (type: int), age (type: int), slacker (type: boolean), manager (type: boolean), joinedat (type: date)
@@ -4625,12 +4633,12 @@ STAGE PLANS:
                       Map-reduce partition columns: _col1 (type: string)
                       Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: depts
+                  alias: depts_n3
                   Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -4647,7 +4655,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -4675,7 +4683,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -4700,24 +4708,24 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name)
+PREHOOK: query: select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@depts
-PREHOOK: Input: default@emps
+PREHOOK: Input: default@depts_n3
+PREHOOK: Input: default@emps_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name)
+POSTHOOK: query: select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@depts
-POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@depts_n3
+POSTHOOK: Input: default@emps_n4
 #### A masked pattern was here ####
 100	Fred	10	NULL	NULL	30	25	true	false	1996-08-03
 110	Eric	20	M	San Francisco	3	80	NULL	false	2001-01-01
 110	John	40	M	Vancouver	2	NULL	false	true	2002-05-03
 120	Wilma	20	F	NULL	1	5	NULL	true	2005-09-07
 130	Alice	40	F	Vancouver	2	NULL	false	true	2007-01-01
-PREHOOK: query: explain select * from emps where name > (select min(name) from depts where depts.deptno=emps.deptno)
+PREHOOK: query: explain select * from emps_n4 where name > (select min(name) from depts_n3 where depts_n3.deptno=emps_n4.deptno)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emps where name > (select min(name) from depts where depts.deptno=emps.deptno)
+POSTHOOK: query: explain select * from emps_n4 where name > (select min(name) from depts_n3 where depts_n3.deptno=emps_n4.deptno)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4735,7 +4743,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: emps
+                  alias: emps_n4
                   Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: empno (type: int), name (type: string), deptno (type: int), gender (type: string), city (type: string), empid (type: int), age (type: int), slacker (type: boolean), manager (type: boolean), joinedat (type: date)
@@ -4747,12 +4755,12 @@ STAGE PLANS:
                       Map-reduce partition columns: _col2 (type: int)
                       Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: depts
+                  alias: depts_n3
                   Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: deptno is not null (type: boolean)
@@ -4769,7 +4777,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -4795,7 +4803,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -4820,20 +4828,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from emps where name > (select min(name) from depts where depts.deptno=emps.deptno)
+PREHOOK: query: select * from emps_n4 where name > (select min(name) from depts_n3 where depts_n3.deptno=emps_n4.deptno)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@depts
-PREHOOK: Input: default@emps
+PREHOOK: Input: default@depts_n3
+PREHOOK: Input: default@emps_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from emps where name > (select min(name) from depts where depts.deptno=emps.deptno)
+POSTHOOK: query: select * from emps_n4 where name > (select min(name) from depts_n3 where depts_n3.deptno=emps_n4.deptno)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@depts
-POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@depts_n3
+POSTHOOK: Input: default@emps_n4
 #### A masked pattern was here ####
 120	Wilma	20	F	NULL	1	5	NULL	true	2005-09-07
-PREHOOK: query: explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts where depts.deptno = emps.deptno)
+PREHOOK: query: explain select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3 where depts_n3.deptno = emps_n4.deptno)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts where depts.deptno = emps.deptno)
+POSTHOOK: query: explain select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3 where depts_n3.deptno = emps_n4.deptno)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4853,7 +4861,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: emps
+                  alias: emps_n4
                   Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: empno (type: int), name (type: string), deptno (type: int), gender (type: string), city (type: string), empid (type: int), age (type: int), slacker (type: boolean), manager (type: boolean), joinedat (type: date)
@@ -4865,12 +4873,12 @@ STAGE PLANS:
                       Map-reduce partition columns: _col1 (type: string)
                       Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: depts
+                  alias: depts_n3
                   Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -4902,7 +4910,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -4954,7 +4962,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -4973,7 +4981,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint), _col1 (type: boolean)
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -4998,15 +5006,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts where depts.deptno = emps.deptno)
+PREHOOK: query: select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3 where depts_n3.deptno = emps_n4.deptno)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@depts
-PREHOOK: Input: default@emps
+PREHOOK: Input: default@depts_n3
+PREHOOK: Input: default@emps_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts where depts.deptno = emps.deptno)
+POSTHOOK: query: select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3 where depts_n3.deptno = emps_n4.deptno)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@depts
-POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@depts_n3
+POSTHOOK: Input: default@emps_n4
 #### A masked pattern was here ####
 100	Fred	10	NULL	NULL	30	25	true	false	1996-08-03
 110	Eric	20	M	San Francisco	3	80	NULL	false	2001-01-01
@@ -5014,9 +5022,9 @@ POSTHOOK: Input: default@emps
 120	Wilma	20	F	NULL	1	5	NULL	true	2005-09-07
 130	Alice	40	F	Vancouver	2	NULL	false	true	2007-01-01
 Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: explain select * from emps where deptno <> (select sum(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts)
+PREHOOK: query: explain select * from emps_n4 where deptno <> (select sum(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emps where deptno <> (select sum(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts)
+POSTHOOK: query: explain select * from emps_n4 where deptno <> (select sum(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -5036,7 +5044,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: emps
+                  alias: emps_n4
                   Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: empno (type: int), name (type: string), deptno (type: int), gender (type: string), city (type: string), empid (type: int), age (type: int), slacker (type: boolean), manager (type: boolean), joinedat (type: date)
@@ -5048,12 +5056,12 @@ STAGE PLANS:
                       Map-reduce partition columns: _col1 (type: string)
                       Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: depts
+                  alias: depts_n3
                   Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -5070,12 +5078,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: depts
+                  alias: depts_n3
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: name (type: string)
@@ -5090,7 +5098,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -5136,7 +5144,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -5155,7 +5163,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint), _col1 (type: boolean)
         Reducer 7 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -5174,37 +5182,37 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[28][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts)
+PREHOOK: query: select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@depts
-PREHOOK: Input: default@emps
+PREHOOK: Input: default@depts_n3
+PREHOOK: Input: default@emps_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts)
+POSTHOOK: query: select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@depts
-POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@depts_n3
+POSTHOOK: Input: default@emps_n4
 #### A masked pattern was here ####
 100	Fred	10	NULL	NULL	30	25	true	false	1996-08-03
 110	Eric	20	M	San Francisco	3	80	NULL	false	2001-01-01
 110	John	40	M	Vancouver	2	NULL	false	true	2002-05-03
 120	Wilma	20	F	NULL	1	5	NULL	true	2005-09-07
 130	Alice	40	F	Vancouver	2	NULL	false	true	2007-01-01
-PREHOOK: query: drop table DEPTS
+PREHOOK: query: drop table DEPTS_n3
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@depts
-PREHOOK: Output: default@depts
-POSTHOOK: query: drop table DEPTS
+PREHOOK: Input: default@depts_n3
+PREHOOK: Output: default@depts_n3
+POSTHOOK: query: drop table DEPTS_n3
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@depts
-POSTHOOK: Output: default@depts
-PREHOOK: query: drop table EMPS
+POSTHOOK: Input: default@depts_n3
+POSTHOOK: Output: default@depts_n3
+PREHOOK: query: drop table EMPS_n4
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@emps
-PREHOOK: Output: default@emps
-POSTHOOK: query: drop table EMPS
+PREHOOK: Input: default@emps_n4
+PREHOOK: Output: default@emps_n4
+POSTHOOK: query: drop table EMPS_n4
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@emps
-POSTHOOK: Output: default@emps
+POSTHOOK: Input: default@emps_n4
+POSTHOOK: Output: default@emps_n4
 Warning: Shuffle Join MERGEJOIN[19][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain
  select key, count(*)
@@ -5267,10 +5275,10 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -5306,7 +5314,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -5397,7 +5405,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -5435,7 +5443,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -5461,7 +5469,7 @@ STAGE PLANS:
                     Statistics: Num rows: 66 Data size: 12276 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col2 (type: bigint)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -5497,7 +5505,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -5565,7 +5573,7 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -5586,7 +5594,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 13 Data size: 1352 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
@@ -5609,7 +5617,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 13 Data size: 1404 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -5637,7 +5645,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
@@ -5656,7 +5664,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -5672,7 +5680,7 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 7 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -5728,7 +5736,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col4 (type: string)
                       Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -5748,7 +5756,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 13 Data size: 1352 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -5770,7 +5778,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 13 Data size: 1404 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -5798,7 +5806,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
@@ -5824,7 +5832,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
@@ -5886,7 +5894,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col4 (type: string)
                       Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -5901,7 +5909,7 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string), _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
@@ -5918,7 +5926,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 13 Data size: 1352 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -5974,7 +5982,7 @@ STAGE PLANS:
                       Statistics: Num rows: 24 Data size: 2688 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: bigint)
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -5993,7 +6001,7 @@ STAGE PLANS:
                     Statistics: Num rows: 24 Data size: 2784 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint), _col1 (type: boolean)
         Reducer 7 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
@@ -6047,28 +6055,28 @@ POSTHOOK: Input: default@part
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-PREHOOK: query: create table t(i int, j int)
+PREHOOK: query: create table t_n11(i int, j int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t(i int, j int)
+PREHOOK: Output: default@t_n11
+POSTHOOK: query: create table t_n11(i int, j int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values(3,1), (1,1)
+POSTHOOK: Output: default@t_n11
+PREHOOK: query: insert into t_n11 values(3,1), (1,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values(3,1), (1,1)
+PREHOOK: Output: default@t_n11
+POSTHOOK: query: insert into t_n11 values(3,1), (1,1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.i SCRIPT []
-POSTHOOK: Lineage: t.j SCRIPT []
+POSTHOOK: Output: default@t_n11
+POSTHOOK: Lineage: t_n11.i SCRIPT []
+POSTHOOK: Lineage: t_n11.j SCRIPT []
 Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
-PREHOOK: query: explain select * from t where 0 = (select count(*) from t tt where tt.j <> t.i)
+PREHOOK: query: explain select * from t_n11 where 0 = (select count(*) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t where 0 = (select count(*) from t tt where tt.j <> t.i)
+POSTHOOK: query: explain select * from t_n11 where 0 = (select count(*) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6088,7 +6096,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n11
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: i (type: int), j (type: int)
@@ -6100,12 +6108,12 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: tt
+                  alias: tt_n11
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: j (type: int)
@@ -6115,12 +6123,12 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n11
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: i (type: int)
@@ -6132,7 +6140,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -6188,7 +6196,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: bigint)
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -6207,7 +6215,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint), _col1 (type: boolean)
         Reducer 7 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int)
@@ -6226,19 +6234,19 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
-PREHOOK: query: select * from t where 0 = (select count(*) from t tt where tt.j <> t.i)
+PREHOOK: query: select * from t_n11 where 0 = (select count(*) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t where 0 = (select count(*) from t tt where tt.j <> t.i)
+POSTHOOK: query: select * from t_n11 where 0 = (select count(*) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n11
 #### A masked pattern was here ####
 1	1
 Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: explain select * from t where 0 = (select avg(tt.i) from t tt where tt.j <> t.i)
+PREHOOK: query: explain select * from t_n11 where 0 = (select avg(tt_n11.i) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t where 0 = (select avg(tt.i) from t tt where tt.j <> t.i)
+POSTHOOK: query: explain select * from t_n11 where 0 = (select avg(tt_n11.i) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6258,7 +6266,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n11
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: i (type: int), j (type: int)
@@ -6274,12 +6282,12 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n11
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: i (type: int)
@@ -6291,7 +6299,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -6328,29 +6336,29 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col2
                   Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: avg(_col0)
+                    aggregations: sum(_col0), count(_col0)
                     keys: _col2 (type: int)
                     mode: hash
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col1 (type: struct<count:bigint,sum:double,input:int>)
+                      Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: bigint), _col2 (type: bigint)
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: avg(VALUE._col0)
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col1 = 0.0D) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  predicate: (0.0D = (_col1 / _col2)) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int)
                     outputColumnNames: _col0
@@ -6361,7 +6369,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int)
@@ -6380,25 +6388,25 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: select * from t where 0 = (select avg(tt.i) from t tt where tt.j <> t.i)
+PREHOOK: query: select * from t_n11 where 0 = (select avg(tt_n11.i) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t where 0 = (select avg(tt.i) from t tt where tt.j <> t.i)
+POSTHOOK: query: select * from t_n11 where 0 = (select avg(tt_n11.i) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n11
 #### A masked pattern was here ####
-PREHOOK: query: create table tempty(i int, j int)
+PREHOOK: query: create table tempty_n0(i int, j int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tempty
-POSTHOOK: query: create table tempty(i int, j int)
+PREHOOK: Output: default@tempty_n0
+POSTHOOK: query: create table tempty_n0(i int, j int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tempty
-PREHOOK: query: explain select * from t where 0 = (select count(*) from tempty tt where t.i=tt.i)
+POSTHOOK: Output: default@tempty_n0
+PREHOOK: query: explain select * from t_n11 where 0 = (select count(*) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t where 0 = (select count(*) from tempty tt where t.i=tt.i)
+POSTHOOK: query: explain select * from t_n11 where 0 = (select count(*) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6416,7 +6424,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n11
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: i (type: int), j (type: int)
@@ -6428,12 +6436,12 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: tt
+                  alias: tt_n11
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i is not null (type: boolean)
@@ -6450,7 +6458,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -6478,7 +6486,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -6503,21 +6511,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from t where 0 = (select count(*) from tempty tt where t.i=tt.i)
+PREHOOK: query: select * from t_n11 where 0 = (select count(*) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
-PREHOOK: Input: default@tempty
+PREHOOK: Input: default@t_n11
+PREHOOK: Input: default@tempty_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t where 0 = (select count(*) from tempty tt where t.i=tt.i)
+POSTHOOK: query: select * from t_n11 where 0 = (select count(*) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
-POSTHOOK: Input: default@tempty
+POSTHOOK: Input: default@t_n11
+POSTHOOK: Input: default@tempty_n0
 #### A masked pattern was here ####
 1	1
 3	1
-PREHOOK: query: explain select * from t where 0 = (select min(tt.j) from tempty tt where t.i=tt.i)
+PREHOOK: query: explain select * from t_n11 where 0 = (select min(tt_n11.j) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t where 0 = (select min(tt.j) from tempty tt where t.i=tt.i)
+POSTHOOK: query: explain select * from t_n11 where 0 = (select min(tt_n11.j) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6535,7 +6543,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n11
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: i (type: int), j (type: int)
@@ -6547,12 +6555,12 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: tt
+                  alias: tt_n11
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i is not null (type: boolean)
@@ -6569,7 +6577,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -6590,7 +6598,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0)
@@ -6617,32 +6625,32 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from t where 0 = (select min(tt.j) from tempty tt where t.i=tt.i)
+PREHOOK: query: select * from t_n11 where 0 = (select min(tt_n11.j) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
-PREHOOK: Input: default@tempty
+PREHOOK: Input: default@t_n11
+PREHOOK: Input: default@tempty_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t where 0 = (select min(tt.j) from tempty tt where t.i=tt.i)
+POSTHOOK: query: select * from t_n11 where 0 = (select min(tt_n11.j) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
-POSTHOOK: Input: default@tempty
+POSTHOOK: Input: default@t_n11
+POSTHOOK: Input: default@tempty_n0
 #### A masked pattern was here ####
-PREHOOK: query: drop table t
+PREHOOK: query: drop table t_n11
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t
-PREHOOK: Output: default@t
-POSTHOOK: query: drop table t
+PREHOOK: Input: default@t_n11
+PREHOOK: Output: default@t_n11
+POSTHOOK: query: drop table t_n11
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t
-POSTHOOK: Output: default@t
-PREHOOK: query: drop table tempty
+POSTHOOK: Input: default@t_n11
+POSTHOOK: Output: default@t_n11
+PREHOOK: query: drop table tempty_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@tempty
-PREHOOK: Output: default@tempty
-POSTHOOK: query: drop table tempty
+PREHOOK: Input: default@tempty_n0
+PREHOOK: Output: default@tempty_n0
+POSTHOOK: query: drop table tempty_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@tempty
-POSTHOOK: Output: default@tempty
+POSTHOOK: Input: default@tempty_n0
+POSTHOOK: Output: default@tempty_n0
 Warning: Shuffle Join MERGEJOIN[18][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select key, count(*) from src group by key having count(*) >
     (select count(*) from src s1 group by 4)
@@ -6685,7 +6693,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -6706,10 +6714,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -6745,7 +6753,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -6827,10 +6835,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -6866,7 +6874,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)

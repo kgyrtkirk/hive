@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.adapter.druid.DruidSchema;
 import org.apache.calcite.adapter.druid.DruidTable;
@@ -192,6 +193,8 @@ public final class HiveMaterializedViewsRegistry {
   private RelOptMaterialization addMaterializedView(HiveConf conf, Table materializedViewTable, OpType opType) {
     // Bail out if it is not enabled for rewriting
     if (!materializedViewTable.isRewriteEnabled()) {
+      LOG.debug("Materialized view " + materializedViewTable.getCompleteName() +
+          " ignored; it is not rewrite enabled");
       return null;
     }
 
@@ -376,21 +379,20 @@ public final class HiveMaterializedViewsRegistry {
       List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
       rowType = dtFactory.createStructType(druidColTypes, druidColNames);
       RelOptHiveTable optTable = new RelOptHiveTable(null, fullyQualifiedTabName,
-              rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-              conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
-
+          rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
+          conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
       DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
           dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
           intervals, null, null);
       final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
           optTable, viewTable.getTableName(), null, false, false);
       tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
-          optTable, druidTable, ImmutableList.<RelNode>of(scan));
+          optTable, druidTable, ImmutableList.<RelNode>of(scan), ImmutableMap.of());
     } else {
       // Build Hive Table Scan Rel
       RelOptHiveTable optTable = new RelOptHiveTable(null, fullyQualifiedTabName,
-              rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-              conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
+          rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
+          conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
       tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
           viewTable.getTableName(), null, false, false);
     }
@@ -417,18 +419,26 @@ public final class HiveMaterializedViewsRegistry {
   }
 
   private static TableType obtainTableType(Table tabMetaData) {
-    if (tabMetaData.getStorageHandler() != null &&
-            tabMetaData.getStorageHandler().toString().equals(
-                    Constants.DRUID_HIVE_STORAGE_HANDLER_ID)) {
-      return TableType.DRUID;
+    if (tabMetaData.getStorageHandler() != null) {
+      final String storageHandlerStr = tabMetaData.getStorageHandler().toString();
+      if (storageHandlerStr.equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID)) {
+        return TableType.DRUID;
+      }
+
+      if (storageHandlerStr.equals(Constants.JDBC_HIVE_STORAGE_HANDLER_ID)) {
+        return TableType.JDBC;
+      }
+
     }
+
     return TableType.NATIVE;
   }
 
   //@TODO this seems to be the same as org.apache.hadoop.hive.ql.parse.CalcitePlanner.TableType.DRUID do we really need both
   private enum TableType {
     DRUID,
-    NATIVE
+    NATIVE,
+    JDBC
   }
 
   private enum OpType {

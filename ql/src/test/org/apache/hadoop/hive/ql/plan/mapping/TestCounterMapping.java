@@ -33,10 +33,11 @@ import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.parse.ParseException;
+import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.SimpleRuntimeStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
@@ -129,7 +130,7 @@ public class TestCounterMapping {
     FilterOperator filter1 = filters1.get(0);
 
     driver = createDriver();
-    ((ReExecDriver) driver).setRuntimeStatsSource(new SimpleRuntimeStatsSource(pm1));
+    ((ReExecDriver) driver).setStatsSource(StatsSources.getStatsSourceContaining(EmptyStatsSource.INSTANCE, pm1));
 
     PlanMapper pm2 = getMapperForQuery(driver, query);
 
@@ -149,10 +150,10 @@ public class TestCounterMapping {
 
     PlanMapper pm0 = getMapperForQuery(driver, "select sum(tu.id_uv),sum(u) from tu join tv on (tu.id_uv = tv.id_uv) where u>1 and v>1");
 
-    Iterator<LinkGroup> itG = pm0.iterateGroups();
+    Iterator<EquivGroup> itG = pm0.iterateGroups();
     int checkedOperators = 0;
     while (itG.hasNext()) {
-      LinkGroup g = itG.next();
+      EquivGroup g = itG.next();
       List<HiveFilter> hfs = g.getAll(HiveFilter.class);
       List<OperatorStats> oss = g.getAll(OperatorStats.class);
       List<FilterOperator> fos = g.getAll(FilterOperator.class);
@@ -172,7 +173,6 @@ public class TestCounterMapping {
   }
 
   private static IDriver createDriver() {
-    //    HiveConf conf = new HiveConf(Driver.class);
     HiveConf conf = env_setup.getTestCtx().hiveConf;
     conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED, true);
     conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS, true);

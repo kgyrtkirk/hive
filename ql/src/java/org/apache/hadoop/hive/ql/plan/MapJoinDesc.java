@@ -33,7 +33,6 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
-import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationType;
@@ -140,7 +139,6 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   }
 
   @Explain(displayName = "input vertices", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  @Signature
   public Map<Integer, String> getParentToInput() {
     return parentToInput;
   }
@@ -158,7 +156,6 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   }
 
   @Explain(displayName = "Estimated key counts", explainLevels = { Level.EXTENDED })
-  @Signature
   public String getKeyCountsExplainDesc() {
     StringBuilder result = null;
     for (Map.Entry<Integer, Long> entry : parentKeyCounts.entrySet()) {
@@ -216,10 +213,10 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
    */
   @Override
   @Explain(displayName = "keys")
-  public Map<Byte, String> getKeysString() {
-    Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
+  public Map<String, String> getKeysString() {
+    Map<String, String> keyMap = new LinkedHashMap<>();
     for (Map.Entry<Byte, List<ExprNodeDesc>> k: getKeys().entrySet()) {
-      keyMap.put(k.getKey(), PlanUtils.getExprListString(k.getValue()));
+      keyMap.put(String.valueOf(k.getKey()), PlanUtils.getExprListString(k.getValue()));
     }
     return keyMap;
   }
@@ -253,7 +250,6 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
    * @return the position of the big table not in memory
    */
   @Explain(displayName = "Position of Big Table", explainLevels = { Level.EXTENDED })
-  @Signature
   public int getPosBigTable() {
     return posBigTable;
   }
@@ -344,7 +340,6 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   }
 
   @Explain(displayName = "BucketMapJoin", explainLevels = { Level.USER, Level.EXTENDED }, displayOnlyOnTrue = true)
-  @Signature
   public boolean isBucketMapJoin() {
     return isBucketMapJoin;
   }

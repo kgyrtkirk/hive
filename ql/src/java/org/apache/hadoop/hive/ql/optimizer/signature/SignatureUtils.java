@@ -23,17 +23,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import com.google.common.collect.Sets;
 
 /**
  * Enables to calculate the signature of an object.
  *
  * If the object has methods annotated with {@link Signature}, they will be used.
- * If the object has no methods marked with the annotation; the object itself is used in the signature to prevent incorrect matches.
+ * If the object has no methods marked with the annotation;
+ * the object itself is used in the signature to prevent incorrect matches.
  */
-public class SignatureUtils {
+public final class SignatureUtils {
 
   private static Map<Class<?>, SignatureMapper> mappers = new HashMap<>();
 
@@ -42,34 +40,34 @@ public class SignatureUtils {
     mapper.write(ret, o);
   }
 
-  static class SignatureMapper {
+  /** Prevent construction. */
+  private SignatureUtils() {
+  }
 
-    static final Set<String> acceptedSignatureTypes = Sets.newHashSet();
+  static class SignatureMapper {
 
     private List<Method> sigMethods;
 
-    public SignatureMapper(Class<?> o) {
+    private String classLabel;
+
+    SignatureMapper(Class<?> o) {
       Method[] f = o.getMethods();
       sigMethods = new ArrayList<>();
       for (Method method : f) {
         if (method.isAnnotationPresent(Signature.class)) {
-          Class<?> rType = method.getReturnType();
-          String rTypeName = rType.getName();
-          if (!rType.isPrimitive() && acceptedSignatureTypes.contains(rTypeName)) {
-            throw new RuntimeException("unxepected type (" + rTypeName + ") used in signature");
-          }
           sigMethods.add(method);
         }
       }
+      classLabel = o.getName();
     }
 
     public void write(Map<String, Object> ret, Object o) {
       if (sigMethods.isEmpty()) {
         // by supplying using "o" this enforces identity/equls matching
         // which will most probably make the signature very unique
-        ret.put(o.getClass().getName(), o);
+        ret.put(classLabel, System.identityHashCode(o));
       } else {
-        ret.put(o.getClass().getName(), "1");
+        ret.put(classLabel, "1");
         for (Method method : sigMethods) {
           try {
             Object res = method.invoke(o);
