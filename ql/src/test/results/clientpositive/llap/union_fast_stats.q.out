@@ -175,11 +175,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	3                   
-	numRows             	5                   
-	rawDataSize         	1069                
 	totalSize           	4033                
 #### A masked pattern was here ####
 	 	 
@@ -513,7 +510,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1069                
-	totalSize           	3245                
+	totalSize           	3243                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -566,7 +563,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	15                  
 	rawDataSize         	3320                
-	totalSize           	3245                
+	totalSize           	3243                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -631,7 +628,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	20                  
 	rawDataSize         	4389                
-	totalSize           	4618                
+	totalSize           	4616                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
