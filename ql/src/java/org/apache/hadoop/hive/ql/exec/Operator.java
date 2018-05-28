@@ -134,7 +134,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     initOperatorId();
   }
 
-  /** Kryo ctor. */
   protected Operator() {
     childOperators = new ArrayList<Operator<? extends OperatorDesc>>();
     parentOperators = new ArrayList<Operator<? extends OperatorDesc>>();
@@ -244,6 +243,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   // for output rows of this operator
   protected transient ObjectInspector outputObjInspector;
 
+
+  public void setId(String id) {
+    this.id = id;
+  }
 
   /**
    * This function is not named getId(), to make sure java serialization does
@@ -1156,7 +1159,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     setOperatorId(getName() + "_" + this.id);
   }
 
-  private void setOperatorId(String operatorId) {
+  public void setOperatorId(String operatorId) {
     this.operatorId = operatorId;
   }
 
@@ -1525,8 +1528,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public void setCompilationOpContext(CompilationOpContext ctx) {
     cContext = ctx;
-    id = String.valueOf(ctx.nextOperatorId());
-    initOperatorId();
   }
 
   /** @return Compilation operator context. Only available during compilation. */

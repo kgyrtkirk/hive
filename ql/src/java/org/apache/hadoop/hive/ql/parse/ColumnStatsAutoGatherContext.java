@@ -127,7 +127,6 @@ public class ColumnStatsAutoGatherContext {
   private Operator genSelOpForAnalyze(String analyzeCommand, Context origCtx) throws IOException, ParseException, SemanticException{
     //0. initialization
     Context ctx = new Context(conf);
-    ctx.setOpContext(origCtx.getOpContext());
     ctx.setExplainConfig(origCtx.getExplainConfig());
     ASTNode tree = ParseUtils.parse(analyzeCommand, ctx);
 
