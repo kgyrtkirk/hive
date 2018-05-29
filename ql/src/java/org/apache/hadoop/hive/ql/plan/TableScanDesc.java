@@ -386,7 +386,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   @Signature
   public String getQualifiedTable() {
-    return tableMetadata.getFullyQualifiedName();
+    return dbName + "." + tableName;
   }
 
   public Table getTableMetadata() {
