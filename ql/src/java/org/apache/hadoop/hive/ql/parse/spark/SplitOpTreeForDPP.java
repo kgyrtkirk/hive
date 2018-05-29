@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
@@ -36,6 +35,8 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+
+import com.google.common.base.Preconditions;
 
 
 /**
@@ -115,7 +116,7 @@ public class SplitOpTreeForDPP implements NodeProcessor {
 
     Operator newBranchingOp = null;
     for (int i = 0; i < newRoots.size() && newBranchingOp == null; i++) {
-      newBranchingOp = OperatorUtils.findLogicalOperator(newRoots.get(i), branchingOp);
+      newBranchingOp = OperatorUtils.findOperatorById(newRoots.get(i), branchingOp.getOldOperatorId());
     }
     Preconditions.checkNotNull(newBranchingOp,
         "Cannot find the branching operator in cloned tree.");
