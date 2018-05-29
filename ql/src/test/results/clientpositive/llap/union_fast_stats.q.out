@@ -179,8 +179,8 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	3                   
 	numRows             	15                  
-	rawDataSize         	3483                
-	totalSize           	4033                
+	rawDataSize         	3315                
+	totalSize           	4152                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -233,7 +233,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	15                  
 	rawDataSize         	3483                
-	totalSize           	4033                
+	totalSize           	4152                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -297,8 +297,8 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	4                   
 	numRows             	20                  
-	rawDataSize         	4552                
-	totalSize           	5406                
+	rawDataSize         	4468                
+	totalSize           	5569                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -512,8 +512,8 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	15                  
-	rawDataSize         	3483                
-	totalSize           	3241                
+	rawDataSize         	3315                
+	totalSize           	3318                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -584,7 +584,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	15                  
 	rawDataSize         	3320                
-	totalSize           	3241                
+	totalSize           	3318                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -648,8 +648,8 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	20                  
-	rawDataSize         	4389                
-	totalSize           	4614                
+	rawDataSize         	4305                
+	totalSize           	4735                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
