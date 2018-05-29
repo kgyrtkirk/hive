@@ -48,7 +48,7 @@ POSTHOOK: Lineage: cmv_basetable_n2.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n2.d SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n2.t SIMPLE []
 POSTHOOK: Lineage: cmv_basetable_n2.userid SCRIPT []
-PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n2 ENABLE REWRITE
+PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n2
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS
@@ -59,7 +59,7 @@ PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable_n2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view_n2
-POSTHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n2 ENABLE REWRITE
+POSTHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n2
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS
@@ -94,7 +94,7 @@ rawDataSize	0
 storage_handler	org.apache.hadoop.hive.druid.DruidStorageHandler
 totalSize	0
 #### A masked pattern was here ####
-PREHOOK: query: CREATE MATERIALIZED VIEW IF NOT EXISTS cmv_mat_view2_n0 ENABLE REWRITE
+PREHOOK: query: CREATE MATERIALIZED VIEW IF NOT EXISTS cmv_mat_view2_n0
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS
@@ -105,7 +105,7 @@ PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable_n2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view2_n0
-POSTHOOK: query: CREATE MATERIALIZED VIEW IF NOT EXISTS cmv_mat_view2_n0 ENABLE REWRITE
+POSTHOOK: query: CREATE MATERIALIZED VIEW IF NOT EXISTS cmv_mat_view2_n0
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS
@@ -337,7 +337,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n2
-                  Statistics: Num rows: 30 Data size: 360 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 31 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (a = 3) (type: boolean)
                     Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
@@ -353,7 +353,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n2
-                  Statistics: Num rows: 30 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 31 Data size: 496 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((a = 3) and (d = 3)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -454,7 +454,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n2
-                  Statistics: Num rows: 30 Data size: 21960 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 31 Data size: 22692 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (a = 3) (type: boolean)
                     Statistics: Num rows: 5 Data size: 3660 Basic stats: COMPLETE Column stats: NONE
@@ -545,7 +545,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n2
-                  Statistics: Num rows: 30 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 31 Data size: 496 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((a = 3) and (d = 3)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
