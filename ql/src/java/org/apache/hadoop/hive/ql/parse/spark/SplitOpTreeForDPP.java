@@ -115,7 +115,7 @@ public class SplitOpTreeForDPP implements NodeProcessor {
 
     Operator newBranchingOp = null;
     for (int i = 0; i < newRoots.size() && newBranchingOp == null; i++) {
-      newBranchingOp = OperatorUtils.findOperatorById(newRoots.get(i), branchingOp.getOperatorId());
+      newBranchingOp = OperatorUtils.findLogicalOperator(newRoots.get(i), branchingOp);
     }
     Preconditions.checkNotNull(newBranchingOp,
         "Cannot find the branching operator in cloned tree.");

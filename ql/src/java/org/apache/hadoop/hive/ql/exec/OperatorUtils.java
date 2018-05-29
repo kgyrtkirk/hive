@@ -427,12 +427,12 @@ public class OperatorUtils {
     return matchingOps;
   }
 
-  public static Operator<?> findOperatorById(Operator<?> start, String opId) {
+  public static Operator<?> findLogicalOperator(Operator<?> start, Operator o) {
     Deque<Operator<?>> queue = new ArrayDeque<>();
     queue.add(start);
     while (!queue.isEmpty()) {
       Operator<?> op = queue.remove();
-      if (op.getOperatorId().equals(opId)) {
+      if (op.logicalEquals(o)) {
         return op;
       }
       if (op.getChildOperators() != null) {
