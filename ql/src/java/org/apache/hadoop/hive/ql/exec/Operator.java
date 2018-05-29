@@ -1526,6 +1526,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void setCompilationOpContext(CompilationOpContext ctx) {
+    if (cContext == ctx) {
+      return;
+    }
     cContext = ctx;
     id = String.valueOf(ctx.nextOperatorId());
     initOperatorId();
