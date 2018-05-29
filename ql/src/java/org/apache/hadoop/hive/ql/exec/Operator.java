@@ -80,6 +80,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected transient CompilationOpContext cContext;
   protected List<Operator<? extends OperatorDesc>> childOperators;
   protected List<Operator<? extends OperatorDesc>> parentOperators;
+  private transient String oldOperatorId;
   protected String operatorId;
   protected final AtomicBoolean abortOp;
   private transient ExecMapperContext execContext;
@@ -1152,12 +1153,13 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return operatorId;
   }
 
-  public void initOperatorId() {
-    setOperatorId(getName() + "_" + this.id);
+  public String getOldOperatorId() {
+    return oldOperatorId;
   }
 
-  private void setOperatorId(String operatorId) {
-    this.operatorId = operatorId;
+  public void initOperatorId() {
+    oldOperatorId = operatorId;
+    this.operatorId = getName() + "_" + this.id;
   }
 
   /*
