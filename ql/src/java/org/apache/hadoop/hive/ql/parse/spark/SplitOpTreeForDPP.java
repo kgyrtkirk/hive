@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-import com.clearspring.analytics.util.Lists;
+import com.google.common.base.Preconditions;
 
 
 /**
@@ -108,20 +108,20 @@ public class SplitOpTreeForDPP implements NodeProcessor {
     branchingOp.setChildOperators(null);
 
     // Now clone the tree above selOp
-    Operator<?> newBranchingOp = SerializationUtilities.cloneOperatorTree(branchingOp);
-    List<Operator<?>> newRoots = Lists.newArrayList();
-    OperatorUtils.findRoots(newBranchingOp, newRoots);
+    List<Operator<?>> newRoots = SerializationUtilities.cloneOperatorTree(roots);
     for (int i = 0; i < roots.size(); i++) {
+      TableScanOperator newTs = (TableScanOperator) newRoots.get(i);
       TableScanOperator oldTs = (TableScanOperator) roots.get(i);
-      for (int j = 0; j < newRoots.size(); j++) {
-        TableScanOperator newTs = (TableScanOperator) newRoots.get(j);
-        if (oldTs.logicalEquals(newTs)) {
-          newTs.getConf().setTableMetadata(oldTs.getConf().getTableMetadata());
-        }
-      }
+      newTs.getConf().setTableMetadata(oldTs.getConf().getTableMetadata());
     }
     context.clonedPruningTableScanSet.addAll(newRoots);
 
+    Operator newBranchingOp = null;
+    for (int i = 0; i < newRoots.size() && newBranchingOp == null; i++) {
+      newBranchingOp = OperatorUtils.findOperatorByMarker(newRoots.get(i), marker);
+    }
+    Preconditions.checkNotNull(newBranchingOp,
+        "Cannot find the branching operator in cloned tree.");
     newBranchingOp.setChildOperators(firstNodesOfPruningBranch);
 
     // Restore broken links between operators, and remove the branch from the original tree
