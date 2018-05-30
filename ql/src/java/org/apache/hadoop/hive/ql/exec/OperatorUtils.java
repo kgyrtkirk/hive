@@ -432,7 +432,7 @@ public class OperatorUtils {
     queue.add(start);
     while (!queue.isEmpty()) {
       Operator<?> op = queue.remove();
-      if (op.getMarkers().contains(marker)) {
+      if (marker.equals(op.getMarker())) {
         return op;
       }
       if (op.getChildOperators() != null) {

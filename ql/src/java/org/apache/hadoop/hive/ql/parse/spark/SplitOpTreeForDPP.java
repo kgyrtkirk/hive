@@ -102,7 +102,7 @@ public class SplitOpTreeForDPP implements NodeProcessor {
 
     Operator<?> branchingOp = pruningSinkOp.getBranchingOp();
     String marker = "SPARK_DPP_BRANCH_POINT_" + branchingOp.getOperatorId();
-    branchingOp.getMarkers().add(marker);
+    branchingOp.setMarker(marker);
     List<Operator<?>> savedChildOps = branchingOp.getChildOperators();
     List<Operator<?>> firstNodesOfPruningBranch = findFirstNodesOfPruningBranch(branchingOp);
     branchingOp.setChildOperators(null);

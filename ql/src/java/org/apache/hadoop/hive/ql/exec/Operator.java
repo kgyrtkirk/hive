@@ -89,7 +89,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected int indexForTezUnion = -1;
   private transient Configuration hconf;
   protected final transient Collection<Future<?>> asyncInitOperations = new HashSet<>();
-  private Set<String> markers = new HashSet<>();
+  private String marker;
 
   protected int bucketingVersion = -1;
   // It can be optimized later so that an operator operator (init/close) is performed
@@ -1153,8 +1153,12 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return operatorId;
   }
 
-  public Set<String> getMarkers() {
-    return markers;
+  public String getMarker() {
+    return marker;
+  }
+
+  public void setMarker(String marker) {
+    this.marker = marker;
   }
 
   public void initOperatorId() {
