@@ -80,7 +80,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected transient CompilationOpContext cContext;
   protected List<Operator<? extends OperatorDesc>> childOperators;
   protected List<Operator<? extends OperatorDesc>> parentOperators;
-  private transient String oldOperatorId;
   protected String operatorId;
   protected final AtomicBoolean abortOp;
   private transient ExecMapperContext execContext;
@@ -90,6 +89,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected int indexForTezUnion = -1;
   private transient Configuration hconf;
   protected final transient Collection<Future<?>> asyncInitOperations = new HashSet<>();
+  private Set<String> markers = new HashSet<>();
 
   protected int bucketingVersion = -1;
   // It can be optimized later so that an operator operator (init/close) is performed
@@ -1153,12 +1153,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return operatorId;
   }
 
-  public String getOldOperatorId() {
-    return oldOperatorId;
+  public Set<String> getMarkers() {
+    return markers;
   }
 
   public void initOperatorId() {
-    oldOperatorId = operatorId;
     this.operatorId = getName() + "_" + this.id;
   }
 

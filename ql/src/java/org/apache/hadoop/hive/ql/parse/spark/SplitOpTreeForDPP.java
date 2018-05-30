@@ -101,6 +101,8 @@ public class SplitOpTreeForDPP implements NodeProcessor {
     collectRoots(roots, pruningSinkOp);
 
     Operator<?> branchingOp = pruningSinkOp.getBranchingOp();
+    String marker = "SPARK_DPP_BRANCH_POINT_" + branchingOp.getOperatorId();
+    branchingOp.getMarkers().add(marker);
     List<Operator<?>> savedChildOps = branchingOp.getChildOperators();
     List<Operator<?>> firstNodesOfPruningBranch = findFirstNodesOfPruningBranch(branchingOp);
     branchingOp.setChildOperators(null);
@@ -116,7 +118,7 @@ public class SplitOpTreeForDPP implements NodeProcessor {
 
     Operator newBranchingOp = null;
     for (int i = 0; i < newRoots.size() && newBranchingOp == null; i++) {
-      newBranchingOp = OperatorUtils.findOperatorByOldId(newRoots.get(i), branchingOp.getOperatorId());
+      newBranchingOp = OperatorUtils.findOperatorByMarker(newRoots.get(i), marker);
     }
     Preconditions.checkNotNull(newBranchingOp,
         "Cannot find the branching operator in cloned tree.");
