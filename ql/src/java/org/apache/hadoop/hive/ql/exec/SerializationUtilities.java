@@ -39,6 +39,7 @@ import java.util.Properties;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.hive.common.CopyOnFirstWriteProperties;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -637,6 +638,11 @@ public class SerializationUtilities {
     }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.CLONE_PLAN);
     return newPlan;
+  }
+
+  public static Operator<?> cloneOperatorTree(Operator<?> op) {
+    List<Operator<?>> res = cloneOperatorTree(Lists.newArrayList(op));
+    return res.get(0);
   }
 
   /**
