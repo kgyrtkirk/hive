@@ -58,6 +58,14 @@ POSTHOOK: query: analyze table t_good compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_good
 POSTHOOK: Output: default@t_good
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/100M.data.txt' INTO TABLE t_bad
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t_bad
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/100M.data.txt' INTO TABLE t_bad
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t_bad
 PREHOOK: query: explain
 select sum(length(l.str||l.id||r.id||r.str)) from t_bad l join t_good r on (l.id=r.id)
 PREHOOK: type: QUERY
@@ -166,4 +174,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_bad
 POSTHOOK: Input: default@t_good
 #### A masked pattern was here ####
-196638	12
+196902426	12012
