@@ -4,8 +4,11 @@
 SET hive.vectorized.execution.enabled=false;
 set hive.map.aggr=false;
 
+
 set hive.strict.checks.bucketing=false;
 set hive.explain.user=true;
+
+-- select 'hive.fetch.task.conversion:',"${hiveconf:hive.fetch.task.conversion}";
 
 explain analyze
 SELECT x.key, z.value, y.value
