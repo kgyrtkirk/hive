@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.hooks;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -100,7 +99,7 @@ public class NoOperatorReuseCheckerHook implements ExecuteWithHookContext {
       return;
     }
 
-    Dispatcher disp = new DefaultRuleDispatcher(new UniqueOpIdChecker(), new LinkedHashMap<>(), null);
+    Dispatcher disp = new DefaultRuleDispatcher(new UniqueOpIdChecker(), new HashMap<>(), null);
     GraphWalker ogw = new DefaultGraphWalker(disp);
 
     HashMap<Node, Object> nodeOutput = new HashMap<Node, Object>();
