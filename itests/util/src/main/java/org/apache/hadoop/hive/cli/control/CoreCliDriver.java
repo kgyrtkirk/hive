@@ -84,6 +84,7 @@ public class CoreCliDriver extends CliAdapter {
           return null;
         }
       }.invoke("Initialization createSources done.", LOG, true);
+      qt.clearTestSideEffects();
 
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
@@ -96,6 +97,11 @@ public class CoreCliDriver extends CliAdapter {
   @Override
   @Before
   public void setUp() {
+  }
+
+  @Override
+  @After
+  public void tearDown() {
     try {
       new ElapsedTimeLoggingWrapper<Void>() {
         @Override
@@ -110,11 +116,7 @@ public class CoreCliDriver extends CliAdapter {
       System.err.flush();
       fail("Unexpected exception in setup");
     }
-  }
 
-  @Override
-  @After
-  public void tearDown() {
     try {
       new ElapsedTimeLoggingWrapper<Void>() {
         @Override
