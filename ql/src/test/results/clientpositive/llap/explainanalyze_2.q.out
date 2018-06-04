@@ -868,19 +868,19 @@ Stage-0
               <-Map 1 [CONTAINS] llap
                 Reduce Output Operator [RS_48]
                   PartitionCols:_col0
-                  Merge Join Operator [MERGEJOIN_46] (rows=382/480 width=4)
-                    Conds:SEL_44._col0=SEL_5._col0(Inner),Output:["_col0"]
+                  Merge Join Operator [MERGEJOIN_45] (rows=382 width=4)
+                    Conds:SEL_43._col0=SEL_5._col0(Inner),Output:["_col0"]
                   <-Select Operator [SEL_5] (rows=242/242 width=4)
                       Output:["_col0"]
                       Filter Operator [FIL_33] (rows=242/242 width=4)
                         predicate:key is not null
                         TableScan [TS_3] (rows=242/242 width=4)
                           default@tab_n6,s3,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
-                  <-Select Operator [SEL_44] (rows=242/242 width=4)
+                  <-Select Operator [SEL_43] (rows=242 width=4)
                       Output:["_col0"]
-                      Filter Operator [FIL_42] (rows=242/242 width=4)
+                      Filter Operator [FIL_41] (rows=242 width=4)
                         predicate:key is not null
-                        TableScan [TS_40] (rows=242/242 width=4)
+                        TableScan [TS_39] (rows=242 width=4)
                           Output:["key"]
               <-Map 6 [CONTAINS] llap
                 Reduce Output Operator [RS_53]
