@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -114,7 +113,7 @@ public class SerializeFilter implements PhysicalPlanResolver {
       Dispatcher disp = null;
       final Set<TableScanOperator> tableScans = new LinkedHashSet<TableScanOperator>();
 
-      LinkedHashMap<Rule, NodeProcessor> rules = new HashMap<Rule, NodeProcessor>();
+      LinkedHashMap<Rule, NodeProcessor> rules = new LinkedHashMap<Rule, NodeProcessor>();
       rules.put(new RuleRegExp("TS finder",
               TableScanOperator.getOperatorName() + "%"), new NodeProcessor() {
           @Override

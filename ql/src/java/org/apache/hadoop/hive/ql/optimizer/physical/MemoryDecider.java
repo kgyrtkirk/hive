@@ -129,7 +129,7 @@ public class MemoryDecider implements PhysicalPlanResolver {
       Dispatcher disp = null;
       final Set<MapJoinOperator> mapJoins = new LinkedHashSet<MapJoinOperator>();
 
-      LinkedHashMap<Rule, NodeProcessor> rules = new HashMap<Rule, NodeProcessor>();
+      LinkedHashMap<Rule, NodeProcessor> rules = new LinkedHashMap<Rule, NodeProcessor>();
       rules.put(new RuleRegExp("Map join memory estimator",
               MapJoinOperator.getOperatorName() + "%"), new NodeProcessor() {
           @Override
