@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -45,8 +47,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * TableAccessAnalyzer walks the operator graph from joins and group bys
@@ -72,7 +72,7 @@ public class TableAccessAnalyzer {
   public TableAccessInfo analyzeTableAccess() throws SemanticException {
 
     // Set up the rules for the graph walker for group by and join operators
-    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", GroupByOperator.getOperatorName() + "%"),
         new GroupByProcessor(pGraphContext));
     opRules.put(new RuleRegExp("R2", JoinOperator.getOperatorName() + "%"),

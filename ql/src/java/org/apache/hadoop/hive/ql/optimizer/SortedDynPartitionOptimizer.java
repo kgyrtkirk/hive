@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.ReduceField;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -87,7 +88,7 @@ public class SortedDynPartitionOptimizer extends Transform {
 
     // create a walker which walks the tree in a DFS manner while maintaining the
     // operator stack. The dispatcher generates the plan from the operator tree
-    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
 
     String FS = FileSinkOperator.getOperatorName() + "%";
 
@@ -197,7 +198,7 @@ public class SortedDynPartitionOptimizer extends Transform {
         /**
          * ROW__ID is always the 1st column of Insert representing Update/Delete operation
          * (set up in {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer})
-         * and we wrap it in UDFToInteger
+         * and we wrap it in UDFToInteger 
          * (in {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer#getPartitionColsFromBucketColsForUpdateDelete(Operator, boolean)})
          * which extracts bucketId from it
          * see {@link org.apache.hadoop.hive.ql.udf.UDFToInteger#evaluate(RecordIdentifier)}*/
@@ -226,15 +227,9 @@ public class SortedDynPartitionOptimizer extends Transform {
         sortNullOrder.add(order == 1 ? 0 : 1); // for asc, nulls first; for desc, nulls last
       }
       LOG.debug("Got sort order");
-      for (int i : sortPositions) {
-        LOG.debug("sort position " + i);
-      }
-      for (int i : sortOrder) {
-        LOG.debug("sort order " + i);
-      }
-      for (int i : sortNullOrder) {
-        LOG.debug("sort null order " + i);
-      }
+      for (int i : sortPositions) LOG.debug("sort position " + i);
+      for (int i : sortOrder) LOG.debug("sort order " + i);
+      for (int i : sortNullOrder) LOG.debug("sort null order " + i);
       List<Integer> partitionPositions = getPartitionPositions(dpCtx, fsParent.getSchema());
 
       // update file sink descriptor

@@ -191,7 +191,7 @@ public class TypeCheckProcFactory {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
-    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
 
     opRules.put(new RuleRegExp("R1", HiveParser.TOK_NULL + "%"),
         tf.getNullExprProcessor());
@@ -356,9 +356,7 @@ public class TypeCheckProcFactory {
       //       not be desirable for the literals; however, this used to be the default behavior
       //       for explicit decimal literals (e.g. 1.0BD), so we keep this behavior for now.
       HiveDecimal hd = HiveDecimal.create(strVal);
-      if (notNull && hd == null) {
-        return null;
-      }
+      if (notNull && hd == null) return null;
       int prec = 1;
       int scale = 0;
       if (hd != null) {
@@ -753,7 +751,7 @@ public class TypeCheckProcFactory {
     constantExpr.setFoldedFromCol(colInfo.getInternalName());
     return constantExpr;
   }
-
+  
   private static ExprNodeConstantDesc toListConstDesc(ColumnInfo colInfo, ObjectInspector inspector,
       ObjectInspector listElementOI) {
     PrimitiveObjectInspector poi = (PrimitiveObjectInspector)listElementOI;
@@ -762,12 +760,12 @@ public class TypeCheckProcFactory {
     for (Object o : values) {
       constant.add(poi.getPrimitiveJavaObject(o));
     }
-
+    
     ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
     constantExpr.setFoldedFromCol(colInfo.getInternalName());
     return constantExpr;
   }
-
+  
   private static ExprNodeConstantDesc toMapConstDesc(ColumnInfo colInfo, ObjectInspector inspector,
       ObjectInspector keyOI, ObjectInspector valueOI) {
     PrimitiveObjectInspector keyPoi = (PrimitiveObjectInspector)keyOI;
@@ -777,7 +775,7 @@ public class TypeCheckProcFactory {
     for (Map.Entry<?, ?> e : values.entrySet()) {
       constant.put(keyPoi.getPrimitiveJavaObject(e.getKey()), valuePoi.getPrimitiveJavaObject(e.getValue()));
     }
-
+    
     ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
     constantExpr.setFoldedFromCol(colInfo.getInternalName());
     return constantExpr;
@@ -792,7 +790,7 @@ public class TypeCheckProcFactory {
       PrimitiveObjectInspector fieldPoi = (PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector();
       constant.add(fieldPoi.getPrimitiveJavaObject(value));
     }
-
+    
     ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
     constantExpr.setFoldedFromCol(colInfo.getInternalName());
     return constantExpr;
@@ -1031,9 +1029,8 @@ public class TypeCheckProcFactory {
         desc = new ExprNodeFieldDesc(t, children.get(0), fieldNameString, isList);
       } else if (funcText.equals("[")) {
         // "[]" : LSQUARE/INDEX Expression
-        if (!ctx.getallowIndexExpr()) {
+        if (!ctx.getallowIndexExpr())
           throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(expr));
-        }
 
         assert (children.size() == 2);
 
@@ -1351,10 +1348,9 @@ public class TypeCheckProcFactory {
        * return null;
        */
       if (windowingTokens.contains(expr.getType())) {
-        if (!ctx.getallowWindowing()) {
+        if (!ctx.getallowWindowing())
           throw new SemanticException(SemanticAnalyzer.generateErrorMessage(expr,
               ErrorMsg.INVALID_FUNCTION.getMsg("Windowing is not supported in the context")));
-        }
 
         return null;
       }
@@ -1368,11 +1364,10 @@ public class TypeCheckProcFactory {
       }
 
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
-        if (!ctx.getallowAllColRef()) {
+        if (!ctx.getallowAllColRef())
           throw new SemanticException(SemanticAnalyzer.generateErrorMessage(expr,
               ErrorMsg.INVALID_COLUMN
                   .getMsg("All column reference is not supported in the context")));
-        }
 
         RowResolver input = ctx.getInputRR();
         ExprNodeColumnListDesc columnList = new ExprNodeColumnListDesc();
@@ -1441,11 +1436,10 @@ public class TypeCheckProcFactory {
       }
 
       if (expr.getType() == HiveParser.TOK_FUNCTIONSTAR) {
-        if (!ctx.getallowFunctionStar()) {
-          throw new SemanticException(SemanticAnalyzer.generateErrorMessage(expr,
-              ErrorMsg.INVALID_COLUMN
-                  .getMsg(".* reference is not supported in the context")));
-        }
+        if (!ctx.getallowFunctionStar())
+        throw new SemanticException(SemanticAnalyzer.generateErrorMessage(expr,
+            ErrorMsg.INVALID_COLUMN
+                .getMsg(".* reference is not supported in the context")));
 
         RowResolver input = ctx.getInputRR();
         for (ColumnInfo colInfo : input.getColumnInfos()) {
@@ -1512,11 +1506,10 @@ public class TypeCheckProcFactory {
       ASTNode expr = (ASTNode) nd;
       ASTNode sqNode = (ASTNode) expr.getParent().getChild(1);
 
-      if (!ctx.getallowSubQueryExpr()) {
+      if (!ctx.getallowSubQueryExpr())
         throw new CalciteSubquerySemanticException(SemanticAnalyzer.generateErrorMessage(sqNode,
             ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg("Currently SubQuery expressions are only allowed as " +
                     "Where and Having Clause predicates")));
-      }
 
       ExprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
       if (desc != null) {

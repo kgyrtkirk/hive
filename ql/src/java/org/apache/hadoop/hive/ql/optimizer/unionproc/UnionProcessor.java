@@ -20,14 +20,17 @@ package org.apache.hadoop.hive.ql.optimizer.unionproc;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.LevelOrderWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -62,11 +65,10 @@ public class UnionProcessor extends Transform {
    * @param pCtx
    *          the current parse context
    */
-  @Override
   public ParseContext transform(ParseContext pCtx) throws SemanticException {
     // create a walker which walks the tree in a BFS manner while maintaining
     // the operator stack.
-    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1",
       ReduceSinkOperator.getOperatorName() + "%.*" + UnionOperator.getOperatorName() + "%"),
       UnionProcFactory.getMapRedUnion());

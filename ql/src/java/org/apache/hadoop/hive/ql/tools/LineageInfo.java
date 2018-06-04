@@ -18,9 +18,12 @@
 
 package org.apache.hadoop.hive.ql.tools;
 
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Stack;
 import java.util.TreeSet;
 
@@ -35,8 +38,8 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
-import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
@@ -75,7 +78,6 @@ public class LineageInfo implements NodeProcessor {
   /**
    * Implements the process method for the NodeProcessor interface.
    */
-  @Override
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
       Object... nodeOutputs) throws SemanticException {
     ASTNode pt = (ASTNode) nd;
@@ -124,7 +126,7 @@ public class LineageInfo implements NodeProcessor {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
-    LinkedHashMap<Rule, NodeProcessor> rules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<Rule, NodeProcessor> rules = new LinkedHashMap<Rule, NodeProcessor>();
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along

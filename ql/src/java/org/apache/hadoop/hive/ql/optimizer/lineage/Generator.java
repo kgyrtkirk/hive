@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.lineage;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
@@ -92,7 +93,7 @@ public class Generator extends Transform {
     // Create the lineage context
     LineageCtx lCtx = new LineageCtx(pctx, index);
 
-    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", TableScanOperator.getOperatorName() + "%"),
       OpProcFactory.getTSProc());
     opRules.put(new RuleRegExp("R2", ScriptOperator.getOperatorName() + "%"),
