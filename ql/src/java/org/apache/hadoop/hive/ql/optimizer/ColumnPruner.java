@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
@@ -82,7 +84,7 @@ public class ColumnPruner extends Transform {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
-    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1",
       FilterOperator.getOperatorName() + "%"),
       ColumnPrunerProcFactory.getFilterProc());

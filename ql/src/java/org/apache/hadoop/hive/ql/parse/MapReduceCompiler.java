@@ -24,8 +24,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
@@ -68,8 +71,6 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MapReduceCompiler extends TaskCompiler {
 
@@ -288,7 +289,7 @@ public class MapReduceCompiler extends TaskCompiler {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
     // The dispatcher generates the plan from the operator tree
-    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp(new String("R1"),
         TableScanOperator.getOperatorName() + "%"),
         new GenMRTableScan1());

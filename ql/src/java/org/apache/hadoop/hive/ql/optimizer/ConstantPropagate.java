@@ -22,7 +22,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -43,8 +46,6 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcCtx.ConstantPropagateOption;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of one of the rule-based optimization steps. ConstantPropagate traverse the DAG
@@ -88,7 +89,7 @@ public class ConstantPropagate extends Transform {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
-    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
 
     opRules.put(new RuleRegExp("R1", FilterOperator.getOperatorName() + "%"),
         ConstantPropagateProcFactory.getFilterProc());

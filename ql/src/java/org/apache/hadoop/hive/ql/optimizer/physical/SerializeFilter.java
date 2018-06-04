@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
@@ -113,7 +114,7 @@ public class SerializeFilter implements PhysicalPlanResolver {
       Dispatcher disp = null;
       final Set<TableScanOperator> tableScans = new LinkedHashSet<TableScanOperator>();
 
-      LinkedHashMap<Rule, NodeProcessor> rules = new LinkedHashMap<Rule, NodeProcessor>();
+      Map<Rule, NodeProcessor> rules = new LinkedHashMap<Rule, NodeProcessor>();
       rules.put(new RuleRegExp("TS finder",
               TableScanOperator.getOperatorName() + "%"), new NodeProcessor() {
           @Override

@@ -23,6 +23,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVECONVERTJOINNOCON
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -79,7 +80,7 @@ public class ReduceSinkDeDuplication extends Transform {
 
     // If multiple rules can be matched with same cost, last rule will be choosen as a processor
     // see DefaultRuleDispatcher#dispatch()
-    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", RS + "%.*%" + RS + "%"),
         ReduceSinkDeduplicateProcFactory.getReducerReducerProc());
     opRules.put(new RuleRegExp("R2", RS + "%" + GBY + "%.*%" + RS + "%"),

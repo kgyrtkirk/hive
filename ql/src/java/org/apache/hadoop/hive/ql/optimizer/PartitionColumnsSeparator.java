@@ -75,7 +75,7 @@ public class PartitionColumnsSeparator extends Transform {
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     // 1. Trigger transformation
-    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", FilterOperator.getOperatorName() + "%"), new StructInTransformer());
 
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
@@ -117,7 +117,7 @@ public class PartitionColumnsSeparator extends Transform {
     }
 
     private ExprNodeDesc generateInClauses(ExprNodeDesc predicate) throws SemanticException {
-      LinkedHashMap<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
+      Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
       exprRules.put(new TypeRule(ExprNodeGenericFuncDesc.class), new StructInExprProcessor());
 
       // The dispatcher fires the processor corresponding to the closest matching
@@ -379,7 +379,7 @@ public class PartitionColumnsSeparator extends Transform {
         return null;
       }
 
-      // 4. See if all the field expressions of the left hand side of IN are expressions
+      // 4. See if all the field expressions of the left hand side of IN are expressions 
       // containing constants or only partition columns coming from same table.
       // If so, we need not perform this optimization and we should bail out.
       if (hasAllSubExprWithConstOrPartColOrVirtualColWithOneTableAlias(children.get(0))) {

@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -67,8 +69,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of  Correlation Optimizer. This optimizer is based on
@@ -207,7 +207,6 @@ public class CorrelationOptimizer extends Transform {
    *          current parse context
    * @throws SemanticException
    */
-  @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
 
     pCtx = pctx;
@@ -218,7 +217,7 @@ public class CorrelationOptimizer extends Transform {
 
     // detect correlations
     CorrelationNodeProcCtx corrCtx = new CorrelationNodeProcCtx(pCtx);
-    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", ReduceSinkOperator.getOperatorName() + "%"),
         new CorrelationNodeProc());
 
@@ -254,7 +253,7 @@ public class CorrelationOptimizer extends Transform {
     private void analyzeReduceSinkOperatorsOfJoinOperator(JoinCondDesc[] joinConds,
         List<Operator<? extends OperatorDesc>> rsOps, Operator<? extends OperatorDesc> curentRsOp,
         Set<ReduceSinkOperator> correlatedRsOps) {
-      if (correlatedRsOps.contains(curentRsOp)) {
+      if (correlatedRsOps.contains((ReduceSinkOperator) curentRsOp)) {
         return;
       }
       correlatedRsOps.add((ReduceSinkOperator) curentRsOp);
@@ -570,7 +569,6 @@ public class CorrelationOptimizer extends Transform {
       return reduceSinkOperators;
     }
 
-    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       CorrelationNodeProcCtx corrCtx = (CorrelationNodeProcCtx) ctx;

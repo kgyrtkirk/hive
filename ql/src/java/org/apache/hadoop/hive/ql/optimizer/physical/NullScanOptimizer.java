@@ -24,10 +24,14 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -41,8 +45,6 @@ import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer.Walker
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This optimizer attempts following two optimizations:
@@ -56,7 +58,7 @@ public class NullScanOptimizer implements PhysicalPlanResolver {
   @Override
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {
 
-    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", TableScanOperator.getOperatorName() + "%.*" +
       FilterOperator.getOperatorName() + "%"), new WhereFalseProcessor());
     Dispatcher disp = new NullScanTaskDispatcher(pctx, opRules);
@@ -147,9 +149,8 @@ public class NullScanOptimizer implements PhysicalPlanResolver {
       HashSet<TableScanOperator> tsOps = ((WalkerCtx)procCtx).getMayBeMetadataOnlyTableScans();
       if (tsOps != null) {
         for (Iterator<TableScanOperator> tsOp = tsOps.iterator(); tsOp.hasNext();) {
-          if (!isNullOpPresentInAllBranches(tsOp.next(),limitOp)) {
+          if (!isNullOpPresentInAllBranches(tsOp.next(),limitOp))
             tsOp.remove();
-          }
         }
       }
       LOG.info("Found Limit 0 TableScan. " + nd);

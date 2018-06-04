@@ -21,7 +21,11 @@ package org.apache.hadoop.hive.ql.optimizer.pcr;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -35,8 +39,6 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The transformation step that does partition condition remover.
@@ -63,7 +65,7 @@ public class PartitionConditionRemover extends Transform {
         new ArrayList<PcrOpWalkerCtx.OpToDeleteInfo>();
     PcrOpWalkerCtx opWalkerCtx = new PcrOpWalkerCtx(pctx, opToRemove);
 
-    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1",
       "(" + TableScanOperator.getOperatorName() + "%"
       + FilterOperator.getOperatorName() + "%)|("

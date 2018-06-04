@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleExactMatch;
+import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TypeRule;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -62,7 +63,7 @@ public final class PrunerUtils {
    */
   public static void walkOperatorTree(ParseContext pctx, NodeProcessorCtx opWalkerCtx,
       NodeProcessor filterProc, NodeProcessor defaultProc) throws SemanticException {
-    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
 
     // Build regular expression for operator rule.
     // "(TS%FIL%)|(TS%FIL%FIL%)"
@@ -102,7 +103,7 @@ public final class PrunerUtils {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
-    LinkedHashMap<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
+    Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
     exprRules.put(new TypeRule(ExprNodeColumnDesc.class) , colProc);
     exprRules.put(new TypeRule(ExprNodeFieldDesc.class), fieldProc);
     exprRules.put(new TypeRule(ExprNodeGenericFuncDesc.class), genFuncProc);
