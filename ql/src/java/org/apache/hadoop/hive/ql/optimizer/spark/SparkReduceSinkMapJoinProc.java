@@ -87,7 +87,7 @@ public class SparkReduceSinkMapJoinProc implements NodeProcessor {
   private boolean hasGroupBy(Operator<? extends OperatorDesc> mapjoinOp,
                              GenSparkProcContext context) throws SemanticException {
     List<Operator<? extends OperatorDesc>> childOps = mapjoinOp.getChildOperators();
-    Map<Rule, NodeProcessor> rules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> rules = new LinkedHashMap<Rule, NodeProcessor>();
     SparkMapJoinFollowedByGroupByProcessor processor = new SparkMapJoinFollowedByGroupByProcessor();
     rules.put(new RuleRegExp("GBY", GroupByOperator.getOperatorName() + "%"), processor);
     Dispatcher disp = new DefaultRuleDispatcher(null, rules, context);

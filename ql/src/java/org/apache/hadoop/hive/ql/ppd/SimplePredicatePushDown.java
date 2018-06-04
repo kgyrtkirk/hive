@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.ppd;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -58,7 +57,7 @@ public class SimplePredicatePushDown extends Transform {
     // create a the context for walking operators
     OpWalkerInfo opWalkerInfo = new OpWalkerInfo(pGraphContext);
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1",
       FilterOperator.getOperatorName() + "%"),
       OpProcFactory.getFilterSyntheticJoinPredicateProc());

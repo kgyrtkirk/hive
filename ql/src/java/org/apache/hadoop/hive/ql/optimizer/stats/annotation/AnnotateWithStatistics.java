@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer.stats.annotation;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -50,7 +49,7 @@ public class AnnotateWithStatistics extends Transform {
 
     // create a walker which walks the tree in a BFS manner while maintaining the
     // operator stack. The dispatcher generates the plan from the operator tree
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("TS", TableScanOperator.getOperatorName() + "%"),
         StatsRulesProcFactory.getTableScanRule());
     opRules.put(new RuleRegExp("SEL", SelectOperator.getOperatorName() + "%"),

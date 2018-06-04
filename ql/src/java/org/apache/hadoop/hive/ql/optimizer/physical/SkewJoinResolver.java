@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
@@ -107,7 +106,7 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
 
       SkewJoinProcCtx skewJoinProcContext = new SkewJoinProcCtx(task, pc);
 
-      Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+      LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
       opRules.put(new RuleRegExp("R1",
         CommonJoinOperator.getOperatorName() + "%"),
         SkewJoinProcFactory.getJoinProc());

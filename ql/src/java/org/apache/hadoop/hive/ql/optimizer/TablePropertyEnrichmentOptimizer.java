@@ -18,9 +18,15 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Stack;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -43,13 +49,9 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hive.common.util.ReflectionUtil;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Stack;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * Optimizer that updates TableScanOperators' Table-references with properties that might be
@@ -149,7 +151,7 @@ class TablePropertyEnrichmentOptimizer extends Transform {
 
     LOG.info("TablePropertyEnrichmentOptimizer::transform().");
 
-    Map<Rule, NodeProcessor> opRules = Maps.newLinkedHashMap();
+    LinkedHashMap<Rule, NodeProcessor> opRules = Maps.newLinkedHashMap();
     opRules.put(new RuleRegExp("R1", TableScanOperator.getOperatorName() + "%"),
         new Processor());
 

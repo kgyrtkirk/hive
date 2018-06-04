@@ -148,7 +148,7 @@ public class SparkCompiler extends TaskCompiler {
 
   private void runRemoveDynamicPruning(OptimizeSparkProcContext procCtx) throws SemanticException {
     ParseContext pCtx = procCtx.getParseContext();
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
 
     opRules.put(new RuleRegExp("Disabling Dynamic Partition Pruning",
         SparkPartitionPruningSinkOperator.getOperatorName() + "%"),
@@ -283,7 +283,7 @@ public class SparkCompiler extends TaskCompiler {
     }
 
     ParseContext parseContext = procCtx.getParseContext();
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(
         new RuleRegExp(new String("Dynamic Partition Pruning"),
             FilterOperator.getOperatorName() + "%"),
@@ -301,7 +301,7 @@ public class SparkCompiler extends TaskCompiler {
 
   private void runSetReducerParallelism(OptimizeSparkProcContext procCtx) throws SemanticException {
     ParseContext pCtx = procCtx.getParseContext();
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("Set parallelism - ReduceSink",
             ReduceSinkOperator.getOperatorName() + "%"),
         new SetSparkReducerParallelism(pCtx.getConf()));
@@ -319,7 +319,7 @@ public class SparkCompiler extends TaskCompiler {
 
   private void runJoinOptimizations(OptimizeSparkProcContext procCtx) throws SemanticException {
     ParseContext pCtx = procCtx.getParseContext();
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
 
     opRules.put(new TypeRule(JoinOperator.class), new SparkJoinOptimizer(pCtx));
 
@@ -355,7 +355,7 @@ public class SparkCompiler extends TaskCompiler {
     // -------------------------------- First Pass ---------------------------------- //
     // Identify SparkPartitionPruningSinkOperators, and break OP tree if necessary
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("Clone OP tree for PartitionPruningSink",
             SparkPartitionPruningSinkOperator.getOperatorName() + "%"),
         new SplitOpTreeForDPP());
@@ -419,7 +419,7 @@ public class SparkCompiler extends TaskCompiler {
     throws SemanticException {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher generates the plan from the operator tree
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     GenSparkWork genSparkWork = new GenSparkWork(GenSparkUtils.getUtils());
 
     opRules.put(new RuleRegExp("Split Work - ReduceSink",

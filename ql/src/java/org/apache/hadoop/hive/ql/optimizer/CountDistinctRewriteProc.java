@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -59,6 +57,8 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Queries of form : select max(c), count(distinct c) from T; generates a plan
@@ -89,7 +89,7 @@ public class CountDistinctRewriteProc extends Transform {
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     // process group-by pattern
     opRules
         .put(
@@ -288,7 +288,7 @@ public class CountDistinctRewriteProc extends Transform {
           outputKeyColumnNames, outputValueColumnNames, true, -1, 1, -1,
           AcidUtils.Operation.NOT_ACID));
       rs1.setColumnExprMap(colExprMap);
-      
+
       rs1.setSchema(new RowSchema(rowSchema));
       return rs1;
     }

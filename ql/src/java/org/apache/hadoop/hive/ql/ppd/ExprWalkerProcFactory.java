@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.ppd;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -309,7 +308,7 @@ public final class ExprWalkerProcFactory {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
-    Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
     exprRules.put(new TypeRule(ExprNodeColumnDesc.class), getColumnProcessor());
     exprRules.put(new TypeRule(ExprNodeFieldDesc.class), getFieldProcessor());
     exprRules.put(new TypeRule(ExprNodeGenericFuncDesc.class), getGenericFuncProcessor());

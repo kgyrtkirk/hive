@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.all;
 import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.auto;
-import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.only;
 import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.map;
 import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.none;
+import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.only;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -33,10 +33,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
-import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -73,9 +71,10 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 /**
  * LlapDecider takes care of tagging certain vertices in the execution graph as
@@ -120,7 +119,7 @@ public class LlapDecider implements PhysicalPlanResolver {
     private final float minReducersPerExec;
     private final int executorsPerNode;
     private List<MapJoinOperator> mapJoinOpList;
-    private final Map<Rule, NodeProcessor> rules;
+    private final LinkedHashMap<Rule, NodeProcessor> rules;
 
     public LlapDecisionDispatcher(PhysicalContext pctx, LlapMode mode) {
       conf = pctx.getConf();
@@ -160,14 +159,16 @@ public class LlapDecider implements PhysicalPlanResolver {
           graceMapJoinOp.getConf().setHybridHashJoin(false);
         }
         adjustAutoParallelism(work);
-        
+
         convertWork(tezWork, work);
       }
       mapJoinOpList.clear();
     }
 
     private void adjustAutoParallelism(BaseWork work) {
-      if (minReducersPerExec <= 0 || !(work instanceof ReduceWork)) return;
+      if (minReducersPerExec <= 0 || !(work instanceof ReduceWork)) {
+        return;
+      }
       ReduceWork reduceWork = (ReduceWork)work;
       if (reduceWork.isAutoReduceParallelism() == false && reduceWork.isUniformDistribution() == false) {
         return; // Not based on ARP and cannot assume uniform distribution, bail.
@@ -317,7 +318,9 @@ public class LlapDecider implements PhysicalPlanResolver {
         }
 
         ExprNodeDesc cur = exprs.removeFirst();
-        if (cur == null) continue;
+        if (cur == null) {
+          continue;
+        }
         if (cur.getChildren() != null) {
           exprs.addAll(cur.getChildren());
         }
@@ -357,7 +360,9 @@ public class LlapDecider implements PhysicalPlanResolver {
 
     private boolean checkExpressions(Collection<ExprNodeDesc> exprs) {
       for (ExprNodeDesc expr : exprs) {
-        if (!checkExpression(expr)) return false;
+        if (!checkExpression(expr)) {
+          return false;
+        }
       }
       return true;
     }
@@ -365,7 +370,9 @@ public class LlapDecider implements PhysicalPlanResolver {
     private boolean checkAggregators(Collection<AggregationDesc> aggs) {
       try {
         for (AggregationDesc agg: aggs) {
-          if (!checkAggregator(agg)) return false;
+          if (!checkAggregator(agg)) {
+            return false;
+          }
         }
       } catch (SemanticException e) {
         LOG.warn("Exception testing aggregators.",e);
@@ -374,8 +381,8 @@ public class LlapDecider implements PhysicalPlanResolver {
       return true;
     }
 
-    private Map<Rule, NodeProcessor> getRules() {
-      Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    private LinkedHashMap<Rule, NodeProcessor> getRules() {
+      LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
       opRules.put(new RuleRegExp("No scripts", ScriptOperator.getOperatorName() + "%"),
           new NodeProcessor() {
           @Override

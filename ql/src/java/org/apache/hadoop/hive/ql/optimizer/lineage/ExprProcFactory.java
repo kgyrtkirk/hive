@@ -70,7 +70,7 @@ public class ExprProcFactory {
   private static final String exprNodeFieldDescRegExp = ExprNodeFieldDesc.class.getName() + "%";
   private static final String exprNodeGenFuncDescRegExp = ExprNodeGenericFuncDesc.class.getName() + "%";
 
-  private static final Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
+  private static final LinkedHashMap<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
 
   static {
     exprRules.put(new RuleRegExp("R1", exprNodeColDescRegExp), getColumnProcessor());

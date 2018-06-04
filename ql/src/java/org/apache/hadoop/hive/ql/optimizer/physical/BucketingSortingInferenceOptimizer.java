@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -99,7 +98,7 @@ public class BucketingSortingInferenceOptimizer implements PhysicalPlanResolver 
       // In particular, this guarantees that the first operator is the reducer
       // (and its parent(s) are ReduceSinkOperators) since it begins walking the tree from
       // the reducer.
-      Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+      LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
       opRules.put(new RuleRegExp("R1", SelectOperator.getOperatorName() + "%"),
           BucketingSortingOpProcFactory.getSelProc());
       // Matches only GroupByOperators which are reducers, rather than map group by operators,

@@ -60,7 +60,7 @@ public class NonBlockingOpDeDupProc extends Transform {
     // 1. We apply the transformation
     String SEL = SelectOperator.getOperatorName();
     String FIL = FilterOperator.getOperatorName();
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", SEL + "%" + SEL + "%"), new SelectDedup(pctx));
     opRules.put(new RuleRegExp("R2", FIL + "%" + FIL + "%"), new FilterDedup());
 

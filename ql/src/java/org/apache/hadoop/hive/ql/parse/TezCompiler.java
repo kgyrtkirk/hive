@@ -430,7 +430,7 @@ public class TezCompiler extends TaskCompiler {
 
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("Set parallelism - ReduceSink",
         ReduceSinkOperator.getOperatorName() + "%"),
         new SetReducerParallelism());
@@ -456,7 +456,7 @@ public class TezCompiler extends TaskCompiler {
 
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(
         new RuleRegExp("Remove dynamic pruning by size",
         AppMasterEventOperator.getOperatorName() + "%"),
@@ -482,7 +482,7 @@ public class TezCompiler extends TaskCompiler {
     Deque<Operator<?>> deque = new LinkedList<Operator<?>>();
     deque.addAll(procCtx.parseContext.getTopOps().values());
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(
         new RuleRegExp(new String("Dynamic Partition Pruning"), FilterOperator.getOperatorName()
             + "%"), new DynamicPartitionPruningOptimization());
@@ -513,7 +513,7 @@ public class TezCompiler extends TaskCompiler {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
     // The dispatcher generates the plan from the operator tree
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("Split Work - ReduceSink",
         ReduceSinkOperator.getOperatorName() + "%"),
         genTezWork);
@@ -737,7 +737,7 @@ public class TezCompiler extends TaskCompiler {
       return;
     }
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(
             new RuleRegExp("R1", TableScanOperator.getOperatorName() + "%" +
                     ".*" + TezDummyStoreOperator.getOperatorName() + "%" +
@@ -823,7 +823,7 @@ public class TezCompiler extends TaskCompiler {
       return;
     }
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(
             new RuleRegExp("R1", MapJoinOperator.getOperatorName() + "%" +
                     MapJoinOperator.getOperatorName() + "%"),
@@ -992,7 +992,7 @@ public class TezCompiler extends TaskCompiler {
       return;
     }
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(
             new RuleRegExp("R1", GroupByOperator.getOperatorName() + "%" +
                     ReduceSinkOperator.getOperatorName() + "%" +

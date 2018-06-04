@@ -21,11 +21,8 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
@@ -53,6 +50,8 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Node processor factory for map join resolver. What it did is to replace the
@@ -87,6 +86,7 @@ public final class LocalMapJoinProcFactory {
    *
    */
   public static class MapJoinFollowedByGroupByProcessor implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       LocalMapJoinProcCtx context = (LocalMapJoinProcCtx) ctx;
@@ -107,6 +107,7 @@ public final class LocalMapJoinProcFactory {
    *
    */
   public static class LocalMapJoinProcessor implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       LocalMapJoinProcCtx context = (LocalMapJoinProcCtx) ctx;
@@ -252,7 +253,7 @@ public final class LocalMapJoinProcFactory {
     public void hasGroupBy(Operator<? extends OperatorDesc> mapJoinOp,
         LocalMapJoinProcCtx localMapJoinProcCtx) throws Exception {
       List<Operator<? extends OperatorDesc>> childOps = mapJoinOp.getChildOperators();
-      Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+      LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
       opRules.put(new RuleRegExp("R1", GroupByOperator.getOperatorName() + "%"),
         LocalMapJoinProcFactory.getGroupByProc());
       // The dispatcher fires the processor corresponding to the closest

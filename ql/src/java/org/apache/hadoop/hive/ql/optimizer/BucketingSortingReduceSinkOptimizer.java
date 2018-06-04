@@ -80,7 +80,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
 
     // process reduce sink added by hive.enforce.bucketing or hive.enforce.sorting
     opRules.put(new RuleRegExp("R1",
@@ -621,8 +621,8 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
             if (selectDesc.getColList().size() < bucketPositions.size()
                 || selectDesc.getColList().size() != fsOp.getSchema().getSignature().size()) {
               // Some columns in select are pruned. This may happen if those are constants.
-              // TODO: the best solution is to hook the operator before fs with the select operator. 
-              // See smb_mapjoin_20.q for more details. 
+              // TODO: the best solution is to hook the operator before fs with the select operator.
+              // See smb_mapjoin_20.q for more details.
               return null;
             }
             // Only columns can be selected for both sorted and bucketed positions

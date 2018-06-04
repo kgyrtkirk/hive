@@ -65,7 +65,7 @@ public class HiveOpConverterPostProc extends Transform {
     this.aliasToOpInfo = new HashMap<String, Operator<? extends OperatorDesc>>();
 
     // 2. Trigger transformation
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", JoinOperator.getOperatorName() + "%"), new JoinAnnotate());
     opRules.put(new RuleRegExp("R2", TableScanOperator.getOperatorName() + "%"), new TableScanAnnotate());
 
