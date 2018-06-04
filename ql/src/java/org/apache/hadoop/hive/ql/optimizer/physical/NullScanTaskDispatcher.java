@@ -19,12 +19,6 @@
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import java.io.IOException;
-
-import org.apache.hadoop.hive.common.StringInternUtils;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-
-import org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,15 +31,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.NullScanFileSystem;
 import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat;
+import org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
@@ -61,6 +56,8 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.NullStructSerDe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Iterate over all tasks one by one and removes all input paths from task if conditions as
@@ -71,9 +68,9 @@ public class NullScanTaskDispatcher implements Dispatcher {
   static final Logger LOG = LoggerFactory.getLogger(NullScanTaskDispatcher.class.getName());
 
   private final PhysicalContext physicalContext;
-  private final Map<Rule, NodeProcessor> rules;
+  private final LinkedHashMap<Rule, NodeProcessor> rules;
 
-  public NullScanTaskDispatcher(PhysicalContext context,  Map<Rule, NodeProcessor> rules) {
+  public NullScanTaskDispatcher(PhysicalContext context, LinkedHashMap<Rule, NodeProcessor> rules) {
     super();
     physicalContext = context;
     this.rules = rules;
@@ -93,7 +90,9 @@ public class NullScanTaskDispatcher implements Dispatcher {
   }
 
   private PartitionDesc changePartitionToMetadataOnly(PartitionDesc desc, Path path) {
-    if (desc == null) return null;
+    if (desc == null) {
+      return null;
+    }
     boolean isEmpty = false;
     try {
       isEmpty = Utilities.isEmptyPath(physicalContext.getConf(), path);
@@ -217,8 +216,9 @@ public class NullScanTaskDispatcher implements Dispatcher {
 
       LOG.debug(String.format("Found %d null table scans",
           walkerCtx.getMetadataOnlyTableScans().size()));
-      if (walkerCtx.getMetadataOnlyTableScans().size() > 0)
+      if (walkerCtx.getMetadataOnlyTableScans().size() > 0) {
         processAlias(mapWork, walkerCtx.getMetadataOnlyTableScans());
+      }
     }
     return null;
   }

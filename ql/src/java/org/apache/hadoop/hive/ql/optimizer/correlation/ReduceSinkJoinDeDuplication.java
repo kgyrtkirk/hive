@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.optimizer.correlation;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
@@ -72,7 +71,7 @@ public class ReduceSinkJoinDeDuplication extends Transform {
 
     ReduceSinkJoinDeDuplicateProcCtx cppCtx = new ReduceSinkJoinDeDuplicateProcCtx(pGraphContext);
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", ReduceSinkOperator.getOperatorName() + "%"),
         ReduceSinkJoinDeDuplicateProcFactory.getReducerMapJoinProc());
 

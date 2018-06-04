@@ -20,11 +20,8 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Stack;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -42,6 +39,8 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 //try to replace a bucket map join with a sorted merge map join
 public class SortedMergeBucketMapJoinOptimizer extends Transform {
@@ -58,7 +57,7 @@ public class SortedMergeBucketMapJoinOptimizer extends Transform {
 
     // Go through all joins - it should only contain selects and filters between
     // tablescan and join operators.
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", JoinOperator.getOperatorName() + "%"),
       getCheckCandidateJoin());
 
@@ -85,7 +84,7 @@ public class SortedMergeBucketMapJoinOptimizer extends Transform {
     // dictates which operator is allowed
     getListOfRejectedJoins(pctx, smbJoinContext);
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     // go through all map joins and find out all which have enabled bucket map
     // join.
     opRules.put(new RuleRegExp("R1", MapJoinOperator.getOperatorName() + "%"),

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 import org.apache.calcite.util.Pair;
@@ -59,7 +58,7 @@ import com.google.common.collect.Lists;
 /**
  * Takes a Filter operator on top of a TableScan and removes dynamic pruning conditions
  * if static partition pruning has been triggered already.
- * 
+ *
  * This transformation is executed when CBO is on and hence we can guarantee that the filtering
  * conditions on the partition columns will be immediately on top of the TableScan operator.
  *
@@ -78,7 +77,7 @@ public class RedundantDynamicPruningConditionsRemoval extends Transform {
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     // Make sure semijoin is not enabled. If it is, then do not remove the dynamic partition pruning predicates.
     if (!pctx.getConf().getBoolVar(HiveConf.ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION)) {
-      Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+      LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
       opRules.put(new RuleRegExp("R1", TableScanOperator.getOperatorName() + "%" +
               FilterOperator.getOperatorName() + "%"), new FilterTransformer());
 

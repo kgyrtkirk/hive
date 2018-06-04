@@ -21,14 +21,8 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
-import com.google.common.base.Predicates;
-import com.google.common.collect.Iterators;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
@@ -47,6 +41,11 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Predicates;
+import com.google.common.collect.Iterators;
 
 /** This optimization tries to remove {@link SelectOperator} from tree which don't do any
  * processing except forwarding columns from its parent to its children.
@@ -83,7 +82,7 @@ public class IdentityProjectRemover extends Transform {
     }
 
     // 1. We apply the transformation
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1",
       "(" + SelectOperator.getOperatorName() + "%)"), new ProjectRemover());
     GraphWalker ogw = new DefaultGraphWalker(new DefaultRuleDispatcher(null, opRules, null));
@@ -98,7 +97,7 @@ public class IdentityProjectRemover extends Transform {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-    	
+
       SelectOperator sel = (SelectOperator)nd;
       List<Operator<? extends OperatorDesc>> parents = sel.getParentOperators();
       if (parents.size() != 1 || parents.get(0) instanceof LateralViewForwardOperator) {

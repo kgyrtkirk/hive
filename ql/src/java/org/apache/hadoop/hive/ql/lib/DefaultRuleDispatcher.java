@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Stack;
 
@@ -36,7 +37,7 @@ public class DefaultRuleDispatcher implements Dispatcher {
 
   /**
    * Constructor.
-   * 
+   *
    * @param defaultProc
    *          default processor to be fired if no rule matches
    * @param rules
@@ -45,7 +46,7 @@ public class DefaultRuleDispatcher implements Dispatcher {
    *          operator processor context, which is opaque to the dispatcher
    */
   public DefaultRuleDispatcher(NodeProcessor defaultProc,
-      Map<Rule, NodeProcessor> rules, NodeProcessorCtx procCtx) {
+      LinkedHashMap<Rule, NodeProcessor> rules, NodeProcessorCtx procCtx) {
     this.defaultProc = defaultProc;
     procRules = rules;
     this.procCtx = procCtx;
@@ -53,7 +54,7 @@ public class DefaultRuleDispatcher implements Dispatcher {
 
   /**
    * Dispatcher function.
-   * 
+   *
    * @param nd
    *          operator to process
    * @param ndStack

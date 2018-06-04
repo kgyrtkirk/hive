@@ -250,7 +250,7 @@ public class MapJoinResolver implements PhysicalPlanResolver {
         throws SemanticException {
       LocalMapJoinProcCtx localMapJoinProcCtx = new LocalMapJoinProcCtx(task, physicalContext
           .getParseContext());
-      Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+      LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
       opRules.put(new RuleRegExp("R1", MapJoinOperator.getOperatorName() + "%"),
         LocalMapJoinProcFactory.getJoinProc());
       // The dispatcher fires the processor corresponding to the closest

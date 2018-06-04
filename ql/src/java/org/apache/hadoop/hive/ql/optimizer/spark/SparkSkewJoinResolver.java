@@ -82,7 +82,7 @@ public class SparkSkewJoinResolver implements PhysicalPlanResolver {
         SparkWork sparkWork = ((SparkTask) task).getWork();
         SparkSkewJoinProcCtx skewJoinProcCtx =
             new SparkSkewJoinProcCtx(task, physicalContext.getParseContext());
-        Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+        LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
         opRules.put(new RuleRegExp("R1", CommonJoinOperator.getOperatorName() + "%"),
             SparkSkewJoinProcFactory.getJoinProc());
         Dispatcher disp = new DefaultRuleDispatcher(

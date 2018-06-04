@@ -64,7 +64,7 @@ public class PredicateTransitivePropagate extends Transform {
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     pGraphContext = pctx;
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", "(" +
         FilterOperator.getOperatorName() + "%" +
         ReduceSinkOperator.getOperatorName() + "%" +

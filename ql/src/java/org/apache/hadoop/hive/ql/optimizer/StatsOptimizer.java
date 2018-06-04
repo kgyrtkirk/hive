@@ -17,7 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -75,14 +83,7 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import com.google.common.collect.Lists;
 
 
 /** There is a set of queries which can be answered entirely from statistics stored in metastore.
@@ -118,7 +119,7 @@ public class StatsOptimizer extends Transform {
     String SEL = SelectOperator.getOperatorName() + "%";
     String FS = FileSinkOperator.getOperatorName() + "%";
 
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    LinkedHashMap<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", TS + SEL + GBY + RS + GBY + SEL + FS),
         new MetaDataProcessor(pctx));
     opRules.put(new RuleRegExp("R2", TS + SEL + GBY + RS + GBY + FS),
@@ -498,8 +499,9 @@ public class StatsOptimizer extends Transform {
                 }
                 for (List<ColumnStatisticsObj> statObj : result) {
                   ColumnStatisticsData statData = validateSingleColStat(statObj);
-                  if (statData == null)
+                  if (statData == null) {
                     return null;
+                  }
                   Long nullCnt = getNullcountFor(type, statData);
                   if (nullCnt == null) {
                     Logger.debug("Unsupported type: " + desc.getTypeString() + " encountered in "
@@ -582,7 +584,9 @@ public class StatsOptimizer extends Transform {
                   }
                   for (List<ColumnStatisticsObj> statObj : result) {
                     ColumnStatisticsData statData = validateSingleColStat(statObj);
-                    if (statData == null) return null;
+                    if (statData == null) {
+                      return null;
+                    }
                     LongColumnStatsData lstats = statData.getLongStats();
                     if (!lstats.isSetHighValue()) {
                       continue;
@@ -608,7 +612,9 @@ public class StatsOptimizer extends Transform {
                   }
                   for (List<ColumnStatisticsObj> statObj : result) {
                     ColumnStatisticsData statData = validateSingleColStat(statObj);
-                    if (statData == null) return null;
+                    if (statData == null) {
+                      return null;
+                    }
                     DoubleColumnStatsData dstats = statData.getDoubleStats();
                     if (!dstats.isSetHighValue()) {
                       continue;
@@ -632,7 +638,9 @@ public class StatsOptimizer extends Transform {
                   }
                   for (List<ColumnStatisticsObj> statObj : result) {
                     ColumnStatisticsData statData = validateSingleColStat(statObj);
-                    if (statData == null) return null;
+                    if (statData == null) {
+                      return null;
+                    }
                     DateColumnStatsData dstats = statData.getDateStats();
                     if (!dstats.isSetHighValue()) {
                       continue;
@@ -717,7 +725,9 @@ public class StatsOptimizer extends Transform {
                   }
                   for (List<ColumnStatisticsObj> statObj : result) {
                     ColumnStatisticsData statData = validateSingleColStat(statObj);
-                    if (statData == null) return null;
+                    if (statData == null) {
+                      return null;
+                    }
                     LongColumnStatsData lstats = statData.getLongStats();
                     if (!lstats.isSetLowValue()) {
                       continue;
@@ -743,7 +753,9 @@ public class StatsOptimizer extends Transform {
                   }
                   for (List<ColumnStatisticsObj> statObj : result) {
                     ColumnStatisticsData statData = validateSingleColStat(statObj);
-                    if (statData == null) return null;
+                    if (statData == null) {
+                      return null;
+                    }
                     DoubleColumnStatsData dstats = statData.getDoubleStats();
                     if (!dstats.isSetLowValue()) {
                       continue;
@@ -767,7 +779,9 @@ public class StatsOptimizer extends Transform {
                   }
                   for (List<ColumnStatisticsObj> statObj : result) {
                     ColumnStatisticsData statData = validateSingleColStat(statObj);
-                    if (statData == null) return null;
+                    if (statData == null) {
+                      return null;
+                    }
                     DateColumnStatsData dstats = statData.getDateStats();
                     if (!dstats.isSetLowValue()) {
                       continue;
