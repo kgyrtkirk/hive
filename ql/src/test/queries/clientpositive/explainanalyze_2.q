@@ -7,8 +7,6 @@ set hive.map.aggr=false;
 set hive.strict.checks.bucketing=false;
 set hive.explain.user=true;
 
-set hive.auto.convert.join=false;
-
 explain analyze
 SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
