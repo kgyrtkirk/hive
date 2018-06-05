@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import java.util.List;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Operator;

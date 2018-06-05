@@ -5,13 +5,6 @@ PREHOOK: query: create table t_bad (id integer,str integer)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_bad
-POSTHOOK: query: create table t_bad (id integer,str integer)
-        row format delimited FIELDS TERMINATED BY '\u0009'
-        stored as textfile
-        TBLPROPERTIES('transactional'='false')
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t_bad
 PREHOOK: query: create table t_good (id integer,str integer)
         row format delimited FIELDS TERMINATED BY '\u0009'
         stored as textfile
@@ -19,55 +12,67 @@ PREHOOK: query: create table t_good (id integer,str integer)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_good
-POSTHOOK: query: create table t_good (id integer,str integer)
-        row format delimited FIELDS TERMINATED BY '\u0009'
-        stored as textfile
-        TBLPROPERTIES('transactional'='false')
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t_good
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/I10M.data.txt' INTO TABLE t_bad
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@t_bad
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/I10M.data.txt' INTO TABLE t_bad
-POSTHOOK: type: LOAD
-#### A masked pattern was here ####
-POSTHOOK: Output: default@t_bad
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/I10M.data.txt' INTO TABLE t_good
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@t_good
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/I10M.data.txt' INTO TABLE t_good
-POSTHOOK: type: LOAD
-#### A masked pattern was here ####
-POSTHOOK: Output: default@t_good
 PREHOOK: query: analyze table t_bad compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@t_bad
 PREHOOK: Output: default@t_bad
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table t_bad compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@t_bad
-POSTHOOK: Output: default@t_bad
-#### A masked pattern was here ####
+Stage-0 FILE SYSTEM COUNTERS:
+Stage-0 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 650000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_6: 1
+   RECORDS_OUT_OPERATOR_GBY_2: 1
+   RECORDS_OUT_OPERATOR_GBY_4: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_3: 1
+   RECORDS_OUT_OPERATOR_SEL_1: 650000
+   RECORDS_OUT_OPERATOR_TS_0: 650000
+Stage-0 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
 PREHOOK: query: analyze table t_good compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@t_good
 PREHOOK: Output: default@t_good
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table t_good compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@t_good
-POSTHOOK: Output: default@t_good
-#### A masked pattern was here ####
+Stage-0 FILE SYSTEM COUNTERS:
+Stage-0 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 650000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_6: 1
+   RECORDS_OUT_OPERATOR_GBY_2: 1
+   RECORDS_OUT_OPERATOR_GBY_4: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_3: 1
+   RECORDS_OUT_OPERATOR_SEL_1: 650000
+   RECORDS_OUT_OPERATOR_TS_0: 650000
+Stage-0 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
 PREHOOK: query: explain
 select sum(length(l.str||l.id||r.id||r.str)) from t_bad l join t_good r on (l.id=r.id)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
-select sum(length(l.str||l.id||r.id||r.str)) from t_bad l join t_good r on (l.id=r.id)
-POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -165,9 +170,43 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t_bad
 PREHOOK: Input: default@t_good
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(length(l.str||l.id||r.id||r.str)),count(*) from t_bad l join t_good r on (l.id=r.id)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t_bad
-POSTHOOK: Input: default@t_good
-#### A masked pattern was here ####
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   MEMORY_USAGE+MAPJOIN_27+attempt_#ID#: 25182996
+   RECORDS_IN_Map_1: 650000
+   RECORDS_IN_Map_3: 650000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_3: 650000
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_22: 650000
+   RECORDS_OUT_OPERATOR_FIL_25: 650000
+   RECORDS_OUT_OPERATOR_FS_32: 1
+   RECORDS_OUT_OPERATOR_GBY_29: 1
+   RECORDS_OUT_OPERATOR_GBY_31: 1
+   RECORDS_OUT_OPERATOR_MAPJOIN_27: 650000
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_24: 650000
+   RECORDS_OUT_OPERATOR_RS_30: 1
+   RECORDS_OUT_OPERATOR_SEL_23: 650000
+   RECORDS_OUT_OPERATOR_SEL_26: 650000
+   RECORDS_OUT_OPERATOR_SEL_28: 650000
+   RECORDS_OUT_OPERATOR_TS_0: 650000
+   RECORDS_OUT_OPERATOR_TS_3: 650000
+Stage-1 LLAP IO COUNTERS:
+   CACHE_MISS_BYTES: 17755580
+   NUM_DECODED_BATCHES: 14
+   NUM_VECTOR_BATCHES: 1274
+   ROWS_EMITTED: 1300000
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   GROUPED_INPUT_SPLITS_Map_3: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_DIRECTORIES_Map_3: 1
+   INPUT_FILES_Map_1: 1
+   INPUT_FILES_Map_3: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+   RAW_INPUT_SPLITS_Map_3: 1
 15155580	650000

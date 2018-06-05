@@ -1,3 +1,4 @@
+SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecTezSummaryPrinter;
 
 create table t_bad (id integer,str integer)
         row format delimited FIELDS TERMINATED BY '\u0009'

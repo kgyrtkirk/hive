@@ -115,7 +115,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   public enum Counter {
     RECORDS_OUT_OPERATOR,
-    RECORDS_OUT_INTERMEDIATE
+    RECORDS_OUT_INTERMEDIATE,
+    MEMORY_USAGE
   }
 
   protected transient State state = State.UNINIT;

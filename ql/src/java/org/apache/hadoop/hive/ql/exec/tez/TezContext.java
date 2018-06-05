@@ -91,4 +91,10 @@ public class TezContext extends MapredContext {
   public Map<Integer, DummyStoreOperator> getDummyOpsMap() {
     return dummyOpsMap;
   }
+
+  @Override
+  public String getExecutorId() {
+    return getTezProcessorContext().getUniqueIdentifier();
+  }
+
 }
