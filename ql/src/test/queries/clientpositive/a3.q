@@ -1,3 +1,4 @@
+set hive.mapjoin.hybridgrace.hashtable=false;
 SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecTezSummaryPrinter;
 
 create table t_bad (id integer,str integer)
@@ -11,8 +12,8 @@ create table t_good (id integer,str integer)
         TBLPROPERTIES('transactional'='false');
 
 
-LOAD DATA LOCAL INPATH '../../data/files/I10M.data.txt' INTO TABLE t_bad;
-LOAD DATA LOCAL INPATH '../../data/files/I10M.data.txt' INTO TABLE t_good;
+LOAD DATA LOCAL INPATH '../../data/files/I100M.data.txt' INTO TABLE t_bad;
+LOAD DATA LOCAL INPATH '../../data/files/I100M.data.txt' INTO TABLE t_good;
 
 analyze table t_bad compute statistics for columns;
 analyze table t_good compute statistics for columns;

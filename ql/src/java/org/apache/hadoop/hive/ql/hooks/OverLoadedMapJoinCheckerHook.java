@@ -17,6 +17,7 @@
 // */
 //
 //package org.apache.hadoop.hive.ql.hooks;
+
 //
 //import java.util.List;
 //import java.util.TreeMap;
