@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,6 +74,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.math.DoubleMath;
 
 /**
  * ConvertJoinMapJoin is an optimization that replaces a common join
@@ -264,7 +266,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     memoryOverHeadPerRow += vLongEstimatedLength; // length
 
     long numRows=statistics.getNumRows();
-    long worstCaseNeededSlots = 1L << Long.highestOneBit((long) (numRows / hashTableLoadFactor));
+    long worstCaseNeededSlots = 1L << DoubleMath.log2(numRows / hashTableLoadFactor, RoundingMode.UP);
 
     onlineDataSize += statistics.getDataSize();
     onlineDataSize += memoryOverHeadPerRow * statistics.getNumRows();
