@@ -9,13 +9,13 @@ create table t_good (id integer,str string)
         stored as textfile
         TBLPROPERTIES('transactional'='false');
 
-LOAD DATA LOCAL INPATH '../../data/files/100K.data.txt' INTO TABLE t_bad;
+LOAD DATA LOCAL INPATH '../../data/files/100M.data.txt' INTO TABLE t_bad;
 LOAD DATA LOCAL INPATH '../../data/files/100M.data.txt' INTO TABLE t_good;
 
 analyze table t_bad compute statistics;
 analyze table t_good compute statistics;
 
-LOAD DATA LOCAL INPATH '../../data/files/100M.data.txt' INTO TABLE t_bad;
+-- LOAD DATA LOCAL INPATH '../../data/files/100M.data.txt' INTO TABLE t_bad;
 
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask = true;

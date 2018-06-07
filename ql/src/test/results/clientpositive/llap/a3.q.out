@@ -12,11 +12,11 @@ PREHOOK: query: create table t_good (id integer,str integer)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_good
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/I10M.data.txt' INTO TABLE t_bad
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/I100M.data.txt' INTO TABLE t_bad
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@t_bad
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/I10M.data.txt' INTO TABLE t_good
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/I100M.data.txt' INTO TABLE t_good
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@t_good
@@ -29,22 +29,22 @@ Stage-0 FILE SYSTEM COUNTERS:
 Stage-0 HIVE COUNTERS:
    CREATED_FILES: 1
    DESERIALIZE_ERRORS: 0
-   RECORDS_IN_Map_1: 650000
+   RECORDS_IN_Map_1: 6500000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2
    RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
    RECORDS_OUT_OPERATOR_FS_6: 1
-   RECORDS_OUT_OPERATOR_GBY_2: 1
+   RECORDS_OUT_OPERATOR_GBY_2: 2
    RECORDS_OUT_OPERATOR_GBY_4: 1
    RECORDS_OUT_OPERATOR_MAP_0: 0
-   RECORDS_OUT_OPERATOR_RS_3: 1
-   RECORDS_OUT_OPERATOR_SEL_1: 650000
-   RECORDS_OUT_OPERATOR_TS_0: 650000
+   RECORDS_OUT_OPERATOR_RS_3: 2
+   RECORDS_OUT_OPERATOR_SEL_1: 6500000
+   RECORDS_OUT_OPERATOR_TS_0: 6500000
 Stage-0 INPUT COUNTERS:
-   GROUPED_INPUT_SPLITS_Map_1: 1
+   GROUPED_INPUT_SPLITS_Map_1: 2
    INPUT_DIRECTORIES_Map_1: 1
    INPUT_FILES_Map_1: 1
-   RAW_INPUT_SPLITS_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 2
 PREHOOK: query: analyze table t_good compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@t_good
@@ -54,22 +54,22 @@ Stage-0 FILE SYSTEM COUNTERS:
 Stage-0 HIVE COUNTERS:
    CREATED_FILES: 1
    DESERIALIZE_ERRORS: 0
-   RECORDS_IN_Map_1: 650000
+   RECORDS_IN_Map_1: 6500000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2
    RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
    RECORDS_OUT_OPERATOR_FS_6: 1
-   RECORDS_OUT_OPERATOR_GBY_2: 1
+   RECORDS_OUT_OPERATOR_GBY_2: 2
    RECORDS_OUT_OPERATOR_GBY_4: 1
    RECORDS_OUT_OPERATOR_MAP_0: 0
-   RECORDS_OUT_OPERATOR_RS_3: 1
-   RECORDS_OUT_OPERATOR_SEL_1: 650000
-   RECORDS_OUT_OPERATOR_TS_0: 650000
+   RECORDS_OUT_OPERATOR_RS_3: 2
+   RECORDS_OUT_OPERATOR_SEL_1: 6500000
+   RECORDS_OUT_OPERATOR_TS_0: 6500000
 Stage-0 INPUT COUNTERS:
-   GROUPED_INPUT_SPLITS_Map_1: 1
+   GROUPED_INPUT_SPLITS_Map_1: 2
    INPUT_DIRECTORIES_Map_1: 1
    INPUT_FILES_Map_1: 1
-   RAW_INPUT_SPLITS_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 2
 PREHOOK: query: explain
 select sum(length(l.str||l.id||r.id||r.str)) from t_bad l join t_good r on (l.id=r.id)
 PREHOOK: type: QUERY
@@ -90,14 +90,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: l
-                  Statistics: Num rows: 650000 Data size: 5200000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 6500000 Data size: 52000000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: id is not null (type: boolean)
-                    Statistics: Num rows: 650000 Data size: 5200000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 6500000 Data size: 52000000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: id (type: int), str (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 650000 Data size: 5200000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 6500000 Data size: 52000000 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -107,11 +107,11 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2, _col3
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 644308 Data size: 10308928 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 6559755 Data size: 104956080 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: length(concat(concat(concat(_col1, _col0), _col2), _col3)) (type: int)
                           outputColumnNames: _col0
-                          Statistics: Num rows: 644308 Data size: 10308928 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 6559755 Data size: 104956080 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(_col0)
                             mode: hash
@@ -127,19 +127,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: r
-                  Statistics: Num rows: 650000 Data size: 5200000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 6500000 Data size: 52000000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: id is not null (type: boolean)
-                    Statistics: Num rows: 650000 Data size: 5200000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 6500000 Data size: 52000000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: id (type: int), str (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 650000 Data size: 5200000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 6500000 Data size: 52000000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 650000 Data size: 5200000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 6500000 Data size: 52000000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -174,39 +174,40 @@ Stage-1 FILE SYSTEM COUNTERS:
 Stage-1 HIVE COUNTERS:
    CREATED_FILES: 1
    DESERIALIZE_ERRORS: 0
-   MEMORY_USAGE+MAPJOIN_27+attempt_#ID#: 25182996
-   RECORDS_IN_Map_1: 650000
-   RECORDS_IN_Map_3: 650000
+   MEMORY_USAGE+MAPJOIN_27+attempt_#ID#: 260064540
+   MEMORY_USAGE+MAPJOIN_27+attempt_#ID#: 260064540
+   RECORDS_IN_Map_1: 6500000
+   RECORDS_IN_Map_3: 6500000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
-   RECORDS_OUT_INTERMEDIATE_Map_3: 650000
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2
+   RECORDS_OUT_INTERMEDIATE_Map_3: 6500000
    RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
-   RECORDS_OUT_OPERATOR_FIL_22: 650000
-   RECORDS_OUT_OPERATOR_FIL_25: 650000
+   RECORDS_OUT_OPERATOR_FIL_22: 6500000
+   RECORDS_OUT_OPERATOR_FIL_25: 6500000
    RECORDS_OUT_OPERATOR_FS_32: 1
-   RECORDS_OUT_OPERATOR_GBY_29: 1
+   RECORDS_OUT_OPERATOR_GBY_29: 2
    RECORDS_OUT_OPERATOR_GBY_31: 1
-   RECORDS_OUT_OPERATOR_MAPJOIN_27: 650000
+   RECORDS_OUT_OPERATOR_MAPJOIN_27: 6500000
    RECORDS_OUT_OPERATOR_MAP_0: 0
-   RECORDS_OUT_OPERATOR_RS_24: 650000
-   RECORDS_OUT_OPERATOR_RS_30: 1
-   RECORDS_OUT_OPERATOR_SEL_23: 650000
-   RECORDS_OUT_OPERATOR_SEL_26: 650000
-   RECORDS_OUT_OPERATOR_SEL_28: 650000
-   RECORDS_OUT_OPERATOR_TS_0: 650000
-   RECORDS_OUT_OPERATOR_TS_3: 650000
+   RECORDS_OUT_OPERATOR_RS_24: 6500000
+   RECORDS_OUT_OPERATOR_RS_30: 2
+   RECORDS_OUT_OPERATOR_SEL_23: 6500000
+   RECORDS_OUT_OPERATOR_SEL_26: 6500000
+   RECORDS_OUT_OPERATOR_SEL_28: 6500000
+   RECORDS_OUT_OPERATOR_TS_0: 6500000
+   RECORDS_OUT_OPERATOR_TS_3: 6500000
 Stage-1 LLAP IO COUNTERS:
-   CACHE_MISS_BYTES: 17755580
-   NUM_DECODED_BATCHES: 14
-   NUM_VECTOR_BATCHES: 1274
-   ROWS_EMITTED: 1300000
+   CACHE_MISS_BYTES: 203555584
+   NUM_DECODED_BATCHES: 132
+   NUM_VECTOR_BATCHES: 12742
+   ROWS_EMITTED: 13000000
 Stage-1 INPUT COUNTERS:
-   GROUPED_INPUT_SPLITS_Map_1: 1
-   GROUPED_INPUT_SPLITS_Map_3: 1
+   GROUPED_INPUT_SPLITS_Map_1: 2
+   GROUPED_INPUT_SPLITS_Map_3: 2
    INPUT_DIRECTORIES_Map_1: 1
    INPUT_DIRECTORIES_Map_3: 1
    INPUT_FILES_Map_1: 1
    INPUT_FILES_Map_3: 1
-   RAW_INPUT_SPLITS_Map_1: 1
-   RAW_INPUT_SPLITS_Map_3: 1
-15155580	650000
+   RAW_INPUT_SPLITS_Map_1: 2
+   RAW_INPUT_SPLITS_Map_3: 2
+177555584	6500000
