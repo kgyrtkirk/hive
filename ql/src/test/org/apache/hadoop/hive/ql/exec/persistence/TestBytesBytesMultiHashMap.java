@@ -43,7 +43,7 @@ public class TestBytesBytesMultiHashMap {
   @Test
   public void testCapacityValidation() {
     BytesBytesMultiHashMap map = new BytesBytesMultiHashMap(CAPACITY, LOAD_FACTOR, WB_SIZE);
-    assertEquals(CAPACITY, map.getCapacity());
+    assertEquals(16, map.getCapacity());
     map = new BytesBytesMultiHashMap(9, LOAD_FACTOR, WB_SIZE);
     assertEquals(16, map.getCapacity());
 

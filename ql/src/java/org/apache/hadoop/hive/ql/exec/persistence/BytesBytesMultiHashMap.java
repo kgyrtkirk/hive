@@ -25,14 +25,14 @@ import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.MemoryEstimate;
-import org.apache.hadoop.hive.ql.util.JavaDataModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.debug.Utils;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -164,12 +164,17 @@ public final class BytesBytesMultiHashMap implements MemoryEstimate {
     if (loadFactor < 0 || loadFactor > 1) {
       throw new AssertionError("Load factor must be between (0, 1].");
     }
+    if (loadFactor > .5) {
+      // for "sane" load factors upscale initialCapacity to make the hashmap able to accomodate
+      // initialCap elements without rehashing
+      initialCapacity = (int) (initialCapacity / loadFactor);
+    }
     assert initialCapacity > 0;
     initialCapacity = (Long.bitCount(initialCapacity) == 1)
         ? initialCapacity : nextHighestPowerOfTwo(initialCapacity);
     // 8 bytes per long in the refs, assume data will be empty. This is just a sanity check.
     int maxCapacity =  (maxProbeSize <= 0) ? DEFAULT_MAX_CAPACITY
-        : (int)Math.min((long)DEFAULT_MAX_CAPACITY, maxProbeSize / 8);
+        : (int)Math.min(DEFAULT_MAX_CAPACITY, maxProbeSize / 8);
     if (maxCapacity < DEFAULT_MIN_MAX_CAPACITY) {
       maxCapacity = DEFAULT_MIN_MAX_CAPACITY;
     }
