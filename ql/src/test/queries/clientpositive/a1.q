@@ -12,8 +12,8 @@ create table t_good (id integer,str string)
 LOAD DATA LOCAL INPATH '../../data/files/100M.data.txt' INTO TABLE t_bad;
 LOAD DATA LOCAL INPATH '../../data/files/100M.data.txt' INTO TABLE t_good;
 
-analyze table t_bad compute statistics;
-analyze table t_good compute statistics;
+analyze table t_bad compute statistics for columns;
+analyze table t_good compute statistics for columns;
 
 -- LOAD DATA LOCAL INPATH '../../data/files/100M.data.txt' INTO TABLE t_bad;
 
