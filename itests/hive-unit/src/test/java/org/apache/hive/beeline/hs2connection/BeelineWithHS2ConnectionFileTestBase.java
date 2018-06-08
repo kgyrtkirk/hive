@@ -191,8 +191,15 @@ public abstract class BeelineWithHS2ConnectionFileTestBase {
     assertFalse(rowSet.numRows() == 0);
   }
 
-  protected String testBeeLineConnection(String path, String[] beelineArgs,
-      String expectedOutput) throws IOException {
+  protected void assertBeelineOutputContains(String path, String[] beelineArgs,
+      String expectedOutput) throws Exception {
+    String output = getBeelineOutput(path, beelineArgs);
+    Assert.assertNotNull(output);
+    Assert.assertTrue("Output " + output + " does not contain " + expectedOutput,
+        output.toLowerCase().contains(expectedOutput.toLowerCase()));
+  }
+
+  protected String getBeelineOutput(String path, String[] beelineArgs) throws Exception {
     TestBeeLine beeLine = null;
     try {
       if(path != null) {
@@ -205,9 +212,6 @@ public abstract class BeelineWithHS2ConnectionFileTestBase {
       beeLine.begin(beelineArgs, null);
       String output = beeLine.getOutput();
       System.out.println(output);
-      Assert.assertNotNull(output);
-      Assert.assertTrue("Output " + output + " does not contain " + expectedOutput,
-          output.toLowerCase().contains(expectedOutput.toLowerCase()));
       return output;
     } finally {
       if (beeLine != null) {

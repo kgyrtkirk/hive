@@ -27,21 +27,28 @@ public class TestBeelineConnectionUsingHiveSite extends BeelineWithHS2Connection
   public void testBeelineConnectionHttp() throws Exception {
     setupHs2();
     String path = createDefaultHs2ConnectionFile();
-    testBeeLineConnection(path, new String[] { "-e", "show tables;" }, tableName);
+    assertBeelineOutputContains(path, new String[] { "-e", "show tables;" }, tableName);
   }
 
   @Test
   public void testBeelineConnectionSSL() throws Exception {
     setupSSLHs2();
     String path = createDefaultHs2ConnectionFile();
-    testBeeLineConnection(path, new String[] { "-e", "show tables;" }, tableName);
+    assertBeelineOutputContains(path, new String[] { "-e", "show tables;" }, tableName);
   }
 
   @Test
   public void testBeelineConnectionNoAuth() throws Exception {
     setupNoAuthHs2();
     String path = createDefaultHs2ConnectionFile();
-    testBeeLineConnection(path, new String[] { "-e", "show tables;" }, tableName);
+    assertBeelineOutputContains(path, new String[] { "-e", "show tables;" }, tableName);
+  }
+
+  @Test
+  public void testBeelineDoesntUseDefaultIfU() throws Exception {
+    setupNoAuthHs2();
+    String path = createDefaultHs2ConnectionFile();
+    assertBeelineOutputContains(path, new String[] {"-u", "asdasd", "-e", "show tables;" }, tableName);
   }
 
   /*
@@ -51,7 +58,7 @@ public class TestBeelineConnectionUsingHiveSite extends BeelineWithHS2Connection
   @Test
   public void testBeelineWithNoConnectionFile() throws Exception {
     setupNoAuthHs2();
-    testBeeLineConnection(null, new String[] { "-e", "show tables;" }, "no current connection");
+    assertBeelineOutputContains(null, new String[] { "-e", "show tables;" }, "no current connection");
   }
 
   @Test
@@ -60,7 +67,7 @@ public class TestBeelineConnectionUsingHiveSite extends BeelineWithHS2Connection
     String url = miniHS2.getBaseJdbcURL() + "default";
     String args[] = new String[] { "-u", url, "-n", System.getProperty("user.name"), "-p", "foo",
         "-e", "show tables;" };
-    testBeeLineConnection(null, args, tableName);
+    assertBeelineOutputContains(null, args, tableName);
   }
 
   private void setupNoAuthHs2() throws Exception {
