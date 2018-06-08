@@ -177,6 +177,11 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	3                   
+<<<<<<< HEAD
+=======
+	numRows             	5                   
+	rawDataSize         	1300                
+>>>>>>> asf/master
 	totalSize           	4033                
 #### A masked pattern was here ####
 	 	 
@@ -510,7 +515,11 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1069                
+<<<<<<< HEAD
 	totalSize           	3243                
+=======
+	totalSize           	3247                
+>>>>>>> asf/master
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -563,7 +572,11 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	15                  
 	rawDataSize         	3320                
+<<<<<<< HEAD
 	totalSize           	3243                
+=======
+	totalSize           	3247                
+>>>>>>> asf/master
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -628,7 +641,11 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	20                  
 	rawDataSize         	4389                
+<<<<<<< HEAD
 	totalSize           	4616                
+=======
+	totalSize           	4620                
+>>>>>>> asf/master
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
