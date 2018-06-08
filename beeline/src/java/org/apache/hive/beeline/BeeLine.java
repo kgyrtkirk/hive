@@ -900,7 +900,10 @@ public class BeeLine implements Closeable {
         comForDebug = constructCmdUrl(url, user, driver, true);
       }
       debug(comForDebug);
-      return dispatch(com);
+      if (!dispatch(com)) {
+        exit = true;
+        return false;
+      }
     }
     // load property file
     String propertyFile = cl.getOptionValue("property-file");
