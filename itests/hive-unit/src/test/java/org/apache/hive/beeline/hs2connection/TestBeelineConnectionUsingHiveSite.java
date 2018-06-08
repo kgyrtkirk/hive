@@ -17,6 +17,10 @@
  */
 package org.apache.hive.beeline.hs2connection;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -48,7 +52,10 @@ public class TestBeelineConnectionUsingHiveSite extends BeelineWithHS2Connection
   public void testBeelineDoesntUseDefaultIfU() throws Exception {
     setupNoAuthHs2();
     String path = createDefaultHs2ConnectionFile();
-    assertBeelineOutputContains(path, new String[] {"-u", "asdasd", "-e", "show tables;" }, tableName);
+    BeelineResult res = getBeelineOutput(path, new String[] {"-u", "invalidUrl", "-e", "show tables;" });
+    assertEquals(1, res.exitCode);
+    assertFalse(tableName + " should not appear", res.output.toLowerCase().contains(tableName));
+
   }
 
   /*
@@ -58,7 +65,9 @@ public class TestBeelineConnectionUsingHiveSite extends BeelineWithHS2Connection
   @Test
   public void testBeelineWithNoConnectionFile() throws Exception {
     setupNoAuthHs2();
-    assertBeelineOutputContains(null, new String[] { "-e", "show tables;" }, "no current connection");
+    BeelineResult res = getBeelineOutput(null, new String[] {"-e", "show tables;" });
+    assertEquals(1, res.exitCode);
+    assertTrue(res.output.toLowerCase().contains("no current connection"));
   }
 
   @Test
