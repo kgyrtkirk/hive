@@ -1273,7 +1273,9 @@ public class BeeLine implements Closeable {
 
         if (!dispatch(line)) {
           lastExecutionResult = ERRNO_OTHER;
-          if (exitOnError) break;
+          if (exitOnError) {
+            break;
+          }
         } else if (line != null) {
           lastExecutionResult = ERRNO_OK;
         }
@@ -2209,7 +2211,7 @@ public class BeeLine implements Closeable {
     }
     info("scan complete in "
         + (System.currentTimeMillis() - start) + "ms");
-    return (Driver[]) driverClasses.toArray(new Driver[0]);
+    return driverClasses.toArray(new Driver[0]);
   }
 
   // /////////////////////////////////////
