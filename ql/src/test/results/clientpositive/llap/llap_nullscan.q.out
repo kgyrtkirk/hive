@@ -56,10 +56,10 @@ STAGE PLANS:
                       File Output Operator
                         compressed: false
                         GlobalTableId: 0
-                        directory: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
                         NumFilesPerFileSink: 1
                         Statistics: Num rows: 1 Data size: 736 Basic stats: COMPLETE Column stats: NONE
-                        Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -93,7 +93,6 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:string:string:string
 #### A masked pattern was here ####
-                    location hdfs://### HDFS PATH ###
                     name default.src_orc_n1
                     numFiles 1
                     numRows 10
@@ -116,7 +115,6 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string:string:string
 #### A masked pattern was here ####
-                      location hdfs://### HDFS PATH ###
                       name default.src_orc_n1
                       numFiles 1
                       numRows 10
@@ -141,11 +139,11 @@ STAGE PLANS:
 PREHOOK: query: select * from src_orc_n1 where 1=2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_orc_n1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_orc_n1 where 1=2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_orc_n1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: explain
 select * from (select key from src_orc_n1 where false) a left outer join (select key from src_orc_n1 limit 0) b on a.key=b.key
 PREHOOK: type: QUERY
@@ -238,11 +236,11 @@ STAGE PLANS:
 PREHOOK: query: select * from (select key from src_orc_n1 where false) a left outer join (select key from src_orc_n1 limit 0) b on a.key=b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_orc_n1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from (select key from src_orc_n1 where false) a left outer join (select key from src_orc_n1 limit 0) b on a.key=b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_orc_n1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: explain
 select count(key) from src_orc_n1 where false union all select count(key) from src_orc_n1
 PREHOOK: type: QUERY
@@ -343,11 +341,11 @@ STAGE PLANS:
 PREHOOK: query: select count(key) from src_orc_n1 where false union all select count(key) from src_orc_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_orc_n1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select count(key) from src_orc_n1 where false union all select count(key) from src_orc_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_orc_n1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 0
 10
 PREHOOK: query: explain 
@@ -432,11 +430,11 @@ STAGE PLANS:
 PREHOOK: query: select * from src_orc_n1 s1, src_orc_n1 s2 where false and s1.value = s2.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_orc_n1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_orc_n1 s1, src_orc_n1 s2 where false and s1.value = s2.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_orc_n1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: drop table if exists src_orc_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_orc_n1
