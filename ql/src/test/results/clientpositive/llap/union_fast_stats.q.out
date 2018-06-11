@@ -175,23 +175,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	3                   
-<<<<<<< HEAD
-<<<<<<< HEAD
 	numRows             	15                  
 	rawDataSize         	3315                
 	totalSize           	4152                
-=======
-<<<<<<< HEAD
-=======
->>>>>>> asf/master
-=======
-	numRows             	5                   
-	rawDataSize         	1300                
->>>>>>> asf/master
-	totalSize           	4033                
->>>>>>> kgyrtkirk/HIVE-19237-oid-once
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -522,22 +511,9 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	1                   
-<<<<<<< HEAD
 	numRows             	15                  
 	rawDataSize         	3315                
 	totalSize           	3318                
-=======
-	numRows             	5                   
-	rawDataSize         	1069                
-<<<<<<< HEAD
-	totalSize           	3243                
-=======
-	totalSize           	3247                
->>>>>>> asf/master
-<<<<<<< HEAD
->>>>>>> kgyrtkirk/HIVE-19237-oid-once
-=======
->>>>>>> asf/master
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -550,7 +526,6 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-<<<<<<< HEAD
 PREHOOK: query: select 15,count(*) from small_alltypesorc_a_n2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a_n2
@@ -577,16 +552,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a_n2
 #### A masked pattern was here ####
 15	15
-=======
-PREHOOK: query: ANALYZE TABLE small_alltypesorc_a_n2 COMPUTE STATISTICS
-PREHOOK: type: QUERY
-PREHOOK: Input: default@small_alltypesorc_a_n2
-PREHOOK: Output: default@small_alltypesorc_a_n2
-POSTHOOK: query: ANALYZE TABLE small_alltypesorc_a_n2 COMPUTE STATISTICS
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@small_alltypesorc_a_n2
-POSTHOOK: Output: default@small_alltypesorc_a_n2
->>>>>>> asf/master
 PREHOOK: query: desc formatted small_alltypesorc_a_n2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@small_alltypesorc_a_n2
@@ -619,21 +584,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	15                  
 	rawDataSize         	3320                
-<<<<<<< HEAD
-<<<<<<< HEAD
 	totalSize           	3318                
-=======
-<<<<<<< HEAD
-=======
->>>>>>> asf/master
-	totalSize           	3243                
-=======
-	totalSize           	3247                
->>>>>>> asf/master
-<<<<<<< HEAD
->>>>>>> kgyrtkirk/HIVE-19237-oid-once
-=======
->>>>>>> asf/master
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -697,20 +648,8 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	20                  
-<<<<<<< HEAD
 	rawDataSize         	4305                
 	totalSize           	4735                
-=======
-	rawDataSize         	4389                
-<<<<<<< HEAD
-	totalSize           	4616                
-=======
-	totalSize           	4620                
->>>>>>> asf/master
-<<<<<<< HEAD
->>>>>>> kgyrtkirk/HIVE-19237-oid-once
-=======
->>>>>>> asf/master
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
