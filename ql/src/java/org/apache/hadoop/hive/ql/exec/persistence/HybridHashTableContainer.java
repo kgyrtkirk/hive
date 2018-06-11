@@ -46,8 +46,8 @@ import org.apache.hadoop.hive.ql.exec.vector.rowbytescontainer.VectorRowBytesCon
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
-import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
@@ -159,6 +159,11 @@ public class HybridHashTableContainer
       this.initialCapacity = initialCapacity;
       this.loadFactor = loadFactor;
       this.wbSize = wbSize;
+    }
+
+    public HashPartition(int initialCapacity, HashMapSettings settings, long maxProbeSize,
+        boolean createHashMap, String spillLocalDirs) {
+      this(initialCapacity, settings.getLoadFactor(), settings.getWB(), maxProbeSize, createHashMap, spillLocalDirs);
     }
 
     /* Get the in memory hashmap */
@@ -274,12 +279,10 @@ public class HybridHashTableContainer
   public HybridHashTableContainer(Configuration hconf, long keyCount, long memoryAvailable,
                                   long estimatedTableSize, HybridHashTableConf nwayConf)
       throws SerDeException, IOException {
-    this(HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT),
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD),
-        HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR),
+    this(
+        new HashMapSettings(hconf),
         HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMEMCHECKFREQ),
         HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINWBSIZE),
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEWBSIZE),
         HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINNUMPARTITIONS),
         HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEMAPJOINOPTIMIZEDTABLEPROBEPERCENT),
         HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINBLOOMFILTER),
@@ -287,15 +290,14 @@ public class HybridHashTableContainer
         HiveUtils.getLocalDirList(hconf));
   }
 
-  private HybridHashTableContainer(float keyCountAdj, int threshold, float loadFactor,
-      int memCheckFreq, int minWbSize, int maxWbSize, int minNumParts, float probePercent,
+  private HybridHashTableContainer(HashMapSettings settings,
+      int memCheckFreq, int minWbSize, int minNumParts, float probePercent,
       boolean useBloomFilter, long estimatedTableSize, long keyCount, long memoryAvailable,
       HybridHashTableConf nwayConf, String spillLocalDirs)
       throws SerDeException, IOException {
     directWriteHelper = new MapJoinBytesTableContainer.DirectKeyValueWriter();
 
-    int newKeyCount = HashMapWrapper.calculateTableSize(
-        keyCountAdj, threshold, loadFactor, keyCount);
+    int newKeyCount = HashMapWrapper.calculateTableSize(settings, keyCount);
 
     memoryThreshold = memoryAvailable;
     tableRowSize = estimatedTableSize / (keyCount != 0 ? keyCount : 1);
@@ -337,7 +339,9 @@ public class HybridHashTableContainer
     // Cap WriteBufferSize to avoid large preallocations
     // We also want to limit the size of writeBuffer, because we normally have 16 partitions, that
     // makes spilling prediction (isMemoryFull) to be too defensive which results in unnecessary spilling
-    writeBufferSize = writeBufferSize < minWbSize ? minWbSize : Math.min(maxWbSize / numPartitions, writeBufferSize);
+    // FIXME: MAX/NP can be smaller than MIN
+    writeBufferSize =
+        writeBufferSize < minWbSize ? minWbSize : Math.min(settings.getWB() / numPartitions, writeBufferSize);
     LOG.info("Write buffer size: " + writeBufferSize);
     memoryUsed = 0;
 
@@ -361,7 +365,8 @@ public class HybridHashTableContainer
 
     hashPartitions = new HashPartition[numPartitions];
     int numPartitionsSpilledOnCreation = 0;
-    int initialCapacity = Math.max(newKeyCount / numPartitions, threshold / numPartitions);
+    // FIXME: this is just unneccessary
+    int initialCapacity = Math.max(newKeyCount / numPartitions, settings.getThreshold() / numPartitions);
     // maxCapacity should be calculated based on a percentage of memoryThreshold, which is to divide
     // row size using long size
     float probePercentage = (float) 8 / (tableRowSize + 8); // long_size / tableRowSize + long_size
@@ -373,23 +378,23 @@ public class HybridHashTableContainer
       if (this.nwayConf == null ||                          // binary join
           nwayConf.getLoadedContainerList().size() == 0) {  // n-way join, first (biggest) small table
         if (i == 0) { // We unconditionally create a hashmap for the first hash partition
-          hashPartitions[i] = new HashPartition(initialCapacity, loadFactor, writeBufferSize,
+          hashPartitions[i] = new HashPartition(initialCapacity, settings,
               maxCapacity, true, spillLocalDirs);
           LOG.info("Each new partition will require memory: " + hashPartitions[0].hashMap.memorySize());
         } else {
           // To check whether we have enough memory to allocate for another hash partition,
           // we need to get the size of the first hash partition to get an idea.
-          hashPartitions[i] = new HashPartition(initialCapacity, loadFactor, writeBufferSize,
+          hashPartitions[i] = new HashPartition(initialCapacity, settings,
               maxCapacity, memoryUsed + hashPartitions[0].hashMap.memorySize() < memoryThreshold,
               spillLocalDirs);
         }
       } else {                                              // n-way join, all later small tables
         // For all later small tables, follow the same pattern of the previously loaded tables.
         if (this.nwayConf.doSpillOnCreation(i)) {
-          hashPartitions[i] = new HashPartition(initialCapacity, loadFactor, writeBufferSize,
+          hashPartitions[i] = new HashPartition(initialCapacity, settings,
               maxCapacity, false, spillLocalDirs);
         } else {
-          hashPartitions[i] = new HashPartition(initialCapacity, loadFactor, writeBufferSize,
+          hashPartitions[i] = new HashPartition(initialCapacity, settings,
               maxCapacity, true, spillLocalDirs);
         }
       }
@@ -861,7 +866,9 @@ public class HybridHashTableContainer
 
     @Override
     public boolean hasAnyNulls(int fieldCount, boolean[] nullsafes) {
-      if (nulls == null || nulls.length == 0) return false;
+      if (nulls == null || nulls.length == 0) {
+        return false;
+      }
       for (int i = 0; i < nulls.length; i++) {
         if (nulls[i] && (nullsafes == null || !nullsafes[i])) {
           return true;

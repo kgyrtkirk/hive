@@ -64,4 +64,8 @@ public class HashMapSettings {
     return wbSize;
   }
 
+  public int getWB() {
+    return wbSize;
+  }
+
 }
