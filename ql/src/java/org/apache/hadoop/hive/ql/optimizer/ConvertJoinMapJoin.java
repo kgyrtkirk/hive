@@ -265,7 +265,10 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     memoryOverHeadPerRow += vLongEstimatedLength; // offset
     memoryOverHeadPerRow += vLongEstimatedLength; // length
 
-    long numRows=statistics.getNumRows();
+    long numRows = statistics.getNumRows();
+    if (numRows <= 0) {
+      numRows=1;
+    }
     long worstCaseNeededSlots = 1L << DoubleMath.log2(numRows / hashTableLoadFactor, RoundingMode.UP);
 
     onlineDataSize += statistics.getDataSize();
