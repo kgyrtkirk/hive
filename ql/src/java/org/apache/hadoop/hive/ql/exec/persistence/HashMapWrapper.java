@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
@@ -36,11 +34,13 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -55,8 +55,6 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
   protected static final Logger LOG = LoggerFactory.getLogger(HashMapWrapper.class);
   private static final long DEFAULT_HASHMAP_ENTRY_SIZE = 1024L;
   // default threshold for using main memory based HashMap
-  private static final int THRESHOLD = 1000000;
-  private static final float LOADFACTOR = 0.75f;
   private final HashMap<MapJoinKey, MapJoinRowContainer> mHash; // main memory HashMap
   private final MapJoinKey lastKey = null;
   private final Output output = new Output(0); // Reusable output for serialization
