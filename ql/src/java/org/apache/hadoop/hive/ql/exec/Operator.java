@@ -88,6 +88,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected transient long runTimeNumRows = 0;
   private transient Configuration hconf;
   protected final transient Collection<Future<?>> asyncInitOperations = new HashSet<>();
+  private String marker;
 
   protected int bucketingVersion = -1;
   // It can be optimized later so that an operator operator (init/close) is performed
@@ -1151,12 +1152,16 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return operatorId;
   }
 
-  public void initOperatorId() {
-    setOperatorId(getName() + "_" + this.id);
+  public String getMarker() {
+    return marker;
   }
 
-  private void setOperatorId(String operatorId) {
-    this.operatorId = operatorId;
+  public void setMarker(String marker) {
+    this.marker = marker;
+  }
+
+  public void initOperatorId() {
+    this.operatorId = getName() + "_" + this.id;
   }
 
   /*
@@ -1523,6 +1528,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void setCompilationOpContext(CompilationOpContext ctx) {
+    if (cContext == ctx) {
+      return;
+    }
     cContext = ctx;
     id = String.valueOf(ctx.nextOperatorId());
     initOperatorId();

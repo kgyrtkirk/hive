@@ -178,9 +178,18 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	3                   
+<<<<<<< HEAD
 	numRows             	15                  
 	rawDataSize         	3315                
 	totalSize           	4152                
+=======
+<<<<<<< HEAD
+=======
+	numRows             	5                   
+	rawDataSize         	1300                
+>>>>>>> asf/master
+	totalSize           	4033                
+>>>>>>> kgyrtkirk/HIVE-19237-oid-once
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -511,9 +520,19 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	1                   
+<<<<<<< HEAD
 	numRows             	15                  
 	rawDataSize         	3315                
 	totalSize           	3318                
+=======
+	numRows             	5                   
+	rawDataSize         	1069                
+<<<<<<< HEAD
+	totalSize           	3243                
+=======
+	totalSize           	3247                
+>>>>>>> asf/master
+>>>>>>> kgyrtkirk/HIVE-19237-oid-once
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -584,7 +603,15 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	15                  
 	rawDataSize         	3320                
+<<<<<<< HEAD
 	totalSize           	3318                
+=======
+<<<<<<< HEAD
+	totalSize           	3243                
+=======
+	totalSize           	3247                
+>>>>>>> asf/master
+>>>>>>> kgyrtkirk/HIVE-19237-oid-once
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -648,8 +675,17 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	20                  
+<<<<<<< HEAD
 	rawDataSize         	4305                
 	totalSize           	4735                
+=======
+	rawDataSize         	4389                
+<<<<<<< HEAD
+	totalSize           	4616                
+=======
+	totalSize           	4620                
+>>>>>>> asf/master
+>>>>>>> kgyrtkirk/HIVE-19237-oid-once
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
