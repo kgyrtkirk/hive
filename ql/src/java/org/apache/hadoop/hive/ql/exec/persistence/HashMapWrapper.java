@@ -27,7 +27,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
@@ -69,21 +68,23 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
   }
 
   public HashMapWrapper() {
-    this(HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT.defaultFloatVal,
-        HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD.defaultIntVal,
-        HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR.defaultFloatVal, -1);
+    this(new HashMapSettings(), -1);
   }
 
   public HashMapWrapper(Configuration hconf, long keyCount) {
-    this(HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT),
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD),
-        HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR), keyCount);
+    this(new HashMapSettings(hconf), keyCount);
+
+
   }
 
-  private HashMapWrapper(float keyCountAdj, int threshold, float loadFactor, long keyCount) {
-    super(createConstructorMetaData(threshold, loadFactor));
-    threshold = calculateTableSize(keyCountAdj, threshold, loadFactor, keyCount);
-    mHash = new HashMap<MapJoinKey, MapJoinRowContainer>(threshold, loadFactor);
+  private HashMapWrapper(HashMapSettings settings, long keyCount) {
+    super(createConstructorMetaData(settings.getThreshold(), settings.getLoadFactor()));
+    int threshold = calculateTableSize(settings, keyCount);
+    mHash = new HashMap<MapJoinKey, MapJoinRowContainer>(threshold, settings.loadFactor());
+  }
+
+  private int calculateTableSize(HashMapSettings settings, long keyCount) {
+    return calculateTableSize(settings.getKeyCountAdj(), settings.getThreshold(), settings.loadFactor(), keyCount);
   }
 
   public static int calculateTableSize(
