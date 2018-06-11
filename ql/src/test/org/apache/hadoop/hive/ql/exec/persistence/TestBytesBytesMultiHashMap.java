@@ -17,10 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec.persistence;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -30,10 +26,11 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
-import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 public class TestBytesBytesMultiHashMap {
   private static final float LOAD_FACTOR = 0.75f;
@@ -43,7 +40,7 @@ public class TestBytesBytesMultiHashMap {
   @Test
   public void testCapacityValidation() {
     BytesBytesMultiHashMap map = new BytesBytesMultiHashMap(CAPACITY, LOAD_FACTOR, WB_SIZE);
-    assertEquals(16, map.getCapacity());
+    assertEquals(CAPACITY, map.getCapacity());
     map = new BytesBytesMultiHashMap(9, LOAD_FACTOR, WB_SIZE);
     assertEquals(16, map.getCapacity());
 
@@ -108,20 +105,6 @@ public class TestBytesBytesMultiHashMap {
     // Get of non-existent key should terminate..
     BytesBytesMultiHashMap.Result hashMapResult = new BytesBytesMultiHashMap.Result();
     map.getValueResult(new byte[0], 0, 0, hashMapResult);
-  }
-
-  @Test
-  public void testNotExpandedToReachInitialCap() throws Exception {
-    int targetCapactity = 15;
-    BytesBytesMultiHashMap map = new BytesBytesMultiHashMap(targetCapactity, LOAD_FACTOR, WB_SIZE);
-    int initialCapacity = map.getCapacity();
-
-    UniqueKeysKvSource kv = new UniqueKeysKvSource();
-    for (int i = 0; i < targetCapactity; ++i) {
-      map.put(kv, -1);
-    }
-
-    assertEquals(initialCapacity, map.getCapacity());
   }
 
   @Test
