@@ -29,6 +29,7 @@ import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.IntervalDayVector;
 import org.apache.arrow.vector.IntervalYearVector;
 import org.apache.arrow.vector.SmallIntVector;
+import org.apache.arrow.vector.TimeStampMicroVector;
 import org.apache.arrow.vector.TimeStampMilliVector;
 import org.apache.arrow.vector.TimeStampNanoVector;
 import org.apache.arrow.vector.TinyIntVector;
@@ -55,10 +56,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
@@ -67,8 +66,10 @@ import org.apache.hadoop.io.Writable;
 import java.util.List;
 
 import static org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil.createColumnVector;
-import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MS_PER_SECOND;
-import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_MS;
+import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MICROS_PER_SECOND;
+import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MILLIS_PER_SECOND;
+import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_MICROS;
+import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_MILLIS;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_SECOND;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.SECOND_PER_DAY;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.toStructListTypeInfo;
@@ -277,8 +278,8 @@ class Deserializer {
               // Time = second + sub-second
               final long timeInMillis = ((TimeStampMilliVector) arrowVector).get(i);
               final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
-              int subSecondInNanos = (int) ((timeInMillis % MS_PER_SECOND) * NS_PER_MS);
-              long second = timeInMillis / MS_PER_SECOND;
+              int subSecondInNanos = (int) ((timeInMillis % MILLIS_PER_SECOND) * NS_PER_MILLIS);
+              long second = timeInMillis / MILLIS_PER_SECOND;
 
               // A nanosecond value should not be negative
               if (subSecondInNanos < 0) {
@@ -286,11 +287,39 @@ class Deserializer {
                 // So add one second to the negative nanosecond value to make it positive
                 subSecondInNanos += NS_PER_SECOND;
 
-                // Subtract one second from the second value because we added one second,
-                // then subtract one more second because of the ceiling in the division.
-                second -= 2;
+                // Subtract one second from the second value because we added one second
+                second -= 1;
               }
-              timestampColumnVector.time[i] = second * MS_PER_SECOND;
+              timestampColumnVector.time[i] = second * MILLIS_PER_SECOND;
+              timestampColumnVector.nanos[i] = subSecondInNanos;
+            }
+          }
+        }
+        break;
+      case TIMESTAMPMICRO:
+        {
+          for (int i = 0; i < size; i++) {
+            if (arrowVector.isNull(i)) {
+              VectorizedBatchUtil.setNullColIsNullValue(hiveVector, i);
+            } else {
+              hiveVector.isNull[i] = false;
+
+              // Time = second + sub-second
+              final long timeInMicros = ((TimeStampMicroVector) arrowVector).get(i);
+              final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
+              int subSecondInNanos = (int) ((timeInMicros % MICROS_PER_SECOND) * NS_PER_MICROS);
+              long second = timeInMicros / MICROS_PER_SECOND;
+
+              // A nanosecond value should not be negative
+              if (subSecondInNanos < 0) {
+
+                // So add one second to the negative nanosecond value to make it positive
+                subSecondInNanos += NS_PER_SECOND;
+
+                // Subtract one second from the second value because we added one second
+                second -= 1;
+              }
+              timestampColumnVector.time[i] = second * MILLIS_PER_SECOND;
               timestampColumnVector.nanos[i] = subSecondInNanos;
             }
           }
@@ -316,11 +345,10 @@ class Deserializer {
                 // So add one second to the negative nanosecond value to make it positive
                 subSecondInNanos += NS_PER_SECOND;
 
-                // Subtract one second from the second value because we added one second,
-                // then subtract one more second because of the ceiling in the division.
-                second -= 2;
+                // Subtract one second from the second value because we added one second
+                second -= 1;
               }
-              timestampColumnVector.time[i] = second * MS_PER_SECOND;
+              timestampColumnVector.time[i] = second * MILLIS_PER_SECOND;
               timestampColumnVector.nanos[i] = subSecondInNanos;
             }
           }
@@ -375,8 +403,8 @@ class Deserializer {
               hiveVector.isNull[i] = false;
               intervalDayVector.get(i, intervalDayHolder);
               final long seconds = intervalDayHolder.days * SECOND_PER_DAY +
-                  intervalDayHolder.milliseconds / MS_PER_SECOND;
-              final int nanos = (intervalDayHolder.milliseconds % 1_000) * NS_PER_MS;
+                  intervalDayHolder.milliseconds / MILLIS_PER_SECOND;
+              final int nanos = (intervalDayHolder.milliseconds % 1_000) * NS_PER_MILLIS;
               intervalDayTime.set(seconds, nanos);
               ((IntervalDayTimeColumnVector) hiveVector).set(i, intervalDayTime);
             }
