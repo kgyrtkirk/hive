@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
@@ -34,13 +36,11 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -90,9 +90,9 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
 
   public static int calculateTableSize(
       float keyCountAdj, int threshold, float loadFactor, long keyCount) {
-    if (keyCount >= 0 && keyCountAdj >= 0) {
+    if (keyCount >= 0 && keyCountAdj != 0) {
       // We have statistics for the table. Size appropriately.
-      threshold = (int) (Math.ceil(keyCount / loadFactor) + keyCountAdj);
+      threshold = (int)Math.ceil(keyCount / (keyCountAdj * loadFactor));
     }
     LOG.info("Key count from statistics is " + keyCount + "; setting map size to " + threshold);
     return threshold;
