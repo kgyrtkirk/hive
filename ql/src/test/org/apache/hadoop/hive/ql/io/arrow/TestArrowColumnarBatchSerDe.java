@@ -105,25 +105,25 @@ public class TestArrowColumnarBatchSerDe {
       {null, null, null},
   };
 
-  private final static long TIME_IN_MS = TimeUnit.DAYS.toMillis(365 + 31 + 3);
-  private final static long NEGATIVE_TIME_IN_MS = TimeUnit.DAYS.toMillis(-9 * 365 + 31 + 3);
+  private final static long TIME_IN_MILLIS = TimeUnit.DAYS.toMillis(365 + 31 + 3);
+  private final static long NEGATIVE_TIME_IN_MILLIS = TimeUnit.DAYS.toMillis(-9 * 365 + 31 + 3);
   private final static Timestamp TIMESTAMP;
   private final static Timestamp NEGATIVE_TIMESTAMP_WITHOUT_NANOS;
 
   static {
-    TIMESTAMP = new Timestamp(TIME_IN_MS);
-    NEGATIVE_TIMESTAMP_WITHOUT_NANOS = new Timestamp(NEGATIVE_TIME_IN_MS);
+    TIMESTAMP = new Timestamp(TIME_IN_MILLIS);
+    NEGATIVE_TIMESTAMP_WITHOUT_NANOS = new Timestamp(NEGATIVE_TIME_IN_MILLIS);
   }
 
   private final static Object[][] DTI_ROWS = {
       {
-          new DateWritable(DateWritable.millisToDays(TIME_IN_MS)),
+          new DateWritable(DateWritable.millisToDays(TIME_IN_MILLIS)),
           new TimestampWritable(TIMESTAMP),
           new HiveIntervalYearMonthWritable(new HiveIntervalYearMonth(1, 2)),
           new HiveIntervalDayTimeWritable(new HiveIntervalDayTime(1, 2, 3, 4, 5_000_000))
       },
       {
-          new DateWritable(DateWritable.millisToDays(NEGATIVE_TIME_IN_MS)),
+          new DateWritable(DateWritable.millisToDays(NEGATIVE_TIME_IN_MILLIS)),
           new TimestampWritable(NEGATIVE_TIMESTAMP_WITHOUT_NANOS),
           null,
           null
@@ -508,7 +508,9 @@ public class TestArrowColumnarBatchSerDe {
     Object[][] rows = new Object[size][];
     for (int i = 0; i < size; i++) {
       long millis = ((long) rand.nextInt(Integer.MAX_VALUE)) * 1000;
-      rows[i] = new Object[] {new TimestampWritable(new Timestamp(millis))};
+      Timestamp timestamp = new Timestamp(rand.nextBoolean() ? millis : -millis);
+      timestamp.setNanos(rand.nextInt(1000) * 1000);
+      rows[i] = new Object[] {new TimestampWritable(timestamp)};
     }
 
     initAndSerializeAndDeserialize(schema, rows);
@@ -781,4 +783,5 @@ public class TestArrowColumnarBatchSerDe {
 
     initAndSerializeAndDeserialize(schema, toList(DECIMAL_ROWS));
   }
+
 }

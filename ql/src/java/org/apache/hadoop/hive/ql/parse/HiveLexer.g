@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 
 KW_TRUE : 'TRUE';
 KW_FALSE : 'FALSE';
+KW_UNKNOWN : 'UNKNOWN';
 KW_ALL : 'ALL';
 KW_NONE: 'NONE';
 KW_AND : 'AND';
@@ -470,21 +471,6 @@ NumberLiteral
 ByteLengthLiteral
     :
     (Digit)+ ('b' | 'B' | 'k' | 'K' | 'm' | 'M' | 'g' | 'G')
-    ;
-
-TimeFullLiteral
-    :
-    (Digit)+ ('NS' | 'NSEC' | 'NSECS' | 'NANOSECOND' | 'NANOSECONDS' |
-          'US' | 'USEC' | 'USECS' | 'MICROSECOND' | 'MICROSECONDS' |
-          'MS' | 'MSEC' | 'MSECS' | 'MILLISECOND' | 'MILLISECONDS' |
-          'SEC' | 'SECS' | 'SECOND' | 'SECONDS' |
-          'MIN' | 'MINS' | 'MINUTE' | 'MINUTES' |
-          'HOUR' | 'HOURS' | 'DAY' | 'DAYS')
-    ;
-
-ByteLengthFullLiteral
-    :
-    (Digit)+ ('KB' | 'MB' | 'GB' | 'TB' | 'PB')
     ;
 
 Number
