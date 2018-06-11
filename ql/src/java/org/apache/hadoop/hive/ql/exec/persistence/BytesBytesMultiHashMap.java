@@ -159,6 +159,9 @@ public final class BytesBytesMultiHashMap implements MemoryEstimate {
   /** Make sure maxCapacity has a lower limit */
   private final static int DEFAULT_MIN_MAX_CAPACITY = 16 * 1024 * 1024;
 
+  public BytesBytesMultiHashMap(int designCapacity, HashMapSettings settings, long maxProbeSize) {
+    this(designCapacity, settings.loadFactor(), settings.wbSize(), maxProbeSize);
+  }
   public BytesBytesMultiHashMap(int initialCapacity,
       float loadFactor, int wbSize, long maxProbeSize) {
     if (loadFactor < 0 || loadFactor > 1) {

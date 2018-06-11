@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.MemoryEstimate;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
@@ -35,9 +34,9 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
-import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
@@ -98,19 +97,16 @@ public class MapJoinBytesTableContainer
 
   public MapJoinBytesTableContainer(Configuration hconf,
       MapJoinObjectSerDeContext valCtx, long keyCount, long memUsage) throws SerDeException {
-    this(HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT),
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD),
-        HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR),
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEWBSIZE),
+    this(
+        new HashMapSettings(hconf),
         valCtx, keyCount, memUsage);
   }
 
-  private MapJoinBytesTableContainer(float keyCountAdj, int threshold, float loadFactor,
-      int wbSize, MapJoinObjectSerDeContext valCtx, long keyCount, long memUsage)
+  private MapJoinBytesTableContainer(HashMapSettings settings,
+      MapJoinObjectSerDeContext valCtx, long keyCount, long memUsage)
           throws SerDeException {
-    int newThreshold = HashMapWrapper.calculateTableSize(
-        keyCountAdj, threshold, loadFactor, keyCount);
-    hashMap = new BytesBytesMultiHashMap(newThreshold, loadFactor, wbSize, memUsage);
+    int newThreshold = HashMapWrapper.calculateTableSize(settings, keyCount);
+    hashMap = new BytesBytesMultiHashMap(newThreshold, settings, memUsage);
     directWriteHelper = new DirectKeyValueWriter();
   }
 
@@ -213,7 +209,9 @@ public class MapJoinBytesTableContainer
 
     @Override
     public byte updateStateByte(Byte previousValue) {
-      if (!hasFilterTag) return (byte)0xff;
+      if (!hasFilterTag) {
+        return (byte)0xff;
+      }
       byte aliasFilter = (previousValue == null) ? (byte)0xff : previousValue.byteValue();
       aliasFilter &= ((ShortWritable)valObjs[valObjs.length - 1]).get();
       return aliasFilter;
@@ -289,7 +287,9 @@ public class MapJoinBytesTableContainer
      * optimized change causes RSO to pass on tags.
      */
     private void sanityCheckKeyForTag() throws SerDeException {
-      if (hasTag != null) return;
+      if (hasTag != null) {
+        return;
+      }
       BinaryComparable b = (BinaryComparable)key;
       Object o = keySerDe.deserialize(key);
       StructObjectInspector soi = (StructObjectInspector)keySerDe.getObjectInspector();
@@ -336,7 +336,9 @@ public class MapJoinBytesTableContainer
 
     @Override
     public byte updateStateByte(Byte previousValue) {
-      if (filterGetter == null) return (byte)0xff;
+      if (filterGetter == null) {
+        return (byte)0xff;
+      }
       byte aliasFilter = (previousValue == null) ? (byte)0xff : previousValue.byteValue();
       filterGetter.init((BinaryComparable)value);
       aliasFilter &= filterGetter.getShort();
@@ -568,7 +570,9 @@ public class MapJoinBytesTableContainer
 
     @Override
     public boolean hasAnyNulls(int fieldCount, boolean[] nullsafes) {
-      if (nulls == null || nulls.length == 0) return false;
+      if (nulls == null || nulls.length == 0) {
+        return false;
+      }
       for (int i = 0; i < nulls.length; i++) {
         if (nulls[i] && (nullsafes == null || !nullsafes[i])) {
           return true;

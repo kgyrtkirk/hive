@@ -27,17 +27,20 @@ public class HashMapSettings {
   private float keyCountAdj;
   private int hashTableThreshold;
   private float loadFactor;
+  private int wbSize;
 
   public HashMapSettings(Configuration hconf) {
     keyCountAdj = HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT);
     hashTableThreshold = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD);
     loadFactor = HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR);
+    wbSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEWBSIZE);
   }
 
   public HashMapSettings() {
     keyCountAdj = HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT.defaultFloatVal;
     hashTableThreshold = HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD.defaultIntVal;
     loadFactor = HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR.defaultFloatVal;
+    wbSize = HiveConf.ConfVars.HIVEHASHTABLEWBSIZE.defaultIntVal;
   }
 
   public float getKeyCountAdj() {
@@ -55,6 +58,10 @@ public class HashMapSettings {
 
   public float loadFactor() {
     return loadFactor;
+  }
+
+  public int wbSize() {
+    return wbSize;
   }
 
 }

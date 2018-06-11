@@ -83,7 +83,7 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
     mHash = new HashMap<MapJoinKey, MapJoinRowContainer>(threshold, settings.loadFactor());
   }
 
-  private int calculateTableSize(HashMapSettings settings, long keyCount) {
+  public static int calculateTableSize(HashMapSettings settings, long keyCount) {
     return calculateTableSize(settings.getKeyCountAdj(), settings.getThreshold(), settings.loadFactor(), keyCount);
   }
 
