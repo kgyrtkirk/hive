@@ -130,17 +130,16 @@ public class HybridHashTableContainer
   public static class HashPartition {
     BytesBytesMultiHashMap hashMap;         // In memory hashMap
     KeyValueContainer sidefileKVContainer;  // Stores small table key/value pairs
-    ObjectContainer matchfileObjContainer;  // Stores big table rows
+    ObjectContainer matchfileObjContainer; // Stores big table rows
     VectorRowBytesContainer matchfileRowBytesContainer;
                                             // Stores big table rows as bytes for native vector map join.
     Path hashMapLocalPath;                  // Local file system path for spilled hashMap
     boolean hashMapOnDisk;                  // Status of hashMap. true: on disk, false: in memory
     boolean hashMapSpilledOnCreation;       // When there's no enough memory, cannot create hashMap
     int initialCapacity;                    // Used to create an empty BytesBytesMultiHashMap
-    float loadFactor;                       // Same as above
-    int wbSize;                             // Same as above
     int rowsOnDisk;                         // How many rows saved to the on-disk hashmap (if on disk)
     private final String spillLocalDirs;
+    private HashMapSettings settings;
 
     /* It may happen that there's not enough memory to instantiate a hashmap for the partition.
      * In that case, we don't create the hashmap, but pretend the hashmap is directly "spilled".
@@ -149,7 +148,7 @@ public class HybridHashTableContainer
                          boolean createHashMap, String spillLocalDirs) {
       if (createHashMap) {
         // Probe space should be at least equal to the size of our designated wbSize
-        maxProbeSize = Math.max(maxProbeSize, wbSize);
+        maxProbeSize = Math.max(maxProbeSize, settings.wbSize());
         hashMap = new BytesBytesMultiHashMap(initialCapacity, settings, maxProbeSize);
       } else {
         hashMapSpilledOnCreation = true;
@@ -157,8 +156,8 @@ public class HybridHashTableContainer
       }
       this.spillLocalDirs = spillLocalDirs;
       this.initialCapacity = initialCapacity;
-      this.loadFactor = loadFactor;
-      this.wbSize = wbSize;
+      this.settings = settings;
+
     }
 
     /* Get the in memory hashmap */
@@ -172,7 +171,7 @@ public class HybridHashTableContainer
     public BytesBytesMultiHashMap getHashMapFromDisk(int rowCount)
         throws IOException, ClassNotFoundException {
       if (hashMapSpilledOnCreation) {
-        return new BytesBytesMultiHashMap(rowCount, loadFactor, wbSize, -1);
+        return new BytesBytesMultiHashMap(rowCount, settings, -1);
       } else {
         InputStream inputStream = Files.newInputStream(hashMapLocalPath);
         com.esotericsoftware.kryo.io.Input input = new com.esotericsoftware.kryo.io.Input(inputStream);
