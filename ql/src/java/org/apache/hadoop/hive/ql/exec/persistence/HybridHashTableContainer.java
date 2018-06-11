@@ -145,12 +145,12 @@ public class HybridHashTableContainer
     /* It may happen that there's not enough memory to instantiate a hashmap for the partition.
      * In that case, we don't create the hashmap, but pretend the hashmap is directly "spilled".
      */
-    public HashPartition(int initialCapacity, float loadFactor, int wbSize, long maxProbeSize,
+    public HashPartition(int initialCapacity, HashMapSettings settings, long maxProbeSize,
                          boolean createHashMap, String spillLocalDirs) {
       if (createHashMap) {
         // Probe space should be at least equal to the size of our designated wbSize
         maxProbeSize = Math.max(maxProbeSize, wbSize);
-        hashMap = new BytesBytesMultiHashMap(initialCapacity, loadFactor, wbSize, maxProbeSize);
+        hashMap = new BytesBytesMultiHashMap(initialCapacity, settings, maxProbeSize);
       } else {
         hashMapSpilledOnCreation = true;
         hashMapOnDisk = true;
@@ -159,11 +159,6 @@ public class HybridHashTableContainer
       this.initialCapacity = initialCapacity;
       this.loadFactor = loadFactor;
       this.wbSize = wbSize;
-    }
-
-    public HashPartition(int initialCapacity, HashMapSettings settings, long maxProbeSize,
-        boolean createHashMap, String spillLocalDirs) {
-      this(initialCapacity, settings.getLoadFactor(), settings.getWB(), maxProbeSize, createHashMap, spillLocalDirs);
     }
 
     /* Get the in memory hashmap */
