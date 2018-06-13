@@ -204,20 +204,21 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
         if (par.getLocation() != null) {
           tblLoc = par.getDataLocation().toString();
         }
-        inputFormattCls = par.getInputFormatClass().getName();
-        outputFormattCls = par.getOutputFormatClass().getName();
+        inputFormattCls = par.getInputFormatClass() == null ? null : par.getInputFormatClass().getName();
+        outputFormattCls = par.getOutputFormatClass() == null ? null : par.getOutputFormatClass().getName();
       }
     } else {
       if (tbl.getPath() != null) {
         tblLoc = tbl.getDataLocation().toString();
       }
-      inputFormattCls = tbl.getInputFormatClass().getName();
-      outputFormattCls = tbl.getOutputFormatClass().getName();
+      inputFormattCls = tbl.getInputFormatClass() == null ? null : tbl.getInputFormatClass().getName();
+      outputFormattCls = tbl.getOutputFormatClass() == null ? null : tbl.getOutputFormatClass().getName();
     }
 
     MapBuilder builder = MapBuilder.create();
 
     builder.put("tableName", tbl.getTableName());
+    builder.put("ownerType", (tbl.getOwnerType() != null) ? tbl.getOwnerType().name() : "null");
     builder.put("owner", tbl.getOwner());
     builder.put("location", tblLoc);
     builder.put("inputFormat", inputFormattCls);

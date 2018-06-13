@@ -365,6 +365,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           analyzeAlterTableAddConstraint(ast, tableName);
       } else if(ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_UPDATECOLUMNS) {
         analyzeAlterTableUpdateColumns(ast, tableName, partSpec);
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_OWNER) {
+        analyzeAlterTableOwner(ast, tableName);
       }
       break;
     }
@@ -1095,7 +1097,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     StringBuilder builder = new StringBuilder();
     for (int i = 0; i < ast.getChildCount(); ++i) {
-      builder.append(ast.getChild(i).getText());
+      builder.append(stripQuotes(ast.getChild(i).getText()));
       builder.append(' ');
     }
     builder.deleteCharAt(builder.length() - 1);
@@ -1926,6 +1928,21 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
+  }
+
+  private void analyzeAlterTableOwner(ASTNode ast, String tableName) throws SemanticException {
+    PrincipalDesc ownerPrincipal = AuthorizationParseUtils.getPrincipalDesc((ASTNode) ast.getChild(0));
+
+    if (ownerPrincipal.getType() == null) {
+      throw new SemanticException("Owner type can't be null in alter table set owner command");
+    }
+
+    if (ownerPrincipal.getName() == null) {
+      throw new SemanticException("Owner name can't be null in alter table set owner command");
+    }
+
+    AlterTableDesc alterTblDesc  = new AlterTableDesc(tableName, ownerPrincipal);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
   }
 
   private void analyzeAlterTableLocation(ASTNode ast, String tableName,

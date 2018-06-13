@@ -1587,10 +1587,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
   }
 
-  private void deleteDir(Path dir) throws HiveException {
+  private void deleteDir(Path dir, Database db) throws HiveException {
     try {
       Warehouse wh = new Warehouse(conf);
-      wh.deleteDir(dir, true);
+      wh.deleteDir(dir, true, db);
     } catch (MetaException e) {
       throw new HiveException(e);
     }
@@ -1845,7 +1845,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // If a failure occurs here, the directory containing the original files
     // will not be deleted. The user will run ARCHIVE again to clear this up
     if(pathExists(intermediateOriginalDir)) {
-      deleteDir(intermediateOriginalDir);
+      deleteDir(intermediateOriginalDir, db.getDatabase(tbl.getDbName()));
     }
 
     if(recovery) {
@@ -2051,7 +2051,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // If a failure happens here, the intermediate archive files won't be
     // deleted. The user will need to call unarchive again to clear those up.
     if(pathExists(intermediateArchivedDir)) {
-      deleteDir(intermediateArchivedDir);
+      deleteDir(intermediateArchivedDir, db.getDatabase(tbl.getDbName()));
     }
 
     if(recovery) {
@@ -4330,6 +4330,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       tbl.setStoredAsSubDirectories(alterTbl.isStoredAsSubDirectories());
+    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.OWNER) {
+      if (alterTbl.getOwnerPrincipal() != null) {
+        tbl.setOwner(alterTbl.getOwnerPrincipal().getName());
+        tbl.setOwnerType(alterTbl.getOwnerPrincipal().getType());
+      }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERSKEWEDLOCATION) {
       // process location one-by-one
       Map<List<String>,String> locMaps = alterTbl.getSkewedLocations();
@@ -4473,7 +4478,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Boolean isToMmTable = AcidUtils.isToInsertOnlyTable(tbl, alterTbl.getProps());
       if (isToMmTable != null) {
         if (!isFromMmTable && isToMmTable) {
-          result = generateAddMmTasks(tbl, alterTbl.getWriteId());
+          if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_ALLOW_ORIGINALS)) {
+            result = generateAddMmTasks(tbl, alterTbl.getWriteId());
+          } else {
+            if (tbl.getPartitionKeys().size() > 0) {
+              Hive db = getHive();
+              PartitionIterable parts = new PartitionIterable(db, tbl, null,
+                  HiveConf.getIntVar(conf, ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+              Iterator<Partition> partIter = parts.iterator();
+              while (partIter.hasNext()) {
+                Partition part0 = partIter.next();
+                checkMmLb(part0);
+              }
+            } else {
+              checkMmLb(tbl);
+            }
+          }
         } else if (isFromMmTable && !isToMmTable) {
           throw new HiveException("Cannot convert an ACID table to non-ACID");
         }

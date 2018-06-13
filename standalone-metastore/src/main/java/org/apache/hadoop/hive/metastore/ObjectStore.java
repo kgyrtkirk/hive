@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
-import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedDbName;
-import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -56,6 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
+
 import javax.jdo.JDOCanRetryException;
 import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
@@ -71,6 +70,7 @@ import javax.jdo.identity.IntIdentity;
 import javax.sql.DataSource;
 
 import com.google.common.base.Strings;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -80,7 +80,9 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -217,6 +219,7 @@ import org.datanucleus.AbstractNucleusContext;
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ClassLoaderResolverImpl;
 import org.datanucleus.NucleusContext;
+import org.datanucleus.PropertyNames;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
@@ -645,7 +648,9 @@ public class ObjectStore implements RawStore, Configurable {
     if (pmf == null) {
 
       Configuration conf = MetastoreConf.newMetastoreConf();
-      DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+      DataSourceProvider dsp = DataSourceProviderFactory.hasProviderSpecificConfigurations(conf) ?
+              DataSourceProviderFactory.getDataSourceProvider(conf) : null;
+
       if (dsp == null) {
         pmf = JDOHelper.getPersistenceManagerFactory(prop);
       } else {
@@ -654,7 +659,8 @@ public class ObjectStore implements RawStore, Configurable {
           Map<Object, Object> dsProperties = new HashMap<>();
           //Any preexisting datanucleus property should be passed along
           dsProperties.putAll(prop);
-          dsProperties.put("datanucleus.ConnectionFactory", ds);
+          dsProperties.put(PropertyNames.PROPERTY_CONNECTION_FACTORY, ds);
+          dsProperties.put(PropertyNames.PROPERTY_CONNECTION_FACTORY2, ds);
           dsProperties.put("javax.jdo.PersistenceManagerFactoryClass",
               "org.datanucleus.api.jdo.JDOPersistenceManagerFactory");
           pmf = JDOHelper.getPersistenceManagerFactory(dsProperties);
@@ -1097,7 +1103,7 @@ public class ObjectStore implements RawStore, Configurable {
       MDatabase db = getMDatabase(catName, dbname);
       pm.retrieve(db);
       if (db != null) {
-        List<MDBPrivilege> dbGrants = this.listDatabaseGrants(catName, dbname, queryWrapper);
+        List<MDBPrivilege> dbGrants = this.listDatabaseGrants(catName, dbname, null, queryWrapper);
         if (CollectionUtils.isNotEmpty(dbGrants)) {
           pm.deletePersistentAll(dbGrants);
         }
@@ -1314,13 +1320,13 @@ public class ObjectStore implements RawStore, Configurable {
         int now = (int)(System.currentTimeMillis()/1000);
 
         Map<String, List<PrivilegeGrantInfo>> userPrivs = principalPrivs.getUserPrivileges();
-        putPersistentPrivObjects(mtbl, toPersistPrivObjs, now, userPrivs, PrincipalType.USER);
+        putPersistentPrivObjects(mtbl, toPersistPrivObjs, now, userPrivs, PrincipalType.USER, "SQL");
 
         Map<String, List<PrivilegeGrantInfo>> groupPrivs = principalPrivs.getGroupPrivileges();
-        putPersistentPrivObjects(mtbl, toPersistPrivObjs, now, groupPrivs, PrincipalType.GROUP);
+        putPersistentPrivObjects(mtbl, toPersistPrivObjs, now, groupPrivs, PrincipalType.GROUP, "SQL");
 
         Map<String, List<PrivilegeGrantInfo>> rolePrivs = principalPrivs.getRolePrivileges();
-        putPersistentPrivObjects(mtbl, toPersistPrivObjs, now, rolePrivs, PrincipalType.ROLE);
+        putPersistentPrivObjects(mtbl, toPersistPrivObjs, now, rolePrivs, PrincipalType.ROLE, "SQL");
       }
       pm.makePersistentAll(toPersistPrivObjs);
       commited = commitTransaction();
@@ -1350,7 +1356,7 @@ public class ObjectStore implements RawStore, Configurable {
    * @param type
    */
   private void putPersistentPrivObjects(MTable mtbl, List<Object> toPersistPrivObjs,
-      int now, Map<String, List<PrivilegeGrantInfo>> privMap, PrincipalType type) {
+      int now, Map<String, List<PrivilegeGrantInfo>> privMap, PrincipalType type, String authorizer) {
     if (privMap != null) {
       for (Map.Entry<String, List<PrivilegeGrantInfo>> entry : privMap
           .entrySet()) {
@@ -1364,7 +1370,7 @@ public class ObjectStore implements RawStore, Configurable {
           MTablePrivilege mTblSec = new MTablePrivilege(
               principalName, type.toString(), mtbl, priv.getPrivilege(),
               now, priv.getGrantor(), priv.getGrantorType().toString(), priv
-                  .isGrantOption());
+                  .isGrantOption(), authorizer);
           toPersistPrivObjs.add(mTblSec);
         }
       }
@@ -1408,7 +1414,7 @@ public class ObjectStore implements RawStore, Configurable {
           deleteTableColumnStatistics(catName, dbName, tableName, null);
         } catch (NoSuchObjectException e) {
           LOG.info("Found no table level column statistics associated with {} to delete",
-              getCatalogQualifiedTableName(catName, dbName, tableName));
+              TableName.getQualified(catName, dbName, tableName));
         }
 
         List<MConstraint> tabConstraints = listAllTableConstraintsWithOptionalConstraintName(
@@ -1547,6 +1553,96 @@ public class ObjectStore implements RawStore, Configurable {
     } catch (NoSuchObjectException e) {
       throw new MetaException(ExceptionUtils.getStackTrace(e));
     }
+  }
+
+  @Override
+  public List<TableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException {
+    return new GetListHelper<TableName>(null, null, null, true, false) {
+      @Override
+      protected List<TableName> getSqlResult(
+          GetHelper<List<TableName>> ctx) throws MetaException {
+        return directSql.getTableNamesWithStats();
+      }
+
+      @Override
+      protected List<TableName> getJdoResult(
+          GetHelper<List<TableName>> ctx) throws MetaException {
+        throw new UnsupportedOperationException("UnsupportedOperationException"); // TODO: implement?
+      }
+    }.run(false);
+  }
+
+  @Override
+  public Map<String, List<String>> getPartitionColsWithStats(String catName, String dbName, String tableName)
+      throws MetaException, NoSuchObjectException {
+    return new GetHelper<Map<String, List<String>>>(catName, dbName, null, true, false) {
+      @Override
+      protected Map<String, List<String>> getSqlResult(
+          GetHelper<Map<String, List<String>>> ctx) throws MetaException {
+        try {
+          return directSql.getColAndPartNamesWithStats(catName, dbName, tableName);
+        } catch (Throwable ex) {
+          LOG.error("DirectSQL failed", ex);
+          throw new MetaException(ex.getMessage());
+        }
+      }
+
+      @Override
+      protected Map<String, List<String>> getJdoResult(
+          GetHelper<Map<String, List<String>>> ctx) throws MetaException {
+        throw new UnsupportedOperationException("UnsupportedOperationException"); // TODO: implement?
+      }
+
+      @Override
+      protected String describeResult() {
+        return results.size() + " partitions";
+      }
+    }.run(false);
+  }
+
+  @Override
+  public List<TableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException {
+    return new GetListHelper<TableName>(null, null, null, true, false) {
+      @Override
+      protected List<TableName> getSqlResult(
+          GetHelper<List<TableName>> ctx) throws MetaException {
+        return directSql.getAllTableNamesForStats();
+      }
+
+      @Override
+      protected List<TableName> getJdoResult(
+          GetHelper<List<TableName>> ctx) throws MetaException {
+        boolean commited = false;
+        Query query = null;
+        List<TableName> result = new ArrayList<>();
+        openTransaction();
+        try {
+          String paramStr = "", whereStr = "";
+          for (int i = 0; i < MetaStoreDirectSql.STATS_TABLE_TYPES.length; ++i) {
+            if (i != 0) {
+              paramStr += ", ";
+              whereStr += "||";
+            }
+            paramStr += "java.lang.String tt" + i;
+            whereStr += " tableType == tt" + i;
+          }
+          query = pm.newQuery(MTable.class, whereStr);
+          query.declareParameters(paramStr);
+          @SuppressWarnings("unchecked")
+          Collection<MTable> tbls = (Collection<MTable>) query.executeWithArray(
+              query, MetaStoreDirectSql.STATS_TABLE_TYPES);
+          pm.retrieveAll(tbls);
+          for (MTable tbl : tbls) {
+            result.add(new TableName(
+                tbl.getDatabase().getCatalogName(), tbl.getDatabase().getName(), tbl.getTableName()));
+          }
+          commited = commitTransaction();
+        } finally {
+          rollbackAndCleanup(commited, query);
+        }
+        return result;
+      }
+    }.run(false);
   }
 
   protected List<String> getTablesInternal(String catName, String dbName, String pattern,
@@ -1780,7 +1876,7 @@ public class ObjectStore implements RawStore, Configurable {
           "java.lang.String table, java.lang.String db, java.lang.String catname");
       query.setUnique(true);
       LOG.debug("Executing getMTable for " +
-          getCatalogQualifiedTableName(catName, db, table));
+          TableName.getQualified(catName, db, table));
       mtbl = (MTable) query.execute(table, db, catName);
       pm.retrieve(mtbl);
       // Retrieving CD can be expensive and unnecessary, so do it only when required.
@@ -1851,7 +1947,7 @@ public class ObjectStore implements RawStore, Configurable {
         String dbNameIfExists = (String) dbExistsQuery.execute(db, catName);
         if (org.apache.commons.lang.StringUtils.isEmpty(dbNameIfExists)) {
           throw new UnknownDBException("Could not find database " +
-              getCatalogQualifiedDbName(catName, db));
+              DatabaseName.getQualified(catName, db));
         }
       } else {
         for (Iterator iter = mtables.iterator(); iter.hasNext(); ) {
@@ -1932,7 +2028,7 @@ public class ObjectStore implements RawStore, Configurable {
     } catch (NoSuchObjectException e) {
       LOG.error("Could not convert to MTable", e);
       throw new InvalidObjectException("Database " +
-          getCatalogQualifiedDbName(catName, tbl.getDbName()) + " doesn't exist.");
+          DatabaseName.getQualified(catName, tbl.getDbName()) + " doesn't exist.");
     }
 
     // If the table has property EXTERNAL set, update table type
@@ -2242,7 +2338,8 @@ public class ObjectStore implements RawStore, Configurable {
           for (MTablePrivilege tab: tabGrants) {
             toPersist.add(new MPartitionPrivilege(tab.getPrincipalName(),
                 tab.getPrincipalType(), mpart, tab.getPrivilege(), now,
-                tab.getGrantor(), tab.getGrantorType(), tab.getGrantOption()));
+                tab.getGrantor(), tab.getGrantorType(), tab.getGrantOption(),
+                tab.getAuthorizer()));
           }
         }
 
@@ -2250,7 +2347,8 @@ public class ObjectStore implements RawStore, Configurable {
           for (MTableColumnPrivilege col : tabColumnGrants) {
             toPersist.add(new MPartitionColumnPrivilege(col.getPrincipalName(),
                 col.getPrincipalType(), mpart, col.getColumnName(), col.getPrivilege(),
-                now, col.getGrantor(), col.getGrantorType(), col.getGrantOption()));
+                now, col.getGrantor(), col.getGrantorType(), col.getGrantOption(),
+                col.getAuthorizer()));
           }
         }
       }
@@ -2314,7 +2412,8 @@ public class ObjectStore implements RawStore, Configurable {
             for (MTablePrivilege tab : tabGrants) {
               pm.makePersistent(new MPartitionPrivilege(tab.getPrincipalName(),
                   tab.getPrincipalType(), mpart, tab.getPrivilege(), now,
-                  tab.getGrantor(), tab.getGrantorType(), tab.getGrantOption()));
+                  tab.getGrantor(), tab.getGrantorType(), tab.getGrantOption(),
+                  tab.getAuthorizer()));
             }
           }
 
@@ -2322,7 +2421,8 @@ public class ObjectStore implements RawStore, Configurable {
             for (MTableColumnPrivilege col : tabColumnGrants) {
               pm.makePersistent(new MPartitionColumnPrivilege(col.getPrincipalName(),
                   col.getPrincipalType(), mpart, col.getColumnName(), col.getPrivilege(),
-                  now, col.getGrantor(), col.getGrantorType(), col.getGrantOption()));
+                  now, col.getGrantor(), col.getGrantorType(), col.getGrantOption(),
+                  col.getAuthorizer()));
             }
           }
         }
@@ -2363,7 +2463,7 @@ public class ObjectStore implements RawStore, Configurable {
           MPartitionPrivilege partGrant = new MPartitionPrivilege(tab
               .getPrincipalName(), tab.getPrincipalType(),
               mpart, tab.getPrivilege(), now, tab.getGrantor(), tab
-                  .getGrantorType(), tab.getGrantOption());
+                  .getGrantorType(), tab.getGrantOption(), tab.getAuthorizer());
           toPersist.add(partGrant);
         }
       }
@@ -2373,7 +2473,7 @@ public class ObjectStore implements RawStore, Configurable {
           MPartitionColumnPrivilege partColumn = new MPartitionColumnPrivilege(col
               .getPrincipalName(), col.getPrincipalType(), mpart, col
               .getColumnName(), col.getPrivilege(), now, col.getGrantor(), col
-              .getGrantorType(), col.getGrantOption());
+              .getGrantorType(), col.getGrantOption(), col.getAuthorizer());
           toPersist.add(partColumn);
         }
 
@@ -2547,9 +2647,32 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public void dropPartitions(String catName, String dbName, String tblName, List<String> partNames)
       throws MetaException, NoSuchObjectException {
+    dropPartitionsInternal(catName, dbName, tblName, partNames, true, true);
+  }
+
+  @VisibleForTesting
+  void dropPartitionsInternal(String catName, String dbName, String tblName,
+       List<String> partNames, boolean allowSql, boolean allowJdo)
+      throws MetaException, NoSuchObjectException {
     if (CollectionUtils.isEmpty(partNames)) {
       return;
     }
+    new GetListHelper<Void>(catName, dbName, tblName, allowSql, allowJdo) {
+      @Override
+      protected List<Void> getSqlResult(GetHelper<List<Void>> ctx) throws MetaException {
+        directSql.dropPartitionsViaSqlFilter(catName, dbName, tblName, partNames);
+        return Collections.emptyList();
+      }
+      @Override
+      protected List<Void> getJdoResult(GetHelper<List<Void>> ctx) throws MetaException {
+        dropPartitionsViaJdo(catName, dbName, tblName, partNames);
+        return Collections.emptyList();
+      }
+    }.run(false);
+  }
+
+  private void dropPartitionsViaJdo(String catName, String dbName, String tblName,
+      List<String> partNames) throws MetaException {
     boolean success = false;
     openTransaction();
     try {
@@ -2558,7 +2681,7 @@ public class ObjectStore implements RawStore, Configurable {
       dropPartitionAllColumnGrantsNoTxn(catName, dbName, tblName, partNames);
       dropPartitionColumnStatisticsNoTxn(catName, dbName, tblName, partNames);
 
-      // CDs are reused; go thry partition SDs, detach all CDs from SDs, then remove unused CDs.
+      // CDs are reused; go try partition SDs, detach all CDs from SDs, then remove unused CDs.
       for (MColumnDescriptor mcd : detachCdsFromSdsNoTxn(catName, dbName, tblName, partNames)) {
         removeUnusedColumnDescriptor(mcd);
       }
@@ -2849,7 +2972,7 @@ public class ObjectStore implements RawStore, Configurable {
       throws MetaException, NoSuchObjectException {
 
     LOG.info("Table: {} filter: \"{}\" cols: {}",
-        getCatalogQualifiedTableName(catName, dbName, tableName), filter, cols);
+        TableName.getQualified(catName, dbName, tableName), filter, cols);
     List<String> partitionNames = null;
     List<Partition> partitions = null;
     Table tbl = getTable(catName, dbName, tableName);
@@ -2877,7 +3000,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     if (partitionNames == null && partitions == null) {
       throw new MetaException("Cannot obtain list of partitions by filter:\"" + filter +
-          "\" for " + getCatalogQualifiedTableName(catName, dbName, tableName));
+          "\" for " + TableName.getQualified(catName, dbName, tableName));
     }
 
     if (!ascending) {
@@ -3069,7 +3192,7 @@ public class ObjectStore implements RawStore, Configurable {
     tableName = normalizeIdentifier(tableName);
     Table table = getTable(catName, dbName, tableName);
     if (table == null) {
-      throw new NoSuchObjectException(getCatalogQualifiedTableName(catName, dbName, tableName)
+      throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tableName)
           + " table not found");
     }
     String partNameMatcher = MetaStoreUtils.makePartNameMatcher(table, part_vals);
@@ -3446,9 +3569,9 @@ public class ObjectStore implements RawStore, Configurable {
                      boolean allowSql, boolean allowJdo) throws MetaException {
       assert allowSql || allowJdo;
       this.allowJdo = allowJdo;
-      this.catName = normalizeIdentifier(catalogName);
-      this.dbName = normalizeIdentifier(dbName);
-      if (tblName != null){
+      this.catName = (catalogName != null) ? normalizeIdentifier(catalogName) : null;
+      this.dbName = (dbName != null) ? normalizeIdentifier(dbName) : null;
+      if (tblName != null) {
         this.tblName = normalizeIdentifier(tblName);
       } else {
         // tblName can be null in cases of Helper being used at a higher
@@ -3490,6 +3613,7 @@ public class ObjectStore implements RawStore, Configurable {
           try {
             directSql.prepareTxn();
             this.results = getSqlResult(this);
+            LOG.debug("Using direct SQL optimization.");
           } catch (Exception ex) {
             handleDirectSqlError(ex);
           }
@@ -3499,6 +3623,7 @@ public class ObjectStore implements RawStore, Configurable {
         //    2) DirectSQL threw and was disabled in handleDirectSqlError.
         if (!doUseDirectSql) {
           this.results = getJdoResult(this);
+          LOG.debug("Not using direct SQL optimization.");
         }
         return commit();
       } catch (NoSuchObjectException ex) {
@@ -3787,7 +3912,7 @@ public class ObjectStore implements RawStore, Configurable {
     MTable mtable = getMTable(catName, dbName, tblName);
     if (mtable == null) {
       throw new NoSuchObjectException("Specified catalog.database.table does not exist : "
-          + getCatalogQualifiedTableName(catName, dbName, tblName));
+          + TableName.getQualified(catName, dbName, tblName));
     }
     return mtable;
   }
@@ -4595,7 +4720,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (getPrimaryKeyConstraintName(parentTable.getDatabase().getCatalogName(),
           parentTable.getDatabase().getName(), parentTable.getTableName()) != null) {
         throw new MetaException(" Primary key already exists for: " +
-            getCatalogQualifiedTableName(catName, tableDB, tableName));
+            TableName.getQualified(catName, tableDB, tableName));
       }
       if (pks.get(i).getPk_name() == null) {
         if (pks.get(i).getKey_seq() == 1) {
@@ -5633,6 +5758,7 @@ public class ObjectStore implements RawStore, Configurable {
           String privilegeStr = privDef.getGrantInfo().getPrivilege();
           String[] privs = privilegeStr.split(",");
           String userName = privDef.getPrincipalName();
+          String authorizer = privDef.getAuthorizer();
           PrincipalType principalType = privDef.getPrincipalType();
           String grantor = privDef.getGrantInfo().getGrantor();
           String grantorType = privDef.getGrantInfo().getGrantorType().toString();
@@ -5647,7 +5773,7 @@ public class ObjectStore implements RawStore, Configurable {
               getDefaultCatalog(conf);
           if (hiveObject.getObjectType() == HiveObjectType.GLOBAL) {
             List<MGlobalPrivilege> globalPrivs = this
-                .listPrincipalMGlobalGrants(userName, principalType);
+                .listPrincipalMGlobalGrants(userName, principalType, authorizer);
             if (globalPrivs != null) {
               for (MGlobalPrivilege priv : globalPrivs) {
                 if (priv.getGrantor().equalsIgnoreCase(grantor)) {
@@ -5661,14 +5787,15 @@ public class ObjectStore implements RawStore, Configurable {
                     + " is already granted by " + grantor);
               }
               MGlobalPrivilege mGlobalPrivs = new MGlobalPrivilege(userName,
-                  principalType.toString(), privilege, now, grantor, grantorType, grantOption);
+                  principalType.toString(), privilege, now, grantor, grantorType, grantOption,
+                  authorizer);
               persistentObjs.add(mGlobalPrivs);
             }
           } else if (hiveObject.getObjectType() == HiveObjectType.DATABASE) {
             MDatabase dbObj = getMDatabase(catName, hiveObject.getDbName());
             if (dbObj != null) {
               List<MDBPrivilege> dbPrivs = this.listPrincipalMDBGrants(
-                  userName, principalType, catName, hiveObject.getDbName());
+                  userName, principalType, catName, hiveObject.getDbName(), authorizer);
               if (dbPrivs != null) {
                 for (MDBPrivilege priv : dbPrivs) {
                   if (priv.getGrantor().equalsIgnoreCase(grantor)) {
@@ -5683,7 +5810,7 @@ public class ObjectStore implements RawStore, Configurable {
                       + hiveObject.getDbName() + " by " + grantor);
                 }
                 MDBPrivilege mDb = new MDBPrivilege(userName, principalType
-                    .toString(), dbObj, privilege, now, grantor, grantorType, grantOption);
+                    .toString(), dbObj, privilege, now, grantor, grantorType, grantOption, authorizer);
                 persistentObjs.add(mDb);
               }
             }
@@ -5693,7 +5820,7 @@ public class ObjectStore implements RawStore, Configurable {
             if (tblObj != null) {
               List<MTablePrivilege> tablePrivs = this
                   .listAllMTableGrants(userName, principalType,
-                      catName, hiveObject.getDbName(), hiveObject.getObjectName());
+                      catName, hiveObject.getDbName(), hiveObject.getObjectName(), authorizer);
               if (tablePrivs != null) {
                 for (MTablePrivilege priv : tablePrivs) {
                   if (priv.getGrantor() != null
@@ -5711,7 +5838,7 @@ public class ObjectStore implements RawStore, Configurable {
                 }
                 MTablePrivilege mTab = new MTablePrivilege(
                     userName, principalType.toString(), tblObj,
-                    privilege, now, grantor, grantorType, grantOption);
+                    privilege, now, grantor, grantorType, grantOption, authorizer);
                 persistentObjs.add(mTab);
               }
             }
@@ -5724,7 +5851,7 @@ public class ObjectStore implements RawStore, Configurable {
               List<MPartitionPrivilege> partPrivs = this
                   .listPrincipalMPartitionGrants(userName,
                       principalType, catName, hiveObject.getDbName(), hiveObject
-                          .getObjectName(), partObj.getPartitionName());
+                          .getObjectName(), partObj.getPartitionName(), authorizer);
               if (partPrivs != null) {
                 for (MPartitionPrivilege priv : partPrivs) {
                   if (priv.getGrantor().equalsIgnoreCase(grantor)) {
@@ -5742,7 +5869,7 @@ public class ObjectStore implements RawStore, Configurable {
                 }
                 MPartitionPrivilege mTab = new MPartitionPrivilege(userName,
                     principalType.toString(), partObj, privilege, now, grantor,
-                    grantorType, grantOption);
+                    grantorType, grantOption, authorizer);
                 persistentObjs.add(mTab);
               }
             }
@@ -5761,7 +5888,7 @@ public class ObjectStore implements RawStore, Configurable {
                 colPrivs = this.listPrincipalMPartitionColumnGrants(
                     userName, principalType, catName, hiveObject.getDbName(), hiveObject
                         .getObjectName(), partObj.getPartitionName(),
-                    hiveObject.getColumnName());
+                    hiveObject.getColumnName(), authorizer);
 
                 if (colPrivs != null) {
                   for (MPartitionColumnPrivilege priv : colPrivs) {
@@ -5782,7 +5909,7 @@ public class ObjectStore implements RawStore, Configurable {
                   MPartitionColumnPrivilege mCol = new MPartitionColumnPrivilege(userName,
                       principalType.toString(), partObj, hiveObject
                           .getColumnName(), privilege, now, grantor, grantorType,
-                      grantOption);
+                      grantOption, authorizer);
                   persistentObjs.add(mCol);
                 }
 
@@ -5790,7 +5917,7 @@ public class ObjectStore implements RawStore, Configurable {
                 List<MTableColumnPrivilege> colPrivs = null;
                 colPrivs = this.listPrincipalMTableColumnGrants(
                     userName, principalType, catName, hiveObject.getDbName(), hiveObject
-                        .getObjectName(), hiveObject.getColumnName());
+                        .getObjectName(), hiveObject.getColumnName(), authorizer);
 
                 if (colPrivs != null) {
                   for (MTableColumnPrivilege priv : colPrivs) {
@@ -5810,7 +5937,7 @@ public class ObjectStore implements RawStore, Configurable {
                   MTableColumnPrivilege mCol = new MTableColumnPrivilege(userName,
                       principalType.toString(), tblObj, hiveObject
                           .getColumnName(), privilege, now, grantor, grantorType,
-                      grantOption);
+                      grantOption, authorizer);
                   persistentObjs.add(mCol);
                 }
               }
@@ -6091,7 +6218,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean refreshPrivileges(HiveObjectRef objToRefresh, PrivilegeBag grantPrivileges)
+  public boolean refreshPrivileges(HiveObjectRef objToRefresh, String authorizer, PrivilegeBag grantPrivileges)
       throws InvalidObjectException, MetaException, NoSuchObjectException {
     boolean committed = false;
     try {
@@ -6106,15 +6233,15 @@ public class ObjectStore implements RawStore, Configurable {
           getDefaultCatalog(conf);
       switch (objToRefresh.getObjectType()) {
       case DATABASE:
-        grants = this.listDBGrantsAll(catName, objToRefresh.getDbName());
+        grants = this.listDBGrantsAll(catName, objToRefresh.getDbName(), authorizer);
         break;
       case TABLE:
-        grants = listTableGrantsAll(catName, objToRefresh.getDbName(), objToRefresh.getObjectName());
+        grants = listTableGrantsAll(catName, objToRefresh.getDbName(), objToRefresh.getObjectName(), authorizer);
         break;
       case COLUMN:
         Preconditions.checkArgument(objToRefresh.getColumnName()==null, "columnName must be null");
         grants = convertTableCols(listTableAllColumnGrants(catName,
-            objToRefresh.getDbName(), objToRefresh.getObjectName()));
+            objToRefresh.getDbName(), objToRefresh.getObjectName(), authorizer));
         break;
       default:
         throw new MetaException("Unexpected object type " + objToRefresh.getObjectType());
@@ -6208,9 +6335,14 @@ public class ObjectStore implements RawStore, Configurable {
     return rolePrinGrantList;
   }
 
+  private List<MGlobalPrivilege> listPrincipalMGlobalGrants(String principalName,
+      PrincipalType principalType) {
+    return listPrincipalMGlobalGrants(principalName, principalType, null);
+  }
+
   @SuppressWarnings("unchecked")
   private List<MGlobalPrivilege> listPrincipalMGlobalGrants(String principalName,
-                                                           PrincipalType principalType) {
+      PrincipalType principalType, String authorizer) {
     boolean commited = false;
     Query query = null;
     List<MGlobalPrivilege> userNameDbPriv = new ArrayList<>();
@@ -6218,10 +6350,18 @@ public class ObjectStore implements RawStore, Configurable {
       List<MGlobalPrivilege> mPrivs = null;
       openTransaction();
       if (principalName != null) {
-        query = pm.newQuery(MGlobalPrivilege.class, "principalName == t1 && principalType == t2 ");
-        query.declareParameters("java.lang.String t1, java.lang.String t2");
-        mPrivs = (List<MGlobalPrivilege>) query
-                .executeWithArray(principalName, principalType.toString());
+        if (authorizer != null) {
+          query = pm.newQuery(MGlobalPrivilege.class, "principalName == t1 && principalType == t2 "
+              + "&& authorizer == t3");
+          query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
+          mPrivs = (List<MGlobalPrivilege>) query
+                  .executeWithArray(principalName, principalType.toString(), authorizer);
+        } else {
+          query = pm.newQuery(MGlobalPrivilege.class, "principalName == t1 && principalType == t2 ");
+          query.declareParameters("java.lang.String t1, java.lang.String t2");
+          mPrivs = (List<MGlobalPrivilege>) query
+                  .executeWithArray(principalName, principalType.toString());
+        }
         pm.retrieveAll(mPrivs);
       }
       commited = commitTransaction();
@@ -6251,7 +6391,8 @@ public class ObjectStore implements RawStore, Configurable {
           objectRef, sUsr.getPrincipalName(), principalType,
           new PrivilegeGrantInfo(sUsr.getPrivilege(), sUsr
               .getCreateTime(), sUsr.getGrantor(), PrincipalType
-              .valueOf(sUsr.getGrantorType()), sUsr.getGrantOption()));
+              .valueOf(sUsr.getGrantorType()), sUsr.getGrantOption()),
+          sUsr.getAuthorizer());
       result.add(secUser);
     }
     return result;
@@ -6277,20 +6418,26 @@ public class ObjectStore implements RawStore, Configurable {
     List<HiveObjectPrivilege> result = new ArrayList<>();
     for (MGlobalPrivilege priv : privs) {
       String pname = priv.getPrincipalName();
+      String authorizer = priv.getAuthorizer();
       PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
 
       HiveObjectRef objectRef = new HiveObjectRef(HiveObjectType.GLOBAL, null, null, null, null);
       PrivilegeGrantInfo grantor = new PrivilegeGrantInfo(priv.getPrivilege(), priv.getCreateTime(),
           priv.getGrantor(), PrincipalType.valueOf(priv.getGrantorType()), priv.getGrantOption());
 
-      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor));
+      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor, authorizer));
     }
     return result;
   }
 
-  @SuppressWarnings("unchecked")
   private List<MDBPrivilege> listPrincipalMDBGrants(String principalName,
       PrincipalType principalType, String catName, String dbName) {
+    return listPrincipalMDBGrants(principalName, principalType, catName, dbName, null);
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<MDBPrivilege> listPrincipalMDBGrants(String principalName,
+      PrincipalType principalType, String catName, String dbName, String authorizer) {
     boolean success = false;
     Query query = null;
     List<MDBPrivilege> mSecurityDBList = new ArrayList<>();
@@ -6299,14 +6446,24 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Executing listPrincipalDBGrants");
 
       openTransaction();
-      query =
-          pm.newQuery(MDBPrivilege.class,
-              "principalName == t1 && principalType == t2 && database.name == t3 && database.catalogName == t4");
-      query.declareParameters(
-          "java.lang.String t1, java.lang.String t2, java.lang.String t3, java.lang.String t4");
-      List<MDBPrivilege> mPrivs =
-          (List<MDBPrivilege>) query.executeWithArray(principalName, principalType.toString(),
-              dbName, catName);
+      List<MDBPrivilege> mPrivs;
+      if (authorizer != null) {
+        query = pm.newQuery(MDBPrivilege.class,
+            "principalName == t1 && principalType == t2 && database.name == t3 && " +
+            "database.catalogName == t4 && authorizer == t5");
+        query.declareParameters(
+            "java.lang.String t1, java.lang.String t2, java.lang.String t3, java.lang.String t4, "
+            + "java.lang.String t5");
+        mPrivs = (List<MDBPrivilege>) query.executeWithArray(principalName, principalType.toString(),
+                dbName, catName, authorizer);
+      } else {
+        query = pm.newQuery(MDBPrivilege.class,
+                "principalName == t1 && principalType == t2 && database.name == t3 && database.catalogName == t4");
+        query.declareParameters(
+            "java.lang.String t1, java.lang.String t2, java.lang.String t3, java.lang.String t4");
+        mPrivs = (List<MDBPrivilege>) query.executeWithArray(principalName, principalType.toString(),
+                dbName, catName);
+      }
       pm.retrieveAll(mPrivs);
       success = commitTransaction();
 
@@ -6336,7 +6493,7 @@ public class ObjectStore implements RawStore, Configurable {
           sDB.getPrincipalName(), principalType,
           new PrivilegeGrantInfo(sDB.getPrivilege(), sDB
               .getCreateTime(), sDB.getGrantor(), PrincipalType
-              .valueOf(sDB.getGrantorType()), sDB.getGrantOption()));
+              .valueOf(sDB.getGrantorType()), sDB.getGrantOption()), sDB.getAuthorizer());
       result.add(secObj);
     }
     return result;
@@ -6355,9 +6512,13 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<HiveObjectPrivilege> listDBGrantsAll(String catName, String dbName) {
+    return listDBGrantsAll(catName, dbName, null);
+  }
+
+  private List<HiveObjectPrivilege> listDBGrantsAll(String catName, String dbName, String authorizer) {
     QueryWrapper queryWrapper = new QueryWrapper();
     try {
-      return convertDB(listDatabaseGrants(catName, dbName, queryWrapper));
+      return convertDB(listDatabaseGrants(catName, dbName, authorizer, queryWrapper));
       } finally {
         queryWrapper.close();
       }
@@ -6367,6 +6528,7 @@ public class ObjectStore implements RawStore, Configurable {
     List<HiveObjectPrivilege> result = new ArrayList<>();
     for (MDBPrivilege priv : privs) {
       String pname = priv.getPrincipalName();
+      String authorizer = priv.getAuthorizer();
       PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
       String database = priv.getDatabase().getName();
 
@@ -6376,7 +6538,7 @@ public class ObjectStore implements RawStore, Configurable {
       PrivilegeGrantInfo grantor = new PrivilegeGrantInfo(priv.getPrivilege(), priv.getCreateTime(),
           priv.getGrantor(), PrincipalType.valueOf(priv.getGrantorType()), priv.getGrantOption());
 
-      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor));
+      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor, authorizer));
     }
     return result;
   }
@@ -6474,9 +6636,14 @@ public class ObjectStore implements RawStore, Configurable {
     return mSecurityTabPartList;
   }
 
-  @SuppressWarnings("unchecked")
   private List<MTableColumnPrivilege> listTableAllColumnGrants(
       String catName, String dbName, String tableName) {
+    return listTableAllColumnGrants(catName, dbName, tableName, null);
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<MTableColumnPrivilege> listTableAllColumnGrants(
+      String catName, String dbName, String tableName, String authorizer) {
     boolean success = false;
     Query query = null;
     List<MTableColumnPrivilege> mTblColPrivilegeList = new ArrayList<>();
@@ -6487,12 +6654,21 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Executing listTableAllColumnGrants");
 
       openTransaction();
-      String queryStr = "table.tableName == t1 && table.database.name == t2 &&" +
-          "table.database.catalogName == t3";
-      query = pm.newQuery(MTableColumnPrivilege.class, queryStr);
-      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
-      List<MTableColumnPrivilege> mPrivs =
-          (List<MTableColumnPrivilege>) query.executeWithArray(tableName, dbName, catName);
+      List<MTableColumnPrivilege> mPrivs = null;
+      if (authorizer != null) {
+        String queryStr = "table.tableName == t1 && table.database.name == t2 &&" +
+            "table.database.catalogName == t3 && authorizer == t4";
+        query = pm.newQuery(MTableColumnPrivilege.class, queryStr);
+        query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, " +
+            "java.lang.String t4");
+        mPrivs = (List<MTableColumnPrivilege>) query.executeWithArray(tableName, dbName, catName, authorizer);
+      } else {
+        String queryStr = "table.tableName == t1 && table.database.name == t2 &&" +
+            "table.database.catalogName == t3";
+        query = pm.newQuery(MTableColumnPrivilege.class, queryStr);
+        query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
+        mPrivs = (List<MTableColumnPrivilege>) query.executeWithArray(tableName, dbName, catName);
+      }
       pm.retrieveAll(mPrivs);
       success = commitTransaction();
 
@@ -6574,7 +6750,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @SuppressWarnings("unchecked")
-  private List<MDBPrivilege> listDatabaseGrants(String catName, String dbName, QueryWrapper queryWrapper) {
+  private List<MDBPrivilege> listDatabaseGrants(String catName, String dbName,
+      String authorizer, QueryWrapper queryWrapper) {
     dbName = normalizeIdentifier(dbName);
     catName = normalizeIdentifier(catName);
     boolean success = false;
@@ -6582,11 +6759,18 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Executing listDatabaseGrants");
 
       openTransaction();
-      Query query = queryWrapper.query = pm.newQuery(MDBPrivilege.class,
-          "database.name == t1 && database.catalogName == t2");
-      query.declareParameters("java.lang.String t1, java.lang.String t2");
-      List<MDBPrivilege> mSecurityDBList =
-          (List<MDBPrivilege>) query.executeWithArray(dbName, catName);
+      List<MDBPrivilege> mSecurityDBList = null;
+      if (authorizer != null) {
+        Query query = queryWrapper.query = pm.newQuery(MDBPrivilege.class,
+            "database.name == t1 && database.catalogName == t2 && authorizer == t3");
+        query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
+        mSecurityDBList = (List<MDBPrivilege>) query.executeWithArray(dbName, catName, authorizer);
+      } else {
+        Query query = queryWrapper.query = pm.newQuery(MDBPrivilege.class,
+            "database.name == t1 && database.catalogName == t2");
+        query.declareParameters("java.lang.String t1, java.lang.String t2");
+        mSecurityDBList = (List<MDBPrivilege>) query.executeWithArray(dbName, catName);
+      }
       pm.retrieveAll(mSecurityDBList);
       success = commitTransaction();
       LOG.debug("Done retrieving all objects for listDatabaseGrants");
@@ -6665,10 +6849,16 @@ public class ObjectStore implements RawStore, Configurable {
     return new ObjectPair<>(query, params);
   }
 
-  @SuppressWarnings("unchecked")
   private List<MTablePrivilege> listAllMTableGrants(
       String principalName, PrincipalType principalType, String catName, String dbName,
       String tableName) {
+    return listAllMTableGrants(principalName, principalType, catName, dbName, tableName, null);
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<MTablePrivilege> listAllMTableGrants(
+      String principalName, PrincipalType principalType, String catName, String dbName,
+      String tableName, String authorizer) {
     tableName = normalizeIdentifier(tableName);
     dbName = normalizeIdentifier(dbName);
     catName = normalizeIdentifier(catName);
@@ -6678,16 +6868,24 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("Executing listAllTableGrants");
-      query =
-          pm.newQuery(MTablePrivilege.class,
-              "principalName == t1 && principalType == t2 && table.tableName == t3 &&" +
-                  "table.database.name == t4 && table.database.catalogName == t5");
-      query
-          .declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3," +
-              "java.lang.String t4, java.lang.String t5");
-      List<MTablePrivilege> mPrivs =
-          (List<MTablePrivilege>) query.executeWithArray(principalName, principalType.toString(),
-              tableName, dbName, catName);
+      List<MTablePrivilege> mPrivs;
+      if (authorizer != null) {
+        query = pm.newQuery(MTablePrivilege.class,
+            "principalName == t1 && principalType == t2 && table.tableName == t3 &&" +
+                "table.database.name == t4 && table.database.catalogName == t5 && authorizer == t6");
+        query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3," +
+            "java.lang.String t4, java.lang.String t5, java.lang.String t6");
+        mPrivs = (List<MTablePrivilege>) query.executeWithArray(principalName, principalType.toString(),
+            tableName, dbName, catName, authorizer);
+      } else {
+        query = pm.newQuery(MTablePrivilege.class,
+                "principalName == t1 && principalType == t2 && table.tableName == t3 &&" +
+                    "table.database.name == t4 && table.database.catalogName == t5");
+        query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3," +
+                "java.lang.String t4, java.lang.String t5");
+        mPrivs = (List<MTablePrivilege>) query.executeWithArray(principalName, principalType.toString(),
+                tableName, dbName, catName);
+      }
       pm.retrieveAll(mPrivs);
       success = commitTransaction();
 
@@ -6721,16 +6919,22 @@ public class ObjectStore implements RawStore, Configurable {
           sTbl.getPrincipalName(), principalType,
           new PrivilegeGrantInfo(sTbl.getPrivilege(), sTbl.getCreateTime(), sTbl
               .getGrantor(), PrincipalType.valueOf(sTbl
-              .getGrantorType()), sTbl.getGrantOption()));
+              .getGrantorType()), sTbl.getGrantOption()), sTbl.getAuthorizer());
       result.add(secObj);
     }
     return result;
   }
 
-  @SuppressWarnings("unchecked")
   private List<MPartitionPrivilege> listPrincipalMPartitionGrants(
       String principalName, PrincipalType principalType, String catName, String dbName,
       String tableName, String partName) {
+    return listPrincipalMPartitionGrants(principalName, principalType, catName, dbName, tableName, partName, null);
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<MPartitionPrivilege> listPrincipalMPartitionGrants(
+      String principalName, PrincipalType principalType, String catName, String dbName,
+      String tableName, String partName, String authorizer) {
     boolean success = false;
     Query query = null;
     tableName = normalizeIdentifier(tableName);
@@ -6741,17 +6945,26 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Executing listPrincipalPartitionGrants");
 
       openTransaction();
-      query =
-          pm.newQuery(MPartitionPrivilege.class,
-              "principalName == t1 && principalType == t2 && partition.table.tableName == t3 "
-                  + "&& partition.table.database.name == t4 && partition.table.database.catalogName == t5"
-                  + "&& partition.partitionName == t6");
-      query
-          .declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, java.lang.String t4, "
-              + "java.lang.String t5, java.lang.String t6");
-      List<MPartitionPrivilege> mPrivs =
-          (List<MPartitionPrivilege>) query.executeWithArray(principalName,
-              principalType.toString(), tableName, dbName, catName, partName);
+      List<MPartitionPrivilege> mPrivs;
+      if (authorizer != null) {
+        query = pm.newQuery(MPartitionPrivilege.class,
+            "principalName == t1 && principalType == t2 && partition.table.tableName == t3 "
+                + "&& partition.table.database.name == t4 && partition.table.database.catalogName == t5"
+                + "&& partition.partitionName == t6 && authorizer == t7");
+        query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, java.lang.String t4, "
+                + "java.lang.String t5, java.lang.String t6, java.lang.String t7");
+        mPrivs = (List<MPartitionPrivilege>) query.executeWithArray(principalName,
+        principalType.toString(), tableName, dbName, catName, partName, authorizer);
+      } else {
+        query = pm.newQuery(MPartitionPrivilege.class,
+                "principalName == t1 && principalType == t2 && partition.table.tableName == t3 "
+                    + "&& partition.table.database.name == t4 && partition.table.database.catalogName == t5"
+                    + "&& partition.partitionName == t6");
+        query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, java.lang.String t4, "
+                + "java.lang.String t5, java.lang.String t6");
+        mPrivs = (List<MPartitionPrivilege>) query.executeWithArray(principalName,
+            principalType.toString(), tableName, dbName, catName, partName);
+      }
       pm.retrieveAll(mPrivs);
       success = commitTransaction();
 
@@ -6788,17 +7001,24 @@ public class ObjectStore implements RawStore, Configurable {
           new PrivilegeGrantInfo(sPart.getPrivilege(), sPart
               .getCreateTime(), sPart.getGrantor(), PrincipalType
               .valueOf(sPart.getGrantorType()), sPart
-              .getGrantOption()));
+              .getGrantOption()), sPart.getAuthorizer());
 
       result.add(secObj);
     }
     return result;
   }
 
-  @SuppressWarnings("unchecked")
   private List<MTableColumnPrivilege> listPrincipalMTableColumnGrants(
       String principalName, PrincipalType principalType, String catName, String dbName,
       String tableName, String columnName) {
+    return listPrincipalMTableColumnGrants(principalName, principalType, catName, dbName, tableName,
+        columnName, null);
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<MTableColumnPrivilege> listPrincipalMTableColumnGrants(
+      String principalName, PrincipalType principalType, String catName, String dbName,
+      String tableName, String columnName, String authorizer) {
     boolean success = false;
     Query query = null;
     tableName = normalizeIdentifier(tableName);
@@ -6809,16 +7029,28 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Executing listPrincipalTableColumnGrants");
 
       openTransaction();
-      String queryStr =
-          "principalName == t1 && principalType == t2 && "
-              + "table.tableName == t3 && table.database.name == t4 &&  " +
-              "table.database.catalogName == t5 && columnName == t6 ";
-      query = pm.newQuery(MTableColumnPrivilege.class, queryStr);
-      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, "
-          + "java.lang.String t4, java.lang.String t5, java.lang.String t6");
-      List<MTableColumnPrivilege> mPrivs =
-          (List<MTableColumnPrivilege>) query.executeWithArray(principalName,
-              principalType.toString(), tableName, dbName, catName, columnName);
+      List<MTableColumnPrivilege> mPrivs;
+      if (authorizer != null) {
+        String queryStr =
+            "principalName == t1 && principalType == t2 && "
+                + "table.tableName == t3 && table.database.name == t4 &&  " +
+                "table.database.catalogName == t5 && columnName == t6 && authorizer == t7";
+        query = pm.newQuery(MTableColumnPrivilege.class, queryStr);
+        query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, "
+            + "java.lang.String t4, java.lang.String t5, java.lang.String t6, java.lang.String t7");
+        mPrivs = (List<MTableColumnPrivilege>) query.executeWithArray(principalName,
+                principalType.toString(), tableName, dbName, catName, columnName, authorizer);
+      } else {
+        String queryStr =
+            "principalName == t1 && principalType == t2 && "
+                + "table.tableName == t3 && table.database.name == t4 &&  " +
+                "table.database.catalogName == t5 && columnName == t6 ";
+        query = pm.newQuery(MTableColumnPrivilege.class, queryStr);
+        query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, "
+            + "java.lang.String t4, java.lang.String t5, java.lang.String t6");
+        mPrivs = (List<MTableColumnPrivilege>) query.executeWithArray(principalName,
+                principalType.toString(), tableName, dbName, catName, columnName);
+      }
       pm.retrieveAll(mPrivs);
       success = commitTransaction();
 
@@ -6854,16 +7086,23 @@ public class ObjectStore implements RawStore, Configurable {
           new PrivilegeGrantInfo(sCol.getPrivilege(), sCol
               .getCreateTime(), sCol.getGrantor(), PrincipalType
               .valueOf(sCol.getGrantorType()), sCol
-              .getGrantOption()));
+              .getGrantOption()), sCol.getAuthorizer());
       result.add(secObj);
     }
     return result;
   }
 
-  @SuppressWarnings("unchecked")
   private List<MPartitionColumnPrivilege> listPrincipalMPartitionColumnGrants(
       String principalName, PrincipalType principalType, String catName, String dbName,
       String tableName, String partitionName, String columnName) {
+    return listPrincipalMPartitionColumnGrants(principalName, principalType, catName, dbName,
+        tableName, partitionName, columnName, null);
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<MPartitionColumnPrivilege> listPrincipalMPartitionColumnGrants(
+      String principalName, PrincipalType principalType, String catName, String dbName,
+      String tableName, String partitionName, String columnName, String authorizer) {
     boolean success = false;
     Query query = null;
     tableName = normalizeIdentifier(tableName);
@@ -6875,16 +7114,29 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Executing listPrincipalPartitionColumnGrants");
 
       openTransaction();
-      query = pm.newQuery(
-              MPartitionColumnPrivilege.class,
-              "principalName == t1 && principalType == t2 && partition.table.tableName == t3 "
-                  + "&& partition.table.database.name == t4 && partition.table.database.catalogName == t5" +
-                  " && partition.partitionName == t6 && columnName == t7");
-      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, "
-          + "java.lang.String t4, java.lang.String t5, java.lang.String t6, java.lang.String t7");
-      List<MPartitionColumnPrivilege> mPrivs =
-          (List<MPartitionColumnPrivilege>) query.executeWithArray(principalName,
-              principalType.toString(), tableName, dbName, catName, partitionName, columnName);
+      List<MPartitionColumnPrivilege> mPrivs;
+      if (authorizer != null) {
+        query = pm.newQuery(
+            MPartitionColumnPrivilege.class,
+            "principalName == t1 && principalType == t2 && partition.table.tableName == t3 "
+                + "&& partition.table.database.name == t4 && partition.table.database.catalogName == t5" +
+                " && partition.partitionName == t6 && columnName == t7 && authorizer == t8");
+        query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, "
+            + "java.lang.String t4, java.lang.String t5, java.lang.String t6, java.lang.String t7, "
+            + "java.lang.String t8");
+        mPrivs = (List<MPartitionColumnPrivilege>) query.executeWithArray(principalName,
+                principalType.toString(), tableName, dbName, catName, partitionName, columnName, authorizer);
+      } else {
+        query = pm.newQuery(
+                MPartitionColumnPrivilege.class,
+                "principalName == t1 && principalType == t2 && partition.table.tableName == t3 "
+                    + "&& partition.table.database.name == t4 && partition.table.database.catalogName == t5" +
+                    " && partition.partitionName == t6 && columnName == t7");
+        query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, "
+            + "java.lang.String t4, java.lang.String t5, java.lang.String t6, java.lang.String t7");
+        mPrivs = (List<MPartitionColumnPrivilege>) query.executeWithArray(principalName,
+                principalType.toString(), tableName, dbName, catName, partitionName, columnName);
+      }
       pm.retrieveAll(mPrivs);
       success = commitTransaction();
 
@@ -6922,7 +7174,7 @@ public class ObjectStore implements RawStore, Configurable {
           sCol.getPrincipalName(), principalType,
           new PrivilegeGrantInfo(sCol.getPrivilege(), sCol
               .getCreateTime(), sCol.getGrantor(), PrincipalType
-              .valueOf(sCol.getGrantorType()), sCol.getGrantOption()));
+              .valueOf(sCol.getGrantorType()), sCol.getGrantOption()), sCol.getAuthorizer());
       result.add(secObj);
     }
     return result;
@@ -6993,6 +7245,7 @@ public class ObjectStore implements RawStore, Configurable {
     List<HiveObjectPrivilege> result = new ArrayList<>();
     for (MPartitionColumnPrivilege priv : privs) {
       String pname = priv.getPrincipalName();
+      String authorizer = priv.getAuthorizer();
       PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
 
       MPartition mpartition = priv.getPartition();
@@ -7005,7 +7258,7 @@ public class ObjectStore implements RawStore, Configurable {
       PrivilegeGrantInfo grantor = new PrivilegeGrantInfo(priv.getPrivilege(), priv.getCreateTime(),
           priv.getGrantor(), PrincipalType.valueOf(priv.getGrantorType()), priv.getGrantOption());
 
-      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor));
+      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor, authorizer));
     }
     return result;
   }
@@ -7067,6 +7320,11 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<HiveObjectPrivilege> listTableGrantsAll(String catName, String dbName, String tableName) {
+    return listTableGrantsAll(catName, dbName, tableName, null);
+  }
+
+  private List<HiveObjectPrivilege> listTableGrantsAll(String catName, String dbName, String tableName,
+      String authorizer) {
     boolean success = false;
     Query query = null;
     dbName = normalizeIdentifier(dbName);
@@ -7074,12 +7332,20 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("Executing listTableGrantsAll");
-      query =
-          pm.newQuery(MTablePrivilege.class,
-              "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3");
-      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
-      List<MTablePrivilege> mSecurityTabPartList =
-          (List<MTablePrivilege>) query.executeWithArray(tableName, dbName, catName);
+      List<MTablePrivilege> mSecurityTabPartList = null;
+      if (authorizer != null) {
+        query = pm.newQuery(MTablePrivilege.class,
+                "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3" +
+                " && authorizer == t4");
+        query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, " +
+                "java.lang.String t4");
+        mSecurityTabPartList = (List<MTablePrivilege>) query.executeWithArray(tableName, dbName, catName, authorizer);
+      } else {
+        query = pm.newQuery(MTablePrivilege.class,
+                "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3");
+        query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
+        mSecurityTabPartList = (List<MTablePrivilege>) query.executeWithArray(tableName, dbName, catName);
+      }
       LOG.debug("Done executing query for listTableGrantsAll");
       pm.retrieveAll(mSecurityTabPartList);
       List<HiveObjectPrivilege> result = convertTable(mSecurityTabPartList);
@@ -7095,6 +7361,7 @@ public class ObjectStore implements RawStore, Configurable {
     List<HiveObjectPrivilege> result = new ArrayList<>();
     for (MTablePrivilege priv : privs) {
       String pname = priv.getPrincipalName();
+      String authorizer = priv.getAuthorizer();
       PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
 
       String table = priv.getTable().getTableName();
@@ -7106,7 +7373,7 @@ public class ObjectStore implements RawStore, Configurable {
       PrivilegeGrantInfo grantor = new PrivilegeGrantInfo(priv.getPrivilege(), priv.getCreateTime(),
           priv.getGrantor(), PrincipalType.valueOf(priv.getGrantorType()), priv.getGrantOption());
 
-      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor));
+      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor, authorizer));
     }
     return result;
   }
@@ -7195,6 +7462,7 @@ public class ObjectStore implements RawStore, Configurable {
     List<HiveObjectPrivilege> result = new ArrayList<>();
     for (MPartitionPrivilege priv : privs) {
       String pname = priv.getPrincipalName();
+      String authorizer = priv.getAuthorizer();
       PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
 
       MPartition mpartition = priv.getPartition();
@@ -7207,7 +7475,7 @@ public class ObjectStore implements RawStore, Configurable {
       PrivilegeGrantInfo grantor = new PrivilegeGrantInfo(priv.getPrivilege(), priv.getCreateTime(),
           priv.getGrantor(), PrincipalType.valueOf(priv.getGrantorType()), priv.getGrantOption());
 
-      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor));
+      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor, authorizer));
     }
     return result;
   }
@@ -7304,6 +7572,7 @@ public class ObjectStore implements RawStore, Configurable {
     List<HiveObjectPrivilege> result = new ArrayList<>();
     for (MTableColumnPrivilege priv : privs) {
       String pname = priv.getPrincipalName();
+      String authorizer = priv.getAuthorizer();
       PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
 
       MTable mtable = priv.getTable();
@@ -7315,7 +7584,7 @@ public class ObjectStore implements RawStore, Configurable {
       PrivilegeGrantInfo grantor = new PrivilegeGrantInfo(priv.getPrivilege(), priv.getCreateTime(),
           priv.getGrantor(), PrincipalType.valueOf(priv.getGrantorType()), priv.getGrantOption());
 
-      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor));
+      result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor, authorizer));
     }
     return result;
   }
@@ -7912,7 +8181,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     try {
       LOG.info("Updating table level column statistics for table={}" +
-        " colName={}", getCatalogQualifiedTableName(table), colName);
+        " colName={}", Warehouse.getCatalogQualifiedTableName(table), colName);
       validateTableCols(table, Lists.newArrayList(colName));
 
       if (oldStats != null) {
@@ -7940,7 +8209,7 @@ public class ObjectStore implements RawStore, Configurable {
     String colName = mStatsObj.getColName();
 
     LOG.info("Updating partition level column statistics for table=" +
-        getCatalogQualifiedTableName(catName, dbName, tableName) +
+        TableName.getQualified(catName, dbName, tableName) +
         " partName=" + partName + " colName=" + colName);
 
     boolean foundCol = false;
@@ -8478,7 +8747,7 @@ public class ObjectStore implements RawStore, Configurable {
           pm.deletePersistent(mStatsObj);
         } else {
           throw new NoSuchObjectException("Column stats doesn't exist for table="
-              + getCatalogQualifiedTableName(catName, dbName, tableName) +
+              + TableName.getQualified(catName, dbName, tableName) +
               " partition=" + partName + " col=" + colName);
         }
       } else {
@@ -8492,7 +8761,7 @@ public class ObjectStore implements RawStore, Configurable {
           pm.deletePersistentAll(mStatsObjColl);
         } else {
           throw new NoSuchObjectException("Column stats don't exist for table="
-              + getCatalogQualifiedTableName(catName, dbName, tableName) + " partition" + partName);
+              + TableName.getQualified(catName, dbName, tableName) + " partition" + partName);
         }
       }
       ret = commitTransaction();
@@ -8523,7 +8792,7 @@ public class ObjectStore implements RawStore, Configurable {
       List<MTableColumnStatistics> mStatsObjColl;
       if (mTable == null) {
         throw new NoSuchObjectException("Table " +
-            getCatalogQualifiedTableName(catName, dbName, tableName)
+            TableName.getQualified(catName, dbName, tableName)
             + "  for which stats deletion is requested doesn't exist");
       }
       query = pm.newQuery(MTableColumnStatistics.class);

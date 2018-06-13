@@ -69,6 +69,7 @@ TOK_OP_NOT;
 TOK_OP_LIKE;
 TOK_TRUE;
 TOK_FALSE;
+TOK_UNKNOWN;
 TOK_TRANSFORM;
 TOK_SERDE;
 TOK_SERDENAME;
@@ -188,6 +189,7 @@ TOK_ALTERTABLE_COMPACT;
 TOK_ALTERTABLE_DROPCONSTRAINT;
 TOK_ALTERTABLE_ADDCONSTRAINT;
 TOK_ALTERTABLE_UPDATECOLUMNS;
+TOK_ALTERTABLE_OWNER;
 TOK_MSCK;
 TOK_SHOWDATABASES;
 TOK_SHOWTABLES;
@@ -450,6 +452,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     // Keywords
     xlateMap.put("KW_TRUE", "TRUE");
     xlateMap.put("KW_FALSE", "FALSE");
+    xlateMap.put("KW_UNKNOWN", "UNKNOWN");
     xlateMap.put("KW_ALL", "ALL");
     xlateMap.put("KW_NONE", "NONE");
     xlateMap.put("KW_AND", "AND");
@@ -1136,6 +1139,7 @@ alterTableStatementSuffix
     | alterStatementSuffixDropConstraint
     | alterStatementSuffixAddConstraint
     | partitionSpec? alterTblPartitionStatementSuffix -> alterTblPartitionStatementSuffix partitionSpec?
+    | alterStatementSuffixSetOwner
     ;
 
 alterTblPartitionStatementSuffix
@@ -1481,6 +1485,12 @@ alterStatementSuffixCompact
     -> ^(TOK_ALTERTABLE_COMPACT $compactType blocking? tableProperties?)
     ;
 
+alterStatementSuffixSetOwner
+@init { pushMsg("alter table set owner", state); }
+@after { popMsg(state); }
+    : KW_SET KW_OWNER principalName
+    -> ^(TOK_ALTERTABLE_OWNER principalName)
+    ;
 
 fileFormat
 @init { pushMsg("file format specification", state); }
@@ -1911,11 +1921,11 @@ createMaterializedViewStatement
 }
 @after { popMsg(state); }
     : KW_CREATE KW_MATERIALIZED KW_VIEW (ifNotExists)? name=tableName
-        rewriteEnabled? tableComment? tableRowFormat? tableFileFormat? tableLocation?
+        rewriteDisabled? tableComment? tableRowFormat? tableFileFormat? tableLocation?
         tablePropertiesPrefixed? KW_AS selectStatementWithCTE
     -> ^(TOK_CREATE_MATERIALIZED_VIEW $name
          ifNotExists?
-         rewriteEnabled?
+         rewriteDisabled?
          tableComment?
          tableRowFormat?
          tableFileFormat?

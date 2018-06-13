@@ -71,6 +71,7 @@ import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
@@ -78,8 +79,11 @@ import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.events.NotificationEventPoll;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
+import org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.PolicyProviderContainer;
 import org.apache.hadoop.hive.ql.security.authorization.PrivilegeSynchonizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.session.ClearDanglingScratchDir;
@@ -772,7 +776,7 @@ public class HiveServer2 extends CompositeService {
       LOG.info("Started/Reconnected tez sessions.");
 
       // resolve futures used for testing
-      if (HiveConf.getBoolVar(hiveServer2.hiveConf, ConfVars.HIVE_IN_TEST)) {
+      if (HiveConf.getBoolVar(hiveServer2.getHiveConf(), ConfVars.HIVE_IN_TEST)) {
         hiveServer2.isLeaderTestFuture.set(true);
         hiveServer2.resetNotLeaderTestFuture();
       }
@@ -787,7 +791,7 @@ public class HiveServer2 extends CompositeService {
       LOG.info("Stopped/Disconnected tez sessions.");
 
       // resolve futures used for testing
-      if (HiveConf.getBoolVar(hiveServer2.hiveConf, ConfVars.HIVE_IN_TEST)) {
+      if (HiveConf.getBoolVar(hiveServer2.getHiveConf(), ConfVars.HIVE_IN_TEST)) {
         hiveServer2.notLeaderTestFuture.set(true);
         hiveServer2.resetIsLeaderTestFuture();
       }
@@ -802,14 +806,15 @@ public class HiveServer2 extends CompositeService {
       try {
         resourcePlan = sessionHive.getActiveResourcePlan();
       } catch (HiveException e) {
-        if (!HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_IN_TEST_SSL)) {
+        if (!HiveConf.getBoolVar(getHiveConf(), ConfVars.HIVE_IN_TEST_SSL)) {
           throw new RuntimeException(e);
         } else {
           resourcePlan = null; // Ignore errors in SSL tests where the connection is misconfigured.
         }
       }
 
-      if (resourcePlan == null && HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_IN_TEST)) {
+      if (resourcePlan == null && HiveConf.getBoolVar(
+          getHiveConf(), ConfVars.HIVE_IN_TEST)) {
         LOG.info("Creating a default resource plan for test");
         resourcePlan = createTestResourcePlan();
       }
@@ -825,6 +830,7 @@ public class HiveServer2 extends CompositeService {
       // will be invoked anyway in TezTask. Doing it early to initialize triggers for non-pool tez session.
       LOG.info("Initializing tez session pool manager");
       tezSessionPoolManager = TezSessionPoolManager.getInstance();
+      HiveConf hiveConf = getHiveConf();
       if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
         tezSessionPoolManager.setupPool(hiveConf);
       } else {
@@ -842,7 +848,7 @@ public class HiveServer2 extends CompositeService {
       // Initialize workload management.
       LOG.info("Initializing workload management");
       try {
-        wm = WorkloadManager.create(wmQueue, hiveConf, resourcePlan);
+        wm = WorkloadManager.create(wmQueue, getHiveConf(), resourcePlan);
         wm.start();
         LOG.info("Workload manager initialized.");
       } catch (Exception e) {
@@ -973,23 +979,38 @@ public class HiveServer2 extends CompositeService {
   }
 
   public void startPrivilegeSynchonizer(HiveConf hiveConf) throws Exception {
-    if (hiveConf.getBoolVar(ConfVars.HIVE_PRIVILEGE_SYNCHRONIZER)) {
+
+    PolicyProviderContainer policyContainer = new PolicyProviderContainer();
+    HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
+    if (authorizer.getHivePolicyProvider() != null) {
+      policyContainer.addAuthorizer(authorizer);
+    }
+    if (hiveConf.get(MetastoreConf.ConfVars.PRE_EVENT_LISTENERS.getVarname()) != null &&
+        hiveConf.get(MetastoreConf.ConfVars.PRE_EVENT_LISTENERS.getVarname()).contains(
+        "org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener") &&
+        hiveConf.get(MetastoreConf.ConfVars.HIVE_AUTHORIZATION_MANAGER.getVarname())!= null) {
+      List<HiveMetastoreAuthorizationProvider> providers = HiveUtils.getMetaStoreAuthorizeProviderManagers(
+          hiveConf, HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_MANAGER, SessionState.get().getAuthenticator());
+      for (HiveMetastoreAuthorizationProvider provider : providers) {
+        if (provider.getHivePolicyProvider() != null) {
+          policyContainer.addAuthorizationProvider(provider);
+        }
+      }
+    }
+
+    if (policyContainer.size() > 0) {
       zKClientForPrivSync = startZookeeperClient(hiveConf);
       String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
       String path = ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace
           + ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + "leader";
       LeaderLatch privilegeSynchonizerLatch = new LeaderLatch(zKClientForPrivSync, path);
       privilegeSynchonizerLatch.start();
-      HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
-      if (authorizer.getHivePolicyProvider() == null) {
-        LOG.warn(
-            "Cannot start PrivilegeSynchonizer, policyProvider of " + authorizer.getClass().getName() + " is null");
-        privilegeSynchonizerLatch.close();
-        return;
-      }
       Thread privilegeSynchonizerThread = new Thread(
-          new PrivilegeSynchonizer(privilegeSynchonizerLatch, authorizer, hiveConf), "PrivilegeSynchonizer");
+          new PrivilegeSynchonizer(privilegeSynchonizerLatch, policyContainer, hiveConf), "PrivilegeSynchonizer");
       privilegeSynchonizerThread.start();
+    } else {
+      LOG.warn(
+          "No policy provider found, skip creating PrivilegeSynchonizer");
     }
   }
 

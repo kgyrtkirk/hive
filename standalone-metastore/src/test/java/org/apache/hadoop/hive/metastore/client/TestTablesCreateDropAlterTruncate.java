@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -198,7 +199,11 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
   public void tearDown() throws Exception {
     try {
       if (client != null) {
-        client.close();
+        try {
+          client.close();
+        } catch (Exception e) {
+          // HIVE-19729: Shallow the exceptions based on the discussion in the Jira
+        }
       }
     } finally {
       client = null;
@@ -256,6 +261,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     client.createTable(table);
     Table createdTable = client.getTable(table.getDbName(), table.getTableName());
 
+    Assert.assertEquals("Comparing OwnerType", PrincipalType.USER, createdTable.getOwnerType());
     Assert.assertNull("Comparing OwnerName", createdTable.getOwner());
     Assert.assertNotEquals("Comparing CreateTime", 0, createdTable.getCreateTime());
     Assert.assertEquals("Comparing LastAccessTime", 0, createdTable.getLastAccessTime());
@@ -354,7 +360,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
         createdTable.getSd().getLocation());
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = InvalidObjectException.class)
   public void testCreateTableNullDatabase() throws Exception {
     Table table = testTables[0];
     table.setDbName(null);
@@ -889,7 +895,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     }
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = InvalidOperationException.class)
   public void testAlterTableNullDatabaseInNew() throws Exception {
     Table originalTable = testTables[0];
     Table newTable = originalTable.deepCopy();
@@ -1334,6 +1340,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
                .setDbName(DEFAULT_DATABASE)
                .setTableName("test_table_with_all_parameters_set")
                .setCreateTime(100)
+               .setOwnerType(PrincipalType.ROLE)
                .setOwner("owner")
                .setLastAccessTime(200)
                .addPartCol("part_col", "int", "part col comment")

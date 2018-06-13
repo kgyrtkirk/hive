@@ -214,7 +214,7 @@ public final class FunctionRegistry {
     system.registerUDF("rand", UDFRand.class, false);
     system.registerGenericUDF("abs", GenericUDFAbs.class);
     system.registerGenericUDF("sq_count_check", GenericUDFSQCountCheck.class);
-    system.registerGenericUDF("enforce_constraint", GenericUDFEnforceNotNullConstraint.class);
+    system.registerGenericUDF("enforce_constraint", GenericUDFEnforceConstraint.class);
     system.registerGenericUDF("pmod", GenericUDFPosMod.class);
 
     system.registerUDF("ln", UDFLn.class, false);
@@ -359,6 +359,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("current_groups", GenericUDFCurrentGroups.class);
     system.registerGenericUDF("logged_in_user", GenericUDFLoggedInUser.class);
     system.registerGenericUDF("restrict_information_schema", GenericUDFRestrictInformationSchema.class);
+    system.registerGenericUDF("current_authorizer", GenericUDFCurrentAuthorizer.class);
 
     system.registerGenericUDF("isnull", GenericUDFOPNull.class);
     system.registerGenericUDF("isnotnull", GenericUDFOPNotNull.class);

@@ -204,6 +204,8 @@ public class TestReOptimization {
     {
       // new hs2 instance session
       IDriver driver = createDriver("reoptimize");
+      // loading of metastore stats is async; execute a simple to ensure they are loaded
+      driver.run("select count(*) from tu group by id_uv");
       checkUsageOfRuntimeStats(driver, expectHs2Instance);
     }
   }

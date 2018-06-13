@@ -1,30 +1,30 @@
-PREHOOK: query: create table tnull(i int, c char(2))
+PREHOOK: query: create table tnull_n0(i int, c char(2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tnull
-POSTHOOK: query: create table tnull(i int, c char(2))
+PREHOOK: Output: default@tnull_n0
+POSTHOOK: query: create table tnull_n0(i int, c char(2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tnull
-PREHOOK: query: insert into tnull values(NULL, NULL), (NULL, NULL)
+POSTHOOK: Output: default@tnull_n0
+PREHOOK: query: insert into tnull_n0 values(NULL, NULL), (NULL, NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tnull
-POSTHOOK: query: insert into tnull values(NULL, NULL), (NULL, NULL)
+PREHOOK: Output: default@tnull_n0
+POSTHOOK: query: insert into tnull_n0 values(NULL, NULL), (NULL, NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tnull
-POSTHOOK: Lineage: tnull.c EXPRESSION []
-POSTHOOK: Lineage: tnull.i EXPRESSION []
-PREHOOK: query: create table tempty(c char(2))
+POSTHOOK: Output: default@tnull_n0
+POSTHOOK: Lineage: tnull_n0.c EXPRESSION []
+POSTHOOK: Lineage: tnull_n0.i EXPRESSION []
+PREHOOK: query: create table tempty_n0(c char(2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tempty
-POSTHOOK: query: create table tempty(c char(2))
+PREHOOK: Output: default@tempty_n0
+POSTHOOK: query: create table tempty_n0(c char(2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tempty
-PREHOOK: query: CREATE TABLE part_null(
+POSTHOOK: Output: default@tempty_n0
+PREHOOK: query: CREATE TABLE part_null_n0(
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -33,13 +33,13 @@ PREHOOK: query: CREATE TABLE part_null(
     p_size INT,
     p_container STRING,
     p_retailprice DOUBLE,
-    p_comment STRING
+    p_comment_n11 STRING
 )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ","
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_null
-POSTHOOK: query: CREATE TABLE part_null(
+PREHOOK: Output: default@part_null_n0
+POSTHOOK: query: CREATE TABLE part_null_n0(
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -48,41 +48,41 @@ POSTHOOK: query: CREATE TABLE part_null(
     p_size INT,
     p_container STRING,
     p_retailprice DOUBLE,
-    p_comment STRING
+    p_comment_n11 STRING
 )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ","
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_null
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny_nulls.txt' overwrite into table part_null
+POSTHOOK: Output: default@part_null_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny_nulls.txt' overwrite into table part_null_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@part_null
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny_nulls.txt' overwrite into table part_null
+PREHOOK: Output: default@part_null_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny_nulls.txt' overwrite into table part_null_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@part_null
-PREHOOK: query: insert into part_null values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith')
+POSTHOOK: Output: default@part_null_n0
+PREHOOK: query: insert into part_null_n0 values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part_null
-POSTHOOK: query: insert into part_null values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith')
+PREHOOK: Output: default@part_null_n0
+POSTHOOK: query: insert into part_null_n0 values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part_null
-POSTHOOK: Lineage: part_null.p_brand SCRIPT []
-POSTHOOK: Lineage: part_null.p_comment SCRIPT []
-POSTHOOK: Lineage: part_null.p_container SCRIPT []
-POSTHOOK: Lineage: part_null.p_mfgr SCRIPT []
-POSTHOOK: Lineage: part_null.p_name EXPRESSION []
-POSTHOOK: Lineage: part_null.p_partkey SCRIPT []
-POSTHOOK: Lineage: part_null.p_retailprice SCRIPT []
-POSTHOOK: Lineage: part_null.p_size SCRIPT []
-POSTHOOK: Lineage: part_null.p_type SCRIPT []
+POSTHOOK: Output: default@part_null_n0
+POSTHOOK: Lineage: part_null_n0.p_brand SCRIPT []
+POSTHOOK: Lineage: part_null_n0.p_comment_n11 SCRIPT []
+POSTHOOK: Lineage: part_null_n0.p_container SCRIPT []
+POSTHOOK: Lineage: part_null_n0.p_mfgr SCRIPT []
+POSTHOOK: Lineage: part_null_n0.p_name EXPRESSION []
+POSTHOOK: Lineage: part_null_n0.p_partkey SCRIPT []
+POSTHOOK: Lineage: part_null_n0.p_retailprice SCRIPT []
+POSTHOOK: Lineage: part_null_n0.p_size SCRIPT []
+POSTHOOK: Lineage: part_null_n0.p_type SCRIPT []
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null)
+PREHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null_n0)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null)
+POSTHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null_n0)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -115,7 +115,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: p_size (type: int)
@@ -179,15 +179,15 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from part where p_size > (select avg(p_size) from part_null)
+PREHOOK: query: select * from part where p_size > (select avg(p_size) from part_null_n0)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part where p_size > (select avg(p_size) from part_null)
+POSTHOOK: query: select * from part where p_size > (select avg(p_size) from part_null_n0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
 144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
@@ -201,20 +201,20 @@ POSTHOOK: Input: default@part_null
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 Warning: Shuffle Join MERGEJOIN[18][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from part where p_size > (select * from tempty)
+PREHOOK: query: select * from part where p_size > (select * from tempty_n0)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@tempty
+PREHOOK: Input: default@tempty_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part where p_size > (select * from tempty)
+POSTHOOK: query: select * from part where p_size > (select * from tempty_n0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@tempty
+POSTHOOK: Input: default@tempty_n0
 #### A masked pattern was here ####
 Warning: Shuffle Join MERGEJOIN[18][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from part where p_size > (select * from tempty)
+PREHOOK: query: explain select * from part where p_size > (select * from tempty_n0)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part where p_size > (select * from tempty)
+POSTHOOK: query: explain select * from part where p_size > (select * from tempty_n0)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -247,7 +247,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: tempty
+                  alias: tempty_n0
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
@@ -265,7 +265,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: tempty
+                  alias: tempty_n0
                   Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: c (type: char(2))
@@ -326,9 +326,9 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from part where p_name = (select p_name from part_null where p_name is null)
+PREHOOK: query: explain select * from part where p_name = (select p_name from part_null_n0 where p_name is null)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part where p_name = (select p_name from part_null where p_name is null)
+POSTHOOK: query: explain select * from part where p_name = (select p_name from part_null_n0 where p_name is null)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -364,7 +364,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_name is null (type: boolean)
@@ -433,21 +433,21 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from part where p_name = (select p_name from part_null where p_name is null)
+PREHOOK: query: select * from part where p_name = (select p_name from part_null_n0 where p_name is null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part where p_name = (select p_name from part_null where p_name is null)
+POSTHOOK: query: select * from part where p_name = (select p_name from part_null_n0 where p_name is null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: explain select * from part where (select i from tnull limit 1) is null
+PREHOOK: query: explain select * from part where (select i from tnull_n0 limit 1) is null
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part where (select i from tnull limit 1) is null
+POSTHOOK: query: explain select * from part where (select i from tnull_n0 limit 1) is null
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -483,7 +483,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: tnull
+                  alias: tnull_n0
                   Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -498,7 +498,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: tnull
+                  alias: tnull_n0
                   Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: i (type: int)
@@ -608,15 +608,15 @@ STAGE PLANS:
 
 Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: select * from part where (select i from tnull limit 1) is null
+PREHOOK: query: select * from part where (select i from tnull_n0 limit 1) is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@tnull
+PREHOOK: Input: default@tnull_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part where (select i from tnull limit 1) is null
+POSTHOOK: query: select * from part where (select i from tnull_n0 limit 1) is null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@tnull
+POSTHOOK: Input: default@tnull_n0
 #### A masked pattern was here ####
 105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
 110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
@@ -645,9 +645,9 @@ POSTHOOK: Input: default@tnull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from part where (select max(p_name) from part_null) is not null
+PREHOOK: query: explain select * from part where (select max(p_name) from part_null_n0) is not null
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part where (select max(p_name) from part_null) is not null
+POSTHOOK: query: explain select * from part where (select max(p_name) from part_null_n0) is not null
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -680,7 +680,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: p_name (type: string)
@@ -739,15 +739,15 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from part where (select max(p_name) from part_null) is not null
+PREHOOK: query: select * from part where (select max(p_name) from part_null_n0) is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part where (select max(p_name) from part_null) is not null
+POSTHOOK: query: select * from part where (select max(p_name) from part_null_n0) is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
 110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
@@ -1326,16 +1326,19 @@ STAGE PLANS:
                 TableScan
                   alias: e
                   Statistics: Num rows: 26 Data size: 3250 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: p_name (type: string), p_size (type: int)
-                    outputColumnNames: _col0, _col1
+                  Filter Operator
+                    predicate: p_name is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 3250 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
+                    Select Operator
+                      expressions: p_name (type: string), p_size (type: int)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 26 Data size: 3250 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col1 (type: int)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 26 Data size: 3250 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
@@ -1368,9 +1371,9 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string)
-                  1 _col2 (type: string)
-                outputColumnNames: _col1, _col2, _col3
-                residual filter predicates: {((_col1 + 100) < CASE WHEN (_col3 is null) THEN (null) ELSE (_col2) END)}
+                  1 _col1 (type: string)
+                outputColumnNames: _col1, _col2
+                residual filter predicates: {((_col1 + 100) < _col2)}
                 Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1408,15 +1411,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 13 Data size: 1625 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: int), true (type: boolean), _col0 (type: string)
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 13 Data size: 1677 Basic stats: COMPLETE Column stats: COMPLETE
+                  expressions: _col1 (type: int), _col0 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 13 Data size: 1625 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string)
+                    key expressions: _col1 (type: string)
                     sort order: +
-                    Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 13 Data size: 1677 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: int), _col1 (type: boolean)
+                    Map-reduce partition columns: _col1 (type: string)
+                    Statistics: Num rows: 13 Data size: 1625 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: int)
 
   Stage: Stage-0
     Fetch Operator
@@ -1456,15 +1459,18 @@ STAGE PLANS:
                 TableScan
                   alias: e
                   Statistics: Num rows: 26 Data size: 3146 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: p_name (type: string)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: p_name is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 3146 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
+                    Select Operator
+                      expressions: p_name (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 26 Data size: 3146 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 26 Data size: 3146 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
@@ -1560,9 +1566,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 26
-PREHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null where part_null.p_type = part.p_type)
+PREHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null where part_null.p_type = part.p_type)
+POSTHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1582,22 +1588,25 @@ STAGE PLANS:
                 TableScan
                   alias: part
                   Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                  Filter Operator
+                    predicate: p_type is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col4 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col4 (type: string)
+                    Select Operator
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                       Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+                      Reduce Output Operator
+                        key expressions: _col4 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col4 (type: string)
+                        Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_type is not null (type: boolean)
@@ -1624,9 +1633,9 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col4 (type: string)
-                  1 _col2 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
-                residual filter predicates: {(UDFToDouble(_col5) > CASE WHEN (_col10 is null) THEN (null) ELSE (_col9) END)}
+                  1 _col1 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                residual filter predicates: {(UDFToDouble(_col5) > _col9)}
                 Statistics: Num rows: 9 Data size: 5690 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -1649,15 +1658,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: (_col1 / _col2) (type: double), true (type: boolean), _col0 (type: string)
-                  outputColumnNames: _col0, _col1, _col2
+                  expressions: (_col1 / _col2) (type: double), _col0 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string)
+                    key expressions: _col1 (type: string)
                     sort order: +
-                    Map-reduce partition columns: _col2 (type: string)
+                    Map-reduce partition columns: _col1 (type: string)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: double), _col1 (type: boolean)
+                    value expressions: _col0 (type: double)
 
   Stage: Stage-0
     Fetch Operator
@@ -1665,21 +1674,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from part where p_size > (select avg(p_size) from part_null where part_null.p_type = part.p_type)
+PREHOOK: query: select * from part where p_size > (select avg(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part where p_size > (select avg(p_size) from part_null where part_null.p_type = part.p_type)
+POSTHOOK: query: select * from part where p_size > (select avg(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
 Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: explain select * from part where p_size BETWEEN (select min(p_size) from part_null where part_null.p_type = part.p_type) AND (select max(p_size) from part_null)
+PREHOOK: query: explain select * from part where p_size BETWEEN (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND (select max(p_size) from part_null_n0)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part where p_size BETWEEN (select min(p_size) from part_null where part_null.p_type = part.p_type) AND (select max(p_size) from part_null)
+POSTHOOK: query: explain select * from part where p_size BETWEEN (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND (select max(p_size) from part_null_n0)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1716,7 +1725,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_type is not null (type: boolean)
@@ -1738,7 +1747,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: p_size (type: int)
@@ -1834,15 +1843,15 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: select * from part where p_size BETWEEN (select min(p_size) from part_null where part_null.p_type = part.p_type) AND (select max(p_size) from part_null)
+PREHOOK: query: select * from part where p_size BETWEEN (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND (select max(p_size) from part_null_n0)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part where p_size BETWEEN (select min(p_size) from part_null where part_null.p_type = part.p_type) AND (select max(p_size) from part_null)
+POSTHOOK: query: select * from part where p_size BETWEEN (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND (select max(p_size) from part_null_n0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
 110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
@@ -1870,10 +1879,10 @@ POSTHOOK: Input: default@part_null
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: explain select * from part where p_size >= (select min(p_size) from part_null where part_null.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null)
+Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: explain select * from part where p_size >= (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null_n0)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part where p_size >= (select min(p_size) from part_null where part_null.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null)
+POSTHOOK: query: explain select * from part where p_size >= (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null_n0)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1895,22 +1904,25 @@ STAGE PLANS:
                 TableScan
                   alias: part
                   Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                  Filter Operator
+                    predicate: p_type is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col4 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col4 (type: string)
+                    Select Operator
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                       Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+                      Reduce Output Operator
+                        key expressions: _col4 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col4 (type: string)
+                        Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_type is not null (type: boolean)
@@ -1932,7 +1944,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: p_retailprice (type: double)
@@ -1957,9 +1969,9 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col4 (type: string)
-                  1 _col2 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
-                residual filter predicates: {(_col5 >= CASE WHEN (_col10 is null) THEN (null) ELSE (_col9) END)}
+                  1 _col1 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                residual filter predicates: {(_col5 >= _col9)}
                 Statistics: Num rows: 9 Data size: 5690 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -2002,15 +2014,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: int), true (type: boolean), _col0 (type: string)
-                  outputColumnNames: _col0, _col1, _col2
+                  expressions: _col1 (type: int), _col0 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string)
+                    key expressions: _col1 (type: string)
                     sort order: +
-                    Map-reduce partition columns: _col2 (type: string)
+                    Map-reduce partition columns: _col1 (type: string)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: int), _col1 (type: boolean)
+                    value expressions: _col0 (type: int)
         Reducer 7 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -2030,16 +2042,16 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: select * from part where p_size >= (select min(p_size) from part_null where part_null.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null)
+Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: select * from part where p_size >= (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null_n0)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part where p_size >= (select min(p_size) from part_null where part_null.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null)
+POSTHOOK: query: select * from part where p_size >= (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null_n0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
 110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
@@ -3112,16 +3124,19 @@ STAGE PLANS:
                 TableScan
                   alias: part
                   Statistics: Num rows: 26 Data size: 3354 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: p_partkey (type: int), p_name (type: string), p_size (type: int)
-                    outputColumnNames: _col0, _col1, _col2
+                  Filter Operator
+                    predicate: p_size is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 3354 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col2 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col2 (type: int)
+                    Select Operator
+                      expressions: p_partkey (type: int), p_name (type: string), p_size (type: int)
+                      outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 26 Data size: 3354 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: string)
+                      Reduce Output Operator
+                        key expressions: _col2 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col2 (type: int)
+                        Statistics: Num rows: 26 Data size: 3354 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
@@ -3172,9 +3187,9 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col2 (type: int)
-                  1 _col2 (type: int)
-                outputColumnNames: _col0, _col1, _col3, _col4
-                residual filter predicates: {(_col1 like CASE WHEN (_col4 is null) THEN (null) ELSE (_col3) END)}
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col3
+                residual filter predicates: {(_col1 like _col3)}
                 Statistics: Num rows: 8 Data size: 2472 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int)
@@ -3220,15 +3235,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 14 Data size: 2632 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: string), true (type: boolean), _col0 (type: int)
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 14 Data size: 2688 Basic stats: COMPLETE Column stats: COMPLETE
+                  expressions: _col1 (type: string), _col0 (type: int)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 14 Data size: 2632 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col2 (type: int)
+                    key expressions: _col1 (type: int)
                     sort order: +
-                    Map-reduce partition columns: _col2 (type: int)
-                    Statistics: Num rows: 14 Data size: 2688 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: string), _col1 (type: boolean)
+                    Map-reduce partition columns: _col1 (type: int)
+                    Statistics: Num rows: 14 Data size: 2632 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: string)
 
   Stage: Stage-0
     Fetch Operator
@@ -3265,9 +3280,9 @@ POSTHOOK: Input: default@part
 86428
 90681
 Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from part_null where p_name NOT LIKE (select min(p_name) from part_null) AND p_brand NOT IN (select p_name from part)
+PREHOOK: query: explain select * from part_null_n0 where p_name NOT LIKE (select min(p_name) from part_null_n0) AND p_brand NOT IN (select p_name from part)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part_null where p_name NOT LIKE (select min(p_name) from part_null) AND p_brand NOT IN (select p_name from part)
+POSTHOOK: query: explain select * from part_null_n0 where p_name NOT LIKE (select min(p_name) from part_null_n0) AND p_brand NOT IN (select p_name from part)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3288,10 +3303,10 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                    expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment_n11 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                     Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
@@ -3303,7 +3318,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: p_name (type: string)
@@ -3445,15 +3460,15 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from part_null where p_name NOT LIKE (select min(p_name) from part_null) AND p_brand NOT IN (select p_name from part)
+PREHOOK: query: select * from part_null_n0 where p_name NOT LIKE (select min(p_name) from part_null_n0) AND p_brand NOT IN (select p_name from part)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part_null where p_name NOT LIKE (select min(p_name) from part_null) AND p_brand NOT IN (select p_name from part)
+POSTHOOK: query: select * from part_null_n0 where p_name NOT LIKE (select min(p_name) from part_null_n0) AND p_brand NOT IN (select p_name from part)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
 110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
@@ -3480,10 +3495,10 @@ POSTHOOK: Input: default@part_null
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-Warning: Shuffle Join MERGEJOIN[42][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from part_null where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null pp where part_null.p_type = pp.p_type)
+Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain select * from part_null_n0 where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null_n0 pp where part_null_n0.p_type = pp.p_type)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part_null where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null pp where part_null.p_type = pp.p_type)
+POSTHOOK: query: explain select * from part_null_n0 where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null_n0 pp where part_null_n0.p_type = pp.p_type)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3505,16 +3520,19 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                  Filter Operator
+                    predicate: p_type is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
+                    Select Operator
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment_n11 (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                       Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
@@ -3598,17 +3616,17 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col12
                 Statistics: Num rows: 14 Data size: 1787 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (not CASE WHEN ((_col9 = 0L)) THEN (false) WHEN (_col12 is not null) THEN (true) WHEN (_col3 is null) THEN (null) WHEN ((_col10 < _col9)) THEN (true) ELSE (false) END) (type: boolean)
-                  Statistics: Num rows: 7 Data size: 893 Basic stats: COMPLETE Column stats: NONE
+                  predicate: ((_col12 is null and _col3 is not null and (_col10 >= _col9)) or (_col9 = 0L)) (type: boolean)
+                  Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 7 Data size: 893 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col4 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col4 (type: string)
-                      Statistics: Num rows: 7 Data size: 893 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
         Reducer 4 
             Execution mode: llap
@@ -3618,17 +3636,17 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col4 (type: string)
-                  1 _col2 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col13, _col14
-                residual filter predicates: {(not (_col1 like CASE WHEN (_col14 is null) THEN (null) ELSE (_col13) END))}
-                Statistics: Num rows: 4 Data size: 561 Basic stats: COMPLETE Column stats: NONE
+                  1 _col1 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col13
+                residual filter predicates: {(not (_col1 like _col13))}
+                Statistics: Num rows: 5 Data size: 701 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                  Statistics: Num rows: 4 Data size: 561 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 701 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 4 Data size: 561 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 701 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3673,15 +3691,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: string), true (type: boolean), _col0 (type: string)
-                  outputColumnNames: _col0, _col1, _col2
+                  expressions: _col1 (type: string), _col0 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string)
+                    key expressions: _col1 (type: string)
                     sort order: +
-                    Map-reduce partition columns: _col2 (type: string)
+                    Map-reduce partition columns: _col1 (type: string)
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: string), _col1 (type: boolean)
+                    value expressions: _col0 (type: string)
 
   Stage: Stage-0
     Fetch Operator
@@ -3689,18 +3707,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[42][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from part_null where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null pp where part_null.p_type = pp.p_type)
+Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select * from part_null_n0 where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null_n0 pp where part_null_n0.p_type = pp.p_type)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part_null where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null pp where part_null.p_type = pp.p_type)
+POSTHOOK: query: select * from part_null_n0 where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null_n0 pp where part_null_n0.p_type = pp.p_type)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
@@ -3722,7 +3741,7 @@ STAGE PLANS:
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
         Reducer 3 <- Map 5 (SIMPLE_EDGE), Reducer 2 (ONE_TO_ONE_EDGE)
-        Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 7 (ONE_TO_ONE_EDGE)
+        Reducer 4 <- Reducer 3 (XPROD_EDGE), Reducer 7 (XPROD_EDGE)
         Reducer 7 <- Map 6 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
@@ -3755,15 +3774,15 @@ STAGE PLANS:
                     predicate: ((l_linenumber = 1) and l_partkey is not null) (type: boolean)
                     Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int), 1 (type: int)
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                      expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int)
+                      outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: int)
+                        value expressions: _col0 (type: int), _col2 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
@@ -3772,15 +3791,15 @@ STAGE PLANS:
                   alias: lineitem
                   Statistics: Num rows: 100 Data size: 9600 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((l_shipmode = 'AIR') and l_linenumber is not null) (type: boolean)
+                    predicate: ((l_linenumber = 1) and (l_shipmode = 'AIR')) (type: boolean)
                     Statistics: Num rows: 14 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: l_orderkey (type: int), l_linenumber (type: int)
-                      outputColumnNames: l_orderkey, l_linenumber
+                      expressions: l_orderkey (type: int)
+                      outputColumnNames: _col1
                       Statistics: Num rows: 14 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: min(l_orderkey)
-                        keys: l_linenumber (type: int)
+                        aggregations: min(_col1)
+                        keys: 1 (type: int)
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3814,13 +3833,11 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col1 (type: int)
-                outputColumnNames: _col0, _col1, _col3, _col4
-                Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 7 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: _col4 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: _col4 (type: int)
-                  Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  sort order: 
+                  Statistics: Num rows: 7 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int), _col1 (type: int), _col3 (type: int)
         Reducer 4 
             Execution mode: llap
@@ -3829,10 +3846,10 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col4 (type: int)
-                  1 _col2 (type: int)
-                outputColumnNames: _col0, _col1, _col3, _col5, _col6
-                residual filter predicates: {(_col1 <> CASE WHEN (_col6 is null) THEN (null) ELSE (_col5) END)}
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col3, _col5
+                residual filter predicates: {(_col1 <> _col5)}
                 Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col3 (type: int)
@@ -3855,15 +3872,13 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: int), true (type: boolean), _col0 (type: int)
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  expressions: _col1 (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col2 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col2 (type: int)
-                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: int), _col1 (type: boolean)
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: int)
 
   Stage: Stage-0
     Fetch Operator
@@ -3871,6 +3886,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
@@ -3910,6 +3926,7 @@ POSTHOOK: Input: default@lineitem
 85951	5952
 88035	5560
 88362	871
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
@@ -3931,7 +3948,7 @@ STAGE PLANS:
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
         Reducer 3 <- Map 5 (SIMPLE_EDGE), Reducer 2 (ONE_TO_ONE_EDGE)
-        Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 7 (ONE_TO_ONE_EDGE)
+        Reducer 4 <- Reducer 3 (XPROD_EDGE), Reducer 7 (XPROD_EDGE)
         Reducer 7 <- Map 6 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
@@ -3964,15 +3981,15 @@ STAGE PLANS:
                     predicate: ((l_linenumber = 1) and l_partkey is not null) (type: boolean)
                     Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int), 1 (type: int)
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                      expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int)
+                      outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: int)
+                        value expressions: _col0 (type: int), _col2 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
@@ -3981,15 +3998,15 @@ STAGE PLANS:
                   alias: lineitem
                   Statistics: Num rows: 100 Data size: 9600 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((l_shipmode = 'AIR') and l_linenumber is not null) (type: boolean)
+                    predicate: ((l_linenumber = 1) and (l_shipmode = 'AIR')) (type: boolean)
                     Statistics: Num rows: 14 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: l_orderkey (type: int), l_linenumber (type: int)
-                      outputColumnNames: l_orderkey, l_linenumber
+                      expressions: l_orderkey (type: int)
+                      outputColumnNames: _col1
                       Statistics: Num rows: 14 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: min(l_orderkey)
-                        keys: l_linenumber (type: int)
+                        aggregations: min(_col1)
+                        keys: 1 (type: int)
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4023,13 +4040,11 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col1 (type: int)
-                outputColumnNames: _col0, _col1, _col3, _col4
-                Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 7 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: _col4 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: _col4 (type: int)
-                  Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  sort order: 
+                  Statistics: Num rows: 7 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int), _col1 (type: int), _col3 (type: int)
         Reducer 4 
             Execution mode: llap
@@ -4038,10 +4053,10 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col4 (type: int)
-                  1 _col2 (type: int)
-                outputColumnNames: _col0, _col1, _col3, _col5, _col6
-                residual filter predicates: {(_col1 <> CASE WHEN (_col6 is null) THEN (null) ELSE (_col5) END)}
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col3, _col5
+                residual filter predicates: {(_col1 <> _col5)}
                 Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col3 (type: int)
@@ -4064,15 +4079,13 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: int), true (type: boolean), _col0 (type: int)
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  expressions: _col1 (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col2 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col2 (type: int)
-                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: int), _col1 (type: boolean)
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: int)
 
   Stage: Stage-0
     Fetch Operator
@@ -4080,6 +4093,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
@@ -4208,9 +4222,9 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
-                  2 _col1 (type: int)
-                outputColumnNames: _col1, _col2, _col4
-                residual filter predicates: {(_col1 > _col4)}
+                  2 _col0 (type: int)
+                outputColumnNames: _col1, _col2, _col5
+                residual filter predicates: {(_col1 > _col5)}
                 Statistics: Num rows: 4 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col2 (type: double)
@@ -4250,15 +4264,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 50 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: (_col1 / _col2) (type: double), _col0 (type: int)
+                  expressions: _col0 (type: int), (_col1 / _col2) (type: double)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 50 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col1 (type: int)
+                    key expressions: _col0 (type: int)
                     sort order: +
-                    Map-reduce partition columns: _col1 (type: int)
+                    Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 50 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: double)
+                    value expressions: _col1 (type: double)
 
   Stage: Stage-0
     Fetch Operator
@@ -4277,9 +4291,9 @@ POSTHOOK: Input: default@lineitem
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 NULL
-PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
+PREHOOK: query: explain select * from part_null_n0 where p_name IN (select p_name from part where part.p_type = part_null_n0.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
+POSTHOOK: query: explain select * from part_null_n0 where p_name IN (select p_name from part where part.p_type = part_null_n0.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4298,13 +4312,13 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_null
+                  alias: part_null_n0
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (p_name is not null and p_type is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment_n11 (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                       Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
@@ -4321,7 +4335,7 @@ STAGE PLANS:
                   alias: part
                   Statistics: Num rows: 26 Data size: 8242 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: p_type is not null (type: boolean)
+                    predicate: (p_name is not null and p_type is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 8242 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_name (type: string), p_brand (type: string), p_type (type: string)
@@ -4383,27 +4397,24 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col2 (type: string)
-                  1 _col2 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                residual filter predicates: {(not (_col1 like CASE WHEN (_col4 is null) THEN (null) ELSE (_col3) END))}
+                  1 _col1 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                residual filter predicates: {(not (_col1 like _col3))}
                 Statistics: Num rows: 7 Data size: 3507 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), _col2 (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 7 Data size: 1575 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (_col0 is not null and _col1 is not null) (type: boolean)
-                    Statistics: Num rows: 7 Data size: 1575 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      keys: _col0 (type: string), _col1 (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
+                  Group By Operator
+                    keys: _col0 (type: string), _col1 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 3 Data size: 675 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: string)
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                       Statistics: Num rows: 3 Data size: 675 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string), _col1 (type: string)
-                        sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                        Statistics: Num rows: 3 Data size: 675 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 6 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -4414,15 +4425,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 13 Data size: 3744 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: string), true (type: boolean), _col0 (type: string)
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 13 Data size: 3796 Basic stats: COMPLETE Column stats: COMPLETE
+                  expressions: _col1 (type: string), _col0 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 13 Data size: 3744 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string)
+                    key expressions: _col1 (type: string)
                     sort order: +
-                    Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 13 Data size: 3796 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: string), _col1 (type: boolean)
+                    Map-reduce partition columns: _col1 (type: string)
+                    Statistics: Num rows: 13 Data size: 3744 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: string)
 
   Stage: Stage-0
     Fetch Operator
@@ -4430,180 +4441,180 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
+PREHOOK: query: select * from part_null_n0 where p_name IN (select p_name from part where part.p_type = part_null_n0.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@part_null
+PREHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
+POSTHOOK: query: select * from part_null_n0 where p_name IN (select p_name from part where part.p_type = part_null_n0.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@part_null
+POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
-PREHOOK: query: drop table tnull
+PREHOOK: query: drop table tnull_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@tnull
-PREHOOK: Output: default@tnull
-POSTHOOK: query: drop table tnull
+PREHOOK: Input: default@tnull_n0
+PREHOOK: Output: default@tnull_n0
+POSTHOOK: query: drop table tnull_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@tnull
-POSTHOOK: Output: default@tnull
-PREHOOK: query: drop table part_null
+POSTHOOK: Input: default@tnull_n0
+POSTHOOK: Output: default@tnull_n0
+PREHOOK: query: drop table part_null_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_null
-PREHOOK: Output: default@part_null
-POSTHOOK: query: drop table part_null
+PREHOOK: Input: default@part_null_n0
+PREHOOK: Output: default@part_null_n0
+POSTHOOK: query: drop table part_null_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_null
-POSTHOOK: Output: default@part_null
-PREHOOK: query: drop table tempty
+POSTHOOK: Input: default@part_null_n0
+POSTHOOK: Output: default@part_null_n0
+PREHOOK: query: drop table tempty_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@tempty
-PREHOOK: Output: default@tempty
-POSTHOOK: query: drop table tempty
+PREHOOK: Input: default@tempty_n0
+PREHOOK: Output: default@tempty_n0
+POSTHOOK: query: drop table tempty_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@tempty
-POSTHOOK: Output: default@tempty
-PREHOOK: query: create table EMPS(EMPNO int,NAME string,DEPTNO int,GENDER string,CITY string,EMPID int,AGE int,SLACKER boolean,MANAGER boolean,JOINEDAT date)
+POSTHOOK: Input: default@tempty_n0
+POSTHOOK: Output: default@tempty_n0
+PREHOOK: query: create table EMPS_n4(EMPNO int,NAME string,DEPTNO int,GENDER string,CITY string,EMPID int,AGE int,SLACKER boolean,MANAGER boolean,JOINEDAT date)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@EMPS
-POSTHOOK: query: create table EMPS(EMPNO int,NAME string,DEPTNO int,GENDER string,CITY string,EMPID int,AGE int,SLACKER boolean,MANAGER boolean,JOINEDAT date)
+PREHOOK: Output: default@EMPS_n4
+POSTHOOK: query: create table EMPS_n4(EMPNO int,NAME string,DEPTNO int,GENDER string,CITY string,EMPID int,AGE int,SLACKER boolean,MANAGER boolean,JOINEDAT date)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@EMPS
-PREHOOK: query: insert into EMPS values (100,'Fred',10,NULL,NULL,30,25,true,false,'1996-08-03')
+POSTHOOK: Output: default@EMPS_n4
+PREHOOK: query: insert into EMPS_n4 values (100,'Fred',10,NULL,NULL,30,25,true,false,'1996-08-03')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@emps
-POSTHOOK: query: insert into EMPS values (100,'Fred',10,NULL,NULL,30,25,true,false,'1996-08-03')
+PREHOOK: Output: default@emps_n4
+POSTHOOK: query: insert into EMPS_n4 values (100,'Fred',10,NULL,NULL,30,25,true,false,'1996-08-03')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@emps
-POSTHOOK: Lineage: emps.age SCRIPT []
-POSTHOOK: Lineage: emps.city EXPRESSION []
-POSTHOOK: Lineage: emps.deptno SCRIPT []
-POSTHOOK: Lineage: emps.empid SCRIPT []
-POSTHOOK: Lineage: emps.empno SCRIPT []
-POSTHOOK: Lineage: emps.gender EXPRESSION []
-POSTHOOK: Lineage: emps.joinedat SCRIPT []
-POSTHOOK: Lineage: emps.manager SCRIPT []
-POSTHOOK: Lineage: emps.name SCRIPT []
-POSTHOOK: Lineage: emps.slacker SCRIPT []
-PREHOOK: query: insert into EMPS values (110,'Eric',20,'M','San Francisco',3,80,NULL,false,'2001-01-01')
+POSTHOOK: Output: default@emps_n4
+POSTHOOK: Lineage: emps_n4.age SCRIPT []
+POSTHOOK: Lineage: emps_n4.city EXPRESSION []
+POSTHOOK: Lineage: emps_n4.deptno SCRIPT []
+POSTHOOK: Lineage: emps_n4.empid SCRIPT []
+POSTHOOK: Lineage: emps_n4.empno SCRIPT []
+POSTHOOK: Lineage: emps_n4.gender EXPRESSION []
+POSTHOOK: Lineage: emps_n4.joinedat SCRIPT []
+POSTHOOK: Lineage: emps_n4.manager SCRIPT []
+POSTHOOK: Lineage: emps_n4.name SCRIPT []
+POSTHOOK: Lineage: emps_n4.slacker SCRIPT []
+PREHOOK: query: insert into EMPS_n4 values (110,'Eric',20,'M','San Francisco',3,80,NULL,false,'2001-01-01')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@emps
-POSTHOOK: query: insert into EMPS values (110,'Eric',20,'M','San Francisco',3,80,NULL,false,'2001-01-01')
+PREHOOK: Output: default@emps_n4
+POSTHOOK: query: insert into EMPS_n4 values (110,'Eric',20,'M','San Francisco',3,80,NULL,false,'2001-01-01')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@emps
-POSTHOOK: Lineage: emps.age SCRIPT []
-POSTHOOK: Lineage: emps.city SCRIPT []
-POSTHOOK: Lineage: emps.deptno SCRIPT []
-POSTHOOK: Lineage: emps.empid SCRIPT []
-POSTHOOK: Lineage: emps.empno SCRIPT []
-POSTHOOK: Lineage: emps.gender SCRIPT []
-POSTHOOK: Lineage: emps.joinedat SCRIPT []
-POSTHOOK: Lineage: emps.manager SCRIPT []
-POSTHOOK: Lineage: emps.name SCRIPT []
-POSTHOOK: Lineage: emps.slacker EXPRESSION []
-PREHOOK: query: insert into EMPS values (110,'John',40,'M','Vancouver',2,NULL,false,true,'2002-05-03')
+POSTHOOK: Output: default@emps_n4
+POSTHOOK: Lineage: emps_n4.age SCRIPT []
+POSTHOOK: Lineage: emps_n4.city SCRIPT []
+POSTHOOK: Lineage: emps_n4.deptno SCRIPT []
+POSTHOOK: Lineage: emps_n4.empid SCRIPT []
+POSTHOOK: Lineage: emps_n4.empno SCRIPT []
+POSTHOOK: Lineage: emps_n4.gender SCRIPT []
+POSTHOOK: Lineage: emps_n4.joinedat SCRIPT []
+POSTHOOK: Lineage: emps_n4.manager SCRIPT []
+POSTHOOK: Lineage: emps_n4.name SCRIPT []
+POSTHOOK: Lineage: emps_n4.slacker EXPRESSION []
+PREHOOK: query: insert into EMPS_n4 values (110,'John',40,'M','Vancouver',2,NULL,false,true,'2002-05-03')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@emps
-POSTHOOK: query: insert into EMPS values (110,'John',40,'M','Vancouver',2,NULL,false,true,'2002-05-03')
+PREHOOK: Output: default@emps_n4
+POSTHOOK: query: insert into EMPS_n4 values (110,'John',40,'M','Vancouver',2,NULL,false,true,'2002-05-03')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@emps
-POSTHOOK: Lineage: emps.age EXPRESSION []
-POSTHOOK: Lineage: emps.city SCRIPT []
-POSTHOOK: Lineage: emps.deptno SCRIPT []
-POSTHOOK: Lineage: emps.empid SCRIPT []
-POSTHOOK: Lineage: emps.empno SCRIPT []
-POSTHOOK: Lineage: emps.gender SCRIPT []
-POSTHOOK: Lineage: emps.joinedat SCRIPT []
-POSTHOOK: Lineage: emps.manager SCRIPT []
-POSTHOOK: Lineage: emps.name SCRIPT []
-POSTHOOK: Lineage: emps.slacker SCRIPT []
-PREHOOK: query: insert into EMPS values (120,'Wilma',20,'F',NULL,1,5,NULL,true,'2005-09-07')
+POSTHOOK: Output: default@emps_n4
+POSTHOOK: Lineage: emps_n4.age EXPRESSION []
+POSTHOOK: Lineage: emps_n4.city SCRIPT []
+POSTHOOK: Lineage: emps_n4.deptno SCRIPT []
+POSTHOOK: Lineage: emps_n4.empid SCRIPT []
+POSTHOOK: Lineage: emps_n4.empno SCRIPT []
+POSTHOOK: Lineage: emps_n4.gender SCRIPT []
+POSTHOOK: Lineage: emps_n4.joinedat SCRIPT []
+POSTHOOK: Lineage: emps_n4.manager SCRIPT []
+POSTHOOK: Lineage: emps_n4.name SCRIPT []
+POSTHOOK: Lineage: emps_n4.slacker SCRIPT []
+PREHOOK: query: insert into EMPS_n4 values (120,'Wilma',20,'F',NULL,1,5,NULL,true,'2005-09-07')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@emps
-POSTHOOK: query: insert into EMPS values (120,'Wilma',20,'F',NULL,1,5,NULL,true,'2005-09-07')
+PREHOOK: Output: default@emps_n4
+POSTHOOK: query: insert into EMPS_n4 values (120,'Wilma',20,'F',NULL,1,5,NULL,true,'2005-09-07')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@emps
-POSTHOOK: Lineage: emps.age SCRIPT []
-POSTHOOK: Lineage: emps.city EXPRESSION []
-POSTHOOK: Lineage: emps.deptno SCRIPT []
-POSTHOOK: Lineage: emps.empid SCRIPT []
-POSTHOOK: Lineage: emps.empno SCRIPT []
-POSTHOOK: Lineage: emps.gender SCRIPT []
-POSTHOOK: Lineage: emps.joinedat SCRIPT []
-POSTHOOK: Lineage: emps.manager SCRIPT []
-POSTHOOK: Lineage: emps.name SCRIPT []
-POSTHOOK: Lineage: emps.slacker EXPRESSION []
-PREHOOK: query: insert into EMPS values (130,'Alice',40,'F','Vancouver',2,NULL,false,true,'2007-01-01')
+POSTHOOK: Output: default@emps_n4
+POSTHOOK: Lineage: emps_n4.age SCRIPT []
+POSTHOOK: Lineage: emps_n4.city EXPRESSION []
+POSTHOOK: Lineage: emps_n4.deptno SCRIPT []
+POSTHOOK: Lineage: emps_n4.empid SCRIPT []
+POSTHOOK: Lineage: emps_n4.empno SCRIPT []
+POSTHOOK: Lineage: emps_n4.gender SCRIPT []
+POSTHOOK: Lineage: emps_n4.joinedat SCRIPT []
+POSTHOOK: Lineage: emps_n4.manager SCRIPT []
+POSTHOOK: Lineage: emps_n4.name SCRIPT []
+POSTHOOK: Lineage: emps_n4.slacker EXPRESSION []
+PREHOOK: query: insert into EMPS_n4 values (130,'Alice',40,'F','Vancouver',2,NULL,false,true,'2007-01-01')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@emps
-POSTHOOK: query: insert into EMPS values (130,'Alice',40,'F','Vancouver',2,NULL,false,true,'2007-01-01')
+PREHOOK: Output: default@emps_n4
+POSTHOOK: query: insert into EMPS_n4 values (130,'Alice',40,'F','Vancouver',2,NULL,false,true,'2007-01-01')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@emps
-POSTHOOK: Lineage: emps.age EXPRESSION []
-POSTHOOK: Lineage: emps.city SCRIPT []
-POSTHOOK: Lineage: emps.deptno SCRIPT []
-POSTHOOK: Lineage: emps.empid SCRIPT []
-POSTHOOK: Lineage: emps.empno SCRIPT []
-POSTHOOK: Lineage: emps.gender SCRIPT []
-POSTHOOK: Lineage: emps.joinedat SCRIPT []
-POSTHOOK: Lineage: emps.manager SCRIPT []
-POSTHOOK: Lineage: emps.name SCRIPT []
-POSTHOOK: Lineage: emps.slacker SCRIPT []
-PREHOOK: query: create table DEPTS(deptno int, name string)
+POSTHOOK: Output: default@emps_n4
+POSTHOOK: Lineage: emps_n4.age EXPRESSION []
+POSTHOOK: Lineage: emps_n4.city SCRIPT []
+POSTHOOK: Lineage: emps_n4.deptno SCRIPT []
+POSTHOOK: Lineage: emps_n4.empid SCRIPT []
+POSTHOOK: Lineage: emps_n4.empno SCRIPT []
+POSTHOOK: Lineage: emps_n4.gender SCRIPT []
+POSTHOOK: Lineage: emps_n4.joinedat SCRIPT []
+POSTHOOK: Lineage: emps_n4.manager SCRIPT []
+POSTHOOK: Lineage: emps_n4.name SCRIPT []
+POSTHOOK: Lineage: emps_n4.slacker SCRIPT []
+PREHOOK: query: create table DEPTS_n3(deptno int, name string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEPTS
-POSTHOOK: query: create table DEPTS(deptno int, name string)
+PREHOOK: Output: default@DEPTS_n3
+POSTHOOK: query: create table DEPTS_n3(deptno int, name string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEPTS
-PREHOOK: query: insert into DEPTS values( 10,'Sales')
+POSTHOOK: Output: default@DEPTS_n3
+PREHOOK: query: insert into DEPTS_n3 values( 10,'Sales')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@depts
-POSTHOOK: query: insert into DEPTS values( 10,'Sales')
+PREHOOK: Output: default@depts_n3
+POSTHOOK: query: insert into DEPTS_n3 values( 10,'Sales')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@depts
-POSTHOOK: Lineage: depts.deptno SCRIPT []
-POSTHOOK: Lineage: depts.name SCRIPT []
-PREHOOK: query: insert into DEPTS values( 20,'Marketing')
+POSTHOOK: Output: default@depts_n3
+POSTHOOK: Lineage: depts_n3.deptno SCRIPT []
+POSTHOOK: Lineage: depts_n3.name SCRIPT []
+PREHOOK: query: insert into DEPTS_n3 values( 20,'Marketing')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@depts
-POSTHOOK: query: insert into DEPTS values( 20,'Marketing')
+PREHOOK: Output: default@depts_n3
+POSTHOOK: query: insert into DEPTS_n3 values( 20,'Marketing')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@depts
-POSTHOOK: Lineage: depts.deptno SCRIPT []
-POSTHOOK: Lineage: depts.name SCRIPT []
-PREHOOK: query: insert into DEPTS values( 30,'Accounts')
+POSTHOOK: Output: default@depts_n3
+POSTHOOK: Lineage: depts_n3.deptno SCRIPT []
+POSTHOOK: Lineage: depts_n3.name SCRIPT []
+PREHOOK: query: insert into DEPTS_n3 values( 30,'Accounts')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@depts
-POSTHOOK: query: insert into DEPTS values( 30,'Accounts')
+PREHOOK: Output: default@depts_n3
+POSTHOOK: query: insert into DEPTS_n3 values( 30,'Accounts')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@depts
-POSTHOOK: Lineage: depts.deptno SCRIPT []
-POSTHOOK: Lineage: depts.name SCRIPT []
-PREHOOK: query: explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name)
+POSTHOOK: Output: default@depts_n3
+POSTHOOK: Lineage: depts_n3.deptno SCRIPT []
+POSTHOOK: Lineage: depts_n3.name SCRIPT []
+PREHOOK: query: explain select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name)
+POSTHOOK: query: explain select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4621,7 +4632,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: emps
+                  alias: emps_n4
                   Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: empno (type: int), name (type: string), deptno (type: int), gender (type: string), city (type: string), empid (type: int), age (type: int), slacker (type: boolean), manager (type: boolean), joinedat (type: date)
@@ -4638,7 +4649,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: depts
+                  alias: depts_n3
                   Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -4708,24 +4719,24 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name)
+PREHOOK: query: select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@depts
-PREHOOK: Input: default@emps
+PREHOOK: Input: default@depts_n3
+PREHOOK: Input: default@emps_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name)
+POSTHOOK: query: select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@depts
-POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@depts_n3
+POSTHOOK: Input: default@emps_n4
 #### A masked pattern was here ####
 100	Fred	10	NULL	NULL	30	25	true	false	1996-08-03
 110	Eric	20	M	San Francisco	3	80	NULL	false	2001-01-01
 110	John	40	M	Vancouver	2	NULL	false	true	2002-05-03
 120	Wilma	20	F	NULL	1	5	NULL	true	2005-09-07
 130	Alice	40	F	Vancouver	2	NULL	false	true	2007-01-01
-PREHOOK: query: explain select * from emps where name > (select min(name) from depts where depts.deptno=emps.deptno)
+PREHOOK: query: explain select * from emps_n4 where name > (select min(name) from depts_n3 where depts_n3.deptno=emps_n4.deptno)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emps where name > (select min(name) from depts where depts.deptno=emps.deptno)
+POSTHOOK: query: explain select * from emps_n4 where name > (select min(name) from depts_n3 where depts_n3.deptno=emps_n4.deptno)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4743,24 +4754,27 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: emps
+                  alias: emps_n4
                   Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: empno (type: int), name (type: string), deptno (type: int), gender (type: string), city (type: string), empid (type: int), age (type: int), slacker (type: boolean), manager (type: boolean), joinedat (type: date)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                  Filter Operator
+                    predicate: deptno is not null (type: boolean)
                     Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col2 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col2 (type: int)
+                    Select Operator
+                      expressions: empno (type: int), name (type: string), deptno (type: int), gender (type: string), city (type: string), empid (type: int), age (type: int), slacker (type: boolean), manager (type: boolean), joinedat (type: date)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
                       Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
+                      Reduce Output Operator
+                        key expressions: _col2 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col2 (type: int)
+                        Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: depts
+                  alias: depts_n3
                   Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: deptno is not null (type: boolean)
@@ -4787,9 +4801,9 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col2 (type: int)
-                  1 _col2 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
-                residual filter predicates: {(_col1 > CASE WHEN (_col11 is null) THEN (null) ELSE (_col10) END)}
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                residual filter predicates: {(_col1 > _col10)}
                 Statistics: Num rows: 1 Data size: 695 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
@@ -4812,15 +4826,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: string), true (type: boolean), _col0 (type: int)
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                  expressions: _col1 (type: string), _col0 (type: int)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col2 (type: int)
+                    key expressions: _col1 (type: int)
                     sort order: +
-                    Map-reduce partition columns: _col2 (type: int)
-                    Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: string), _col1 (type: boolean)
+                    Map-reduce partition columns: _col1 (type: int)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: string)
 
   Stage: Stage-0
     Fetch Operator
@@ -4828,20 +4842,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from emps where name > (select min(name) from depts where depts.deptno=emps.deptno)
+PREHOOK: query: select * from emps_n4 where name > (select min(name) from depts_n3 where depts_n3.deptno=emps_n4.deptno)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@depts
-PREHOOK: Input: default@emps
+PREHOOK: Input: default@depts_n3
+PREHOOK: Input: default@emps_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from emps where name > (select min(name) from depts where depts.deptno=emps.deptno)
+POSTHOOK: query: select * from emps_n4 where name > (select min(name) from depts_n3 where depts_n3.deptno=emps_n4.deptno)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@depts
-POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@depts_n3
+POSTHOOK: Input: default@emps_n4
 #### A masked pattern was here ####
 120	Wilma	20	F	NULL	1	5	NULL	true	2005-09-07
-PREHOOK: query: explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts where depts.deptno = emps.deptno)
+PREHOOK: query: explain select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3 where depts_n3.deptno = emps_n4.deptno)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts where depts.deptno = emps.deptno)
+POSTHOOK: query: explain select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3 where depts_n3.deptno = emps_n4.deptno)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4861,7 +4875,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: emps
+                  alias: emps_n4
                   Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: empno (type: int), name (type: string), deptno (type: int), gender (type: string), city (type: string), empid (type: int), age (type: int), slacker (type: boolean), manager (type: boolean), joinedat (type: date)
@@ -4878,7 +4892,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: depts
+                  alias: depts_n3
                   Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -5006,25 +5020,25 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts where depts.deptno = emps.deptno)
+PREHOOK: query: select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3 where depts_n3.deptno = emps_n4.deptno)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@depts
-PREHOOK: Input: default@emps
+PREHOOK: Input: default@depts_n3
+PREHOOK: Input: default@emps_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts where depts.deptno = emps.deptno)
+POSTHOOK: query: select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3 where depts_n3.deptno = emps_n4.deptno)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@depts
-POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@depts_n3
+POSTHOOK: Input: default@emps_n4
 #### A masked pattern was here ####
 100	Fred	10	NULL	NULL	30	25	true	false	1996-08-03
 110	Eric	20	M	San Francisco	3	80	NULL	false	2001-01-01
 110	John	40	M	Vancouver	2	NULL	false	true	2002-05-03
 120	Wilma	20	F	NULL	1	5	NULL	true	2005-09-07
 130	Alice	40	F	Vancouver	2	NULL	false	true	2007-01-01
-Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: explain select * from emps where deptno <> (select sum(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts)
+Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: explain select * from emps_n4 where deptno <> (select sum(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emps where deptno <> (select sum(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts)
+POSTHOOK: query: explain select * from emps_n4 where deptno <> (select sum(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -5044,24 +5058,27 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: emps
+                  alias: emps_n4
                   Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: empno (type: int), name (type: string), deptno (type: int), gender (type: string), city (type: string), empid (type: int), age (type: int), slacker (type: boolean), manager (type: boolean), joinedat (type: date)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                  Filter Operator
+                    predicate: name is not null (type: boolean)
                     Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col1 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col1 (type: string)
+                    Select Operator
+                      expressions: empno (type: int), name (type: string), deptno (type: int), gender (type: string), city (type: string), empid (type: int), age (type: int), slacker (type: boolean), manager (type: boolean), joinedat (type: date)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
                       Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+                        Statistics: Num rows: 5 Data size: 3160 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: depts
+                  alias: depts_n3
                   Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -5083,7 +5100,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: depts
+                  alias: depts_n3
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: name (type: string)
@@ -5108,9 +5125,9 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col1 (type: string)
-                  1 _col2 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
-                residual filter predicates: {(UDFToLong(_col2) <> CASE WHEN (_col11 is null) THEN (null) ELSE (_col10) END)}
+                  1 _col1 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                residual filter predicates: {(UDFToLong(_col2) <> _col10)}
                 Statistics: Num rows: 5 Data size: 3476 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
@@ -5153,15 +5170,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: bigint), true (type: boolean), _col0 (type: string)
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
+                  expressions: _col1 (type: bigint), _col0 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col2 (type: string)
+                    key expressions: _col1 (type: string)
                     sort order: +
-                    Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: bigint), _col1 (type: boolean)
+                    Map-reduce partition columns: _col1 (type: string)
+                    Statistics: Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: bigint)
         Reducer 7 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -5182,37 +5199,37 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[28][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts)
+PREHOOK: query: select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@depts
-PREHOOK: Input: default@emps
+PREHOOK: Input: default@depts_n3
+PREHOOK: Input: default@emps_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts)
+POSTHOOK: query: select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@depts
-POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@depts_n3
+POSTHOOK: Input: default@emps_n4
 #### A masked pattern was here ####
 100	Fred	10	NULL	NULL	30	25	true	false	1996-08-03
 110	Eric	20	M	San Francisco	3	80	NULL	false	2001-01-01
 110	John	40	M	Vancouver	2	NULL	false	true	2002-05-03
 120	Wilma	20	F	NULL	1	5	NULL	true	2005-09-07
 130	Alice	40	F	Vancouver	2	NULL	false	true	2007-01-01
-PREHOOK: query: drop table DEPTS
+PREHOOK: query: drop table DEPTS_n3
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@depts
-PREHOOK: Output: default@depts
-POSTHOOK: query: drop table DEPTS
+PREHOOK: Input: default@depts_n3
+PREHOOK: Output: default@depts_n3
+POSTHOOK: query: drop table DEPTS_n3
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@depts
-POSTHOOK: Output: default@depts
-PREHOOK: query: drop table EMPS
+POSTHOOK: Input: default@depts_n3
+POSTHOOK: Output: default@depts_n3
+PREHOOK: query: drop table EMPS_n4
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@emps
-PREHOOK: Output: default@emps
-POSTHOOK: query: drop table EMPS
+PREHOOK: Input: default@emps_n4
+PREHOOK: Output: default@emps_n4
+POSTHOOK: query: drop table EMPS_n4
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@emps
-POSTHOOK: Output: default@emps
+POSTHOOK: Input: default@emps_n4
+POSTHOOK: Output: default@emps_n4
 Warning: Shuffle Join MERGEJOIN[19][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain
  select key, count(*)
@@ -5455,18 +5472,18 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 133 Data size: 23674 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 131 Data size: 23318 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   keys: _col0 (type: string), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 66 Data size: 12276 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 65 Data size: 12090 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 66 Data size: 12276 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 65 Data size: 12090 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col2 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -5476,10 +5493,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 66 Data size: 12276 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 65 Data size: 12090 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 66 Data size: 12276 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 65 Data size: 12090 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
         Reducer 4 
             Execution mode: llap
@@ -5492,14 +5509,14 @@ STAGE PLANS:
                   1 
                 outputColumnNames: _col0, _col1, _col2, _col3
                 residual filter predicates: {(_col2 > _col3)}
-                Statistics: Num rows: 22 Data size: 4268 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 21 Data size: 4074 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 22 Data size: 4092 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 21 Data size: 3906 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 22 Data size: 4092 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 21 Data size: 3906 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -5726,16 +5743,19 @@ STAGE PLANS:
                 TableScan
                   alias: part
                   Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                  Filter Operator
+                    predicate: p_type is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col4 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col4 (type: string)
+                    Select Operator
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                       Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+                      Reduce Output Operator
+                        key expressions: _col4 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col4 (type: string)
+                        Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
@@ -6055,28 +6075,28 @@ POSTHOOK: Input: default@part
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-PREHOOK: query: create table t(i int, j int)
+PREHOOK: query: create table t_n11(i int, j int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t(i int, j int)
+PREHOOK: Output: default@t_n11
+POSTHOOK: query: create table t_n11(i int, j int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values(3,1), (1,1)
+POSTHOOK: Output: default@t_n11
+PREHOOK: query: insert into t_n11 values(3,1), (1,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values(3,1), (1,1)
+PREHOOK: Output: default@t_n11
+POSTHOOK: query: insert into t_n11 values(3,1), (1,1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.i SCRIPT []
-POSTHOOK: Lineage: t.j SCRIPT []
+POSTHOOK: Output: default@t_n11
+POSTHOOK: Lineage: t_n11.i SCRIPT []
+POSTHOOK: Lineage: t_n11.j SCRIPT []
 Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
-PREHOOK: query: explain select * from t where 0 = (select count(*) from t tt where tt.j <> t.i)
+PREHOOK: query: explain select * from t_n11 where 0 = (select count(*) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t where 0 = (select count(*) from t tt where tt.j <> t.i)
+POSTHOOK: query: explain select * from t_n11 where 0 = (select count(*) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6096,7 +6116,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n11
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: i (type: int), j (type: int)
@@ -6113,7 +6133,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: tt
+                  alias: tt_n11
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: j (type: int)
@@ -6128,7 +6148,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n11
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: i (type: int)
@@ -6154,7 +6174,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: CASE WHEN (_col3 is null) THEN ((0 = 0)) ELSE ((_col2 = 0)) END (type: boolean)
+                  predicate: CASE WHEN (_col3 is null) THEN (true) ELSE ((_col2 = 0L)) END (type: boolean)
                   Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: int)
@@ -6234,19 +6254,19 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
-PREHOOK: query: select * from t where 0 = (select count(*) from t tt where tt.j <> t.i)
+PREHOOK: query: select * from t_n11 where 0 = (select count(*) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t where 0 = (select count(*) from t tt where tt.j <> t.i)
+POSTHOOK: query: select * from t_n11 where 0 = (select count(*) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n11
 #### A masked pattern was here ####
 1	1
-Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: explain select * from t where 0 = (select avg(tt.i) from t tt where tt.j <> t.i)
+Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: explain select * from t_n11 where 0 = (select avg(tt_n11.i) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t where 0 = (select avg(tt.i) from t tt where tt.j <> t.i)
+POSTHOOK: query: explain select * from t_n11 where 0 = (select avg(tt_n11.i) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6266,18 +6286,25 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n11
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: i is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: i (type: int), j (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int)
                   Select Operator
                     expressions: i (type: int), j (type: int)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col1 (type: int)
                     Reduce Output Operator
                       sort order: 
                       Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6287,18 +6314,21 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n11
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    keys: i (type: int)
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
+                  Filter Operator
+                    predicate: i is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: i (type: int)
+                      mode: hash
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -6387,26 +6417,26 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: select * from t where 0 = (select avg(tt.i) from t tt where tt.j <> t.i)
+Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: select * from t_n11 where 0 = (select avg(tt_n11.i) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t where 0 = (select avg(tt.i) from t tt where tt.j <> t.i)
+POSTHOOK: query: select * from t_n11 where 0 = (select avg(tt_n11.i) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n11
 #### A masked pattern was here ####
-PREHOOK: query: create table tempty(i int, j int)
+PREHOOK: query: create table tempty_n0(i int, j int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tempty
-POSTHOOK: query: create table tempty(i int, j int)
+PREHOOK: Output: default@tempty_n0
+POSTHOOK: query: create table tempty_n0(i int, j int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tempty
-PREHOOK: query: explain select * from t where 0 = (select count(*) from tempty tt where t.i=tt.i)
+POSTHOOK: Output: default@tempty_n0
+PREHOOK: query: explain select * from t_n11 where 0 = (select count(*) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t where 0 = (select count(*) from tempty tt where t.i=tt.i)
+POSTHOOK: query: explain select * from t_n11 where 0 = (select count(*) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6424,7 +6454,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n11
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: i (type: int), j (type: int)
@@ -6441,7 +6471,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: tt
+                  alias: tt_n11
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i is not null (type: boolean)
@@ -6472,7 +6502,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 2 Data size: 17 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: CASE WHEN (_col3 is null) THEN ((0 = 0)) ELSE ((_col2 = 0)) END (type: boolean)
+                  predicate: CASE WHEN (_col3 is null) THEN (true) ELSE ((_col2 = 0L)) END (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: int)
@@ -6511,21 +6541,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from t where 0 = (select count(*) from tempty tt where t.i=tt.i)
+PREHOOK: query: select * from t_n11 where 0 = (select count(*) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
-PREHOOK: Input: default@tempty
+PREHOOK: Input: default@t_n11
+PREHOOK: Input: default@tempty_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t where 0 = (select count(*) from tempty tt where t.i=tt.i)
+POSTHOOK: query: select * from t_n11 where 0 = (select count(*) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
-POSTHOOK: Input: default@tempty
+POSTHOOK: Input: default@t_n11
+POSTHOOK: Input: default@tempty_n0
 #### A masked pattern was here ####
 1	1
 3	1
-PREHOOK: query: explain select * from t where 0 = (select min(tt.j) from tempty tt where t.i=tt.i)
+PREHOOK: query: explain select * from t_n11 where 0 = (select min(tt_n11.j) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t where 0 = (select min(tt.j) from tempty tt where t.i=tt.i)
+POSTHOOK: query: explain select * from t_n11 where 0 = (select min(tt_n11.j) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6543,24 +6573,27 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n11
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: i (type: int), j (type: int)
-                    outputColumnNames: _col0, _col1
+                  Filter Operator
+                    predicate: i is not null (type: boolean)
                     Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
+                    Select Operator
+                      expressions: i (type: int), j (type: int)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col1 (type: int)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: tt
+                  alias: tt_n11
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i is not null (type: boolean)
@@ -6625,32 +6658,32 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from t where 0 = (select min(tt.j) from tempty tt where t.i=tt.i)
+PREHOOK: query: select * from t_n11 where 0 = (select min(tt_n11.j) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
-PREHOOK: Input: default@tempty
+PREHOOK: Input: default@t_n11
+PREHOOK: Input: default@tempty_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t where 0 = (select min(tt.j) from tempty tt where t.i=tt.i)
+POSTHOOK: query: select * from t_n11 where 0 = (select min(tt_n11.j) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
-POSTHOOK: Input: default@tempty
+POSTHOOK: Input: default@t_n11
+POSTHOOK: Input: default@tempty_n0
 #### A masked pattern was here ####
-PREHOOK: query: drop table t
+PREHOOK: query: drop table t_n11
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t
-PREHOOK: Output: default@t
-POSTHOOK: query: drop table t
+PREHOOK: Input: default@t_n11
+PREHOOK: Output: default@t_n11
+POSTHOOK: query: drop table t_n11
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t
-POSTHOOK: Output: default@t
-PREHOOK: query: drop table tempty
+POSTHOOK: Input: default@t_n11
+POSTHOOK: Output: default@t_n11
+PREHOOK: query: drop table tempty_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@tempty
-PREHOOK: Output: default@tempty
-POSTHOOK: query: drop table tempty
+PREHOOK: Input: default@tempty_n0
+PREHOOK: Output: default@tempty_n0
+POSTHOOK: query: drop table tempty_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@tempty
-POSTHOOK: Output: default@tempty
+POSTHOOK: Input: default@tempty_n0
+POSTHOOK: Output: default@tempty_n0
 Warning: Shuffle Join MERGEJOIN[18][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select key, count(*) from src group by key having count(*) >
     (select count(*) from src s1 group by 4)

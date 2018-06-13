@@ -189,7 +189,7 @@ Stage-0
                                         Select Operator [SEL_115] (rows=40000000 width=1014)
                                           Output:["_col0","_col1"]
                                           Filter Operator [FIL_112] (rows=40000000 width=1014)
-                                            predicate:ca_address_sk is not null
+                                            predicate:(ca_address_sk is not null and ca_state is not null)
                                              Please refer to the previous TableScan [TS_3]
                                     <-Reducer 12 [SIMPLE_EDGE]
                                       SHUFFLE [RS_18]

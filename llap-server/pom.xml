@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>3.1.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -115,7 +115,7 @@
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>commmons-logging</groupId>
+          <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
@@ -131,7 +131,7 @@
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>commmons-logging</groupId>
+          <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
@@ -147,7 +147,7 @@
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>commmons-logging</groupId>
+          <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
         <exclusion>
@@ -176,7 +176,7 @@
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>commmons-logging</groupId>
+          <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
         <exclusion>
@@ -204,7 +204,7 @@
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>commmons-logging</groupId>
+          <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
         <exclusion>
@@ -235,6 +235,13 @@
     <!-- test intra-project -->
     <dependency>
       <groupId>org.apache.hive</groupId>
+      <artifactId>hive-common</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore</artifactId>
       <version>${project.version}</version>
       <type>test-jar</type>
@@ -253,7 +260,7 @@
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>commmons-logging</groupId>
+          <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
@@ -317,6 +324,12 @@
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-client</artifactId>
       <version>${hbase.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.glassfish.web</groupId>
+          <artifactId>javax.servlet.jsp</artifactId>
+        </exclusion>
+      </exclusions> 
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
@@ -328,8 +341,12 @@
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>commmons-logging</groupId>
+          <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.glassfish.web</groupId>
+          <artifactId>javax.servlet.jsp</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -343,7 +360,7 @@
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>commmons-logging</groupId>
+          <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>

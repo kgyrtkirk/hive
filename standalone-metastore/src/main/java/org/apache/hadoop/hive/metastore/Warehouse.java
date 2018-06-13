@@ -31,6 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -230,12 +231,14 @@ public class Warehouse {
         MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
   }
 
+  @Deprecated // Use TableName
   public static String getQualifiedName(Table table) {
-    return getQualifiedName(table.getDbName(), table.getTableName());
+    return TableName.getDbTable(table.getDbName(), table.getTableName());
   }
 
+  @Deprecated // Use TableName
   public static String getQualifiedName(String dbName, String tableName) {
-    return dbName + CAT_DB_TABLE_SEPARATOR + tableName;
+    return TableName.getDbTable(dbName, tableName);
   }
 
   public static String getQualifiedName(Partition partition) {
@@ -248,22 +251,7 @@ public class Warehouse {
    * @return fully qualified name.
    */
   public static String getCatalogQualifiedTableName(Table table) {
-    return getCatalogQualifiedTableName(table.getCatName(), table.getDbName(), table.getTableName());
-  }
-
-  /**
-   * Get table name in cat.db.table format.
-   * @param catName catalog name
-   * @param dbName database name
-   * @param tableName table name
-   * @return fully qualified name.
-   */
-  public static String getCatalogQualifiedTableName(String catName, String dbName, String tableName) {
-    return catName + CAT_DB_TABLE_SEPARATOR + dbName + CAT_DB_TABLE_SEPARATOR + tableName;
-  }
-
-  public static String getCatalogQualifiedDbName(String catName, String dbName) {
-    return catName + CAT_DB_TABLE_SEPARATOR + dbName;
+    return TableName.getQualified(table.getCatName(), table.getDbName(), table.getTableName());
   }
 
   public boolean mkdirs(Path f) throws MetaException {
@@ -301,18 +289,16 @@ public class Warehouse {
     }
   }
 
-  public boolean deleteDir(Path f, boolean recursive) throws MetaException {
-    return deleteDir(f, recursive, false);
+  public boolean deleteDir(Path f, boolean recursive, Database db) throws MetaException {
+    return deleteDir(f, recursive, false, db);
   }
 
-  public boolean deleteDir(Path f, boolean recursive, boolean ifPurge) throws MetaException {
-    return deleteDir(f, recursive, ifPurge, true);
+  public boolean deleteDir(Path f, boolean recursive, boolean ifPurge, Database db) throws MetaException {
+    return deleteDir(f, recursive, ifPurge, ReplChangeManager.isSourceOfReplication(db));
   }
 
   public boolean deleteDir(Path f, boolean recursive, boolean ifPurge, boolean needCmRecycle) throws MetaException {
-    // no need to create the CM recycle file for temporary tables
     if (needCmRecycle) {
-
       try {
         cm.recycle(f, RecycleType.MOVE, ifPurge);
       } catch (IOException e) {

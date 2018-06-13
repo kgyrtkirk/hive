@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 import com.google.common.collect.Lists;
 
@@ -38,6 +38,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -47,6 +48,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities.MissingBucketsContext;
+import org.apache.hadoop.hive.ql.exec.spark.SparkMetricUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -56,6 +58,7 @@ import org.apache.hadoop.hive.ql.io.HivePartitioner;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.StreamingOutputFormat;
+import org.apache.hadoop.hive.ql.io.arrow.ArrowWrapperWritable;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -79,29 +82,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.shims.HadoopShims.StoragePolicyShim;
 import org.apache.hadoop.hive.shims.HadoopShims.StoragePolicyValue;
 import org.apache.hadoop.hive.shims.ShimLoader;
+
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
+
 import org.apache.hive.common.util.HiveStringUtils;
-import org.apache.hive.common.util.Murmur3;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.BiFunction;
-
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
 
 /**
  * File Sink operator implementation.
@@ -146,6 +137,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private transient boolean isInsertOverwrite;
   private transient String counterGroup;
   private transient BiFunction<Object[], ObjectInspector[], Integer> hashFunc;
+  public static final String TOTAL_TABLE_ROWS_WRITTEN = "TOTAL_TABLE_ROWS_WRITTEN";
+
   /**
    * Counters.
    */
@@ -582,6 +575,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       hashFunc = conf.getTableInfo().getBucketingVersion() == 2 ?
           ObjectInspectorUtils::getBucketHashCode :
           ObjectInspectorUtils::getBucketHashCodeOld;
+
+      //Counter for number of rows that are associated with a destination table in FileSinkOperator.
+      //This count is used to get total number of rows in an insert query.
+      if (conf.getTableInfo() != null && conf.getTableInfo().getTableName() != null) {
+        statsMap.put(TOTAL_TABLE_ROWS_WRITTEN, row_count);
+      }
     } catch (HiveException e) {
       throw e;
     } catch (Exception e) {
@@ -1234,6 +1233,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     row_count.set(numRows);
     LOG.info(toString() + ": records written - " + numRows);
 
+    if ("spark".equalsIgnoreCase(HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE))) {
+      SparkMetricUtils.updateSparkRecordsWrittenMetrics(runTimeNumRows);
+    }
+
     if (!bDynParts && !filesCreated) {
       boolean skipFiles = "tez".equalsIgnoreCase(
           HiveConf.getVar(hconf, ConfVars.HIVE_EXECUTION_ENGINE));
@@ -1251,16 +1254,25 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // If serializer is ThriftJDBCBinarySerDe, then it buffers rows to a certain limit (hive.server2.thrift.resultset.max.fetch.size)
       // and serializes the whole batch when the buffer is full. The serialize returns null if the buffer is not full
       // (the size of buffer is kept track of in the ThriftJDBCBinarySerDe).
-      if (conf.isUsingThriftJDBCBinarySerDe()) {
-          try {
-            recordValue = serializer.serialize(null, inputObjInspectors[0]);
-            if ( null != fpaths ) {
-              rowOutWriters = fpaths.outWriters;
-              rowOutWriters[0].write(recordValue);
+      if (conf.isUsingBatchingSerDe()) {
+        try {
+          recordValue = serializer.serialize(null, inputObjInspectors[0]);
+          if (null != fpaths) {
+            rowOutWriters = fpaths.outWriters;
+            rowOutWriters[0].write(recordValue);
+          } else if(recordValue instanceof ArrowWrapperWritable) {
+            //Because LLAP arrow output depends on the ThriftJDBCBinarySerDe code path
+            //this is required for 0 row outputs
+            //i.e. we need to write a 0 size batch to signal EOS to the consumer
+            for (FSPaths fsPaths : valToPaths.values()) {
+              for(RecordWriter writer : fsPaths.outWriters) {
+                writer.write(recordValue);
+              }
             }
-          } catch (SerDeException | IOException e) {
-            throw new HiveException(e);
           }
+        } catch (SerDeException | IOException e) {
+          throw new HiveException(e);
+        }
       }
       List<Path> commitPaths = new ArrayList<>();
       for (FSPaths fsp : valToPaths.values()) {
@@ -1299,6 +1311,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
         if (isNativeTable()) {
           fsp.commit(fs, commitPaths);
+        }
+        if ("spark".equals(HiveConf.getVar(hconf, ConfVars.HIVE_EXECUTION_ENGINE))) {
+          SparkMetricUtils.updateSparkBytesWrittenMetrics(LOG, fs, fsp.finalPaths);
         }
       }
       if (conf.isMmTable()) {

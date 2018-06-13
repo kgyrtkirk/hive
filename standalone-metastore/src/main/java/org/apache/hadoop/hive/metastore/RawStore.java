@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
@@ -754,7 +755,7 @@ public interface RawStore extends Configurable {
   boolean revokePrivileges(PrivilegeBag privileges, boolean grantOption)
   throws InvalidObjectException, MetaException, NoSuchObjectException;
 
-  boolean refreshPrivileges(HiveObjectRef objToRefresh, PrivilegeBag grantPrivileges)
+  boolean refreshPrivileges(HiveObjectRef objToRefresh, String authorizer, PrivilegeBag grantPrivileges)
   throws InvalidObjectException, MetaException, NoSuchObjectException;
 
   org.apache.hadoop.hive.metastore.api.Role getRole(
@@ -1638,5 +1639,12 @@ public interface RawStore extends Configurable {
 
   /** Removes outdated statistics. */
   int deleteRuntimeStats(int maxRetainSecs) throws MetaException;
+
+  List<TableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException;
+
+  List<TableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException;
+
+  Map<String, List<String>> getPartitionColsWithStats(String catName, String dbName,
+      String tableName) throws MetaException, NoSuchObjectException;
 
 }

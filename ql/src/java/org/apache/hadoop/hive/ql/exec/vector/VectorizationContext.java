@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.lang.reflect.Constructor;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -133,6 +134,7 @@ public class VectorizationContext {
   }
 
   private HiveVectorAdaptorUsageMode hiveVectorAdaptorUsageMode;
+  private boolean testVectorAdaptorOverride;
 
   public enum HiveVectorIfStmtMode {
     ADAPTOR,
@@ -158,6 +160,8 @@ public class VectorizationContext {
 
   private void setHiveConfVars(HiveConf hiveConf) {
     hiveVectorAdaptorUsageMode = HiveVectorAdaptorUsageMode.getHiveConfValue(hiveConf);
+    testVectorAdaptorOverride =
+        HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_TEST_VECTOR_ADAPTOR_OVERRIDE);
     hiveVectorIfStmtMode = HiveVectorIfStmtMode.getHiveConfValue(hiveConf);
     this.reuseScratchColumns =
         HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_VECTORIZATION_TESTING_REUSE_SCRATCH_COLUMNS);
@@ -171,8 +175,11 @@ public class VectorizationContext {
 
   private void copyHiveConfVars(VectorizationContext vContextEnvironment) {
     hiveVectorAdaptorUsageMode = vContextEnvironment.hiveVectorAdaptorUsageMode;
+    testVectorAdaptorOverride = vContextEnvironment.testVectorAdaptorOverride;
     hiveVectorIfStmtMode = vContextEnvironment.hiveVectorIfStmtMode;
     this.reuseScratchColumns = vContextEnvironment.reuseScratchColumns;
+    useCheckedVectorExpressions = vContextEnvironment.useCheckedVectorExpressions;
+    adaptorSuppressEvaluateExceptions = vContextEnvironment.adaptorSuppressEvaluateExceptions;
     this.ocm.setReuseColumns(reuseScratchColumns);
   }
 
@@ -389,9 +396,6 @@ public class VectorizationContext {
   public DataTypePhysicalVariation getDataTypePhysicalVariation(int columnNum) throws HiveException {
     if (initialDataTypePhysicalVariations == null) {
       return null;
-    }
-    if (columnNum < 0) {
-      fake++;
     }
     if (columnNum < initialDataTypePhysicalVariations.size()) {
       return initialDataTypePhysicalVariations.get(columnNum);
@@ -804,8 +808,12 @@ public class VectorizationContext {
       // Note: this is a no-op for custom UDFs
       List<ExprNodeDesc> childExpressions = getChildExpressionsWithImplicitCast(expr.getGenericUDF(),
           exprDesc.getChildren(), exprDesc.getTypeInfo());
-      ve = getGenericUdfVectorExpression(expr.getGenericUDF(),
-          childExpressions, mode, exprDesc.getTypeInfo());
+
+      // Are we forcing the usage of VectorUDFAdaptor for test purposes?
+      if (!testVectorAdaptorOverride) {
+        ve = getGenericUdfVectorExpression(expr.getGenericUDF(),
+            childExpressions, mode, exprDesc.getTypeInfo());
+      }
       if (ve == null) {
         // Ok, no vectorized class available.  No problem -- try to use the VectorUDFAdaptor
         // when configured.
@@ -1107,7 +1115,7 @@ public class VectorizationContext {
     return HiveDecimalUtils.getPrecisionForType(typeInfo);
   }
 
-  private GenericUDF getGenericUDFForCast(TypeInfo castType) throws HiveException {
+  public static GenericUDF getGenericUDFForCast(TypeInfo castType) throws HiveException {
     UDF udfClass = null;
     GenericUDF genericUdf = null;
     switch (((PrimitiveTypeInfo) castType).getPrimitiveCategory()) {
@@ -1168,8 +1176,10 @@ public class VectorizationContext {
       if (udfClass == null) {
         throw new HiveException("Could not add implicit cast for type "+castType.getTypeName());
       }
-      genericUdf = new GenericUDFBridge();
-      ((GenericUDFBridge) genericUdf).setUdfClassName(udfClass.getClass().getName());
+      GenericUDFBridge genericUDFBridge = new GenericUDFBridge();
+      genericUDFBridge.setUdfClassName(udfClass.getClass().getName());
+      genericUDFBridge.setUdfName(udfClass.getClass().getSimpleName());
+      genericUdf = genericUDFBridge;
     }
     if (genericUdf instanceof SettableUDF) {
       ((SettableUDF) genericUdf).setTypeInfo(castType);
@@ -1681,8 +1691,6 @@ public class VectorizationContext {
 
     return vectorExpression;
   }
-
-  static int fake = 0;
 
   private VectorExpression getVectorExpressionForUdf(GenericUDF genericUdf,
       Class<?> udfClass, List<ExprNodeDesc> childExpr, VectorExpressionDescriptor.Mode mode,
@@ -2741,7 +2749,9 @@ public class VectorizationContext {
     }
     if (isIntFamily(inputType)) {
       return createVectorExpression(CastLongToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
-    } else if (isFloatFamily(inputType)) {
+    } else if (inputType.equals("float")) {
+      return createVectorExpression(CastFloatToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+    } else if (inputType.equals("double")) {
       return createVectorExpression(CastDoubleToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
     } else if (decimalTypePattern.matcher(inputType).matches()) {
       if (child instanceof ExprNodeColumnDesc) {
@@ -3450,20 +3460,20 @@ public class VectorizationContext {
 
   private Object getScalarValue(ExprNodeConstantDesc constDesc)
       throws HiveException {
-    if (constDesc.getTypeString().equalsIgnoreCase("String")) {
-      try {
-         byte[] bytes = ((String) constDesc.getValue()).getBytes("UTF-8");
-         return bytes;
-      } catch (Exception ex) {
-        throw new HiveException(ex);
-      }
-    } else if (constDesc.getTypeString().equalsIgnoreCase("boolean")) {
+    String typeString = constDesc.getTypeString();
+    if (typeString.equalsIgnoreCase("String")) {
+      return ((String) constDesc.getValue()).getBytes(StandardCharsets.UTF_8);
+    } else if (charTypePattern.matcher(typeString).matches()) {
+      return ((HiveChar) constDesc.getValue()).getStrippedValue().getBytes(StandardCharsets.UTF_8);
+    } else if (varcharTypePattern.matcher(typeString).matches()) {
+      return ((HiveVarchar) constDesc.getValue()).getValue().getBytes(StandardCharsets.UTF_8);
+    } else if (typeString.equalsIgnoreCase("boolean")) {
       if (constDesc.getValue().equals(Boolean.valueOf(true))) {
         return 1;
       } else {
         return 0;
       }
-    } else if (decimalTypePattern.matcher(constDesc.getTypeString()).matches()) {
+    } else if (decimalTypePattern.matcher(typeString).matches()) {
       return constDesc.getValue();
     } else {
       return constDesc.getValue();

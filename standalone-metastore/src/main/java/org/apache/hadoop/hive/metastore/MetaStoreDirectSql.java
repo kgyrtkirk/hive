@@ -38,6 +38,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -76,7 +77,9 @@ import org.apache.hadoop.hive.metastore.model.MCreationMetadata;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
+import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
+import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
@@ -141,7 +144,7 @@ class MetaStoreDirectSql {
   private String DBS, TBLS, PARTITIONS, DATABASE_PARAMS, PARTITION_PARAMS, SORT_COLS, SD_PARAMS,
       SDS, SERDES, SKEWED_STRING_LIST_VALUES, SKEWED_VALUES, BUCKETING_COLS, SKEWED_COL_NAMES,
       SKEWED_COL_VALUE_LOC_MAP, COLUMNS_V2, PARTITION_KEYS, SERDE_PARAMS, PART_COL_STATS, KEY_CONSTRAINTS,
-      TAB_COL_STATS, PARTITION_KEY_VALS;
+      TAB_COL_STATS, PARTITION_KEY_VALS, PART_PRIVS, PART_COL_PRIVS, SKEWED_STRING_LIST, CDS;
 
   public MetaStoreDirectSql(PersistenceManager pm, Configuration conf, String schema) {
     this.pm = pm;
@@ -182,7 +185,7 @@ class MetaStoreDirectSql {
       boolean isInTest = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
       isCompatibleDatastore = (!isInTest || ensureDbInit()) && runTestQuery();
       if (isCompatibleDatastore) {
-        LOG.info("Using direct SQL, underlying DB is " + dbType);
+        LOG.debug("Using direct SQL, underlying DB is " + dbType);
       }
     }
 
@@ -234,6 +237,8 @@ class MetaStoreDirectSql {
       initQueries.add(pm.newQuery(MNotificationNextId.class, "nextEventId < -1"));
       initQueries.add(pm.newQuery(MWMResourcePlan.class, "name == ''"));
       initQueries.add(pm.newQuery(MCreationMetadata.class, "dbName == ''"));
+      initQueries.add(pm.newQuery(MPartitionPrivilege.class, "principalName == ''"));
+      initQueries.add(pm.newQuery(MPartitionColumnPrivilege.class, "principalName == ''"));
       Query q;
       while ((q = initQueries.peekFirst()) != null) {
         q.execute();
@@ -443,7 +448,6 @@ class MetaStoreDirectSql {
 
   /**
    * Gets partitions by using direct SQL queries.
-   * Note that batching is not needed for this method - list of names implies the batch size;
    * @param catName Metastore catalog name.
    * @param dbName Metastore db name.
    * @param tblName Metastore table name.
@@ -460,8 +464,12 @@ class MetaStoreDirectSql {
       @Override
       public List<Partition> run(List<String> input) throws MetaException {
         String filter = "" + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(input.size()) + ")";
-        return getPartitionsViaSqlFilterInternal(catName, dbName, tblName, null, filter, input,
-            Collections.<String>emptyList(), null);
+        List<Object> partitionIds = getPartitionIdsViaSqlFilter(catName, dbName, tblName,
+            filter, input, Collections.<String>emptyList(), null);
+        if (partitionIds.isEmpty()) {
+          return Collections.emptyList(); // no partitions, bail early.
+        }
+        return getPartitionsFromPartitionIds(catName, dbName, tblName, null, partitionIds);
       }
     });
   }
@@ -477,8 +485,19 @@ class MetaStoreDirectSql {
     Boolean isViewTable = isViewTable(filter.table);
     String catName = filter.table.isSetCatName() ? filter.table.getCatName() :
         DEFAULT_CATALOG_NAME;
-    return getPartitionsViaSqlFilterInternal(catName, filter.table.getDbName(),
-        filter.table.getTableName(), isViewTable, filter.filter, filter.params, filter.joins, max);
+    List<Object> partitionIds = getPartitionIdsViaSqlFilter(catName,
+        filter.table.getDbName(), filter.table.getTableName(), filter.filter, filter.params,
+        filter.joins, max);
+    if (partitionIds.isEmpty()) {
+      return Collections.emptyList(); // no partitions, bail early.
+    }
+    return Batchable.runBatched(batchSize, partitionIds, new Batchable<Object, Partition>() {
+      @Override
+      public List<Partition> run(List<Object> input) throws MetaException {
+        return getPartitionsFromPartitionIds(catName, filter.table.getDbName(),
+            filter.table.getTableName(), isViewTable, input);
+      }
+    });
   }
 
   public static class SqlFilterForPushdown {
@@ -508,8 +527,20 @@ class MetaStoreDirectSql {
    */
   public List<Partition> getPartitions(String catName,
       String dbName, String tblName, Integer max) throws MetaException {
-    return getPartitionsViaSqlFilterInternal(catName, dbName, tblName, null,
-        null, Collections.<String>emptyList(), Collections.<String>emptyList(), max);
+    List<Object> partitionIds = getPartitionIdsViaSqlFilter(catName, dbName,
+        tblName, null, Collections.<String>emptyList(), Collections.<String>emptyList(), max);
+    if (partitionIds.isEmpty()) {
+      return Collections.emptyList(); // no partitions, bail early.
+    }
+
+    // Get full objects. For Oracle/etc. do it in batches.
+    List<Partition> result = Batchable.runBatched(batchSize, partitionIds, new Batchable<Object, Partition>() {
+      @Override
+      public List<Partition> run(List<Object> input) throws MetaException {
+        return getPartitionsFromPartitionIds(catName, dbName, tblName, null, input);
+      }
+    });
+    return result;
   }
 
   private static Boolean isViewTable(Table t) {
@@ -536,12 +567,11 @@ class MetaStoreDirectSql {
   }
 
   /**
-   * Get partition objects for the query using direct SQL queries, to avoid bazillion
+   * Get partition ids for the query using direct SQL queries, to avoid bazillion
    * queries created by DN retrieving stuff for each object individually.
-   * @param dbName Metastore db name.
-   * @param tblName Metastore table name.
-   * @param isView Whether table is a view. Can be passed as null if not immediately
-   *               known, then this method will get it only if necessary.
+   * @param catName MetaStore catalog name
+   * @param dbName MetaStore db name
+   * @param tblName MetaStore table name
    * @param sqlFilter SQL filter to use. Better be SQL92-compliant.
    * @param paramsForFilter params for ?-s in SQL filter text. Params must be in order.
    * @param joinsForFilter if the filter needs additional join statement, they must be in
@@ -549,24 +579,18 @@ class MetaStoreDirectSql {
    * @param max The maximum number of partitions to return.
    * @return List of partition objects.
    */
-  private List<Partition> getPartitionsViaSqlFilterInternal(
-      String catName, String dbName, String tblName, final Boolean isView, String sqlFilter,
-      List<? extends Object> paramsForFilter, List<String> joinsForFilter,Integer max)
+  private List<Object> getPartitionIdsViaSqlFilter(
+      String catName, String dbName, String tblName, String sqlFilter,
+      List<? extends Object> paramsForFilter, List<String> joinsForFilter, Integer max)
       throws MetaException {
     boolean doTrace = LOG.isDebugEnabled();
-    final String dbNameLcase = dbName.toLowerCase(), tblNameLcase = tblName.toLowerCase();
-    final String catNameLcase = normalizeSpace(catName);
+    final String dbNameLcase = dbName.toLowerCase();
+    final String tblNameLcase = tblName.toLowerCase();
+    final String catNameLcase = normalizeSpace(catName).toLowerCase();
+
     // We have to be mindful of order during filtering if we are not returning all partitions.
     String orderForFilter = (max != null) ? " order by \"PART_NAME\" asc" : "";
 
-    // Get all simple fields for partitions and related objects, which we can map one-on-one.
-    // We will do this in 2 queries to use different existing indices for each one.
-    // We do not get table and DB name, assuming they are the same as we are using to filter.
-    // TODO: We might want to tune the indexes instead. With current ones MySQL performs
-    // poorly, esp. with 'order by' w/o index on large tables, even if the number of actual
-    // results is small (query that returns 8 out of 32k partitions can go 4sec. to 0sec. by
-    // just adding a \"PART_ID\" IN (...) filter that doesn't alter the results to it, probably
-    // causing it to not sort the entire table due to not knowing how selective the filter is.
     String queryText =
         "select " + PARTITIONS + ".\"PART_ID\" from " + PARTITIONS + ""
       + "  inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\" "
@@ -596,15 +620,10 @@ class MetaStoreDirectSql {
       return Collections.emptyList(); // no partitions, bail early.
     }
 
-    // Get full objects. For Oracle/etc. do it in batches.
-    List<Partition> result = Batchable.runBatched(batchSize, sqlResult, new Batchable<Object, Partition>() {
-      @Override
-      public List<Partition> run(List<Object> input) throws MetaException {
-        return getPartitionsFromPartitionIds(catNameLcase, dbNameLcase, tblNameLcase, isView,
-            input);
-      }
-    });
-
+    List<Object> result = new ArrayList<Object>(sqlResult.size());
+    for (Object fields : sqlResult) {
+      result.add(extractSqlLong(fields));
+    }
     query.closeAll();
     return result;
   }
@@ -613,14 +632,11 @@ class MetaStoreDirectSql {
   private List<Partition> getPartitionsFromPartitionIds(String catName, String dbName, String tblName,
       Boolean isView, List<Object> partIdList) throws MetaException {
     boolean doTrace = LOG.isDebugEnabled();
+
     int idStringWidth = (int)Math.ceil(Math.log10(partIdList.size())) + 1; // 1 for comma
     int sbCapacity = partIdList.size() * idStringWidth;
-    // Prepare StringBuilder for "PART_ID in (...)" to use in future queries.
-    StringBuilder partSb = new StringBuilder(sbCapacity);
-    for (Object partitionId : partIdList) {
-      partSb.append(extractSqlLong(partitionId)).append(",");
-    }
-    String partIds = trimCommaList(partSb);
+
+    String partIds = getIdListForIn(partIdList);
 
     // Get most of the fields for the IDs provided.
     // Assume db and table names are the same for all partition, as provided in arguments.
@@ -653,7 +669,7 @@ class MetaStoreDirectSql {
     StringBuilder colsSb = new StringBuilder(7); // We expect that there's only one field schema.
     tblName = tblName.toLowerCase();
     dbName = dbName.toLowerCase();
-    catName = catName.toLowerCase();
+    catName = normalizeSpace(catName).toLowerCase();
     for (Object[] fields : sqlResult) {
       // Here comes the ugly part...
       long partitionId = extractSqlLong(fields[0]);
@@ -1059,6 +1075,18 @@ class MetaStoreDirectSql {
       LOG.debug("Expected blob type but got " + value.getClass().getName());
       return null;
     }
+  }
+
+  /**
+   * Helper method for preparing for "SOMETHING_ID in (...)" to use in future queries.
+   * @param objectIds the objectId collection
+   * @return The concatenated list
+   * @throws MetaException If the list contains wrong data
+   */
+  private static String getIdListForIn(List<Object> objectIds) throws MetaException {
+    return objectIds.stream()
+               .map(i -> i.toString())
+               .collect(Collectors.joining(","));
   }
 
   private static String trimCommaList(StringBuilder sb) {
@@ -2416,4 +2444,369 @@ class MetaStoreDirectSql {
     return ret;
   }
 
+  /**
+   * Drop partitions by using direct SQL queries.
+   * @param catName Metastore catalog name.
+   * @param dbName Metastore db name.
+   * @param tblName Metastore table name.
+   * @param partNames Partition names to get.
+   * @return List of partitions.
+   */
+  public void dropPartitionsViaSqlFilter(final String catName, final String dbName,
+                                         final String tblName, List<String> partNames)
+      throws MetaException {
+    if (partNames.isEmpty()) {
+      return;
+    }
+
+    Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
+      @Override
+      public List<Void> run(List<String> input) throws MetaException {
+        String filter = "" + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(input.size()) + ")";
+        // Get partition ids
+        List<Object> partitionIds = getPartitionIdsViaSqlFilter(catName, dbName, tblName,
+            filter, input, Collections.<String>emptyList(), null);
+        if (partitionIds.isEmpty()) {
+          return Collections.emptyList(); // no partitions, bail early.
+        }
+        dropPartitionsByPartitionIds(partitionIds);
+        return Collections.emptyList();
+      }
+    });
+  }
+
+
+  /**
+   * Drops Partition-s. Should be called with the list short enough to not trip up Oracle/etc.
+   * @param partitionIdList The partition identifiers to drop
+   * @throws MetaException If there is an SQL exception during the execution it converted to
+   * MetaException
+   */
+  private void dropPartitionsByPartitionIds(List<Object> partitionIdList) throws MetaException {
+    String queryText;
+
+    String partitionIds = getIdListForIn(partitionIdList);
+
+    // Get the corresponding SD_ID-s, CD_ID-s, SERDE_ID-s
+    queryText =
+        "SELECT " + SDS + ".\"SD_ID\", " + SDS + ".\"CD_ID\", " + SDS + ".\"SERDE_ID\" "
+            + "from " + SDS + " "
+            + "INNER JOIN " + PARTITIONS + " ON " + PARTITIONS + ".\"SD_ID\" = " + SDS + ".\"SD_ID\" "
+            + "WHERE " + PARTITIONS + ".\"PART_ID\" in (" + partitionIds + ")";
+
+    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    List<Object[]> sqlResult = ensureList(executeWithArray(query, null, queryText));
+
+    List<Object> sdIdList = new ArrayList<>(partitionIdList.size());
+    List<Object> columnDescriptorIdList = new ArrayList<>(1);
+    List<Object> serdeIdList = new ArrayList<>(partitionIdList.size());
+
+    if (!sqlResult.isEmpty()) {
+      for (Object[] fields : sqlResult) {
+        sdIdList.add(extractSqlLong(fields[0]));
+        Long colId = extractSqlLong(fields[1]);
+        if (!columnDescriptorIdList.contains(colId)) {
+          columnDescriptorIdList.add(colId);
+        }
+        serdeIdList.add(extractSqlLong(fields[2]));
+      }
+    }
+    query.closeAll();
+
+    try {
+      // Drop privileges
+      queryText = "delete from " + PART_PRIVS + " where \"PART_ID\" in (" + partitionIds + ")";
+      executeNoResult(queryText);
+      Deadline.checkTimeout();
+
+      // Drop column level privileges
+      queryText = "delete from " + PART_COL_PRIVS + " where \"PART_ID\" in (" + partitionIds + ")";
+      executeNoResult(queryText);
+      Deadline.checkTimeout();
+
+      // Drop partition statistics
+      queryText = "delete from " + PART_COL_STATS + " where \"PART_ID\" in (" + partitionIds + ")";
+      executeNoResult(queryText);
+      Deadline.checkTimeout();
+
+      // Drop the partition params
+      queryText = "delete from " + PARTITION_PARAMS + " where \"PART_ID\" in ("
+          + partitionIds + ")";
+      executeNoResult(queryText);
+      Deadline.checkTimeout();
+
+      // Drop the partition key vals
+      queryText = "delete from " + PARTITION_KEY_VALS + " where \"PART_ID\" in ("
+          + partitionIds + ")";
+      executeNoResult(queryText);
+      Deadline.checkTimeout();
+
+      // Drop the partitions
+      queryText = "delete from " + PARTITIONS + " where \"PART_ID\" in (" + partitionIds + ")";
+      executeNoResult(queryText);
+      Deadline.checkTimeout();
+    } catch (SQLException sqlException) {
+      LOG.warn("SQL error executing query while dropping partition", sqlException);
+      throw new MetaException("Encountered error while dropping partitions.");
+    }
+    dropStorageDescriptors(sdIdList);
+    Deadline.checkTimeout();
+
+    dropSerdes(serdeIdList);
+    Deadline.checkTimeout();
+
+    dropDanglingColumnDescriptors(columnDescriptorIdList);
+  }
+
+  /**
+   * Drops SD-s. Should be called with the list short enough to not trip up Oracle/etc.
+   * @param storageDescriptorIdList The storage descriptor identifiers to drop
+   * @throws MetaException If there is an SQL exception during the execution it converted to
+   * MetaException
+   */
+  private void dropStorageDescriptors(List<Object> storageDescriptorIdList) throws MetaException {
+    String queryText;
+    String sdIds = getIdListForIn(storageDescriptorIdList);
+
+    // Get the corresponding SKEWED_STRING_LIST_ID data
+    queryText =
+        "select " + SKEWED_VALUES + ".\"STRING_LIST_ID_EID\" "
+            + "from " + SKEWED_VALUES + " "
+            + "WHERE " + SKEWED_VALUES + ".\"SD_ID_OID\" in  (" + sdIds + ")";
+
+    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    List<Object[]> sqlResult = ensureList(executeWithArray(query, null, queryText));
+
+    List<Object> skewedStringListIdList = new ArrayList<>(0);
+
+    if (!sqlResult.isEmpty()) {
+      for (Object[] fields : sqlResult) {
+        skewedStringListIdList.add(extractSqlLong(fields[0]));
+      }
+    }
+    query.closeAll();
+
+    String skewedStringListIds = getIdListForIn(skewedStringListIdList);
+
+    try {
+      // Drop the SD params
+      queryText = "delete from " + SD_PARAMS + " where \"SD_ID\" in (" + sdIds + ")";
+      executeNoResult(queryText);
+      Deadline.checkTimeout();
+
+      // Drop the sort cols
+      queryText = "delete from " + SORT_COLS + " where \"SD_ID\" in (" + sdIds + ")";
+      executeNoResult(queryText);
+      Deadline.checkTimeout();
+
+      // Drop the bucketing cols
+      queryText = "delete from " + BUCKETING_COLS + " where \"SD_ID\" in (" + sdIds + ")";
+      executeNoResult(queryText);
+      Deadline.checkTimeout();
+
+      // Drop the skewed string lists
+      if (skewedStringListIdList.size() > 0) {
+        // Drop the skewed string value loc map
+        queryText = "delete from " + SKEWED_COL_VALUE_LOC_MAP + " where \"SD_ID\" in ("
+            + sdIds + ")";
+        executeNoResult(queryText);
+        Deadline.checkTimeout();
+
+        // Drop the skewed values
+        queryText = "delete from " + SKEWED_VALUES + " where \"SD_ID_OID\" in (" + sdIds + ")";
+        executeNoResult(queryText);
+        Deadline.checkTimeout();
+
+        // Drop the skewed string list values
+        queryText = "delete from " + SKEWED_STRING_LIST_VALUES + " where \"STRING_LIST_ID\" in ("
+            + skewedStringListIds + ")";
+        executeNoResult(queryText);
+        Deadline.checkTimeout();
+
+        // Drop the skewed string list
+        queryText = "delete from " + SKEWED_STRING_LIST + " where \"STRING_LIST_ID\" in ("
+            + skewedStringListIds + ")";
+        executeNoResult(queryText);
+        Deadline.checkTimeout();
+      }
+
+      // Drop the skewed cols
+      queryText = "delete from " + SKEWED_COL_NAMES + " where \"SD_ID\" in (" + sdIds + ")";
+      executeNoResult(queryText);
+      Deadline.checkTimeout();
+
+      // Drop the sds
+      queryText = "delete from " + SDS + " where \"SD_ID\" in (" + sdIds + ")";
+      executeNoResult(queryText);
+    } catch (SQLException sqlException) {
+      LOG.warn("SQL error executing query while dropping storage descriptor.", sqlException);
+      throw new MetaException("Encountered error while dropping storage descriptor.");
+    }
+  }
+
+  /**
+   * Drops Serde-s. Should be called with the list short enough to not trip up Oracle/etc.
+   * @param serdeIdList The serde identifiers to drop
+   * @throws MetaException If there is an SQL exception during the execution it converted to
+   * MetaException
+   */
+  private void dropSerdes(List<Object> serdeIdList) throws MetaException {
+    String queryText;
+    String serdeIds = getIdListForIn(serdeIdList);
+
+    try {
+      // Drop the serde params
+      queryText = "delete from " + SERDE_PARAMS + " where \"SERDE_ID\" in (" + serdeIds + ")";
+      executeNoResult(queryText);
+      Deadline.checkTimeout();
+
+      // Drop the serdes
+      queryText = "delete from " + SERDES + " where \"SERDE_ID\" in (" + serdeIds + ")";
+      executeNoResult(queryText);
+    } catch (SQLException sqlException) {
+      LOG.warn("SQL error executing query while dropping serde.", sqlException);
+      throw new MetaException("Encountered error while dropping serde.");
+    }
+  }
+
+  /**
+   * Checks if the column descriptors still has references for other SD-s. If not, then removes
+   * them. Should be called with the list short enough to not trip up Oracle/etc.
+   * @param columnDescriptorIdList The column identifiers
+   * @throws MetaException If there is an SQL exception during the execution it converted to
+   * MetaException
+   */
+  private void dropDanglingColumnDescriptors(List<Object> columnDescriptorIdList)
+      throws MetaException {
+    String queryText;
+    String colIds = getIdListForIn(columnDescriptorIdList);
+
+    // Drop column descriptor, if no relation left
+    queryText =
+        "SELECT " + SDS + ".\"CD_ID\", count(1) "
+            + "from " + SDS + " "
+            + "WHERE " + SDS + ".\"CD_ID\" in (" + colIds + ") "
+            + "GROUP BY " + SDS + ".\"CD_ID\"";
+    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    List<Object[]> sqlResult = ensureList(executeWithArray(query, null, queryText));
+
+    List<Object> danglingColumnDescriptorIdList = new ArrayList<>(columnDescriptorIdList.size());
+    if (!sqlResult.isEmpty()) {
+      for (Object[] fields : sqlResult) {
+        if (extractSqlInt(fields[1]) == 0) {
+          danglingColumnDescriptorIdList.add(extractSqlLong(fields[0]));
+        }
+      }
+    }
+    query.closeAll();
+
+    if (!danglingColumnDescriptorIdList.isEmpty()) {
+      try {
+        String danglingCDIds = getIdListForIn(danglingColumnDescriptorIdList);
+
+        // Drop the columns_v2
+        queryText = "delete from " + COLUMNS_V2 + " where \"CD_ID\" in (" + danglingCDIds + ")";
+        executeNoResult(queryText);
+        Deadline.checkTimeout();
+
+        // Drop the cols
+        queryText = "delete from " + CDS + " where \"CD_ID\" in (" + danglingCDIds + ")";
+        executeNoResult(queryText);
+      } catch (SQLException sqlException) {
+        LOG.warn("SQL error executing query while dropping dangling col descriptions", sqlException);
+        throw new MetaException("Encountered error while dropping col descriptions");
+      }
+    }
+  }
+
+  public final static Object[] STATS_TABLE_TYPES = new Object[] {
+    TableType.MANAGED_TABLE.toString(), TableType.MATERIALIZED_VIEW.toString()
+  };
+
+  public List<org.apache.hadoop.hive.common.TableName> getTableNamesWithStats() throws MetaException {
+    // Could we also join with ACID tables to only get tables with outdated stats?
+    String queryText0 = "SELECT DISTINCT " + TBLS + ".\"TBL_NAME\", " + DBS + ".\"NAME\", "
+        + DBS + ".\"CTLG_NAME\" FROM " + TBLS + " INNER JOIN " + DBS + " ON "
+        + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\"";
+    String queryText1 = " WHERE " + TBLS + ".\"TBL_TYPE\" IN ("
+        + makeParams(STATS_TABLE_TYPES.length) + ")";
+
+    List<org.apache.hadoop.hive.common.TableName> result = new ArrayList<>();
+
+    String queryText = queryText0 + " INNER JOIN " + TAB_COL_STATS
+        + " ON " + TBLS + ".\"TBL_ID\" = " + TAB_COL_STATS + ".\"TBL_ID\"" + queryText1;
+    getStatsTableListResult(queryText, result);
+
+    queryText = queryText0 + " INNER JOIN " + PARTITIONS + " ON " + TBLS + ".\"TBL_ID\" = "
+        + PARTITIONS + ".\"TBL_ID\"" + " INNER JOIN " + PART_COL_STATS + " ON " + PARTITIONS
+        + ".\"PART_ID\" = " + PART_COL_STATS + ".\"PART_ID\"" + queryText1;
+    getStatsTableListResult(queryText, result);
+
+    return result;
+  }
+
+  public Map<String, List<String>> getColAndPartNamesWithStats(
+      String catName, String dbName, String tableName) throws MetaException {
+    // Could we also join with ACID tables to only get tables with outdated stats?
+    String queryText = "SELECT DISTINCT " + PARTITIONS + ".\"PART_NAME\", " + PART_COL_STATS
+        + ".\"COLUMN_NAME\" FROM " + TBLS + " INNER JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = "
+        + DBS + ".\"DB_ID\" INNER JOIN " + PARTITIONS + " ON " + TBLS + ".\"TBL_ID\" = "
+        + PARTITIONS + ".\"TBL_ID\"  INNER JOIN " + PART_COL_STATS + " ON " + PARTITIONS
+        + ".\"PART_ID\" = " + PART_COL_STATS + ".\"PART_ID\" WHERE " + DBS + ".\"NAME\" = ? AND "
+        + DBS + ".\"CTLG_NAME\" = ? AND " + TBLS + ".\"TBL_NAME\" = ? ORDER BY "
+        + PARTITIONS + ".\"PART_NAME\"";
+
+    LOG.debug("Running {}", queryText);
+    Query<?> query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    try {
+      List<Object[]> sqlResult = ensureList(executeWithArray(
+          query, new Object[] { dbName, catName, tableName }, queryText));
+      Map<String, List<String>> result = new HashMap<>();
+      String lastPartName = null;
+      List<String> cols = null;
+      for (Object[] line : sqlResult) {
+        String col = extractSqlString(line[1]);
+        String part = extractSqlString(line[0]);
+        if (!part.equals(lastPartName)) {
+          if (lastPartName != null) {
+            result.put(lastPartName, cols);
+          }
+          cols = cols == null ? new ArrayList<>() : new ArrayList<>(cols.size());
+          lastPartName = part;
+        }
+        cols.add(col);
+      }
+      if (lastPartName != null) {
+        result.put(lastPartName, cols);
+      }
+      return result;
+    } finally {
+      query.closeAll();
+    }
+  }
+
+  public List<org.apache.hadoop.hive.common.TableName> getAllTableNamesForStats() throws MetaException {
+    String queryText = "SELECT " + TBLS + ".\"TBL_NAME\", " + DBS + ".\"NAME\", "
+        + DBS + ".\"CTLG_NAME\" FROM " + TBLS + " INNER JOIN " + DBS + " ON " + TBLS
+        + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+        + " WHERE " + TBLS + ".\"TBL_TYPE\" IN (" + makeParams(STATS_TABLE_TYPES.length) + ")";
+    List<org.apache.hadoop.hive.common.TableName> result = new ArrayList<>();
+    getStatsTableListResult(queryText, result);
+    return result;
+  }
+
+  private void getStatsTableListResult(
+      String queryText, List<org.apache.hadoop.hive.common.TableName> result) throws MetaException {
+    LOG.debug("Running {}", queryText);
+    Query<?> query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    try {
+      List<Object[]> sqlResult = ensureList(executeWithArray(query, STATS_TABLE_TYPES, queryText));
+      for (Object[] line : sqlResult) {
+        result.add(new org.apache.hadoop.hive.common.TableName(
+            extractSqlString(line[2]), extractSqlString(line[1]), extractSqlString(line[0])));
+      }
+    } finally {
+      query.closeAll();
+    }
+  }
 }

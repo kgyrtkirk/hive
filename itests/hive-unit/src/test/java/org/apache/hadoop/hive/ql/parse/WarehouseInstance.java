@@ -30,6 +30,9 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -123,6 +126,7 @@ public class WarehouseInstance implements Closeable {
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
     if (!hiveConf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER).equals("org.apache.hadoop.hive.ql.lockmgr.DbTxnManager")) {
       hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     }
@@ -211,6 +215,14 @@ public class WarehouseInstance implements Closeable {
 
   Tuple dump(String dbName, String lastReplicationId) throws Throwable {
     return dump(dbName, lastReplicationId, Collections.emptyList());
+  }
+
+  WarehouseInstance dumpFailure(String dbName, String lastReplicationId) throws Throwable {
+    String dumpCommand =
+            "REPL DUMP " + dbName + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
+    advanceDumpDir();
+    runFailure(dumpCommand);
+    return this;
   }
 
   WarehouseInstance load(String replicatedDbName, String dumpLocation) throws Throwable {
@@ -316,6 +328,18 @@ public class WarehouseInstance implements Closeable {
     for (String s : getOutput()) {
       logger.info(s);
     }
+  }
+
+  public Database getDatabase(String dbName) throws Exception {
+    return client.getDatabase(dbName);
+  }
+
+  public Table getTable(String dbName, String tableName) throws Exception {
+    return client.getTable(dbName, tableName);
+  }
+
+  public Partition getPartition(String dbName, String tableName, List<String> partValues) throws Exception {
+    return client.getPartition(dbName, tableName, partValues);
   }
 
   ReplicationV1CompatRule getReplivationV1CompatRule(List<String> testsToSkip) {

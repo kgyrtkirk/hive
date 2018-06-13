@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.RandomTypeUtil;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -167,6 +168,9 @@ public class TestVectorTypeCasts {
     LongColumnVector resultV = (LongColumnVector) b.cols[1];
     b.cols[0].noNulls = true;
     VectorExpression expr = new CastTimestampToLong(0, 1);
+    expr.setOutputTypeInfo(TypeInfoFactory.longTypeInfo);
+    expr.setOutputDataTypePhysicalVariation(DataTypePhysicalVariation.NONE);
+    expr.transientInit();
     expr.evaluate(b);
     for (int i = 0; i < longValues.length; i++) {
       long actual = resultV.vector[i];
@@ -376,6 +380,54 @@ public class TestVectorTypeCasts {
     dv.vector[2].set(HiveDecimal.create("9999999999999999.00"));
 
     return b;
+  }
+
+  @Test
+  public void testCastDecimalToFloat() throws HiveException {
+
+    final double eps = 0.00000000000001d; // tolerance to check float equality
+
+    double f1 = HiveDecimal.create("1.1").floatValue();
+    double f2 = HiveDecimal.create("-2.2").floatValue();
+    double f3 = HiveDecimal.create("9999999999999999.00").floatValue();
+
+    // test basic case
+    VectorizedRowBatch b = getBatchDecimalDouble();
+    VectorExpression expr = new CastDecimalToFloat(0, 1);
+    expr.evaluate(b);
+    DoubleColumnVector r = (DoubleColumnVector) b.cols[1];
+    assertEquals(f1, r.vector[0], eps);
+    assertEquals(f2, r.vector[1], eps);
+    assertEquals(f3, r.vector[2], eps);
+
+    // test with nulls in input
+    b = getBatchDecimalDouble();
+    b.cols[0].noNulls = false;
+    b.cols[0].isNull[1] = true;
+    expr.evaluate(b);
+    r = (DoubleColumnVector) b.cols[1];
+    assertFalse(r.noNulls);
+    assertTrue(r.isNull[1]);
+    assertFalse(r.isNull[0]);
+    assertEquals(f1, r.vector[0], eps);
+
+    // test repeating case
+    b = getBatchDecimalDouble();
+    b.cols[0].isRepeating = true;
+    expr.evaluate(b);
+    r = (DoubleColumnVector) b.cols[1];
+    assertTrue(r.isRepeating);
+    assertEquals(f1, r.vector[0], eps);
+
+    // test repeating nulls case
+    b = getBatchDecimalDouble();
+    b.cols[0].isRepeating = true;
+    b.cols[0].noNulls = false;
+    b.cols[0].isNull[0] = true;
+    expr.evaluate(b);
+    r = (DoubleColumnVector) b.cols[1];
+    assertTrue(r.isRepeating);
+    assertTrue(r.isNull[0]);
   }
 
   @Test
