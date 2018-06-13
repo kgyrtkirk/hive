@@ -339,13 +339,19 @@ public class RexNodeConverter {
       } else if (HiveFloorDate.ALL_FUNCTIONS.contains(calciteOp)) {
         // If it is a floor <date> operator, we need to rewrite it
         childRexNodeLst = rewriteFloorDateChildren(calciteOp, childRexNodeLst);
-      } else if (calciteOp.getKind() == SqlKind.IN && childRexNodeLst.size() == 2 && isAllPrimitive) {
-        // if it is a single item in an IN clause, transform A IN (B) to A = B
-        // from IN [A,B] => EQUALS [A,B]
-        // except complex types
-        calciteOp =
-            SqlFunctionConverter.getCalciteOperator("=", FunctionRegistry.getFunctionInfo("=")
-                .getGenericUDF(), argTypeBldr.build(), retType);
+      } else if (calciteOp.getKind() == SqlKind.IN && isAllPrimitive) {
+        if (childRexNodeLst.size() == 2) {
+          // if it is a single item in an IN clause, transform A IN (B) to A = B
+          // from IN [A,B] => EQUALS [A,B]
+          // except complex types
+          calciteOp = SqlStdOperatorTable.EQUALS;
+        } else {
+          // if it is more than an single item in an IN clause,
+          // transform from IN [A,B,C] => OR [EQUALS [A,B], EQUALS [A,C]]
+          // except complex types
+          childRexNodeLst = rewriteInClauseChildren(calciteOp, childRexNodeLst);
+          calciteOp = SqlStdOperatorTable.OR;
+        }
       }
       expr = cluster.getRexBuilder().makeCall(retType, calciteOp, childRexNodeLst);
     } else {
@@ -499,6 +505,19 @@ public class RexNodeConverter {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.MINUTE));
     } else if (op == HiveFloorDate.SECOND) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeFlag(TimeUnitRange.SECOND));
+    }
+    return newChildRexNodeLst;
+  }
+
+  private List<RexNode> rewriteInClauseChildren(SqlOperator op, List<RexNode> childRexNodeLst)
+      throws SemanticException {
+    assert op.getKind() == SqlKind.IN;
+    RexNode firstPred = childRexNodeLst.get(0);
+    List<RexNode> newChildRexNodeLst = new ArrayList<RexNode>();
+    for (int i = 1; i < childRexNodeLst.size(); i++) {
+      newChildRexNodeLst.add(
+          cluster.getRexBuilder().makeCall(
+              SqlStdOperatorTable.EQUALS, firstPred, childRexNodeLst.get(i)));
     }
     return newChildRexNodeLst;
   }
