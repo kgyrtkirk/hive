@@ -382,8 +382,9 @@ public class RexNodeConverter {
           if (udfClassName.equals("UDFToBoolean") || udfClassName.equals("UDFToByte")
               || udfClassName.equals("UDFToDouble") || udfClassName.equals("UDFToInteger")
               || udfClassName.equals("UDFToLong") || udfClassName.equals("UDFToShort")
-              || udfClassName.equals("UDFToFloat") || udfClassName.equals("UDFToString"))
+              || udfClassName.equals("UDFToFloat") || udfClassName.equals("UDFToString")) {
             castExpr = true;
+          }
         }
       }
     }
@@ -557,8 +558,9 @@ public class RexNodeConverter {
         }
       }
 
-      if (noInp > 1)
+      if (noInp > 1) {
         throw new RuntimeException("Ambiguous column mapping");
+      }
     }
 
     return ctxLookingFor;
