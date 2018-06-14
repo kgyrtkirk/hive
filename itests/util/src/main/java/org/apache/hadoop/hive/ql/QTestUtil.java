@@ -247,7 +247,7 @@ public class QTestUtil {
 
   private CliDriver getCliDriver() {
     if(cliDriver == null){
-      cliDriver = new CliDriver();
+      throw new RuntimeException("no clidriver");
     }
     return cliDriver;
   }
@@ -1120,6 +1120,9 @@ public class QTestUtil {
 
     cliDriver = new CliDriver();
 
+    File outf = new File(logDir, "initialize.log");
+    setSessionOutputs("why!??SDDF?S??", ss, outf);
+
   }
   /**
    * Clear out any side effects of running tests
@@ -1349,6 +1352,7 @@ public class QTestUtil {
     CliSessionState ss = (CliSessionState) SessionState.get();
 
     if (fileName.equals("init_file.q")) {
+      // FIXME: remove this crap; it probably unused anyway
       ss.initFiles.add(AbstractCliConfig.HIVE_ROOT + "/data/scripts/test_init_file.sql");
     }
     cliDriver.processInitFiles(ss);

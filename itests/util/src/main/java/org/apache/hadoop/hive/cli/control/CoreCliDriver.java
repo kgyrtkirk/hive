@@ -72,7 +72,8 @@ public class CoreCliDriver extends CliAdapter {
       new ElapsedTimeLoggingWrapper<Void>() {
         @Override
         public Void invokeInternal() throws Exception {
-          qt.cleanUp();
+          qt.newSession();
+          qt.cleanUp(); // I don't think this is neccessary...
           return null;
         }
       }.invoke("Initialization cleanup done.", LOG, true);
