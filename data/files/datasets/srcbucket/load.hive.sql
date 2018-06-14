@@ -1,5 +1,3 @@
-set hive.vectorized.execution.enabled=true;
-
 CREATE TABLE srcbucket_tmp (key INT, value STRING) STORED AS TEXTFILE;
 CREATE TABLE srcbucket (key INT, value STRING)
 CLUSTERED BY (key) INTO 2 BUCKETS
