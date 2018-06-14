@@ -1323,7 +1323,6 @@ public class QTestUtil {
     }
 
     clearSettingsCreatedInTests();
-    initDataSetForTest(file);
 
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
         "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
@@ -1344,7 +1343,8 @@ public class QTestUtil {
 
     File outf = new File(logDir, stdoutName);
 
-    setSessionOutputs(fileName, ss, outf);
+    // Prior to running tests, output should go to System.out
+    setSessionOutputs(fileName, ss, System.out);
 
     SessionState oldSs = SessionState.get();
 
@@ -1362,12 +1362,23 @@ public class QTestUtil {
     }
     cliDriver.processInitFiles(ss);
 
+    initDataSetForTest(file);
+    // Ready to run tests - set test output to outf.
+    setSessionOutputs(fileName, ss, new FileOutputStream(outf));
+
     return outf.getAbsolutePath();
   }
 
-  private void setSessionOutputs(String fileName, CliSessionState ss, File outf)
+  private void setSessionOutputs(String fileName, CliSessionState ss, OutputStream outs)
       throws FileNotFoundException, Exception, UnsupportedEncodingException {
-    OutputStream fo = new BufferedOutputStream(new FileOutputStream(outf));
+    if (ss.out != null) {
+      ss.out.flush();
+    }
+    if (ss.err != null) {
+      ss.out.flush();
+    }
+
+    OutputStream fo = new BufferedOutputStream(outs);
     if (qSortQuerySet.contains(fileName)) {
       ss.out = new SortPrintStream(fo, "UTF-8");
     } else if (qHashQuerySet.contains(fileName)) {
