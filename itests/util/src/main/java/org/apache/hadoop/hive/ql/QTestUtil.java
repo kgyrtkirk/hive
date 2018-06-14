@@ -279,6 +279,8 @@ public class QTestUtil {
     return conf;
   }
 
+  // unused method?
+  @Deprecated
   public boolean deleteDirectory(File path) {
     if (path.exists()) {
       File[] files = path.listFiles();
@@ -293,6 +295,8 @@ public class QTestUtil {
     return (path.delete());
   }
 
+  // unused method?
+  @Deprecated
   public void copyDirectoryToLocal(Path src, Path dest) throws Exception {
 
     FileSystem srcFs = src.getFileSystem(conf);
@@ -324,6 +328,8 @@ public class QTestUtil {
   static Pattern mapTok = Pattern.compile("(\\.?)(.*)_map_(.*)");
   static Pattern reduceTok = Pattern.compile("(.*)(reduce_[^\\.]*)((\\..*)?)");
 
+  // unused method?
+  @Deprecated
   public void normalizeNames(File path) throws Exception {
     if (path.isDirectory()) {
       File[] files = path.listFiles();
@@ -345,14 +351,20 @@ public class QTestUtil {
     }
   }
 
+  // unused method?
+  @Deprecated
   public String getOutputDirectory() {
     return outDir;
   }
 
+  // inline and remove
+  @Deprecated
   public String getLogDirectory() {
     return logDir;
   }
 
+  // unused method?
+  @Deprecated
   private String getHadoopMainVersion(String input) {
     if (input == null) {
       return null;
