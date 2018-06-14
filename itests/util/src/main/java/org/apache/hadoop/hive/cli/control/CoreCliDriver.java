@@ -100,7 +100,7 @@ public class CoreCliDriver extends CliAdapter {
       new ElapsedTimeLoggingWrapper<Void>() {
         @Override
         public Void invokeInternal() throws Exception {
-          qt.clearTestSideEffects();
+          qt.newSession();
           return null;
         }
       }.invoke("PerTestSetup done.", LOG, false);
@@ -120,6 +120,7 @@ public class CoreCliDriver extends CliAdapter {
         @Override
         public Void invokeInternal() throws Exception {
           qt.clearPostTestEffects();
+          qt.clearTestSideEffects();
           return null;
         }
       }.invoke("PerTestTearDown done.", LOG, false);

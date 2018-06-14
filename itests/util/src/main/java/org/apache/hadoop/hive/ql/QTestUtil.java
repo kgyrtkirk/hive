@@ -1092,6 +1092,16 @@ public class QTestUtil {
     }
   }
 
+  public void newSession() throws Exception {
+    // allocate and initialize a new conf since a test can
+    // modify conf by using 'set' commands
+    conf = new HiveConf(IDriver.class);
+    initConf();
+    initConfFromSetup();
+
+    // renew the metastore since the cluster type is unencrypted
+    db = Hive.get(conf); // propagate new conf to meta store
+  }
   /**
    * Clear out any side effects of running tests
    */
@@ -1103,16 +1113,6 @@ public class QTestUtil {
     // Remove any cached results from the previous test.
     NotificationEventPoll.shutdown();
     QueryResultsCache.cleanupInstance();
-
-    // allocate and initialize a new conf since a test can
-    // modify conf by using 'set' commands
-    conf = new HiveConf(IDriver.class);
-    initConf();
-    initConfFromSetup();
-
-    // renew the metastore since the cluster type is unencrypted
-    db = Hive.get(conf);  // propagate new conf to meta store
-
     clearTablesCreatedDuringTests();
     clearUDFsCreatedDuringTests();
     clearKeysCreatedInTests();
