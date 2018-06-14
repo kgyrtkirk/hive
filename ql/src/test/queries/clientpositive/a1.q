@@ -6,6 +6,9 @@ create table testfeed1(key1 int, key2 int, attr1 int,attr2 int,attr4 int,attr5 i
 insert into table testfeed1 values(1,2,5,6,7,1);
 insert into table testmaster1 partition(attr5=1) values(1,2,5,6,8);
 
+set hive.cbo.returnpath.hiveop=true;
+set hive.map.aggr=false;
+
 set hive.explain.user=false;
 explain select count(1) from testfeed1 lf
  join testmaster1 rt on lf.key1=rt.key1 and lf.key2=rt.key2 and lf.attr5=rt.attr5

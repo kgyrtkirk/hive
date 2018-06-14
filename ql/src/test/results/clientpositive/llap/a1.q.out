@@ -50,11 +50,11 @@ POSTHOOK: Lineage: testmaster1 PARTITION(attr5=1).attr4 SCRIPT []
 POSTHOOK: Lineage: testmaster1 PARTITION(attr5=1).key1 SCRIPT []
 POSTHOOK: Lineage: testmaster1 PARTITION(attr5=1).key2 SCRIPT []
 PREHOOK: query: explain select count(1) from testfeed1 lf
- left outer join testmaster1 rt on lf.key1<=>rt.key1 and lf.key2 <=> rt.key2 and lf.attr5 <=> rt.attr5
+ join testmaster1 rt on lf.key1=rt.key1 and lf.key2=rt.key2 and lf.attr5=rt.attr5
  group by lf.key1,lf.key2,lf.attr5
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select count(1) from testfeed1 lf
- left outer join testmaster1 rt on lf.key1<=>rt.key1 and lf.key2 <=> rt.key2 and lf.attr5 <=> rt.attr5
+ join testmaster1 rt on lf.key1=rt.key1 and lf.key2=rt.key2 and lf.attr5=rt.attr5
  group by lf.key1,lf.key2,lf.attr5
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -75,11 +75,33 @@ STAGE PLANS:
                 TableScan
                   alias: lf
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: key1 (type: int), key2 (type: int), attr5 (type: int)
-                    sort order: +++
-                    Map-reduce partition columns: key1 (type: int), key2 (type: int), attr5 (type: int)
+                  Filter Operator
+                    predicate: (attr5 is not null and key1 is not null and key2 is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key1 (type: int), key2 (type: int), attr5 (type: int)
+                      outputColumnNames: key1, key2, attr5
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: key1 (type: int), key2 (type: int), attr5 (type: int)
+                        sort order: +++
+                        Map-reduce partition columns: key1 (type: int), key2 (type: int), attr5 (type: int)
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: attr5 (type: int)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          keys: _col0 (type: int)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                          Dynamic Partitioning Event Operator
+                            Target column: attr5 (int)
+                            Target Input: rt
+                            Partition key expr: attr5
+                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                            Target Vertex: Map 4
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
@@ -87,11 +109,18 @@ STAGE PLANS:
                 TableScan
                   alias: rt
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: key1 (type: int), key2 (type: int), attr5 (type: int)
-                    sort order: +++
-                    Map-reduce partition columns: key1 (type: int), key2 (type: int), attr5 (type: int)
+                  Filter Operator
+                    predicate: (key1 is not null and key2 is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key1 (type: int), key2 (type: int), attr5 (type: int)
+                      outputColumnNames: key1, key2, attr5
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: key1 (type: int), key2 (type: int), attr5 (type: int)
+                        sort order: +++
+                        Map-reduce partition columns: key1 (type: int), key2 (type: int), attr5 (type: int)
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -99,25 +128,28 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Left Outer Join 0 to 1
+                     Inner Join 0 to 1
                 keys:
                   0 key1 (type: int), key2 (type: int), attr5 (type: int)
                   1 key1 (type: int), key2 (type: int), attr5 (type: int)
-                nullSafes: [true, true, true]
-                outputColumnNames: _col0, _col1, _col5
+                outputColumnNames: key1, key2, attr5
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int), _col1 (type: int), _col5 (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                    sort order: +++
-                    Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                Select Operator
+                  expressions: key1 (type: int), key2 (type: int), attr5 (type: int)
+                  outputColumnNames: key1, key2, attr5
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: count()
+                    keys: key1 (type: int), key2 (type: int), attr5 (type: int)
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col3 (type: bigint)
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                      sort order: +++
+                      Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                      Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col3 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -125,11 +157,11 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2, _col3
+                outputColumnNames: key1, key2, attr5, $f3
                 Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col3 (type: bigint)
-                  outputColumnNames: _col0
+                  expressions: $f3 (type: bigint)
+                  outputColumnNames: _o__c0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -146,11 +178,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select count(1) from testfeed1 lf
- left outer join testmaster1 rt on lf.key1<=>rt.key1 and lf.key2 <=> rt.key2 and lf.attr5 <=> rt.attr5
+ join testmaster1 rt on lf.key1=rt.key1 and lf.key2 = rt.key2 and lf.attr5 =rt.attr5
  group by lf.key1,lf.key2,lf.attr5
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select count(1) from testfeed1 lf
- left outer join testmaster1 rt on lf.key1<=>rt.key1 and lf.key2 <=> rt.key2 and lf.attr5 <=> rt.attr5
+ join testmaster1 rt on lf.key1=rt.key1 and lf.key2 = rt.key2 and lf.attr5 =rt.attr5
  group by lf.key1,lf.key2,lf.attr5
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -171,11 +203,33 @@ STAGE PLANS:
                 TableScan
                   alias: lf
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: key1 (type: int), key2 (type: int), attr5 (type: int)
-                    sort order: +++
-                    Map-reduce partition columns: key1 (type: int), key2 (type: int), attr5 (type: int)
+                  Filter Operator
+                    predicate: (attr5 is not null and key1 is not null and key2 is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key1 (type: int), key2 (type: int), attr5 (type: int)
+                      outputColumnNames: key1, key2, attr5
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: key1 (type: int), key2 (type: int), attr5 (type: int)
+                        sort order: +++
+                        Map-reduce partition columns: key1 (type: int), key2 (type: int), attr5 (type: int)
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: attr5 (type: int)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          keys: _col0 (type: int)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                          Dynamic Partitioning Event Operator
+                            Target column: attr5 (int)
+                            Target Input: rt
+                            Partition key expr: attr5
+                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                            Target Vertex: Map 4
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
@@ -183,11 +237,18 @@ STAGE PLANS:
                 TableScan
                   alias: rt
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: key1 (type: int), key2 (type: int), attr5 (type: int)
-                    sort order: +++
-                    Map-reduce partition columns: key1 (type: int), key2 (type: int), attr5 (type: int)
+                  Filter Operator
+                    predicate: (key1 is not null and key2 is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key1 (type: int), key2 (type: int), attr5 (type: int)
+                      outputColumnNames: key1, key2, attr5
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: key1 (type: int), key2 (type: int), attr5 (type: int)
+                        sort order: +++
+                        Map-reduce partition columns: key1 (type: int), key2 (type: int), attr5 (type: int)
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -195,25 +256,28 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Left Outer Join 0 to 1
+                     Inner Join 0 to 1
                 keys:
                   0 key1 (type: int), key2 (type: int), attr5 (type: int)
                   1 key1 (type: int), key2 (type: int), attr5 (type: int)
-                nullSafes: [true, true, true]
-                outputColumnNames: _col0, _col1, _col5
+                outputColumnNames: key1, key2, attr5
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int), _col1 (type: int), _col5 (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
-                    sort order: +++
-                    Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                Select Operator
+                  expressions: key1 (type: int), key2 (type: int), attr5 (type: int)
+                  outputColumnNames: key1, key2, attr5
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: count()
+                    keys: key1 (type: int), key2 (type: int), attr5 (type: int)
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col3 (type: bigint)
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                      sort order: +++
+                      Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                      Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col3 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -221,11 +285,11 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2, _col3
+                outputColumnNames: key1, key2, attr5, $f3
                 Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col3 (type: bigint)
-                  outputColumnNames: _col0
+                  expressions: $f3 (type: bigint)
+                  outputColumnNames: _o__c0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -242,7 +306,7 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(1) from testfeed1 lf
- left outer join testmaster1 rt on lf.key1<=>rt.key1 and lf.key2 <=> rt.key2 and lf.attr5 <=> rt.attr5
+ join testmaster1 rt on lf.key1=rt.key1 and lf.key2 =rt.key2 and lf.attr5 = rt.attr5
  group by lf.key1,lf.key2,lf.attr5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testfeed1
@@ -250,7 +314,7 @@ PREHOOK: Input: default@testmaster1
 PREHOOK: Input: default@testmaster1@attr5=1
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1) from testfeed1 lf
- left outer join testmaster1 rt on lf.key1<=>rt.key1 and lf.key2 <=> rt.key2 and lf.attr5 <=> rt.attr5
+ join testmaster1 rt on lf.key1=rt.key1 and lf.key2 =rt.key2 and lf.attr5 = rt.attr5
  group by lf.key1,lf.key2,lf.attr5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testfeed1
