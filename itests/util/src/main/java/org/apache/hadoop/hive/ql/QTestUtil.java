@@ -1320,6 +1320,7 @@ public class QTestUtil {
     if (recreate) {
       cleanUp(fileName);
       createSources(fileName);
+      throw new RuntimeException("WHY WE RECREATE?!");
     }
 
     clearSettingsCreatedInTests();
