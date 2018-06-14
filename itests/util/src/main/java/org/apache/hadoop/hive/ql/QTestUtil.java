@@ -1121,7 +1121,7 @@ public class QTestUtil {
     cliDriver = new CliDriver();
 
     File outf = new File(logDir, "initialize.log");
-    setSessionOutputs("why!??SDDF?S??", ss, outf);
+    setSessionOutputs("that_shouldnt_happen_there", ss, outf);
 
   }
   /**
