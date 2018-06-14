@@ -1142,16 +1142,6 @@ public class QTestUtil {
     StatsSources.clearGlobalStats();
   }
 
-  protected void clearSettingsCreatedInTests() throws IOException {
-    getCliDriver().processLine(String.format("set hive.security.authorization.enabled=false;"));
-    getCliDriver().processLine(String.format("set user.name=%s;",
-        System.getProperty(TEST_HIVE_USER_PROPERTY, "hive_test_user")));
-
-    getCliDriver().processLine("set hive.metastore.partition.name.whitelist.pattern=;");
-    getCliDriver().processLine("set hive.test.mode=false;");
-    getCliDriver().processLine("set hive.mapred.mode=nonstrict;");
-  }
-
   protected void initConfFromSetup() throws Exception {
     setup.preTest(conf);
   }
@@ -1346,7 +1336,6 @@ public class QTestUtil {
       throw new RuntimeException("WHY WE RECREATE?!");
     }
 
-    clearSettingsCreatedInTests();
     initDataSetForTest(file);
 
     CliSessionState ss = (CliSessionState) SessionState.get();
