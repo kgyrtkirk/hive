@@ -66,7 +66,7 @@ public class CoreHBaseCliDriver extends CliAdapter {
   @Before
   public void setUp() {
     try {
-      qt.clearTestSideEffects();
+      qt.newSession();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -78,6 +78,7 @@ public class CoreHBaseCliDriver extends CliAdapter {
   @After
   public void tearDown() {
     try {
+      qt.clearTestSideEffects();
       qt.clearPostTestEffects();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
