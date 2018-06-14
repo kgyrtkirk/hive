@@ -115,7 +115,7 @@ public class SerializeFilter implements PhysicalPlanResolver {
       Dispatcher disp = null;
       final Set<TableScanOperator> tableScans = new LinkedHashSet<TableScanOperator>();
 
-      Map<Rule, NodeProcessor> rules = new LinkedHashMap<Rule, NodeProcessor>();
+      Map<Rule, NodeProcessor> rules = new HashMap<Rule, NodeProcessor>();
       rules.put(new RuleRegExp("TS finder",
               TableScanOperator.getOperatorName() + "%"), new NodeProcessor() {
           @Override
