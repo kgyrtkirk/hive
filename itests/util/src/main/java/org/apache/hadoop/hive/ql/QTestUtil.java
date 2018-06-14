@@ -1101,6 +1101,25 @@ public class QTestUtil {
 
     // renew the metastore since the cluster type is unencrypted
     db = Hive.get(conf); // propagate new conf to meta store
+
+    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
+        "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
+    CliSessionState ss = new CliSessionState(conf);
+    assert ss != null;
+    ss.in = System.in;
+
+    SessionState oldSs = SessionState.get();
+
+    //FIXME: canReuseSession as arg...etc
+    boolean canReuseSession = true; //!qNoSessionReuseQuerySet.contains(fileName);
+    restartSessions(canReuseSession, ss, oldSs);
+
+    closeSession(oldSs);
+
+    SessionState.start(ss);
+
+    cliDriver = new CliDriver();
+
   }
   /**
    * Clear out any side effects of running tests
@@ -1327,14 +1346,16 @@ public class QTestUtil {
     clearSettingsCreatedInTests();
     initDataSetForTest(file);
 
-    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
-        "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
-    CliSessionState ss = new CliSessionState(conf);
-    assert ss != null;
-    ss.in = System.in;
+    CliSessionState ss = (CliSessionState) SessionState.get();
+
+    if (fileName.equals("init_file.q")) {
+      ss.initFiles.add(AbstractCliConfig.HIVE_ROOT + "/data/scripts/test_init_file.sql");
+    }
+    cliDriver.processInitFiles(ss);
 
     String outFileExtension = getOutFileExtension(fileName);
     String stdoutName = null;
+
     if (outDir != null) {
       // TODO: why is this needed?
       File qf = new File(outDir, fileName);
@@ -1342,27 +1363,8 @@ public class QTestUtil {
     } else {
       stdoutName = fileName + outFileExtension;
     }
-
     File outf = new File(logDir, stdoutName);
-
     setSessionOutputs(fileName, ss, outf);
-
-    SessionState oldSs = SessionState.get();
-
-    boolean canReuseSession = !qNoSessionReuseQuerySet.contains(fileName);
-    restartSessions(canReuseSession, ss, oldSs);
-
-    closeSession(oldSs);
-
-    SessionState.start(ss);
-
-    cliDriver = new CliDriver();
-
-    if (fileName.equals("init_file.q")) {
-      ss.initFiles.add(AbstractCliConfig.HIVE_ROOT + "/data/scripts/test_init_file.sql");
-    }
-    cliDriver.processInitFiles(ss);
-
     return outf.getAbsolutePath();
   }
 
