@@ -1111,6 +1111,7 @@ public class QTestUtil {
     }
 
     // Remove any cached results from the previous test.
+    Utilities.clearWorkMap(conf);
     NotificationEventPoll.shutdown();
     QueryResultsCache.cleanupInstance();
     clearTablesCreatedDuringTests();
@@ -1328,7 +1329,6 @@ public class QTestUtil {
 
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
         "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
-    Utilities.clearWorkMap(conf);
     CliSessionState ss = new CliSessionState(conf);
     assert ss != null;
     ss.in = System.in;
