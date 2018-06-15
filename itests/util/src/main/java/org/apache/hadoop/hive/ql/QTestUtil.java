@@ -172,7 +172,6 @@ public class QTestUtil {
   private final Set<String> qMaskStatsQuerySet;
   private final Set<String> qMaskDataSizeQuerySet;
   private final Set<String> qMaskLineageQuerySet;
-  private final Set<String> qJavaVersionSpecificOutput;
   private static final String SORT_SUFFIX = ".sorted";
   private static Set<String> srcTables;
   private final Set<String> srcUDFs;
@@ -601,7 +600,6 @@ public class QTestUtil {
     qMaskStatsQuerySet = new HashSet<String>();
     qMaskDataSizeQuerySet = new HashSet<String>();
     qMaskLineageQuerySet = new HashSet<String>();
-    qJavaVersionSpecificOutput = new HashSet<String>();
     this.clusterType = clusterType;
 
     HadoopShims shims = ShimLoader.getHadoopShims();
@@ -837,10 +835,6 @@ public class QTestUtil {
       return;
     }
 
-    if (checkNeedJavaSpecificOutput(qf.getName(), query)) {
-      qJavaVersionSpecificOutput.add(qf.getName());
-    }
-
     if (matches(SORT_BEFORE_DIFF, query)) {
       qSortSet.add(qf.getName());
     } else if (matches(SORT_QUERY_RESULTS, query)) {
@@ -879,20 +873,6 @@ public class QTestUtil {
     if (matcher.find()) {
       return true;
     }
-    return false;
-  }
-
-  private boolean checkNeedJavaSpecificOutput(String fileName, String query) {
-    Pattern pattern = Pattern.compile("-- JAVA_VERSION_SPECIFIC_OUTPUT");
-    Matcher matcher = pattern.matcher(query);
-    if (matcher.find()) {
-      System.out.println("Test is flagged to generate Java version specific " +
-          "output. Since we are using Java version " + javaVersion +
-          ", we will generated Java " + javaVersion + " specific " +
-          "output file for query file " + fileName);
-      return true;
-    }
-
     return false;
   }
 
@@ -1549,12 +1529,7 @@ public class QTestUtil {
   }
 
   private String getOutFileExtension(String fname) {
-    String outFileExtension = ".out";
-    if (qJavaVersionSpecificOutput.contains(fname)) {
-      outFileExtension = ".java" + javaVersion + ".out";
-    }
-
-    return outFileExtension;
+    return ".out";
   }
 
   public void convertSequenceFileToTextFile() throws Exception {
