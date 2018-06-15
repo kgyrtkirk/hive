@@ -63,7 +63,7 @@ public class CoreNegativeCliDriver extends CliAdapter{
   @Before
   public void setUp() {
     try {
-      qt.clearTestSideEffects();
+      qt.newSession();
     } catch (Throwable e) {
       e.printStackTrace();
       System.err.flush();
@@ -75,6 +75,7 @@ public class CoreNegativeCliDriver extends CliAdapter{
   @After
   public void tearDown() {
     try {
+      qt.clearTestSideEffects();
       qt.clearPostTestEffects();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());

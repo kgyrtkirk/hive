@@ -91,7 +91,7 @@ public class CorePerfCliDriver extends CliAdapter{
   @Override
   public void setUp() {
     try {
-      qt.clearPostTestEffects();
+      qt.newSession();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();

@@ -247,7 +247,7 @@ public class QTestUtil {
 
   private CliDriver getCliDriver() {
     if(cliDriver == null){
-      cliDriver = new CliDriver();
+      throw new RuntimeException("no clidriver");
     }
     return cliDriver;
   }
@@ -1092,6 +1092,38 @@ public class QTestUtil {
     }
   }
 
+  public void newSession() throws Exception {
+    // allocate and initialize a new conf since a test can
+    // modify conf by using 'set' commands
+    conf = new HiveConf(IDriver.class);
+    initConf();
+    initConfFromSetup();
+
+    // renew the metastore since the cluster type is unencrypted
+    db = Hive.get(conf); // propagate new conf to meta store
+
+    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
+        "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
+    CliSessionState ss = new CliSessionState(conf);
+    assert ss != null;
+    ss.in = System.in;
+
+    SessionState oldSs = SessionState.get();
+
+    //FIXME: canReuseSession as arg...etc
+    boolean canReuseSession = true; //!qNoSessionReuseQuerySet.contains(fileName);
+    restartSessions(canReuseSession, ss, oldSs);
+
+    closeSession(oldSs);
+
+    SessionState.start(ss);
+
+    cliDriver = new CliDriver();
+
+    File outf = new File(logDir, "initialize.log");
+    setSessionOutputs("that_shouldnt_happen_there", ss, outf);
+
+  }
   /**
    * Clear out any side effects of running tests
    */
@@ -1101,32 +1133,13 @@ public class QTestUtil {
     }
 
     // Remove any cached results from the previous test.
+    Utilities.clearWorkMap(conf);
     NotificationEventPoll.shutdown();
     QueryResultsCache.cleanupInstance();
-
-    // allocate and initialize a new conf since a test can
-    // modify conf by using 'set' commands
-    conf = new HiveConf(IDriver.class);
-    initConf();
-    initConfFromSetup();
-
-    // renew the metastore since the cluster type is unencrypted
-    db = Hive.get(conf);  // propagate new conf to meta store
-
     clearTablesCreatedDuringTests();
     clearUDFsCreatedDuringTests();
     clearKeysCreatedInTests();
     StatsSources.clearGlobalStats();
-  }
-
-  protected void clearSettingsCreatedInTests() throws IOException {
-    getCliDriver().processLine(String.format("set hive.security.authorization.enabled=false;"));
-    getCliDriver().processLine(String.format("set user.name=%s;",
-        System.getProperty(TEST_HIVE_USER_PROPERTY, "hive_test_user")));
-
-    getCliDriver().processLine("set hive.metastore.partition.name.whitelist.pattern=;");
-    getCliDriver().processLine("set hive.test.mode=false;");
-    getCliDriver().processLine("set hive.mapred.mode=nonstrict;");
   }
 
   protected void initConfFromSetup() throws Exception {
@@ -1320,20 +1333,22 @@ public class QTestUtil {
     if (recreate) {
       cleanUp(fileName);
       createSources(fileName);
+      throw new RuntimeException("WHY WE RECREATE?!");
     }
 
-    clearSettingsCreatedInTests();
     initDataSetForTest(file);
 
-    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
-        "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
-    Utilities.clearWorkMap(conf);
-    CliSessionState ss = new CliSessionState(conf);
-    assert ss != null;
-    ss.in = System.in;
+    CliSessionState ss = (CliSessionState) SessionState.get();
+
+    if (fileName.equals("init_file.q")) {
+      // FIXME: remove this crap; it probably unused anyway
+      ss.initFiles.add(AbstractCliConfig.HIVE_ROOT + "/data/scripts/test_init_file.sql");
+    }
+    cliDriver.processInitFiles(ss);
 
     String outFileExtension = getOutFileExtension(fileName);
     String stdoutName = null;
+
     if (outDir != null) {
       // TODO: why is this needed?
       File qf = new File(outDir, fileName);
@@ -1341,27 +1356,8 @@ public class QTestUtil {
     } else {
       stdoutName = fileName + outFileExtension;
     }
-
     File outf = new File(logDir, stdoutName);
-
     setSessionOutputs(fileName, ss, outf);
-
-    SessionState oldSs = SessionState.get();
-
-    boolean canReuseSession = !qNoSessionReuseQuerySet.contains(fileName);
-    restartSessions(canReuseSession, ss, oldSs);
-
-    closeSession(oldSs);
-
-    SessionState.start(ss);
-
-    cliDriver = new CliDriver();
-
-    if (fileName.equals("init_file.q")) {
-      ss.initFiles.add(AbstractCliConfig.HIVE_ROOT + "/data/scripts/test_init_file.sql");
-    }
-    cliDriver.processInitFiles(ss);
-
     return outf.getAbsolutePath();
   }
 
