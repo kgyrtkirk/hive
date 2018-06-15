@@ -71,19 +71,18 @@ import org.slf4j.LoggerFactory;
     serdeConstants.LIST_COLUMN_TYPES,
     serdeConstants.TIMESTAMP_FORMATS })
 
-public class JsonSerDe extends AbstractSerDe {
+public class JsonSerDe2 extends AbstractSerDe {
 
-  private static final Logger LOG = LoggerFactory.getLogger(JsonSerDe.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JsonSerDe2.class);
   private List<String> columnNames;
 
   private HiveJsonStructReader structReader;
+  private StructTypeInfo rowTypeInfo;
 
   @Override
   public void initialize(Configuration conf, Properties tbl)
     throws SerDeException {
     List<TypeInfo> columnTypes;
-    StructTypeInfo rowTypeInfo;
-
     LOG.debug("Initializing JsonSerDe: {}", tbl.entrySet());
 
     // Get column names
@@ -379,6 +378,10 @@ public class JsonSerDe extends AbstractSerDe {
   public SerDeStats getSerDeStats() {
     // no support for statistics yet
     return null;
+  }
+
+  public StructTypeInfo getTypeInfo() {
+    return rowTypeInfo;
   }
 
 }
