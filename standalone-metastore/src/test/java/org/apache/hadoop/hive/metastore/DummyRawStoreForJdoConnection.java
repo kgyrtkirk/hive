@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
@@ -749,7 +750,8 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public boolean doesPartitionExist(String catName, String dbName, String tableName,
-      List<String> partVals) throws MetaException, NoSuchObjectException {
+      List<FieldSchema> partKeys, List<String> partVals)
+      throws MetaException, NoSuchObjectException {
     return false;
   }
 
@@ -1171,5 +1173,24 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public int deleteRuntimeStats(int maxRetainSecs) throws MetaException {
     return 0;
+  }
+
+  @Override
+  public List<TableName> getTableNamesWithStats() throws MetaException,
+      NoSuchObjectException {
+    return null;
+  }
+
+  @Override
+  public List<TableName> getAllTableNamesForStats() throws MetaException,
+      NoSuchObjectException {
+    return null;
+  }
+
+  @Override
+  public Map<String, List<String>> getPartitionColsWithStats(String catName,
+      String dbName, String tableName) throws MetaException,
+      NoSuchObjectException {
+    return null;
   }
 }

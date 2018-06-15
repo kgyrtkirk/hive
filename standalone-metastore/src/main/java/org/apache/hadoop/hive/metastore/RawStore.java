@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
@@ -322,13 +323,15 @@ public interface RawStore extends Configurable {
    * @param catName catalog name.
    * @param dbName database name.
    * @param tableName table name.
+   * @param partKeys list of partition keys used to generate the partition name.
    * @param part_vals list of partition values.
    * @return true if the partition exists, false otherwise.
    * @throws MetaException failure reading RDBMS
    * @throws NoSuchObjectException this is never thrown.
    */
   boolean doesPartitionExist(String catName, String dbName, String tableName,
-      List<String> part_vals) throws MetaException, NoSuchObjectException;
+      List<FieldSchema> partKeys, List<String> part_vals)
+      throws MetaException, NoSuchObjectException;
 
   /**
    * Drop a partition.
@@ -1638,5 +1641,12 @@ public interface RawStore extends Configurable {
 
   /** Removes outdated statistics. */
   int deleteRuntimeStats(int maxRetainSecs) throws MetaException;
+
+  List<TableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException;
+
+  List<TableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException;
+
+  Map<String, List<String>> getPartitionColsWithStats(String catName, String dbName,
+      String tableName) throws MetaException, NoSuchObjectException;
 
 }
