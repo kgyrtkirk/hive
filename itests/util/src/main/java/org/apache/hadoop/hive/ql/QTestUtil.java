@@ -1009,6 +1009,10 @@ public class QTestUtil {
   }
 
   public void newSession() throws Exception {
+    newSession(true);
+  }
+
+  public void newSession(boolean canReuseSession) throws Exception {
     // allocate and initialize a new conf since a test can
     // modify conf by using 'set' commands
     conf = new HiveConf(IDriver.class);
@@ -1026,8 +1030,6 @@ public class QTestUtil {
 
     SessionState oldSs = SessionState.get();
 
-    //FIXME: canReuseSession as arg...etc
-    boolean canReuseSession = true; //!qNoSessionReuseQuerySet.contains(fileName);
     restartSessions(canReuseSession, ss, oldSs);
 
     closeSession(oldSs);
@@ -1241,6 +1243,10 @@ public class QTestUtil {
 
   public String cliInit(File file) throws Exception {
     String fileName = file.getName();
+
+    if (qNoSessionReuseQuerySet.contains(fileName)) {
+      newSession(false);
+    }
 
     CliSessionState ss = (CliSessionState) SessionState.get();
 
