@@ -322,19 +322,15 @@ public class XXXJsonHiveStructReader {
     }
   }
 
-  private Object getWriteableFor(String stringValue, PrimitiveObjectInspector oi) {
-    Converter c = ObjectInspectorConverters.getConverter(PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi);
-    return c.convert(stringValue);
-  }
-
-  private Object getObjectOfCorrespondingPrimitiveType(String s, PrimitiveObjectInspector oi1)
+  private Object getObjectOfCorrespondingPrimitiveType(String s, PrimitiveObjectInspector oi)
       throws IOException {
-    PrimitiveTypeInfo oi = oi1.getTypeInfo();
+    PrimitiveTypeInfo typeInfo = oi.getTypeInfo();
     if (writeablePrimitives) {
-      return getWriteableFor(s, oi1);
+      Converter c = ObjectInspectorConverters.getConverter(PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi);
+      return c.convert(s);
     }
 
-    switch (oi.getPrimitiveCategory()) {
+    switch (typeInfo.getPrimitiveCategory()) {
     case INT:
       return Integer.valueOf(s);
     case BYTE:
@@ -366,11 +362,11 @@ public class XXXJsonHiveStructReader {
     case DECIMAL:
       return HiveDecimal.create(s);
     case VARCHAR:
-      return new HiveVarchar(s, ((BaseCharTypeInfo) oi).getLength());
+      return new HiveVarchar(s, ((BaseCharTypeInfo) typeInfo).getLength());
     case CHAR:
-      return new HiveChar(s, ((BaseCharTypeInfo) oi).getLength());
+      return new HiveChar(s, ((BaseCharTypeInfo) typeInfo).getLength());
     }
-    throw new IOException("Could not convert from string to map type " + oi.getTypeName());
+    throw new IOException("Could not convert from string to map type " + typeInfo.getTypeName());
   }
 
   private Object parseMapKey(JsonParser parser, PrimitiveObjectInspector oi) throws HiveException, IOException {
