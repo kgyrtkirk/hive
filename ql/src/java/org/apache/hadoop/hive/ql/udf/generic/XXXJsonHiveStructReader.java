@@ -24,9 +24,11 @@ import java.nio.charset.CharacterCodingException;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,6 +70,8 @@ public class XXXJsonHiveStructReader {
   @Deprecated
   private static boolean hiveColIndexParsing;
 
+  Set<String> reportedUnknownFieldNames = new HashSet<>();
+
   public XXXJsonHiveStructReader(TypeInfo t) {
     outputOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(t);
     factory = new JsonFactory();
@@ -104,7 +108,7 @@ public class XXXJsonHiveStructReader {
     }
   }
 
-  private static Object parseDispatcher(JsonParser parser, ObjectInspector oi)
+  private Object parseDispatcher(JsonParser parser, ObjectInspector oi)
       throws JsonParseException, IOException, HiveException {
 
     switch (oi.getCategory()) {
@@ -121,7 +125,7 @@ public class XXXJsonHiveStructReader {
     }
   }
 
-  private static Object parseMap(JsonParser parser, MapObjectInspector oi) throws IOException, HiveException {
+  private Object parseMap(JsonParser parser, MapObjectInspector oi) throws IOException, HiveException {
 
     if (parser.getCurrentToken() == JsonToken.VALUE_NULL) {
       parser.nextToken();
@@ -160,7 +164,7 @@ public class XXXJsonHiveStructReader {
 
   }
 
-  private static Object parseStruct(JsonParser parser, StructObjectInspector oi)
+  private Object parseStruct(JsonParser parser, StructObjectInspector oi)
       throws JsonParseException, IOException, HiveException {
 
     Object[] ret = new Object[oi.getAllStructFieldRefs().size()];
@@ -191,7 +195,10 @@ public class XXXJsonHiveStructReader {
             }
           } catch (RuntimeException e) {
             if (ignoreUnknownFields) {
-              Log.warn("ignoring field:" + name);
+              if (!reportedUnknownFieldNames.contains(name)) {
+                Log.warn("ignoring field:" + name);
+                reportedUnknownFieldNames.add(name);
+              }
               parser.nextToken();
               skipValue(parser);
               break;
@@ -256,7 +263,7 @@ public class XXXJsonHiveStructReader {
 
   }
 
-  private static Object parseList(JsonParser parser, ListObjectInspector oi)
+  private Object parseList(JsonParser parser, ListObjectInspector oi)
       throws JsonParseException, IOException, HiveException {
     List<Object> ret = new ArrayList<>();
 
