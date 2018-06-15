@@ -72,8 +72,8 @@ public class TestGenericUDFJsonRead {
       assertTrue(res instanceof List<?>);
       List<?> l = (List<?>) res;
       assertEquals(3, l.size());
-      assertEquals("a", l.get(0));
-      assertEquals("b", l.get(1));
+      assertEquals(new Text("a"), l.get(0));
+      assertEquals(new Text("b"), l.get(1));
       assertEquals(null, l.get(2));
     }
   }
@@ -98,7 +98,7 @@ public class TestGenericUDFJsonRead {
       Object res = udf.evaluate(evalArgs("{\"a\":\"b\"}"));
       assertTrue(res instanceof Object[]);
       Object o[] = (Object[]) res;
-      assertEquals("b", o[0]);
+      assertEquals(new Text("b"), o[0]);
     }
   }
 
@@ -186,7 +186,7 @@ public class TestGenericUDFJsonRead {
       assertTrue(res instanceof Map);
       Map o = (Map) res;
       assertEquals(1, o.size());
-      assertEquals("v", o.get("a"));
+      assertEquals(new Text("v"), o.get(new Text("a")));
     }
   }
 

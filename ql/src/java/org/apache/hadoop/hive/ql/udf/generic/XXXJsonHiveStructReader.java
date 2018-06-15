@@ -39,9 +39,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -71,6 +74,9 @@ public class XXXJsonHiveStructReader {
   private static boolean hiveColIndexParsing;
 
   Set<String> reportedUnknownFieldNames = new HashSet<>();
+
+  @Deprecated
+  private boolean writeablePrimitives;
 
   public XXXJsonHiveStructReader(TypeInfo t) {
     outputOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(t);
@@ -291,7 +297,7 @@ public class XXXJsonHiveStructReader {
     return ret;
   }
 
-  private static Object parsePrimitive(JsonParser parser, PrimitiveObjectInspector oi)
+  private Object parsePrimitive(JsonParser parser, PrimitiveObjectInspector oi)
       throws HiveException, IOException {
     JsonToken currentToken = parser.getCurrentToken();
     if (currentToken == null) {
@@ -304,7 +310,7 @@ public class XXXJsonHiveStructReader {
       case VALUE_NUMBER_INT:
       case VALUE_NUMBER_FLOAT:
       case VALUE_STRING:
-        return getObjectOfCorrespondingPrimitiveType(parser.getValueAsString(), oi.getTypeInfo());
+        return getObjectOfCorrespondingPrimitiveType(parser.getValueAsString(), oi);
       case VALUE_NULL:
         return null;
       default:
@@ -316,9 +322,19 @@ public class XXXJsonHiveStructReader {
     }
   }
 
-  private static Object getObjectOfCorrespondingPrimitiveType(String s, PrimitiveTypeInfo mapKeyType)
+  private Object getWriteableFor(String stringValue, PrimitiveObjectInspector oi) {
+    Converter c = ObjectInspectorConverters.getConverter(PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi);
+    return c.convert(stringValue);
+  }
+
+  private Object getObjectOfCorrespondingPrimitiveType(String s, PrimitiveObjectInspector oi1)
       throws IOException {
-    switch (mapKeyType.getPrimitiveCategory()) {
+    PrimitiveTypeInfo oi = oi1.getTypeInfo();
+    if (writeablePrimitives) {
+      return getWriteableFor(s, oi1);
+    }
+
+    switch (oi.getPrimitiveCategory()) {
     case INT:
       return Integer.valueOf(s);
     case BYTE:
@@ -350,14 +366,14 @@ public class XXXJsonHiveStructReader {
     case DECIMAL:
       return HiveDecimal.create(s);
     case VARCHAR:
-      return new HiveVarchar(s, ((BaseCharTypeInfo) mapKeyType).getLength());
+      return new HiveVarchar(s, ((BaseCharTypeInfo) oi).getLength());
     case CHAR:
-      return new HiveChar(s, ((BaseCharTypeInfo) mapKeyType).getLength());
+      return new HiveChar(s, ((BaseCharTypeInfo) oi).getLength());
     }
-    throw new IOException("Could not convert from string to map type " + mapKeyType.getTypeName());
+    throw new IOException("Could not convert from string to map type " + oi.getTypeName());
   }
 
-  private static Object parseMapKey(JsonParser parser, PrimitiveObjectInspector oi) throws HiveException, IOException {
+  private Object parseMapKey(JsonParser parser, PrimitiveObjectInspector oi) throws HiveException, IOException {
     JsonToken currentToken = parser.getCurrentToken();
     if (currentToken == null) {
       return null;
@@ -365,7 +381,7 @@ public class XXXJsonHiveStructReader {
     try {
       switch (parser.getCurrentToken()) {
       case FIELD_NAME:
-        return getObjectOfCorrespondingPrimitiveType(parser.getValueAsString(), oi.getTypeInfo());
+        return getObjectOfCorrespondingPrimitiveType(parser.getValueAsString(), oi);
       case VALUE_NULL:
         return null;
       default:
@@ -383,6 +399,10 @@ public class XXXJsonHiveStructReader {
 
   public void enableHiveColIndexParsing(boolean b) {
     hiveColIndexParsing = b;
+  }
+
+  public void setWritablesUsage(boolean b) {
+    writeablePrimitives = b;
   }
 
 }

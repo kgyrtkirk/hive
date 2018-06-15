@@ -24,10 +24,11 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import com.fasterxml.jackson.core.JsonFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TextConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+
+import com.fasterxml.jackson.core.JsonFactory;
 
 /**
  * Parses a json string representation into a Hive struct.
@@ -61,6 +62,7 @@ public class GenericUDFJsonRead extends GenericUDF {
     try {
       TypeInfo t = TypeInfoUtils.getTypeInfoFromTypeString(typeStr);
       xxx = new XXXJsonHiveStructReader(t);
+      xxx.setWritablesUsage(true);
       outputOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(t);
     } catch (Exception e) {
       throw new UDFArgumentException(getFuncName() + ": Error parsing typestring: " + e.getMessage());
