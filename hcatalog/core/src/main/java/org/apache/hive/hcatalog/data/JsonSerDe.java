@@ -78,7 +78,6 @@ import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 
@@ -92,13 +91,7 @@ public class JsonSerDe extends AbstractSerDe {
   private List<String> columnNames;
   private HCatSchema schema;
 
-  private JsonFactory jsonFactory = null;
-
   private HCatRecordObjectInspector cachedObjectInspector;
-  private TimestampParser tsParser;
-  // FIXME xxx.getOutputOI()
-  @Deprecated
-  private ObjectInspector outputOI;
   private XXXJsonHiveStructReader xxx;
 
   @Override
@@ -135,11 +128,12 @@ public class JsonSerDe extends AbstractSerDe {
 
     rowTypeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
 
-    outputOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(rowTypeInfo);
-
-    xxx = new XXXJsonHiveStructReader(rowTypeInfo);
+    TimestampParser tsParser = new TimestampParser(
+        HiveStringUtils.splitAndUnEscape(tbl.getProperty(serdeConstants.TIMESTAMP_FORMATS)));
+    xxx = new XXXJsonHiveStructReader(rowTypeInfo, tsParser);
     xxx.setIgnoreUnknownFields(true);
     xxx.enableHiveColIndexParsing(true);
+
 
 
     cachedObjectInspector = HCatRecordObjectInspectorFactory.getHCatRecordObjectInspector(rowTypeInfo);
@@ -151,9 +145,6 @@ public class JsonSerDe extends AbstractSerDe {
       throw new SerDeException(e);
     }
 
-    jsonFactory = new JsonFactory();
-    tsParser = new TimestampParser(
-        HiveStringUtils.splitAndUnEscape(tbl.getProperty(serdeConstants.TIMESTAMP_FORMATS)));
   }
 
   /**

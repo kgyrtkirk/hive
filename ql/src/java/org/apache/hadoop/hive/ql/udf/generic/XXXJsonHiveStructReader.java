@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.CharacterCodingException;
 import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -50,6 +49,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Text;
+import org.apache.hive.common.util.TimestampParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,10 +73,16 @@ public class XXXJsonHiveStructReader {
   private static boolean hiveColIndexParsing;
   private boolean writeablePrimitives;
 
+  private TimestampParser tsParser;
+
   public XXXJsonHiveStructReader(TypeInfo t) {
+    this(t, new TimestampParser());
+  }
+
+  public XXXJsonHiveStructReader(TypeInfo t, TimestampParser tsParser) {
+    this.tsParser = tsParser;
     oi = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(t);
     factory = new JsonFactory();
-
   }
 
   public Object parseStruct(String text) throws JsonParseException, IOException, HiveException {
@@ -348,7 +354,7 @@ public class XXXJsonHiveStructReader {
     case DATE:
       return Date.valueOf(s);
     case TIMESTAMP:
-      return Timestamp.valueOf(s);
+      return tsParser.parseTimestamp(s);
     case DECIMAL:
       return HiveDecimal.create(s);
     case VARCHAR:
@@ -394,5 +400,4 @@ public class XXXJsonHiveStructReader {
   public ObjectInspector getObjectInspector() {
     return oi;
   }
-
 }
