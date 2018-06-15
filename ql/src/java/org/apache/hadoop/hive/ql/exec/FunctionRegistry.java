@@ -215,7 +215,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("abs", GenericUDFAbs.class);
     system.registerGenericUDF("json_read", GenericUDFJsonRead.class);
     system.registerGenericUDF("sq_count_check", GenericUDFSQCountCheck.class);
-    system.registerGenericUDF("enforce_constraint", GenericUDFEnforceNotNullConstraint.class);
+    system.registerGenericUDF("enforce_constraint", GenericUDFEnforceConstraint.class);
     system.registerGenericUDF("pmod", GenericUDFPosMod.class);
 
     system.registerUDF("ln", UDFLn.class, false);
@@ -357,7 +357,10 @@ public final class FunctionRegistry {
     system.registerGenericUDF("current_date", GenericUDFCurrentDate.class);
     system.registerGenericUDF("current_timestamp", GenericUDFCurrentTimestamp.class);
     system.registerGenericUDF("current_user", GenericUDFCurrentUser.class);
+    system.registerGenericUDF("current_groups", GenericUDFCurrentGroups.class);
     system.registerGenericUDF("logged_in_user", GenericUDFLoggedInUser.class);
+    system.registerGenericUDF("restrict_information_schema", GenericUDFRestrictInformationSchema.class);
+    system.registerGenericUDF("current_authorizer", GenericUDFCurrentAuthorizer.class);
 
     system.registerGenericUDF("isnull", GenericUDFOPNull.class);
     system.registerGenericUDF("isnotnull", GenericUDFOPNotNull.class);
@@ -397,6 +400,18 @@ public final class FunctionRegistry {
     system.registerUDF(serdeConstants.FLOAT_TYPE_NAME, UDFToFloat.class, false, UDFToFloat.class.getSimpleName());
     system.registerUDF(serdeConstants.DOUBLE_TYPE_NAME, UDFToDouble.class, false, UDFToDouble.class.getSimpleName());
     system.registerUDF(serdeConstants.STRING_TYPE_NAME, UDFToString.class, false, UDFToString.class.getSimpleName());
+    // following mapping is to enable UDFName to UDF while generating expression for default value (in operator tree)
+    //  e.g. cast(4 as string) is serialized as UDFToString(4) into metastore, to allow us to generate appropriate UDF for
+    //  UDFToString we need the following mappings
+    // Rest of the types e.g. DATE, CHAR, VARCHAR etc are already registered
+    system.registerUDF(UDFToString.class.getSimpleName(), UDFToString.class, false, UDFToString.class.getSimpleName());
+    system.registerUDF(UDFToBoolean.class.getSimpleName(), UDFToBoolean.class, false, UDFToBoolean.class.getSimpleName());
+    system.registerUDF(UDFToDouble.class.getSimpleName(), UDFToDouble.class, false, UDFToDouble.class.getSimpleName());
+    system.registerUDF(UDFToFloat.class.getSimpleName(), UDFToFloat.class, false, UDFToFloat.class.getSimpleName());
+    system.registerUDF(UDFToInteger.class.getSimpleName(), UDFToInteger.class, false, UDFToInteger.class.getSimpleName());
+    system.registerUDF(UDFToLong.class.getSimpleName(), UDFToLong.class, false, UDFToLong.class.getSimpleName());
+    system.registerUDF(UDFToShort.class.getSimpleName(), UDFToShort.class, false, UDFToShort.class.getSimpleName());
+    system.registerUDF(UDFToByte.class.getSimpleName(), UDFToByte.class, false, UDFToByte.class.getSimpleName());
 
     system.registerGenericUDF(serdeConstants.DATE_TYPE_NAME, GenericUDFToDate.class);
     system.registerGenericUDF(serdeConstants.TIMESTAMP_TYPE_NAME, GenericUDFTimestamp.class);
@@ -456,6 +471,7 @@ public final class FunctionRegistry {
 
     system.registerGenericUDF("array", GenericUDFArray.class);
     system.registerGenericUDF("assert_true", GenericUDFAssertTrue.class);
+    system.registerGenericUDF("assert_true_oom", GenericUDFAssertTrueOOM.class);
     system.registerGenericUDF("map", GenericUDFMap.class);
     system.registerGenericUDF("struct", GenericUDFStruct.class);
     system.registerGenericUDF("named_struct", GenericUDFNamedStruct.class);
@@ -466,6 +482,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("when", GenericUDFWhen.class);
     system.registerGenericUDF("nullif", GenericUDFNullif.class);
     system.registerGenericUDF("hash", GenericUDFHash.class);
+    system.registerGenericUDF("murmur_hash", GenericUDFMurmurHash.class);
     system.registerGenericUDF("coalesce", GenericUDFCoalesce.class);
     system.registerGenericUDF("index", GenericUDFIndex.class);
     system.registerGenericUDF("in_file", GenericUDFInFile.class);

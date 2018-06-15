@@ -1,8 +1,8 @@
-PREHOOK: query: drop table over10k
+PREHOOK: query: drop table over10k_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table over10k
+POSTHOOK: query: drop table over10k_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table over10k(
+PREHOOK: query: create table over10k_n0(
            t tinyint,
            si smallint,
            i int,
@@ -18,8 +18,8 @@ PREHOOK: query: create table over10k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k
-POSTHOOK: query: create table over10k(
+PREHOOK: Output: default@over10k_n0
+POSTHOOK: query: create table over10k_n0(
            t tinyint,
            si smallint,
            i int,
@@ -35,20 +35,20 @@ POSTHOOK: query: create table over10k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k
-PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+POSTHOOK: Output: default@over10k_n0
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over10k
-POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+PREHOOK: Output: default@over10k_n0
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over10k
+POSTHOOK: Output: default@over10k_n0
 PREHOOK: query: explain vectorization detail
-select s, rank() over (partition by f order by t) from over10k limit 100
+select s, rank() over (partition by f order by t) from over10k_n0 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, rank() over (partition by f order by t) from over10k limit 100
+select s, rank() over (partition by f order by t) from over10k_n0 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -70,11 +70,11 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n0
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: f (type: float), t (type: tinyint)
                     sort order: ++
@@ -195,13 +195,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, rank() over (partition by f order by t) from over10k limit 100
+PREHOOK: query: select s, rank() over (partition by f order by t) from over10k_n0 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select s, rank() over (partition by f order by t) from over10k limit 100
+POSTHOOK: query: select s, rank() over (partition by f order by t) from over10k_n0 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n0
 #### A masked pattern was here ####
 s	rank_window_0
 bob ichabod	1
@@ -305,10 +305,10 @@ irene falkner	1
 holly robinson	1
 yuri white	1
 PREHOOK: query: explain vectorization detail
-select s, dense_rank() over (partition by ts order by i,s desc) from over10k limit 100
+select s, dense_rank() over (partition by ts order by i,s desc) from over10k_n0 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, dense_rank() over (partition by ts order by i,s desc) from over10k limit 100
+select s, dense_rank() over (partition by ts order by i,s desc) from over10k_n0 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -330,11 +330,11 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n0
                   Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: ts (type: timestamp), i (type: int), s (type: string)
                     sort order: ++-
@@ -419,13 +419,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, dense_rank() over (partition by ts order by i,s desc) from over10k limit 100
+PREHOOK: query: select s, dense_rank() over (partition by ts order by i,s desc) from over10k_n0 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select s, dense_rank() over (partition by ts order by i,s desc) from over10k limit 100
+POSTHOOK: query: select s, dense_rank() over (partition by ts order by i,s desc) from over10k_n0 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n0
 #### A masked pattern was here ####
 s	dense_rank_window_0
 rachel thompson	1
@@ -529,10 +529,10 @@ wendy falkner	22
 holly allen	23
 ulysses carson	24
 PREHOOK: query: explain vectorization detail
-select s, cume_dist() over (partition by bo order by b,s) from over10k limit 100
+select s, cume_dist() over (partition by bo order by b,s) from over10k_n0 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, cume_dist() over (partition by bo order by b,s) from over10k limit 100
+select s, cume_dist() over (partition by bo order by b,s) from over10k_n0 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -554,11 +554,11 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n0
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: bo (type: boolean), b (type: bigint), s (type: string)
                     sort order: +++
@@ -643,13 +643,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, cume_dist() over (partition by bo order by b,s) from over10k limit 100
+PREHOOK: query: select s, cume_dist() over (partition by bo order by b,s) from over10k_n0 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select s, cume_dist() over (partition by bo order by b,s) from over10k limit 100
+POSTHOOK: query: select s, cume_dist() over (partition by bo order by b,s) from over10k_n0 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n0
 #### A masked pattern was here ####
 s	cume_dist_window_0
 calvin allen	2.0112630732099757E-4
@@ -753,10 +753,10 @@ gabriella hernandez	0.019710378117457763
 gabriella ovid	0.01991150442477876
 gabriella steinbeck	0.02011263073209976
 PREHOOK: query: explain vectorization detail
-select s, percent_rank() over (partition by `dec` order by f) from over10k limit 100
+select s, percent_rank() over (partition by `dec` order by f) from over10k_n0 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, percent_rank() over (partition by `dec` order by f) from over10k limit 100
+select s, percent_rank() over (partition by `dec` order by f) from over10k_n0 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -778,11 +778,11 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n0
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: dec (type: decimal(4,2)), f (type: float)
                     sort order: ++
@@ -868,13 +868,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, percent_rank() over (partition by `dec` order by f) from over10k limit 100
+PREHOOK: query: select s, percent_rank() over (partition by `dec` order by f) from over10k_n0 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select s, percent_rank() over (partition by `dec` order by f) from over10k limit 100
+POSTHOOK: query: select s, percent_rank() over (partition by `dec` order by f) from over10k_n0 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n0
 #### A masked pattern was here ####
 s	percent_rank_window_0
 wendy king	0.0
@@ -984,8 +984,8 @@ from
           rank() over (partition by ts order by `dec`)  as rnk
           from
             (select other.ts, other.`dec`
-             from over10k other
-             join over10k on (other.b = over10k.b)
+             from over10k_n0 other
+             join over10k_n0 on (other.b = over10k_n0.b)
             ) joined
   ) ranked
 where rnk =  1 limit 10
@@ -997,8 +997,8 @@ from
           rank() over (partition by ts order by `dec`)  as rnk
           from
             (select other.ts, other.`dec`
-             from over10k other
-             join over10k on (other.b = over10k.b)
+             from over10k_n0 other
+             join over10k_n0 on (other.b = over10k_n0.b)
             ) joined
   ) ranked
 where rnk =  1 limit 10
@@ -1028,7 +1028,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1077,11 +1077,11 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1245,13 +1245,13 @@ from
           rank() over (partition by ts order by `dec`)  as rnk
           from
             (select other.ts, other.`dec`
-             from over10k other
-             join over10k on (other.b = over10k.b)
+             from over10k_n0 other
+             join over10k_n0 on (other.b = over10k_n0.b)
             ) joined
   ) ranked
 where rnk =  1 limit 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select ts, `dec`, rnk
 from
@@ -1259,13 +1259,13 @@ from
           rank() over (partition by ts order by `dec`)  as rnk
           from
             (select other.ts, other.`dec`
-             from over10k other
-             join over10k on (other.b = over10k.b)
+             from over10k_n0 other
+             join over10k_n0 on (other.b = over10k_n0.b)
             ) joined
   ) ranked
 where rnk =  1 limit 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n0
 #### A masked pattern was here ####
 ts	dec	rnk
 2013-03-01 09:11:58.70307	0.50	1
@@ -1285,8 +1285,8 @@ from
           rank() over (partition by ts)  as rnk
           from
             (select other.ts, other.`dec`
-             from over10k other
-             join over10k on (other.b = over10k.b)
+             from over10k_n0 other
+             join over10k_n0 on (other.b = over10k_n0.b)
             ) joined
   ) ranked
 where `dec` = 89.5 limit 10
@@ -1298,8 +1298,8 @@ from
           rank() over (partition by ts)  as rnk
           from
             (select other.ts, other.`dec`
-             from over10k other
-             join over10k on (other.b = over10k.b)
+             from over10k_n0 other
+             join over10k_n0 on (other.b = over10k_n0.b)
             ) joined
   ) ranked
 where `dec` = 89.5 limit 10
@@ -1329,7 +1329,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1378,11 +1378,11 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1546,13 +1546,13 @@ from
           rank() over (partition by ts)  as rnk
           from
             (select other.ts, other.`dec`
-             from over10k other
-             join over10k on (other.b = over10k.b)
+             from over10k_n0 other
+             join over10k_n0 on (other.b = over10k_n0.b)
             ) joined
   ) ranked
 where `dec` = 89.5 limit 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select ts, `dec`, rnk
 from
@@ -1560,13 +1560,13 @@ from
           rank() over (partition by ts)  as rnk
           from
             (select other.ts, other.`dec`
-             from over10k other
-             join over10k on (other.b = over10k.b)
+             from over10k_n0 other
+             join over10k_n0 on (other.b = over10k_n0.b)
             ) joined
   ) ranked
 where `dec` = 89.5 limit 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n0
 #### A masked pattern was here ####
 ts	dec	rnk
 2013-03-01 09:11:58.703124	89.50	1
@@ -1586,8 +1586,8 @@ from
           rank() over (partition by ts order by `dec`)  as rnk
           from
             (select other.ts, other.`dec`
-             from over10k other
-             join over10k on (other.b = over10k.b)
+             from over10k_n0 other
+             join over10k_n0 on (other.b = over10k_n0.b)
              where other.t < 10
             ) joined
   ) ranked
@@ -1600,8 +1600,8 @@ from
           rank() over (partition by ts order by `dec`)  as rnk
           from
             (select other.ts, other.`dec`
-             from over10k other
-             join over10k on (other.b = over10k.b)
+             from over10k_n0 other
+             join over10k_n0 on (other.b = over10k_n0.b)
              where other.t < 10
             ) joined
   ) ranked
@@ -1632,13 +1632,13 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 164 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterLongColLessLongScalar(col 0:tinyint, val 10), SelectColumnIsNotNull(col 3:bigint))
-                    predicate: ((t < 10) and b is not null) (type: boolean)
+                    predicate: ((t < 10Y) and b is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 164 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: b (type: bigint), ts (type: timestamp), dec (type: decimal(4,2))
@@ -1681,11 +1681,11 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1849,14 +1849,14 @@ from
           rank() over (partition by ts order by `dec`)  as rnk
           from
             (select other.ts, other.`dec`
-             from over10k other
-             join over10k on (other.b = over10k.b)
+             from over10k_n0 other
+             join over10k_n0 on (other.b = over10k_n0.b)
              where other.t < 10
             ) joined
   ) ranked
 where rnk = 1 limit 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select ts, `dec`, rnk
 from
@@ -1864,14 +1864,14 @@ from
           rank() over (partition by ts order by `dec`)  as rnk
           from
             (select other.ts, other.`dec`
-             from over10k other
-             join over10k on (other.b = over10k.b)
+             from over10k_n0 other
+             join over10k_n0 on (other.b = over10k_n0.b)
              where other.t < 10
             ) joined
   ) ranked
 where rnk = 1 limit 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n0
 #### A masked pattern was here ####
 ts	dec	rnk
 2013-03-01 09:11:58.70307	37.30	1

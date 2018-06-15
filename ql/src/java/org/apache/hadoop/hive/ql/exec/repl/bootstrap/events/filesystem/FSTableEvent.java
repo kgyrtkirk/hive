@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -53,7 +54,7 @@ public class FSTableEvent implements TableEvent {
   }
 
   public boolean shouldNotReplicate() {
-    ReplicationSpec spec = metadata.getReplicationSpec();
+    ReplicationSpec spec = replicationSpec();
     return spec.isNoop() || !spec.isInReplicationScope();
   }
 
@@ -68,7 +69,7 @@ public class FSTableEvent implements TableEvent {
       Table table = new Table(metadata.getTable());
       ImportTableDesc tableDesc =
           new ImportTableDesc(StringUtils.isBlank(dbName) ? table.getDbName() : dbName, table);
-      tableDesc.setReplicationSpec(metadata.getReplicationSpec());
+      tableDesc.setReplicationSpec(replicationSpec());
       return tableDesc;
     } catch (Exception e) {
       throw new SemanticException(e);
@@ -86,6 +87,21 @@ public class FSTableEvent implements TableEvent {
       descs.add(partsDesc);
     }
     return descs;
+  }
+
+  @Override
+  public List<String> partitions(ImportTableDesc tblDesc)
+          throws SemanticException {
+    List<String> partitions = new ArrayList<>();
+    try {
+      for (Partition partition : metadata.getPartitions()) {
+        String partName = Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues());
+        partitions.add(partName);
+      }
+    } catch (MetaException e) {
+      throw new SemanticException(e);
+    }
+    return partitions;
   }
 
   private AddPartitionDesc partitionDesc(Path fromPath,
@@ -106,7 +122,7 @@ public class FSTableEvent implements TableEvent {
       partDesc.setSortCols(partition.getSd().getSortCols());
       partDesc.setLocation(new Path(fromPath,
           Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues())).toString());
-      partsDesc.setReplicationSpec(metadata.getReplicationSpec());
+      partsDesc.setReplicationSpec(replicationSpec());
       return partsDesc;
     } catch (Exception e) {
       throw new SemanticException(e);

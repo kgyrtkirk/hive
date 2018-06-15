@@ -206,7 +206,7 @@
         <include>**/*.py</include>
         <include>**/*.xml</include>
       </includes>
-      <outputDirectory>scripts/llap/slider</outputDirectory>
+      <outputDirectory>scripts/llap/yarn</outputDirectory>
     </fileSet>
 
     <fileSet>
@@ -214,6 +214,9 @@
       <includes>
         <include>**/*</include>
       </includes>
+      <excludes>
+        <exclude>**/upgrade.order.*</exclude> <!-- pick up upgrade order from standalone metastore-->
+      </excludes>
       <outputDirectory>scripts/metastore/upgrade</outputDirectory>
     </fileSet>
 

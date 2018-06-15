@@ -104,6 +104,12 @@ public class HiveMetaTool {
         .withDescription("Specify the key for table property to be updated. tablePropKey option " +
           "is valid only with updateLocation option.")
         .create("tablePropKey");
+    Option prepareAcidUpgrade =
+        OptionBuilder.withArgName("find-compactions")
+            .hasOptionalArg() //directory to output results to
+            .withDescription("Generates a set Compaction commands to run to prepare for Hive 2.x" +
+                " to 3.0 upgrade")
+            .create("prepareAcidUpgrade");
 
     cmdLineOptions.addOption(help);
     cmdLineOptions.addOption(listFSRoot);
@@ -112,6 +118,7 @@ public class HiveMetaTool {
     cmdLineOptions.addOption(dryRun);
     cmdLineOptions.addOption(serdePropKey);
     cmdLineOptions.addOption(tablePropKey);
+    cmdLineOptions.addOption(prepareAcidUpgrade);
   }
 
   private void initObjectStore(Configuration conf) {
@@ -362,7 +369,6 @@ public class HiveMetaTool {
       printSerdePropURIUpdateSummary(updateSerdeURIretVal, serdePropKey, isDryRun);
     }
   }
-
   private static void printAndExit(HiveMetaTool metaTool) {
     HelpFormatter formatter = new HelpFormatter();
     formatter.printHelp("metatool", metaTool.cmdLineOptions);
@@ -460,7 +466,7 @@ public class HiveMetaTool {
           } else {
             metaTool.updateFSRootLocation(oldURI, newURI, serdepropKey, tablePropKey, isDryRun);
           }
-        } else {
+      } else {
           if (line.hasOption("dryRun")) {
             System.err.println("HiveMetaTool: dryRun is not a valid standalone option");
           } else if (line.hasOption("serdePropKey")) {

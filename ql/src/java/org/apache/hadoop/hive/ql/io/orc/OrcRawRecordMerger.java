@@ -79,62 +79,43 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
   @VisibleForTesting
   public final static class ReaderKey extends RecordIdentifier{
     private long currentWriteId;
-    /**
-     * This is the value from delta file name which may be different from value encode in 
-     * {@link RecordIdentifier#getBucketProperty()} in case of Update/Delete.
-     * So for Acid 1.0 + multi-stmt txn, if {@code isSameRow() == true}, then it must be an update
-     * or delete event.  For Acid 2.0 + multi-stmt txn, it must be a delete event.
-     * No 2 Insert events from can ever agree on {@link RecordIdentifier}
-     */
-    private int statementId; //sort on this descending, like currentWriteId
+    private boolean isDeleteEvent = false;
 
     ReaderKey() {
-      this(-1, -1, -1, -1, 0);
+      this(-1, -1, -1, -1);
     }
 
-    ReaderKey(long originalWriteId, int bucket, long rowId,
-                     long currentWriteId) {
-      this(originalWriteId, bucket, rowId, currentWriteId, 0);
-    }
-    /**
-     * @param statementId - set this to 0 if N/A
-     */
-    public ReaderKey(long originalWriteId, int bucket, long rowId,
-                     long currentWriteId, int statementId) {
+    public ReaderKey(long originalWriteId, int bucket, long rowId, long currentWriteId) {
       super(originalWriteId, bucket, rowId);
       this.currentWriteId = currentWriteId;
-      this.statementId = statementId;
     }
 
     @Override
     public void set(RecordIdentifier other) {
       super.set(other);
       currentWriteId = ((ReaderKey) other).currentWriteId;
-      statementId = ((ReaderKey) other).statementId;
+      isDeleteEvent = ((ReaderKey) other).isDeleteEvent;
     }
 
     public void setValues(long originalWriteId,
                           int bucket,
                           long rowId,
                           long currentWriteId,
-                          int statementId) {
+                          boolean  isDelete) {
       setValues(originalWriteId, bucket, rowId);
       this.currentWriteId = currentWriteId;
-      this.statementId = statementId;
+      this.isDeleteEvent = isDelete;
     }
 
     @Override
     public boolean equals(Object other) {
       return super.equals(other) &&
-              currentWriteId == ((ReaderKey) other).currentWriteId
-            && statementId == ((ReaderKey) other).statementId//consistent with compareTo()
-          ;
+                 currentWriteId == ((ReaderKey) other).currentWriteId;
     }
     @Override
     public int hashCode() {
       int result = super.hashCode();
       result = 31 * result + (int)(currentWriteId ^ (currentWriteId >>> 32));
-      result = 31 * result + statementId;
       return result;
     }
 
@@ -148,8 +129,12 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           if (currentWriteId != oth.currentWriteId) {
             return currentWriteId < oth.currentWriteId ? +1 : -1;
           }
-          if(statementId != oth.statementId) {
-            return statementId < oth.statementId ? +1 : -1;
+          if(isDeleteEvent != oth.isDeleteEvent) {
+            //this is to break a tie if insert + delete of a given row is done within the same
+            //txn (so that currentWriteId is the same for both events) and we want the
+            //delete event to sort 1st since it needs to be sent up so that
+            // OrcInputFormat.getReader(InputSplit inputSplit, Options options) can skip it.
+            return isDeleteEvent ? -1 : +1;
           }
         } else {
           return -1;
@@ -181,8 +166,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     @Override
     public String toString() {
       return "{originalWriteId: " + getWriteId() + ", " +
-          bucketToString() + ", row: " + getRowId() + ", currentWriteId " +
-              currentWriteId + ", statementId: "+ statementId + "}";
+          bucketToString() + ", row: " + getRowId() + ", currentWriteId " + currentWriteId + "}";
     }
   }
   interface ReaderPair {
@@ -237,8 +221,6 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     private final ReaderKey key;
     private final RecordIdentifier minKey;
     private final RecordIdentifier maxKey;
-    @Deprecated//HIVE-18158
-    private final int statementId;
 
     /**
      * Create a reader that reads from the first key larger than minKey to any
@@ -249,18 +231,16 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
      * @param maxKey only return keys less than or equal to maxKey if it is
      *               non-null
      * @param options options to provide to read the rows.
-     * @param statementId id of SQL statement within a transaction
      * @throws IOException
      */
     @VisibleForTesting
     ReaderPairAcid(ReaderKey key, Reader reader,
                    RecordIdentifier minKey, RecordIdentifier maxKey,
-                   ReaderImpl.Options options, int statementId) throws IOException {
+                   ReaderImpl.Options options) throws IOException {
       this.reader = reader;
       this.key = key;
       // TODO use stripe statistics to jump over stripes
       recordReader = reader.rowsOptions(options);
-      this.statementId = statementId;
       this.minKey = minKey;
       this.maxKey = maxKey;
       // advance the reader until we reach the minimum key
@@ -268,6 +248,10 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
         next(nextRecord());
       } while (nextRecord() != null &&
         (minKey != null && key.compareRow(getMinKey()) <= 0));
+    }
+    @Override
+    public String toString() {
+      return "[key=" + key + ", nextRecord=" + nextRecord + ", reader=" + reader + "]";
     }
     @Override public final OrcStruct nextRecord() {
       return nextRecord;
@@ -300,8 +284,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
             OrcRecordUpdater.getBucket(nextRecord()),
             OrcRecordUpdater.getRowId(nextRecord()),
             OrcRecordUpdater.getCurrentTransaction(nextRecord()),
-            statementId);
-
+            OrcRecordUpdater.getOperation(nextRecord()) == OrcRecordUpdater.DELETE_OPERATION);
         // if this record is larger than maxKey, we need to stop
         if (getMaxKey() != null && getKey().compareRow(getMaxKey()) > 0) {
           LOG.debug("key " + getKey() + " > maxkey " + getMaxKey());
@@ -350,17 +333,21 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     final int bucketId;
     final int bucketProperty;
     /**
-     * TransactionId to use when generating synthetic ROW_IDs
+     * Write Id to use when generating synthetic ROW_IDs
      */
-    final long transactionId;
-
+    final long writeId;
+    /**
+     * @param statementId - this should be from delta_x_y_stmtId file name.  Imagine 2 load data
+     *                    statements in 1 txn.  The stmtId will be embedded in
+     *                    {@link RecordIdentifier#bucketId} via {@link BucketCodec} below
+     */
     OriginalReaderPair(ReaderKey key, int bucketId, Configuration conf, Options mergeOptions,
       int statementId) throws IOException {
       this.key = key;
       this.bucketId = bucketId;
       assert bucketId >= 0 : "don't support non-bucketed tables yet";
       this.bucketProperty = encodeBucketId(conf, bucketId, statementId);
-      transactionId = mergeOptions.getTransactionId();
+      writeId = mergeOptions.getWriteId();
     }
     @Override public final OrcStruct nextRecord() {
       return nextRecord;
@@ -390,9 +377,9 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
               new IntWritable(OrcRecordUpdater.INSERT_OPERATION);
           nextRecord().setFieldValue(OrcRecordUpdater.OPERATION, operation);
           nextRecord().setFieldValue(OrcRecordUpdater.CURRENT_WRITEID,
-              new LongWritable(transactionId));
+              new LongWritable(writeId));
           nextRecord().setFieldValue(OrcRecordUpdater.ORIGINAL_WRITEID,
-              new LongWritable(transactionId));
+              new LongWritable(writeId));
           nextRecord().setFieldValue(OrcRecordUpdater.BUCKET,
               new IntWritable(bucketProperty));
           nextRecord().setFieldValue(OrcRecordUpdater.ROW_ID,
@@ -404,17 +391,17 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           ((IntWritable) next.getFieldValue(OrcRecordUpdater.OPERATION))
               .set(OrcRecordUpdater.INSERT_OPERATION);
           ((LongWritable) next.getFieldValue(OrcRecordUpdater.ORIGINAL_WRITEID))
-              .set(transactionId);
+              .set(writeId);
           ((IntWritable) next.getFieldValue(OrcRecordUpdater.BUCKET))
               .set(bucketProperty);
           ((LongWritable) next.getFieldValue(OrcRecordUpdater.CURRENT_WRITEID))
-              .set(transactionId);
+              .set(writeId);
           ((LongWritable) next.getFieldValue(OrcRecordUpdater.ROW_ID))
               .set(nextRowId);
           nextRecord().setFieldValue(OrcRecordUpdater.ROW,
               getRecordReader().next(OrcRecordUpdater.getRow(next)));
         }
-        key.setValues(transactionId, bucketProperty, nextRowId, transactionId, 0);
+        key.setValues(writeId, bucketProperty, nextRowId, writeId, false);
         if (getMaxKey() != null && key.compareRow(getMaxKey()) > 0) {
           if (LOG.isDebugEnabled()) {
             LOG.debug("key " + key + " > maxkey " + getMaxKey());
@@ -475,9 +462,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
         AcidUtils.Directory directoryState
                 = AcidUtils.getAcidState(mergerOptions.getRootPath(), conf, validWriteIdList, false, true);
         for (HadoopShims.HdfsFileStatusWithId f : directoryState.getOriginalFiles()) {
-          AcidOutputFormat.Options bucketOptions =
-            AcidUtils.parseBaseOrDeltaBucketFilename(f.getFileStatus().getPath(), conf);
-          if (bucketOptions.getBucketId() != bucketId) {
+          int bucketIdFromPath = AcidUtils.parseBucketId(f.getFileStatus().getPath());
+          if (bucketIdFromPath != bucketId) {
             continue;//todo: HIVE-16952
           }
           if (haveSeenCurrentFile) {
@@ -514,7 +500,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
              *  If this is not the 1st file, set minKey 1 less than the start of current file
              * (Would not need to set minKey if we knew that there are no delta files)
              * {@link #advanceToMinKey()} needs this */
-            newMinKey = new RecordIdentifier(transactionId, bucketProperty,rowIdOffset - 1);
+            newMinKey = new RecordIdentifier(writeId, bucketProperty,rowIdOffset - 1);
           }
           if (maxKey != null) {
             maxKey.setRowId(maxKey.getRowId() + rowIdOffset);
@@ -527,7 +513,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
            * of the file so we want to leave it blank to make sure any insert events in delta
            * files are included; Conversely, if it's not the last file, set the maxKey so that
            * events from deltas that don't modify anything in the current split are excluded*/
-        newMaxKey = new RecordIdentifier(transactionId, bucketProperty,
+        newMaxKey = new RecordIdentifier(writeId, bucketProperty,
           rowIdOffset + reader.getNumberOfRows() - 1);
       }
       this.minKey = newMinKey;
@@ -648,9 +634,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
      */
     private Reader advanceToNextFile() throws IOException {
       while(nextFileIndex < originalFiles.size()) {
-        AcidOutputFormat.Options bucketOptions = AcidUtils.parseBaseOrDeltaBucketFilename(
-          originalFiles.get(nextFileIndex).getFileStatus().getPath(), conf);
-        if (bucketOptions.getBucketId() == bucketId) {
+        int bucketIdFromPath = AcidUtils.parseBucketId(originalFiles.get(nextFileIndex).getFileStatus().getPath());
+        if (bucketIdFromPath == bucketId) {
           break;
         }
         //the the bucket we care about here
@@ -816,7 +801,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     private Path baseDir;
     private boolean isMajorCompaction = false;
     private boolean isDeleteReader = false;
-    private long transactionId = 0;
+    private long writeId = 0;
     Options copyIndex(int copyIndex) {
       assert copyIndex >= 0;
       this.copyIndex = copyIndex;
@@ -845,8 +830,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       assert !isCompacting;
       return this;
     }
-    Options transactionId(long transactionId) {
-      this.transactionId = transactionId;
+    Options writeId(long writeId) {
+      this.writeId = writeId;
       return this;
     }
     Options baseDir(Path baseDir) {
@@ -892,10 +877,10 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
      * for reading "original" files - i.e. not native acid schema.  Default value of 0 is
      * appropriate for files that existed in a table before it was made transactional.  0 is the
      * primordial transaction.  For non-native files resulting from Load Data command, they
-     * are located and base_x or delta_x_x and then transactionId == x.
+     * are located and base_x or delta_x_x and then writeId == x.
      */
-    long getTransactionId() {
-      return transactionId;
+    long getWriteId() {
+      return writeId;
     }
 
     /**
@@ -1017,7 +1002,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       LOG.info("min key = " + keyInterval.getMinKey() + ", max key = " + keyInterval.getMaxKey());
       // use the min/max instead of the byte range
       ReaderPair pair = null;
-      ReaderKey key = new ReaderKey();
+      ReaderKey baseKey = new ReaderKey();
       if (isOriginal) {
         options = options.clone();
         if(mergerOptions.isCompacting()) {
@@ -1027,7 +1012,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
             readerPairOptions = modifyForNonAcidSchemaRead(mergerOptions,
               AcidUtils.parseBase(mergerOptions.getBaseDir()), mergerOptions.getBaseDir());
           }
-          pair = new OriginalReaderPairToCompact(key, bucket, options, readerPairOptions,
+          pair = new OriginalReaderPairToCompact(baseKey, bucket, options, readerPairOptions,
             conf, validWriteIdList,
             0);//0 since base_x doesn't have a suffix (neither does pre acid write)
         } else {
@@ -1042,7 +1027,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
             readerPairOptions = modifyForNonAcidSchemaRead(mergerOptions,
               tfp.syntheticWriteId, tfp.folder);
           }
-          pair = new OriginalReaderPairToRead(key, reader, bucket, keyInterval.getMinKey(),
+          pair = new OriginalReaderPairToRead(baseKey, reader, bucket, keyInterval.getMinKey(),
             keyInterval.getMaxKey(), options,  readerPairOptions, conf, validWriteIdList, tfp.statementId);
         }
       } else {
@@ -1057,8 +1042,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
             //doing major compaction - it's possible where full compliment of bucket files is not
             //required (on Tez) that base_x/ doesn't have a file for 'bucket'
             reader = OrcFile.createReader(bucketPath, OrcFile.readerOptions(conf));
-            pair = new ReaderPairAcid(key, reader, keyInterval.getMinKey(), keyInterval.getMaxKey(),
-              eventOptions, 0);
+            pair = new ReaderPairAcid(baseKey, reader, keyInterval.getMinKey(), keyInterval.getMaxKey(),
+              eventOptions);
           }
           else {
             pair = new EmptyReaderPair();
@@ -1067,8 +1052,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
         }
         else {
           assert reader != null : "no reader? " + mergerOptions.getRootPath();
-          pair = new ReaderPairAcid(key, reader, keyInterval.getMinKey(), keyInterval.getMaxKey(),
-            eventOptions, 0);
+          pair = new ReaderPairAcid(baseKey, reader, keyInterval.getMinKey(), keyInterval.getMaxKey(),
+            eventOptions);
         }
       }
       minKey = pair.getMinKey();
@@ -1076,7 +1061,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       LOG.info("updated min key = " + keyInterval.getMinKey() + ", max key = " + keyInterval.getMaxKey());
       // if there is at least one record, put it in the map
       if (pair.nextRecord() != null) {
-        readers.put(key, pair);
+        ensurePutReader(baseKey, pair);
+        baseKey = null;
       }
       baseReader = pair.getRecordReader();
     }
@@ -1106,7 +1092,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           ReaderPair deltaPair =  new OriginalReaderPairToCompact(key, bucket, options,
               rawCompactOptions, conf, validWriteIdList, deltaDir.getStatementId());
           if (deltaPair.nextRecord() != null) {
-            readers.put(key, deltaPair);
+            ensurePutReader(key, deltaPair);
+            key = new ReaderKey();
           }
           continue;
         }
@@ -1119,15 +1106,17 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
              */
             continue;
           }
+          LOG.debug("Looking at delta file {}", deltaFile);
           if(deltaDir.isDeleteDelta()) {
             //if here it maybe compaction or regular read or Delete event sorter
             //in the later 2 cases we should do:
             //HIVE-17320: we should compute a SARG to push down min/max key to delete_delta
             Reader deltaReader = OrcFile.createReader(deltaFile, OrcFile.readerOptions(conf));
             ReaderPair deltaPair = new ReaderPairAcid(key, deltaReader, minKey, maxKey,
-              deltaEventOptions, deltaDir.getStatementId());
+                deltaEventOptions);
             if (deltaPair.nextRecord() != null) {
-              readers.put(key, deltaPair);
+              ensurePutReader(key, deltaPair);
+              key = new ReaderKey();
             }
             continue;
           }
@@ -1139,16 +1128,17 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           assert length >= 0;
           Reader deltaReader = OrcFile.createReader(deltaFile, OrcFile.readerOptions(conf).maxLength(length));
           //must get statementId from file name since Acid 1.0 doesn't write it into bucketProperty
-          ReaderPairAcid deltaPair = new ReaderPairAcid(key, deltaReader, minKey, maxKey,
-            deltaEventOptions, deltaDir.getStatementId());
+          ReaderPairAcid deltaPair = new ReaderPairAcid(key, deltaReader, minKey, maxKey, deltaEventOptions);
           if (deltaPair.nextRecord() != null) {
-            readers.put(key, deltaPair);
+            ensurePutReader(key, deltaPair);
+            key = new ReaderKey();
           }
         }
       }
     }
 
     // get the first record
+    LOG.debug("Final reader map {}", readers);
     Map.Entry<ReaderKey, ReaderPair> entry = readers.pollFirstEntry();
     if (entry == null) {
       columns = 0;
@@ -1165,6 +1155,14 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     }
   }
 
+  private void ensurePutReader(ReaderKey key, ReaderPair deltaPair) throws IOException {
+    ReaderPair oldPair = readers.put(key, deltaPair);
+    if (oldPair == null) return;
+    String error = "Two readers for " + key + ": new " + deltaPair + ", old " + oldPair;
+    LOG.error(error);
+    throw new IOException(error);
+  }
+
   /**
    * For use with Load Data statement which places {@link AcidUtils.AcidBaseFileType#ORIGINAL_BASE}
    * type files into a base_x/ or delta_x_x.  The data in these are then assigned ROW_IDs at read
@@ -1175,7 +1173,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
   static final class TransactionMetaData {
     final long syntheticWriteId;
     /**
-     * folder which determines the transaction id to use in synthetic ROW_IDs
+     * folder which determines the write id to use in synthetic ROW_IDs
      */
     final Path folder;
     final int statementId;
@@ -1192,7 +1190,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       Path parent = splitPath.getParent();
       if(rootPath.equals(parent)) {
         //the 'isOriginal' file is at the root of the partition (or table) thus it is
-        //from a pre-acid conversion write and belongs to primordial txnid:0.
+        //from a pre-acid conversion write and belongs to primordial writeid:0.
         return new TransactionMetaData(0, parent);
       }
       while(parent != null && !rootPath.equals(parent)) {
@@ -1216,7 +1214,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       if(parent == null) {
         //spit is marked isOriginal but it's not an immediate child of a partition nor is it in a
         //base/ or delta/ - this should never happen
-        throw new IllegalStateException("Cannot determine transaction id for original file "
+        throw new IllegalStateException("Cannot determine write id for original file "
           + splitPath + " in " + rootPath);
       }
       //"warehouse/t/HIVE_UNION_SUBDIR_15/000000_0" is a meaningful path for nonAcid2acid
@@ -1232,8 +1230,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
    * in {@link AcidUtils.Directory#getOriginalFiles()}
    * @return modified clone of {@code baseOptions}
    */
-  private Options modifyForNonAcidSchemaRead(Options baseOptions, long transactionId, Path rootPath) {
-    return baseOptions.clone().transactionId(transactionId).rootPath(rootPath);
+  private Options modifyForNonAcidSchemaRead(Options baseOptions, long writeId, Path rootPath) {
+    return baseOptions.clone().writeId(writeId).rootPath(rootPath);
   }
   /**
    * This determines the set of {@link ReaderPairAcid} to create for a given delta/.
@@ -1362,10 +1360,16 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       * event.  If we did want to pass it along, we'd have to include statementId in the row
       * returned so that compaction could write it out or make minor minor compaction understand
       * how to write out delta files in delta_xxx_yyy_stid format.  There doesn't seem to be any
-      * value in this.*/
+      * value in this.
+      *
+      * todo: this could be simplified since in Acid2 even if you update the same row 2 times in 1
+      * txn, it will have different ROW__IDs, i.e. there is no such thing as multiple versions of
+      * the same physical row.  Leave it for now since this Acid reader should go away altogether
+      * and org.apache.hadoop.hive.ql.io.orc.VectorizedOrcAcidRowBatchReader will be used.*/
       boolean isSameRow = prevKey.isSameRow((ReaderKey)recordIdentifier);
       // if we are collapsing, figure out if this is a new row
       if (collapse || isSameRow) {
+        // Note: for collapse == false, this just sets keysSame.
         keysSame = (collapse && prevKey.compareRow(recordIdentifier) == 0) || (isSameRow);
         if (!keysSame) {
           prevKey.set(recordIdentifier);

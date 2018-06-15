@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io.orc.encoded;
 import org.apache.orc.impl.RunLengthByteReader;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
@@ -28,7 +29,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.orc.CompressionCodec;
 import org.apache.orc.TypeDescription;
-import org.apache.orc.TypeDescription.Category;
+import org.apache.orc.impl.InStream;
 import org.apache.orc.impl.PositionProvider;
 import org.apache.orc.impl.SettableUncompressedStream;
 import org.apache.orc.impl.TreeReaderFactory;
@@ -211,6 +212,11 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
   }
 
+  private static void skipCompressedIndex(boolean isCompressed, PositionProvider index) {
+    if (!isCompressed) return;
+    index.getNext();
+  }
+
   protected static class StringStreamReader extends StringTreeReader
       implements SettableTreeReader {
     private boolean _isFileCompressed;
@@ -258,30 +264,30 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
         // data stream could be empty stream or already reached end of stream before present stream.
         // This can happen if all values in stream are nulls or last row group values are all null.
+        skipCompressedIndex(_isFileCompressed, index);
         if (_dataStream != null && _dataStream.available() > 0) {
-          if (_isFileCompressed) {
-            index.getNext();
-          }
           ((StringDictionaryTreeReader) reader).getReader().seek(index);
-        }
+        } // No need to skip seek here, index won't be used anymore.
       } else {
         // DIRECT encoding
 
         // data stream could be empty stream or already reached end of stream before present stream.
         // This can happen if all values in stream are nulls or last row group values are all null.
+        skipCompressedIndex(_isFileCompressed, index);
+        // TODO: why does the original code not just use _dataStream that it passes in as stream?
+        InStream stream = ((StringDirectTreeReader) reader).getStream();
+        // TODO: not clear why this check and skipSeek are needed.
         if (_dataStream != null && _dataStream.available() > 0) {
-          if (_isFileCompressed) {
-            index.getNext();
-          }
-          ((StringDirectTreeReader) reader).getStream().seek(index);
+          stream.seek(index);
+        } else {
+          assert stream == _dataStream;
+          skipSeek(index);
         }
 
+        skipCompressedIndex(_isFileCompressed, index);
         if (_lengthStream != null && _lengthStream.available() > 0) {
-          if (_isFileCompressed) {
-            index.getNext();
-          }
           ((StringDirectTreeReader) reader).getLengths().seek(index);
-        }
+        } // No need to skip seek here, index won't be used anymore.
       }
     }
 
@@ -828,10 +834,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
       // data stream could be empty stream or already reached end of stream before present stream.
       // This can happen if all values in stream are nulls or last row group values are all null.
+      skipCompressedIndex(_isFileCompressed, index);
       if (_dataStream.available() > 0) {
-        if (_isFileCompressed) {
-          index.getNext();
-        }
         stream.seek(index);
       }
     }
@@ -943,10 +947,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
       // data stream could be empty stream or already reached end of stream before present stream.
       // This can happen if all values in stream are nulls or last row group values are all null.
+      skipCompressedIndex(_isFileCompressed, index);
       if (_dataStream.available() > 0) {
-        if (_isFileCompressed) {
-          index.getNext();
-        }
         stream.seek(index);
       }
     }
@@ -1049,7 +1051,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         boolean isFileCompressed,
         OrcProto.ColumnEncoding encoding, TreeReaderFactory.Context context,
         List<ColumnVector> vectors) throws IOException {
-      super(columnId, presentStream, valueStream, scaleStream, encoding, context);
+      super(columnId, presentStream, valueStream, scaleStream, encoding,
+          precision, scale, context);
       this._isFileCompressed = isFileCompressed;
       this._presentStream = presentStream;
       this._valueStream = valueStream;
@@ -1069,19 +1072,19 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
       // data stream could be empty stream or already reached end of stream before present stream.
       // This can happen if all values in stream are nulls or last row group values are all null.
+      skipCompressedIndex(_isFileCompressed, index);
+      // TODO: not clear why this check and skipSeek are needed.
       if (_valueStream.available() > 0) {
-        if (_isFileCompressed) {
-          index.getNext();
-        }
         valueStream.seek(index);
+      } else {
+        assert valueStream == _valueStream;
+        skipSeek(index);
       }
 
+      skipCompressedIndex(_isFileCompressed, index);
       if (_scaleStream.available() > 0) {
-        if (_isFileCompressed) {
-          index.getNext();
-        }
         scaleReader.seek(index);
-      }
+      } // No need to skip seek here, index won't be used anymore.
     }
 
     @Override
@@ -1373,30 +1376,29 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
         // data stream could be empty stream or already reached end of stream before present stream.
         // This can happen if all values in stream are nulls or last row group values are all null.
+        skipCompressedIndex(_isFileCompressed, index);
         if (_dataStream.available() > 0) {
-          if (_isFileCompressed) {
-            index.getNext();
-          }
           ((StringDictionaryTreeReader) reader).getReader().seek(index);
-        }
+        } // No need to skip seek here, index won't be used anymore.
       } else {
         // DIRECT encoding
 
         // data stream could be empty stream or already reached end of stream before present stream.
         // This can happen if all values in stream are nulls or last row group values are all null.
+        skipCompressedIndex(_isFileCompressed, index);
+        InStream stream = ((StringDirectTreeReader) reader).getStream();
+        // TODO: not clear why this check and skipSeek are needed.
         if (_dataStream.available() > 0) {
-          if (_isFileCompressed) {
-            index.getNext();
-          }
-          ((StringDirectTreeReader) reader).getStream().seek(index);
+          stream.seek(index);
+        } else {
+          assert stream == _dataStream;
+          skipSeek(index);
         }
 
+        skipCompressedIndex(_isFileCompressed, index);
         if (_lengthStream.available() > 0) {
-          if (_isFileCompressed) {
-            index.getNext();
-          }
           ((StringDirectTreeReader) reader).getLengths().seek(index);
-        }
+        } // No need to skip seek here, index won't be used anymore.
       }
     }
 
@@ -1572,30 +1574,29 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
         // data stream could be empty stream or already reached end of stream before present stream.
         // This can happen if all values in stream are nulls or last row group values are all null.
+        skipCompressedIndex(_isFileCompressed, index);
         if (_dataStream.available() > 0) {
-          if (_isFileCompressed) {
-            index.getNext();
-          }
           ((StringDictionaryTreeReader) reader).getReader().seek(index);
-        }
+        } // No need to skip seek here, index won't be used anymore.
       } else {
         // DIRECT encoding
 
         // data stream could be empty stream or already reached end of stream before present stream.
         // This can happen if all values in stream are nulls or last row group values are all null.
+        skipCompressedIndex(_isFileCompressed, index);
+        InStream stream = ((StringDirectTreeReader) reader).getStream();
+        // TODO: not clear why this check and skipSeek are needed.
         if (_dataStream.available() > 0) {
-          if (_isFileCompressed) {
-            index.getNext();
-          }
-          ((StringDirectTreeReader) reader).getStream().seek(index);
+          stream.seek(index);
+        } else {
+          assert stream == _dataStream;
+          skipSeek(index);
         }
 
+        skipCompressedIndex(_isFileCompressed, index);
         if (_lengthStream.available() > 0) {
-          if (_isFileCompressed) {
-            index.getNext();
-          }
           ((StringDirectTreeReader) reader).getLengths().seek(index);
-        }
+        } // No need to skip seek here, index won't be used anymore.
       }
     }
 
@@ -1883,19 +1884,19 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
       // data stream could be empty stream or already reached end of stream before present stream.
       // This can happen if all values in stream are nulls or last row group values are all null.
+      skipCompressedIndex(_isFileCompressed, index);
+      // TODO: not clear why this check and skipSeek are needed.
       if (_dataStream.available() > 0) {
-        if (_isFileCompressed) {
-          index.getNext();
-        }
         stream.seek(index);
+      } else {
+        assert stream == _dataStream;
+        skipSeek(index);
       }
 
+      skipCompressedIndex(_isFileCompressed, index);
       if (lengths != null && _lengthsStream.available() > 0) {
-        if (_isFileCompressed) {
-          index.getNext();
-        }
         lengths.seek(index);
-      }
+      } // No need to skip seek here, index won't be used anymore.
     }
 
     @Override
@@ -2099,35 +2100,27 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
   }
 
-  public static StructTreeReader createRootTreeReader(TypeDescription schema,
+  public static StructTreeReader createRootTreeReader(TypeDescription[] batchSchemas,
        List<OrcProto.ColumnEncoding> encodings, OrcEncodedColumnBatch batch,
-       CompressionCodec codec, TreeReaderFactory.Context context, int[] columnMapping)
-           throws IOException {
-    if (schema.getCategory() != Category.STRUCT) {
-      throw new AssertionError("Schema is not a struct: " + schema);
+       CompressionCodec codec, TreeReaderFactory.Context context) throws IOException {
+    // Note: we only look at the schema here to deal with complex types. Somebody has set up the
+    //       reader with whatever ideas they had to the schema and we just trust the reader to
+    //       produce the CVBs that was asked for. However, we only need to look at top level columns.
+    int includedCount = batch.getColumnsWithDataCount();
+    if (batchSchemas.length > includedCount) {
+      throw new AssertionError("For " + Arrays.toString(batchSchemas) + ", only received "
+          + includedCount + " columns");
     }
-    // Some child types may be excluded. Note that this can only happen at root level.
-    List<TypeDescription> children = schema.getChildren();
-    int childCount = children.size(), includedCount = 0;
-    for (int childIx = 0; childIx < childCount; ++childIx) {
-      int batchColIx = children.get(childIx).getId();
+    TreeReader[] childReaders = new TreeReader[batchSchemas.length];
+    for (int i = 0; i < batchSchemas.length; ++i) {
+      int batchColIx = batchSchemas[i].getId();
       if (!batch.hasData(batchColIx) && !batch.hasVectors(batchColIx)) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Column at " + childIx + " " + children.get(childIx).getId()
-              + ":" + children.get(childIx).toString() + " has no data");
-        }
-        continue;
+        throw new AssertionError("No data for column " + batchColIx + ": " + batchSchemas[i]);
       }
-      ++includedCount;
+      childReaders[i] = createEncodedTreeReader(batchSchemas[i], encodings, batch, codec, context);
     }
-    TreeReader[] childReaders = new TreeReader[includedCount];
-    for (int schemaChildIx = 0, inclChildIx = -1; schemaChildIx < childCount; ++schemaChildIx) {
-      int batchColIx = children.get(schemaChildIx).getId();
-      if (!batch.hasData(batchColIx) && !batch.hasVectors(batchColIx)) continue;
-      childReaders[++inclChildIx] = createEncodedTreeReader(
-          schema.getChildren().get(schemaChildIx), encodings, batch, codec, context);
-      columnMapping[inclChildIx] = schemaChildIx;
-    }
+
+    // TODO: do we actually need this reader? the caller just extracts child readers.
     return StructStreamReader.builder()
         .setColumnIndex(0)
         .setCompressionCodec(codec)
@@ -2135,6 +2128,12 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         .setChildReaders(childReaders)
         .setContext(context)
         .build();
+  }
+
+
+  private static void skipSeek(PositionProvider index) {
+    // Must be consistent with uncompressed stream seek in ORC. See call site comments.
+    index.getNext();
   }
 
 

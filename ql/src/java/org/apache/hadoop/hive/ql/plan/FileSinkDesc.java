@@ -25,6 +25,7 @@ import java.util.Objects;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
@@ -102,9 +103,9 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   /**
    * Whether is a HiveServer query, and the destination table is
-   * indeed written using ThriftJDBCBinarySerDe
+   * indeed written using a row batching SerDe
    */
-  private boolean isUsingThriftJDBCBinarySerDe = false;
+  private boolean isUsingBatchingSerDe = false;
 
   private boolean isInsertOverwrite = false;
 
@@ -182,17 +183,22 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 	  this.isHiveServerQuery = isHiveServerQuery;
   }
 
-  public boolean isUsingThriftJDBCBinarySerDe() {
-	  return this.isUsingThriftJDBCBinarySerDe;
+  public boolean isUsingBatchingSerDe() {
+    return this.isUsingBatchingSerDe;
   }
 
-  public void setIsUsingThriftJDBCBinarySerDe(boolean isUsingThriftJDBCBinarySerDe) {
-	  this.isUsingThriftJDBCBinarySerDe = isUsingThriftJDBCBinarySerDe;
+  public void setIsUsingBatchingSerDe(boolean isUsingBatchingSerDe) {
+    this.isUsingBatchingSerDe = isUsingBatchingSerDe;
   }
 
   @Explain(displayName = "directory", explainLevels = { Level.EXTENDED })
   public Path getDirName() {
     return dirName;
+  }
+
+  @Signature
+  public String getDirNameString() {
+    return dirName.toString();
   }
 
   public void setDirName(final Path dirName) {
@@ -223,6 +229,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   }
 
   @Explain(displayName = "compressed")
+  @Signature
   public boolean getCompressed() {
     return compressed;
   }
@@ -232,6 +239,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   }
 
   @Explain(displayName = "GlobalTableId", explainLevels = { Level.EXTENDED })
+  @Signature
+
   public int getDestTableId() {
     return destTableId;
   }
@@ -260,6 +269,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
    * @return the multiFileSpray
    */
   @Explain(displayName = "MultiFileSpray", explainLevels = { Level.EXTENDED })
+  @Signature
+
   public boolean isMultiFileSpray() {
     return multiFileSpray;
   }
@@ -311,6 +322,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
    * @return the totalFiles
    */
   @Explain(displayName = "TotalFiles", explainLevels = { Level.EXTENDED })
+  @Signature
+
   public int getTotalFiles() {
     return totalFiles;
   }
@@ -340,6 +353,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
    * @return the numFiles
    */
   @Explain(displayName = "NumFilesPerFileSink", explainLevels = { Level.EXTENDED })
+  @Signature
+
   public int getNumFiles() {
     return numFiles;
   }
@@ -364,6 +379,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   }
 
   @Explain(displayName = "Static Partition Specification", explainLevels = { Level.EXTENDED })
+  @Signature
   public String getStaticSpec() {
     return staticSpec;
   }
@@ -374,6 +390,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   @Override
   @Explain(displayName = "GatherStats", explainLevels = { Level.EXTENDED })
+  @Signature
+
   public boolean isGatherStats() {
     return gatherStats;
   }
@@ -391,6 +409,9 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
    */
   @Override
   @Explain(displayName = "Stats Publishing Key Prefix", explainLevels = { Level.EXTENDED })
+  // FIXME: including this in the signature will almost certenly differ even if the operator is doing the same
+  // there might be conflicting usages of logicalCompare?
+  @Signature
   public String getStatsAggPrefix() {
     // dirName uniquely identifies destination directory of a FileSinkOperator.
     // If more than one FileSinkOperator write to the same partition, this dirName

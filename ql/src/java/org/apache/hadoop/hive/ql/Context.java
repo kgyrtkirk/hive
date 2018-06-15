@@ -58,12 +58,16 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 /**
  * Context for Semantic Analyzers. Usage: not reusable - construct a new one for
@@ -94,7 +98,7 @@ public class Context {
   // Keeps track of scratch directories created for different scheme/authority
   private final Map<String, Path> fsScratchDirs = new HashMap<String, Path>();
 
-  private final Configuration conf;
+  private Configuration conf;
   protected int pathid = 10000;
   protected ExplainConfiguration explainConfig = null;
   protected String cboInfo;
@@ -152,6 +156,14 @@ public class Context {
   private Map<Integer, DestClausePrefix> insertBranchToNamePrefix = new HashMap<>();
   private Operation operation = Operation.OTHER;
   private WmContext wmContext;
+
+  private boolean isExplainPlan = false;
+  private PlanMapper planMapper = new PlanMapper();
+  private StatsSource statsSource;
+  private int executionIndex;
+
+  // Load data rewrite
+  private Table tempTableForLoad;
 
   public void setOperation(Operation operation) {
     this.operation = operation;
@@ -229,7 +241,7 @@ public class Context {
       }
       if(!thisIsInASubquery) {
         throw new IllegalStateException("Expected '" + getMatchedText(curNode) + "' to be in sub-query or set operation.");
-      } 
+      }
       return DestClausePrefix.INSERT;
     }
     switch (operation) {
@@ -252,7 +264,7 @@ public class Context {
         assert insert != null && insert.getType() == HiveParser.TOK_INSERT;
         ASTNode query = (ASTNode) insert.getParent();
         assert query != null && query.getType() == HiveParser.TOK_QUERY;
-        
+
         for(int childIdx = 1; childIdx < query.getChildCount(); childIdx++) {//1st child is TOK_FROM
           assert query.getChild(childIdx).getType() == HiveParser.TOK_INSERT;
           if(insert == query.getChild(childIdx)) {
@@ -279,6 +291,7 @@ public class Context {
   public DestClausePrefix addDestNamePrefix(int pos, DestClausePrefix prefix) {
     return insertBranchToNamePrefix.put(pos, prefix);
   }
+
   public Context(Configuration conf) throws IOException {
     this(conf, generateExecutionId());
   }
@@ -301,6 +314,48 @@ public class Context {
     opContext = new CompilationOpContext();
 
     viewsTokenRewriteStreams = new HashMap<>();
+  }
+
+  protected Context(Context ctx) {
+    // This method creates a deep copy of context, but the copy is partial,
+    // hence it needs to be used carefully. In particular, following objects
+    // are ignored:
+    // opContext, pathToCS, cboInfo, cboSucceeded, tokenRewriteStream, viewsTokenRewriteStreams,
+    // rewrittenStatementContexts, cteTables, loadTableOutputMap, planMapper, insertBranchToNamePrefix
+    this.isHDFSCleanup = ctx.isHDFSCleanup;
+    this.resFile = ctx.resFile;
+    this.resDir = ctx.resDir;
+    this.resFs = ctx.resFs;
+    this.resDirPaths = ctx.resDirPaths;
+    this.resDirFilesNum = ctx.resDirFilesNum;
+    this.initialized = ctx.initialized;
+    this.originalTracker = ctx.originalTracker;
+    this.nonLocalScratchPath = ctx.nonLocalScratchPath;
+    this.localScratchDir = ctx.localScratchDir;
+    this.scratchDirPermission = ctx.scratchDirPermission;
+    this.fsScratchDirs.putAll(ctx.fsScratchDirs);
+    this.conf = ctx.conf;
+    this.pathid = ctx.pathid;
+    this.explainConfig = ctx.explainConfig;
+    this.cmd = ctx.cmd;
+    this.executionId = ctx.executionId;
+    this.hiveLocks = ctx.hiveLocks;
+    this.hiveTxnManager = ctx.hiveTxnManager;
+    this.needLockMgr = ctx.needLockMgr;
+    this.sequencer = ctx.sequencer;
+    this.outputLockObjects.putAll(ctx.outputLockObjects);
+    this.stagingDir = ctx.stagingDir;
+    this.heartbeater = ctx.heartbeater;
+    this.skipTableMasking = ctx.skipTableMasking;
+    this.isUpdateDeleteMerge = ctx.isUpdateDeleteMerge;
+    this.isLoadingMaterializedView = ctx.isLoadingMaterializedView;
+    this.operation = ctx.operation;
+    this.wmContext = ctx.wmContext;
+    this.isExplainPlan = ctx.isExplainPlan;
+    this.statsSource = ctx.statsSource;
+    this.executionIndex = ctx.executionIndex;
+    this.viewsTokenRewriteStreams = new HashMap<>();
+    this.rewrittenStatementContexts = new HashSet<>();
   }
 
   public Map<String, Path> getFsScratchDirs() {
@@ -507,7 +562,6 @@ public class Context {
    * - If path is on HDFS, then create a staging directory inside the path
    *
    * @param path Path used to verify the Filesystem to use for temporary directory
-   * @param isFinalJob true if the required {@link Path} will be used for the final job (e.g. the final FSOP)
    *
    * @return A path to the new temporary directory
    */
@@ -972,6 +1026,10 @@ public class Context {
     return opContext;
   }
 
+  public void setOpContext(CompilationOpContext opContext) {
+    this.opContext = opContext;
+  }
+
   public Heartbeater getHeartbeater() {
     return heartbeater;
   }
@@ -997,7 +1055,7 @@ public class Context {
   public ExplainConfiguration getExplainConfig() {
     return explainConfig;
   }
-  private boolean isExplainPlan = false;
+
   public boolean isExplainPlan() {
     return isExplainPlan;
   }
@@ -1033,4 +1091,42 @@ public class Context {
   public String getExecutionId() {
     return executionId;
   }
+
+  public PlanMapper getPlanMapper() {
+    return planMapper;
+  }
+
+  public void setStatsSource(StatsSource statsSource) {
+    this.statsSource = statsSource;
+  }
+
+  public StatsSource getStatsSource() {
+    if (statsSource != null) {
+      return statsSource;
+    } else {
+      // hierarchical; add def stats also here
+      return EmptyStatsSource.INSTANCE;
+    }
+  }
+
+  public int getExecutionIndex() {
+    return executionIndex;
+  }
+
+  public void setExecutionIndex(int executionIndex) {
+    this.executionIndex = executionIndex;
+  }
+
+  public void setConf(HiveConf conf) {
+    this.conf = conf;
+  }
+
+  public Table getTempTableForLoad() {
+    return tempTableForLoad;
+  }
+
+  public void setTempTableForLoad(Table tempTableForLoad) {
+    this.tempTableForLoad = tempTableForLoad;
+  }
+
 }

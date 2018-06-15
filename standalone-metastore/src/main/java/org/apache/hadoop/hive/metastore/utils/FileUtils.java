@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
@@ -32,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
@@ -170,9 +172,9 @@ public class FileUtils {
    * Rename a file.  Unlike {@link FileSystem#rename(Path, Path)}, if the destPath already exists
    * and is a directory, this will NOT move the sourcePath into it.  It will throw an IOException
    * instead.
-   * @param srcfs file system src paths are on
-   * @param destfs file system dest paths are on
-   * @param sourcePath source file or directory to move
+   * @param srcFs file system src paths are on
+   * @param destFs file system dest paths are on
+   * @param srcPath source file or directory to move
    * @param destPath destination file name.  This must be a file and not an existing directory.
    * @return result of fs.rename.
    * @throws IOException if fs.rename throws it, or if destPath already exists.
@@ -314,11 +316,11 @@ public class FileUtils {
    * @return array of FileStatus
    * @throws IOException
    */
-  public static FileStatus[] getFileStatusRecurse(Path path, int level, FileSystem fs)
+  public static List<FileStatus> getFileStatusRecurse(Path path, int level, FileSystem fs)
       throws IOException {
 
     // if level is <0, the return all files/directories under the specified path
-    if ( level < 0) {
+    if (level < 0) {
       List<FileStatus> result = new ArrayList<>();
       try {
         FileStatus fileStatus = fs.getFileStatus(path);
@@ -328,9 +330,9 @@ public class FileUtils {
         // does not exist. But getFileStatus() throw IOException. To mimic the
         // similar behavior we will return empty array on exception. For external
         // tables, the path of the table will not exists during table creation
-        return new FileStatus[0];
+        return new ArrayList<>(0);
       }
-      return result.toArray(new FileStatus[result.size()]);
+      return result;
     }
 
     // construct a path pattern (e.g., /*/*) to find all dynamically generated paths
@@ -339,7 +341,7 @@ public class FileUtils {
       sb.append(Path.SEPARATOR).append("*");
     }
     Path pathPattern = new Path(path, sb.toString());
-    return fs.globStatus(pathPattern, FileUtils.HIDDEN_FILES_PATH_FILTER);
+    return Lists.newArrayList(fs.globStatus(pathPattern, FileUtils.HIDDEN_FILES_PATH_FILTER));
   }
 
   /**
@@ -439,7 +441,7 @@ public class FileUtils {
    * Utility method that determines if a specified directory already has
    * contents (non-hidden files) or not - useful to determine if an
    * immutable table already has contents, for example.
-   *
+   * @param fs
    * @param path
    * @throws IOException
    */
@@ -452,5 +454,60 @@ public class FileUtils {
       }
     }
     return true;
+  }
+
+  /**
+   * Variant of Path.makeQualified that qualifies the input path against the default file system
+   * indicated by the configuration
+   *
+   * This does not require a FileSystem handle in most cases - only requires the Filesystem URI.
+   * This saves the cost of opening the Filesystem - which can involve RPCs - as well as cause
+   * errors
+   *
+   * @param path
+   *          path to be fully qualified
+   * @param conf
+   *          Configuration file
+   * @return path qualified relative to default file system
+   */
+  public static Path makeQualified(Path path, Configuration conf) throws IOException {
+
+    if (!path.isAbsolute()) {
+      // in this case we need to get the working directory
+      // and this requires a FileSystem handle. So revert to
+      // original method.
+      FileSystem fs = FileSystem.get(conf);
+      return path.makeQualified(fs.getUri(), fs.getWorkingDirectory());
+    }
+
+    URI fsUri = FileSystem.getDefaultUri(conf);
+    URI pathUri = path.toUri();
+
+    String scheme = pathUri.getScheme();
+    String authority = pathUri.getAuthority();
+
+    // validate/fill-in scheme and authority. this follows logic
+    // identical to FileSystem.get(URI, conf) - but doesn't actually
+    // obtain a file system handle
+
+    if (scheme == null) {
+      // no scheme - use default file system uri
+      scheme = fsUri.getScheme();
+      authority = fsUri.getAuthority();
+      if (authority == null) {
+        authority = "";
+      }
+    } else {
+      if (authority == null) {
+        // no authority - use default one if it applies
+        if (scheme.equals(fsUri.getScheme()) && fsUri.getAuthority() != null) {
+          authority = fsUri.getAuthority();
+        } else {
+          authority = "";
+        }
+      }
+    }
+
+    return new Path(scheme, authority, pathUri.getPath());
   }
 }

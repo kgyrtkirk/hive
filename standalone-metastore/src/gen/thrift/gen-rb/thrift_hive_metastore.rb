@@ -43,6 +43,90 @@ module ThriftHiveMetastore
       return
     end
 
+    def create_catalog(catalog)
+      send_create_catalog(catalog)
+      recv_create_catalog()
+    end
+
+    def send_create_catalog(catalog)
+      send_message('create_catalog', Create_catalog_args, :catalog => catalog)
+    end
+
+    def recv_create_catalog()
+      result = receive_message(Create_catalog_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
+    def alter_catalog(rqst)
+      send_alter_catalog(rqst)
+      recv_alter_catalog()
+    end
+
+    def send_alter_catalog(rqst)
+      send_message('alter_catalog', Alter_catalog_args, :rqst => rqst)
+    end
+
+    def recv_alter_catalog()
+      result = receive_message(Alter_catalog_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
+    def get_catalog(catName)
+      send_get_catalog(catName)
+      return recv_get_catalog()
+    end
+
+    def send_get_catalog(catName)
+      send_message('get_catalog', Get_catalog_args, :catName => catName)
+    end
+
+    def recv_get_catalog()
+      result = receive_message(Get_catalog_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_catalog failed: unknown result')
+    end
+
+    def get_catalogs()
+      send_get_catalogs()
+      return recv_get_catalogs()
+    end
+
+    def send_get_catalogs()
+      send_message('get_catalogs', Get_catalogs_args)
+    end
+
+    def recv_get_catalogs()
+      result = receive_message(Get_catalogs_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_catalogs failed: unknown result')
+    end
+
+    def drop_catalog(catName)
+      send_drop_catalog(catName)
+      recv_drop_catalog()
+    end
+
+    def send_drop_catalog(catName)
+      send_message('drop_catalog', Drop_catalog_args, :catName => catName)
+    end
+
+    def recv_drop_catalog()
+      result = receive_message(Drop_catalog_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
     def create_database(database)
       send_create_database(database)
       recv_create_database()
@@ -318,13 +402,13 @@ module ThriftHiveMetastore
       return
     end
 
-    def create_table_with_constraints(tbl, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints)
-      send_create_table_with_constraints(tbl, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints)
+    def create_table_with_constraints(tbl, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints)
+      send_create_table_with_constraints(tbl, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints)
       recv_create_table_with_constraints()
     end
 
-    def send_create_table_with_constraints(tbl, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints)
-      send_message('create_table_with_constraints', Create_table_with_constraints_args, :tbl => tbl, :primaryKeys => primaryKeys, :foreignKeys => foreignKeys, :uniqueConstraints => uniqueConstraints, :notNullConstraints => notNullConstraints)
+    def send_create_table_with_constraints(tbl, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints)
+      send_message('create_table_with_constraints', Create_table_with_constraints_args, :tbl => tbl, :primaryKeys => primaryKeys, :foreignKeys => foreignKeys, :uniqueConstraints => uniqueConstraints, :notNullConstraints => notNullConstraints, :defaultConstraints => defaultConstraints, :checkConstraints => checkConstraints)
     end
 
     def recv_create_table_with_constraints()
@@ -411,6 +495,38 @@ module ThriftHiveMetastore
 
     def recv_add_not_null_constraint()
       result = receive_message(Add_not_null_constraint_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def add_default_constraint(req)
+      send_add_default_constraint(req)
+      recv_add_default_constraint()
+    end
+
+    def send_add_default_constraint(req)
+      send_message('add_default_constraint', Add_default_constraint_args, :req => req)
+    end
+
+    def recv_add_default_constraint()
+      result = receive_message(Add_default_constraint_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def add_check_constraint(req)
+      send_add_check_constraint(req)
+      recv_add_check_constraint()
+    end
+
+    def send_add_check_constraint(req)
+      send_message('add_check_constraint', Add_check_constraint_args, :req => req)
+    end
+
+    def recv_add_check_constraint()
+      result = receive_message(Add_check_constraint_result)
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       return
@@ -628,13 +744,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_materialization_invalidation_info failed: unknown result')
     end
 
-    def update_creation_metadata(dbname, tbl_name, creation_metadata)
-      send_update_creation_metadata(dbname, tbl_name, creation_metadata)
+    def update_creation_metadata(catName, dbname, tbl_name, creation_metadata)
+      send_update_creation_metadata(catName, dbname, tbl_name, creation_metadata)
       recv_update_creation_metadata()
     end
 
-    def send_update_creation_metadata(dbname, tbl_name, creation_metadata)
-      send_message('update_creation_metadata', Update_creation_metadata_args, :dbname => dbname, :tbl_name => tbl_name, :creation_metadata => creation_metadata)
+    def send_update_creation_metadata(catName, dbname, tbl_name, creation_metadata)
+      send_message('update_creation_metadata', Update_creation_metadata_args, :catName => catName, :dbname => dbname, :tbl_name => tbl_name, :creation_metadata => creation_metadata)
     end
 
     def recv_update_creation_metadata()
@@ -1453,107 +1569,6 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'isPartitionMarkedForEvent failed: unknown result')
     end
 
-    def add_index(new_index, index_table)
-      send_add_index(new_index, index_table)
-      return recv_add_index()
-    end
-
-    def send_add_index(new_index, index_table)
-      send_message('add_index', Add_index_args, :new_index => new_index, :index_table => index_table)
-    end
-
-    def recv_add_index()
-      result = receive_message(Add_index_result)
-      return result.success unless result.success.nil?
-      raise result.o1 unless result.o1.nil?
-      raise result.o2 unless result.o2.nil?
-      raise result.o3 unless result.o3.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_index failed: unknown result')
-    end
-
-    def alter_index(dbname, base_tbl_name, idx_name, new_idx)
-      send_alter_index(dbname, base_tbl_name, idx_name, new_idx)
-      recv_alter_index()
-    end
-
-    def send_alter_index(dbname, base_tbl_name, idx_name, new_idx)
-      send_message('alter_index', Alter_index_args, :dbname => dbname, :base_tbl_name => base_tbl_name, :idx_name => idx_name, :new_idx => new_idx)
-    end
-
-    def recv_alter_index()
-      result = receive_message(Alter_index_result)
-      raise result.o1 unless result.o1.nil?
-      raise result.o2 unless result.o2.nil?
-      return
-    end
-
-    def drop_index_by_name(db_name, tbl_name, index_name, deleteData)
-      send_drop_index_by_name(db_name, tbl_name, index_name, deleteData)
-      return recv_drop_index_by_name()
-    end
-
-    def send_drop_index_by_name(db_name, tbl_name, index_name, deleteData)
-      send_message('drop_index_by_name', Drop_index_by_name_args, :db_name => db_name, :tbl_name => tbl_name, :index_name => index_name, :deleteData => deleteData)
-    end
-
-    def recv_drop_index_by_name()
-      result = receive_message(Drop_index_by_name_result)
-      return result.success unless result.success.nil?
-      raise result.o1 unless result.o1.nil?
-      raise result.o2 unless result.o2.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'drop_index_by_name failed: unknown result')
-    end
-
-    def get_index_by_name(db_name, tbl_name, index_name)
-      send_get_index_by_name(db_name, tbl_name, index_name)
-      return recv_get_index_by_name()
-    end
-
-    def send_get_index_by_name(db_name, tbl_name, index_name)
-      send_message('get_index_by_name', Get_index_by_name_args, :db_name => db_name, :tbl_name => tbl_name, :index_name => index_name)
-    end
-
-    def recv_get_index_by_name()
-      result = receive_message(Get_index_by_name_result)
-      return result.success unless result.success.nil?
-      raise result.o1 unless result.o1.nil?
-      raise result.o2 unless result.o2.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_index_by_name failed: unknown result')
-    end
-
-    def get_indexes(db_name, tbl_name, max_indexes)
-      send_get_indexes(db_name, tbl_name, max_indexes)
-      return recv_get_indexes()
-    end
-
-    def send_get_indexes(db_name, tbl_name, max_indexes)
-      send_message('get_indexes', Get_indexes_args, :db_name => db_name, :tbl_name => tbl_name, :max_indexes => max_indexes)
-    end
-
-    def recv_get_indexes()
-      result = receive_message(Get_indexes_result)
-      return result.success unless result.success.nil?
-      raise result.o1 unless result.o1.nil?
-      raise result.o2 unless result.o2.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_indexes failed: unknown result')
-    end
-
-    def get_index_names(db_name, tbl_name, max_indexes)
-      send_get_index_names(db_name, tbl_name, max_indexes)
-      return recv_get_index_names()
-    end
-
-    def send_get_index_names(db_name, tbl_name, max_indexes)
-      send_message('get_index_names', Get_index_names_args, :db_name => db_name, :tbl_name => tbl_name, :max_indexes => max_indexes)
-    end
-
-    def recv_get_index_names()
-      result = receive_message(Get_index_names_result)
-      return result.success unless result.success.nil?
-      raise result.o2 unless result.o2.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_index_names failed: unknown result')
-    end
-
     def get_primary_keys(request)
       send_get_primary_keys(request)
       return recv_get_primary_keys()
@@ -1620,6 +1635,40 @@ module ThriftHiveMetastore
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_not_null_constraints failed: unknown result')
+    end
+
+    def get_default_constraints(request)
+      send_get_default_constraints(request)
+      return recv_get_default_constraints()
+    end
+
+    def send_get_default_constraints(request)
+      send_message('get_default_constraints', Get_default_constraints_args, :request => request)
+    end
+
+    def recv_get_default_constraints()
+      result = receive_message(Get_default_constraints_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_default_constraints failed: unknown result')
+    end
+
+    def get_check_constraints(request)
+      send_get_check_constraints(request)
+      return recv_get_check_constraints()
+    end
+
+    def send_get_check_constraints(request)
+      send_message('get_check_constraints', Get_check_constraints_args, :request => request)
+    end
+
+    def recv_get_check_constraints()
+      result = receive_message(Get_check_constraints_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_check_constraints failed: unknown result')
     end
 
     def update_table_column_statistics(stats_obj)
@@ -2129,6 +2178,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'grant_revoke_privileges failed: unknown result')
     end
 
+    def refresh_privileges(objToRefresh, authorizer, grantRequest)
+      send_refresh_privileges(objToRefresh, authorizer, grantRequest)
+      return recv_refresh_privileges()
+    end
+
+    def send_refresh_privileges(objToRefresh, authorizer, grantRequest)
+      send_message('refresh_privileges', Refresh_privileges_args, :objToRefresh => objToRefresh, :authorizer => authorizer, :grantRequest => grantRequest)
+    end
+
+    def recv_refresh_privileges()
+      result = receive_message(Refresh_privileges_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'refresh_privileges failed: unknown result')
+    end
+
     def set_ugi(user_name, group_names)
       send_set_ugi(user_name, group_names)
       return recv_set_ugi()
@@ -2402,6 +2467,20 @@ module ThriftHiveMetastore
       result = receive_message(Commit_txn_result)
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def repl_tbl_writeid_state(rqst)
+      send_repl_tbl_writeid_state(rqst)
+      recv_repl_tbl_writeid_state()
+    end
+
+    def send_repl_tbl_writeid_state(rqst)
+      send_message('repl_tbl_writeid_state', Repl_tbl_writeid_state_args, :rqst => rqst)
+    end
+
+    def recv_repl_tbl_writeid_state()
+      result = receive_message(Repl_tbl_writeid_state_result)
       return
     end
 
@@ -3083,6 +3162,300 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'create_or_drop_wm_trigger_to_pool_mapping failed: unknown result')
     end
 
+    def create_ischema(schema)
+      send_create_ischema(schema)
+      recv_create_ischema()
+    end
+
+    def send_create_ischema(schema)
+      send_message('create_ischema', Create_ischema_args, :schema => schema)
+    end
+
+    def recv_create_ischema()
+      result = receive_message(Create_ischema_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
+    def alter_ischema(rqst)
+      send_alter_ischema(rqst)
+      recv_alter_ischema()
+    end
+
+    def send_alter_ischema(rqst)
+      send_message('alter_ischema', Alter_ischema_args, :rqst => rqst)
+    end
+
+    def recv_alter_ischema()
+      result = receive_message(Alter_ischema_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def get_ischema(name)
+      send_get_ischema(name)
+      return recv_get_ischema()
+    end
+
+    def send_get_ischema(name)
+      send_message('get_ischema', Get_ischema_args, :name => name)
+    end
+
+    def recv_get_ischema()
+      result = receive_message(Get_ischema_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_ischema failed: unknown result')
+    end
+
+    def drop_ischema(name)
+      send_drop_ischema(name)
+      recv_drop_ischema()
+    end
+
+    def send_drop_ischema(name)
+      send_message('drop_ischema', Drop_ischema_args, :name => name)
+    end
+
+    def recv_drop_ischema()
+      result = receive_message(Drop_ischema_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
+    def add_schema_version(schemaVersion)
+      send_add_schema_version(schemaVersion)
+      recv_add_schema_version()
+    end
+
+    def send_add_schema_version(schemaVersion)
+      send_message('add_schema_version', Add_schema_version_args, :schemaVersion => schemaVersion)
+    end
+
+    def recv_add_schema_version()
+      result = receive_message(Add_schema_version_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
+    def get_schema_version(schemaVersion)
+      send_get_schema_version(schemaVersion)
+      return recv_get_schema_version()
+    end
+
+    def send_get_schema_version(schemaVersion)
+      send_message('get_schema_version', Get_schema_version_args, :schemaVersion => schemaVersion)
+    end
+
+    def recv_get_schema_version()
+      result = receive_message(Get_schema_version_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schema_version failed: unknown result')
+    end
+
+    def get_schema_latest_version(schemaName)
+      send_get_schema_latest_version(schemaName)
+      return recv_get_schema_latest_version()
+    end
+
+    def send_get_schema_latest_version(schemaName)
+      send_message('get_schema_latest_version', Get_schema_latest_version_args, :schemaName => schemaName)
+    end
+
+    def recv_get_schema_latest_version()
+      result = receive_message(Get_schema_latest_version_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schema_latest_version failed: unknown result')
+    end
+
+    def get_schema_all_versions(schemaName)
+      send_get_schema_all_versions(schemaName)
+      return recv_get_schema_all_versions()
+    end
+
+    def send_get_schema_all_versions(schemaName)
+      send_message('get_schema_all_versions', Get_schema_all_versions_args, :schemaName => schemaName)
+    end
+
+    def recv_get_schema_all_versions()
+      result = receive_message(Get_schema_all_versions_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schema_all_versions failed: unknown result')
+    end
+
+    def drop_schema_version(schemaVersion)
+      send_drop_schema_version(schemaVersion)
+      recv_drop_schema_version()
+    end
+
+    def send_drop_schema_version(schemaVersion)
+      send_message('drop_schema_version', Drop_schema_version_args, :schemaVersion => schemaVersion)
+    end
+
+    def recv_drop_schema_version()
+      result = receive_message(Drop_schema_version_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def get_schemas_by_cols(rqst)
+      send_get_schemas_by_cols(rqst)
+      return recv_get_schemas_by_cols()
+    end
+
+    def send_get_schemas_by_cols(rqst)
+      send_message('get_schemas_by_cols', Get_schemas_by_cols_args, :rqst => rqst)
+    end
+
+    def recv_get_schemas_by_cols()
+      result = receive_message(Get_schemas_by_cols_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schemas_by_cols failed: unknown result')
+    end
+
+    def map_schema_version_to_serde(rqst)
+      send_map_schema_version_to_serde(rqst)
+      recv_map_schema_version_to_serde()
+    end
+
+    def send_map_schema_version_to_serde(rqst)
+      send_message('map_schema_version_to_serde', Map_schema_version_to_serde_args, :rqst => rqst)
+    end
+
+    def recv_map_schema_version_to_serde()
+      result = receive_message(Map_schema_version_to_serde_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def set_schema_version_state(rqst)
+      send_set_schema_version_state(rqst)
+      recv_set_schema_version_state()
+    end
+
+    def send_set_schema_version_state(rqst)
+      send_message('set_schema_version_state', Set_schema_version_state_args, :rqst => rqst)
+    end
+
+    def recv_set_schema_version_state()
+      result = receive_message(Set_schema_version_state_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
+    def add_serde(serde)
+      send_add_serde(serde)
+      recv_add_serde()
+    end
+
+    def send_add_serde(serde)
+      send_message('add_serde', Add_serde_args, :serde => serde)
+    end
+
+    def recv_add_serde()
+      result = receive_message(Add_serde_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def get_serde(rqst)
+      send_get_serde(rqst)
+      return recv_get_serde()
+    end
+
+    def send_get_serde(rqst)
+      send_message('get_serde', Get_serde_args, :rqst => rqst)
+    end
+
+    def recv_get_serde()
+      result = receive_message(Get_serde_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_serde failed: unknown result')
+    end
+
+    def get_lock_materialization_rebuild(dbName, tableName, txnId)
+      send_get_lock_materialization_rebuild(dbName, tableName, txnId)
+      return recv_get_lock_materialization_rebuild()
+    end
+
+    def send_get_lock_materialization_rebuild(dbName, tableName, txnId)
+      send_message('get_lock_materialization_rebuild', Get_lock_materialization_rebuild_args, :dbName => dbName, :tableName => tableName, :txnId => txnId)
+    end
+
+    def recv_get_lock_materialization_rebuild()
+      result = receive_message(Get_lock_materialization_rebuild_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_lock_materialization_rebuild failed: unknown result')
+    end
+
+    def heartbeat_lock_materialization_rebuild(dbName, tableName, txnId)
+      send_heartbeat_lock_materialization_rebuild(dbName, tableName, txnId)
+      return recv_heartbeat_lock_materialization_rebuild()
+    end
+
+    def send_heartbeat_lock_materialization_rebuild(dbName, tableName, txnId)
+      send_message('heartbeat_lock_materialization_rebuild', Heartbeat_lock_materialization_rebuild_args, :dbName => dbName, :tableName => tableName, :txnId => txnId)
+    end
+
+    def recv_heartbeat_lock_materialization_rebuild()
+      result = receive_message(Heartbeat_lock_materialization_rebuild_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'heartbeat_lock_materialization_rebuild failed: unknown result')
+    end
+
+    def add_runtime_stats(stat)
+      send_add_runtime_stats(stat)
+      recv_add_runtime_stats()
+    end
+
+    def send_add_runtime_stats(stat)
+      send_message('add_runtime_stats', Add_runtime_stats_args, :stat => stat)
+    end
+
+    def recv_add_runtime_stats()
+      result = receive_message(Add_runtime_stats_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
+    def get_runtime_stats(rqst)
+      send_get_runtime_stats(rqst)
+      return recv_get_runtime_stats()
+    end
+
+    def send_get_runtime_stats(rqst)
+      send_message('get_runtime_stats', Get_runtime_stats_args, :rqst => rqst)
+    end
+
+    def recv_get_runtime_stats()
+      result = receive_message(Get_runtime_stats_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_runtime_stats failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -3108,6 +3481,75 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'setMetaConf', seqid)
+    end
+
+    def process_create_catalog(seqid, iprot, oprot)
+      args = read_args(iprot, Create_catalog_args)
+      result = Create_catalog_result.new()
+      begin
+        @handler.create_catalog(args.catalog)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::InvalidObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'create_catalog', seqid)
+    end
+
+    def process_alter_catalog(seqid, iprot, oprot)
+      args = read_args(iprot, Alter_catalog_args)
+      result = Alter_catalog_result.new()
+      begin
+        @handler.alter_catalog(args.rqst)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::InvalidOperationException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'alter_catalog', seqid)
+    end
+
+    def process_get_catalog(seqid, iprot, oprot)
+      args = read_args(iprot, Get_catalog_args)
+      result = Get_catalog_result.new()
+      begin
+        result.success = @handler.get_catalog(args.catName)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_catalog', seqid)
+    end
+
+    def process_get_catalogs(seqid, iprot, oprot)
+      args = read_args(iprot, Get_catalogs_args)
+      result = Get_catalogs_result.new()
+      begin
+        result.success = @handler.get_catalogs()
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_catalogs', seqid)
+    end
+
+    def process_drop_catalog(seqid, iprot, oprot)
+      args = read_args(iprot, Drop_catalog_args)
+      result = Drop_catalog_result.new()
+      begin
+        @handler.drop_catalog(args.catName)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::InvalidOperationException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'drop_catalog', seqid)
     end
 
     def process_create_database(seqid, iprot, oprot)
@@ -3338,7 +3780,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Create_table_with_constraints_args)
       result = Create_table_with_constraints_result.new()
       begin
-        @handler.create_table_with_constraints(args.tbl, args.primaryKeys, args.foreignKeys, args.uniqueConstraints, args.notNullConstraints)
+        @handler.create_table_with_constraints(args.tbl, args.primaryKeys, args.foreignKeys, args.uniqueConstraints, args.notNullConstraints, args.defaultConstraints, args.checkConstraints)
       rescue ::AlreadyExistsException => o1
         result.o1 = o1
       rescue ::InvalidObjectException => o2
@@ -3414,6 +3856,32 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'add_not_null_constraint', seqid)
+    end
+
+    def process_add_default_constraint(seqid, iprot, oprot)
+      args = read_args(iprot, Add_default_constraint_args)
+      result = Add_default_constraint_result.new()
+      begin
+        @handler.add_default_constraint(args.req)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'add_default_constraint', seqid)
+    end
+
+    def process_add_check_constraint(seqid, iprot, oprot)
+      args = read_args(iprot, Add_check_constraint_args)
+      result = Add_check_constraint_result.new()
+      begin
+        @handler.add_check_constraint(args.req)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'add_check_constraint', seqid)
     end
 
     def process_drop_table(seqid, iprot, oprot)
@@ -3575,7 +4043,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Update_creation_metadata_args)
       result = Update_creation_metadata_result.new()
       begin
-        @handler.update_creation_metadata(args.dbname, args.tbl_name, args.creation_metadata)
+        @handler.update_creation_metadata(args.catName, args.dbname, args.tbl_name, args.creation_metadata)
       rescue ::MetaException => o1
         result.o1 = o1
       rescue ::InvalidOperationException => o2
@@ -4233,84 +4701,6 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'isPartitionMarkedForEvent', seqid)
     end
 
-    def process_add_index(seqid, iprot, oprot)
-      args = read_args(iprot, Add_index_args)
-      result = Add_index_result.new()
-      begin
-        result.success = @handler.add_index(args.new_index, args.index_table)
-      rescue ::InvalidObjectException => o1
-        result.o1 = o1
-      rescue ::AlreadyExistsException => o2
-        result.o2 = o2
-      rescue ::MetaException => o3
-        result.o3 = o3
-      end
-      write_result(result, oprot, 'add_index', seqid)
-    end
-
-    def process_alter_index(seqid, iprot, oprot)
-      args = read_args(iprot, Alter_index_args)
-      result = Alter_index_result.new()
-      begin
-        @handler.alter_index(args.dbname, args.base_tbl_name, args.idx_name, args.new_idx)
-      rescue ::InvalidOperationException => o1
-        result.o1 = o1
-      rescue ::MetaException => o2
-        result.o2 = o2
-      end
-      write_result(result, oprot, 'alter_index', seqid)
-    end
-
-    def process_drop_index_by_name(seqid, iprot, oprot)
-      args = read_args(iprot, Drop_index_by_name_args)
-      result = Drop_index_by_name_result.new()
-      begin
-        result.success = @handler.drop_index_by_name(args.db_name, args.tbl_name, args.index_name, args.deleteData)
-      rescue ::NoSuchObjectException => o1
-        result.o1 = o1
-      rescue ::MetaException => o2
-        result.o2 = o2
-      end
-      write_result(result, oprot, 'drop_index_by_name', seqid)
-    end
-
-    def process_get_index_by_name(seqid, iprot, oprot)
-      args = read_args(iprot, Get_index_by_name_args)
-      result = Get_index_by_name_result.new()
-      begin
-        result.success = @handler.get_index_by_name(args.db_name, args.tbl_name, args.index_name)
-      rescue ::MetaException => o1
-        result.o1 = o1
-      rescue ::NoSuchObjectException => o2
-        result.o2 = o2
-      end
-      write_result(result, oprot, 'get_index_by_name', seqid)
-    end
-
-    def process_get_indexes(seqid, iprot, oprot)
-      args = read_args(iprot, Get_indexes_args)
-      result = Get_indexes_result.new()
-      begin
-        result.success = @handler.get_indexes(args.db_name, args.tbl_name, args.max_indexes)
-      rescue ::NoSuchObjectException => o1
-        result.o1 = o1
-      rescue ::MetaException => o2
-        result.o2 = o2
-      end
-      write_result(result, oprot, 'get_indexes', seqid)
-    end
-
-    def process_get_index_names(seqid, iprot, oprot)
-      args = read_args(iprot, Get_index_names_args)
-      result = Get_index_names_result.new()
-      begin
-        result.success = @handler.get_index_names(args.db_name, args.tbl_name, args.max_indexes)
-      rescue ::MetaException => o2
-        result.o2 = o2
-      end
-      write_result(result, oprot, 'get_index_names', seqid)
-    end
-
     def process_get_primary_keys(seqid, iprot, oprot)
       args = read_args(iprot, Get_primary_keys_args)
       result = Get_primary_keys_result.new()
@@ -4361,6 +4751,32 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_not_null_constraints', seqid)
+    end
+
+    def process_get_default_constraints(seqid, iprot, oprot)
+      args = read_args(iprot, Get_default_constraints_args)
+      result = Get_default_constraints_result.new()
+      begin
+        result.success = @handler.get_default_constraints(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_default_constraints', seqid)
+    end
+
+    def process_get_check_constraints(seqid, iprot, oprot)
+      args = read_args(iprot, Get_check_constraints_args)
+      result = Get_check_constraints_result.new()
+      begin
+        result.success = @handler.get_check_constraints(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_check_constraints', seqid)
     end
 
     def process_update_table_column_statistics(seqid, iprot, oprot)
@@ -4753,6 +5169,17 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'grant_revoke_privileges', seqid)
     end
 
+    def process_refresh_privileges(seqid, iprot, oprot)
+      args = read_args(iprot, Refresh_privileges_args)
+      result = Refresh_privileges_result.new()
+      begin
+        result.success = @handler.refresh_privileges(args.objToRefresh, args.authorizer, args.grantRequest)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'refresh_privileges', seqid)
+    end
+
     def process_set_ugi(seqid, iprot, oprot)
       args = read_args(iprot, Set_ugi_args)
       result = Set_ugi_result.new()
@@ -4917,6 +5344,13 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'commit_txn', seqid)
+    end
+
+    def process_repl_tbl_writeid_state(seqid, iprot, oprot)
+      args = read_args(iprot, Repl_tbl_writeid_state_args)
+      result = Repl_tbl_writeid_state_result.new()
+      @handler.repl_tbl_writeid_state(args.rqst)
+      write_result(result, oprot, 'repl_tbl_writeid_state', seqid)
     end
 
     def process_get_valid_write_ids(seqid, iprot, oprot)
@@ -5394,6 +5828,230 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'create_or_drop_wm_trigger_to_pool_mapping', seqid)
     end
 
+    def process_create_ischema(seqid, iprot, oprot)
+      args = read_args(iprot, Create_ischema_args)
+      result = Create_ischema_result.new()
+      begin
+        @handler.create_ischema(args.schema)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'create_ischema', seqid)
+    end
+
+    def process_alter_ischema(seqid, iprot, oprot)
+      args = read_args(iprot, Alter_ischema_args)
+      result = Alter_ischema_result.new()
+      begin
+        @handler.alter_ischema(args.rqst)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'alter_ischema', seqid)
+    end
+
+    def process_get_ischema(seqid, iprot, oprot)
+      args = read_args(iprot, Get_ischema_args)
+      result = Get_ischema_result.new()
+      begin
+        result.success = @handler.get_ischema(args.name)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_ischema', seqid)
+    end
+
+    def process_drop_ischema(seqid, iprot, oprot)
+      args = read_args(iprot, Drop_ischema_args)
+      result = Drop_ischema_result.new()
+      begin
+        @handler.drop_ischema(args.name)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::InvalidOperationException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'drop_ischema', seqid)
+    end
+
+    def process_add_schema_version(seqid, iprot, oprot)
+      args = read_args(iprot, Add_schema_version_args)
+      result = Add_schema_version_result.new()
+      begin
+        @handler.add_schema_version(args.schemaVersion)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'add_schema_version', seqid)
+    end
+
+    def process_get_schema_version(seqid, iprot, oprot)
+      args = read_args(iprot, Get_schema_version_args)
+      result = Get_schema_version_result.new()
+      begin
+        result.success = @handler.get_schema_version(args.schemaVersion)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_schema_version', seqid)
+    end
+
+    def process_get_schema_latest_version(seqid, iprot, oprot)
+      args = read_args(iprot, Get_schema_latest_version_args)
+      result = Get_schema_latest_version_result.new()
+      begin
+        result.success = @handler.get_schema_latest_version(args.schemaName)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_schema_latest_version', seqid)
+    end
+
+    def process_get_schema_all_versions(seqid, iprot, oprot)
+      args = read_args(iprot, Get_schema_all_versions_args)
+      result = Get_schema_all_versions_result.new()
+      begin
+        result.success = @handler.get_schema_all_versions(args.schemaName)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_schema_all_versions', seqid)
+    end
+
+    def process_drop_schema_version(seqid, iprot, oprot)
+      args = read_args(iprot, Drop_schema_version_args)
+      result = Drop_schema_version_result.new()
+      begin
+        @handler.drop_schema_version(args.schemaVersion)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'drop_schema_version', seqid)
+    end
+
+    def process_get_schemas_by_cols(seqid, iprot, oprot)
+      args = read_args(iprot, Get_schemas_by_cols_args)
+      result = Get_schemas_by_cols_result.new()
+      begin
+        result.success = @handler.get_schemas_by_cols(args.rqst)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_schemas_by_cols', seqid)
+    end
+
+    def process_map_schema_version_to_serde(seqid, iprot, oprot)
+      args = read_args(iprot, Map_schema_version_to_serde_args)
+      result = Map_schema_version_to_serde_result.new()
+      begin
+        @handler.map_schema_version_to_serde(args.rqst)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'map_schema_version_to_serde', seqid)
+    end
+
+    def process_set_schema_version_state(seqid, iprot, oprot)
+      args = read_args(iprot, Set_schema_version_state_args)
+      result = Set_schema_version_state_result.new()
+      begin
+        @handler.set_schema_version_state(args.rqst)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::InvalidOperationException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'set_schema_version_state', seqid)
+    end
+
+    def process_add_serde(seqid, iprot, oprot)
+      args = read_args(iprot, Add_serde_args)
+      result = Add_serde_result.new()
+      begin
+        @handler.add_serde(args.serde)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'add_serde', seqid)
+    end
+
+    def process_get_serde(seqid, iprot, oprot)
+      args = read_args(iprot, Get_serde_args)
+      result = Get_serde_result.new()
+      begin
+        result.success = @handler.get_serde(args.rqst)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_serde', seqid)
+    end
+
+    def process_get_lock_materialization_rebuild(seqid, iprot, oprot)
+      args = read_args(iprot, Get_lock_materialization_rebuild_args)
+      result = Get_lock_materialization_rebuild_result.new()
+      result.success = @handler.get_lock_materialization_rebuild(args.dbName, args.tableName, args.txnId)
+      write_result(result, oprot, 'get_lock_materialization_rebuild', seqid)
+    end
+
+    def process_heartbeat_lock_materialization_rebuild(seqid, iprot, oprot)
+      args = read_args(iprot, Heartbeat_lock_materialization_rebuild_args)
+      result = Heartbeat_lock_materialization_rebuild_result.new()
+      result.success = @handler.heartbeat_lock_materialization_rebuild(args.dbName, args.tableName, args.txnId)
+      write_result(result, oprot, 'heartbeat_lock_materialization_rebuild', seqid)
+    end
+
+    def process_add_runtime_stats(seqid, iprot, oprot)
+      args = read_args(iprot, Add_runtime_stats_args)
+      result = Add_runtime_stats_result.new()
+      begin
+        @handler.add_runtime_stats(args.stat)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'add_runtime_stats', seqid)
+    end
+
+    def process_get_runtime_stats(seqid, iprot, oprot)
+      args = read_args(iprot, Get_runtime_stats_args)
+      result = Get_runtime_stats_result.new()
+      begin
+        result.success = @handler.get_runtime_stats(args.rqst)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_runtime_stats', seqid)
+    end
+
   end
 
   # HELPER FUNCTIONS AND STRUCTURES
@@ -5456,6 +6114,183 @@ module ThriftHiveMetastore
 
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_catalog_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    CATALOG = 1
+
+    FIELDS = {
+      CATALOG => {:type => ::Thrift::Types::STRUCT, :name => 'catalog', :class => ::CreateCatalogRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_catalog_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_catalog_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::AlterCatalogRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_catalog_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidOperationException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_catalog_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    CATNAME = 1
+
+    FIELDS = {
+      CATNAME => {:type => ::Thrift::Types::STRUCT, :name => 'catName', :class => ::GetCatalogRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_catalog_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetCatalogResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_catalogs_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_catalogs_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetCatalogsResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_catalog_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    CATNAME = 1
+
+    FIELDS = {
+      CATNAME => {:type => ::Thrift::Types::STRUCT, :name => 'catName', :class => ::DropCatalogRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_catalog_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidOperationException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end
@@ -6074,13 +6909,17 @@ module ThriftHiveMetastore
     FOREIGNKEYS = 3
     UNIQUECONSTRAINTS = 4
     NOTNULLCONSTRAINTS = 5
+    DEFAULTCONSTRAINTS = 6
+    CHECKCONSTRAINTS = 7
 
     FIELDS = {
       TBL => {:type => ::Thrift::Types::STRUCT, :name => 'tbl', :class => ::Table},
       PRIMARYKEYS => {:type => ::Thrift::Types::LIST, :name => 'primaryKeys', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLPrimaryKey}},
       FOREIGNKEYS => {:type => ::Thrift::Types::LIST, :name => 'foreignKeys', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLForeignKey}},
       UNIQUECONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'uniqueConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLUniqueConstraint}},
-      NOTNULLCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'notNullConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLNotNullConstraint}}
+      NOTNULLCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'notNullConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLNotNullConstraint}},
+      DEFAULTCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'defaultConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLDefaultConstraint}},
+      CHECKCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'checkConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLCheckConstraint}}
     }
 
     def struct_fields; FIELDS; end
@@ -6266,6 +7105,74 @@ module ThriftHiveMetastore
   end
 
   class Add_not_null_constraint_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_default_constraint_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::AddDefaultConstraintRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_default_constraint_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_check_constraint_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::AddCheckConstraintRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_check_constraint_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
     O2 = 2
@@ -6765,11 +7672,13 @@ module ThriftHiveMetastore
 
   class Update_creation_metadata_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    DBNAME = 1
-    TBL_NAME = 2
-    CREATION_METADATA = 3
+    CATNAME = 1
+    DBNAME = 2
+    TBL_NAME = 3
+    CREATION_METADATA = 4
 
     FIELDS = {
+      CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
       DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
       TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
       CREATION_METADATA => {:type => ::Thrift::Types::STRUCT, :name => 'creation_metadata', :class => ::CreationMetadata}
@@ -8725,246 +9634,6 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Add_index_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    NEW_INDEX = 1
-    INDEX_TABLE = 2
-
-    FIELDS = {
-      NEW_INDEX => {:type => ::Thrift::Types::STRUCT, :name => 'new_index', :class => ::Index},
-      INDEX_TABLE => {:type => ::Thrift::Types::STRUCT, :name => 'index_table', :class => ::Table}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Add_index_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    SUCCESS = 0
-    O1 = 1
-    O2 = 2
-    O3 = 3
-
-    FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Index},
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidObjectException},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::AlreadyExistsException},
-      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Alter_index_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    DBNAME = 1
-    BASE_TBL_NAME = 2
-    IDX_NAME = 3
-    NEW_IDX = 4
-
-    FIELDS = {
-      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
-      BASE_TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'base_tbl_name'},
-      IDX_NAME => {:type => ::Thrift::Types::STRING, :name => 'idx_name'},
-      NEW_IDX => {:type => ::Thrift::Types::STRUCT, :name => 'new_idx', :class => ::Index}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Alter_index_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    O1 = 1
-    O2 = 2
-
-    FIELDS = {
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidOperationException},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Drop_index_by_name_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    DB_NAME = 1
-    TBL_NAME = 2
-    INDEX_NAME = 3
-    DELETEDATA = 4
-
-    FIELDS = {
-      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
-      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
-      INDEX_NAME => {:type => ::Thrift::Types::STRING, :name => 'index_name'},
-      DELETEDATA => {:type => ::Thrift::Types::BOOL, :name => 'deleteData'}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Drop_index_by_name_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    SUCCESS = 0
-    O1 = 1
-    O2 = 2
-
-    FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Get_index_by_name_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    DB_NAME = 1
-    TBL_NAME = 2
-    INDEX_NAME = 3
-
-    FIELDS = {
-      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
-      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
-      INDEX_NAME => {:type => ::Thrift::Types::STRING, :name => 'index_name'}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Get_index_by_name_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    SUCCESS = 0
-    O1 = 1
-    O2 = 2
-
-    FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Index},
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Get_indexes_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    DB_NAME = 1
-    TBL_NAME = 2
-    MAX_INDEXES = 3
-
-    FIELDS = {
-      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
-      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
-      MAX_INDEXES => {:type => ::Thrift::Types::I16, :name => 'max_indexes', :default => -1}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Get_indexes_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    SUCCESS = 0
-    O1 = 1
-    O2 = 2
-
-    FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Index}},
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Get_index_names_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    DB_NAME = 1
-    TBL_NAME = 2
-    MAX_INDEXES = 3
-
-    FIELDS = {
-      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
-      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
-      MAX_INDEXES => {:type => ::Thrift::Types::I16, :name => 'max_indexes', :default => -1}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Get_index_names_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    SUCCESS = 0
-    O2 = 1
-
-    FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
-      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
   class Get_primary_keys_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     REQUEST = 1
@@ -9097,6 +9766,78 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::NotNullConstraintsResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_default_constraints_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::DefaultConstraintsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_default_constraints_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::DefaultConstraintsResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_check_constraints_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::CheckConstraintsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_check_constraints_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::CheckConstraintsResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
     }
@@ -10250,6 +10991,44 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Refresh_privileges_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    OBJTOREFRESH = 1
+    AUTHORIZER = 2
+    GRANTREQUEST = 3
+
+    FIELDS = {
+      OBJTOREFRESH => {:type => ::Thrift::Types::STRUCT, :name => 'objToRefresh', :class => ::HiveObjectRef},
+      AUTHORIZER => {:type => ::Thrift::Types::STRING, :name => 'authorizer'},
+      GRANTREQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'grantRequest', :class => ::GrantRevokePrivilegeRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Refresh_privileges_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GrantRevokePrivilegeResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class Set_ugi_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     USER_NAME = 1
@@ -10832,6 +11611,37 @@ module ThriftHiveMetastore
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::TxnAbortedException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Repl_tbl_writeid_state_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::ReplTblWriteIdStateRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Repl_tbl_writeid_state_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
     }
 
     def struct_fields; FIELDS; end
@@ -12269,6 +13079,638 @@ module ThriftHiveMetastore
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::InvalidObjectException},
       O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_ischema_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SCHEMA = 1
+
+    FIELDS = {
+      SCHEMA => {:type => ::Thrift::Types::STRUCT, :name => 'schema', :class => ::ISchema}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_ischema_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = -1
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_ischema_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::AlterISchemaRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_ischema_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_ischema_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    NAME = 1
+
+    FIELDS = {
+      NAME => {:type => ::Thrift::Types::STRUCT, :name => 'name', :class => ::ISchemaName}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_ischema_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ISchema},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_ischema_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    NAME = 1
+
+    FIELDS = {
+      NAME => {:type => ::Thrift::Types::STRUCT, :name => 'name', :class => ::ISchemaName}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_ischema_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidOperationException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_schema_version_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SCHEMAVERSION = 1
+
+    FIELDS = {
+      SCHEMAVERSION => {:type => ::Thrift::Types::STRUCT, :name => 'schemaVersion', :class => ::SchemaVersion}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_schema_version_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_version_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SCHEMAVERSION = 1
+
+    FIELDS = {
+      SCHEMAVERSION => {:type => ::Thrift::Types::STRUCT, :name => 'schemaVersion', :class => ::SchemaVersionDescriptor}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_version_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::SchemaVersion},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_latest_version_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SCHEMANAME = 1
+
+    FIELDS = {
+      SCHEMANAME => {:type => ::Thrift::Types::STRUCT, :name => 'schemaName', :class => ::ISchemaName}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_latest_version_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::SchemaVersion},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_all_versions_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SCHEMANAME = 1
+
+    FIELDS = {
+      SCHEMANAME => {:type => ::Thrift::Types::STRUCT, :name => 'schemaName', :class => ::ISchemaName}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_all_versions_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SchemaVersion}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_schema_version_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SCHEMAVERSION = 1
+
+    FIELDS = {
+      SCHEMAVERSION => {:type => ::Thrift::Types::STRUCT, :name => 'schemaVersion', :class => ::SchemaVersionDescriptor}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_schema_version_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schemas_by_cols_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::FindSchemasByColsRqst}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schemas_by_cols_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::FindSchemasByColsResp},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Map_schema_version_to_serde_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::MapSchemaVersionToSerdeRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Map_schema_version_to_serde_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Set_schema_version_state_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::SetSchemaVersionStateRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Set_schema_version_state_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidOperationException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_serde_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SERDE = 1
+
+    FIELDS = {
+      SERDE => {:type => ::Thrift::Types::STRUCT, :name => 'serde', :class => ::SerDeInfo}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_serde_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_serde_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::GetSerdeRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_serde_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::SerDeInfo},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_lock_materialization_rebuild_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DBNAME = 1
+    TABLENAME = 2
+    TXNID = 3
+
+    FIELDS = {
+      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+      TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+      TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_lock_materialization_rebuild_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::LockResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Heartbeat_lock_materialization_rebuild_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DBNAME = 1
+    TABLENAME = 2
+    TXNID = 3
+
+    FIELDS = {
+      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+      TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+      TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Heartbeat_lock_materialization_rebuild_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_runtime_stats_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    STAT = 1
+
+    FIELDS = {
+      STAT => {:type => ::Thrift::Types::STRUCT, :name => 'stat', :class => ::RuntimeStat}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_runtime_stats_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_runtime_stats_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::GetRuntimeStatsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_runtime_stats_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::RuntimeStat}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

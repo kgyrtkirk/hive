@@ -42,7 +42,7 @@ public class LocalSparkJobMonitor extends SparkJobMonitor {
     boolean done = false;
     int rc = 0;
     JobExecutionStatus lastState = null;
-    Map<String, SparkStageProgress> lastProgressMap = null;
+    Map<SparkStage, SparkStageProgress> lastProgressMap = null;
 
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_RUN_JOB);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
@@ -68,7 +68,7 @@ public class LocalSparkJobMonitor extends SparkJobMonitor {
           }
         } else if (state != lastState || state == JobExecutionStatus.RUNNING) {
           lastState = state;
-          Map<String, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
+          Map<SparkStage, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
 
           switch (state) {
           case RUNNING:
@@ -128,7 +128,7 @@ public class LocalSparkJobMonitor extends SparkJobMonitor {
         console.printError(msg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
         rc = 1;
         done = true;
-        sparkJobStatus.setError(e);
+        sparkJobStatus.setMonitorError(e);
       } finally {
         if (done) {
           break;

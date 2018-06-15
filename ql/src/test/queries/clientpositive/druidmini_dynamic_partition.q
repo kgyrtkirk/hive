@@ -1,3 +1,5 @@
+--! qt:dataset:alltypesorc
+SET hive.vectorized.execution.enabled=false;
 CREATE TABLE druid_partitioned_table_0
         STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
         TBLPROPERTIES (
@@ -62,8 +64,13 @@ SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
   cboolean1,
   cboolean2
   FROM alltypesorc where ctimestamp1 IS NOT NULL;
+-- @FIXME https://issues.apache.org/jira/browse/HIVE-19011
+-- SELECT  sum(cint), max(cbigint),  sum(cbigint), max(cint) FROM druid_partitioned_table;
+-- SELECT  sum(cint), max(cbigint),  sum(cbigint), max(cint) FROM druid_partitioned_table_0;
 
-SELECT sum(cfloat)  FROM druid_partitioned_table ;
+
+SELECT  sum(cint), sum(cbigint) FROM druid_partitioned_table;
+SELECT  sum(cint), sum(cbigint) FROM druid_partitioned_table_0;
 
 SELECT floor_hour(cast(`ctimestamp1` as timestamp with local time zone)) as `__time`,
           cstring1,
@@ -106,8 +113,10 @@ SELECT cast (`ctimestamp2` as timestamp with local time zone) as `__time`,
   cboolean1,
   cboolean2
   FROM alltypesorc where ctimestamp2 IS NOT NULL;
+-- @FIXME https://issues.apache.org/jira/browse/HIVE-19011
+-- SELECT sum(cint), max(cbigint),  sum(cbigint), max(cint) FROM druid_partitioned_table;
 
-SELECT  sum(cfloat)  FROM druid_partitioned_table ;
+SELECT sum(cint), sum(cbigint) FROM druid_partitioned_table;
 
 EXPLAIN INSERT OVERWRITE TABLE druid_partitioned_table
   SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
@@ -138,8 +147,11 @@ INSERT OVERWRITE TABLE druid_partitioned_table
     cboolean2
     FROM alltypesorc where ctimestamp1 IS NOT NULL;
 
-  SELECT  sum(cfloat)  FROM druid_partitioned_table ;
+-- @FIXME https://issues.apache.org/jira/browse/HIVE-19011
+--SELECT sum(cint), max(cbigint),  sum(cbigint), max(cint) FROM druid_partitioned_table ;
+--SELECT  sum(cint), max(cbigint),  sum(cbigint), max(cint) FROM druid_partitioned_table_0;
 
+SELECT sum(cint), sum(cbigint) FROM druid_partitioned_table ;
 
 set hive.druid.indexer.partition.size.max=10;
 
@@ -163,8 +175,13 @@ CREATE TABLE druid_max_size_partition
           cboolean2
           FROM alltypesorc where ctimestamp1 IS NOT NULL;
 
-SELECT  sum(cfloat)  FROM druid_max_size_partition ;
+SELECT  sum(cint), sum(cbigint) FROM druid_max_size_partition ;
 
-  DROP TABLE druid_partitioned_table_0;
-  DROP TABLE druid_partitioned_table;
-  DROP TABLE druid_max_size_partition;
+-- @FIXME https://issues.apache.org/jira/browse/HIVE-19011
+--SELECT  sum(cint), max(cbigint),  sum(cbigint), max(cint)  FROM druid_max_size_partition ;
+--SELECT  sum(cint), max(cbigint),  sum(cbigint), max(cint) FROM druid_partitioned_table_0;
+--SELECT sum(cint), max(cbigint),  sum(cbigint), max(cint) FROM druid_partitioned_table ;
+
+DROP TABLE druid_partitioned_table_0;
+DROP TABLE druid_partitioned_table;
+DROP TABLE druid_max_size_partition;

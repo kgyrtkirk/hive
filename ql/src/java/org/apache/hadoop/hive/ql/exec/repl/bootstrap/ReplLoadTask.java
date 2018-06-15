@@ -72,8 +72,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   protected int execute(DriverContext driverContext) {
     try {
       int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
-      Context context = new Context(conf, getHive(), work.sessionStateLineageState,
-          work.currentTransactionId);
+      Context context = new Context(work.dumpDirectory, conf, getHive(),
+              work.sessionStateLineageState, driverContext.getCtx());
       TaskTracker loadTaskTracker = new TaskTracker(maxTasks);
       /*
           for now for simplicity we are doing just one directory ( one database ), come back to use
@@ -112,8 +112,10 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
             loadTaskTracker.update(updateDatabaseLastReplID(maxTasks, context, scope));
           }
           work.updateDbEventState(dbEvent.toState());
-          scope.database = true;
-          scope.rootTasks.addAll(dbTracker.tasks());
+          if (dbTracker.hasTasks()) {
+            scope.rootTasks.addAll(dbTracker.tasks());
+            scope.database = true;
+          }
           dbTracker.debugLog("database");
           break;
         case Table: {
@@ -129,11 +131,11 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           LoadTable loadTable = new LoadTable(tableEvent, context, iterator.replLogger(),
                                               tableContext, loadTaskTracker);
           tableTracker = loadTable.tasks();
-          if (!scope.database) {
+          setUpDependencies(dbTracker, tableTracker);
+          if (!scope.database && tableTracker.hasTasks()) {
             scope.rootTasks.addAll(tableTracker.tasks());
             scope.table = true;
           }
-          setUpDependencies(dbTracker, tableTracker);
           /*
             for table replication if we reach the max number of tasks then for the next run we will
             try to reload the same table again, this is mainly for ease of understanding the code
@@ -231,7 +233,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
                                                   ReplLogger replLogger) throws SemanticException {
     Database dbInMetadata = work.databaseEvent(context.hiveConf).dbInMetadata(work.dbNameToLoadIn);
     ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, dbInMetadata.getParameters());
-    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, conf);
+    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork);
     if (scope.rootTasks.isEmpty()) {
       scope.rootTasks.add(replLogTask);
     } else {
@@ -285,9 +287,15 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       This sets up dependencies such that a child task is dependant on the parent to be complete.
    */
   private void setUpDependencies(TaskTracker parentTasks, TaskTracker childTasks) {
-    for (Task<? extends Serializable> parentTask : parentTasks.tasks()) {
+    if (parentTasks.hasTasks()) {
+      for (Task<? extends Serializable> parentTask : parentTasks.tasks()) {
+        for (Task<? extends Serializable> childTask : childTasks.tasks()) {
+          parentTask.addDependentTask(childTask);
+        }
+      }
+    } else {
       for (Task<? extends Serializable> childTask : childTasks.tasks()) {
-        parentTask.addDependentTask(childTask);
+        parentTasks.addTask(childTask);
       }
     }
   }
@@ -298,7 +306,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     use loadTask as dependencyCollection
    */
     if (shouldCreateAnotherLoadTask) {
-      Task<ReplLoadWork> loadTask = TaskFactory.get(work, conf, true);
+      Task<ReplLoadWork> loadTask = TaskFactory.get(work, conf);
       DAGTraversal.traverse(rootTasks, new AddDependencyToLeaves(loadTask));
     }
   }

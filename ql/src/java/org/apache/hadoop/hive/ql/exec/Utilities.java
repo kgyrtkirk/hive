@@ -23,6 +23,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import java.beans.DefaultPersistenceDelegate;
 import java.beans.Encoder;
 import java.beans.Expression;
@@ -72,6 +73,7 @@ import java.util.regex.Pattern;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.apache.commons.codec.binary.Base64;
@@ -136,6 +138,7 @@ import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.io.ReworkMapredInputFormat;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateMapper;
@@ -405,7 +408,19 @@ public final class Utilities {
    * @throws RuntimeException if the configuration files are not proper or if plan can not be loaded
    */
   private static BaseWork getBaseWork(Configuration conf, String name) {
-    Path path = null;
+
+    Path path = getPlanPath(conf, name);
+    LOG.debug("PLAN PATH = {}", path);
+    if (path == null) { // Map/reduce plan may not be generated
+      return null;
+    }
+
+    BaseWork gWork = gWorkMap.get(conf).get(path);
+    if (gWork != null) {
+      LOG.debug("Found plan in cache for name: {}", name);
+      return gWork;
+    }
+
     InputStream in = null;
     Kryo kryo = SerializationUtilities.borrowKryo();
     try {
@@ -421,73 +436,61 @@ public final class Utilities {
           kryo.setClassLoader(newLoader);
         }
       }
-
-      path = getPlanPath(conf, name);
-      LOG.info("PLAN PATH = {}", path);
-      if (path == null) { // Map/reduce plan may not be generated
-        return null;
-      }
-
-      BaseWork gWork = gWorkMap.get(conf).get(path);
-      if (gWork == null) {
-        Path localPath = path;
-        LOG.debug("local path = {}", localPath);
-        final long serializedSize;
-        final String planMode;
-        if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
-          String planStringPath = path.toUri().getPath();
-          LOG.debug("Loading plan from string: {}", planStringPath);
-          String planString = conf.getRaw(planStringPath);
-          if (planString == null) {
-            LOG.info("Could not find plan string in conf");
-            return null;
-          }
-          serializedSize = planString.length();
-          planMode = "RPC";
-          byte[] planBytes = Base64.decodeBase64(planString);
-          in = new ByteArrayInputStream(planBytes);
-          in = new InflaterInputStream(in);
-        } else {
-          LOG.debug("Open file to read in plan: {}", localPath);
-          FileSystem fs = localPath.getFileSystem(conf);
-          in = fs.open(localPath);
-          serializedSize = fs.getFileStatus(localPath).getLen();
-          planMode = "FILE";
+      Path localPath = path;
+      LOG.debug("local path = {}", localPath);
+      final long serializedSize;
+      final String planMode;
+      if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
+        String planStringPath = path.toUri().getPath();
+        LOG.debug("Loading plan from string: {}", planStringPath);
+        String planString = conf.getRaw(planStringPath);
+        if (planString == null) {
+          LOG.info("Could not find plan string in conf");
+          return null;
         }
-
-        if(MAP_PLAN_NAME.equals(name)){
-          if (ExecMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))){
-            gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
-          } else if(MergeFileMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, MergeFileWork.class);
-          } else if(ColumnTruncateMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, ColumnTruncateWork.class);
-          } else {
-            throw new RuntimeException("unable to determine work from configuration ."
-                + MAPRED_MAPPER_CLASS + " was "+ conf.get(MAPRED_MAPPER_CLASS)) ;
-          }
-        } else if (REDUCE_PLAN_NAME.equals(name)) {
-          if(ExecReducer.class.getName().equals(conf.get(MAPRED_REDUCER_CLASS))) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
-          } else {
-            throw new RuntimeException("unable to determine work from configuration ."
-                + MAPRED_REDUCER_CLASS +" was "+ conf.get(MAPRED_REDUCER_CLASS)) ;
-          }
-        } else if (name.contains(MERGE_PLAN_NAME)) {
-          if (name.startsWith(MAPNAME)) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
-          } else if (name.startsWith(REDUCENAME)) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
-          } else {
-            throw new RuntimeException("Unknown work type: " + name);
-          }
-        }
-        LOG.info("Deserialized plan (via {}) - name: {} size: {}", planMode,
-            gWork.getName(), humanReadableByteCount(serializedSize));
-        gWorkMap.get(conf).put(path, gWork);
+        serializedSize = planString.length();
+        planMode = "RPC";
+        byte[] planBytes = Base64.decodeBase64(planString);
+        in = new ByteArrayInputStream(planBytes);
+        in = new InflaterInputStream(in);
       } else {
-        LOG.debug("Found plan in cache for name: {}", name);
+        LOG.debug("Open file to read in plan: {}", localPath);
+        FileSystem fs = localPath.getFileSystem(conf);
+        in = fs.open(localPath);
+        serializedSize = fs.getFileStatus(localPath).getLen();
+        planMode = "FILE";
       }
+
+      if(MAP_PLAN_NAME.equals(name)){
+        if (ExecMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))){
+          gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
+        } else if(MergeFileMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
+          gWork = SerializationUtilities.deserializePlan(kryo, in, MergeFileWork.class);
+        } else if(ColumnTruncateMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
+          gWork = SerializationUtilities.deserializePlan(kryo, in, ColumnTruncateWork.class);
+        } else {
+          throw new RuntimeException("unable to determine work from configuration ."
+              + MAPRED_MAPPER_CLASS + " was "+ conf.get(MAPRED_MAPPER_CLASS));
+        }
+      } else if (REDUCE_PLAN_NAME.equals(name)) {
+        if(ExecReducer.class.getName().equals(conf.get(MAPRED_REDUCER_CLASS))) {
+          gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
+        } else {
+          throw new RuntimeException("unable to determine work from configuration ."
+              + MAPRED_REDUCER_CLASS +" was "+ conf.get(MAPRED_REDUCER_CLASS));
+        }
+      } else if (name.contains(MERGE_PLAN_NAME)) {
+        if (name.startsWith(MAPNAME)) {
+          gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
+        } else if (name.startsWith(REDUCENAME)) {
+          gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
+        } else {
+          throw new RuntimeException("Unknown work type: " + name);
+        }
+      }
+      LOG.info("Deserialized plan (via {}) - name: {} size: {}", planMode,
+          gWork.getName(), humanReadableByteCount(serializedSize));
+      gWorkMap.get(conf).put(path, gWork);
       return gWork;
     } catch (FileNotFoundException fnf) {
       // happens. e.g.: no reduce work.
@@ -1493,8 +1496,9 @@ public final class Utilities {
       }
 
       // Remove duplicates from tmpPath
-      FileStatus[] statuses = HiveStatsUtils.getFileStatusRecurse(
+      List<FileStatus> statusList = HiveStatsUtils.getFileStatusRecurse(
           tmpPath, ((dpCtx == null) ? 1 : dpCtx.getNumDPCols()), fs);
+      FileStatus[] statuses = statusList.toArray(new FileStatus[statusList.size()]);
       if(statuses != null && statuses.length > 0) {
         PerfLogger perfLogger = SessionState.getPerfLogger();
         Set<Path> filesKept = new HashSet<Path>();
@@ -1601,8 +1605,9 @@ public final class Utilities {
     if (path  == null) {
       return null;
     }
-    FileStatus[] stats = HiveStatsUtils.getFileStatusRecurse(path,
+    List<FileStatus> statusList = HiveStatsUtils.getFileStatusRecurse(path,
         ((dpCtx == null) ? 1 : dpCtx.getNumDPCols()), fs);
+    FileStatus[] stats = statusList.toArray(new FileStatus[statusList.size()]);
     return removeTempOrDuplicateFiles(fs, stats, dpCtx, conf, hconf, isBaseDir);
   }
 
@@ -1640,7 +1645,7 @@ public final class Utilities {
   }
 
   public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, FileStatus[] fileStats,
-      String unionSuffix, int dpLevels, int numBuckets, Configuration hconf, Long txnId,
+      String unionSuffix, int dpLevels, int numBuckets, Configuration hconf, Long writeId,
       int stmtId, boolean isMmTable, Set<Path> filesKept, boolean isBaseDir) throws IOException {
     if (fileStats == null) {
       return null;
@@ -1660,7 +1665,7 @@ public final class Utilities {
 
         if (isMmTable) {
           Path mmDir = parts[i].getPath();
-          if (!mmDir.getName().equals(AcidUtils.baseOrDeltaSubdir(isBaseDir, txnId, txnId, stmtId))) {
+          if (!mmDir.getName().equals(AcidUtils.baseOrDeltaSubdir(isBaseDir, writeId, writeId, stmtId))) {
             throw new IOException("Unexpected non-MM directory name " + mmDir);
           }
 
@@ -1687,7 +1692,7 @@ public final class Utilities {
       if (fileStats.length == 0) {
         return result;
       }
-      Path mmDir = extractNonDpMmDir(txnId, stmtId, items, isBaseDir);
+      Path mmDir = extractNonDpMmDir(writeId, stmtId, items, isBaseDir);
       taskIDToFile = removeTempOrDuplicateFilesNonMm(
           fs.listStatus(new Path(mmDir, unionSuffix)), fs);
       if (filesKept != null && taskIDToFile != null) {
@@ -1705,7 +1710,7 @@ public final class Utilities {
           addFilesToPathSet(taskIDToFile.values(), filesKept);
         }
       } else {
-        Path mmDir = extractNonDpMmDir(txnId, stmtId, items, isBaseDir);
+        Path mmDir = extractNonDpMmDir(writeId, stmtId, items, isBaseDir);
         taskIDToFile = removeTempOrDuplicateFilesNonMm(fs.listStatus(mmDir), fs);
         if (filesKept != null && taskIDToFile != null) {
           addFilesToPathSet(taskIDToFile.values(), filesKept);
@@ -1717,12 +1722,12 @@ public final class Utilities {
     return result;
   }
 
-  private static Path extractNonDpMmDir(Long txnId, int stmtId, FileStatus[] items, boolean isBaseDir) throws IOException {
+  private static Path extractNonDpMmDir(Long writeId, int stmtId, FileStatus[] items, boolean isBaseDir) throws IOException {
     if (items.length > 1) {
       throw new IOException("Unexpected directories for non-DP MM: " + Arrays.toString(items));
     }
     Path mmDir = items[0].getPath();
-    if (!mmDir.getName().equals(AcidUtils.baseOrDeltaSubdir(isBaseDir, txnId, txnId, stmtId))) {
+    if (!mmDir.getName().equals(AcidUtils.baseOrDeltaSubdir(isBaseDir, writeId, writeId, stmtId))) {
       throw new IOException("Unexpected non-MM directory " + mmDir);
     }
       Utilities.FILE_OP_LOGGER.trace("removeTempOrDuplicateFiles processing files in MM directory {}", mmDir);
@@ -2675,9 +2680,9 @@ public final class Utilities {
       Path loadPath = dpCtx.getRootPath();
       FileSystem fs = loadPath.getFileSystem(conf);
       int numDPCols = dpCtx.getNumDPCols();
-      FileStatus[] status = HiveStatsUtils.getFileStatusRecurse(loadPath, numDPCols, fs);
+      List<FileStatus> status = HiveStatsUtils.getFileStatusRecurse(loadPath, numDPCols, fs);
 
-      if (status.length == 0) {
+      if (status.isEmpty()) {
         LOG.warn("No partition is generated by dynamic partitioning");
         return null;
       }
@@ -2690,9 +2695,9 @@ public final class Utilities {
 
       // for each dynamically created DP directory, construct a full partition spec
       // and load the partition based on that
-      for (int i = 0; i < status.length; ++i) {
+      for (int i = 0; i < status.size(); ++i) {
         // get the dynamically created directory
-        Path partPath = status[i].getPath();
+        Path partPath = status.get(i).getPath();
         assert fs.getFileStatus(partPath).isDir() : "partitions " + partPath
             + " is not a directory !";
 
@@ -3280,6 +3285,9 @@ public final class Utilities {
   public static List<Path> getInputPaths(JobConf job, MapWork work, Path hiveScratchDir,
       Context ctx, boolean skipDummy) throws Exception {
 
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INPUT_PATHS);
+
     Set<Path> pathsProcessed = new HashSet<Path>();
     List<Path> pathsToAdd = new LinkedList<Path>();
     LockedDriverState lDrvStat = LockedDriverState.getLockedDriverState();
@@ -3367,6 +3375,8 @@ public final class Utilities {
         finalPathsToAdd.add(newPath);
       }
     }
+
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.INPUT_PATHS);
 
     return finalPathsToAdd;
   }
@@ -4070,11 +4080,11 @@ public final class Utilities {
   }
 
   public static Path[] getMmDirectoryCandidates(FileSystem fs, Path path, int dpLevels,
-      int lbLevels, PathFilter filter, long txnId, int stmtId, Configuration conf,
+      PathFilter filter, long writeId, int stmtId, Configuration conf,
       Boolean isBaseDir) throws IOException {
-    int skipLevels = dpLevels + lbLevels;
+    int skipLevels = dpLevels;
     if (filter == null) {
-      filter = new JavaUtils.IdPathFilter(txnId, stmtId, true, false);
+      filter = new AcidUtils.IdPathFilter(writeId, stmtId);
     }
     if (skipLevels == 0) {
       return statusToPath(fs.listStatus(path, filter));
@@ -4082,12 +4092,12 @@ public final class Utilities {
     // TODO: for some reason, globStatus doesn't work for masks like "...blah/*/delta_0000007_0000007*"
     //       the last star throws it off. So, for now, if stmtId is missing use recursion.
     //       For the same reason, we cannot use it if we don't know isBaseDir. Currently, we don't
-    //       /want/ to know isBaseDir because that is error prone; so, it ends up never being used. 
+    //       /want/ to know isBaseDir because that is error prone; so, it ends up never being used.
     if (stmtId < 0 || isBaseDir == null
         || (HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_AVOID_GLOBSTATUS_ON_S3) && isS3(fs))) {
       return getMmDirectoryCandidatesRecursive(fs, path, skipLevels, filter);
     }
-    return getMmDirectoryCandidatesGlobStatus(fs, path, skipLevels, filter, txnId, stmtId, isBaseDir);
+    return getMmDirectoryCandidatesGlobStatus(fs, path, skipLevels, filter, writeId, stmtId, isBaseDir);
   }
 
   private static boolean isS3(FileSystem fs) {
@@ -4164,27 +4174,27 @@ public final class Utilities {
   }
 
   private static Path[] getMmDirectoryCandidatesGlobStatus(FileSystem fs, Path path, int skipLevels,
-      PathFilter filter, long txnId, int stmtId, boolean isBaseDir) throws IOException {
+      PathFilter filter, long writeId, int stmtId, boolean isBaseDir) throws IOException {
     StringBuilder sb = new StringBuilder(path.toUri().getPath());
     for (int i = 0; i < skipLevels; i++) {
       sb.append(Path.SEPARATOR).append('*');
     }
     if (stmtId < 0) {
       // Note: this does not work.
-      // sb.append(Path.SEPARATOR).append(AcidUtils.deltaSubdir(txnId, txnId)).append("_*");
+      // sb.append(Path.SEPARATOR).append(AcidUtils.deltaSubdir(writeId, writeId)).append("_*");
       throw new AssertionError("GlobStatus should not be called without a statement ID");
     } else {
-      sb.append(Path.SEPARATOR).append(AcidUtils.baseOrDeltaSubdir(isBaseDir, txnId, txnId, stmtId));
+      sb.append(Path.SEPARATOR).append(AcidUtils.baseOrDeltaSubdir(isBaseDir, writeId, writeId, stmtId));
     }
     Path pathPattern = new Path(path, sb.toString());
     return statusToPath(fs.globStatus(pathPattern, filter));
   }
 
   private static void tryDeleteAllMmFiles(FileSystem fs, Path specPath, Path manifestDir,
-      int dpLevels, int lbLevels, JavaUtils.IdPathFilter filter, long txnId, int stmtId,
+      int dpLevels, int lbLevels, AcidUtils.IdPathFilter filter, long writeId, int stmtId,
       Configuration conf) throws IOException {
     Path[] files = getMmDirectoryCandidates(
-        fs, specPath, dpLevels, lbLevels, filter, txnId, stmtId, conf, null);
+        fs, specPath, dpLevels, filter, writeId, stmtId, conf, null);
     if (files != null) {
       for (Path path : files) {
         Utilities.FILE_OP_LOGGER.info("Deleting {} on failure", path);
@@ -4197,12 +4207,12 @@ public final class Utilities {
 
 
   public static void writeMmCommitManifest(List<Path> commitPaths, Path specPath, FileSystem fs,
-      String taskId, Long txnId, int stmtId, String unionSuffix, boolean isInsertOverwrite) throws HiveException {
+      String taskId, Long writeId, int stmtId, String unionSuffix, boolean isInsertOverwrite) throws HiveException {
     if (commitPaths.isEmpty()) {
       return;
     }
     // We assume one FSOP per task (per specPath), so we create it in specPath.
-    Path manifestPath = getManifestDir(specPath, txnId, stmtId, unionSuffix, isInsertOverwrite);
+    Path manifestPath = getManifestDir(specPath, writeId, stmtId, unionSuffix, isInsertOverwrite);
     manifestPath = new Path(manifestPath, taskId + MANIFEST_EXTENSION);
     Utilities.FILE_OP_LOGGER.info("Writing manifest to {} with {}", manifestPath, commitPaths);
     try {
@@ -4223,9 +4233,9 @@ public final class Utilities {
 
   // TODO: we should get rid of isInsertOverwrite here too.
   private static Path getManifestDir(
-      Path specPath, long txnId, int stmtId, String unionSuffix, boolean isInsertOverwrite) {
+      Path specPath, long writeId, int stmtId, String unionSuffix, boolean isInsertOverwrite) {
     Path manifestPath = new Path(specPath, "_tmp." +
-      AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, txnId, txnId, stmtId));
+      AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId));
 
     return (unionSuffix == null) ? manifestPath : new Path(manifestPath, unionSuffix);
   }
@@ -4242,19 +4252,19 @@ public final class Utilities {
   }
 
   public static void handleMmTableFinalPath(Path specPath, String unionSuffix, Configuration hconf,
-      boolean success, int dpLevels, int lbLevels, MissingBucketsContext mbc, long txnId, int stmtId,
+      boolean success, int dpLevels, int lbLevels, MissingBucketsContext mbc, long writeId, int stmtId,
       Reporter reporter, boolean isMmTable, boolean isMmCtas, boolean isInsertOverwrite)
           throws IOException, HiveException {
     FileSystem fs = specPath.getFileSystem(hconf);
-    Path manifestDir = getManifestDir(specPath, txnId, stmtId, unionSuffix, isInsertOverwrite);
+    Path manifestDir = getManifestDir(specPath, writeId, stmtId, unionSuffix, isInsertOverwrite);
     if (!success) {
-      JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(txnId, stmtId, true);
+      AcidUtils.IdPathFilter filter = new AcidUtils.IdPathFilter(writeId, stmtId);
       tryDeleteAllMmFiles(fs, specPath, manifestDir, dpLevels, lbLevels,
-          filter, txnId, stmtId, hconf);
+          filter, writeId, stmtId, hconf);
       return;
     }
 
-    Utilities.FILE_OP_LOGGER.debug("Looking for manifests in: {} ({})", manifestDir, txnId);
+    Utilities.FILE_OP_LOGGER.debug("Looking for manifests in: {} ({})", manifestDir, writeId);
     List<Path> manifests = new ArrayList<>();
     if (fs.exists(manifestDir)) {
       FileStatus[] manifestFiles = fs.listStatus(manifestDir);
@@ -4273,13 +4283,13 @@ public final class Utilities {
     }
 
     Utilities.FILE_OP_LOGGER.debug("Looking for files in: {}", specPath);
-    JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(txnId, stmtId, true, false);
+    AcidUtils.IdPathFilter filter = new AcidUtils.IdPathFilter(writeId, stmtId);
     if (isMmCtas && !fs.exists(specPath)) {
       Utilities.FILE_OP_LOGGER.info("Creating table directory for CTAS with no output at {}", specPath);
       FileUtils.mkdir(fs, specPath, hconf);
     }
     Path[] files = getMmDirectoryCandidates(
-        fs, specPath, dpLevels, lbLevels, filter, txnId, stmtId, hconf, isInsertOverwrite);
+        fs, specPath, dpLevels, filter, writeId, stmtId, hconf, isInsertOverwrite);
     ArrayList<Path> mmDirectories = new ArrayList<>();
     if (files != null) {
       for (Path path : files) {
@@ -4294,6 +4304,7 @@ public final class Utilities {
         int fileCount = mdis.readInt();
         for (int i = 0; i < fileCount; ++i) {
           String nextFile = mdis.readUTF();
+          Utilities.FILE_OP_LOGGER.trace("Looking at committed file: {}", nextFile);
           if (!committed.add(nextFile)) {
             throw new HiveException(nextFile + " was specified in multiple manifests");
           }
@@ -4316,7 +4327,7 @@ public final class Utilities {
     }
 
     for (Path path : mmDirectories) {
-      cleanMmDirectory(path, fs, unionSuffix, committed);
+      cleanMmDirectory(path, fs, unionSuffix, lbLevels, committed);
     }
 
     if (!committed.isEmpty()) {
@@ -4339,7 +4350,7 @@ public final class Utilities {
       finalResults[i] = new PathOnlyFileStatus(mmDirectories.get(i));
     }
     List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(fs, finalResults,
-        unionSuffix, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf, txnId, stmtId,
+        unionSuffix, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf, writeId, stmtId,
             isMmTable, null, isInsertOverwrite);
     // create empty buckets if necessary
     if (!emptyBuckets.isEmpty()) {
@@ -4354,10 +4365,28 @@ public final class Utilities {
     }
   }
 
-  private static void cleanMmDirectory(Path dir, FileSystem fs,
-      String unionSuffix, HashSet<String> committed) throws IOException, HiveException {
+  private static void cleanMmDirectory(Path dir, FileSystem fs, String unionSuffix,
+      int lbLevels, HashSet<String> committed) throws IOException, HiveException {
     for (FileStatus child : fs.listStatus(dir)) {
       Path childPath = child.getPath();
+      if (lbLevels > 0) {
+        // We need to recurse into some LB directories. We don't check the directories themselves
+        // for matches; if they are empty they don't matter, and we do will delete bad files.
+        // This recursion is not the most efficient way to do this but LB is rarely used.
+        if (child.isDirectory()) {
+          Utilities.FILE_OP_LOGGER.trace(
+              "Recursion into LB directory {}; levels remaining ", childPath, lbLevels - 1);
+          cleanMmDirectory(childPath, fs, unionSuffix, lbLevels - 1, committed);
+        } else {
+          if (committed.contains(childPath.toString())) {
+            throw new HiveException("LB FSOP has commited "
+                + childPath + " outside of LB directory levels " + lbLevels);
+          }
+          deleteUncommitedFile(childPath, fs);
+        }
+        continue;
+      }
+      // No more LB directories expected.
       if (unionSuffix == null) {
         if (committed.remove(childPath.toString())) {
           continue; // A good file.
@@ -4366,15 +4395,21 @@ public final class Utilities {
       } else if (!child.isDirectory()) {
         if (committed.contains(childPath.toString())) {
           throw new HiveException("Union FSOP has commited "
-              + childPath + " outside of union directory" + unionSuffix);
+              + childPath + " outside of union directory " + unionSuffix);
         }
         deleteUncommitedFile(childPath, fs);
       } else if (childPath.getName().equals(unionSuffix)) {
         // Found the right union directory; treat it as "our" MM directory.
-        cleanMmDirectory(childPath, fs, null, committed);
+        cleanMmDirectory(childPath, fs, null, 0, committed);
       } else {
-        Utilities.FILE_OP_LOGGER.trace("FSOP for {} is ignoring the other side of the union {}",
-          unionSuffix, childPath);
+        String childName = childPath.getName();
+        if (!childName.startsWith(AbstractFileMergeOperator.UNION_SUDBIR_PREFIX)
+            && !childName.startsWith(".") && !childName.startsWith("_")) {
+          throw new HiveException("Union FSOP has an unknown directory "
+              + childPath + " outside of union directory " + unionSuffix);
+        }
+        Utilities.FILE_OP_LOGGER.trace(
+            "FSOP for {} is ignoring the other side of the union {}", unionSuffix, childPath);
       }
     }
   }
@@ -4393,17 +4428,16 @@ public final class Utilities {
    * if the entire directory is valid (has no uncommitted/temporary files).
    */
   public static List<Path> getValidMmDirectoriesFromTableOrPart(Path path, Configuration conf,
-      ValidWriteIdList validWriteIdList, int lbLevels) throws IOException {
+      ValidWriteIdList validWriteIdList) throws IOException {
     Utilities.FILE_OP_LOGGER.trace("Looking for valid MM paths under {}", path);
     // NULL means this directory is entirely valid.
     List<Path> result = null;
     FileSystem fs = path.getFileSystem(conf);
-    FileStatus[] children = (lbLevels == 0) ? fs.listStatus(path)
-        : fs.globStatus(new Path(path, StringUtils.repeat("*" + Path.SEPARATOR, lbLevels) + "*"));
+    FileStatus[] children = fs.listStatus(path);
     for (int i = 0; i < children.length; ++i) {
       FileStatus file = children[i];
       Path childPath = file.getPath();
-      Long writeId = JavaUtils.extractWriteId(childPath);
+      Long writeId = AcidUtils.extractWriteId(childPath);
       if (!file.isDirectory() || writeId == null || !validWriteIdList.isWriteIdValid(writeId)) {
         Utilities.FILE_OP_LOGGER.debug("Skipping path {}", childPath);
         if (result == null) {
@@ -4472,5 +4506,18 @@ public final class Utilities {
       throw new RuntimeException("The dir: " + rootHDFSDirPath
           + " on HDFS should be writable. Current permissions are: " + currentHDFSDirPermission);
     }
+  }
+
+  // Get the bucketing version stored in the string format
+  public static int getBucketingVersion(final String versionStr) {
+    int bucketingVersion = 1;
+    if (versionStr != null) {
+      try {
+        bucketingVersion = Integer.parseInt(versionStr);
+      } catch (NumberFormatException e) {
+        // Do nothing
+      }
+    }
+    return bucketingVersion;
   }
 }

@@ -64,7 +64,9 @@ STAGE PLANS:
             LLAP IO: no inputs
             Map Vectorization:
                 enabled: false
-#### A masked pattern was here ####
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                enabledConditionsNotMet: Could not enable vectorization due to partition column names size 1 is greater than the number of table column names size 0 IS false
+                inputFileFormats: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -72,7 +74,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:one:int, 1:two:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:one:int, 1:two:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator

@@ -24,6 +24,7 @@ import java.util.Arrays;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * This class provides the implementation of vectorized substring, with a single start index
@@ -120,7 +121,7 @@ public class StringSubstrColStart extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
@@ -145,12 +146,7 @@ public class StringSubstrColStart extends VectorExpression {
     outputColVector.isRepeating = false;
 
     if (inV.isRepeating) {
-      if (!inV.noNulls && inV.isNull[0]) {
-        outputIsNull[0] = true;
-        outputColVector.noNulls = false;
-        outputColVector.setVal(0, EMPTY_STRING, 0, EMPTY_STRING.length);
-        return;
-      } else {
+      if (inV.noNulls || !inV.isNull[0]) {
         outputIsNull[0] = false;
         int offset = getSubstrStartOffset(vector[0], start[0], len[0], startIdx);
         if (offset != -1) {
@@ -158,6 +154,10 @@ public class StringSubstrColStart extends VectorExpression {
         } else {
           outputColVector.setVal(0, EMPTY_STRING, 0, EMPTY_STRING.length);
         }
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+        outputColVector.setVal(0, EMPTY_STRING, 0, EMPTY_STRING.length);
       }
       outputColVector.isRepeating = true;
       return;

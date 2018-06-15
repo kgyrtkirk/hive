@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.cli.control;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+
 import com.google.common.base.Strings;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
@@ -119,7 +121,7 @@ public class CoreNegativeCliDriver extends CliAdapter{
         return;
       }
 
-      qt.cliInit(fname, false);
+      qt.cliInit(new File(fpath), false);
       int ecode = qt.executeClient(fname);
       if (ecode == 0) {
         qt.failed(fname, debugHint);
@@ -130,6 +132,13 @@ public class CoreNegativeCliDriver extends CliAdapter{
         String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ?
             debugHint : "\r\n" + result.getCapturedOutput();
         qt.failedDiff(result.getReturnCode(), fname, message);
+      }
+    } catch (Error error) {
+      QTestProcessExecResult qTestProcessExecResult = qt.checkNegativeResults(fname, error);
+      if (qTestProcessExecResult.getReturnCode() != 0) {
+        String message = Strings.isNullOrEmpty(qTestProcessExecResult.getCapturedOutput()) ? debugHint :
+            "\r\n" + qTestProcessExecResult.getCapturedOutput();
+        qt.failedDiff(qTestProcessExecResult.getReturnCode(), fname, message);
       }
     }
     catch (Exception e) {

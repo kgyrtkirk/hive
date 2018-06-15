@@ -30,6 +30,20 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
+import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
@@ -56,7 +70,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-class WarehouseInstance implements Closeable {
+public class WarehouseInstance implements Closeable {
   final String functionsRoot;
   private Logger logger;
   private IDriver driver;
@@ -85,7 +99,7 @@ class WarehouseInstance implements Closeable {
     initialize(cmRootPath.toString(), warehouseRoot.toString(), overridesForHiveConf);
   }
 
-  WarehouseInstance(Logger logger, MiniDFSCluster cluster,
+  public WarehouseInstance(Logger logger, MiniDFSCluster cluster,
       Map<String, String> overridesForHiveConf) throws Exception {
     this(logger, cluster, overridesForHiveConf, null);
   }
@@ -122,12 +136,16 @@ class WarehouseInstance implements Closeable {
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+    if (!hiveConf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER).equals("org.apache.hadoop.hive.ql.lockmgr.DbTxnManager")) {
+      hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
+    }
+    hiveConf.set(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL.varname,
+            "org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore");
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
 
-    int metaStorePort = MetaStoreTestUtils.startMetaStore(hiveConf);
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + metaStorePort);
+    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf, true);
 
     Path testPath = new Path(hiveWarehouseLocation);
     FileSystem testPathFileSystem = FileSystem.get(testPath.toUri(), hiveConf);
@@ -136,6 +154,10 @@ class WarehouseInstance implements Closeable {
     driver = DriverFactory.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
     client = new HiveMetaStoreClient(hiveConf);
+
+    TxnDbUtil.cleanDb(hiveConf);
+    TxnDbUtil.prepDb(hiveConf);
+
     // change the value for the next instance.
     ++uniqueIdentifier;
   }
@@ -145,6 +167,10 @@ class WarehouseInstance implements Closeable {
     Path path = new Path(pathString);
     fs.mkdir(path, new FsPermission("777"));
     return PathBuilder.fullyQualifiedHDFSUri(path, fs);
+  }
+
+  public HiveConf getConf() {
+    return hiveConf;
   }
 
   private int next = 0;
@@ -165,10 +191,18 @@ class WarehouseInstance implements Closeable {
     return (lastResults.get(0).split("\\t"))[colNum];
   }
 
-  WarehouseInstance run(String command) throws Throwable {
+  public WarehouseInstance run(String command) throws Throwable {
     CommandProcessorResponse ret = driver.run(command);
     if (ret.getException() != null) {
       throw ret.getException();
+    }
+    return this;
+  }
+
+  WarehouseInstance runFailure(String command) throws Throwable {
+    CommandProcessorResponse ret = driver.run(command);
+    if (ret.getException() == null) {
+      throw new RuntimeException("command execution passed for a invalid command" + command);
     }
     return this;
   }
@@ -195,11 +229,57 @@ class WarehouseInstance implements Closeable {
     return dump(dbName, lastReplicationId, Collections.emptyList());
   }
 
+  WarehouseInstance dumpFailure(String dbName, String lastReplicationId) throws Throwable {
+    String dumpCommand =
+            "REPL DUMP " + dbName + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
+    advanceDumpDir();
+    runFailure(dumpCommand);
+    return this;
+  }
+
   WarehouseInstance load(String replicatedDbName, String dumpLocation) throws Throwable {
     run("EXPLAIN REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
     printOutput();
     run("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
     return this;
+  }
+
+  WarehouseInstance load(String replicatedDbName, String dumpLocation, List<String> withClauseOptions)
+          throws Throwable {
+    String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
+    if (!withClauseOptions.isEmpty()) {
+      replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+    run("EXPLAIN " + replLoadCmd);
+    printOutput();
+    return run(replLoadCmd);
+  }
+
+  WarehouseInstance status(String replicatedDbName) throws Throwable {
+    String replStatusCmd = "REPL STATUS " + replicatedDbName;
+    return run(replStatusCmd);
+  }
+
+  WarehouseInstance status(String replicatedDbName, List<String> withClauseOptions) throws Throwable {
+    String replStatusCmd = "REPL STATUS " + replicatedDbName;
+    if (!withClauseOptions.isEmpty()) {
+      replStatusCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+    return run(replStatusCmd);
+  }
+
+  WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation) throws Throwable {
+    runFailure("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
+    return this;
+  }
+
+  WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation, List<String> withClauseOptions)
+          throws Throwable {
+    String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
+    if (!withClauseOptions.isEmpty()) {
+      replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+    return runFailure(replLoadCmd);
   }
 
   WarehouseInstance verifyResult(String data) throws IOException {
@@ -257,7 +337,7 @@ class WarehouseInstance implements Closeable {
     return this;
   }
 
-  List<String> getOutput() throws IOException {
+  public List<String> getOutput() throws IOException {
     List<String> results = new ArrayList<>();
     driver.getResults(results);
     return results;
@@ -267,6 +347,59 @@ class WarehouseInstance implements Closeable {
     for (String s : getOutput()) {
       logger.info(s);
     }
+  }
+
+  public Database getDatabase(String dbName) throws Exception {
+    try {
+      return client.getDatabase(dbName);
+    } catch (NoSuchObjectException e) {
+      return null;
+    }
+  }
+
+  public List<String> getAllTables(String dbName) throws Exception {
+    return client.getAllTables(dbName);
+  }
+
+  public Table getTable(String dbName, String tableName) throws Exception {
+    try {
+      return client.getTable(dbName, tableName);
+    } catch (NoSuchObjectException e) {
+      return null;
+    }
+  }
+
+  public List<Partition> getAllPartitions(String dbName, String tableName) throws Exception {
+    try {
+      return client.listPartitions(dbName, tableName, Short.MAX_VALUE);
+    } catch (NoSuchObjectException e) {
+      return null;
+    }
+  }
+
+  public Partition getPartition(String dbName, String tableName, List<String> partValues) throws Exception {
+    try {
+      return client.getPartition(dbName, tableName, partValues);
+    } catch (NoSuchObjectException e) {
+      return null;
+    }
+  }
+
+  public List<SQLPrimaryKey> getPrimaryKeyList(String dbName, String tblName) throws Exception {
+    return client.getPrimaryKeys(new PrimaryKeysRequest(dbName, tblName));
+  }
+
+  public List<SQLForeignKey> getForeignKeyList(String dbName, String tblName) throws Exception {
+    return client.getForeignKeys(new ForeignKeysRequest(null, null, dbName, tblName));
+  }
+
+  public List<SQLUniqueConstraint> getUniqueConstraintList(String dbName, String tblName) throws Exception {
+    return client.getUniqueConstraints(new UniqueConstraintsRequest(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName));
+  }
+
+  public List<SQLNotNullConstraint> getNotNullConstraintList(String dbName, String tblName) throws Exception {
+    return client.getNotNullConstraints(
+            new NotNullConstraintsRequest(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName));
   }
 
   ReplicationV1CompatRule getReplivationV1CompatRule(List<String> testsToSkip) {

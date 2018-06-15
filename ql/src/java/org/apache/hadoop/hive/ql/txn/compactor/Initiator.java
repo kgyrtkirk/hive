@@ -157,7 +157,8 @@ public class Initiator extends CompactorThread {
               /*Future thought: checkForCompaction will check a lot of file metadata and may be expensive.
               * Long term we should consider having a thread pool here and running checkForCompactionS
               * in parallel*/
-              CompactionType compactionNeeded = checkForCompaction(ci, tblValidWriteIds, sd, t.getParameters(), runAs);
+              CompactionType compactionNeeded
+                      = checkForCompaction(ci, tblValidWriteIds, sd, t.getParameters(), runAs);
               if (compactionNeeded != null) requestCompaction(ci, runAs, compactionNeeded);
             } catch (Throwable t) {
               LOG.error("Caught exception while trying to determine if we should compact " +
@@ -172,6 +173,9 @@ public class Initiator extends CompactorThread {
 
           // Clean anything from the txns table that has no components left in txn_components.
           txnHandler.cleanEmptyAbortedTxns();
+
+          // Clean TXN_TO_WRITE_ID table for entries under min_uncommitted_txn referred by any open txns.
+          txnHandler.cleanTxnToWriteIdTable();
         } catch (Throwable t) {
           LOG.error("Initiator loop caught unexpected exception this time through the loop: " +
               StringUtils.stringifyException(t));
@@ -235,10 +239,11 @@ public class Initiator extends CompactorThread {
           "initiating major compaction");
       return CompactionType.MAJOR;
     }
+
     if (runJobAsSelf(runAs)) {
       return determineCompactionType(ci, writeIds, sd, tblproperties);
     } else {
-      LOG.info("Going to initiate as user " + runAs);
+      LOG.info("Going to initiate as user " + runAs + " for " + ci.getFullPartitionName());
       UserGroupInformation ugi = UserGroupInformation.createProxyUser(runAs,
         UserGroupInformation.getLoginUser());
       CompactionType compactionType = ugi.doAs(new PrivilegedExceptionAction<CompactionType>() {
@@ -260,10 +265,6 @@ public class Initiator extends CompactorThread {
   private CompactionType determineCompactionType(CompactionInfo ci, ValidWriteIdList writeIds,
                                                  StorageDescriptor sd, Map<String, String> tblproperties)
       throws IOException, InterruptedException {
-
-    if (AcidUtils.isInsertOnlyTable(tblproperties)) {
-      return CompactionType.MINOR;
-    }
 
     boolean noBase = false;
     Path location = new Path(sd.getLocation());
@@ -327,14 +328,20 @@ public class Initiator extends CompactorThread {
         HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD) :
         Integer.parseInt(deltaNumProp);
     boolean enough = deltas.size() > deltaNumThreshold;
-    if (enough) {
-      LOG.debug("Found " + deltas.size() + " delta files, threshold is " + deltaNumThreshold +
-          (enough ? "" : "not") + " and no base, requesting " + (noBase ? "major" : "minor") +
-          " compaction");
-      // If there's no base file, do a major compaction
-      return noBase ? CompactionType.MAJOR : CompactionType.MINOR;
+    if (!enough) {
+      return null;
     }
-    return null;
+    if (AcidUtils.isInsertOnlyTable(tblproperties)) {
+      LOG.debug("Requesting a major compaction for a MM table; found " + deltas.size()
+          + " delta files, threshold is " + deltaNumThreshold);
+      return CompactionType.MAJOR;
+    }
+    // TODO: this log statement looks wrong
+    LOG.debug("Found " + deltas.size() + " delta files, threshold is " + deltaNumThreshold +
+        (enough ? "" : "not") + " and no base, requesting " + (noBase ? "major" : "minor") +
+        " compaction");
+    // If there's no base file, do a major compaction
+    return noBase ? CompactionType.MAJOR : CompactionType.MINOR;
   }
 
   private long sumDirSize(FileSystem fs, Path dir) throws IOException {

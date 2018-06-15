@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -55,24 +57,46 @@ public class TxnUtils {
    * @return a valid txn list.
    */
   public static ValidTxnList createValidReadTxnList(GetOpenTxnsResponse txns, long currentTxn) {
-    /*todo: should highWater be min(currentTxn,txns.getTxn_high_water_mark()) assuming currentTxn>0
+    /*
+     * The highWaterMark should be min(currentTxn,txns.getTxn_high_water_mark()) assuming currentTxn>0
      * otherwise if currentTxn=7 and 8 commits before 7, then 7 will see result of 8 which
-     * doesn't make sense for Snapshot Isolation.  Of course for Read Committed, the list should
-     * inlude the latest committed set.*/
-    long highWater = txns.getTxn_high_water_mark();
-    List<Long> open = txns.getOpen_txns();
-    BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
-    long[] exceptions = new long[open.size() - (currentTxn > 0 ? 1 : 0)];
+     * doesn't make sense for Snapshot Isolation. Of course for Read Committed, the list should
+     * include the latest committed set.
+     */
+    long highWaterMark = (currentTxn > 0) ? Math.min(currentTxn, txns.getTxn_high_water_mark())
+                                          : txns.getTxn_high_water_mark();
+
+    // Open txns are already sorted in ascending order. This list may or may not include HWM
+    // but it is guaranteed that list won't have txn > HWM. But, if we overwrite the HWM with currentTxn
+    // then need to truncate the exceptions list accordingly.
+    List<Long> openTxns = txns.getOpen_txns();
+
+    // We care only about open/aborted txns below currentTxn and hence the size should be determined
+    // for the exceptions list. The currentTxn will be missing in openTxns list only in rare case like
+    // txn is aborted by AcidHouseKeeperService and compactor actually cleans up the aborted txns.
+    // So, for such cases, we get negative value for sizeToHwm with found position for currentTxn, and so,
+    // we just negate it to get the size.
+    int sizeToHwm = (currentTxn > 0) ? Collections.binarySearch(openTxns, currentTxn) : openTxns.size();
+    sizeToHwm = (sizeToHwm < 0) ? (-sizeToHwm) : sizeToHwm;
+    long[] exceptions = new long[sizeToHwm];
+    BitSet inAbortedBits = BitSet.valueOf(txns.getAbortedBits());
+    BitSet outAbortedBits = new BitSet();
+    long minOpenTxnId = Long.MAX_VALUE;
     int i = 0;
-    for (long txn : open) {
-      if (currentTxn > 0 && currentTxn == txn) continue;
+    for (long txn : openTxns) {
+      // For snapshot isolation, we don't care about txns greater than current txn and so stop here.
+      // Also, we need not include current txn to exceptions list.
+      if ((currentTxn > 0) && (txn >= currentTxn)) {
+        break;
+      }
+      if (inAbortedBits.get(i)) {
+        outAbortedBits.set(i);
+      } else if (minOpenTxnId == Long.MAX_VALUE) {
+        minOpenTxnId = txn;
+      }
       exceptions[i++] = txn;
     }
-    if (txns.isSetMin_open_txn()) {
-      return new ValidReadTxnList(exceptions, abortedBits, highWater, txns.getMin_open_txn());
-    } else {
-      return new ValidReadTxnList(exceptions, abortedBits, highWater);
-    }
+    return new ValidReadTxnList(exceptions, outAbortedBits, highWaterMark, minOpenTxnId);
   }
 
   /**
@@ -80,13 +104,13 @@ public class TxnUtils {
    * {@link org.apache.hadoop.hive.common.ValidTxnWriteIdList}.  This assumes that the caller intends to
    * read the files, and thus treats both open and aborted transactions as invalid.
    * @param currentTxnId current txn ID for which we get the valid write ids list
-   * @param validWriteIds valid write ids list from the metastore
+   * @param list valid write ids list from the metastore
    * @return a valid write IDs list for the whole transaction.
    */
   public static ValidTxnWriteIdList createValidTxnWriteIdList(Long currentTxnId,
-                                                              GetValidWriteIdsResponse validWriteIds) {
+                                                              List<TableValidWriteIds> validIds) {
     ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(currentTxnId);
-    for (TableValidWriteIds tableWriteIds : validWriteIds.getTblValidWriteIds()) {
+    for (TableValidWriteIds tableWriteIds : validIds) {
       validTxnWriteIdList.addTableValidWriteIdList(createValidReaderWriteIdList(tableWriteIds));
     }
     return validTxnWriteIdList;
@@ -155,6 +179,17 @@ public class TxnUtils {
     }
   }
 
+  public static ValidReaderWriteIdList updateForCompactionQuery(ValidReaderWriteIdList ids) {
+    // This is based on the existing valid write ID list that was built for a select query;
+    // therefore we assume all the aborted txns, etc. were already accounted for.
+    // All we do is adjust the high watermark to only include contiguous txns.
+    Long minOpenWriteId = ids.getMinOpenWriteId();
+    if (minOpenWriteId != null && minOpenWriteId != Long.MAX_VALUE) {
+      return ids.updateHighWatermark(ids.getMinOpenWriteId() - 1);
+    }
+    return ids;
+  }
+
   /**
    * Get an instance of the TxnStore that is appropriate for this store
    * @param conf configuration
@@ -212,7 +247,7 @@ public class TxnUtils {
 
 
   /**
-   * Build a query (or queries if one query is too big but only for the case of 'IN' 
+   * Build a query (or queries if one query is too big but only for the case of 'IN'
    * composite clause. For the case of 'NOT IN' clauses, multiple queries change
    * the semantics of the intended query.
    * E.g., Let's assume that input "inList" parameter has [5, 6] and that

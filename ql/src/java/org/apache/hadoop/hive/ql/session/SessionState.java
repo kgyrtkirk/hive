@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
@@ -59,7 +61,10 @@ import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.MapRedStats;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.Registry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
@@ -76,6 +81,7 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -114,9 +120,14 @@ public class SessionState {
   static final String LOCK_FILE_NAME = "inuse.lck";
   static final String INFO_FILE_NAME = "inuse.info";
 
-  private final Map<String, Map<String, Table>> tempTables = new HashMap<String, Map<String, Table>>();
+  /**
+   * Concurrent since SessionState is often propagated to workers in thread pools
+   */
+  private final Map<String, Map<String, Table>> tempTables = new ConcurrentHashMap<>();
   private final Map<String, Map<String, ColumnStatisticsObj>> tempTableColStats =
-      new HashMap<String, Map<String, ColumnStatisticsObj>>();
+      new ConcurrentHashMap<>();
+  private final Map<String, SessionHiveMetaStoreClient.TempTable> tempPartitions =
+      new ConcurrentHashMap<>();
 
   protected ClassLoader parentLoader;
 
@@ -126,7 +137,7 @@ public class SessionState {
   /**
    * current configuration.
    */
-  private final HiveConf sessionConf;
+  private HiveConf sessionConf;
 
   /**
    * silent mode.
@@ -151,7 +162,7 @@ public class SessionState {
   /**
    * The flag to indicate if the session already started so we can skip the init
    */
-  private boolean isStarted = false;
+  private AtomicBoolean isStarted = new AtomicBoolean(false);
   /*
    * HiveHistory Object
    */
@@ -220,6 +231,8 @@ public class SessionState {
 
   private String currentDatabase;
 
+  private String currentCatalog;
+
   private final String CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER =
       "hive.internal.ss.authz.settings.applied.marker";
 
@@ -231,6 +244,11 @@ public class SessionState {
    * Gets information about HDFS encryption
    */
   private Map<URI, HadoopShims.HdfsEncryptionShim> hdfsEncryptionShims = Maps.newHashMap();
+
+  /**
+   * Cache for Erasure Coding shims.
+   */
+  private Map<URI, HadoopShims.HdfsErasureCodingShim> erasureCodingShims;
 
   private final String userName;
 
@@ -275,6 +293,12 @@ public class SessionState {
   private final Registry registry;
 
   /**
+   * Used to cache functions in use for a query, during query planning
+   * and is later used for function usage authorization.
+   */
+  private final Map<String, FunctionInfo> currentFunctionsInUse = new HashMap<>();
+
+  /**
    * CURRENT_TIMESTAMP value for query
    */
   private Timestamp queryCurrentTimestamp;
@@ -293,6 +317,9 @@ public class SessionState {
     return sessionConf;
   }
 
+  public void setConf(HiveConf conf) {
+    this.sessionConf = conf;
+  }
 
   public File getTmpOutputFile() {
     return tmpOutputFile;
@@ -451,6 +478,13 @@ public class SessionState {
     return txnMgr;
   }
 
+  /**
+   * Get the transaction manager for the current SessionState.
+   * Note that the Driver can be initialized with a different txn manager than the SessionState's
+   * txn manager (HIVE-17482), and so it is preferable to use the txn manager propagated down from
+   * the Driver as opposed to calling this method.
+   * @return transaction manager for the current SessionState
+   */
   public HiveTxnManager getTxnMgr() {
     return txnMgr;
   }
@@ -568,13 +602,14 @@ public class SessionState {
     startSs.tezSessionState.endOpen();
   }
 
-  synchronized private static void start(SessionState startSs, boolean isAsync, LogHelper console) {
+  private static void start(SessionState startSs, boolean isAsync, LogHelper console) {
     setCurrentSessionState(startSs);
 
-    if (startSs.isStarted) {
-      return;
+    synchronized(SessionState.class) {
+      if (!startSs.isStarted.compareAndSet(false, true)) {
+        return;
+      }
     }
-    startSs.isStarted = true;
 
     if (startSs.hiveHist == null){
       if (startSs.getConf().getBoolVar(HiveConf.ConfVars.HIVE_SESSION_HISTORY_ENABLED)) {
@@ -788,7 +823,7 @@ public class SessionState {
       return new Path(sessionPathString);
     }
     Preconditions.checkNotNull(ss.hdfsSessionPath,
-        "Non-local session path expected to be non-null");
+       "Non-local session path expected to be non-null");
     return ss.hdfsSessionPath;
   }
 
@@ -1235,6 +1270,13 @@ public class SessionState {
   public static String getUserFromAuthenticator() {
     if (SessionState.get() != null && SessionState.get().getAuthenticator() != null) {
       return SessionState.get().getAuthenticator().getUserName();
+    }
+    return null;
+  }
+
+  public static List<String> getGroupsFromAuthenticator() {
+    if (SessionState.get() != null && SessionState.get().getAuthenticator() != null) {
+      return SessionState.get().getAuthenticator().getGroupNames();
     }
     return null;
   }
@@ -1688,6 +1730,17 @@ public class SessionState {
     this.currentDatabase = currentDatabase;
   }
 
+  public String getCurrentCatalog() {
+    if (currentCatalog == null) {
+      currentCatalog = MetaStoreUtils.getDefaultCatalog(getConf());
+    }
+    return currentCatalog;
+  }
+
+  public void setCurrentCatalog(String currentCatalog) {
+    this.currentCatalog = currentCatalog;
+  }
+
   public void close() throws IOException {
     for (Closeable cleanupItem : cleanupItems) {
       try {
@@ -1739,14 +1792,16 @@ public class SessionState {
 
   private void unCacheDataNucleusClassLoaders() {
     try {
-      boolean isLocalMetastore =
-          HiveConfUtil.isEmbeddedMetaStore(sessionConf.getVar(HiveConf.ConfVars.METASTOREURIS));
+      boolean isLocalMetastore = HiveConfUtil.isEmbeddedMetaStore(
+          MetastoreConf.getVar(sessionConf, MetastoreConf.ConfVars.THRIFT_URIS));
       if (isLocalMetastore) {
 
-        String rawStoreImpl = sessionConf.getVar(ConfVars.METASTORE_RAW_STORE_IMPL);
+        String rawStoreImpl =
+            MetastoreConf.getVar(sessionConf, MetastoreConf.ConfVars.RAW_STORE_IMPL);
         String realStoreImpl;
         if (rawStoreImpl.equals(CachedStore.class.getName())) {
-          realStoreImpl = sessionConf.getVar(ConfVars.METASTORE_CACHED_RAW_STORE_IMPL);
+          realStoreImpl =
+              MetastoreConf.getVar(sessionConf, MetastoreConf.ConfVars.CACHED_RAW_STORE_IMPL);
         } else {
           realStoreImpl = rawStoreImpl;
         }
@@ -1848,6 +1903,9 @@ public class SessionState {
 
   public Map<String, Map<String, Table>> getTempTables() {
     return tempTables;
+  }
+  public Map<String, SessionHiveMetaStoreClient.TempTable> getTempPartitions() {
+    return tempPartitions;
   }
 
   public Map<String, Map<String, ColumnStatisticsObj>> getTempTableColStats() {
@@ -1990,6 +2048,11 @@ public class SessionState {
   public void addCleanupItem(Closeable item) {
     cleanupItems.add(item);
   }
+
+  public Map<String, FunctionInfo> getCurrentFunctionsInUse() {
+    return currentFunctionsInUse;
+  }
+
 }
 
 class ResourceMaps {

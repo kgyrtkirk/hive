@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.druid.serde;
 
-import io.druid.query.Result;
 import io.druid.query.scan.ScanQuery;
 import io.druid.query.scan.ScanResultValue;
 

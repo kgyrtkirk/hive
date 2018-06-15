@@ -106,6 +106,8 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("_hive.tmp_table_space");
     addToExpectedRestrictedMap("_hive.hdfs.session.path");
     addToExpectedRestrictedMap("hive.spark.client.rpc.server.address");
+    addToExpectedRestrictedMap("spark.home");
+    addToExpectedRestrictedMap("hive.privilege.synchronizer.interval");
   }
 
   @AfterClass

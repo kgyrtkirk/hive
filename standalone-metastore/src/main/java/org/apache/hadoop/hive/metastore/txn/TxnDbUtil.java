@@ -79,17 +79,18 @@ public final class TxnDbUtil {
           "  TXN_STARTED bigint NOT NULL," +
           "  TXN_LAST_HEARTBEAT bigint NOT NULL," +
           "  TXN_USER varchar(128) NOT NULL," +
-          "  TXN_HOST varchar(128) NOT NULL)");
+          "  TXN_HOST varchar(128) NOT NULL," +
+          "  TXN_TYPE integer)");
 
       stmt.execute("CREATE TABLE TXN_COMPONENTS (" +
-          "  TC_TXNID bigint REFERENCES TXNS (TXN_ID)," +
+          "  TC_TXNID bigint NOT NULL REFERENCES TXNS (TXN_ID)," +
           "  TC_DATABASE varchar(128) NOT NULL," +
           "  TC_TABLE varchar(128)," +
           "  TC_PARTITION varchar(767)," +
           "  TC_OPERATION_TYPE char(1) NOT NULL," +
           "  TC_WRITEID bigint)");
       stmt.execute("CREATE TABLE COMPLETED_TXN_COMPONENTS (" +
-          "  CTC_TXNID bigint," +
+          "  CTC_TXNID bigint NOT NULL," +
           "  CTC_DATABASE varchar(128) NOT NULL," +
           "  CTC_TABLE varchar(128)," +
           "  CTC_PARTITION varchar(767)," +
@@ -109,10 +110,15 @@ public final class TxnDbUtil {
           " NWI_TABLE varchar(256) NOT NULL," +
           " NWI_NEXT bigint NOT NULL)");
 
+      stmt.execute("CREATE TABLE MIN_HISTORY_LEVEL (" +
+          " MHL_TXNID bigint NOT NULL," +
+          " MHL_MIN_OPEN_TXNID bigint NOT NULL," +
+          " PRIMARY KEY(MHL_TXNID))");
+
       stmt.execute("CREATE TABLE HIVE_LOCKS (" +
           " HL_LOCK_EXT_ID bigint NOT NULL," +
           " HL_LOCK_INT_ID bigint NOT NULL," +
-          " HL_TXNID bigint," +
+          " HL_TXNID bigint NOT NULL," +
           " HL_DB varchar(128) NOT NULL," +
           " HL_TABLE varchar(128)," +
           " HL_PARTITION varchar(767)," +
@@ -149,7 +155,7 @@ public final class TxnDbUtil {
 
       stmt.execute("CREATE TABLE NEXT_COMPACTION_QUEUE_ID (NCQ_NEXT bigint NOT NULL)");
       stmt.execute("INSERT INTO NEXT_COMPACTION_QUEUE_ID VALUES(1)");
-      
+
       stmt.execute("CREATE TABLE COMPLETED_COMPACTIONS (" +
           " CC_ID bigint PRIMARY KEY," +
           " CC_DATABASE varchar(128) NOT NULL," +
@@ -165,13 +171,13 @@ public final class TxnDbUtil {
           " CC_HIGHEST_WRITE_ID bigint," +
           " CC_META_INFO varchar(2048) for bit data," +
           " CC_HADOOP_JOB_ID varchar(32))");
-      
+
       stmt.execute("CREATE TABLE AUX_TABLE (" +
         " MT_KEY1 varchar(128) NOT NULL," +
         " MT_KEY2 bigint NOT NULL," +
         " MT_COMMENT varchar(255)," +
         " PRIMARY KEY(MT_KEY1, MT_KEY2))");
-      
+
       stmt.execute("CREATE TABLE WRITE_SET (" +
         " WS_DATABASE varchar(128) NOT NULL," +
         " WS_TABLE varchar(128) NOT NULL," +
@@ -180,6 +186,65 @@ public final class TxnDbUtil {
         " WS_COMMIT_ID bigint NOT NULL," +
         " WS_OPERATION_TYPE char(1) NOT NULL)"
       );
+
+      stmt.execute("CREATE TABLE REPL_TXN_MAP (" +
+          " RTM_REPL_POLICY varchar(256) NOT NULL, " +
+          " RTM_SRC_TXN_ID bigint NOT NULL, " +
+          " RTM_TARGET_TXN_ID bigint NOT NULL, " +
+          " PRIMARY KEY (RTM_REPL_POLICY, RTM_SRC_TXN_ID))"
+      );
+
+      try {
+        stmt.execute("CREATE TABLE \"APP\".\"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\" VARCHAR(256) NOT " +
+
+                "NULL, \"NEXT_VAL\" BIGINT NOT NULL)"
+        );
+      } catch (SQLException e) {
+        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+          LOG.info("SEQUENCE_TABLE table already exist, ignoring");
+        } else {
+          throw e;
+        }
+      }
+
+      try {
+        stmt.execute("CREATE TABLE \"APP\".\"NOTIFICATION_SEQUENCE\" (\"NNI_ID\" BIGINT NOT NULL, " +
+
+                "\"NEXT_EVENT_ID\" BIGINT NOT NULL)"
+        );
+      } catch (SQLException e) {
+        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+          LOG.info("NOTIFICATION_SEQUENCE table already exist, ignoring");
+        } else {
+          throw e;
+        }
+      }
+
+      try {
+        stmt.execute("CREATE TABLE \"APP\".\"NOTIFICATION_LOG\" (\"NL_ID\" BIGINT NOT NULL, " +
+                "\"DB_NAME\" VARCHAR(128), \"EVENT_ID\" BIGINT NOT NULL, \"EVENT_TIME\" INTEGER NOT" +
+
+                " NULL, \"EVENT_TYPE\" VARCHAR(32) NOT NULL, \"MESSAGE\" CLOB, \"TBL_NAME\" " +
+                "VARCHAR" +
+                "(256), \"MESSAGE_FORMAT\" VARCHAR(16))"
+        );
+      } catch (SQLException e) {
+        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+          LOG.info("NOTIFICATION_LOG table already exist, ignoring");
+        } else {
+          throw e;
+        }
+      }
+
+      stmt.execute("INSERT INTO \"APP\".\"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\") " +
+              "SELECT * FROM (VALUES ('org.apache.hadoop.hive.metastore.model.MNotificationLog', " +
+              "1)) tmp_table WHERE NOT EXISTS ( SELECT \"NEXT_VAL\" FROM \"APP\"" +
+              ".\"SEQUENCE_TABLE\" WHERE \"SEQUENCE_NAME\" = 'org.apache.hadoop.hive.metastore" +
+              ".model.MNotificationLog')");
+
+      stmt.execute("INSERT INTO \"APP\".\"NOTIFICATION_SEQUENCE\" (\"NNI_ID\", \"NEXT_EVENT_ID\")" +
+              " SELECT * FROM (VALUES (1,1)) tmp_table WHERE NOT EXISTS ( SELECT " +
+              "\"NEXT_EVENT_ID\" FROM \"APP\".\"NOTIFICATION_SEQUENCE\")");
     } catch (SQLException e) {
       try {
         conn.rollback();
@@ -234,6 +299,7 @@ public final class TxnDbUtil {
         success &= dropTable(stmt, "NEXT_TXN_ID", retryCount);
         success &= dropTable(stmt, "TXN_TO_WRITE_ID", retryCount);
         success &= dropTable(stmt, "NEXT_WRITE_ID", retryCount);
+        success &= dropTable(stmt, "MIN_HISTORY_LEVEL", retryCount);
         success &= dropTable(stmt, "HIVE_LOCKS", retryCount);
         success &= dropTable(stmt, "NEXT_LOCK_ID", retryCount);
         success &= dropTable(stmt, "COMPACTION_QUEUE", retryCount);
@@ -241,6 +307,13 @@ public final class TxnDbUtil {
         success &= dropTable(stmt, "COMPLETED_COMPACTIONS", retryCount);
         success &= dropTable(stmt, "AUX_TABLE", retryCount);
         success &= dropTable(stmt, "WRITE_SET", retryCount);
+        success &= dropTable(stmt, "REPL_TXN_MAP", retryCount);
+        /*
+         * Don't drop NOTIFICATION_LOG, SEQUENCE_TABLE and NOTIFICATION_SEQUENCE as its used by other
+         * table which are not txn related to generate primary key. So if these tables are dropped
+         *  and other tables are not dropped, then it will create key duplicate error while inserting
+         *  to other table.
+         */
       } finally {
         closeResources(conn, stmt, null);
       }
@@ -361,7 +434,7 @@ public final class TxnDbUtil {
     String jdbcDriver = MetastoreConf.getVar(conf, ConfVars.CONNECTION_DRIVER);
     Driver driver = (Driver) Class.forName(jdbcDriver).newInstance();
     Properties prop = new Properties();
-    String driverUrl = MetastoreConf.getVar(conf, ConfVars.CONNECTURLKEY);
+    String driverUrl = MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_KEY);
     String user = MetastoreConf.getVar(conf, ConfVars.CONNECTION_USER_NAME);
     String passwd = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD);
     prop.setProperty("user", user);

@@ -32,6 +32,31 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("setMetaConf\n");
   }
 
+  void create_catalog(const CreateCatalogRequest& catalog) {
+    // Your implementation goes here
+    printf("create_catalog\n");
+  }
+
+  void alter_catalog(const AlterCatalogRequest& rqst) {
+    // Your implementation goes here
+    printf("alter_catalog\n");
+  }
+
+  void get_catalog(GetCatalogResponse& _return, const GetCatalogRequest& catName) {
+    // Your implementation goes here
+    printf("get_catalog\n");
+  }
+
+  void get_catalogs(GetCatalogsResponse& _return) {
+    // Your implementation goes here
+    printf("get_catalogs\n");
+  }
+
+  void drop_catalog(const DropCatalogRequest& catName) {
+    // Your implementation goes here
+    printf("drop_catalog\n");
+  }
+
   void create_database(const Database& database) {
     // Your implementation goes here
     printf("create_database\n");
@@ -112,7 +137,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("create_table_with_environment_context\n");
   }
 
-  void create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys, const std::vector<SQLUniqueConstraint> & uniqueConstraints, const std::vector<SQLNotNullConstraint> & notNullConstraints) {
+  void create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys, const std::vector<SQLUniqueConstraint> & uniqueConstraints, const std::vector<SQLNotNullConstraint> & notNullConstraints, const std::vector<SQLDefaultConstraint> & defaultConstraints, const std::vector<SQLCheckConstraint> & checkConstraints) {
     // Your implementation goes here
     printf("create_table_with_constraints\n");
   }
@@ -140,6 +165,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void add_not_null_constraint(const AddNotNullConstraintRequest& req) {
     // Your implementation goes here
     printf("add_not_null_constraint\n");
+  }
+
+  void add_default_constraint(const AddDefaultConstraintRequest& req) {
+    // Your implementation goes here
+    printf("add_default_constraint\n");
+  }
+
+  void add_check_constraint(const AddCheckConstraintRequest& req) {
+    // Your implementation goes here
+    printf("add_check_constraint\n");
   }
 
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) {
@@ -207,7 +242,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_materialization_invalidation_info\n");
   }
 
-  void update_creation_metadata(const std::string& dbname, const std::string& tbl_name, const CreationMetadata& creation_metadata) {
+  void update_creation_metadata(const std::string& catName, const std::string& dbname, const std::string& tbl_name, const CreationMetadata& creation_metadata) {
     // Your implementation goes here
     printf("update_creation_metadata\n");
   }
@@ -447,36 +482,6 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("isPartitionMarkedForEvent\n");
   }
 
-  void add_index(Index& _return, const Index& new_index, const Table& index_table) {
-    // Your implementation goes here
-    printf("add_index\n");
-  }
-
-  void alter_index(const std::string& dbname, const std::string& base_tbl_name, const std::string& idx_name, const Index& new_idx) {
-    // Your implementation goes here
-    printf("alter_index\n");
-  }
-
-  bool drop_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name, const bool deleteData) {
-    // Your implementation goes here
-    printf("drop_index_by_name\n");
-  }
-
-  void get_index_by_name(Index& _return, const std::string& db_name, const std::string& tbl_name, const std::string& index_name) {
-    // Your implementation goes here
-    printf("get_index_by_name\n");
-  }
-
-  void get_indexes(std::vector<Index> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) {
-    // Your implementation goes here
-    printf("get_indexes\n");
-  }
-
-  void get_index_names(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) {
-    // Your implementation goes here
-    printf("get_index_names\n");
-  }
-
   void get_primary_keys(PrimaryKeysResponse& _return, const PrimaryKeysRequest& request) {
     // Your implementation goes here
     printf("get_primary_keys\n");
@@ -495,6 +500,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_not_null_constraints(NotNullConstraintsResponse& _return, const NotNullConstraintsRequest& request) {
     // Your implementation goes here
     printf("get_not_null_constraints\n");
+  }
+
+  void get_default_constraints(DefaultConstraintsResponse& _return, const DefaultConstraintsRequest& request) {
+    // Your implementation goes here
+    printf("get_default_constraints\n");
+  }
+
+  void get_check_constraints(CheckConstraintsResponse& _return, const CheckConstraintsRequest& request) {
+    // Your implementation goes here
+    printf("get_check_constraints\n");
   }
 
   bool update_table_column_statistics(const ColumnStatistics& stats_obj) {
@@ -647,6 +662,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("grant_revoke_privileges\n");
   }
 
+  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest) {
+    // Your implementation goes here
+    printf("refresh_privileges\n");
+  }
+
   void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names) {
     // Your implementation goes here
     printf("set_ugi\n");
@@ -735,6 +755,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void commit_txn(const CommitTxnRequest& rqst) {
     // Your implementation goes here
     printf("commit_txn\n");
+  }
+
+  void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst) {
+    // Your implementation goes here
+    printf("repl_tbl_writeid_state\n");
   }
 
   void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst) {
@@ -940,6 +965,96 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void create_or_drop_wm_trigger_to_pool_mapping(WMCreateOrDropTriggerToPoolMappingResponse& _return, const WMCreateOrDropTriggerToPoolMappingRequest& request) {
     // Your implementation goes here
     printf("create_or_drop_wm_trigger_to_pool_mapping\n");
+  }
+
+  void create_ischema(const ISchema& schema) {
+    // Your implementation goes here
+    printf("create_ischema\n");
+  }
+
+  void alter_ischema(const AlterISchemaRequest& rqst) {
+    // Your implementation goes here
+    printf("alter_ischema\n");
+  }
+
+  void get_ischema(ISchema& _return, const ISchemaName& name) {
+    // Your implementation goes here
+    printf("get_ischema\n");
+  }
+
+  void drop_ischema(const ISchemaName& name) {
+    // Your implementation goes here
+    printf("drop_ischema\n");
+  }
+
+  void add_schema_version(const SchemaVersion& schemaVersion) {
+    // Your implementation goes here
+    printf("add_schema_version\n");
+  }
+
+  void get_schema_version(SchemaVersion& _return, const SchemaVersionDescriptor& schemaVersion) {
+    // Your implementation goes here
+    printf("get_schema_version\n");
+  }
+
+  void get_schema_latest_version(SchemaVersion& _return, const ISchemaName& schemaName) {
+    // Your implementation goes here
+    printf("get_schema_latest_version\n");
+  }
+
+  void get_schema_all_versions(std::vector<SchemaVersion> & _return, const ISchemaName& schemaName) {
+    // Your implementation goes here
+    printf("get_schema_all_versions\n");
+  }
+
+  void drop_schema_version(const SchemaVersionDescriptor& schemaVersion) {
+    // Your implementation goes here
+    printf("drop_schema_version\n");
+  }
+
+  void get_schemas_by_cols(FindSchemasByColsResp& _return, const FindSchemasByColsRqst& rqst) {
+    // Your implementation goes here
+    printf("get_schemas_by_cols\n");
+  }
+
+  void map_schema_version_to_serde(const MapSchemaVersionToSerdeRequest& rqst) {
+    // Your implementation goes here
+    printf("map_schema_version_to_serde\n");
+  }
+
+  void set_schema_version_state(const SetSchemaVersionStateRequest& rqst) {
+    // Your implementation goes here
+    printf("set_schema_version_state\n");
+  }
+
+  void add_serde(const SerDeInfo& serde) {
+    // Your implementation goes here
+    printf("add_serde\n");
+  }
+
+  void get_serde(SerDeInfo& _return, const GetSerdeRequest& rqst) {
+    // Your implementation goes here
+    printf("get_serde\n");
+  }
+
+  void get_lock_materialization_rebuild(LockResponse& _return, const std::string& dbName, const std::string& tableName, const int64_t txnId) {
+    // Your implementation goes here
+    printf("get_lock_materialization_rebuild\n");
+  }
+
+  bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId) {
+    // Your implementation goes here
+    printf("heartbeat_lock_materialization_rebuild\n");
+  }
+
+  void add_runtime_stats(const RuntimeStat& stat) {
+    // Your implementation goes here
+    printf("add_runtime_stats\n");
+  }
+
+  void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst) {
+    // Your implementation goes here
+    printf("get_runtime_stats\n");
   }
 
 };

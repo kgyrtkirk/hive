@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
+import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
 import org.apache.hadoop.hive.llap.io.metadata.ConsumerFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.ConsumerStripeMetadata;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
@@ -62,21 +63,22 @@ import org.apache.orc.OrcProto;
 public class OrcEncodedDataConsumer
   extends EncodedDataConsumer<OrcBatchKey, OrcEncodedColumnBatch> {
   private TreeReaderFactory.TreeReader[] columnReaders;
-  private int[] columnMapping; // Mapping from columnReaders (by index) to columns in file schema.
   private int previousStripeIndex = -1;
   private ConsumerFileMetadata fileMetadata; // We assume one request is only for one file.
   private CompressionCodec codec;
   private List<ConsumerStripeMetadata> stripes;
   private final boolean skipCorrupt; // TODO: get rid of this
   private final QueryFragmentCounters counters;
-  private boolean[] includedColumns;
   private SchemaEvolution evolution;
   private IoTrace trace;
+  private final Includes includes;
+  private TypeDescription[] batchSchemas;
 
   public OrcEncodedDataConsumer(
-      Consumer<ColumnVectorBatch> consumer, int colCount, boolean skipCorrupt,
+      Consumer<ColumnVectorBatch> consumer, Includes includes, boolean skipCorrupt,
       QueryFragmentCounters counters, LlapDaemonIOMetrics ioMetrics) {
-    super(consumer, colCount, ioMetrics);
+    super(consumer, includes.getPhysicalColumnIds().size(), ioMetrics);
+    this.includes = includes;
     // TODO: get rid of this
     this.skipCorrupt = skipCorrupt;
     this.counters = counters;
@@ -111,29 +113,26 @@ public class OrcEncodedDataConsumer
       ConsumerStripeMetadata stripeMetadata = stripes.get(currentStripeIndex);
       // Get non null row count from root column, to get max vector batches
       int rgIdx = batch.getBatchKey().rgIx;
-      long nonNullRowCount = -1;
+      long nonNullRowCount;
+      boolean noIndex = false;
       if (rgIdx == OrcEncodedColumnBatch.ALL_RGS) {
         nonNullRowCount = stripeMetadata.getRowCount();
       } else {
         OrcProto.RowIndexEntry rowIndex = stripeMetadata.getRowIndexEntry(0, rgIdx);
-        nonNullRowCount = getRowCount(rowIndex);
+        // index is disabled
+        if (rowIndex == null) {
+          nonNullRowCount = stripeMetadata.getRowCount();
+          noIndex = true;
+        } else {
+          nonNullRowCount = getRowCount(rowIndex);
+        }
       }
       int maxBatchesRG = (int) ((nonNullRowCount / VectorizedRowBatch.DEFAULT_SIZE) + 1);
       int batchSize = VectorizedRowBatch.DEFAULT_SIZE;
-      TypeDescription schema = fileMetadata.getSchema();
+      TypeDescription fileSchema = fileMetadata.getSchema();
 
-      if (columnReaders == null || !sameStripe) {
-        int[] columnMapping = new int[schema.getChildren().size()];
-        TreeReaderFactory.Context context =
-            new TreeReaderFactory.ReaderContext()
-                .setSchemaEvolution(evolution)
-                .writerTimeZone(stripeMetadata.getWriterTimezone())
-                .skipCorrupt(skipCorrupt);
-        StructTreeReader treeReader = EncodedTreeReaderFactory.createRootTreeReader(
-            schema, stripeMetadata.getEncodings(), batch, codec, context, columnMapping);
-        this.columnReaders = treeReader.getChildReaders();
-        this.columnMapping = Arrays.copyOf(columnMapping, columnReaders.length);
-        positionInStreams(columnReaders, batch.getBatchKey(), stripeMetadata);
+      if (columnReaders == null || !sameStripe || noIndex) {
+        createColumnReaders(batch, stripeMetadata, fileSchema);
       } else {
         repositionInStreams(this.columnReaders, batch, sameStripe, stripeMetadata);
       }
@@ -154,8 +153,7 @@ public class OrcEncodedDataConsumer
           if (cvb.cols[idx] == null) {
             // Orc store rows inside a root struct (hive writes it this way).
             // When we populate column vectors we skip over the root struct.
-            cvb.cols[idx] = createColumn(schema.getChildren().get(columnMapping[idx]),
-                VectorizedRowBatch.DEFAULT_SIZE);
+            cvb.cols[idx] = createColumn(batchSchemas[idx], VectorizedRowBatch.DEFAULT_SIZE);
           }
           trace.logTreeReaderNextVector(idx);
 
@@ -212,6 +210,26 @@ public class OrcEncodedDataConsumer
       // Caller will return the batch.
       downstreamConsumer.setError(e);
     }
+  }
+
+  private void createColumnReaders(OrcEncodedColumnBatch batch,
+      ConsumerStripeMetadata stripeMetadata, TypeDescription fileSchema) throws IOException {
+    TreeReaderFactory.Context context = new TreeReaderFactory.ReaderContext()
+            .setSchemaEvolution(evolution).skipCorrupt(skipCorrupt)
+            .writerTimeZone(stripeMetadata.getWriterTimezone())
+        ;
+    this.batchSchemas = includes.getBatchReaderTypes(fileSchema);
+    StructTreeReader treeReader = EncodedTreeReaderFactory.createRootTreeReader(
+        batchSchemas, stripeMetadata.getEncodings(), batch, codec, context);
+    this.columnReaders = treeReader.getChildReaders();
+
+    if (LlapIoImpl.LOG.isDebugEnabled()) {
+      for (int i = 0; i < columnReaders.length; ++i) {
+        LlapIoImpl.LOG.debug("Created a reader at " + i + ": " + columnReaders[i]
+            + " from schema " + batchSchemas[i]);
+      }
+    }
+    positionInStreams(columnReaders, batch.getBatchKey(), stripeMetadata);
   }
 
   private ColumnVector createColumn(TypeDescription type, int batchSize) {
@@ -279,6 +297,9 @@ public class OrcEncodedDataConsumer
       ConsumerStripeMetadata stripeMetadata) throws IOException {
     PositionProvider[] pps = createPositionProviders(
         columnReaders, batch.getBatchKey(), stripeMetadata);
+    if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
+      LlapIoImpl.ORC_LOGGER.trace("Created pps {}", Arrays.toString(pps));
+    }
     if (pps == null) return;
     for (int i = 0; i < columnReaders.length; i++) {
       TreeReader reader = columnReaders[i];
@@ -342,15 +363,6 @@ public class OrcEncodedDataConsumer
 
   private long getRowCount(OrcProto.RowIndexEntry rowIndexEntry) {
     return rowIndexEntry.getStatistics().getNumberOfValues();
-  }
-
-  @Override
-  public boolean[] getIncludedColumns() {
-    return includedColumns;
-  }
-
-  public void setIncludedColumns(final boolean[] includedColumns) {
-    this.includedColumns = includedColumns;
   }
 
   public void setSchemaEvolution(SchemaEvolution evolution) {

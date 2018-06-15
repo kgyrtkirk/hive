@@ -65,10 +65,6 @@ public class TestWorker extends CompactorTest {
   static final private String CLASS_NAME = TestWorker.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
-  public TestWorker() throws Exception {
-    super();
-  }
-
   @Test
   public void nothing() throws Exception {
     // Test that the whole things works when there's nothing in the queue.  This is just a
@@ -306,7 +302,7 @@ public class TestWorker extends CompactorTest {
     for (int i = 0; i < stat.length; i++) {
       if (stat[i].getPath().getName().equals(makeDeltaDirNameCompacted(21, 24))) {
         sawNewDelta = true;
-        FileStatus[] buckets = fs.listStatus(stat[i].getPath());
+        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), AcidUtils.hiddenFileFilter);
         Assert.assertEquals(2, buckets.length);
         Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
         Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
@@ -315,7 +311,7 @@ public class TestWorker extends CompactorTest {
       }
       if (stat[i].getPath().getName().equals(makeDeleteDeltaDirNameCompacted(21, 24))) {
         sawNewDelta = true;
-        FileStatus[] buckets = fs.listStatus(stat[i].getPath());
+        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), AcidUtils.hiddenFileFilter);
         Assert.assertEquals(2, buckets.length);
         Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
         Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
@@ -438,7 +434,7 @@ public class TestWorker extends CompactorTest {
     for (int i = 0; i < stat.length; i++) {
       if (stat[i].getPath().getName().equals(makeDeltaDirNameCompacted(21, 24))) {
         sawNewDelta = true;
-        FileStatus[] buckets = fs.listStatus(stat[i].getPath());
+        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), AcidUtils.hiddenFileFilter);
         Assert.assertEquals(2, buckets.length);
         Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
         Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
@@ -446,14 +442,14 @@ public class TestWorker extends CompactorTest {
         Assert.assertEquals(104L, buckets[1].getLen());
       }
       if (stat[i].getPath().getName().equals(makeDeleteDeltaDirNameCompacted(21, 24))) {
-          sawNewDelta = true;
-          FileStatus[] buckets = fs.listStatus(stat[i].getPath());
-          Assert.assertEquals(2, buckets.length);
-          Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
-          Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
-          Assert.assertEquals(104L, buckets[0].getLen());
-          Assert.assertEquals(104L, buckets[1].getLen());
-        } else {
+        sawNewDelta = true;
+        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), AcidUtils.hiddenFileFilter);
+        Assert.assertEquals(2, buckets.length);
+        Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
+        Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
+        Assert.assertEquals(104L, buckets[0].getLen());
+        Assert.assertEquals(104L, buckets[1].getLen());
+      } else {
         LOG.debug("This is not the delta file you are looking for " + stat[i].getPath().getName());
       }
     }
@@ -490,7 +486,7 @@ public class TestWorker extends CompactorTest {
     for (int i = 0; i < stat.length; i++) {
       if (stat[i].getPath().getName().equals(makeDeltaDirNameCompacted(1, 4))) {
         sawNewDelta = true;
-        FileStatus[] buckets = fs.listStatus(stat[i].getPath());
+        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), AcidUtils.hiddenFileFilter);
         Assert.assertEquals(2, buckets.length);
         Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
         Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
@@ -499,7 +495,7 @@ public class TestWorker extends CompactorTest {
       }
       if (stat[i].getPath().getName().equals(makeDeleteDeltaDirNameCompacted(1, 4))) {
         sawNewDelta = true;
-        FileStatus[] buckets = fs.listStatus(stat[i].getPath());
+        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), AcidUtils.hiddenFileFilter);
         Assert.assertEquals(2, buckets.length);
         Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
         Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
@@ -842,7 +838,7 @@ public class TestWorker extends CompactorTest {
     for (int i = 0; i < stat.length; i++) {
       if (stat[i].getPath().getName().equals(makeDeltaDirNameCompacted(21, 24))) {
         sawNewDelta = true;
-        FileStatus[] buckets = fs.listStatus(stat[i].getPath());
+        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), AcidUtils.hiddenFileFilter);
         Assert.assertEquals(2, buckets.length);
         Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
         Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));

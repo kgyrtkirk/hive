@@ -32,16 +32,18 @@ public class TableHandler extends AbstractMessageHandler {
     try {
       List<Task<? extends Serializable>> importTasks = new ArrayList<>();
 
+      context.nestedContext.setConf(context.hiveConf);
       EximUtil.SemanticAnalyzerWrapperContext x =
           new EximUtil.SemanticAnalyzerWrapperContext(
               context.hiveConf, context.db, readEntitySet, writeEntitySet, importTasks, context.log,
               context.nestedContext);
+      x.setEventType(context.dmd.getDumpType());
 
       // REPL LOAD is not partition level. It is always DB or table level. So, passing null for partition specs.
       // Also, REPL LOAD doesn't support external table and hence no location set as well.
       ImportSemanticAnalyzer.prepareImport(false, false, false, false,
           (context.precursor != null), null, context.tableName, context.dbName,
-          null, context.location, x, updatedMetadata);
+          null, context.location, x, updatedMetadata, context.getTxnMgr());
 
       return importTasks;
     } catch (Exception e) {

@@ -46,6 +46,7 @@ import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.lang.Exception;
 import java.lang.Object;
@@ -490,6 +491,25 @@ public class TestJdbcDriver2 {
     assertNotNull(
         "Setting to an unknown type should throw an exception",
         expectedException);
+  }
+
+  @Test
+  public void testPrepareStatementWithSetBinaryStream() throws SQLException {
+    PreparedStatement stmt = con.prepareStatement("select under_col from " + tableName + " where value=?");
+    stmt.setBinaryStream(1, new ByteArrayInputStream("'val_238' or under_col <> 0".getBytes()));
+    ResultSet res = stmt.executeQuery();
+    assertFalse(res.next());
+  }
+
+  @Test
+  public void testPrepareStatementWithSetString() throws SQLException {
+    PreparedStatement stmt = con.prepareStatement("select under_col from " + tableName + " where value=?");
+    stmt.setString(1, "val_238\\' or under_col <> 0 --");
+    ResultSet res = stmt.executeQuery();
+    assertFalse(res.next());
+    stmt.setString(1,  "anyStringHere\\' or 1=1 --");
+    res = stmt.executeQuery();
+    assertFalse(res.next());
   }
 
   private PreparedStatement createPreapredStatementUsingSetObject(String sql) throws SQLException {
@@ -957,7 +977,7 @@ public class TestJdbcDriver2 {
     assertNotNull("ResultSet is null", res);
     assertTrue("getResultSet() not returning expected ResultSet", res == stmt
         .getResultSet());
-    assertEquals("get update count not as expected", -1, stmt.getUpdateCount());
+    assertEquals("get update count not as expected", 0, stmt.getUpdateCount());
     int i = 0;
 
     ResultSetMetaData meta = res.getMetaData();
@@ -1559,6 +1579,8 @@ public class TestJdbcDriver2 {
   @Test
   public void testResultSetMetaData() throws SQLException {
     Statement stmt = con.createStatement();
+
+    stmt.execute("set " + HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname + "=false");
 
     ResultSet res =
         stmt.executeQuery("select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, "
@@ -2940,23 +2962,25 @@ public class TestJdbcDriver2 {
 
   private void testInsertOverwrite(HiveStatement stmt) throws SQLException {
     String tblName = "testInsertOverwriteExecAsync";
-    int rowCount = 0;
-    stmt.execute("create table " + tblName + " (col1 int , col2 string)");
-    boolean isResulSet =
-        stmt.executeAsync("insert overwrite table " + tblName + " select * from " + tableName);
-    assertFalse(isResulSet);
-    // HiveStatement#getUpdateCount blocks until the async query is complete
-    stmt.getUpdateCount();
-    // Read from the new table
-    ResultSet rs = stmt.executeQuery("select * from " + tblName);
-    assertNotNull(rs);
-    while (rs.next()) {
-      String value = rs.getString(2);
-      rowCount++;
-      assertNotNull(value);
+    try {
+      int rowCount = 0;
+      stmt.execute("create table " + tblName + " (col1 int , col2 string)");
+      boolean isResulSet =
+          stmt.executeAsync("insert overwrite table " + tblName + " select * from " + tableName);
+      assertFalse(isResulSet);
+      // HiveStatement#getUpdateCount blocks until the async query is complete
+      rowCount = stmt.getUpdateCount();
+      // Read from the new table
+      ResultSet rs = stmt.executeQuery("select * from " + tblName);
+      assertNotNull(rs);
+      while (rs.next()) {
+        String value = rs.getString(2);
+        assertNotNull(value);
+      }
+      assertEquals(dataFileRowCount, rowCount);
+    } finally {
+      stmt.execute("drop table " + tblName);
     }
-    assertEquals(rowCount, dataFileRowCount);
-    stmt.execute("drop table " + tblName);
   }
 
   // Test that opening a JDBC connection to a non-existent database throws a HiveSQLException

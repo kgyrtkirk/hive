@@ -120,7 +120,7 @@ public class TestHCatClient {
 
     System.setProperty(HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS.varname,
         DbNotificationListener.class.getName()); // turn on db notification listener on metastore
-    msPort = MetaStoreTestUtils.startMetaStore();
+    msPort = MetaStoreTestUtils.startMetaStoreWithRetry();
     securityManager = System.getSecurityManager();
     System.setSecurityManager(new NoExitSecurityManager());
     Policy.setPolicy(new DerbyPolicy());
@@ -178,7 +178,8 @@ public class TestHCatClient {
     if (useExternalMS) {
       assertTrue(testDb.getLocation().matches(".*" + "/" + db + ".db"));
     } else {
-      String expectedDir = warehouseDir.replaceFirst("pfile:///", "pfile:/");
+      String expectedDir = warehouseDir.replaceFirst("pfile:///", "pfile:/")
+          + "/" + msPort;
       assertEquals(expectedDir + "/" + db + ".db", testDb.getLocation());
     }
     ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
@@ -296,6 +297,8 @@ public class TestHCatClient {
     assertNotNull(inner);
     assertNotNull(outer);
     for ( Map.Entry<String,String> e : inner.entrySet()){
+      // If it is bucketing version, skip it
+      if (e.getKey().equals("bucketing_version")) continue;
       assertTrue(outer.containsKey(e.getKey()));
       assertEquals(outer.get(e.getKey()), e.getValue());
     }
@@ -809,7 +812,7 @@ public class TestHCatClient {
       HiveConf conf = new HiveConf();
       conf.set("javax.jdo.option.ConnectionURL", hcatConf.get("javax.jdo.option.ConnectionURL")
         .replace("metastore", "target_metastore"));
-      replicationTargetHCatPort = MetaStoreTestUtils.startMetaStore(conf);
+      replicationTargetHCatPort = MetaStoreTestUtils.startMetaStoreWithRetry(conf);
       replicationTargetHCatConf = new HiveConf(hcatConf);
       replicationTargetHCatConf.setVar(HiveConf.ConfVars.METASTOREURIS,
                                        "thrift://localhost:" + replicationTargetHCatPort);

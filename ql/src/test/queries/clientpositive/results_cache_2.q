@@ -1,5 +1,7 @@
+--! qt:dataset:src
 
 set hive.query.results.cache.enabled=true;
+set hive.query.results.cache.nontransactional.tables.enabled=true;
 set hive.fetch.task.conversion=more;
 
 -- Test 1: fetch task
@@ -38,4 +40,12 @@ set test.comment;
 explain
 select c1, count(*)
 from (select current_timestamp c1, value from src where key < 10) q
+group by c1;
+
+-- Test 4: cache disabled for explain analyze
+set test.comment=EXPLAIN ANALYZE should not use the cache. This query just previously used the cache in Test 2;
+set test.comment;
+explain analyze
+select c1, count(*)
+from (select sign(value) c1, value from src where key < 10) q
 group by c1;

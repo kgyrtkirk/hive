@@ -27,7 +27,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -38,7 +37,6 @@ import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.thrift.TException;
-import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -91,7 +89,11 @@ public class TestExchangePartitions extends MetaStoreClientTest {
   public void tearDown() throws Exception {
     try {
       if (client != null) {
-        client.close();
+        try {
+          client.close();
+        } catch (Exception e) {
+          // HIVE-19729: Shallow the exceptions based on the discussion in the Jira
+        }
       }
     } finally {
       client = null;
@@ -290,160 +292,100 @@ public class TestExchangePartitions extends MetaStoreClientTest {
         sourceTable.getTableName(), destTable.getDbName(), destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionsNonExistingSourceTable() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partitions(partitionSpecs, DB_NAME, "nonexistingtable",
-          destTable.getDbName(), destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partitions(partitionSpecs, DB_NAME, "nonexistingtable", destTable.getDbName(),
+        destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionsNonExistingSourceDB() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partitions(partitionSpecs, "nonexistingdb", sourceTable.getTableName(),
-          destTable.getDbName(), destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partitions(partitionSpecs, "nonexistingdb", sourceTable.getTableName(),
+        destTable.getDbName(), destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionsNonExistingDestTable() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partitions(partitionSpecs, sourceTable.getDbName(),
-          sourceTable.getTableName(), DB_NAME, "nonexistingtable");
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partitions(partitionSpecs, sourceTable.getDbName(), sourceTable.getTableName(),
+        DB_NAME, "nonexistingtable");
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionsNonExistingDestDB() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partitions(partitionSpecs, sourceTable.getDbName(),
-          sourceTable.getTableName(), "nonexistingdb", destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partitions(partitionSpecs, sourceTable.getDbName(), sourceTable.getTableName(),
+        "nonexistingdb", destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionsEmptySourceTable() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partitions(partitionSpecs, DB_NAME, "", destTable.getDbName(),
-          destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partitions(partitionSpecs, DB_NAME, "", destTable.getDbName(),
+        destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionsEmptySourceDB() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partitions(partitionSpecs, "", sourceTable.getTableName(),
-          destTable.getDbName(), destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partitions(partitionSpecs, "", sourceTable.getTableName(),
+        destTable.getDbName(), destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionsEmptyDestTable() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partitions(partitionSpecs, sourceTable.getDbName(),
-          sourceTable.getTableName(), DB_NAME, "");
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partitions(partitionSpecs, sourceTable.getDbName(), sourceTable.getTableName(),
+        DB_NAME, "");
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionsEmptyDestDB() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partitions(partitionSpecs, sourceTable.getDbName(),
-          sourceTable.getTableName(), "", destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partitions(partitionSpecs, sourceTable.getDbName(), sourceTable.getTableName(),
+        "", destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionsNullSourceTable() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partitions(partitionSpecs, DB_NAME, null, destTable.getDbName(),
-          destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partitions(partitionSpecs, DB_NAME, null, destTable.getDbName(),
+        destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionsNullSourceDB() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partitions(partitionSpecs, null, sourceTable.getTableName(),
-          destTable.getDbName(), destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partitions(partitionSpecs, null, sourceTable.getTableName(),
+        destTable.getDbName(), destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionsNullDestTable() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partitions(partitionSpecs, sourceTable.getDbName(),
-          sourceTable.getTableName(), DB_NAME, null);
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partitions(partitionSpecs, sourceTable.getDbName(), sourceTable.getTableName(),
+        DB_NAME, null);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionsNullDestDB() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partitions(partitionSpecs, sourceTable.getDbName(),
-          sourceTable.getTableName(), null, destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partitions(partitionSpecs, sourceTable.getDbName(), sourceTable.getTableName(),
+        null, destTable.getTableName());
   }
 
   @Test(expected = MetaException.class)
@@ -454,15 +396,10 @@ public class TestExchangePartitions extends MetaStoreClientTest {
         sourceTable.getTableName(), destTable.getDbName(), destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionsNullPartSpec() throws Exception {
-    try {
-      client.exchange_partitions(null, sourceTable.getDbName(), sourceTable.getTableName(), null,
-          destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: NPE should not be thrown
-    }
+    client.exchange_partitions(null, sourceTable.getDbName(), sourceTable.getTableName(), null,
+        destTable.getTableName());
   }
 
   @Test(expected = MetaException.class)
@@ -475,9 +412,6 @@ public class TestExchangePartitions extends MetaStoreClientTest {
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
     client.exchange_partitions(partitionSpecs, DB_NAME, sourceTable.getTableName(), DB_NAME,
         destTable.getTableName());
-    // TODO: In this case we get an exception, because the insert statement fails due to duplicated
-    // primary key. Maybe this use case could be handled better by checking if the partition already
-    // exists.
   }
 
   @Test
@@ -691,8 +625,6 @@ public class TestExchangePartitions extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   public void testExchangePartitionsNoPartExists() throws Exception {
 
-    // TODO: FileNotFoundException will occur. This use case could be handled in a better way like
-    // checking if the partitionsToExchange is empty and throw an exception if it is.
     Map<String, String> partitionSpecs =
         getPartitionSpec(Lists.newArrayList("2017", "march", "25"));
     client.exchange_partitions(partitionSpecs, sourceTable.getDbName(),
@@ -883,160 +815,100 @@ public class TestExchangePartitions extends MetaStoreClientTest {
         sourceTable.getTableName(), destTable.getDbName(), destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionNonExistingSourceTable() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partition(partitionSpecs, DB_NAME, "nonexistingtable",
-          destTable.getDbName(), destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partition(partitionSpecs, DB_NAME, "nonexistingtable", destTable.getDbName(),
+        destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionNonExistingSourceDB() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partition(partitionSpecs, "nonexistingdb", sourceTable.getTableName(),
-          destTable.getDbName(), destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partition(partitionSpecs, "nonexistingdb", sourceTable.getTableName(),
+        destTable.getDbName(), destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionNonExistingDestTable() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partition(partitionSpecs, sourceTable.getDbName(),
-          sourceTable.getTableName(), DB_NAME, "nonexistingtable");
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partition(partitionSpecs, sourceTable.getDbName(), sourceTable.getTableName(),
+        DB_NAME, "nonexistingtable");
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionNonExistingDestDB() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partition(partitionSpecs, sourceTable.getDbName(),
-          sourceTable.getTableName(), "nonexistingdb", destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partition(partitionSpecs, sourceTable.getDbName(), sourceTable.getTableName(),
+        "nonexistingdb", destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionEmptySourceTable() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partition(partitionSpecs, DB_NAME, "", destTable.getDbName(),
-          destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partition(partitionSpecs, DB_NAME, "", destTable.getDbName(),
+        destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionEmptySourceDB() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partition(partitionSpecs, "", sourceTable.getTableName(),
-          destTable.getDbName(), destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partition(partitionSpecs, "", sourceTable.getTableName(), destTable.getDbName(),
+        destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionEmptyDestTable() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partition(partitionSpecs, sourceTable.getDbName(),
-          sourceTable.getTableName(), DB_NAME, "");
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partition(partitionSpecs, sourceTable.getDbName(), sourceTable.getTableName(),
+        DB_NAME, "");
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionEmptyDestDB() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partition(partitionSpecs, sourceTable.getDbName(),
-          sourceTable.getTableName(), "", destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partition(partitionSpecs, sourceTable.getDbName(), sourceTable.getTableName(),
+        "", destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionNullSourceTable() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partition(partitionSpecs, DB_NAME, null, destTable.getDbName(),
-          destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partition(partitionSpecs, DB_NAME, null, destTable.getDbName(),
+        destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionNullSourceDB() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partition(partitionSpecs, null, sourceTable.getTableName(),
-          destTable.getDbName(), destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partition(partitionSpecs, null, sourceTable.getTableName(),
+        destTable.getDbName(), destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionNullDestTable() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partition(partitionSpecs, sourceTable.getDbName(),
-          sourceTable.getTableName(), DB_NAME, null);
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partition(partitionSpecs, sourceTable.getDbName(), sourceTable.getTableName(),
+        DB_NAME, null);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionNullDestDB() throws Exception {
 
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
-    try {
-      client.exchange_partition(partitionSpecs, sourceTable.getDbName(),
-          sourceTable.getTableName(), null, destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: Non existing table or db should be handled correctly and NPE should not occur.
-    }
+    client.exchange_partition(partitionSpecs, sourceTable.getDbName(), sourceTable.getTableName(),
+        null, destTable.getTableName());
   }
 
   @Test(expected = MetaException.class)
@@ -1047,15 +919,11 @@ public class TestExchangePartitions extends MetaStoreClientTest {
         sourceTable.getTableName(), destTable.getDbName(), destTable.getTableName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testExchangePartitionNullPartSpec() throws Exception {
-    try {
-      client.exchange_partition(null, sourceTable.getDbName(), sourceTable.getTableName(), null,
-          destTable.getTableName());
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: NPE should not be thrown
-    }
+
+    client.exchange_partition(null, sourceTable.getDbName(), sourceTable.getTableName(), null,
+        destTable.getTableName());
   }
 
   @Test(expected = MetaException.class)
@@ -1068,9 +936,6 @@ public class TestExchangePartitions extends MetaStoreClientTest {
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
     client.exchange_partition(partitionSpecs, DB_NAME, sourceTable.getTableName(), DB_NAME,
         destTable.getTableName());
-    // TODO: In this case we get an exception, because the insert statement fails due to duplicated
-    // primary key. Maybe this use case could be handled better by checking if the partition already
-    // exists.
   }
 
   @Test
@@ -1284,8 +1149,6 @@ public class TestExchangePartitions extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   public void testExchangePartitionNoPartExists() throws Exception {
 
-    // TODO: FileNotFoundException will occur. This use case could be handled in a better way like
-    // checking if the partitionsToExchange is empty and throw an exception if it is.
     Map<String, String> partitionSpecs =
         getPartitionSpec(Lists.newArrayList("2017", "march", "25"));
     client.exchange_partition(partitionSpecs, sourceTable.getDbName(),
@@ -1302,10 +1165,9 @@ public class TestExchangePartitions extends MetaStoreClientTest {
 
   // Helper methods
   private void createDB(String dbName) throws TException {
-    Database db = new DatabaseBuilder()
+    new DatabaseBuilder()
         .setName(dbName)
-        .build();
-    client.createDatabase(db);
+        .create(client, metaStore.getConf());
   }
 
   private Table createSourceTable() throws Exception {
@@ -1326,14 +1188,13 @@ public class TestExchangePartitions extends MetaStoreClientTest {
 
   private Table createTable(String dbName, String tableName, List<FieldSchema> partCols,
       List<FieldSchema> cols, String location) throws Exception {
-    Table table = new TableBuilder()
+    new TableBuilder()
         .setDbName(dbName)
         .setTableName(tableName)
         .setCols(cols)
         .setPartCols(partCols)
         .setLocation(location)
-        .build();
-    client.createTable(table);
+        .create(client, metaStore.getConf());
     return client.getTable(dbName, tableName);
   }
 
@@ -1384,7 +1245,7 @@ public class TestExchangePartitions extends MetaStoreClientTest {
         .addStorageDescriptorParam("test_exch_sd_param_key", "test_exch_sd_param_value")
         .setCols(getYearMonthAndDayPartCols())
         .setLocation(location)
-        .build();
+        .build(metaStore.getConf());
     return partition;
   }
 

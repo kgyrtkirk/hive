@@ -23,9 +23,13 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.column.page.PageReader;
+import org.apache.parquet.schema.DecimalMetadata;
 import org.apache.parquet.schema.Type;
 
 import java.io.IOException;
+
+import static org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT32;
+import static org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.INT64;
 
 /**
  * It's column level Parquet reader which is used to read a batch of records for a column,
@@ -121,6 +125,12 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
+  private static void setNullValue(ColumnVector c, int rowId) {
+    c.isNull[rowId] = true;
+    c.isRepeating = false;
+    c.noNulls = false;
+  }
+
   private void readDictionaryIDs(
       int total,
       LongColumnVector c,
@@ -133,9 +143,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         c.isNull[rowId] = false;
         c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -151,12 +159,15 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
         c.vector[rowId] = dataColumn.readInteger();
-        c.isNull[rowId] = false;
-        c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        if (dataColumn.isValid(c.vector[rowId])) {
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        } else {
+          c.vector[rowId] = 0;
+          setNullValue(c, rowId);
+        }
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -172,12 +183,15 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
         c.vector[rowId] = dataColumn.readDouble();
-        c.isNull[rowId] = false;
-        c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        if (dataColumn.isValid(c.vector[rowId])) {
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        } else {
+          c.vector[rowId] = 0;
+          setNullValue(c, rowId);
+        }
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -196,9 +210,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         c.isNull[rowId] = false;
         c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -214,12 +226,15 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
         c.vector[rowId] = dataColumn.readLong();
-        c.isNull[rowId] = false;
-        c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        if (dataColumn.isValid(c.vector[rowId])) {
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        } else {
+          c.vector[rowId] = 0;
+          setNullValue(c, rowId);
+        }
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -235,12 +250,15 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
         c.vector[rowId] = dataColumn.readFloat();
-        c.isNull[rowId] = false;
-        c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        if (dataColumn.isValid(c.vector[rowId])) {
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        } else {
+          c.vector[rowId] = 0;
+          setNullValue(c, rowId);
+        }
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -251,20 +269,30 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       int total,
       DecimalColumnVector c,
       int rowId) throws IOException {
-    decimalTypeCheck(type);
+
+    DecimalMetadata decimalMetadata = type.asPrimitiveType().getDecimalMetadata();
+    fillDecimalPrecisionScale(decimalMetadata, c);
+
     int left = total;
-    c.precision = (short) type.asPrimitiveType().getDecimalMetadata().getPrecision();
-    c.scale = (short) type.asPrimitiveType().getDecimalMetadata().getScale();
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        c.vector[rowId].set(dataColumn.readDecimal(), c.scale);
-        c.isNull[rowId] = false;
-        c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        if (decimalMetadata != null) {
+          c.vector[rowId].set(dataColumn.readDecimal(), c.scale);
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        } else {
+          long value = dataColumn.readLong();
+          if (dataColumn.isValid(value)) {
+            c.vector[rowId].setFromLong(value);
+            c.isNull[rowId] = false;
+            c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+          } else {
+            setNullValue(c, rowId);
+          }
+        }
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -284,9 +312,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         // TODO figure out a better way to set repeat for Binary type
         c.isRepeating = false;
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -306,9 +332,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         // TODO figure out a better way to set repeat for Binary type
         c.isRepeating = false;
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -328,9 +352,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         // TODO figure out a better way to set repeat for Binary type
         c.isRepeating = false;
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -350,9 +372,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         // TODO figure out a better way to set repeat for Binary type
         c.isRepeating = false;
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -377,9 +397,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         c.isRepeating =
             c.isRepeating && ((c.time[0] == c.time[rowId]) && (c.nanos[0] == c.nanos[rowId]));
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -411,8 +429,11 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       for (int i = rowId; i < rowId + num; ++i) {
         ((LongColumnVector) column).vector[i] =
             dictionary.readInteger((int) dictionaryIds.vector[i]);
-      }
-      break;
+        if (!(dictionary.isValid(((LongColumnVector) column).vector[i]))) {
+          setNullValue(column, i);
+          ((LongColumnVector) column).vector[i] = 0;
+        }
+      } break;
     case DATE:
     case INTERVAL_YEAR_MONTH:
     case LONG:
@@ -464,14 +485,26 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       }
       break;
     case DECIMAL:
-      decimalTypeCheck(type);
+      DecimalMetadata decimalMetadata = type.asPrimitiveType().getDecimalMetadata();
       DecimalColumnVector decimalColumnVector = ((DecimalColumnVector) column);
-      decimalColumnVector.precision = (short) type.asPrimitiveType().getDecimalMetadata().getPrecision();
-      decimalColumnVector.scale = (short) type.asPrimitiveType().getDecimalMetadata().getScale();
-      for (int i = rowId; i < rowId + num; ++i) {
-        decimalColumnVector.vector[i]
-            .set(dictionary.readDecimal((int) dictionaryIds.vector[i]),
-                decimalColumnVector.scale);
+
+      fillDecimalPrecisionScale(decimalMetadata, decimalColumnVector);
+
+      if (decimalMetadata != null) {
+        for (int i = rowId; i < rowId + num; ++i) {
+          decimalColumnVector.vector[i].set(dictionary.readDecimal((int) dictionaryIds.vector[i]),
+              decimalColumnVector.scale);
+        }
+      } else {
+        for (int i = rowId; i < rowId + num; ++i) {
+          long value = dictionary.readLong((int) dictionaryIds.vector[i]);
+          if (dictionary.isValid(value)) {
+            decimalColumnVector.vector[i]
+                .setFromLong(dictionary.readLong((int) dictionaryIds.vector[i]));
+          } else {
+            setNullValue(column, i);
+          }
+        }
       }
       break;
     case TIMESTAMP:
@@ -483,6 +516,24 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     case INTERVAL_DAY_TIME:
     default:
       throw new UnsupportedOperationException("Unsupported type: " + type);
+    }
+  }
+
+  private void fillDecimalPrecisionScale(DecimalMetadata decimalMetadata,
+      DecimalColumnVector decimalColumnVector) {
+    if (decimalMetadata != null) {
+      decimalColumnVector.precision =
+          (short) type.asPrimitiveType().getDecimalMetadata().getPrecision();
+      decimalColumnVector.scale = (short) type.asPrimitiveType().getDecimalMetadata().getScale();
+    } else if (type.asPrimitiveType().getPrimitiveTypeName() == INT32) {
+      decimalColumnVector.precision = 10;
+      decimalColumnVector.scale = 0;
+    } else if (type.asPrimitiveType().getPrimitiveTypeName() == INT64) {
+      decimalColumnVector.precision = 19;
+      decimalColumnVector.scale = 0;
+    } else {
+      throw new UnsupportedOperationException(
+          "The underlying Parquet type cannot be converted to Hive Decimal type: " + type);
     }
   }
 }

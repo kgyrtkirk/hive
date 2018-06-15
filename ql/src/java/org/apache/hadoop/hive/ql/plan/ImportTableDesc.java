@@ -60,7 +60,7 @@ public class ImportTableDesc {
         this.createTblDesc = new CreateTableDesc(dbName,
                 table.getTableName(),
                 false, // isExternal: set to false here, can be overwritten by the IMPORT stmt
-                table.isTemporary(),
+                false,
                 table.getSd().getCols(),
                 table.getPartitionKeys(),
                 table.getSd().getBucketCols(),
@@ -82,7 +82,9 @@ public class ImportTableDesc {
                 null,
                 null,
                 null,
-                null);
+                null,
+            null,
+            null);
         this.createTblDesc.setStoredAsSubDirectories(table.getSd().isStoredAsSubDirectories());
         break;
       case VIEW:
@@ -320,9 +322,9 @@ public class ImportTableDesc {
       HiveConf conf) {
     switch (getDescType()) {
     case TABLE:
-      return TaskFactory.get(new DDLWork(inputs, outputs, createTblDesc), conf, true);
+        return TaskFactory.get(new DDLWork(inputs, outputs, createTblDesc), conf);
     case VIEW:
-      return TaskFactory.get(new DDLWork(inputs, outputs, createViewDesc), conf, true);
+        return TaskFactory.get(new DDLWork(inputs, outputs, createViewDesc), conf);
     }
     return null;
   }
@@ -345,5 +347,16 @@ public class ImportTableDesc {
       return TableType.MATERIALIZED_VIEW;
     }
     return TableType.MANAGED_TABLE;
+  }
+
+  public Table toTable(HiveConf conf) throws Exception {
+    switch (getDescType()) {
+      case TABLE:
+        return createTblDesc.toTable(conf);
+      case VIEW:
+        return createViewDesc.toTable(conf);
+      default:
+        return null;
+    }
   }
 }

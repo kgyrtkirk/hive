@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.adapter.druid.DruidSchema;
 import org.apache.calcite.adapter.druid.DruidTable;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -65,6 +67,7 @@ import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -125,7 +128,7 @@ public final class HiveMaterializedViewsRegistry {
       // Create a new conf object to bypass metastore authorization, as we need to
       // retrieve all materialized views from all databases
       HiveConf conf = new HiveConf();
-      conf.set(HiveConf.ConfVars.METASTORE_FILTER_HOOK.varname,
+      conf.set(MetastoreConf.ConfVars.FILTER_HOOK.getVarname(),
           DefaultMetaStoreFilterHookImpl.class.getName());
       init(Hive.get(conf));
     } catch (HiveException e) {
@@ -158,6 +161,7 @@ public final class HiveMaterializedViewsRegistry {
     @Override
     public void run() {
       try {
+        SessionState.start(db.getConf());
         for (String dbName : db.getAllDatabases()) {
           for (Table mv : db.getAllMaterializedViewObjects(dbName)) {
             addMaterializedView(db.getConf(), mv, OpType.LOAD);
@@ -192,6 +196,8 @@ public final class HiveMaterializedViewsRegistry {
   private RelOptMaterialization addMaterializedView(HiveConf conf, Table materializedViewTable, OpType opType) {
     // Bail out if it is not enabled for rewriting
     if (!materializedViewTable.isRewriteEnabled()) {
+      LOG.debug("Materialized view " + materializedViewTable.getCompleteName() +
+          " ignored; it is not rewrite enabled");
       return null;
     }
 
@@ -376,21 +382,20 @@ public final class HiveMaterializedViewsRegistry {
       List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
       rowType = dtFactory.createStructType(druidColTypes, druidColNames);
       RelOptHiveTable optTable = new RelOptHiveTable(null, fullyQualifiedTabName,
-              rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-              conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
-
+          rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
+          conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
       DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
           dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
           intervals, null, null);
       final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
           optTable, viewTable.getTableName(), null, false, false);
       tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
-          optTable, druidTable, ImmutableList.<RelNode>of(scan));
+          optTable, druidTable, ImmutableList.<RelNode>of(scan), ImmutableMap.of());
     } else {
       // Build Hive Table Scan Rel
       RelOptHiveTable optTable = new RelOptHiveTable(null, fullyQualifiedTabName,
-              rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-              conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
+          rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
+          conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
       tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
           viewTable.getTableName(), null, false, false);
     }
@@ -411,24 +416,32 @@ public final class HiveMaterializedViewsRegistry {
       return analyzer.genLogicalPlan(node);
     } catch (Exception e) {
       // We could not parse the view
-      LOG.error(e.getMessage());
+      LOG.error("Error parsing original query for materialized view", e);
       return null;
     }
   }
 
   private static TableType obtainTableType(Table tabMetaData) {
-    if (tabMetaData.getStorageHandler() != null &&
-            tabMetaData.getStorageHandler().toString().equals(
-                    Constants.DRUID_HIVE_STORAGE_HANDLER_ID)) {
-      return TableType.DRUID;
+    if (tabMetaData.getStorageHandler() != null) {
+      final String storageHandlerStr = tabMetaData.getStorageHandler().toString();
+      if (storageHandlerStr.equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID)) {
+        return TableType.DRUID;
+      }
+
+      if (storageHandlerStr.equals(Constants.JDBC_HIVE_STORAGE_HANDLER_ID)) {
+        return TableType.JDBC;
+      }
+
     }
+
     return TableType.NATIVE;
   }
 
   //@TODO this seems to be the same as org.apache.hadoop.hive.ql.parse.CalcitePlanner.TableType.DRUID do we really need both
   private enum TableType {
     DRUID,
-    NATIVE
+    NATIVE,
+    JDBC
   }
 
   private enum OpType {
