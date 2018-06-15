@@ -1255,7 +1255,6 @@ public class QTestUtil {
     CliSessionState ss = (CliSessionState) SessionState.get();
 
     if (fileName.equals("init_file.q")) {
-      // FIXME: remove this crap; it probably unused anyway
       ss.initFiles.add(AbstractCliConfig.HIVE_ROOT + "/data/scripts/test_init_file.sql");
     }
     cliDriver.processInitFiles(ss);
