@@ -401,9 +401,7 @@ public class XXXJsonHiveStructReader {
   }
 
   public ObjectInspector getObjectInspector() {
-    throw new RuntimeException();
-    // TODO Auto-generated method stub
-    // return null;
+    return oi;
   }
 
 }
