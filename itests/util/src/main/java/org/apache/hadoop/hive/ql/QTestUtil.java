@@ -1239,18 +1239,12 @@ public class QTestUtil {
     cliDriver.processCmd("set hive.cli.print.header=true;");
   }
 
-  public void cliInit(File file) throws Exception {
-    cliInit(file, true);
+  public String cliInit(File file, boolean recreate) throws Exception {
+    return cliInit(file);
   }
 
-  public String cliInit(File file, boolean recreate) throws Exception {
+  public String cliInit(File file) throws Exception {
     String fileName = file.getName();
-
-    if (recreate) {
-      cleanUp(fileName);
-      createSources(fileName);
-      throw new RuntimeException("WHY WE RECREATE?!");
-    }
 
     CliSessionState ss = (CliSessionState) SessionState.get();
 
