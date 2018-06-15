@@ -158,8 +158,8 @@ public class JsonSerDe extends AbstractSerDe {
     JsonParser p;
     try {
       row = structReader.parseStruct(new ByteArrayInputStream((t.getBytes()), 0, t.getLength()));
-      List row2 = fatLand((Object[]) row);
-      return new DefaultHCatRecord(row2);
+      List fatRow = fatLand((Object[]) row);
+      return new DefaultHCatRecord(fatRow);
     } catch (Exception e) {
       LOG.warn("Error [{}] parsing json text [{}].", e, t);
       throw new SerDeException(e);
