@@ -72,9 +72,6 @@ public class XXXJsonHiveStructReader {
 
   Set<String> reportedUnknownFieldNames = new HashSet<>();
 
-  @Deprecated
-  private boolean demoteToPrimitives = true;
-
   public XXXJsonHiveStructReader(TypeInfo t) {
     outputOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(t);
     factory = new JsonFactory();
