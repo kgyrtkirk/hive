@@ -72,6 +72,9 @@ public class XXXJsonHiveStructReader {
 
   Set<String> reportedUnknownFieldNames = new HashSet<>();
 
+  @Deprecated
+  private boolean demoteToPrimitives = true;
+
   public XXXJsonHiveStructReader(TypeInfo t) {
     outputOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(t);
     factory = new JsonFactory();
@@ -275,16 +278,17 @@ public class XXXJsonHiveStructReader {
     if (parser.getCurrentToken() != JsonToken.START_ARRAY) {
       throw new HiveException("array expected");
     }
+    ObjectInspector eOI = oi.getListElementObjectInspector();
     JsonToken currentToken = parser.nextToken();
     try {
       while (currentToken != null && currentToken != JsonToken.END_ARRAY) {
-        ObjectInspector eOI = oi.getListElementObjectInspector();
         ret.add(parseDispatcher(parser, eOI));
         currentToken = parser.getCurrentToken();
       }
     } catch (Exception e) {
       throw new HiveException("array: " + e.getMessage(), e);
     }
+
     currentToken = parser.nextToken();
 
     return ret;
@@ -355,6 +359,7 @@ public class XXXJsonHiveStructReader {
     }
     throw new IOException("Could not convert from string to map type " + mapKeyType.getTypeName());
   }
+
   private static Object parseMapKey(JsonParser parser, PrimitiveObjectInspector oi) throws HiveException, IOException {
     JsonToken currentToken = parser.getCurrentToken();
     if (currentToken == null) {

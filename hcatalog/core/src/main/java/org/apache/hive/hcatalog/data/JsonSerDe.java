@@ -85,12 +85,13 @@ import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema.Type;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS,
                           serdeConstants.LIST_COLUMN_TYPES,
@@ -227,7 +228,7 @@ public class JsonSerDe extends AbstractSerDe {
         ret.add(fatLand2(((Map) o)));
       } else if (o != null && o instanceof List<?>) {
         ret.add(fatLand(((List) o).toArray()));
-      } else if (o != null && o.getClass().isArray()) {
+      } else if (o != null && o.getClass().isArray() && o.getClass().getComponentType() != byte.class) {
         Class<?> ct = o.getClass().getComponentType();
         if (ct.isPrimitive()) {
           ret.add(primitiveArrayToList(o));
@@ -242,6 +243,10 @@ public class JsonSerDe extends AbstractSerDe {
     return ret;
   }
 
+
+  private Object fatBinary(byte[] o) {
+    return Arrays.asList(o);
+  }
 
   private Object fatLand2(Map<Object, Object> map) {
     Map ret = new LinkedHashMap<>();
