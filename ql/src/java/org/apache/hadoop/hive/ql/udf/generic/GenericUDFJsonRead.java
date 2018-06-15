@@ -28,8 +28,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
-import com.fasterxml.jackson.core.JsonFactory;
-
 /**
  * Parses a json string representation into a Hive struct.
  */
@@ -39,12 +37,8 @@ import com.fasterxml.jackson.core.JsonFactory;
     + "Example:\n" + "select _FUNC_('[]','array<struct<a:string>>' ")
 public class GenericUDFJsonRead extends GenericUDF {
 
-  @Deprecated
-  private ObjectInspector outputOI;
-  @Deprecated
-  private transient JsonFactory factory;
   private TextConverter inputConverter;
-  private XXXJsonHiveStructReader xxx;
+  private XXXJsonHiveStructReader jsonReader;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -61,15 +55,13 @@ public class GenericUDFJsonRead extends GenericUDF {
 
     try {
       TypeInfo t = TypeInfoUtils.getTypeInfoFromTypeString(typeStr);
-      xxx = new XXXJsonHiveStructReader(t);
-      xxx.setWritablesUsage(true);
-      outputOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(t);
+      jsonReader = new XXXJsonHiveStructReader(t);
+      jsonReader.setWritablesUsage(true);
     } catch (Exception e) {
       throw new UDFArgumentException(getFuncName() + ": Error parsing typestring: " + e.getMessage());
     }
 
-    factory = new JsonFactory();
-    return outputOI;
+    return jsonReader.getObjectInspector();
   }
 
   @Override
@@ -84,7 +76,7 @@ public class GenericUDFJsonRead extends GenericUDF {
       if (text.trim().length() == 0) {
         return null;
       }
-      return xxx.parseStruct(text);
+      return jsonReader.parseStruct(text);
     } catch (Exception e) {
       throw new HiveException("Error parsing json: " + e.getMessage(), e);
     }

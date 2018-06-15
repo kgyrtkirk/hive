@@ -63,8 +63,7 @@ public class XXXJsonHiveStructReader {
 
   private static final Logger LOG = LoggerFactory.getLogger(XXXJsonHiveStructReader.class);
 
-  // XXX: RENAME
-  private ObjectInspector outputOI;
+  private ObjectInspector oi;
   private JsonFactory factory;
 
   // FIX THIS!
@@ -79,7 +78,7 @@ public class XXXJsonHiveStructReader {
   private boolean writeablePrimitives;
 
   public XXXJsonHiveStructReader(TypeInfo t) {
-    outputOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(t);
+    oi = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(t);
     factory = new JsonFactory();
 
   }
@@ -106,7 +105,7 @@ public class XXXJsonHiveStructReader {
   private Object parseInternal(JsonParser parser) throws HiveException {
     try {
       parser.nextToken();
-      Object res = parseDispatcher(parser, outputOI);
+      Object res = parseDispatcher(parser, oi);
       return res;
     } catch (Exception e) {
       String locationStr = parser.getCurrentLocation().getLineNr() + "," + parser.getCurrentLocation().getColumnNr();
@@ -399,6 +398,12 @@ public class XXXJsonHiveStructReader {
 
   public void setWritablesUsage(boolean b) {
     writeablePrimitives = b;
+  }
+
+  public ObjectInspector getObjectInspector() {
+    throw new RuntimeException();
+    // TODO Auto-generated method stub
+    // return null;
   }
 
 }
