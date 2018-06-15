@@ -277,80 +277,6 @@ public class QTestUtil {
     return conf;
   }
 
-  public boolean deleteDirectory(File path) {
-    if (path.exists()) {
-      File[] files = path.listFiles();
-      for (File file : files) {
-        if (file.isDirectory()) {
-          deleteDirectory(file);
-        } else {
-          file.delete();
-        }
-      }
-    }
-    return (path.delete());
-  }
-
-  public void copyDirectoryToLocal(Path src, Path dest) throws Exception {
-
-    FileSystem srcFs = src.getFileSystem(conf);
-    FileSystem destFs = dest.getFileSystem(conf);
-    if (srcFs.exists(src)) {
-      FileStatus[] files = srcFs.listStatus(src);
-      for (FileStatus file : files) {
-        String name = file.getPath().getName();
-        Path dfs_path = file.getPath();
-        Path local_path = new Path(dest, name);
-
-        // If this is a source table we do not copy it out
-        if (getSrcTables().contains(name)) {
-          continue;
-        }
-
-        if (file.isDirectory()) {
-          if (!destFs.exists(local_path)) {
-            destFs.mkdirs(local_path);
-          }
-          copyDirectoryToLocal(dfs_path, local_path);
-        } else {
-          srcFs.copyToLocalFile(dfs_path, local_path);
-        }
-      }
-    }
-  }
-
-  static Pattern mapTok = Pattern.compile("(\\.?)(.*)_map_(.*)");
-  static Pattern reduceTok = Pattern.compile("(.*)(reduce_[^\\.]*)((\\..*)?)");
-
-  public void normalizeNames(File path) throws Exception {
-    if (path.isDirectory()) {
-      File[] files = path.listFiles();
-      for (File file : files) {
-        normalizeNames(file);
-      }
-    } else {
-      Matcher m = reduceTok.matcher(path.getName());
-      if (m.matches()) {
-        String name = m.group(1) + "reduce" + m.group(3);
-        path.renameTo(new File(path.getParent(), name));
-      } else {
-        m = mapTok.matcher(path.getName());
-        if (m.matches()) {
-          String name = m.group(1) + "map_" + m.group(3);
-          path.renameTo(new File(path.getParent(), name));
-        }
-      }
-    }
-  }
-
-  public String getOutputDirectory() {
-    return outDir;
-  }
-
-  public String getLogDirectory() {
-    return logDir;
-  }
-
   private String getHadoopMainVersion(String input) {
     if (input == null) {
       return null;
@@ -710,7 +636,7 @@ public class QTestUtil {
     if (clusterType == MiniClusterType.druid || clusterType == MiniClusterType.druidKafka) {
       final String tempDir = System.getProperty("test.tmp.dir");
       druidCluster = new MiniDruidCluster("mini-druid",
-          getLogDirectory(),
+          logDir,
           tempDir,
           setup.zkPort,
           Utilities.jarFinderGetJar(MiniDruidCluster.class)
@@ -730,7 +656,7 @@ public class QTestUtil {
 
     if(clusterType == MiniClusterType.kafka || clusterType == MiniClusterType.druidKafka) {
       kafkaCluster = new SingleNodeKafkaCluster("kafka",
-          getLogDirectory() + "/kafka-cluster",
+          logDir + "/kafka-cluster",
           setup.zkPort
       );
       kafkaCluster.init(conf);
@@ -819,10 +745,11 @@ public class QTestUtil {
   }
 
   public void addFile(String queryFile) throws IOException {
-    addFile(queryFile, false);
+    addFileX(queryFile, false);
   }
 
-  public void addFile(String queryFile, boolean partial) throws IOException {
+  @Deprecated
+  public void addFileX(String queryFile, boolean partial) throws IOException {
     addFile(new File(queryFile));
   }
 
@@ -2080,7 +2007,7 @@ public class QTestUtil {
       qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, null, "0.20",
         initScript == null ? defaultInitScript : initScript,
         cleanupScript == null ? defaultCleanupScript : cleanupScript, false);
-      qt[i].addFile(qfiles[i]);
+      qt[i].addFile(qfiles[i], false);
       qt[i].clearTestSideEffects();
     }
 
