@@ -117,7 +117,7 @@ public class JsonSerDe2 extends AbstractSerDe {
     structReader = new HiveJsonStructReader(rowTypeInfo, tsParser);
     structReader.setIgnoreUnknownFields(true);
     structReader.enableHiveColIndexParsing(true);
-
+    structReader.setWritablesUsage(true);
   }
 
   /**
@@ -382,6 +382,10 @@ public class JsonSerDe2 extends AbstractSerDe {
 
   public StructTypeInfo getTypeInfo() {
     return rowTypeInfo;
+  }
+
+  public void setWriteablesUsage(boolean b) {
+    structReader.setWritablesUsage(b);
   }
 
 }
