@@ -35,7 +35,6 @@ import java.util.Set;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.HiveJsonStructReader;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -78,7 +77,6 @@ import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS,
@@ -158,34 +156,14 @@ public class JsonSerDe extends AbstractSerDe {
     Object row;
     Text t = (Text) blob;
     JsonParser p;
-    List<Object> r = new ArrayList<Object>(Collections.nCopies(columnNames.size(), null));
     try {
-      if (true) {
-        try {
-          //
-
-          row = structReader.parseStruct(new ByteArrayInputStream((t.getBytes()), 0, t.getLength()));
-
-          //XXX
-        } catch (HiveException e) {
-          throw new SerDeException(e);
-        }
-      }
-
-      //XXX
-    } catch (JsonParseException e) {
-      LOG.warn("Error [{}] parsing json text [{}].", e, t);
-      throw new SerDeException(e);
-    } catch (IOException e) {
+      row = structReader.parseStruct(new ByteArrayInputStream((t.getBytes()), 0, t.getLength()));
+      List row2 = fatLand((Object[]) row);
+      return new DefaultHCatRecord(row2);
+    } catch (Exception e) {
       LOG.warn("Error [{}] parsing json text [{}].", e, t);
       throw new SerDeException(e);
     }
-
-    List row2 = fatLand((Object[]) row);
-
-    boolean aa = row2.equals(r);
-
-    return new DefaultHCatRecord(row2);
   }
 
   private List fatLand(Object[] arr) {
