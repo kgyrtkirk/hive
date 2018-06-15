@@ -31,7 +31,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 
-// FIXME: this needs some improvement
 public class CoreHBaseNegativeCliDriver extends CliAdapter {
 
   private HBaseQTestUtil qt;
