@@ -229,11 +229,12 @@ public class XXXJsonHiveStructReader {
     return oi.getStructFieldRef(name);
   }
 
+  Pattern internalPattern = Pattern.compile("^_col([0-9]+)$");
+
   private int getColIndex(String internalName) {
     // The above line should have been all the implementation that
     // we need, but due to a bug in that impl which recognizes
     // only single-digit columns, we need another impl here.
-    Pattern internalPattern = Pattern.compile("_col([0-9]+)");
     Matcher m = internalPattern.matcher(internalName);
     if (!m.matches()) {
       return -1;
