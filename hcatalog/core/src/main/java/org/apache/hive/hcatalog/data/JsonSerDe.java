@@ -226,13 +226,13 @@ public class JsonSerDe extends AbstractSerDe {
     Set<Entry<Object, Object>> es = map.entrySet();
     for (Entry<Object, Object> e : es) {
       Object oldV = e.getValue();
-      Object v;
-      if (oldV.getClass().isArray()) {
-        v = fatLand((Object[]) oldV);
+      Object newV;
+      if (oldV != null && oldV.getClass().isArray()) {
+        newV = fatLand((Object[]) oldV);
       } else {
-        v = oldV;
+        newV = oldV;
       }
-      ret.put(e.getKey(), v);
+      ret.put(e.getKey(), newV);
     }
     return ret;
   }
