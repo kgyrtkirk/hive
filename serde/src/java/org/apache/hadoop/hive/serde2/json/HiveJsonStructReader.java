@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf.generic;
+package org.apache.hadoop.hive.serde2.json;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -53,7 +53,6 @@ import org.apache.hive.common.util.TimestampParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.esotericsoftware.minlog.Log;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -85,29 +84,29 @@ public class HiveJsonStructReader {
     factory = new JsonFactory();
   }
 
-  public Object parseStruct(String text) throws JsonParseException, IOException, HiveException {
+  public Object parseStruct(String text) throws JsonParseException, IOException, SerDeException {
     JsonParser parser = factory.createParser(text);
     return parseInternal(parser);
   }
 
-  public Object parseStruct(InputStream is) throws JsonParseException, IOException, HiveException {
+  public Object parseStruct(InputStream is) throws JsonParseException, IOException, SerDeException {
     JsonParser parser = factory.createParser(is);
     return parseInternal(parser);
   }
 
-  private Object parseInternal(JsonParser parser) throws HiveException {
+  private Object parseInternal(JsonParser parser) throws SerDeException {
     try {
       parser.nextToken();
       Object res = parseDispatcher(parser, oi);
       return res;
     } catch (Exception e) {
       String locationStr = parser.getCurrentLocation().getLineNr() + "," + parser.getCurrentLocation().getColumnNr();
-      throw new HiveException("at[" + locationStr + "]: " + e.getMessage(), e);
+      throw new SerDeException("at[" + locationStr + "]: " + e.getMessage(), e);
     }
   }
 
   private Object parseDispatcher(JsonParser parser, ObjectInspector oi)
-      throws JsonParseException, IOException, HiveException {
+      throws JsonParseException, IOException, SerDeException {
 
     switch (oi.getCategory()) {
     case PRIMITIVE:
@@ -119,11 +118,11 @@ public class HiveJsonStructReader {
     case MAP:
       return parseMap(parser, (MapObjectInspector) oi);
     default:
-      throw new HiveException("parsing of: " + oi.getCategory() + " is not handled");
+      throw new SerDeException("parsing of: " + oi.getCategory() + " is not handled");
     }
   }
 
-  private Object parseMap(JsonParser parser, MapObjectInspector oi) throws IOException, HiveException {
+  private Object parseMap(JsonParser parser, MapObjectInspector oi) throws IOException, SerDeException {
 
     if (parser.getCurrentToken() == JsonToken.VALUE_NULL) {
       parser.nextToken();
@@ -133,11 +132,11 @@ public class HiveJsonStructReader {
     Map<Object, Object> ret = new LinkedHashMap<>();
 
     if (parser.getCurrentToken() != JsonToken.START_OBJECT) {
-      throw new HiveException("struct expected");
+      throw new SerDeException("struct expected");
     }
 
     if (!(oi.getMapKeyObjectInspector() instanceof PrimitiveObjectInspector)) {
-      throw new HiveException("map key must be a primitive");
+      throw new SerDeException("map key must be a primitive");
     }
     PrimitiveObjectInspector keyOI = (PrimitiveObjectInspector) oi.getMapKeyObjectInspector();
     ObjectInspector valOI = oi.getMapValueObjectInspector();
@@ -146,7 +145,7 @@ public class HiveJsonStructReader {
     while (currentToken != null && currentToken != JsonToken.END_OBJECT) {
 
       if (currentToken != JsonToken.FIELD_NAME) {
-        throw new HiveException("unexpected token: " + currentToken);
+        throw new SerDeException("unexpected token: " + currentToken);
       }
 
       Object key = parseMapKey(parser, keyOI);
@@ -163,7 +162,7 @@ public class HiveJsonStructReader {
   }
 
   private Object parseStruct(JsonParser parser, StructObjectInspector oi)
-      throws JsonParseException, IOException, HiveException {
+      throws JsonParseException, IOException, SerDeException {
 
     Object[] ret = new Object[oi.getAllStructFieldRefs().size()];
 
@@ -172,7 +171,7 @@ public class HiveJsonStructReader {
       return null;
     }
     if (parser.getCurrentToken() != JsonToken.START_OBJECT) {
-      throw new HiveException("struct expected");
+      throw new SerDeException("struct expected");
     }
     JsonToken currentToken = parser.nextToken();
     while (currentToken != null && currentToken != JsonToken.END_OBJECT) {
@@ -187,7 +186,7 @@ public class HiveJsonStructReader {
           } catch (RuntimeException e) {
             if (ignoreUnknownFields) {
               if (!reportedUnknownFieldNames.contains(name)) {
-                Log.warn("ignoring field:" + name);
+                LOG.warn("ignoring field:" + name);
                 reportedUnknownFieldNames.add(name);
               }
               parser.nextToken();
@@ -196,16 +195,16 @@ public class HiveJsonStructReader {
             }
           }
           if (field == null) {
-            throw new HiveException("undeclared field");
+            throw new SerDeException("undeclared field");
           }
           parser.nextToken();
           ret[field.getFieldID()] = parseDispatcher(parser, field.getFieldObjectInspector());
         } catch (Exception e) {
-          throw new HiveException("struct field " + name + ": " + e.getMessage(), e);
+          throw new SerDeException("struct field " + name + ": " + e.getMessage(), e);
         }
         break;
       default:
-        throw new HiveException("unexpected token: " + currentToken);
+        throw new SerDeException("unexpected token: " + currentToken);
       }
       currentToken = parser.getCurrentToken();
     }
@@ -266,7 +265,7 @@ public class HiveJsonStructReader {
   }
 
   private Object parseList(JsonParser parser, ListObjectInspector oi)
-      throws JsonParseException, IOException, HiveException {
+      throws JsonParseException, IOException, SerDeException {
     List<Object> ret = new ArrayList<>();
 
     if (parser.getCurrentToken() == JsonToken.VALUE_NULL) {
@@ -275,7 +274,7 @@ public class HiveJsonStructReader {
     }
 
     if (parser.getCurrentToken() != JsonToken.START_ARRAY) {
-      throw new HiveException("array expected");
+      throw new SerDeException("array expected");
     }
     ObjectInspector eOI = oi.getListElementObjectInspector();
     JsonToken currentToken = parser.nextToken();
@@ -285,7 +284,7 @@ public class HiveJsonStructReader {
         currentToken = parser.getCurrentToken();
       }
     } catch (Exception e) {
-      throw new HiveException("array: " + e.getMessage(), e);
+      throw new SerDeException("array: " + e.getMessage(), e);
     }
 
     currentToken = parser.nextToken();
@@ -294,7 +293,7 @@ public class HiveJsonStructReader {
   }
 
   private Object parsePrimitive(JsonParser parser, PrimitiveObjectInspector oi)
-      throws HiveException, IOException {
+      throws SerDeException, IOException {
     JsonToken currentToken = parser.getCurrentToken();
     if (currentToken == null) {
       return null;
@@ -310,7 +309,7 @@ public class HiveJsonStructReader {
       case VALUE_NULL:
         return null;
       default:
-        throw new HiveException("unexpected token type: " + currentToken);
+        throw new SerDeException("unexpected token type: " + currentToken);
       }
     } finally {
       parser.nextToken();
@@ -365,7 +364,7 @@ public class HiveJsonStructReader {
     throw new IOException("Could not convert from string to map type " + typeInfo.getTypeName());
   }
 
-  private Object parseMapKey(JsonParser parser, PrimitiveObjectInspector oi) throws HiveException, IOException {
+  private Object parseMapKey(JsonParser parser, PrimitiveObjectInspector oi) throws SerDeException, IOException {
     JsonToken currentToken = parser.getCurrentToken();
     if (currentToken == null) {
       return null;
@@ -377,7 +376,7 @@ public class HiveJsonStructReader {
       case VALUE_NULL:
         return null;
       default:
-        throw new HiveException("unexpected token type: " + currentToken);
+        throw new SerDeException("unexpected token type: " + currentToken);
       }
     } finally {
       parser.nextToken();
