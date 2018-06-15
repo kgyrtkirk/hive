@@ -22,19 +22,13 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -72,8 +66,6 @@ import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.TimestampParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonParser;
 
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS,
     serdeConstants.LIST_COLUMN_TYPES,
@@ -141,84 +133,13 @@ public class JsonSerDe extends AbstractSerDe {
 
     Object row;
     Text t = (Text) blob;
-    JsonParser p;
     try {
       row = structReader.parseStruct(new ByteArrayInputStream((t.getBytes()), 0, t.getLength()));
-      List fatRow = fatLand((Object[]) row);
-      return fatRow;
+      return row;
     } catch (Exception e) {
       LOG.warn("Error [{}] parsing json text [{}].", e, t);
       throw new SerDeException(e);
     }
-  }
-
-  @SuppressWarnings({"rawtypes", "unchecked" })
-  private static List fatLand(Object[] arr) {
-    List ret = new ArrayList<>();
-    for (Object o : arr) {
-      if (o != null && o instanceof Map<?, ?>) {
-        ret.add(fatMap(((Map) o)));
-      } else if (o != null && o instanceof List<?>) {
-        ret.add(fatLand(((List) o).toArray()));
-      } else if (o != null && o.getClass().isArray() && o.getClass().getComponentType() != byte.class) {
-        Class<?> ct = o.getClass().getComponentType();
-        if (ct.isPrimitive()) {
-          ret.add(primitiveArrayToList(o));
-        } else {
-          ret.add(fatLand((Object[]) o));
-        }
-      } else {
-        ret.add(o);
-      }
-    }
-    return ret;
-  }
-
-  @SuppressWarnings("rawtypes")
-  private static Object fatMap(Map<Object, Object> map) {
-    Map ret = new LinkedHashMap<>();
-    Set<Entry<Object, Object>> es = map.entrySet();
-    for (Entry<Object, Object> e : es) {
-      Object oldV = e.getValue();
-      Object newV;
-      if (oldV != null && oldV.getClass().isArray()) {
-        newV = fatLand((Object[]) oldV);
-      } else {
-        newV = oldV;
-      }
-      ret.put(e.getKey(), newV);
-    }
-    return ret;
-  }
-
-  private static Object primitiveArrayToList(Object arr) {
-    Class<?> ct = arr.getClass().getComponentType();
-    if (int.class.equals(ct)) {
-      return Arrays.asList(ArrayUtils.toObject((int[]) arr));
-    }
-    if (long.class.equals(ct)) {
-      return Arrays.asList(ArrayUtils.toObject((long[]) arr));
-    }
-    if (char.class.equals(ct)) {
-      return Arrays.asList(ArrayUtils.toObject((char[]) arr));
-    }
-    if (byte.class.equals(ct)) {
-      return Arrays.asList(ArrayUtils.toObject((byte[]) arr));
-    }
-    if (short.class.equals(ct)) {
-      return Arrays.asList(ArrayUtils.toObject((short[]) arr));
-    }
-    if (float.class.equals(ct)) {
-      return Arrays.asList(ArrayUtils.toObject((float[]) arr));
-    }
-    if (double.class.equals(ct)) {
-      return Arrays.asList(ArrayUtils.toObject((double[]) arr));
-    }
-    throw new RuntimeException("Unhandled primitiveArrayToList for type: " + ct);
-  }
-
-  public String getHiveInternalColumnName(int fpos) {
-    return HiveConf.getColumnInternalName(fpos);
   }
 
   /**
