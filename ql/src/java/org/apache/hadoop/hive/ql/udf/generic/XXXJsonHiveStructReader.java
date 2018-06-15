@@ -79,21 +79,12 @@ public class XXXJsonHiveStructReader {
 
   }
 
-  // XXX: consider exception types
   public Object parseStruct(String text) throws JsonParseException, IOException, HiveException {
     JsonParser parser = factory.createParser(text);
     return parseInternal(parser);
   }
 
-  // XXX: one method?
   public Object parseStruct(InputStream is) throws JsonParseException, IOException, HiveException {
-//    JsonFactory f = new JsonFactory();
-//    JsonParser pp = f.createParser(is);
-//    if (pp.hasCurrentToken()) {
-//      pp.nextToken();
-//    }
-
-    //    JsonParser parser = factory.createJsonParser(is);
     JsonParser parser = factory.createParser(is);
     return parseInternal(parser);
   }
