@@ -106,7 +106,7 @@ public class CoreParseNegative extends CliAdapter{
         firstRun = false;
       }
 
-      qt.cliInit(new File(fpath), false);
+      qt.cliInit(new File(fpath));
 
       ASTNode tree = qt.parseQuery(fname);
       List<Task<? extends Serializable>> tasks = qt.analyzeAST(tree);

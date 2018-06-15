@@ -96,7 +96,7 @@ public class CoreAccumuloCliDriver extends CliAdapter {
         return;
       }
 
-      qt.cliInit(new File(fpath), false);
+      qt.cliInit(new File(fpath));
       qt.clearTestSideEffects();
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {

@@ -138,7 +138,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
         System.err.println("Test " + fname + " skipped");
         return;
       }
-      qt.cliInit(new File(fpath), false);
+      qt.cliInit(new File(fpath));
       int ecode = qt.executeClient(fname);
       if ((ecode == 0) ^ expectSuccess) {
         qt.failed(ecode, fname, debugHint);

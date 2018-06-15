@@ -1239,10 +1239,6 @@ public class QTestUtil {
     cliDriver.processCmd("set hive.cli.print.header=true;");
   }
 
-  public String cliInit(File file, boolean recreate) throws Exception {
-    return cliInit(file);
-  }
-
   public String cliInit(File file) throws Exception {
     String fileName = file.getName();
 
@@ -1960,7 +1956,7 @@ public class QTestUtil {
         qt.startSessionState(false);
         // assumption is that environment has already been cleaned once globally
         // hence each thread does not call cleanUp() and createSources() again
-        qt.cliInit(file, false);
+        qt.cliInit(file);
         qt.executeClient(file.getName());
       } catch (Throwable e) {
         System.err.println("Query file " + file.getName() + " failed with exception "
@@ -2016,7 +2012,7 @@ public class QTestUtil {
     qt[0].createSources();
     for (int i = 0; i < qfiles.length && !failed; i++) {
       qt[i].clearTestSideEffects();
-      qt[i].cliInit(qfiles[i], false);
+      qt[i].cliInit(qfiles[i]);
       qt[i].executeClient(qfiles[i].getName());
       QTestProcessExecResult result = qt[i].checkCliDriverResults(qfiles[i].getName());
       if (result.getReturnCode() != 0) {

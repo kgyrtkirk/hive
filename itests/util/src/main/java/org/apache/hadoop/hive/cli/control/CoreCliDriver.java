@@ -175,7 +175,7 @@ public class CoreCliDriver extends CliAdapter {
         return;
       }
 
-      qt.cliInit(new File(fpath), false);
+      qt.cliInit(new File(fpath));
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {
         failed = true;
