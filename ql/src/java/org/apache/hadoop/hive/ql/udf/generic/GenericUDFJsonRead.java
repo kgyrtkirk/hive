@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 public class GenericUDFJsonRead extends GenericUDF {
 
   private TextConverter inputConverter;
-  private XXXJsonHiveStructReader jsonReader;
+  private HiveJsonStructReader jsonReader;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -55,7 +55,7 @@ public class GenericUDFJsonRead extends GenericUDF {
 
     try {
       TypeInfo t = TypeInfoUtils.getTypeInfoFromTypeString(typeStr);
-      jsonReader = new XXXJsonHiveStructReader(t);
+      jsonReader = new HiveJsonStructReader(t);
       jsonReader.setWritablesUsage(true);
     } catch (Exception e) {
       throw new UDFArgumentException(getFuncName() + ": Error parsing typestring: " + e.getMessage());

@@ -59,9 +59,9 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
-public class XXXJsonHiveStructReader {
+public class HiveJsonStructReader {
 
-  private static final Logger LOG = LoggerFactory.getLogger(XXXJsonHiveStructReader.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveJsonStructReader.class);
 
   private ObjectInspector oi;
   private JsonFactory factory;
@@ -75,11 +75,11 @@ public class XXXJsonHiveStructReader {
 
   private TimestampParser tsParser;
 
-  public XXXJsonHiveStructReader(TypeInfo t) {
+  public HiveJsonStructReader(TypeInfo t) {
     this(t, new TimestampParser());
   }
 
-  public XXXJsonHiveStructReader(TypeInfo t, TimestampParser tsParser) {
+  public HiveJsonStructReader(TypeInfo t, TimestampParser tsParser) {
     this.tsParser = tsParser;
     oi = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(t);
     factory = new JsonFactory();

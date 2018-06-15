@@ -36,7 +36,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.udf.generic.XXXJsonHiveStructReader;
+import org.apache.hadoop.hive.ql.udf.generic.HiveJsonStructReader;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -92,7 +92,7 @@ public class JsonSerDe extends AbstractSerDe {
   private HCatSchema schema;
 
   private HCatRecordObjectInspector cachedObjectInspector;
-  private XXXJsonHiveStructReader xxx;
+  private HiveJsonStructReader structReader;
 
   @Override
   public void initialize(Configuration conf, Properties tbl)
@@ -130,11 +130,9 @@ public class JsonSerDe extends AbstractSerDe {
 
     TimestampParser tsParser = new TimestampParser(
         HiveStringUtils.splitAndUnEscape(tbl.getProperty(serdeConstants.TIMESTAMP_FORMATS)));
-    xxx = new XXXJsonHiveStructReader(rowTypeInfo, tsParser);
-    xxx.setIgnoreUnknownFields(true);
-    xxx.enableHiveColIndexParsing(true);
-
-
+    structReader = new HiveJsonStructReader(rowTypeInfo, tsParser);
+    structReader.setIgnoreUnknownFields(true);
+    structReader.enableHiveColIndexParsing(true);
 
     cachedObjectInspector = HCatRecordObjectInspectorFactory.getHCatRecordObjectInspector(rowTypeInfo);
     try {
@@ -166,7 +164,7 @@ public class JsonSerDe extends AbstractSerDe {
         try {
           //
 
-          row = xxx.parseStruct(new ByteArrayInputStream((t.getBytes()), 0, t.getLength()));
+          row = structReader.parseStruct(new ByteArrayInputStream((t.getBytes()), 0, t.getLength()));
 
           //XXX
         } catch (HiveException e) {
