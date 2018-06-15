@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.cli.control;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.google.common.base.Strings;
-
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -38,6 +36,8 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+
+import com.google.common.base.Strings;
 
 public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
 
@@ -68,6 +68,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
 
       // do a one time initialization
       setupUniqueTestPath();
+      qt.newSession();
       qt.cleanUp();
       qt.createSources();
     } catch (Exception e) {
