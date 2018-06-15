@@ -185,16 +185,12 @@ public class JsonSerDe extends AbstractSerDe {
 
     List row2 = fatLand((Object[]) row);
 
-//    boolean aa = Arrays.deepEquals((Object[]) row, r.toArray());
     boolean aa = row2.equals(r);
-
-    //    assert (aa);
 
     return new DefaultHCatRecord(row2);
   }
 
   private List fatLand(Object[] arr) {
-
     List ret = new ArrayList<>();
     for (Object o : arr) {
       if (o != null && o instanceof Map<?, ?>) {
@@ -212,13 +208,7 @@ public class JsonSerDe extends AbstractSerDe {
         ret.add(o);
       }
     }
-
     return ret;
-  }
-
-
-  private Object fatBinary(byte[] o) {
-    return Arrays.asList(o);
   }
 
   private Object fatLand2(Map<Object, Object> map) {
