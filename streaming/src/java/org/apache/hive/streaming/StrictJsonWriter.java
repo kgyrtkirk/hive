@@ -21,7 +21,7 @@ package org.apache.hive.streaming;
 import java.util.Properties;
 
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.json.JsonSerDe;
+import org.apache.hadoop.hive.serde2.json.JsonSerDe2;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.io.Text;
@@ -30,7 +30,7 @@ import com.google.common.base.Joiner;
 
 /**
  * Streaming Writer handles utf8 encoded Json (Strict syntax).
- * Uses org.apache.hadoop.hive.serde2.serde.JsonSerDe to process Json input
+ * Uses org.apache.hadoop.hive.serde2.serde.JsonSerDe2 to process Json input
  *
  * NOTE: This record writer is NOT thread-safe. Use one record writer per streaming connection.
  */
