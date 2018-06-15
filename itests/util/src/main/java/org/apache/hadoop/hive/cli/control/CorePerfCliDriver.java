@@ -25,13 +25,14 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 
-import com.google.common.base.Strings;
+import org.apache.hadoop.hive.ql.MetaStoreDumpUtility;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
-import org.apache.hadoop.hive.ql.MetaStoreDumpUtility;
 import org.junit.After;
 import org.junit.AfterClass;
+
+import com.google.common.base.Strings;
 /**
  This is the TestPerformance Cli Driver for integrating performance regression tests
  as part of the Hive Unit tests.
@@ -67,6 +68,7 @@ public class CorePerfCliDriver extends CliAdapter{
           cleanupScript, false, null);
 
       // do a one time initialization
+      qt.newSession();
       qt.cleanUp();
       qt.createSources();
       // Manually modify the underlying metastore db to reflect statistics corresponding to
