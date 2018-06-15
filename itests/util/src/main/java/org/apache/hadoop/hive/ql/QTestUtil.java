@@ -745,16 +745,7 @@ public class QTestUtil {
   }
 
   public void addFile(String queryFile) throws IOException {
-    addFileX(queryFile, false);
-  }
-
-  @Deprecated
-  public void addFileX(String queryFile, boolean partial) throws IOException {
-    addFile(new File(queryFile));
-  }
-
-  public void addFile(File qf) throws IOException {
-    addFile(qf, false);
+    addFile(new File(queryFile), false);
   }
 
   public void addFile(File qf, boolean partial) throws IOException  {
