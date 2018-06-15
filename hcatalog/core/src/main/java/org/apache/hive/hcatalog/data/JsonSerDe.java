@@ -71,9 +71,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.TimestampParser;
-import org.apache.hive.hcatalog.common.HCatException;
-import org.apache.hive.hcatalog.data.schema.HCatSchema;
-import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,9 +84,7 @@ public class JsonSerDe extends AbstractSerDe {
 
   private static final Logger LOG = LoggerFactory.getLogger(JsonSerDe.class);
   private List<String> columnNames;
-  private HCatSchema schema;
 
-  private HCatRecordObjectInspector cachedObjectInspector;
   private HiveJsonStructReader structReader;
 
   @Override
@@ -132,14 +127,7 @@ public class JsonSerDe extends AbstractSerDe {
     structReader.setIgnoreUnknownFields(true);
     structReader.enableHiveColIndexParsing(true);
 
-    cachedObjectInspector = HCatRecordObjectInspectorFactory.getHCatRecordObjectInspector(rowTypeInfo);
-    try {
-      schema = HCatSchemaUtils.getHCatSchema(rowTypeInfo).get(0).getStructSubSchema();
-      LOG.debug("schema : {}", schema);
-      LOG.debug("fields : {}", schema.getFieldNames());
-    } catch (HCatException e) {
-      throw new SerDeException(e);
-    }
+
 
   }
 
@@ -461,7 +449,7 @@ public class JsonSerDe extends AbstractSerDe {
    */
   @Override
   public ObjectInspector getObjectInspector() throws SerDeException {
-    return cachedObjectInspector;
+    return structReader.getObjectInspector();
   }
 
   @Override
