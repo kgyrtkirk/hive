@@ -20,7 +20,6 @@ package org.apache.hive.hcatalog.data;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.charset.CharacterCodingException;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -32,14 +31,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.XXXJsonHiveStructReader;
@@ -70,8 +64,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -81,8 +73,6 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.TimestampParser;
 import org.apache.hive.hcatalog.common.HCatException;
-import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
-import org.apache.hive.hcatalog.data.schema.HCatFieldSchema.Type;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 import org.slf4j.Logger;
@@ -91,7 +81,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS,
                           serdeConstants.LIST_COLUMN_TYPES,
@@ -147,8 +136,8 @@ public class JsonSerDe extends AbstractSerDe {
     rowTypeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
 
     outputOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(rowTypeInfo);
-    xxx = new XXXJsonHiveStructReader(rowTypeInfo);
 
+    xxx = new XXXJsonHiveStructReader(rowTypeInfo);
     xxx.setIgnoreUnknownFields(true);
     xxx.enableHiveColIndexParsing(true);
 
@@ -188,20 +177,13 @@ public class JsonSerDe extends AbstractSerDe {
 
           row = xxx.parseStruct(new ByteArrayInputStream((t.getBytes()), 0, t.getLength()));
 
+          //XXX
         } catch (HiveException e) {
           throw new SerDeException(e);
         }
       }
 
-      p = jsonFactory.createJsonParser(new ByteArrayInputStream((t.getBytes())));
-      if (p.nextToken() != JsonToken.START_OBJECT) {
-        throw new IOException("Start token not found where expected");
-      }
-      JsonToken token;
-      while (((token = p.nextToken()) != JsonToken.END_OBJECT) && (token != null)) {
-        // iterate through each token, and create appropriate object here.
-        populateRecord(r, token, p, schema);
-      }
+      //XXX
     } catch (JsonParseException e) {
       LOG.warn("Error [{}] parsing json text [{}].", e, t);
       throw new SerDeException(e);
@@ -290,249 +272,8 @@ public class JsonSerDe extends AbstractSerDe {
     throw new RuntimeException("x");
   }
 
-  private void populateRecord(List<Object> r, JsonToken token, JsonParser p, HCatSchema s) throws IOException {
-    if (token != JsonToken.FIELD_NAME) {
-      throw new IOException("Field name expected");
-    }
-    String fieldName = p.getText();
-    Integer fpos = s.getPosition(fieldName);
-    if (fpos == null) {
-      fpos = getPositionFromHiveInternalColumnName(fieldName);
-      LOG.debug("NPE finding position for field [{}] in schema [{}],"
-        +" attempting to check if it is an internal column name like _col0", fieldName, s);
-      if (fpos == -1) {
-        skipValue(p);
-        return; // unknown field, we return. We'll continue from the next field onwards.
-      }
-      // If we get past this, then the column name did match the hive pattern for an internal
-      // column name, such as _col0, etc, so it *MUST* match the schema for the appropriate column.
-      // This means people can't use arbitrary column names such as _col0, and expect us to ignore it
-      // if we find it.
-      if (!fieldName.equalsIgnoreCase(getHiveInternalColumnName(fpos))) {
-        LOG.error("Hive internal column name {} and position "
-          + "encoding {} for the column name are at odds", fieldName, fpos);
-        throw new IOException("Hive internal column name ("+ fieldName
-            + ") and position encoding (" + fpos
-            + ") for the column name are at odds");
-      }
-      // If we reached here, then we were successful at finding an alternate internal
-      // column mapping, and we're about to proceed.
-    }
-    HCatFieldSchema hcatFieldSchema = s.getFields().get(fpos);
-    Object currField = extractCurrentField(p, hcatFieldSchema, false);
-    r.set(fpos, currField);
-  }
-
   public String getHiveInternalColumnName(int fpos) {
     return HiveConf.getColumnInternalName(fpos);
-  }
-
-  public int getPositionFromHiveInternalColumnName(String internalName) {
-//    return HiveConf.getPositionFromInternalName(fieldName);
-    // The above line should have been all the implementation that
-    // we need, but due to a bug in that impl which recognizes
-    // only single-digit columns, we need another impl here.
-    Pattern internalPattern = Pattern.compile("_col([0-9]+)");
-    Matcher m = internalPattern.matcher(internalName);
-    if (!m.matches()) {
-      return -1;
-    } else {
-      return Integer.parseInt(m.group(1));
-    }
-  }
-
-  /**
-   * Utility method to extract (and forget) the next value token from the JsonParser,
-   * as a whole. The reason this function gets called is to yank out the next value altogether,
-   * because it corresponds to a field name that we do not recognize, and thus, do not have
-   * a schema/type for. Thus, this field is to be ignored.
-   * @throws IOException
-   * @throws JsonParseException
-   */
-  private void skipValue(JsonParser p) throws JsonParseException, IOException {
-    JsonToken valueToken = p.nextToken();
-
-    if ((valueToken == JsonToken.START_ARRAY) || (valueToken == JsonToken.START_OBJECT)){
-      // if the currently read token is a beginning of an array or object, move stream forward
-      // skipping any child tokens till we're at the corresponding END_ARRAY or END_OBJECT token
-      p.skipChildren();
-    }
-    // At the end of this function, the stream should be pointing to the last token that
-    // corresponds to the value being skipped. This way, the next call to nextToken
-    // will advance it to the next field name.
-  }
-
-  /**
-   * Utility method to extract current expected field from given JsonParser
-   *
-   * isTokenCurrent is a boolean variable also passed in, which determines
-   * if the JsonParser is already at the token we expect to read next, or
-   * needs advancing to the next before we read.
-   */
-  private Object extractCurrentField(JsonParser p, HCatFieldSchema hcatFieldSchema,
-                                     boolean isTokenCurrent) throws IOException {
-    Object val = null;
-    JsonToken valueToken;
-    if (isTokenCurrent) {
-      valueToken = p.getCurrentToken();
-    } else {
-      valueToken = p.nextToken();
-    }
-    switch (hcatFieldSchema.getType()) {
-    case INT:
-      val = (valueToken == JsonToken.VALUE_NULL) ? null : p.getIntValue();
-      break;
-    case TINYINT:
-      val = (valueToken == JsonToken.VALUE_NULL) ? null : p.getByteValue();
-      break;
-    case SMALLINT:
-      val = (valueToken == JsonToken.VALUE_NULL) ? null : p.getShortValue();
-      break;
-    case BIGINT:
-      val = (valueToken == JsonToken.VALUE_NULL) ? null : p.getLongValue();
-      break;
-    case BOOLEAN:
-      String bval = (valueToken == JsonToken.VALUE_NULL) ? null : p.getText();
-      if (bval != null) {
-        val = Boolean.valueOf(bval);
-      } else {
-        val = null;
-      }
-      break;
-    case FLOAT:
-      val = (valueToken == JsonToken.VALUE_NULL) ? null : p.getFloatValue();
-      break;
-    case DOUBLE:
-      val = (valueToken == JsonToken.VALUE_NULL) ? null : p.getDoubleValue();
-      break;
-    case STRING:
-      val = (valueToken == JsonToken.VALUE_NULL) ? null : p.getText();
-      break;
-    case BINARY:
-      String b = (valueToken == JsonToken.VALUE_NULL) ? null : p.getText();
-      if (b != null) {
-        try {
-          String t = Text.decode(b.getBytes(), 0, b.getBytes().length);
-          return t.getBytes();
-        } catch (CharacterCodingException e) {
-          LOG.warn("Error generating json binary type from object.", e);
-          return null;
-        }
-      } else {
-        val = null;
-      }
-      break;
-      case DATE:
-      val = (valueToken == JsonToken.VALUE_NULL) ? null : Date.valueOf(p.getText());
-      break;
-    case TIMESTAMP:
-      val = (valueToken == JsonToken.VALUE_NULL) ? null : tsParser.parseTimestamp(p.getText());
-      break;
-    case DECIMAL:
-      val = (valueToken == JsonToken.VALUE_NULL) ? null : HiveDecimal.create(p.getText());
-      break;
-    case VARCHAR:
-      int vLen = ((BaseCharTypeInfo)hcatFieldSchema.getTypeInfo()).getLength();
-      val = (valueToken == JsonToken.VALUE_NULL) ? null : new HiveVarchar(p.getText(), vLen);
-      break;
-    case CHAR:
-      int cLen = ((BaseCharTypeInfo)hcatFieldSchema.getTypeInfo()).getLength();
-      val = (valueToken == JsonToken.VALUE_NULL) ? null : new HiveChar(p.getText(), cLen);
-      break;
-    case ARRAY:
-      if (valueToken == JsonToken.VALUE_NULL) {
-        val = null;
-        break;
-      }
-      if (valueToken != JsonToken.START_ARRAY) {
-        throw new IOException("Start of Array expected");
-      }
-      List<Object> arr = new ArrayList<Object>();
-      while ((valueToken = p.nextToken()) != JsonToken.END_ARRAY) {
-        arr.add(extractCurrentField(p, hcatFieldSchema.getArrayElementSchema().get(0), true));
-      }
-      val = arr;
-      break;
-    case MAP:
-      if (valueToken == JsonToken.VALUE_NULL) {
-        val = null;
-        break;
-      }
-      if (valueToken != JsonToken.START_OBJECT) {
-        throw new IOException("Start of Object expected");
-      }
-      Map<Object, Object> map = new LinkedHashMap<Object, Object>();
-      HCatFieldSchema valueSchema = hcatFieldSchema.getMapValueSchema().get(0);
-      while ((valueToken = p.nextToken()) != JsonToken.END_OBJECT) {
-        Object k = getObjectOfCorrespondingPrimitiveType(p.getCurrentName(), hcatFieldSchema.getMapKeyTypeInfo());
-        Object v = extractCurrentField(p, valueSchema, false);
-        map.put(k, v);
-      }
-      val = map;
-      break;
-    case STRUCT:
-      if (valueToken == JsonToken.VALUE_NULL) {
-        val = null;
-        break;
-      }
-      if (valueToken != JsonToken.START_OBJECT) {
-        throw new IOException("Start of Object expected");
-      }
-      HCatSchema subSchema = hcatFieldSchema.getStructSubSchema();
-      int sz = subSchema.getFieldNames().size();
-
-      List<Object> struct = new ArrayList<Object>(Collections.nCopies(sz, null));
-      while ((valueToken = p.nextToken()) != JsonToken.END_OBJECT) {
-        populateRecord(struct, valueToken, p, subSchema);
-      }
-      val = struct;
-      break;
-    default:
-      LOG.error("Unknown type found: " + hcatFieldSchema.getType());
-      return null;
-    }
-    return val;
-  }
-
-  private Object getObjectOfCorrespondingPrimitiveType(String s, PrimitiveTypeInfo mapKeyType)
-    throws IOException {
-    switch (Type.getPrimitiveHType(mapKeyType)) {
-    case INT:
-      return Integer.valueOf(s);
-    case TINYINT:
-      return Byte.valueOf(s);
-    case SMALLINT:
-      return Short.valueOf(s);
-    case BIGINT:
-      return Long.valueOf(s);
-    case BOOLEAN:
-      return (s.equalsIgnoreCase("true"));
-    case FLOAT:
-      return Float.valueOf(s);
-    case DOUBLE:
-      return Double.valueOf(s);
-    case STRING:
-      return s;
-    case BINARY:
-      try {
-        String t = Text.decode(s.getBytes(), 0, s.getBytes().length);
-        return t.getBytes();
-      } catch (CharacterCodingException e) {
-        LOG.warn("Error generating json binary type from object.", e);
-        return null;
-      }
-    case DATE:
-      return Date.valueOf(s);
-    case TIMESTAMP:
-      return Timestamp.valueOf(s);
-    case DECIMAL:
-      return HiveDecimal.create(s);
-    case VARCHAR:
-      return new HiveVarchar(s, ((BaseCharTypeInfo)mapKeyType).getLength());
-    case CHAR:
-      return new HiveChar(s, ((BaseCharTypeInfo)mapKeyType).getLength());
-    }
-    throw new IOException("Could not convert from string to map type " + mapKeyType.getTypeName());
   }
 
   /**
@@ -570,6 +311,7 @@ public class JsonSerDe extends AbstractSerDe {
     }
     return new Text(sb.toString());
   }
+
   private static StringBuilder appendWithQuotes(StringBuilder sb, String value) {
     return sb == null ? null : sb.append(SerDeUtils.QUOTE).append(value).append(SerDeUtils.QUOTE);
   }
