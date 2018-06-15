@@ -166,11 +166,12 @@ public class JsonSerDe extends AbstractSerDe {
     }
   }
 
-  private List fatLand(Object[] arr) {
+  @SuppressWarnings({"rawtypes", "unchecked" })
+  private static List fatLand(Object[] arr) {
     List ret = new ArrayList<>();
     for (Object o : arr) {
       if (o != null && o instanceof Map<?, ?>) {
-        ret.add(fatLand2(((Map) o)));
+        ret.add(fatMap(((Map) o)));
       } else if (o != null && o instanceof List<?>) {
         ret.add(fatLand(((List) o).toArray()));
       } else if (o != null && o.getClass().isArray() && o.getClass().getComponentType() != byte.class) {
@@ -187,7 +188,8 @@ public class JsonSerDe extends AbstractSerDe {
     return ret;
   }
 
-  private Object fatLand2(Map<Object, Object> map) {
+  @SuppressWarnings("rawtypes")
+  private static Object fatMap(Map<Object, Object> map) {
     Map ret = new LinkedHashMap<>();
     Set<Entry<Object, Object>> es = map.entrySet();
     for (Entry<Object, Object> e : es) {
@@ -203,7 +205,7 @@ public class JsonSerDe extends AbstractSerDe {
     return ret;
   }
 
-  private Object primitiveArrayToList(Object arr) {
+  private static Object primitiveArrayToList(Object arr) {
     Class<?> ct = arr.getClass().getComponentType();
     if (int.class.equals(ct)) {
       return Arrays.asList(ArrayUtils.toObject((int[]) arr));
