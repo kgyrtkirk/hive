@@ -66,15 +66,11 @@ public class XXXJsonHiveStructReader {
   private ObjectInspector oi;
   private JsonFactory factory;
 
-  // FIX THIS!
-  @Deprecated
-  private static boolean ignoreUnknownFields;
-  @Deprecated
-  private static boolean hiveColIndexParsing;
 
   Set<String> reportedUnknownFieldNames = new HashSet<>();
 
-  @Deprecated
+  private static boolean ignoreUnknownFields;
+  private static boolean hiveColIndexParsing;
   private boolean writeablePrimitives;
 
   public XXXJsonHiveStructReader(TypeInfo t) {
@@ -188,16 +184,9 @@ public class XXXJsonHiveStructReader {
       case FIELD_NAME:
         String name = parser.getCurrentName();
         try {
-          // XXX: linear scan inside the below method...get a map here or something..
-          //          oi.getAllStructFieldRefs();
           StructField field = null;
           try {
-            int colIndex = getColIndex(name);
-            if (colIndex >= 0) {
-              field = oi.getAllStructFieldRefs().get(colIndex);
-            } else {
-              field = oi.getStructFieldRef(name);
-            }
+            field = getStructField(oi, name);
           } catch (RuntimeException e) {
             if (ignoreUnknownFields) {
               if (!reportedUnknownFieldNames.contains(name)) {
@@ -229,8 +218,18 @@ public class XXXJsonHiveStructReader {
     return ret;
   }
 
-  private static int getColIndex(String internalName) {
-    //    return HiveConf.getPositionFromInternalName(fieldName);
+  private StructField getStructField(StructObjectInspector oi, String name) {
+    if (hiveColIndexParsing) {
+      int colIndex = getColIndex(name);
+      if (colIndex >= 0) {
+        return oi.getAllStructFieldRefs().get(colIndex);
+      }
+    }
+    // FIXME: linear scan inside the below method...get a map here or something..
+    return oi.getStructFieldRef(name);
+  }
+
+  private int getColIndex(String internalName) {
     // The above line should have been all the implementation that
     // we need, but due to a bug in that impl which recognizes
     // only single-digit columns, we need another impl here.
