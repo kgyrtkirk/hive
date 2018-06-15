@@ -54,7 +54,6 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import junit.framework.TestSuite;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -80,6 +79,9 @@ import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
+import org.apache.hadoop.hive.ql.dataset.Dataset;
+import org.apache.hadoop.hive.ql.dataset.DatasetCollection;
+import org.apache.hadoop.hive.ql.dataset.DatasetParser;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -105,9 +107,6 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.dataset.DatasetCollection;
-import org.apache.hadoop.hive.ql.dataset.DatasetParser;
-import org.apache.hadoop.hive.ql.dataset.Dataset;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsErasureCodingShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -119,14 +118,15 @@ import org.apache.tools.ant.BuildException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
-import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import junit.framework.TestSuite;
 
 /**
  * QTestUtil.
@@ -1336,8 +1336,6 @@ public class QTestUtil {
       throw new RuntimeException("WHY WE RECREATE?!");
     }
 
-    initDataSetForTest(file);
-
     CliSessionState ss = (CliSessionState) SessionState.get();
 
     if (fileName.equals("init_file.q")) {
@@ -1345,6 +1343,8 @@ public class QTestUtil {
       ss.initFiles.add(AbstractCliConfig.HIVE_ROOT + "/data/scripts/test_init_file.sql");
     }
     cliDriver.processInitFiles(ss);
+
+    initDataSetForTest(file);
 
     String outFileExtension = getOutFileExtension(fileName);
     String stdoutName = null;
@@ -1364,6 +1364,12 @@ public class QTestUtil {
   private void setSessionOutputs(String fileName, CliSessionState ss, File outf)
       throws FileNotFoundException, Exception, UnsupportedEncodingException {
     OutputStream fo = new BufferedOutputStream(new FileOutputStream(outf));
+    if (ss.out != null) {
+      ss.out.flush();
+    }
+    if (ss.err != null) {
+      ss.out.flush();
+    }
     if (qSortQuerySet.contains(fileName)) {
       ss.out = new SortPrintStream(fo, "UTF-8");
     } else if (qHashQuerySet.contains(fileName)) {
