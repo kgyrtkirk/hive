@@ -228,7 +228,7 @@ public class JsonSerDe extends AbstractSerDe {
     if (double.class.equals(ct)) {
       return Arrays.asList(ArrayUtils.toObject((double[]) arr));
     }
-    throw new RuntimeException("x");
+    throw new RuntimeException("Unhandled primitiveArrayToList for type: " + ct);
   }
 
   public String getHiveInternalColumnName(int fpos) {
