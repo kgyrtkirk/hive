@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
 
 import com.google.common.base.Joiner;
@@ -24,6 +25,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.apache.commons.collections.ListUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -64,7 +66,9 @@ import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.util.MachineList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javax.annotation.Nullable;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -265,7 +269,7 @@ public class MetaStoreUtils {
     }
     if (colStatsMap.size() < 1) {
       LOG.debug("No stats data found for: tblName= {}, partNames= {}, colNames= {}",
-          Warehouse.getCatalogQualifiedTableName(catName, dbName, tableName), partNames, colNames);
+          TableName.getQualified(catName, dbName, tableName), partNames, colNames);
       return new ArrayList<ColumnStatisticsObj>();
     }
     return aggrPartitionStats(colStatsMap, partNames, areAllPartsFound,
@@ -718,12 +722,12 @@ public class MetaStoreUtils {
     params.put(StatsSetupConst.NUM_FILES, Integer.toString(numFiles));
     params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
   }
- 
+
   public static void clearQuickStats(Map<String, String> params) {
     params.remove(StatsSetupConst.NUM_FILES);
     params.remove(StatsSetupConst.TOTAL_SIZE);
   }
- 
+
 
   public static boolean areSameColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     return ListUtils.isEqualList(oldCols, newCols);
@@ -1282,7 +1286,10 @@ public class MetaStoreUtils {
       for (Map.Entry<String,String> param : sd.getSerdeInfo().getParameters().entrySet()) {
         String key = param.getKey();
         if (schema.get(key) != null &&
-            (key.equals(cols) || key.equals(colTypes) || key.equals(parts))) {
+                (key.equals(cols) || key.equals(colTypes) || key.equals(parts) ||
+                        // skip Druid properties which are used in DruidSerde, since they are also updated
+                        // after SerDeInfo properties are copied.
+                        key.startsWith("druid."))) {
           continue;
         }
         schema.put(key, (param.getValue() != null) ? param.getValue() : StringUtils.EMPTY);
@@ -1797,4 +1804,5 @@ public class MetaStoreUtils {
     if (catName == null || "".equals(catName)) catName = Warehouse.DEFAULT_CATALOG_NAME;
     return catName;
   }
+
 }
