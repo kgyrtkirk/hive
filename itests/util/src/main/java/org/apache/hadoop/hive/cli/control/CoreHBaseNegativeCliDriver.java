@@ -43,13 +43,6 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
 
   @Override
   public void beforeClass() throws Exception {
-  }
-
-  // hmm..this looks a bit wierd...setup boots qtestutil...this part used to be in beforeclass
-  @Override
-  @Before
-  public void setUp() {
-
     MiniClusterType miniMR = cliConfig.getClusterType();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
@@ -65,11 +58,26 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
     }
   }
 
+  // hmm..this looks a bit wierd...setup boots qtestutil...this part used to be in beforeclass
+  @Override
+  @Before
+  public void setUp() {
+    try {
+      qt.newSession();
+    } catch (Exception e) {
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.err.flush();
+      fail("Unexpected exception in setup");
+    }
+  }
+
   @Override
   @After
   public void tearDown() {
     try {
-      qt.shutdown();
+      qt.clearPostTestEffects();
+      qt.clearTestSideEffects();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -81,6 +89,14 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
   @Override
   @AfterClass
   public void shutdown() throws Exception {
+    try {
+      qt.shutdown();
+    } catch (Exception e) {
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.err.flush();
+      fail("Unexpected exception in tearDown");
+    }
     // closeHBaseConnections
     setup.tearDown();
   }
@@ -98,7 +114,7 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
         return;
       }
 
-      qt.cliInit(new File(fpath));
+      qt.cliInit(new File(fpath), false);
       qt.clearTestSideEffects();
       int ecode = qt.executeClient(fname);
       if (ecode == 0) {
@@ -109,7 +125,6 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
       if (result.getReturnCode() != 0) {
         qt.failedDiff(result.getReturnCode(), fname, result.getCapturedOutput());
       }
-      qt.clearPostTestEffects();
 
     } catch (Exception e) {
       qt.failed(e, fname, null);
