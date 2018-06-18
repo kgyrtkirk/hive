@@ -336,6 +336,7 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/perf-reg/spark");
         setClusterType(MiniClusterType.spark);
+        setMethodTimeoutMs(-1);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -547,6 +548,7 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/spark/standalone");
         setClusterType(MiniClusterType.spark);
+        setMethodTimeoutMs(-1);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -592,6 +594,7 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/spark/yarn-cluster");
         setClusterType(MiniClusterType.miniSparkOnYarn);
+        setMethodTimeoutMs(-1);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -615,6 +618,7 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/spark/standalone");
         setClusterType(MiniClusterType.spark);
+        setMethodTimeoutMs(-1);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }

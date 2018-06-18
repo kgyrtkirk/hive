@@ -43,6 +43,9 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractCliConfig {
 
+  // used in every cli method to set an upperbound to execution time
+  public static final int QTEST_TIMEOUT_MS = 10 * 60 * 1000;
+
   public static final String HIVE_ROOT = HiveTestEnvSetup.HIVE_ROOT;
   private static final Logger LOG = LoggerFactory.getLogger(AbstractCliConfig.class);
 
@@ -72,6 +75,7 @@ public abstract class AbstractCliConfig {
   // moved...this may change
   private Set<String> includeQueryFileNames;
   private Class<? extends CliAdapter> cliAdapter;
+  private int methodTimeoutMs = QTEST_TIMEOUT_MS;
 
   public AbstractCliConfig(Class<? extends CliAdapter> adapter) {
     cliAdapter = adapter;
@@ -414,6 +418,19 @@ public abstract class AbstractCliConfig {
 
   private String getAbsolutePath(String dir) {
     return new File(new File(HIVE_ROOT), dir).getAbsolutePath();
+  }
+
+  protected void setMethodTimeoutMs(int methodTimeoutMs) {
+    this.methodTimeoutMs = methodTimeoutMs;
+  }
+
+  public int getMethodTimeoutMs() {
+    // disable in case debug is enabled
+    if (System.getProperty("maven.surefire.debug") == null) {
+      return methodTimeoutMs;
+    } else {
+      return -1;
+    }
   }
 
 }
