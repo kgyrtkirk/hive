@@ -968,6 +968,7 @@ public class QTestUtil {
     if (System.getenv(QTEST_LEAVE_FILES) != null) {
       return;
     }
+    // the test might have configured security/etc; open a new session to get rid of that
     newSession();
 
     // Remove any cached results from the previous test.
