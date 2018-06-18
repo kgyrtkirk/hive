@@ -513,7 +513,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	15                  
 	rawDataSize         	3315                
-	totalSize           	3318                
+	totalSize           	3317                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -529,11 +529,11 @@ Storage Desc Params:
 PREHOOK: query: select 15,count(*) from small_alltypesorc_a_n2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a_n2
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select 15,count(*) from small_alltypesorc_a_n2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a_n2
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 15	15
 PREHOOK: query: ANALYZE TABLE small_alltypesorc_a_n2 COMPUTE STATISTICS
 PREHOOK: type: QUERY
@@ -546,11 +546,11 @@ POSTHOOK: Output: default@small_alltypesorc_a_n2
 PREHOOK: query: select 15,count(*) from small_alltypesorc_a_n2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a_n2
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select 15,count(*) from small_alltypesorc_a_n2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a_n2
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 15	15
 PREHOOK: query: desc formatted small_alltypesorc_a_n2
 PREHOOK: type: DESCTABLE
@@ -584,7 +584,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	15                  
 	rawDataSize         	3320                
-	totalSize           	3318                
+	totalSize           	3317                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -649,7 +649,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	20                  
 	rawDataSize         	4305                
-	totalSize           	4735                
+	totalSize           	4734                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
