@@ -1250,11 +1250,6 @@ public class QTestUtil {
 
     CliSessionState ss = (CliSessionState) SessionState.get();
 
-    if (fileName.equals("init_file.q")) {
-      ss.initFiles.add(AbstractCliConfig.HIVE_ROOT + "/data/scripts/test_init_file.sql");
-    }
-    cliDriver.processInitFiles(ss);
-
     initDataSetForTest(file);
 
     String outFileExtension = getOutFileExtension(fileName);
@@ -1269,6 +1264,12 @@ public class QTestUtil {
     }
     File outf = new File(logDir, stdoutName);
     setSessionOutputs(fileName, ss, outf);
+
+    if (fileName.equals("init_file.q")) {
+      ss.initFiles.add(AbstractCliConfig.HIVE_ROOT + "/data/scripts/test_init_file.sql");
+    }
+    cliDriver.processInitFiles(ss);
+
     return outf.getAbsolutePath();
   }
 
