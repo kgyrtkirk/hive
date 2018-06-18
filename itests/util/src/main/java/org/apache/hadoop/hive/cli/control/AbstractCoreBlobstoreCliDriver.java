@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.cli.control;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.google.common.base.Strings;
-
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -38,6 +36,8 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+
+import com.google.common.base.Strings;
 
 public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
 
@@ -68,6 +68,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
 
       // do a one time initialization
       setupUniqueTestPath();
+      qt.newSession();
       qt.cleanUp();
       qt.createSources();
     } catch (Exception e) {
@@ -132,12 +133,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
       System.err.println("Begin query: " + fname);
 
       qt.addFile(fpath);
-
-      if (qt.shouldBeSkipped(fname)) {
-        System.err.println("Test " + fname + " skipped");
-        return;
-      }
-      qt.cliInit(new File(fpath), false);
+      qt.cliInit(new File(fpath));
       int ecode = qt.executeClient(fname);
       if ((ecode == 0) ^ expectSuccess) {
         qt.failed(ecode, fname, debugHint);

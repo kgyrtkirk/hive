@@ -43,7 +43,7 @@ public class CoreAccumuloCliDriver extends CliAdapter {
   @BeforeClass
   public void beforeClass() {
     setup = new AccumuloTestSetup();
-    
+
     MiniClusterType miniMR = cliConfig.getClusterType();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
@@ -51,20 +51,21 @@ public class CoreAccumuloCliDriver extends CliAdapter {
     try {
       qt = new AccumuloQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
           setup, initScript, cleanupScript);
-      
+
       // do a one time initialization
+      qt.newSession();
       qt.cleanUp();
       qt.createSources();
     } catch (Exception e) {
       throw new RuntimeException("Unexpected exception in setUp",e);
     }
   }
-  
+
   @Override
   @AfterClass
   public void shutdown() throws Exception {
     setup.tearDown();
-    
+
     try {
       qt.shutdown();
     }
@@ -90,12 +91,7 @@ public class CoreAccumuloCliDriver extends CliAdapter {
 
       qt.addFile(fpath);
 
-      if (qt.shouldBeSkipped(fname)) {
-        System.err.println("Test " + fname + " skipped");
-        return;
-      }
-
-      qt.cliInit(new File(fpath), false);
+      qt.cliInit(new File(fpath));
       qt.clearTestSideEffects();
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {
