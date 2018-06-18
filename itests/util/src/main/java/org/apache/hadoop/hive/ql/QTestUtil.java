@@ -993,6 +993,7 @@ public class QTestUtil {
     if (System.getenv(QTEST_LEAVE_FILES) != null) {
       return;
     }
+    conf.setBoolean("hive.test.shutdown.phase", true);
 
     clearTablesCreatedDuringTests();
     clearUDFsCreatedDuringTests();
