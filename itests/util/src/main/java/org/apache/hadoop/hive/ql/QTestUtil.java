@@ -181,6 +181,7 @@ public class QTestUtil {
   protected Hive db;
   protected QueryState queryState;
   protected HiveConf conf;
+  protected HiveConf savedConf;
   private IDriver drv;
   private BaseSemanticAnalyzer sem;
   protected final boolean overWrite;
@@ -567,6 +568,7 @@ public class QTestUtil {
     overWrite = "true".equalsIgnoreCase(System.getProperty("test.output.overwrite"));
 
     init();
+    savedConf = new HiveConf(conf);
   }
   private String getScriptsDir() {
     // Use the current directory if it is not specified
@@ -1015,7 +1017,7 @@ public class QTestUtil {
   public void newSession(boolean canReuseSession) throws Exception {
     // allocate and initialize a new conf since a test can
     // modify conf by using 'set' commands
-    conf = new HiveConf(IDriver.class);
+    conf = new HiveConf(savedConf);
     initConf();
     initConfFromSetup();
 
