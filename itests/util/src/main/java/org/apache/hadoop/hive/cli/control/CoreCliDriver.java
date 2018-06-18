@@ -72,8 +72,7 @@ public class CoreCliDriver extends CliAdapter {
       new ElapsedTimeLoggingWrapper<Void>() {
         @Override
         public Void invokeInternal() throws Exception {
-          qt.newSession();
-          qt.cleanUp(); // I don't think this is neccessary...
+          qt.cleanUp();
           return null;
         }
       }.invoke("Initialization cleanup done.", LOG, true);
@@ -101,7 +100,7 @@ public class CoreCliDriver extends CliAdapter {
       new ElapsedTimeLoggingWrapper<Void>() {
         @Override
         public Void invokeInternal() throws Exception {
-          qt.newSession();
+          qt.clearTestSideEffects();
           return null;
         }
       }.invoke("PerTestSetup done.", LOG, false);
@@ -121,7 +120,6 @@ public class CoreCliDriver extends CliAdapter {
         @Override
         public Void invokeInternal() throws Exception {
           qt.clearPostTestEffects();
-          qt.clearTestSideEffects();
           return null;
         }
       }.invoke("PerTestTearDown done.", LOG, false);
@@ -167,7 +165,7 @@ public class CoreCliDriver extends CliAdapter {
       System.err.println("Begin query: " + fname);
 
       qt.addFile(fpath);
-      qt.cliInit(new File(fpath));
+      qt.cliInit(new File(fpath), false);
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {
         failed = true;

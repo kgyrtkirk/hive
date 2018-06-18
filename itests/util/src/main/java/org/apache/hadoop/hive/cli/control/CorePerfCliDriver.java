@@ -68,7 +68,6 @@ public class CorePerfCliDriver extends CliAdapter{
           cleanupScript, false, null);
 
       // do a one time initialization
-      qt.newSession();
       qt.cleanUp();
       qt.createSources();
       // Manually modify the underlying metastore db to reflect statistics corresponding to
@@ -93,7 +92,7 @@ public class CorePerfCliDriver extends CliAdapter{
   @Override
   public void setUp() {
     try {
-      qt.newSession();
+      qt.clearPostTestEffects();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -127,7 +126,7 @@ public class CorePerfCliDriver extends CliAdapter{
       System.err.println("Begin query: " + fname);
 
       qt.addFile(fpath);
-      qt.cliInit(new File(fpath));
+      qt.cliInit(new File(fpath), false);
 
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {

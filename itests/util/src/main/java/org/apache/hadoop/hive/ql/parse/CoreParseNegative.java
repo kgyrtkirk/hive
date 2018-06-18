@@ -57,7 +57,6 @@ public class CoreParseNegative extends CliAdapter{
       String hadoopVer = cliConfig.getHadoopVersion();
       qt = new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR, null,
           hadoopVer, initScript, cleanupScript, false);
-      qt.newSession();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -107,7 +106,7 @@ public class CoreParseNegative extends CliAdapter{
         firstRun = false;
       }
 
-      qt.cliInit(new File(fpath));
+      qt.cliInit(new File(fpath), false);
 
       ASTNode tree = qt.parseQuery(fname);
       List<Task<? extends Serializable>> tasks = qt.analyzeAST(tree);
