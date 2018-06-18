@@ -35,7 +35,7 @@ import com.google.common.base.Joiner;
  * NOTE: This record writer is NOT thread-safe. Use one record writer per streaming connection.
  */
 public class StrictJsonWriter extends AbstractRecordWriter {
-  private JsonSerDe serde;
+  private JsonSerDe2 serde;
 
   public StrictJsonWriter(final Builder builder) {
     super(builder.lineDelimiter);
@@ -64,17 +64,17 @@ public class StrictJsonWriter extends AbstractRecordWriter {
    * @throws SerializationError if serde could not be initialized
    */
   @Override
-  public JsonSerDe createSerde() throws SerializationError {
+  public JsonSerDe2 createSerde() throws SerializationError {
     try {
       Properties tableProps = table.getMetadata();
       tableProps.setProperty(serdeConstants.LIST_COLUMNS, Joiner.on(",").join(inputColumns));
       tableProps.setProperty(serdeConstants.LIST_COLUMN_TYPES, Joiner.on(":").join(inputTypes));
-      JsonSerDe serde = new JsonSerDe();
+      JsonSerDe2 serde = new JsonSerDe2();
       SerDeUtils.initializeSerDe(serde, conf, tableProps, null);
       this.serde = serde;
       return serde;
     } catch (SerDeException e) {
-      throw new SerializationError("Error initializing serde " + JsonSerDe.class.getName(), e);
+      throw new SerializationError("Error initializing serde " + JsonSerDe2.class.getName(), e);
     }
   }
 
