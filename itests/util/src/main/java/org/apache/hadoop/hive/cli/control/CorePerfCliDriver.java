@@ -127,11 +127,6 @@ public class CorePerfCliDriver extends CliAdapter{
       System.err.println("Begin query: " + fname);
 
       qt.addFile(fpath);
-
-      if (qt.shouldBeSkipped(fname)) {
-        return;
-      }
-
       qt.cliInit(new File(fpath));
 
       int ecode = qt.executeClient(fname);

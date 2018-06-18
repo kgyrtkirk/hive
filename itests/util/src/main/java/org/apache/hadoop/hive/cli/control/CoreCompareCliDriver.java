@@ -130,10 +130,6 @@ public class CoreCompareCliDriver extends CliAdapter{
         qt.addFile(new File(queryDirectory, versionFile), true);
       }
 
-      if (qt.shouldBeSkipped(fname)) {
-        return;
-      }
-
       int ecode = 0;
 
       qt.cliInit(new File(fpath));

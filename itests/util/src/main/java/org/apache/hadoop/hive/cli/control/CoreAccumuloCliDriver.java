@@ -91,11 +91,6 @@ public class CoreAccumuloCliDriver extends CliAdapter {
 
       qt.addFile(fpath);
 
-      if (qt.shouldBeSkipped(fname)) {
-        System.err.println("Test " + fname + " skipped");
-        return;
-      }
-
       qt.cliInit(new File(fpath));
       qt.clearTestSideEffects();
       int ecode = qt.executeClient(fname);

@@ -119,10 +119,6 @@ public class CoreNegativeCliDriver extends CliAdapter{
 
       qt.addFile(fpath);
 
-      if (qt.shouldBeSkipped(fname)) {
-        System.err.println("Test " + fname + " skipped");
-        return;
-      }
 
       qt.cliInit(new File(fpath));
       int ecode = qt.executeClient(fname);
