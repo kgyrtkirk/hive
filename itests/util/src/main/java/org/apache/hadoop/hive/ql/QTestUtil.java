@@ -1168,7 +1168,6 @@ public class QTestUtil {
     String fileName = file.getName();
 
     initDataSetForTest(file);
-    newSession(true);
 
     if (qNoSessionReuseQuerySet.contains(fileName)) {
       newSession(false);
