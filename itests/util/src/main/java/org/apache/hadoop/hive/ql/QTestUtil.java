@@ -156,6 +156,7 @@ public class QTestUtil {
   private static final String DEFAULT_TEST_EC_POLICY = "RS-3-2-1024k";
 
   private String testWarehouse;
+  @Deprecated
   private final String testFiles;
   private final File datasetDir;
   protected final String outDir;
@@ -550,6 +551,7 @@ public class QTestUtil {
       dataDir = new File(".").getAbsolutePath() + "/data/files";
     }
     testFiles = dataDir;
+    conf.set("test.data.dir", dataDir);
 
     // Use path relative to dataDir directory if it is not specified
     datasetDir = conf.get("test.data.set.files") == null
@@ -1094,7 +1096,7 @@ public class QTestUtil {
     }
   }
 
-  private void initDataSetForTest(File file){
+  private void initDataSetForTest(File file) throws Exception {
     getCliDriver().processLine("set test.data.dir=" + testFiles + ";");
 
     DatasetParser parser = new DatasetParser();
@@ -1108,10 +1110,11 @@ public class QTestUtil {
     }
   }
 
-  protected void initDataset(String table) {
+  protected void initDataset(String table) throws Exception {
     if (getSrcTables().contains(table)){
       return;
     }
+    newSession(true);
 
     File tableFile = new File(new File(datasetDir, table), Dataset.INIT_FILE_NAME);
     String commands = null;
@@ -1162,13 +1165,15 @@ public class QTestUtil {
   public String cliInit(File file) throws Exception {
     String fileName = file.getName();
 
+    initDataSetForTest(file);
+    newSession(true);
+
     if (qNoSessionReuseQuerySet.contains(fileName)) {
       newSession(false);
     }
 
     CliSessionState ss = (CliSessionState) SessionState.get();
 
-    initDataSetForTest(file);
 
     String outFileExtension = getOutFileExtension(fileName);
     String stdoutName = null;
