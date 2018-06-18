@@ -968,6 +968,7 @@ public class QTestUtil {
     if (System.getenv(QTEST_LEAVE_FILES) != null) {
       return;
     }
+    newSession();
 
     // Remove any cached results from the previous test.
     Utilities.clearWorkMap(conf);
