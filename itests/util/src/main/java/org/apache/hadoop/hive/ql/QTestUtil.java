@@ -1097,24 +1097,26 @@ public class QTestUtil {
   }
 
   private void initDataSetForTest(File file) throws Exception {
-    getCliDriver().processLine("set test.data.dir=" + testFiles + ";");
+    synchronized (QTestUtil.class) {
+      DatasetParser parser = new DatasetParser();
+      parser.parse(file);
 
-    DatasetParser parser = new DatasetParser();
-    parser.parse(file);
+      DatasetCollection datasets = parser.getDatasets();
 
-    DatasetCollection datasets = parser.getDatasets();
-    for (String table : datasets.getTables()){
-      synchronized (QTestUtil.class){
+      Set<String> missingDatasets = datasets.getTables();
+      missingDatasets.removeAll(getSrcTables());
+      if (missingDatasets.isEmpty()) {
+        return;
+      }
+      newSession(true);
+      for (String table : missingDatasets) {
         initDataset(table);
       }
+      newSession(true);
     }
   }
 
   protected void initDataset(String table) throws Exception {
-    if (getSrcTables().contains(table)){
-      return;
-    }
-    newSession(true);
 
     File tableFile = new File(new File(datasetDir, table), Dataset.INIT_FILE_NAME);
     String commands = null;
