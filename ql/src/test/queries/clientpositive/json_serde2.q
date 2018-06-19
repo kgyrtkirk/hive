@@ -6,7 +6,7 @@ drop table if exists json_serde1_1;
 drop table if exists json_serde1_2;
 
 create table json_serde1_1 (a array<string>,b map<string,int>)
-  row format serde 'org.apache.hadoop.hive.serde2.json.JsonSerDe2';
+  row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe';
 
 insert into table json_serde1_1
   select array('aaa'),map('aaa',1) from src limit 2;
@@ -17,7 +17,7 @@ create table json_serde1_2 (
   a array<int>,
   b map<int,date>,
   c struct<c1:int, c2:string, c3:array<string>, c4:map<string, int>, c5:struct<c5_1:string, c5_2:int>>
-) row format serde 'org.apache.hadoop.hive.serde2.json.JsonSerDe2';
+) row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe';
 
 insert into table json_serde1_2
   select
