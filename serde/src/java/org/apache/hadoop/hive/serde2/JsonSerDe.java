@@ -67,9 +67,9 @@ import org.slf4j.LoggerFactory;
     serdeConstants.LIST_COLUMN_TYPES,
     serdeConstants.TIMESTAMP_FORMATS })
 
-public class JsonSerDe2 extends AbstractSerDe {
+public class JsonSerDe extends AbstractSerDe {
 
-  private static final Logger LOG = LoggerFactory.getLogger(JsonSerDe2.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JsonSerDe.class);
   private List<String> columnNames;
 
   private HiveJsonStructReader structReader;

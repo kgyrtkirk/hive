@@ -32,7 +32,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
-import org.apache.hadoop.hive.serde2.JsonSerDe2;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -55,7 +54,7 @@ public class JsonSerDe extends AbstractSerDe {
   private HCatSchema schema;
 
   private HCatRecordObjectInspector cachedObjectInspector;
-  private JsonSerDe2 jsonSerde = new JsonSerDe2();
+  private org.apache.hadoop.hive.serde2.JsonSerDe jsonSerde = new org.apache.hadoop.hive.serde2.JsonSerDe();
 
   @Override
   public void initialize(Configuration conf, Properties tbl)
