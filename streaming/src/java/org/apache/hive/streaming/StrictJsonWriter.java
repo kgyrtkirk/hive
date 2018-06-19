@@ -21,7 +21,7 @@ package org.apache.hive.streaming;
 import java.util.Properties;
 
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.json.JsonSerDe2;
+import org.apache.hadoop.hive.serde2.JsonSerDe2;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.io.Text;
