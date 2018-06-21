@@ -64,11 +64,14 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.LockComponent;
+import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache.CacheEntry;
+import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DagUtils;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
@@ -809,10 +812,26 @@ public class Driver implements IDriver {
     }
     Set<String> nonSharedLocks = new HashSet<>();
     for (HiveLock lock : ctx.getHiveLocks()) {
-      if (lock.getHiveLockMode() == HiveLockMode.EXCLUSIVE ||
-          lock.getHiveLockMode() == HiveLockMode.SEMI_SHARED) {
-        if (lock.getHiveLockObject().getPaths().length == 2) {
-          // Pos 0 of lock paths array contains dbname, pos 1 contains tblname
+      if (lock.mayContainComponents()) {
+        // The lock may have multiple components, e.g., DbHiveLock, hence we need
+        // to check for each of them
+        for (LockComponent lckCmp : lock.getHiveLockComponents()) {
+          // We only consider tables for which we hold either an exclusive
+          // or a shared write lock
+          if ((lckCmp.getType() == LockType.EXCLUSIVE ||
+              lckCmp.getType() == LockType.SHARED_WRITE) &&
+              lckCmp.getTablename() != null) {
+            nonSharedLocks.add(
+                Warehouse.getQualifiedName(
+                    lckCmp.getDbname(), lckCmp.getTablename()));
+          }
+        }
+      } else {
+        // The lock has a single components, e.g., SimpleHiveLock or ZooKeeperHiveLock.
+        // Pos 0 of lock paths array contains dbname, pos 1 contains tblname
+        if ((lock.getHiveLockMode() == HiveLockMode.EXCLUSIVE ||
+            lock.getHiveLockMode() == HiveLockMode.SEMI_SHARED) &&
+            lock.getHiveLockObject().getPaths().length == 2) {
           nonSharedLocks.add(
               Warehouse.getQualifiedName(
                   lock.getHiveLockObject().getPaths()[0], lock.getHiveLockObject().getPaths()[1]));
@@ -820,12 +839,12 @@ public class Driver implements IDriver {
       }
     }
     // 3) Get txn tables that are being written
-    ValidTxnWriteIdList txnWriteIdList =
-        new ValidTxnWriteIdList(conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
-    if (txnWriteIdList == null) {
+    String txnWriteIdListStr = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
+    if (txnWriteIdListStr == null || txnWriteIdListStr.length() == 0) {
       // Nothing to check
       return true;
     }
+    ValidTxnWriteIdList txnWriteIdList = new ValidTxnWriteIdList(txnWriteIdListStr);
     List<Pair<String, Table>> writtenTables = getWrittenTableList(plan);
     ValidTxnWriteIdList currentTxnWriteIds =
         queryTxnMgr.getValidWriteIds(
@@ -1563,9 +1582,19 @@ public class Driver implements IDriver {
                   Utilities.getTableName(tableInfo.getTableName()));
           desc.setTableWriteId(writeId);
 
-          //it's possible to have > 1 FileSink writing to the same table/partition
-          //e.g. Merge stmt, multi-insert stmt when mixing DP and SP writes
+          /**
+           * it's possible to have > 1 FileSink writing to the same table/partition
+           * e.g. Merge stmt, multi-insert stmt when mixing DP and SP writes
+           * Insert ... Select ... Union All Select ... using
+           * {@link org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator#UNION_SUDBIR_PREFIX}
+           */
           desc.setStatementId(queryTxnMgr.getStmtIdAndIncrement());
+          String unionAllSubdir = "/" + AbstractFileMergeOperator.UNION_SUDBIR_PREFIX;
+          if(desc.getInsertOverwrite() && desc.getDirName().toString().contains(unionAllSubdir) &&
+              desc.isFullAcidTable()) {
+            throw new UnsupportedOperationException("QueryId=" + plan.getQueryId() +
+                " is not supported due to OVERWRITE and UNION ALL.  Please use truncate + insert");
+          }
         }
       }
 
@@ -1938,6 +1967,7 @@ public class Driver implements IDriver {
 
       try {
         if (!isValidTxnListState()) {
+          LOG.info("Compiling after acquiring locks");
           // Snapshot was outdated when locks were acquired, hence regenerate context,
           // txn list and retry
           // TODO: Lock acquisition should be moved before analyze, this is a bit hackish.
