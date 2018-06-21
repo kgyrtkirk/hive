@@ -110,10 +110,6 @@ public class CoreAccumuloCliDriver extends CliAdapter {
       qt.addFile(fpath);
 
       qt.cliInit(new File(fpath));
-<<<<<<< HEAD
-      qt.clearTestSideEffects();
-=======
->>>>>>> asf/master
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {
         qt.failed(ecode, fname, null);

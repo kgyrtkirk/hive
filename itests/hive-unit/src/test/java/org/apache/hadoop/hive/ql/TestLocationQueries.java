@@ -109,10 +109,7 @@ public class TestLocationQueries extends BaseTestQueries {
 
     for (int i = 0; i < qfiles.length; i++) {
       qt[i] = new CheckResults(resDir, logDir, MiniClusterType.none, "0.20", "parta");
-<<<<<<< HEAD
-=======
       qt[i].newSession();
->>>>>>> asf/master
       qt[i].addFile(qfiles[i], false);
       qt[i].clearTestSideEffects();
     }
