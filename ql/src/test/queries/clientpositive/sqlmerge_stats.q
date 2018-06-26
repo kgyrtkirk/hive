@@ -7,6 +7,8 @@ set hive.merge.cardinality.check=true;
 create table t(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
 create table upd_t(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='false');
 
+desc formatted t;
+
 insert into t values (1,1);
 insert into upd_t values (1,1),(2,2);
 

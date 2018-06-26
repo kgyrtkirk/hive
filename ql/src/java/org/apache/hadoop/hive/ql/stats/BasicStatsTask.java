@@ -208,12 +208,6 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     private void updateStats(StatsAggregator statsAggregator, Map<String, String> parameters,
         String aggKey, boolean isFullAcid) throws HiveException {
       for (String statType : StatsSetupConst.statsRequireCompute) {
-        if (isFullAcid && !work.isTargetRewritten()) {
-          // Don't bother with aggregation in this case, it will probably be invalid.
-          parameters.remove(statType);
-          continue;
-        }
-
         String value = statsAggregator.aggregateStats(aggKey, statType);
         if (value != null && !value.isEmpty()) {
           long longValue = Long.parseLong(value);
