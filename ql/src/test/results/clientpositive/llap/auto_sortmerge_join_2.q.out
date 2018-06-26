@@ -101,7 +101,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+<<<<<<< HEAD
                   Statistics: Num rows: 4 Data size: 2996 Basic stats: PARTIAL Column stats: NONE
+=======
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 4 Data size: 2996 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -168,7 +173,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+<<<<<<< HEAD
                   Statistics: Num rows: 112 Data size: 74872 Basic stats: PARTIAL Column stats: NONE
+=======
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 112 Data size: 74872 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -378,7 +388,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+<<<<<<< HEAD
                   Statistics: Num rows: 4 Data size: 2996 Basic stats: PARTIAL Column stats: NONE
+=======
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 4 Data size: 2996 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -445,7 +460,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+<<<<<<< HEAD
                   Statistics: Num rows: 112 Data size: 74872 Basic stats: PARTIAL Column stats: NONE
+=======
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 112 Data size: 74872 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false

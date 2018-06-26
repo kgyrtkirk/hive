@@ -78,7 +78,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+<<<<<<< HEAD
                   Statistics: Num rows: 69 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
+=======
+                  filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+                  Statistics: Num rows: 69 Data size: 27500 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -162,7 +167,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+<<<<<<< HEAD
                   Statistics: Num rows: 69 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
+=======
+                  filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+                  Statistics: Num rows: 69 Data size: 27500 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false

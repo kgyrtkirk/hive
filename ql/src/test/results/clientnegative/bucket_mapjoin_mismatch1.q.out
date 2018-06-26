@@ -94,7 +94,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+<<<<<<< HEAD
             Statistics: Num rows: 108 Data size: 42000 Basic stats: PARTIAL Column stats: NONE
+=======
+            filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+            Statistics: Num rows: 108 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
             Filter Operator
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 108 Data size: 42000 Basic stats: PARTIAL Column stats: NONE
@@ -110,7 +115,12 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+<<<<<<< HEAD
             Statistics: Num rows: 70 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
+=======
+            filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+            Statistics: Num rows: 70 Data size: 27500 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
             Filter Operator
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 70 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
@@ -177,7 +187,12 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+<<<<<<< HEAD
             Statistics: Num rows: 92 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
+=======
+            filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+            Statistics: Num rows: 92 Data size: 27500 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
             Filter Operator
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 92 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
@@ -191,7 +206,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+<<<<<<< HEAD
             Statistics: Num rows: 140 Data size: 42000 Basic stats: PARTIAL Column stats: NONE
+=======
+            filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+            Statistics: Num rows: 140 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
             Filter Operator
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 140 Data size: 42000 Basic stats: PARTIAL Column stats: NONE

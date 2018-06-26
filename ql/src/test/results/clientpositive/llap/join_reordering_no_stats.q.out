@@ -100,6 +100,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem_nostats
+                  filterExpr: (l_partkey is not null and l_suppkey is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (l_partkey is not null and l_suppkey is not null) (type: boolean)
@@ -120,6 +121,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_nostats
+                  filterExpr: p_partkey is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_partkey is not null (type: boolean)
@@ -139,6 +141,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: supplier_nostats
+                  filterExpr: s_suppkey is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: s_suppkey is not null (type: boolean)
@@ -233,6 +236,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem_nostats
+                  filterExpr: (l_partkey is not null and l_suppkey is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (l_partkey is not null and l_suppkey is not null) (type: boolean)
@@ -253,6 +257,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_nostats
+                  filterExpr: p_partkey is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_partkey is not null (type: boolean)
@@ -272,6 +277,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: supplier_nostats
+                  filterExpr: s_suppkey is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: s_suppkey is not null (type: boolean)
@@ -430,6 +436,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem_nostats
+                  filterExpr: (l_partkey is not null and l_suppkey is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (l_partkey is not null and l_suppkey is not null) (type: boolean)
@@ -450,6 +457,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: supplier_nostats
+                  filterExpr: s_suppkey is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: s_suppkey is not null (type: boolean)
@@ -469,7 +477,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: employee_part_n1
+<<<<<<< HEAD
                   Statistics: Num rows: 8 Data size: 28 Basic stats: PARTIAL Column stats: NONE
+=======
+                  filterExpr: employeeid is not null (type: boolean)
+                  Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   Filter Operator
                     predicate: employeeid is not null (type: boolean)
                     Statistics: Num rows: 6 Data size: 21 Basic stats: PARTIAL Column stats: NONE
@@ -563,6 +576,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem_nostats
+                  filterExpr: (l_partkey is not null and l_suppkey is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (l_partkey is not null and l_suppkey is not null) (type: boolean)
@@ -582,8 +596,14 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: employee_part_n1
                   Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
+=======
+                  alias: supplier_nostats
+                  filterExpr: s_suppkey is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   Filter Operator
                     predicate: employeeid is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
@@ -601,8 +621,14 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: supplier_nostats
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+=======
+                  alias: employee_part_n1
+                  filterExpr: employeeid is not null (type: boolean)
+                  Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   Filter Operator
                     predicate: s_suppkey is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE

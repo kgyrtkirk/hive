@@ -94,7 +94,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_part
+<<<<<<< HEAD
                   Statistics: Num rows: 160 Data size: 61011 Basic stats: PARTIAL Column stats: NONE
+=======
+                  filterExpr: ((key = 'foo') and (ds = '2008-04-08')) (type: boolean)
+                  Statistics: Num rows: 160 Data size: 61001 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1906 Basic stats: PARTIAL Column stats: NONE
@@ -189,7 +194,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_part
+<<<<<<< HEAD
                   Statistics: Num rows: 159 Data size: 104357 Basic stats: PARTIAL Column stats: PARTIAL
+=======
+                  filterExpr: ((key = 'foo') and (ds) IN ('2008-04-08')) (type: boolean)
+                  Statistics: Num rows: 159 Data size: 104317 Basic stats: COMPLETE Column stats: PARTIAL
+>>>>>>> asf/master
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 3281 Basic stats: PARTIAL Column stats: PARTIAL
@@ -380,7 +390,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_part_sdpo
+<<<<<<< HEAD
                   Statistics: Num rows: 176 Data size: 67083 Basic stats: PARTIAL Column stats: NONE
+=======
+                  filterExpr: ((key = 'foo') and (ds = '2008-04-08')) (type: boolean)
+                  Statistics: Num rows: 176 Data size: 67063 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1905 Basic stats: PARTIAL Column stats: NONE
@@ -475,7 +490,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_part_sdpo
+<<<<<<< HEAD
                   Statistics: Num rows: 171 Data size: 112202 Basic stats: PARTIAL Column stats: PARTIAL
+=======
+                  filterExpr: ((key = 'foo') and (ds) IN ('2008-04-08')) (type: boolean)
+                  Statistics: Num rows: 171 Data size: 112152 Basic stats: COMPLETE Column stats: PARTIAL
+>>>>>>> asf/master
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 3280 Basic stats: PARTIAL Column stats: PARTIAL
@@ -675,7 +695,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part
+<<<<<<< HEAD
                   Statistics: Num rows: 157 Data size: 60537 Basic stats: PARTIAL Column stats: NONE
+=======
+                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr = 11)) (type: boolean)
+                  Statistics: Num rows: 157 Data size: 60527 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1927 Basic stats: PARTIAL Column stats: NONE
@@ -771,7 +796,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part
+<<<<<<< HEAD
                   Statistics: Num rows: 1804 Data size: 235911 Basic stats: PARTIAL Column stats: PARTIAL
+=======
+                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr >= 11)) (type: boolean)
+                  Statistics: Num rows: 1600 Data size: 156727 Basic stats: PARTIAL Column stats: PARTIAL
+>>>>>>> asf/master
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 653 Basic stats: PARTIAL Column stats: PARTIAL
@@ -897,7 +927,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part
+<<<<<<< HEAD
                   Statistics: Num rows: 2013 Data size: 724942 Basic stats: PARTIAL Column stats: PARTIAL
+=======
+                  filterExpr: (value = 'bar') (type: boolean)
+                  Statistics: Num rows: 1600 Data size: 451127 Basic stats: PARTIAL Column stats: PARTIAL
+>>>>>>> asf/master
                   Filter Operator
                     predicate: (value = 'bar') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1800 Basic stats: PARTIAL Column stats: PARTIAL
@@ -1095,7 +1130,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo
+<<<<<<< HEAD
                   Statistics: Num rows: 157 Data size: 60537 Basic stats: PARTIAL Column stats: NONE
+=======
+                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr = 11)) (type: boolean)
+                  Statistics: Num rows: 157 Data size: 60527 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1927 Basic stats: PARTIAL Column stats: NONE
@@ -1191,7 +1231,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo
+<<<<<<< HEAD
                   Statistics: Num rows: 1804 Data size: 235911 Basic stats: PARTIAL Column stats: PARTIAL
+=======
+                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr >= 11)) (type: boolean)
+                  Statistics: Num rows: 1600 Data size: 156727 Basic stats: PARTIAL Column stats: PARTIAL
+>>>>>>> asf/master
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 653 Basic stats: PARTIAL Column stats: PARTIAL
@@ -1317,7 +1362,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo
+<<<<<<< HEAD
                   Statistics: Num rows: 2013 Data size: 724942 Basic stats: PARTIAL Column stats: PARTIAL
+=======
+                  filterExpr: (value = 'bar') (type: boolean)
+                  Statistics: Num rows: 1600 Data size: 451127 Basic stats: PARTIAL Column stats: PARTIAL
+>>>>>>> asf/master
                   Filter Operator
                     predicate: (value = 'bar') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1800 Basic stats: PARTIAL Column stats: PARTIAL
@@ -1515,7 +1565,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo_no_cp
+<<<<<<< HEAD
                   Statistics: Num rows: 97 Data size: 82932 Basic stats: PARTIAL Column stats: PARTIAL
+=======
+                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr = 11)) (type: boolean)
+                  Statistics: Num rows: 97 Data size: 82922 Basic stats: COMPLETE Column stats: PARTIAL
+>>>>>>> asf/master
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 4274 Basic stats: PARTIAL Column stats: PARTIAL
@@ -1613,7 +1668,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo_no_cp
+<<<<<<< HEAD
                   Statistics: Num rows: 1726 Data size: 705922 Basic stats: PARTIAL Column stats: PARTIAL
+=======
+                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr >= 11)) (type: boolean)
+                  Statistics: Num rows: 1600 Data size: 598664 Basic stats: PARTIAL Column stats: PARTIAL
+>>>>>>> asf/master
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 2044 Basic stats: PARTIAL Column stats: PARTIAL

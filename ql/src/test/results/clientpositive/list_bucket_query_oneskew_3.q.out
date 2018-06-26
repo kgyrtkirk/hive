@@ -209,7 +209,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily_n0
+<<<<<<< HEAD
           Statistics: Num rows: 2 Data size: 1170 Basic stats: PARTIAL Column stats: NONE
+=======
+          filterExpr: ((ds = '1') and (x <> 86)) (type: boolean)
+          Statistics: Num rows: 2 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
           GatherStats: false
           Filter Operator
             isSamplingPred: false
