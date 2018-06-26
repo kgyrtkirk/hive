@@ -1561,6 +1561,8 @@ public class HiveConf extends Configuration {
     HIVE_STRICT_CHECKS_BUCKETING("hive.strict.checks.bucketing", true,
         "Enabling strict bucketing checks disallows the following:\n" +
         "  Load into bucketed tables."),
+    HIVE_LOAD_DATA_OWNER("hive.load.data.owner", "",
+        "Set the owner of files loaded using load data in managed tables."),
 
     @Deprecated
     HIVEMAPREDMODE("hive.mapred.mode", null,
@@ -1605,7 +1607,7 @@ public class HiveConf extends Configuration {
         "columns in operators such as Aggregate or Join so that we try to reduce the number of shuffling stages"),
 
     // materialized views
-    HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING("hive.materializedview.rewriting", false,
+    HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING("hive.materializedview.rewriting", true,
         "Whether to try to rewrite queries using the materialized views enabled for rewriting"),
     HIVE_MATERIALIZED_VIEW_REWRITING_SELECTION_STRATEGY("hive.materializedview.rewriting.strategy", "heuristic",
         new StringSet("heuristic", "costbased"),
@@ -2113,7 +2115,7 @@ public class HiveConf extends Configuration {
         "Whether to provide the row offset virtual column"),
 
     // Optimizer
-    HIVEOPTINDEXFILTER("hive.optimize.index.filter", false, "Whether to enable automatic use of indexes"),
+    HIVEOPTINDEXFILTER("hive.optimize.index.filter", true, "Whether to enable automatic use of indexes"),
 
     HIVEOPTPPD("hive.optimize.ppd", true,
         "Whether to enable predicate pushdown"),
@@ -2844,10 +2846,6 @@ public class HiveConf extends Configuration {
         "Whether to disable certain optimizations and operations on external tables," +
         " on the assumption that data changes by external applications may have negative effects" +
         " on these operations."),
-
-    HIVE_STRICT_MANAGED_TABLES("hive.strict.managed.tables", false,
-        "Whether strict managed tables mode is enabled. With this mode enabled, " +
-        "only transactional tables (both full and insert-only) are allowed to be created as managed tables"),
 
     HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false,
         "Whether to throw an exception if dynamic partition insert generates empty results."),
