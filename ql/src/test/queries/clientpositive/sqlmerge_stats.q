@@ -18,4 +18,22 @@ explain merge into t as t using upd_t as u ON t.a = u.a
 WHEN MATCHED THEN UPDATE SET b = 99
 WHEN NOT MATCHED THEN INSERT VALUES(u.a, u.b);
 
+merge into t as t using upd_t as u ON t.a = u.a 
+WHEN MATCHED THEN UPDATE SET b = 99
+WHEN NOT MATCHED THEN INSERT VALUES(u.a, u.b);
+
+-- merge could keep track of inserts
+select assert_true(count(1) = 2) from t group by a>-1;
+-- rownum is 2
 desc formatted t;
+
+merge into t as t using upd_t as u ON t.a = u.a 
+WHEN MATCHED THEN DELETE
+WHEN NOT MATCHED THEN INSERT VALUES(u.a, u.b);
+
+
+-- however it can't keep track of deletes
+select assert_true(count(1) = 0) from t group by a>-1;
+-- rownum is still 2; but the table is actually empty
+desc formatted t;
+

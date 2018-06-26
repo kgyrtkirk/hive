@@ -378,6 +378,36 @@ STAGE PLANS:
           Column Types: int, int
           Table: default.t
 
+PREHOOK: query: merge into t as t using upd_t as u ON t.a = u.a 
+WHEN MATCHED THEN UPDATE SET b = 99
+WHEN NOT MATCHED THEN INSERT VALUES(u.a, u.b)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Input: default@upd_t
+PREHOOK: Output: default@merge_tmp_table
+PREHOOK: Output: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: merge into t as t using upd_t as u ON t.a = u.a 
+WHEN MATCHED THEN UPDATE SET b = 99
+WHEN NOT MATCHED THEN INSERT VALUES(u.a, u.b)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Input: default@upd_t
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@t
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(t)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: t.a SIMPLE [(upd_t)u.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: t.b SIMPLE [(upd_t)u.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: select assert_true(count(1) = 2) from t group by a>-1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(count(1) = 2) from t group by a>-1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+NULL
 PREHOOK: query: desc formatted t
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@t
@@ -396,10 +426,75 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	bucketing_version   	2                   
-	numFiles            	1                   
-	numRows             	1                   
+	numFiles            	4                   
+	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	657                 
+	totalSize           	2690                
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[a]                 	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: merge into t as t using upd_t as u ON t.a = u.a 
+WHEN MATCHED THEN DELETE
+WHEN NOT MATCHED THEN INSERT VALUES(u.a, u.b)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Input: default@upd_t
+PREHOOK: Output: default@merge_tmp_table
+PREHOOK: Output: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: merge into t as t using upd_t as u ON t.a = u.a 
+WHEN MATCHED THEN DELETE
+WHEN NOT MATCHED THEN INSERT VALUES(u.a, u.b)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Input: default@upd_t
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@t
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(t)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: t.a SIMPLE [(upd_t)u.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: t.b SIMPLE [(upd_t)u.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: select assert_true(count(1) = 0) from t group by a>-1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(count(1) = 0) from t group by a>-1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted t
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: desc formatted t
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+	numFiles            	6                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	4052                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
