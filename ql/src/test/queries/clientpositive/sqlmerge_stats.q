@@ -32,8 +32,7 @@ WHEN MATCHED THEN DELETE
 WHEN NOT MATCHED THEN INSERT VALUES(u.a, u.b);
 
 
--- however it can't keep track of deletes
 select assert_true(count(1) = 0) from t group by a>-1;
--- rownum is still 2; but the table is actually empty
+-- rownum is 0; because the orc writer can keep track of delta
 desc formatted t;
 
