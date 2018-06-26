@@ -8,8 +8,8 @@ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=88888888;
-set hive.auto.convert.sortmerge.join=true;
-set hive.auto.convert.sortmerge.join.to.mapjoin=true;
+-- set hive.auto.convert.sortmerge.join=true;
+-- set hive.auto.convert.sortmerge.join.to.mapjoin=true;
 
 create table lineitem (L_ORDERKEY integer);
 
