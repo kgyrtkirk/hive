@@ -6865,6 +6865,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         partnCols = getPartitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input, true);
       }
     }
+    else {
+      if(updating(dest) || deleting(dest)) {
+        partnCols = getPartitionColsFromBucketColsForUpdateDelete(input, true);
+        enforceBucketing = true;
+      }
+    }
 
     if ((dest_tab.getSortCols() != null) &&
         (dest_tab.getSortCols().size() > 0)) {
@@ -7824,7 +7830,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String tName = Utilities.getDbTableName(tableDesc.getTableName())[1];
       try {
         Warehouse wh = new Warehouse(conf);
-        tlocation = wh.getDefaultTablePath(db.getDatabase(tableDesc.getDatabaseName()), tName);
+        tlocation = wh.getDefaultTablePath(db.getDatabase(tableDesc.getDatabaseName()),
+            tName, tableDesc.isExternal());
       } catch (MetaException|HiveException e) {
         throw new SemanticException(e);
       }
@@ -11855,7 +11862,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames),
-            new MaskAndFilterInfo(colTypes, additionalTabInfo.toString(), alias, astNode, table.isView()));
+            new MaskAndFilterInfo(colTypes, additionalTabInfo.toString(), alias, astNode, table.isView(), table.isNonNative()));
       }
       if (astNode.getChildCount() > 0 && !ignoredTokens.contains(astNode.getToken().getType())) {
         for (Node child : astNode.getChildren()) {
@@ -12129,7 +12136,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // If no masking/filtering required, then we can check the cache now, before
     // generating the operator tree and going through CBO.
     // Otherwise we have to wait until after the masking/filtering step.
-    boolean isCacheEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED);
+    boolean isCacheEnabled = isResultsCacheEnabled();
     QueryResultsCache.LookupInfo lookupInfo = null;
     boolean needsTransform = needsTransform();
     if (isCacheEnabled && !needsTransform && queryTypeCanUseCache()) {
@@ -12846,7 +12853,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
-    boolean makeInsertOnly = HiveConf.getBoolVar(conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY);
+    boolean makeInsertOnly = !isTemporaryTable && HiveConf.getBoolVar(conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY);
     boolean makeAcid = !isTemporaryTable &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID) &&
         HiveConf.getBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY) &&
@@ -13144,9 +13151,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         try {
           // Generate a unique ID for temp table path.
           // This path will be fixed for the life of the temp table.
-          Path path = new Path(SessionState.getTempTableSpace(conf), UUID.randomUUID().toString());
-          path = Warehouse.getDnsPath(path, conf);
-          location = path.toString();
+          location = SessionState.generateTempTableLocation(conf);
         } catch (MetaException err) {
           throw new SemanticException("Error while generating temp table path:", err);
         }
@@ -14657,6 +14662,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           });
     }
     return lookupInfo;
+  }
+
+  private boolean isResultsCacheEnabled() {
+    return conf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED) &&
+        !(SessionState.get().isHiveServerQuery() && conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS));
   }
 
   /**

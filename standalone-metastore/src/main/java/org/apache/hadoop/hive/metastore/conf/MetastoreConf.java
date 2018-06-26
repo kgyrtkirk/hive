@@ -748,6 +748,9 @@ public class MetastoreConf {
         "The class to use to read schemas from storage.  It must implement " +
         "org.apache.hadoop.hive.metastore.StorageSchemaReader"),
     STORE_MANAGER_TYPE("datanucleus.storeManagerType", "datanucleus.storeManagerType", "rdbms", "metadata store type"),
+    STRICT_MANAGED_TABLES("metastore.strict.managed.tables", "hive.strict.managed.tables", false,
+            "Whether strict managed tables mode is enabled. With this mode enabled, " +
+            "only transactional tables (both full and insert-only) are allowed to be created as managed tables"),
     SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES("metastore.support.special.characters.tablename",
         "hive.support.special.characters.tablename", true,
         "This flag should be set to true to enable support for special characters in table names.\n"
@@ -862,6 +865,10 @@ public class MetastoreConf {
         "validates existing schema against code. turn this on if you want to verify existing schema"),
     WAREHOUSE("metastore.warehouse.dir", "hive.metastore.warehouse.dir", "/user/hive/warehouse",
         "location of default database for the warehouse"),
+    WAREHOUSE_EXTERNAL("metastore.warehouse.external.dir",
+        "hive.metastore.warehouse.external.dir", "",
+        "Default location for external tables created in the warehouse. " +
+        "If not set or null, then the normal warehouse location will be used as the default location."),
     WRITE_SET_REAPER_INTERVAL("metastore.writeset.reaper.interval",
         "hive.writeset.reaper.interval", 60, TimeUnit.SECONDS,
         "Frequency of WriteSet reaper runs"),

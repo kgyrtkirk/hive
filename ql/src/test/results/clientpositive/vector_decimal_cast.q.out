@@ -16,6 +16,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
+            filterExpr: (cdouble is not null and cint is not null and cboolean1 is not null and ctimestamp1 is not null) (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -56,8 +57,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -135,6 +136,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypes_small
+            filterExpr: (cdouble is not null and cint is not null and cboolean1 is not null and ctimestamp1 is not null) (type: boolean)
             Statistics: Num rows: 12288 Data size: 1333293 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true

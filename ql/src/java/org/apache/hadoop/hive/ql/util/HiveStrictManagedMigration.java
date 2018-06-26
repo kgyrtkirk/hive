@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.HiveStrictManagedUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -470,7 +471,7 @@ public class HiveStrictManagedMigration {
       throws IOException, MetaException {
     String tableName = tableObj.getTableName();
     String partLocation = partObj.getSd().getLocation();
-    Path oldDefaultPartLocation = oldWh.getDefaultPartitionPath(dbObj, tableName, partSpec);
+    Path oldDefaultPartLocation = oldWh.getDefaultPartitionPath(dbObj, tableObj, partSpec);
     return arePathsEqual(conf, partLocation, oldDefaultPartLocation.toString());
   }
 
