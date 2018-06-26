@@ -132,16 +132,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid
-<<<<<<< HEAD
-            Statistics: Num rows: 83 Data size: 40640 Basic stats: PARTIAL Column stats: NONE
-            Select Operator
-              Statistics: Num rows: 83 Data size: 40640 Basic stats: PARTIAL Column stats: NONE
-=======
             filterExpr: (ds = '2008-04-08') (type: boolean)
-            Statistics: Num rows: 83 Data size: 40630 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 83 Data size: 40630 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              Statistics: Num rows: 83 Data size: 40630 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+              Statistics: Num rows: 83 Data size: 40630 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: count()
                 mode: hash

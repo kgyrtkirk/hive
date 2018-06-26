@@ -134,12 +134,8 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
-<<<<<<< HEAD
-            Statistics: Num rows: 95 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
-=======
             filterExpr: ((part = '1') and key is not null) (type: boolean)
-            Statistics: Num rows: 95 Data size: 27500 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+            Statistics: Num rows: 95 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -163,12 +159,8 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-<<<<<<< HEAD
-            Statistics: Num rows: 95 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
-=======
             filterExpr: ((part = '1') and key is not null) (type: boolean)
-            Statistics: Num rows: 95 Data size: 27500 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+            Statistics: Num rows: 95 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -388,12 +380,8 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
-<<<<<<< HEAD
-            Statistics: Num rows: 95 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
-=======
             filterExpr: ((part = '1') and key is not null) (type: boolean)
-            Statistics: Num rows: 95 Data size: 27500 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+            Statistics: Num rows: 95 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -417,12 +405,8 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-<<<<<<< HEAD
-            Statistics: Num rows: 95 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
-=======
             filterExpr: ((part = '1') and key is not null) (type: boolean)
-            Statistics: Num rows: 95 Data size: 27500 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+            Statistics: Num rows: 95 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
