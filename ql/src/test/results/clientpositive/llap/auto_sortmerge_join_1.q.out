@@ -119,12 +119,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-<<<<<<< HEAD
-                  Statistics: Num rows: 2 Data size: 1508 Basic stats: PARTIAL Column stats: NONE
-=======
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 2 Data size: 1508 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+                  Statistics: Num rows: 2 Data size: 1508 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -191,12 +187,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-<<<<<<< HEAD
-                  Statistics: Num rows: 240 Data size: 158376 Basic stats: PARTIAL Column stats: NONE
-=======
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 240 Data size: 158376 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+                  Statistics: Num rows: 240 Data size: 158376 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -406,12 +398,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-<<<<<<< HEAD
-                  Statistics: Num rows: 2 Data size: 1508 Basic stats: PARTIAL Column stats: NONE
-=======
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 2 Data size: 1508 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+                  Statistics: Num rows: 2 Data size: 1508 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -478,12 +466,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-<<<<<<< HEAD
-                  Statistics: Num rows: 240 Data size: 158376 Basic stats: PARTIAL Column stats: NONE
-=======
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 240 Data size: 158376 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+                  Statistics: Num rows: 240 Data size: 158376 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -693,12 +677,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-<<<<<<< HEAD
-                  Statistics: Num rows: 2 Data size: 1508 Basic stats: PARTIAL Column stats: NONE
-=======
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 2 Data size: 1508 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+                  Statistics: Num rows: 2 Data size: 1508 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -765,12 +745,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-<<<<<<< HEAD
-                  Statistics: Num rows: 240 Data size: 158376 Basic stats: PARTIAL Column stats: NONE
-=======
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 240 Data size: 158376 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+                  Statistics: Num rows: 240 Data size: 158376 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
