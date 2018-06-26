@@ -169,7 +169,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         // though we are marking stats as not being accurate.
         if (StatsSetupConst.areBasicStatsUptoDate(parameters) || p.isTransactionalTable()) {
           String prefix = getAggregationPrefix(p.getTable(), p.getPartition());
-          updateStats(statsAggregator, parameters, prefix, p.isAcid());
+          updateStats(statsAggregator, parameters, prefix);
         }
       }
 
@@ -206,7 +206,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     }
 
     private void updateStats(StatsAggregator statsAggregator, Map<String, String> parameters,
-        String aggKey, boolean isFullAcid) throws HiveException {
+        String aggKey) throws HiveException {
       for (String statType : StatsSetupConst.statsRequireCompute) {
         String value = statsAggregator.aggregateStats(aggKey, statType);
         if (value != null && !value.isEmpty()) {
