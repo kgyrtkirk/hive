@@ -192,12 +192,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bigtbl
-<<<<<<< HEAD
-                  Statistics: Num rows: 5000 Data size: 1748368 Basic stats: COMPLETE Column stats: NONE
-=======
                   filterExpr: (key is not null and value is not null) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+                  Statistics: Num rows: 5000 Data size: 1748368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
                     Statistics: Num rows: 4500 Data size: 1573531 Basic stats: COMPLETE Column stats: NONE
@@ -362,12 +358,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bigtbl
-<<<<<<< HEAD
-                  Statistics: Num rows: 5000 Data size: 1748368 Basic stats: COMPLETE Column stats: NONE
-=======
                   filterExpr: (key is not null and value is not null) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+                  Statistics: Num rows: 5000 Data size: 1748368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
                     Statistics: Num rows: 4500 Data size: 1573531 Basic stats: COMPLETE Column stats: NONE
@@ -534,12 +526,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bigtbl
-<<<<<<< HEAD
-                  Statistics: Num rows: 5000 Data size: 1748368 Basic stats: COMPLETE Column stats: NONE
-=======
                   filterExpr: (key is not null and value is not null) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+                  Statistics: Num rows: 5000 Data size: 1748368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
                     Statistics: Num rows: 4500 Data size: 1573531 Basic stats: COMPLETE Column stats: NONE
@@ -846,12 +834,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bigtbl
-<<<<<<< HEAD
-                  Statistics: Num rows: 5000 Data size: 2622552 Basic stats: COMPLETE Column stats: NONE
-=======
                   filterExpr: (key1 is not null and value is not null and key2 is not null) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 262752 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+                  Statistics: Num rows: 5000 Data size: 2622552 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key1 is not null and key2 is not null and value is not null) (type: boolean)
                     Statistics: Num rows: 4250 Data size: 2229169 Basic stats: COMPLETE Column stats: NONE
@@ -1190,12 +1174,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bigtbl
-<<<<<<< HEAD
-                  Statistics: Num rows: 5000 Data size: 2622552 Basic stats: COMPLETE Column stats: NONE
-=======
                   filterExpr: (key1 is not null and value is not null and key2 is not null) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 262752 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+                  Statistics: Num rows: 5000 Data size: 2622552 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key1 is not null and key2 is not null and value is not null) (type: boolean)
                     Statistics: Num rows: 4250 Data size: 2229169 Basic stats: COMPLETE Column stats: NONE
@@ -1537,12 +1517,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bigtbl
-<<<<<<< HEAD
-                  Statistics: Num rows: 5000 Data size: 2622552 Basic stats: COMPLETE Column stats: NONE
-=======
                   filterExpr: (key1 is not null and value is not null and key2 is not null) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 262752 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+                  Statistics: Num rows: 5000 Data size: 2622552 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key1 is not null and key2 is not null and value is not null) (type: boolean)
                     Statistics: Num rows: 4250 Data size: 2229169 Basic stats: COMPLETE Column stats: NONE
@@ -1912,12 +1888,8 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bigtbl
-<<<<<<< HEAD
-                  Statistics: Num rows: 5000 Data size: 2622552 Basic stats: COMPLETE Column stats: NONE
-=======
                   filterExpr: (key1 is not null and value is not null and key2 is not null) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 262752 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+                  Statistics: Num rows: 5000 Data size: 2622552 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key1 is not null and key2 is not null and value is not null) (type: boolean)
                     Statistics: Num rows: 4250 Data size: 2229169 Basic stats: COMPLETE Column stats: NONE
