@@ -44,7 +44,6 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
   protected static QTestUtil qt;
   private static final String HCONF_TEST_BLOBSTORE_PATH = "test.blobstore.path";
   private static final String HCONF_TEST_BLOBSTORE_PATH_UNIQUE = HCONF_TEST_BLOBSTORE_PATH + ".unique";
-  private static String testBlobstorePathUnique;
 
   public AbstractCoreBlobstoreCliDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
@@ -128,7 +127,6 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
 
   protected void runTestHelper(String tname, String fname, String fpath, boolean expectSuccess) throws Exception {
     long startTime = System.currentTimeMillis();
-    qt.getConf().set(HCONF_TEST_BLOBSTORE_PATH_UNIQUE, testBlobstorePathUnique);
     try {
       System.err.println("Begin query: " + fname);
 
@@ -174,7 +172,10 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
     testBlobstorePath += HiveTestEnvSetup.ensurePathEndsInSlash(this.getClass().getSimpleName()); // name of child class
     String uid = new SimpleDateFormat("yyyyMMdd.HHmmss.SSS").format(Calendar.getInstance().getTime())
         + "-" + String.format("%03d", (int)(Math.random() * 999));
-    testBlobstorePathUnique = testBlobstorePath + uid;
+    String testBlobstorePathUnique = testBlobstorePath + uid;
+
+    qt.getConf().set(HCONF_TEST_BLOBSTORE_PATH_UNIQUE, testBlobstorePathUnique);
+    qt.saveConf();
 
     qt.getQOutProcessor().addPatternWithMaskComment(testBlobstorePathUnique,
         String.format("### %s ###", HCONF_TEST_BLOBSTORE_PATH));

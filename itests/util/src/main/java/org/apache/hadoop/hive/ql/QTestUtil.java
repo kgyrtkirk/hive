@@ -566,7 +566,7 @@ public class QTestUtil {
     overWrite = "true".equalsIgnoreCase(System.getProperty("test.output.overwrite"));
 
     init();
-    savedConf = new HiveConf(conf);
+    saveConf();
   }
   private String getScriptsDir() {
     // Use the current directory if it is not specified
@@ -2133,5 +2133,9 @@ public class QTestUtil {
       return true;
     }
     return false;
+  }
+
+  public void saveConf() {
+    savedConf = new HiveConf(conf);
   }
 }
