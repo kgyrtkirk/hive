@@ -26,7 +26,7 @@ create table lineitem_stage
 analyze table lineitem2 compute statistics for columns;
 analyze table lineitem_stage compute statistics for columns;
 
-explain
+explain reoptimization
 merge into lineitem2 using
 	(select * from lineitem_stage) sub
 	on sub.L_ORDERKEY = lineitem2.L_ORDERKEY
