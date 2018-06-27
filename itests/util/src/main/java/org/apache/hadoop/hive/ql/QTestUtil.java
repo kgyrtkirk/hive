@@ -1167,6 +1167,7 @@ public class QTestUtil {
   }
 
   public String cliInit(File file) throws Exception {
+    newSession(true);
     String fileName = file.getName();
 
     initDataSetForTest(file);
