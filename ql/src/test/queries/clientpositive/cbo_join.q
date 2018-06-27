@@ -2,6 +2,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
 set hive.support.concurrency=true;
+set hive.explain.user=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 
