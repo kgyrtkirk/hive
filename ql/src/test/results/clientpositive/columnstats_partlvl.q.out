@@ -46,12 +46,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: employee_part
-<<<<<<< ours
-            Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
-=======
-            filterExpr: (employeesalary = 2000.0D) (type: boolean)
             Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
->>>>>>> theirs
             Select Operator
               expressions: employeeid (type: int)
               outputColumnNames: employeeid
@@ -111,12 +106,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: employee_part
-<<<<<<< ours
-            Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
-=======
-            filterExpr: (employeesalary = 2000.0D) (type: boolean)
             Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
->>>>>>> theirs
             Statistics Aggregation Key Prefix: default.employee_part/
             GatherStats: true
             Select Operator
@@ -305,12 +295,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: employee_part
-<<<<<<< ours
-            Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
-=======
-            filterExpr: (employeesalary = 4000.0D) (type: boolean)
             Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
->>>>>>> theirs
             Select Operator
               expressions: employeeid (type: int)
               outputColumnNames: employeeid
@@ -370,12 +355,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: employee_part
-<<<<<<< ours
-            Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
-=======
-            filterExpr: (employeesalary = 4000.0D) (type: boolean)
             Statistics: Num rows: 3 Data size: 1050 Basic stats: PARTIAL Column stats: NONE
->>>>>>> theirs
             Statistics Aggregation Key Prefix: default.employee_part/
             GatherStats: true
             Select Operator

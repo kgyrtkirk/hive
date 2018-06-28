@@ -121,12 +121,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_n4
-<<<<<<< ours
-          Statistics: Num rows: 9 Data size: 5364 Basic stats: COMPLETE Column stats: NONE
-=======
-          filterExpr: (year = '__HIVE_DEFAULT_PARTITION__') (type: boolean)
           Statistics: Num rows: 9 Data size: 5364 Basic stats: PARTIAL Column stats: NONE
->>>>>>> theirs
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), '__HIVE_DEFAULT_PARTITION__' (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
