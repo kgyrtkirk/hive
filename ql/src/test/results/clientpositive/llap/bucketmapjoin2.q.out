@@ -119,12 +119,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-<<<<<<< ours
-                  Statistics: Num rows: 149 Data size: 85004 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 149 Data size: 85004 Basic stats: PARTIAL Column stats: NONE
->>>>>>> theirs
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -203,12 +198,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-<<<<<<< ours
-                  Statistics: Num rows: 78 Data size: 44908 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 78 Data size: 44908 Basic stats: PARTIAL Column stats: NONE
->>>>>>> theirs
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -559,12 +549,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-<<<<<<< ours
-                  Statistics: Num rows: 149 Data size: 85004 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 149 Data size: 85004 Basic stats: PARTIAL Column stats: NONE
->>>>>>> theirs
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -643,12 +628,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-<<<<<<< ours
-                  Statistics: Num rows: 78 Data size: 44908 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 78 Data size: 44908 Basic stats: PARTIAL Column stats: NONE
->>>>>>> theirs
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -1016,12 +996,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-<<<<<<< ours
-                  Statistics: Num rows: 149 Data size: 85004 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 149 Data size: 85004 Basic stats: PARTIAL Column stats: NONE
->>>>>>> theirs
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -1100,12 +1075,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-<<<<<<< ours
-                  Statistics: Num rows: 156 Data size: 89440 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 156 Data size: 89440 Basic stats: PARTIAL Column stats: NONE
->>>>>>> theirs
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
