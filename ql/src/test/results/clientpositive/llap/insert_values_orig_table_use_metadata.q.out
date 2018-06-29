@@ -170,13 +170,9 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	1                   
-<<<<<<< HEAD
 	numRows             	12288               
 	rawDataSize         	0                   
-	totalSize           	295583              
-=======
 	totalSize           	295638              
->>>>>>> asf/master
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -211,15 +207,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-<<<<<<< HEAD
-                  Statistics: Num rows: 12288 Data size: 2955830 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12288 Data size: 2956380 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 12288 Data size: 2955830 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  Statistics: Num rows: 5865 Data size: 2956380 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 5865 Data size: 2956380 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
+                    Statistics: Num rows: 12288 Data size: 2956380 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -388,13 +378,9 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	1                   
-<<<<<<< HEAD
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	1663                
-=======
 	totalSize           	1652                
->>>>>>> asf/master
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -429,15 +415,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-<<<<<<< HEAD
-                  Statistics: Num rows: 2 Data size: 16630 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 16520 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 2 Data size: 16630 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  Statistics: Num rows: 32 Data size: 16520 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 32 Data size: 16520 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
+                    Statistics: Num rows: 2 Data size: 16520 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -533,13 +513,9 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	2                   
-<<<<<<< HEAD
 	numRows             	4                   
 	rawDataSize         	0                   
-	totalSize           	3326                
-=======
 	totalSize           	3304                
->>>>>>> asf/master
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -574,15 +550,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-<<<<<<< HEAD
-                  Statistics: Num rows: 4 Data size: 33260 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 33040 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 4 Data size: 33260 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  Statistics: Num rows: 65 Data size: 33040 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 65 Data size: 33040 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
+                    Statistics: Num rows: 4 Data size: 33040 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -674,13 +644,9 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	3                   
-<<<<<<< HEAD
 	numRows             	12292               
 	rawDataSize         	0                   
-	totalSize           	298909              
-=======
 	totalSize           	298943              
->>>>>>> asf/master
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -715,15 +681,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-<<<<<<< HEAD
-                  Statistics: Num rows: 12292 Data size: 2989090 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12292 Data size: 2989430 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 12292 Data size: 2989090 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  Statistics: Num rows: 5931 Data size: 2989430 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 5931 Data size: 2989430 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
+                    Statistics: Num rows: 12292 Data size: 2989430 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
