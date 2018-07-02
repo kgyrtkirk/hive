@@ -1012,7 +1012,7 @@ public class Table implements Serializable {
   }
 
   public void setTemporary(boolean isTemporary) {
-    tTable.setTemporary(true);
+    tTable.setTemporary(isTemporary);
   }
 
   public static boolean hasMetastoreBasedSchema(HiveConf conf, String serdeLib) {
