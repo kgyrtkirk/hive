@@ -1,3 +1,4 @@
+SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecTezSummaryPrinter;
 
 create table t_chicken(a int);
 create table t_mammut(a int);
