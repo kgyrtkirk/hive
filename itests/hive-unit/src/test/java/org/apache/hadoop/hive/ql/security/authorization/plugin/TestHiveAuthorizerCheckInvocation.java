@@ -470,11 +470,6 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals("input count", 1, inputs.size());
     assertEquals("output count", 0, outputs.size());
 
-//
-//    HivePrivilegeObject funcObj = outputs.get(0);
-//    assertEquals("input type", HivePrivilegeObjectType.FUNCTION, funcObj.getType());
-//    assertTrue("function name", funcName.equalsIgnoreCase(funcObj.getObjectName()));
-//    assertEquals("db name", null, funcObj.getDbname());
   }
 
   private String getDefaultTmp() {
