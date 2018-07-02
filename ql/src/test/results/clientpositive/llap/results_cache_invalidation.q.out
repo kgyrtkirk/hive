@@ -57,12 +57,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-<<<<<<< HEAD
-                  Statistics: Num rows: 91 Data size: 16192 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: (UDFToDouble(key) >= 0.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (UDFToDouble(key) >= 0.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29077 Basic stats: COMPLETE Column stats: NONE
@@ -202,12 +197,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab1_n6
-<<<<<<< HEAD
-                  Statistics: Num rows: 91 Data size: 16192 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
@@ -226,12 +216,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab2_n5
-<<<<<<< HEAD
-                  Statistics: Num rows: 91 Data size: 16192 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
@@ -408,12 +393,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-<<<<<<< HEAD
-                  Statistics: Num rows: 111 Data size: 19688 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: (UDFToDouble(key) >= 0.0D) (type: boolean)
                   Statistics: Num rows: 501 Data size: 87768 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (UDFToDouble(key) >= 0.0D) (type: boolean)
                     Statistics: Num rows: 167 Data size: 29256 Basic stats: COMPLETE Column stats: NONE
@@ -510,12 +490,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab1_n6
-<<<<<<< HEAD
-                  Statistics: Num rows: 111 Data size: 19688 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 501 Data size: 87768 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 476 Data size: 83388 Basic stats: COMPLETE Column stats: NONE
@@ -534,12 +509,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab2_n5
-<<<<<<< HEAD
-                  Statistics: Num rows: 91 Data size: 16192 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
@@ -735,12 +705,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab1_n6
-<<<<<<< HEAD
-                  Statistics: Num rows: 111 Data size: 19688 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 501 Data size: 87768 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 476 Data size: 83388 Basic stats: COMPLETE Column stats: NONE
@@ -759,12 +724,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab2_n5
-<<<<<<< HEAD
-                  Statistics: Num rows: 111 Data size: 19688 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 501 Data size: 87768 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 476 Data size: 83388 Basic stats: COMPLETE Column stats: NONE

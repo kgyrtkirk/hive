@@ -1704,12 +1704,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: insert_into1_n0
-<<<<<<< HEAD
-                  Statistics: Num rows: 25 Data size: 4700 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: (value = 1) (type: boolean)
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (value = 1) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
@@ -1816,12 +1811,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: insert_into1_n0
-<<<<<<< HEAD
-                  Statistics: Num rows: 25 Data size: 4700 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: (value = 1) (type: boolean)
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (value = 1) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
@@ -2378,12 +2368,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t
-<<<<<<< HEAD
-                  Statistics: Num rows: 20 Data size: 80 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: enforce_constraint(key is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: enforce_constraint(key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE

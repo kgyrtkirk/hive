@@ -124,12 +124,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hello_acid
-<<<<<<< HEAD
-            Statistics: Num rows: 78 Data size: 19860 Basic stats: PARTIAL Column stats: NONE
-=======
-            filterExpr: (ROW__ID.writeid = 3) (type: boolean)
             Statistics: Num rows: 3 Data size: 19860 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
             Filter Operator
               predicate: (ROW__ID.writeid = 3) (type: boolean)
               Statistics: Num rows: 1 Data size: 6620 Basic stats: COMPLETE Column stats: NONE

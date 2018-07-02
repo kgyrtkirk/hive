@@ -342,12 +342,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n2
-<<<<<<< HEAD
-                  Statistics: Num rows: 31 Data size: 372 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: (a = 3) (type: boolean)
                   Statistics: Num rows: 7 Data size: 84 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (a = 3) (type: boolean)
                     Statistics: Num rows: 7 Data size: 84 Basic stats: COMPLETE Column stats: NONE
@@ -363,12 +358,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n2
-<<<<<<< HEAD
-                  Statistics: Num rows: 31 Data size: 496 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: ((d = 3) and (a = 3)) (type: boolean)
                   Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: ((a = 3) and (d = 3)) (type: boolean)
                     Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: NONE
@@ -469,12 +459,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n2
-<<<<<<< HEAD
-                  Statistics: Num rows: 31 Data size: 22692 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: (a = 3) (type: boolean)
                   Statistics: Num rows: 7 Data size: 5124 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (a = 3) (type: boolean)
                     Statistics: Num rows: 7 Data size: 5124 Basic stats: COMPLETE Column stats: NONE
@@ -565,12 +550,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n2
-<<<<<<< HEAD
-                  Statistics: Num rows: 31 Data size: 496 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: ((a = 3) and (d = 3)) (type: boolean)
                   Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: ((a = 3) and (d = 3)) (type: boolean)
                     Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: NONE

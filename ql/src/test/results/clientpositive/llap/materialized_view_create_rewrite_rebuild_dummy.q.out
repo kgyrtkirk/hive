@@ -749,12 +749,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n0
-<<<<<<< HEAD
-                  Statistics: Num rows: 46 Data size: 5336 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  filterExpr: ((c > 10.1) and a is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: ((c > 10.1) and a is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1032,12 +1027,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n0
-<<<<<<< HEAD
-                  Statistics: Num rows: 46 Data size: 5336 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  filterExpr: ((c > 10.1) and a is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: ((c > 10.1) and a is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE

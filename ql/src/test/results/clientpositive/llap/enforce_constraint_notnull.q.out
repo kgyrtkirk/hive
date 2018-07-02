@@ -3233,12 +3233,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_uami_n1
-<<<<<<< HEAD
-                  Statistics: Num rows: 281 Data size: 87904 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: (((de = 109.23) or (de = 119.23)) and enforce_constraint(vc is not null)) (type: boolean)
                   Statistics: Num rows: 1002 Data size: 312584 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (((de = 109.23) or (de = 119.23)) and enforce_constraint(vc is not null)) (type: boolean)
                     Statistics: Num rows: 5 Data size: 1559 Basic stats: COMPLETE Column stats: NONE
@@ -3331,12 +3326,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_uami_n1
-<<<<<<< HEAD
-                  Statistics: Num rows: 320 Data size: 100040 Basic stats: COMPLETE Column stats: NONE
-=======
-                  filterExpr: ((de = 3.14) and enforce_constraint((i is not null and vc is not null))) (type: boolean)
                   Statistics: Num rows: 1002 Data size: 312584 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: ((de = 3.14) and enforce_constraint((i is not null and vc is not null))) (type: boolean)
                     Statistics: Num rows: 2 Data size: 623 Basic stats: COMPLETE Column stats: NONE

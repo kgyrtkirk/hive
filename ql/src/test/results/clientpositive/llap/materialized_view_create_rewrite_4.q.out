@@ -1067,12 +1067,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
-<<<<<<< HEAD
-                  Statistics: Num rows: 61 Data size: 7320 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  filterExpr: ((c > 10) and a is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: ((c > 10) and a is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1291,12 +1286,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
-<<<<<<< HEAD
-                  Statistics: Num rows: 75 Data size: 9000 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  filterExpr: ((c > 10) and a is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: ((c > 10) and a is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1545,12 +1535,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
-<<<<<<< HEAD
-                  Statistics: Num rows: 91 Data size: 10920 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  filterExpr: ((c > 10) and (ROW__ID.writeid > 4) and a is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: ((ROW__ID.writeid > 4) and (c > 10) and a is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
