@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -54,7 +55,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 
 /**
  * Test HiveAuthorizer api invocation
@@ -385,7 +385,7 @@ public class TestHiveAuthorizerCheckInvocation {
     assertTrue("function name", funcName.equalsIgnoreCase(funcObj.getObjectName()));
     assertEquals("db name", null, funcObj.getDbname());
   }
-  
+
   @Test
   public void testTempTable() throws Exception {
 
@@ -394,7 +394,8 @@ public class TestHiveAuthorizerCheckInvocation {
     final String tableName = "testTempTable";
     { // create temp table
       reset(mockedAuthorizer);
-      int status = driver.compile("create temporary table " + tableName + "(i int) location '" + tmpTableDir + "'");
+      int status = driver.run("create temporary table " + tableName + "(i int) location '" + tmpTableDir + "'")
+          .getResponseCode();
       assertEquals(0, status);
 
       List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
@@ -413,9 +414,23 @@ public class TestHiveAuthorizerCheckInvocation {
     }
     { // select from the temp table
       reset(mockedAuthorizer);
+      int status = driver.compile("insert into " + tableName + " values(1)");
+      assertEquals(0, status);
+
+      // temp tables should be skipped from authorization
+      List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+      List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
+      System.err.println("inputs " + inputs);
+      System.err.println("outputs " + outputs);
+
+      assertEquals("input count", 0, inputs.size());
+      assertEquals("output count", 0, outputs.size());
+    }
+    { // select from the temp table
+      reset(mockedAuthorizer);
       int status = driver.compile("select * from " + tableName);
       assertEquals(0, status);
-      
+
       // temp tables should be skipped from authorization
       List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
       List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
@@ -427,34 +442,35 @@ public class TestHiveAuthorizerCheckInvocation {
     }
 
   }
-  
+
   @Test
   public void testTempTableImplicit() throws Exception {
     final String tableName = "testTempTableImplicit";
-    int status = driver.compile("create table " + tableName
-        + "(i int)");
+    int status = driver.run("create table " + tableName + "(i int)").getResponseCode();
     assertEquals(0, status);
 
     reset(mockedAuthorizer);
-    status = driver.compile("insert into " + tableName
-        + "values ");
+    status = driver.compile("insert into " + tableName + " values (1)");
+    assertEquals(0, status);
+
     List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
     List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
-    
+
     // only the URI should be passed for authorization check
-    assertEquals("input count", 1, inputs.size());
-    // only the dbname should be passed authorization check
-    assertEquals("output count", 0, outputs.size());
-    assertEquals("input type", HivePrivilegeObjectType.LOCAL_URI, inputs.get(0).getType());
-    
+    assertEquals("input count", 0, inputs.size());
+
     reset(mockedAuthorizer);
     status = driver.compile("select * from " + tableName);
+    assertEquals(0, status);
+
+    inputs = getHivePrivilegeObjectInputs().getLeft();
+    outputs = getHivePrivilegeObjectInputs().getRight();
 
     // temp tables should be skipped from authorization
-    assertEquals("input count", 0, inputs.size());
+    assertEquals("input count", 1, inputs.size());
     assertEquals("output count", 0, outputs.size());
- 
-//    
+
+//
 //    HivePrivilegeObject funcObj = outputs.get(0);
 //    assertEquals("input type", HivePrivilegeObjectType.FUNCTION, funcObj.getType());
 //    assertTrue("function name", funcName.equalsIgnoreCase(funcObj.getObjectName()));
