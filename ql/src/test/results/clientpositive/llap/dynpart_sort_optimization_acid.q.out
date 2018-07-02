@@ -94,12 +94,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_part
-<<<<<<< HEAD
-                  Statistics: Num rows: 160 Data size: 61001 Basic stats: PARTIAL Column stats: NONE
-=======
-                  filterExpr: ((key = 'foo') and (ds = '2008-04-08')) (type: boolean)
                   Statistics: Num rows: 1601 Data size: 150414 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
@@ -194,12 +189,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_part
-<<<<<<< HEAD
-                  Statistics: Num rows: 159 Data size: 104317 Basic stats: PARTIAL Column stats: PARTIAL
-=======
-                  filterExpr: ((key = 'foo') and (ds) IN ('2008-04-08')) (type: boolean)
                   Statistics: Num rows: 1601 Data size: 444998 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1355 Basic stats: COMPLETE Column stats: PARTIAL
@@ -390,12 +380,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_part_sdpo
-<<<<<<< HEAD
-                  Statistics: Num rows: 176 Data size: 67063 Basic stats: PARTIAL Column stats: NONE
-=======
-                  filterExpr: ((key = 'foo') and (ds = '2008-04-08')) (type: boolean)
                   Statistics: Num rows: 1601 Data size: 150414 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
@@ -490,12 +475,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_part_sdpo
-<<<<<<< HEAD
-                  Statistics: Num rows: 171 Data size: 112152 Basic stats: PARTIAL Column stats: PARTIAL
-=======
-                  filterExpr: ((key = 'foo') and (ds) IN ('2008-04-08')) (type: boolean)
                   Statistics: Num rows: 1601 Data size: 444998 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1355 Basic stats: COMPLETE Column stats: PARTIAL
@@ -695,12 +675,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part
-<<<<<<< HEAD
-                  Statistics: Num rows: 157 Data size: 60527 Basic stats: PARTIAL Column stats: NONE
-=======
-                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr = 11)) (type: boolean)
                   Statistics: Num rows: 1601 Data size: 150414 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
@@ -796,12 +771,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part
-<<<<<<< HEAD
-                  Statistics: Num rows: 1804 Data size: 235871 Basic stats: PARTIAL Column stats: PARTIAL
-=======
-                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr >= 11)) (type: boolean)
                   Statistics: Num rows: 3201 Data size: 313458 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 455 Basic stats: COMPLETE Column stats: PARTIAL
@@ -927,12 +897,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part
-<<<<<<< HEAD
-                  Statistics: Num rows: 2015 Data size: 726272 Basic stats: PARTIAL Column stats: PARTIAL
-=======
-                  filterExpr: (value = 'bar') (type: boolean)
                   Statistics: Num rows: 4200 Data size: 1253037 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (value = 'bar') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1375 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1130,12 +1095,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo
-<<<<<<< HEAD
-                  Statistics: Num rows: 157 Data size: 60527 Basic stats: PARTIAL Column stats: NONE
-=======
-                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr = 11)) (type: boolean)
                   Statistics: Num rows: 1601 Data size: 150414 Basic stats: COMPLETE Column stats: NONE
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
@@ -1231,12 +1191,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo
-<<<<<<< HEAD
-                  Statistics: Num rows: 1804 Data size: 235871 Basic stats: PARTIAL Column stats: PARTIAL
-=======
-                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr >= 11)) (type: boolean)
                   Statistics: Num rows: 3201 Data size: 313458 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 455 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1362,12 +1317,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo
-<<<<<<< HEAD
-                  Statistics: Num rows: 2015 Data size: 726272 Basic stats: PARTIAL Column stats: PARTIAL
-=======
-                  filterExpr: (value = 'bar') (type: boolean)
                   Statistics: Num rows: 4952 Data size: 1456618 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (value = 'bar') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1375 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1565,12 +1515,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo_no_cp
-<<<<<<< HEAD
-                  Statistics: Num rows: 97 Data size: 82922 Basic stats: PARTIAL Column stats: PARTIAL
-=======
-                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr = 11)) (type: boolean)
                   Statistics: Num rows: 1601 Data size: 599036 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1860 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1668,12 +1613,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo_no_cp
-<<<<<<< HEAD
-                  Statistics: Num rows: 1725 Data size: 705510 Basic stats: PARTIAL Column stats: PARTIAL
-=======
-                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr >= 11)) (type: boolean)
                   Statistics: Num rows: 3201 Data size: 1197516 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> 08eba3e1e8... HIVE-19995 : Aggregate row traffic for acid tables (Zoltan Haindrich via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1860 Basic stats: COMPLETE Column stats: PARTIAL
