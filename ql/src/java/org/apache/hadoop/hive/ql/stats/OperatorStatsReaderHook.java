@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import java.util.List;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -60,6 +61,8 @@ public class OperatorStatsReaderHook implements ExecuteWithHookContext {
         LOG.debug("Reading runtime statistics for tez vertex task: {}", vertexName);
         TezCounters counters = tezTask.getTezCounters();
         if (counters != null) {
+          VertexCounters vc = new VertexCounters(conf, counters, vertexName);
+
           String groupName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP);
           for (Operator<? extends OperatorDesc> op : baseWork.getAllOperators()) {
             String operatorId = op.getOperatorId();
@@ -70,7 +73,8 @@ public class OperatorStatsReaderHook implements ExecuteWithHookContext {
               if (operatorStats == null) {
                 operatorStats = new OperatorStats(operatorId);
               }
-              operatorStats.setOutputRecords(tezCounter.getValue());
+              operatorStats.setOutputRecords(vc.val);
+              //              operatorStats.setOutputRecords(tezCounter.getValue());
             }
 
             if (operatorStats != null) {
@@ -83,6 +87,19 @@ public class OperatorStatsReaderHook implements ExecuteWithHookContext {
         }
       }
     }
+  }
+
+  private static class VertexCounters {
+
+    private long val;
+
+    public VertexCounters(HiveConf conf, TezCounters counters, String vertexName) {
+      String groupName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP);
+      String counterName = String.format("RECORDS_OUT_INTERMEDIATE_%s", vertexName.replaceAll(" ", "_"));
+      TezCounter tezCounter = counters.getGroup(groupName).findCounter(counterName, false);
+      val = tezCounter.getValue();
+    }
+
   }
 
   public boolean isCollectOnSuccess() {
