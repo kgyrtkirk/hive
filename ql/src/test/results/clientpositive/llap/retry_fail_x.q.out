@@ -57,7 +57,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_UDTF_2: 10
    TOTAL_TABLE_ROWS_WRITTEN: 10
 PREHOOK: query: explain
-select count(1) from t_mammut l join t_chicken r where l.a=r.a
+select count(1) from t_mammut join t_chicken where t_mammut.a=t_chicken.a
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -75,7 +75,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: l
+                  alias: t_mammut
                   filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -108,7 +108,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: r
+                  alias: t_chicken
                   filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -148,7 +148,7 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain reoptimization
-select count(1) from t_mammut l join t_chicken r where l.a=r.a
+select count(1) from t_mammut join t_chicken where t_mammut.a=t_chicken.a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_chicken
 PREHOOK: Input: default@t_mammut
@@ -191,7 +191,7 @@ Stage-1 INPUT COUNTERS:
    RAW_INPUT_SPLITS_Map_1: 1
    RAW_INPUT_SPLITS_Map_3: 1
 PREHOOK: query: explain reoptimization
-select count(1) from t_mammut l join t_chicken r where l.a=r.a
+select count(1) from t_mammut join t_chicken where t_mammut.a=t_chicken.a
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -209,7 +209,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: l
+                  alias: t_mammut
                   filterExpr: a is not null (type: boolean)
                   Statistics: (RUNTIME) Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -229,7 +229,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: r
+                  alias: t_chicken
                   filterExpr: a is not null (type: boolean)
                   Statistics: (RUNTIME) Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator

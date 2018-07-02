@@ -12,8 +12,8 @@ set hive.query.reexecution.enabled=true;
 set hive.query.reexecution.strategies=overlay,reoptimize;
 
 explain
-select count(1) from t_mammut l join t_chicken r where l.a=r.a;
+select count(1) from t_mammut join t_chicken where t_mammut.a=t_chicken.a;
 
 explain reoptimization
-select count(1) from t_mammut l join t_chicken r where l.a=r.a;
+select count(1) from t_mammut join t_chicken where t_mammut.a=t_chicken.a;
 
