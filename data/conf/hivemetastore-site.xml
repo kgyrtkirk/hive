@@ -38,9 +38,5 @@
   <description>Using property defined in HiveConf.ConfVars to test System property overriding</description>
 </property>
 
-<property>
-  <name>metastore.event.listeners</name>
-  <value>org.apache.hadoop.hive.ql.EmptyMetastoreListener</value>
-</property>
 
 </configuration>
