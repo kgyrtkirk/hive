@@ -37,6 +37,8 @@ alter table x1_date_dim update statistics set(
 'numRows'='56',
 'rawDataSize'='81449');
 
+
+-- the following query is designed to produce a DPP plan
 explain 
 select   count(*) cnt
  from
@@ -48,6 +50,7 @@ select   count(*) cnt
 	and d.d_year=2000;
 
 -- tablescan of s should be 2 or 123456 rows; but never 1
+-- and it should not be a mapjoin :)
 explain reoptimization
 select   count(*) cnt
  from
