@@ -339,9 +339,4 @@
   <value>false</value>
 </property>
 
-<property>
-  <name>hive.metastore.dml.events</name>
-  <value>true</value>
-</property>
-
 </configuration>
