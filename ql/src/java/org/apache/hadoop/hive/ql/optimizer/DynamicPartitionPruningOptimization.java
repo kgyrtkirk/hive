@@ -78,6 +78,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -481,6 +482,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     colMap.put(outputNames.get(0), groupByExpr);
     groupByOp.setColumnExprMap(colMap);
 
+    parseContext.getContext().getPlanMapper().link(ts, new OperatorStats.IncorrectRuntimeStatsMarker());
     // finally add the event broadcast operator
     if (HiveConf.getVar(parseContext.getConf(),
         ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
