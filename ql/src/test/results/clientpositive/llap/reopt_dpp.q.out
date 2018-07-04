@@ -50,6 +50,24 @@ stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x1_date_dim
+PREHOOK: query: create table x1_seller
+(
+	ss_item_sk	int
+)
+partitioned by (ss_sold_date_sk int)
+stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x1_seller
+POSTHOOK: query: create table x1_seller
+(
+	ss_item_sk	int
+)
+partitioned by (ss_sold_date_sk int)
+stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@x1_seller
 PREHOOK: query: insert into x1_date_dim values	(1,1,2000,2),
 				(2,2,2001,2)
 PREHOOK: type: QUERY
@@ -82,6 +100,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@x1_store_sales@ss_sold_date_sk=2
 POSTHOOK: Lineage: x1_store_sales PARTITION(ss_sold_date_sk=2).ss_item_sk SCRIPT []
+PREHOOK: query: insert into x1_seller partition (ss_sold_date_sk=1) values (1),(2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@x1_seller@ss_sold_date_sk=1
+POSTHOOK: query: insert into x1_seller partition (ss_sold_date_sk=1) values (1),(2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@x1_seller@ss_sold_date_sk=1
+POSTHOOK: Lineage: x1_seller PARTITION(ss_sold_date_sk=1).ss_item_sk SCRIPT []
+PREHOOK: query: insert into x1_seller partition (ss_sold_date_sk=2) values (2),(3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@x1_seller@ss_sold_date_sk=2
+POSTHOOK: query: insert into x1_seller partition (ss_sold_date_sk=2) values (2),(3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@x1_seller@ss_sold_date_sk=2
+POSTHOOK: Lineage: x1_seller PARTITION(ss_sold_date_sk=2).ss_item_sk SCRIPT []
 PREHOOK: query: alter table x1_store_sales partition (ss_sold_date_sk=1) update statistics set(
 'numRows'='123456',
 'rawDataSize'='1234567')
@@ -181,7 +217,7 @@ PREHOOK: Input: default@x1_date_dim
 PREHOOK: Input: default@x1_store_sales
 PREHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1
 PREHOOK: Input: default@x1_store_sales@ss_sold_date_sk=2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain reoptimization
 select   count(*) cnt
  from
@@ -196,7 +232,7 @@ POSTHOOK: Input: default@x1_date_dim
 POSTHOOK: Input: default@x1_store_sales
 POSTHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1
 POSTHOOK: Input: default@x1_store_sales@ss_sold_date_sk=2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain reoptimization
 select   count(*) cnt
  from
@@ -256,4 +292,144 @@ Stage-0
                   Output:["_col0"]
                   TableScan [TS_0] (rows=123457 width=14)
                     default@x1_store_sales,s,Tbl:COMPLETE,Col:COMPLETE
+
+PREHOOK: query: explain 
+select   sum(s.ss_item_sk)
+ from
+     x1_store_sales s
+     ,x1_seller d
+ where
+        1=1
+        and s.ss_item_sk=d.ss_item_sk
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+select   sum(s.ss_item_sk)
+ from
+     x1_store_sales s
+     ,x1_seller d
+ where
+        1=1
+        and s.ss_item_sk=d.ss_item_sk
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 3 (BROADCAST_EDGE)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_40]
+        Group By Operator [GBY_39] (rows=1 width=8)
+          Output:["_col0"],aggregations:["sum(VALUE._col0)"]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
+          PARTITION_ONLY_SHUFFLE [RS_38]
+            Group By Operator [GBY_37] (rows=1 width=8)
+              Output:["_col0"],aggregations:["sum(_col0)"]
+              Map Join Operator [MAPJOIN_36] (rows=164609 width=4)
+                Conds:SEL_35._col0=RS_33._col0(Inner),Output:["_col0"]
+              <-Map 3 [BROADCAST_EDGE] vectorized, llap
+                BROADCAST [RS_33]
+                  PartitionCols:_col0
+                  Select Operator [SEL_32] (rows=4 width=4)
+                    Output:["_col0"]
+                    Filter Operator [FIL_31] (rows=4 width=4)
+                      predicate:ss_item_sk is not null
+                      TableScan [TS_3] (rows=4 width=4)
+                        default@x1_seller,d,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_item_sk"]
+              <-Select Operator [SEL_35] (rows=123457 width=4)
+                  Output:["_col0"]
+                  Filter Operator [FIL_34] (rows=123457 width=4)
+                    predicate:ss_item_sk is not null
+                    TableScan [TS_0] (rows=123457 width=4)
+                      default@x1_store_sales,s,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_item_sk"]
+
+PREHOOK: query: explain reoptimization
+select   sum(s.ss_item_sk)
+ from
+     x1_store_sales s
+     ,x1_seller d
+ where
+        1=1
+        and s.ss_item_sk=d.ss_item_sk
+PREHOOK: type: QUERY
+PREHOOK: Input: default@x1_seller
+PREHOOK: Input: default@x1_seller@ss_sold_date_sk=1
+PREHOOK: Input: default@x1_seller@ss_sold_date_sk=2
+PREHOOK: Input: default@x1_store_sales
+PREHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1
+PREHOOK: Input: default@x1_store_sales@ss_sold_date_sk=2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain reoptimization
+select   sum(s.ss_item_sk)
+ from
+     x1_store_sales s
+     ,x1_seller d
+ where
+        1=1
+        and s.ss_item_sk=d.ss_item_sk
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@x1_seller
+POSTHOOK: Input: default@x1_seller@ss_sold_date_sk=1
+POSTHOOK: Input: default@x1_seller@ss_sold_date_sk=2
+POSTHOOK: Input: default@x1_store_sales
+POSTHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1
+POSTHOOK: Input: default@x1_store_sales@ss_sold_date_sk=2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: explain reoptimization
+select   sum(s.ss_item_sk)
+ from
+     x1_store_sales s
+     ,x1_seller d
+ where
+        1=1
+        and s.ss_item_sk=d.ss_item_sk
+PREHOOK: type: QUERY
+POSTHOOK: query: explain reoptimization
+select   sum(s.ss_item_sk)
+ from
+     x1_store_sales s
+     ,x1_seller d
+ where
+        1=1
+        and s.ss_item_sk=d.ss_item_sk
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 2 <- Map 1 (BROADCAST_EDGE)
+Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 3 vectorized, llap
+      File Output Operator [FS_40]
+        Group By Operator [GBY_39] (runtime: rows=1 width=8)
+          Output:["_col0"],aggregations:["sum(VALUE._col0)"]
+        <-Map 2 [CUSTOM_SIMPLE_EDGE] vectorized, llap
+          PARTITION_ONLY_SHUFFLE [RS_38]
+            Group By Operator [GBY_37] (runtime: rows=1 width=8)
+              Output:["_col0"],aggregations:["sum(_col0)"]
+              Map Join Operator [MAPJOIN_36] (runtime: rows=3 width=4)
+                Conds:RS_33._col0=SEL_35._col0(Inner),Output:["_col0"]
+              <-Map 1 [BROADCAST_EDGE] vectorized, llap
+                BROADCAST [RS_33]
+                  PartitionCols:_col0
+                  Select Operator [SEL_32] (runtime: rows=2 width=4)
+                    Output:["_col0"]
+                    Filter Operator [FIL_31] (runtime: rows=2 width=4)
+                      predicate:ss_item_sk is not null
+                      TableScan [TS_0] (runtime: rows=2 width=4)
+                        default@x1_store_sales,s,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_item_sk"]
+              <-Select Operator [SEL_35] (runtime: rows=4 width=4)
+                  Output:["_col0"]
+                  Filter Operator [FIL_34] (runtime: rows=4 width=4)
+                    predicate:ss_item_sk is not null
+                    TableScan [TS_3] (runtime: rows=4 width=4)
+                      default@x1_seller,d,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_item_sk"]
 
