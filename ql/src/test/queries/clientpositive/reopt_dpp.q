@@ -25,7 +25,8 @@ stored as orc;
 
 create table x1_seller
 (
-	ss_item_sk	int
+	ss_item_sk	int,
+	s_fx	int
 )
 partitioned by (ss_sold_date_sk int)
 stored as orc;
@@ -35,8 +36,9 @@ insert into x1_date_dim values	(1,1,2000,2),
 insert into x1_store_sales partition (ss_sold_date_sk=1) values (1);
 insert into x1_store_sales partition (ss_sold_date_sk=2) values (2);
 
-insert into x1_seller partition (ss_sold_date_sk=1) values (1),(2);
-insert into x1_seller partition (ss_sold_date_sk=2) values (2),(3);
+insert into x1_seller partition (ss_sold_date_sk=1) values (1,1),(2,2),(1,3),(55,55);
+insert into x1_seller partition (ss_sold_date_sk=2) values (2,1),(3,2),(1,3),(44,44);
+insert into x1_seller partition (ss_sold_date_sk=3) values (2,1),(3,2),(1,3),(4,4);
 
 alter table x1_store_sales partition (ss_sold_date_sk=1) update statistics set(
 'numRows'='123456',
@@ -107,6 +109,7 @@ select   sum(s.ss_item_sk)
  where
         1=1
         and s.ss_item_sk=d.ss_item_sk
+	and s_fx=1
 ;
 
 explain reoptimization
@@ -117,6 +120,7 @@ select   sum(s.ss_item_sk)
  where
         1=1
         and s.ss_item_sk=d.ss_item_sk
+	and s_fx=1
 ;
 
 
