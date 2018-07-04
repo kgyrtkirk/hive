@@ -42,6 +42,10 @@ alter table x1_store_sales partition (ss_sold_date_sk=1) update statistics set(
 'numRows'='123456',
 'rawDataSize'='1234567');
 
+alter table x1_seller partition (ss_sold_date_sk=1) update statistics set(
+'numRows'='12345',
+'rawDataSize'='123456');
+
 alter table x1_date_dim update statistics set(
 'numRows'='56',
 'rawDataSize'='81449');
