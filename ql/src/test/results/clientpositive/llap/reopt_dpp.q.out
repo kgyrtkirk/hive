@@ -50,26 +50,6 @@ stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x1_date_dim
-PREHOOK: query: create table x1_seller
-(
-	ss_item_sk	int,
-	s_fx	int
-)
-partitioned by (ss_sold_date_sk int)
-stored as orc
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@x1_seller
-POSTHOOK: query: create table x1_seller
-(
-	ss_item_sk	int,
-	s_fx	int
-)
-partitioned by (ss_sold_date_sk int)
-stored as orc
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@x1_seller
 PREHOOK: query: insert into x1_date_dim values	(1,1,2000,2),
 				(2,2,2001,2)
 PREHOOK: type: QUERY
@@ -84,54 +64,24 @@ POSTHOOK: Lineage: x1_date_dim.d_date_sk SCRIPT []
 POSTHOOK: Lineage: x1_date_dim.d_month_seq SCRIPT []
 POSTHOOK: Lineage: x1_date_dim.d_moy SCRIPT []
 POSTHOOK: Lineage: x1_date_dim.d_year SCRIPT []
-PREHOOK: query: insert into x1_store_sales partition (ss_sold_date_sk=1) values (1),(3),(4),(5),(6),(7),(8),(9),(10),(11)
+PREHOOK: query: insert into x1_store_sales partition (ss_sold_date_sk=1) values (1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@x1_store_sales@ss_sold_date_sk=1
-POSTHOOK: query: insert into x1_store_sales partition (ss_sold_date_sk=1) values (1),(3),(4),(5),(6),(7),(8),(9),(10),(11)
+POSTHOOK: query: insert into x1_store_sales partition (ss_sold_date_sk=1) values (1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@x1_store_sales@ss_sold_date_sk=1
 POSTHOOK: Lineage: x1_store_sales PARTITION(ss_sold_date_sk=1).ss_item_sk SCRIPT []
-PREHOOK: query: insert into x1_store_sales partition (ss_sold_date_sk=2) values (2),(20),(21),(22)
+PREHOOK: query: insert into x1_store_sales partition (ss_sold_date_sk=2) values (2)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@x1_store_sales@ss_sold_date_sk=2
-POSTHOOK: query: insert into x1_store_sales partition (ss_sold_date_sk=2) values (2),(20),(21),(22)
+POSTHOOK: query: insert into x1_store_sales partition (ss_sold_date_sk=2) values (2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@x1_store_sales@ss_sold_date_sk=2
 POSTHOOK: Lineage: x1_store_sales PARTITION(ss_sold_date_sk=2).ss_item_sk SCRIPT []
-PREHOOK: query: insert into x1_seller partition (ss_sold_date_sk=1) values (1,1),(2,2),(1,3),(55,55)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@x1_seller@ss_sold_date_sk=1
-POSTHOOK: query: insert into x1_seller partition (ss_sold_date_sk=1) values (1,1),(2,2),(1,3),(55,55)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@x1_seller@ss_sold_date_sk=1
-POSTHOOK: Lineage: x1_seller PARTITION(ss_sold_date_sk=1).s_fx SCRIPT []
-POSTHOOK: Lineage: x1_seller PARTITION(ss_sold_date_sk=1).ss_item_sk SCRIPT []
-PREHOOK: query: insert into x1_seller partition (ss_sold_date_sk=2) values (2,1),(3,2),(1,3),(44,44)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@x1_seller@ss_sold_date_sk=2
-POSTHOOK: query: insert into x1_seller partition (ss_sold_date_sk=2) values (2,1),(3,2),(1,3),(44,44)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@x1_seller@ss_sold_date_sk=2
-POSTHOOK: Lineage: x1_seller PARTITION(ss_sold_date_sk=2).s_fx SCRIPT []
-POSTHOOK: Lineage: x1_seller PARTITION(ss_sold_date_sk=2).ss_item_sk SCRIPT []
-PREHOOK: query: insert into x1_seller partition (ss_sold_date_sk=3) values (2,1),(3,2),(1,3),(4,4)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@x1_seller@ss_sold_date_sk=3
-POSTHOOK: query: insert into x1_seller partition (ss_sold_date_sk=3) values (2,1),(3,2),(1,3),(4,4)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@x1_seller@ss_sold_date_sk=3
-POSTHOOK: Lineage: x1_seller PARTITION(ss_sold_date_sk=3).s_fx SCRIPT []
-POSTHOOK: Lineage: x1_seller PARTITION(ss_sold_date_sk=3).ss_item_sk SCRIPT []
 PREHOOK: query: alter table x1_store_sales partition (ss_sold_date_sk=1) update statistics set(
 'numRows'='123456',
 'rawDataSize'='1234567')
@@ -145,19 +95,6 @@ POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
 POSTHOOK: Input: default@x1_store_sales
 POSTHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1
 POSTHOOK: Output: default@x1_store_sales@ss_sold_date_sk=1
-PREHOOK: query: alter table x1_seller partition (ss_sold_date_sk=1) update statistics set(
-'numRows'='12345',
-'rawDataSize'='123456')
-PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
-PREHOOK: Input: default@x1_seller
-PREHOOK: Output: default@x1_seller@ss_sold_date_sk=1
-POSTHOOK: query: alter table x1_seller partition (ss_sold_date_sk=1) update statistics set(
-'numRows'='12345',
-'rawDataSize'='123456')
-POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
-POSTHOOK: Input: default@x1_seller
-POSTHOOK: Input: default@x1_seller@ss_sold_date_sk=1
-POSTHOOK: Output: default@x1_seller@ss_sold_date_sk=1
 PREHOOK: query: alter table x1_date_dim update statistics set(
 'numRows'='56',
 'rawDataSize'='81449')
@@ -208,7 +145,7 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_33]
             Group By Operator [GBY_32] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Map Join Operator [MAPJOIN_31] (rows=1728440 width=8)
+              Map Join Operator [MAPJOIN_31] (rows=1728398 width=8)
                 Conds:SEL_30._col0=RS_26._col0(Inner)
               <-Map 3 [BROADCAST_EDGE] vectorized, llap
                 BROADCAST [RS_26]
@@ -225,9 +162,9 @@ Stage-0
                     Select Operator [SEL_27] (rows=28 width=8)
                       Output:["_col0"]
                        Please refer to the previous Select Operator [SEL_25]
-              <-Select Operator [SEL_30] (rows=123460 width=4)
+              <-Select Operator [SEL_30] (rows=123457 width=4)
                   Output:["_col0"]
-                  TableScan [TS_0] (rows=123460 width=13)
+                  TableScan [TS_0] (rows=123457 width=14)
                     default@x1_store_sales,s,Tbl:COMPLETE,Col:COMPLETE
 
 PREHOOK: query: explain reoptimization
@@ -298,7 +235,7 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_33]
             Group By Operator [GBY_32] (runtime: rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Map Join Operator [MAPJOIN_31] (runtime: rows=10 width=8)
+              Map Join Operator [MAPJOIN_31] (runtime: rows=1 width=8)
                 Conds:SEL_30._col0=RS_26._col0(Inner)
               <-Map 3 [BROADCAST_EDGE] vectorized, llap
                 BROADCAST [RS_26]
@@ -315,301 +252,8 @@ Stage-0
                     Select Operator [SEL_27] (runtime: rows=1 width=8)
                       Output:["_col0"]
                        Please refer to the previous Select Operator [SEL_25]
-              <-Select Operator [SEL_30] (runtime: rows=10 width=4)
+              <-Select Operator [SEL_30] (runtime: rows=1 width=4)
                   Output:["_col0"]
-                  TableScan [TS_0] (rows=123460 width=13)
+                  TableScan [TS_0] (rows=123457 width=14)
                     default@x1_store_sales,s,Tbl:COMPLETE,Col:COMPLETE
-
-PREHOOK: query: explain 
-select   sum(s.ss_item_sk)
- from
-     x1_store_sales s
-     ,x1_seller d
- where
-        1=1
-        and s.ss_item_sk=d.ss_item_sk
-	and s_fx=1
-PREHOOK: type: QUERY
-POSTHOOK: query: explain 
-select   sum(s.ss_item_sk)
- from
-     x1_store_sales s
-     ,x1_seller d
- where
-        1=1
-        and s.ss_item_sk=d.ss_item_sk
-	and s_fx=1
-POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Map 1 <- Reducer 5 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
-        Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: s
-                  filterExpr: (ss_item_sk is not null and (ss_item_sk BETWEEN DynamicValue(RS_7_d_ss_item_sk_min) AND DynamicValue(RS_7_d_ss_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_7_d_ss_item_sk_bloom_filter)))) (type: boolean)
-                  Statistics: Num rows: 123460 Data size: 493840 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: ((ss_item_sk BETWEEN DynamicValue(RS_7_d_ss_item_sk_min) AND DynamicValue(RS_7_d_ss_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_7_d_ss_item_sk_bloom_filter))) and ss_item_sk is not null) (type: boolean)
-                    Statistics: Num rows: 123460 Data size: 493840 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: ss_item_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 123460 Data size: 493840 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 123460 Data size: 493840 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: d
-                  filterExpr: ((s_fx = 1) and ss_item_sk is not null) (type: boolean)
-                  Statistics: Num rows: 12353 Data size: 98824 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: ((s_fx = 1) and ss_item_sk is not null) (type: boolean)
-                    Statistics: Num rows: 2059 Data size: 16472 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: ss_item_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 2059 Data size: 16472 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2059 Data size: 16472 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: _col0 (type: int)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 2059 Data size: 8236 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=2)
-                          mode: hash
-                          outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                            value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col0
-                Statistics: Num rows: 18157438 Data size: 72629752 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
-                  aggregations: sum(_col0)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: bigint)
-        Reducer 3 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: sum(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=2)
-                mode: final
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: explain reoptimization
-select   sum(s.ss_item_sk)
- from
-     x1_store_sales s
-     ,x1_seller d
- where
-        1=1
-        and s.ss_item_sk=d.ss_item_sk
-	and s_fx=1
-PREHOOK: type: QUERY
-PREHOOK: Input: default@x1_seller
-PREHOOK: Input: default@x1_seller@ss_sold_date_sk=1
-PREHOOK: Input: default@x1_seller@ss_sold_date_sk=2
-PREHOOK: Input: default@x1_seller@ss_sold_date_sk=3
-PREHOOK: Input: default@x1_store_sales
-PREHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1
-PREHOOK: Input: default@x1_store_sales@ss_sold_date_sk=2
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: explain reoptimization
-select   sum(s.ss_item_sk)
- from
-     x1_store_sales s
-     ,x1_seller d
- where
-        1=1
-        and s.ss_item_sk=d.ss_item_sk
-	and s_fx=1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@x1_seller
-POSTHOOK: Input: default@x1_seller@ss_sold_date_sk=1
-POSTHOOK: Input: default@x1_seller@ss_sold_date_sk=2
-POSTHOOK: Input: default@x1_seller@ss_sold_date_sk=3
-POSTHOOK: Input: default@x1_store_sales
-POSTHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1
-POSTHOOK: Input: default@x1_store_sales@ss_sold_date_sk=2
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-PREHOOK: query: explain reoptimization
-select   sum(s.ss_item_sk)
- from
-     x1_store_sales s
-     ,x1_seller d
- where
-        1=1
-        and s.ss_item_sk=d.ss_item_sk
-	and s_fx=1
-PREHOOK: type: QUERY
-POSTHOOK: query: explain reoptimization
-select   sum(s.ss_item_sk)
- from
-     x1_store_sales s
-     ,x1_seller d
- where
-        1=1
-        and s.ss_item_sk=d.ss_item_sk
-	and s_fx=1
-POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: s
-                  filterExpr: ss_item_sk is not null (type: boolean)
-                  Statistics: (RUNTIME) Num rows: 14 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: ss_item_sk is not null (type: boolean)
-                    Statistics: (RUNTIME) Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: ss_item_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: (RUNTIME) Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: (RUNTIME) Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: d
-                  filterExpr: ((s_fx = 1) and ss_item_sk is not null) (type: boolean)
-                  Statistics: (RUNTIME) Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: ((s_fx = 1) and ss_item_sk is not null) (type: boolean)
-                    Statistics: (RUNTIME) Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: ss_item_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: (RUNTIME) Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: (RUNTIME) Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col0
-                Statistics: (RUNTIME) Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
-                  aggregations: sum(_col0)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: (RUNTIME) Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: (RUNTIME) Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: bigint)
-        Reducer 3 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: sum(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: (RUNTIME) Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
 

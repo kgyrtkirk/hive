@@ -5,13 +5,12 @@ set hive.vectorized.execution.enabled=true;
 
 drop table if exists x1_store_sales;
 drop table if exists x1_date_dim;
-drop table if exists x1_item;
 
 create table x1_store_sales 
 (
+	ss_sold_date_sk int,
 	ss_item_sk	int
 )
-partitioned by (ss_sold_date_sk int)
 stored as orc;
 
 create table x1_date_dim
@@ -23,58 +22,25 @@ create table x1_date_dim
 )
 stored as orc;
 
-create table x1_seller
-(
-	ss_item_sk	int,
-	s_fx	int
-)
-partitioned by (ss_sold_date_sk int)
-stored as orc;
+insert into x1_date_dim values	(1,1,2000,1),
+				(2,2,2001,2),
+				(3,2,2001,3),
+				(4,2,2001,4),
+				(5,2,2001,5),
+				(6,2,2001,6),
+				(7,2,2001,7),
+				(8,2,2001,8);
 
-insert into x1_date_dim values	(1,1,2000,2),
-				(2,2,2001,2);
-insert into x1_store_sales partition (ss_sold_date_sk=1) values (1),(3),(4),(5),(6),(7),(8),(9),(10),(11);
-insert into x1_store_sales partition (ss_sold_date_sk=2) values (2),(20),(21),(22);
-
-insert into x1_seller partition (ss_sold_date_sk=1) values (1,1),(2,2),(1,3),(55,55);
-insert into x1_seller partition (ss_sold_date_sk=2) values (2,1),(3,2),(1,3),(44,44);
-insert into x1_seller partition (ss_sold_date_sk=3) values (2,1),(3,2),(1,3),(4,4);
+insert into x1_store_sales values (1,1),(3,3),(4,4),(5,5),(6,6),(7,7),(8,8),(9,9),(10,10),(11,11);
 
 alter table x1_store_sales partition (ss_sold_date_sk=1) update statistics set(
 'numRows'='123456',
 'rawDataSize'='1234567');
 
-alter table x1_seller partition (ss_sold_date_sk=1) update statistics set(
-'numRows'='12345',
-'rawDataSize'='123456');
-
 alter table x1_date_dim update statistics set(
 'numRows'='56',
 'rawDataSize'='81449');
 
-
--- the following query is designed to produce a DPP plan
-explain 
-select   count(*) cnt
- from
-     x1_store_sales s
-     ,x1_date_dim d
- where  
-	1=1
-	and s.ss_sold_date_sk = d.d_date_sk
-	and d.d_year=2000;
-
--- tablescan of s should be 14 or 123456 rows; but it may not be 10 or 4
--- and it should not be a mapjoin :)
-explain reoptimization
-select   count(*) cnt
- from
-     x1_store_sales s
-     ,x1_date_dim d
- where  
-	1=1
-	and s.ss_sold_date_sk = d.d_date_sk
-	and d.d_year=2000;
 
 set hive.auto.convert.join.noconditionaltask.size=1;
 set hive.tez.dynamic.partition.pruning=true;
@@ -105,22 +71,22 @@ explain
 select   sum(s.ss_item_sk)
  from
      x1_store_sales s
-     ,x1_seller d
+     ,x1_date_dim d
  where
         1=1
-        and s.ss_item_sk=d.ss_item_sk
-	and s_fx=1
+        and s.ss_sold_date_sk=d.d_date_sk
+	and d.d_moy=3
 ;
 
 explain reoptimization
 select   sum(s.ss_item_sk)
  from
      x1_store_sales s
-     ,x1_seller d
+     ,x1_date_dim d
  where
         1=1
-        and s.ss_item_sk=d.ss_item_sk
-	and s_fx=1
+        and s.ss_sold_date_sk=d.d_date_sk
+	and d.d_moy=3
 ;
 
 
