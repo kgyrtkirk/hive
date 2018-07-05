@@ -107,6 +107,7 @@ import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
 import org.slf4j.Logger;
@@ -210,6 +211,10 @@ public class TezCompiler extends TaskCompiler {
       new SharedWorkOptimizer().transform(procCtx.parseContext);
     }
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Shared scans optimization");
+
+    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    markOperatorsWithUnstableRuntimeStats(procCtx);
+    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "markOperatorsWithUnstableRuntimeStats");
 
     // need a new run of the constant folding because we might have created lots
     // of "and true and true" conditions.
@@ -999,6 +1004,36 @@ public class TezCompiler extends TaskCompiler {
                     GroupByOperator.getOperatorName() + "%" +
                     ReduceSinkOperator.getOperatorName() + "%"),
             new SemiJoinRemovalIfNoStatsProc());
+    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    List<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(procCtx.parseContext.getTopOps().values());
+    GraphWalker ogw = new PreOrderOnceWalker(disp);
+    ogw.startWalking(topNodes, null);
+  }
+
+  private static class MarkTsOfSemijoinsAsIncorrect implements NodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+        throws SemanticException {
+      assert nd instanceof ReduceSinkOperator;
+      ReduceSinkOperator rs = (ReduceSinkOperator) nd;
+      ParseContext pCtx = ((OptimizeTezProcContext) procCtx).parseContext;
+      SemiJoinBranchInfo sjInfo = pCtx.getRsToSemiJoinBranchInfo().get(rs);
+      if (sjInfo == null) {
+        return null;
+      }
+      pCtx.getContext().getPlanMapper().link(sjInfo.getTsOp(), new OperatorStats.IncorrectRuntimeStatsMarker());
+      return null;
+    }
+  }
+
+  private void markOperatorsWithUnstableRuntimeStats(OptimizeTezProcContext procCtx) throws SemanticException {
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    opRules.put(
+        new RuleRegExp("R1",
+            ReduceSinkOperator.getOperatorName() + "%"),
+        new MarkTsOfSemijoinsAsIncorrect());
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
