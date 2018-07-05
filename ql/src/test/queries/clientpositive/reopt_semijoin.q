@@ -33,7 +33,7 @@ insert into x1_date_dim values	(1,1,2000,1),
 
 insert into x1_store_sales values (1,1),(3,3),(4,4),(5,5),(6,6),(7,7),(8,8),(9,9),(10,10),(11,11);
 
-alter table x1_store_sales partition (ss_sold_date_sk=1) update statistics set(
+alter table x1_store_sales update statistics set(
 'numRows'='123456',
 'rawDataSize'='1234567');
 
