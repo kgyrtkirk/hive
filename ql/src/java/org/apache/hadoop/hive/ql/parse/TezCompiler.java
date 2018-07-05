@@ -93,6 +93,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.optimizer.stats.annotation.AnnotateWithStatistics;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
@@ -1019,15 +1020,24 @@ public class TezCompiler extends TaskCompiler {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
-      assert nd instanceof ReduceSinkOperator;
-      ReduceSinkOperator rs = (ReduceSinkOperator) nd;
-      ParseContext pCtx = ((OptimizeTezProcContext) procCtx).parseContext;
-      SemiJoinBranchInfo sjInfo = pCtx.getRsToSemiJoinBranchInfo().get(rs);
-      if (sjInfo == null) {
-        return null;
+      if (nd instanceof ReduceSinkOperator) {
+        ReduceSinkOperator rs = (ReduceSinkOperator) nd;
+        ParseContext pCtx = ((OptimizeTezProcContext) procCtx).parseContext;
+        SemiJoinBranchInfo sjInfo = pCtx.getRsToSemiJoinBranchInfo().get(rs);
+        if (sjInfo == null) {
+          return null;
+        }
+        planMapper = pCtx.getContext().getPlanMapper();
+        walkSubtree(sjInfo.getTsOp());
       }
-      planMapper = pCtx.getContext().getPlanMapper();
-      walkSubtree(sjInfo.getTsOp());
+      if (nd instanceof AppMasterEventOperator) {
+        AppMasterEventOperator ame = (AppMasterEventOperator) nd;
+        AppMasterEventDesc c = ame.getConf();
+        if (c instanceof DynamicPruningEventDesc) {
+          DynamicPruningEventDesc dped = (DynamicPruningEventDesc) c;
+          walkSubtree(dped.getTableScan());
+        }
+      }
       return null;
     }
 
@@ -1052,6 +1062,10 @@ public class TezCompiler extends TaskCompiler {
     opRules.put(
         new RuleRegExp("R1",
             ReduceSinkOperator.getOperatorName() + "%"),
+        new MarkTsOfSemijoinsAsIncorrect());
+    opRules.put(
+        new RuleRegExp("R2",
+            AppMasterEventOperator.getOperatorName() + "%"),
         new MarkTsOfSemijoinsAsIncorrect());
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
