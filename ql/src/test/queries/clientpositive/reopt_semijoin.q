@@ -49,23 +49,7 @@ set hive.optimize.index.filter=true;
 set hive.tez.bigtable.minsize.semijoin.reduction=1;
 set hive.tez.min.bloom.filter.entries=1;
 set hive.tez.bloom.filter.factor=1.0f;
-
-
-set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
-set hive.optimize.ppd=true;
-set hive.ppd.remove.duplicatefilters=true;
-set hive.tez.dynamic.partition.pruning=true;
-set hive.tez.dynamic.semijoin.reduction=true;
-set hive.optimize.metadataonly=false;
-set hive.optimize.index.filter=true;
-set hive.stats.autogather=true;
-set hive.tez.bigtable.minsize.semijoin.reduction=1;
-set hive.tez.min.bloom.filter.entries=1;
-set hive.stats.fetch.column.stats=true;
-set hive.tez.bloom.filter.factor=1.0f;
-set hive.disable.unsafe.external.table.operations=true;
-
 
 explain 
 select   sum(s.ss_item_sk)
