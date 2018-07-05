@@ -1013,7 +1013,7 @@ public class TezCompiler extends TaskCompiler {
     ogw.startWalking(topNodes, null);
   }
 
-  private static class MarkTsOfSemijoinsAsIncorrect implements NodeProcessor {
+  private static class MarkRuntimeStatsAsIncorrect implements NodeProcessor {
 
     private PlanMapper planMapper;
 
@@ -1066,11 +1066,11 @@ public class TezCompiler extends TaskCompiler {
     opRules.put(
         new RuleRegExp("R1",
             ReduceSinkOperator.getOperatorName() + "%"),
-        new MarkTsOfSemijoinsAsIncorrect());
+        new MarkRuntimeStatsAsIncorrect());
     opRules.put(
         new RuleRegExp("R2",
             AppMasterEventOperator.getOperatorName() + "%"),
-        new MarkTsOfSemijoinsAsIncorrect());
+        new MarkRuntimeStatsAsIncorrect());
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
