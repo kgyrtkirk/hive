@@ -1020,14 +1020,14 @@ public class TezCompiler extends TaskCompiler {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
+      ParseContext pCtx = ((OptimizeTezProcContext) procCtx).parseContext;
+      planMapper = pCtx.getContext().getPlanMapper();
       if (nd instanceof ReduceSinkOperator) {
         ReduceSinkOperator rs = (ReduceSinkOperator) nd;
-        ParseContext pCtx = ((OptimizeTezProcContext) procCtx).parseContext;
         SemiJoinBranchInfo sjInfo = pCtx.getRsToSemiJoinBranchInfo().get(rs);
         if (sjInfo == null) {
           return null;
         }
-        planMapper = pCtx.getContext().getPlanMapper();
         walkSubtree(sjInfo.getTsOp());
       }
       if (nd instanceof AppMasterEventOperator) {
@@ -1035,7 +1035,7 @@ public class TezCompiler extends TaskCompiler {
         AppMasterEventDesc c = ame.getConf();
         if (c instanceof DynamicPruningEventDesc) {
           DynamicPruningEventDesc dped = (DynamicPruningEventDesc) c;
-          walkSubtree(dped.getTableScan());
+          mark(dped.getTableScan());
         }
       }
       return null;
@@ -1046,13 +1046,17 @@ public class TezCompiler extends TaskCompiler {
       deque.add(root);
       while (!deque.isEmpty()) {
         Operator<?> op = deque.pollLast();
-        planMapper.link(op, new OperatorStats.IncorrectRuntimeStatsMarker());
+        mark(op);
         if (op instanceof ReduceSinkOperator) {
           // Done with this branch
         } else {
           deque.addAll(op.getChildOperators());
         }
       }
+    }
+
+    private void mark(Operator<?> op) {
+      planMapper.link(op, new OperatorStats.IncorrectRuntimeStatsMarker());
     }
 
   }

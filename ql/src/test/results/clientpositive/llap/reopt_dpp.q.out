@@ -181,7 +181,7 @@ PREHOOK: Input: default@x1_date_dim
 PREHOOK: Input: default@x1_store_sales
 PREHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1
 PREHOOK: Input: default@x1_store_sales@ss_sold_date_sk=2
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain reoptimization
 select   count(*) cnt
  from
@@ -196,7 +196,7 @@ POSTHOOK: Input: default@x1_date_dim
 POSTHOOK: Input: default@x1_store_sales
 POSTHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1
 POSTHOOK: Input: default@x1_store_sales@ss_sold_date_sk=2
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: explain reoptimization
 select   count(*) cnt
  from
