@@ -105,6 +105,7 @@ import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
@@ -1013,6 +1014,8 @@ public class TezCompiler extends TaskCompiler {
 
   private static class MarkTsOfSemijoinsAsIncorrect implements NodeProcessor {
 
+    private PlanMapper planMapper;
+
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
@@ -1023,9 +1026,25 @@ public class TezCompiler extends TaskCompiler {
       if (sjInfo == null) {
         return null;
       }
-      pCtx.getContext().getPlanMapper().link(sjInfo.getTsOp(), new OperatorStats.IncorrectRuntimeStatsMarker());
+      planMapper = pCtx.getContext().getPlanMapper();
+      walkSubtree(sjInfo.getTsOp());
       return null;
     }
+
+    private void walkSubtree(Operator<?> root) {
+      Deque<Operator<?>> deque = new LinkedList<>();
+      deque.add(root);
+      while (!deque.isEmpty()) {
+        Operator<?> op = deque.pollLast();
+        planMapper.link(op, new OperatorStats.IncorrectRuntimeStatsMarker());
+        if (op instanceof ReduceSinkOperator) {
+          // Done with this branch
+        } else {
+          deque.addAll(op.getChildOperators());
+        }
+      }
+    }
+
   }
 
   private void markOperatorsWithUnstableRuntimeStats(OptimizeTezProcContext procCtx) throws SemanticException {
