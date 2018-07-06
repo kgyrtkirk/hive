@@ -111,6 +111,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
@@ -1036,6 +1037,12 @@ public class CachedStore implements RawStore, Configurable {
     }
     List<Partition> parts = sharedCache.listCachedPartitions(catName, dbName, tblName, max);
     return parts;
+  }
+
+  @Override
+  public Map<String, String> getPartitionLocations(String catName, String dbName, String tblName,
+      String baseLocationToNotShow, int max) {
+    return rawStore.getPartitionLocations(catName, dbName, tblName, baseLocationToNotShow, max);
   }
 
   @Override
@@ -2020,7 +2027,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void addNotificationEvent(NotificationEvent event) {
+  public void addNotificationEvent(NotificationEvent event) throws MetaException {
     rawStore.addNotificationEvent(event);
   }
 
@@ -2406,6 +2413,17 @@ public class CachedStore implements RawStore, Configurable {
 
   public long getCacheUpdateCount() {
     return sharedCache.getUpdateCount();
+  }
+
+  @Override
+  public void cleanWriteNotificationEvents(int olderThan) {
+    rawStore.cleanWriteNotificationEvents(olderThan);
+  }
+
+
+  @Override
+  public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException {
+    return rawStore.getAllWriteEventInfo(txnId, dbName, tableName);
   }
 
   static boolean isNotInBlackList(String catName, String dbName, String tblName) {

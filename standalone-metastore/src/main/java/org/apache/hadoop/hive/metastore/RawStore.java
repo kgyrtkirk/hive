@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -361,6 +362,21 @@ public interface RawStore extends Configurable {
    */
   List<Partition> getPartitions(String catName, String dbName,
       String tableName, int max) throws MetaException, NoSuchObjectException;
+
+  /**
+   * Get the location for every partition of a given table. If a partition location is a child of
+   * baseLocationToNotShow then the partitionName is returned, but the only null location is
+   * returned.
+   * @param catName catalog name.
+   * @param dbName database name.
+   * @param tblName table name.
+   * @param baseLocationToNotShow Partition locations which are child of this path are omitted, and
+   *     null value returned instead.
+   * @param max The maximum number of partition locations returned, or -1 for all
+   * @return The map of the partitionName, location pairs
+   */
+  Map<String, String> getPartitionLocations(String catName, String dbName, String tblName,
+      String baseLocationToNotShow, int max);
 
   /**
    * Alter a table.
@@ -1180,8 +1196,9 @@ public interface RawStore extends Configurable {
   /**
    * Add a notification entry.  This should only be called from inside the metastore
    * @param event the notification to add
+   * @throws MetaException error accessing RDBMS
    */
-  void addNotificationEvent(NotificationEvent event);
+  void addNotificationEvent(NotificationEvent event) throws MetaException;
 
   /**
    * Remove older notification events.
@@ -1649,4 +1666,17 @@ public interface RawStore extends Configurable {
   Map<String, List<String>> getPartitionColsWithStats(String catName, String dbName,
       String tableName) throws MetaException, NoSuchObjectException;
 
+  /**
+   * Remove older notification events.
+   * @param olderThan Remove any events older than a given number of seconds
+   */
+  void cleanWriteNotificationEvents(int olderThan);
+
+  /**
+   * Get all write events for a specific transaction .
+   * @param txnId get all the events done by this transaction
+   * @param dbName the name of db for which dump is being taken
+   * @param tableName the name of the table for which the dump is being taken
+   */
+  List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException;
 }

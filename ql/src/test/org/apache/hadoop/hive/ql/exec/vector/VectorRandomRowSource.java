@@ -18,11 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -32,12 +31,14 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.common.type.RandomTypeUtil;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.serde2.RandomTypeUtil;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
@@ -243,6 +244,10 @@ public class VectorRandomRowSource {
     return rowStructObjectInspector;
   }
 
+  public List<ObjectInspector> objectInspectorList() {
+    return objectInspectorList;
+  }
+
   public StructObjectInspector partialRowStructObjectInspector(int partialFieldCount) {
     ArrayList<ObjectInspector> partialObjectInspectorList =
         new ArrayList<ObjectInspector>(partialFieldCount);
@@ -445,11 +450,11 @@ public class VectorRandomRowSource {
     return getDecoratedTypeName(r, typeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
   }
 
-  private ObjectInspector getObjectInspector(TypeInfo typeInfo) {
+  public static ObjectInspector getObjectInspector(TypeInfo typeInfo) {
     return getObjectInspector(typeInfo, DataTypePhysicalVariation.NONE);
   }
 
-  private ObjectInspector getObjectInspector(TypeInfo typeInfo,
+  public static ObjectInspector getObjectInspector(TypeInfo typeInfo,
       DataTypePhysicalVariation dataTypePhysicalVariation) {
 
     final ObjectInspector objectInspector;
@@ -1294,15 +1299,11 @@ public class VectorRandomRowSource {
   }
 
   public static String randomPrimitiveDateStringObject(Random r) {
-    Date randomDate = RandomTypeUtil.getRandDate(r);
-    String randomDateString = randomDate.toString();
-    return randomDateString;
+    return RandomTypeUtil.getRandDate(r).toString();
   }
 
   public static String randomPrimitiveTimestampStringObject(Random r) {
-    Timestamp randomTimestamp = RandomTypeUtil.getRandTimestamp(r);
-    String randomTimestampString = randomTimestamp.toString();
-    return randomTimestampString;
+    return RandomTypeUtil.getRandTimestamp(r).toString();
   }
 
   public static HiveChar getRandHiveChar(Random r, CharTypeInfo charTypeInfo) {

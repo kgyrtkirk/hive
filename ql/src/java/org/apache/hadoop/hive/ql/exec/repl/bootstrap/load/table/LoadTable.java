@@ -27,10 +27,10 @@ import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.repl.ReplUtils;
-import org.apache.hadoop.hive.ql.exec.repl.ReplUtils.ReplLoadOpType;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.ReplLoadOpType;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
-import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.TaskTracker;
+import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.PathUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -206,12 +206,11 @@ public class LoadTable {
   private String location(ImportTableDesc tblDesc, Database parentDb)
       throws MetaException, SemanticException {
     if (!tableContext.waitOnPrecursor()) {
-      return context.warehouse.getDefaultTablePath(parentDb, tblDesc.getTableName()).toString();
+      return context.warehouse.getDefaultTablePath(
+          parentDb, tblDesc.getTableName(), tblDesc.isExternal()).toString();
     } else {
-      Path tablePath = new Path(
-          context.warehouse.getDefaultDatabasePath(tblDesc.getDatabaseName()),
-          MetaStoreUtils.encodeTableName(tblDesc.getTableName().toLowerCase())
-      );
+      Path tablePath = context.warehouse.getDefaultTablePath(
+          tblDesc.getDatabaseName(), tblDesc.getTableName(), tblDesc.isExternal());
       return context.warehouse.getDnsPath(tablePath).toString();
     }
   }

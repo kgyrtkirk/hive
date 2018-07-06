@@ -94,7 +94,9 @@ Table:              	acid
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	2                   
-	totalSize           	4064                
+	numRows             	2000                
+	rawDataSize         	0                   
+	totalSize           	4063                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -132,9 +134,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid
-            Statistics: Num rows: 83 Data size: 40640 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (ds = '2008-04-08') (type: boolean)
+            Statistics: Num rows: 2000 Data size: 40630 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              Statistics: Num rows: 83 Data size: 40640 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2000 Data size: 40630 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
                 mode: hash
@@ -210,7 +213,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	208000              
-	totalSize           	4064                
+	totalSize           	4063                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -261,7 +264,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	208000              
-	totalSize           	4064                
+	totalSize           	4063                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -299,6 +302,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid
+            filterExpr: (ds = '2008-04-08') (type: boolean)
             Statistics: Num rows: 1000 Data size: 208000 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               Statistics: Num rows: 1000 Data size: 208000 Basic stats: COMPLETE Column stats: NONE
@@ -385,7 +389,9 @@ Table:              	acid
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	4                   
-	totalSize           	8119                
+	numRows             	3000                
+	rawDataSize         	208000              
+	totalSize           	8118                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -432,7 +438,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	2000                
 	rawDataSize         	416000              
-	totalSize           	8119                
+	totalSize           	8118                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -459,6 +465,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid
+            filterExpr: (ds = '2008-04-08') (type: boolean)
             Statistics: Num rows: 2000 Data size: 416000 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               Statistics: Num rows: 2000 Data size: 416000 Basic stats: COMPLETE Column stats: NONE
@@ -531,6 +538,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid
+            filterExpr: (ds = '2008-04-08') (type: boolean)
             Statistics: Num rows: 2000 Data size: 416000 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)

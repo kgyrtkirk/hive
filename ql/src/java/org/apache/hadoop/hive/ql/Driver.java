@@ -41,8 +41,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -71,13 +69,14 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache.CacheEntry;
+import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DagUtils;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
-import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionType;
+import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -149,6 +148,7 @@ import org.apache.hive.common.util.TxnIdUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -815,33 +815,35 @@ public class Driver implements IDriver {
         // The lock may have multiple components, e.g., DbHiveLock, hence we need
         // to check for each of them
         for (LockComponent lckCmp : lock.getHiveLockComponents()) {
-          if (lckCmp.getType() == LockType.EXCLUSIVE ||
-              lckCmp.getType() == LockType.SHARED_WRITE) {
+          // We only consider tables for which we hold either an exclusive
+          // or a shared write lock
+          if ((lckCmp.getType() == LockType.EXCLUSIVE ||
+              lckCmp.getType() == LockType.SHARED_WRITE) &&
+              lckCmp.getTablename() != null) {
             nonSharedLocks.add(
                 Warehouse.getQualifiedName(
                     lckCmp.getDbname(), lckCmp.getTablename()));
           }
         }
       } else {
-        // The lock has a single components, e.g., SimpleHiveLock or ZooKeeperHiveLock
-        if (lock.getHiveLockMode() == HiveLockMode.EXCLUSIVE ||
-            lock.getHiveLockMode() == HiveLockMode.SEMI_SHARED) {
-          if (lock.getHiveLockObject().getPaths().length == 2) {
-            // Pos 0 of lock paths array contains dbname, pos 1 contains tblname
-            nonSharedLocks.add(
-                Warehouse.getQualifiedName(
-                    lock.getHiveLockObject().getPaths()[0], lock.getHiveLockObject().getPaths()[1]));
-          }
+        // The lock has a single components, e.g., SimpleHiveLock or ZooKeeperHiveLock.
+        // Pos 0 of lock paths array contains dbname, pos 1 contains tblname
+        if ((lock.getHiveLockMode() == HiveLockMode.EXCLUSIVE ||
+            lock.getHiveLockMode() == HiveLockMode.SEMI_SHARED) &&
+            lock.getHiveLockObject().getPaths().length == 2) {
+          nonSharedLocks.add(
+              Warehouse.getQualifiedName(
+                  lock.getHiveLockObject().getPaths()[0], lock.getHiveLockObject().getPaths()[1]));
         }
       }
     }
     // 3) Get txn tables that are being written
-    ValidTxnWriteIdList txnWriteIdList =
-        new ValidTxnWriteIdList(conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
-    if (txnWriteIdList == null) {
+    String txnWriteIdListStr = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
+    if (txnWriteIdListStr == null || txnWriteIdListStr.length() == 0) {
       // Nothing to check
       return true;
     }
+    ValidTxnWriteIdList txnWriteIdList = new ValidTxnWriteIdList(txnWriteIdListStr);
     List<Pair<String, Table>> writtenTables = getWrittenTableList(plan);
     ValidTxnWriteIdList currentTxnWriteIds =
         queryTxnMgr.getValidWriteIds(
@@ -1331,6 +1333,11 @@ public class Driver implements IDriver {
         //do not authorize temporary uris
         continue;
       }
+      if (privObject.getTyp() == Type.TABLE
+          && (privObject.getT() == null || privObject.getT().isTemporary())) {
+        // skip temporary tables from authorization
+        continue;
+      }
       //support for authorization on partitions needs to be added
       String dbname = null;
       String objName = null;
@@ -1579,9 +1586,19 @@ public class Driver implements IDriver {
                   Utilities.getTableName(tableInfo.getTableName()));
           desc.setTableWriteId(writeId);
 
-          //it's possible to have > 1 FileSink writing to the same table/partition
-          //e.g. Merge stmt, multi-insert stmt when mixing DP and SP writes
+          /**
+           * it's possible to have > 1 FileSink writing to the same table/partition
+           * e.g. Merge stmt, multi-insert stmt when mixing DP and SP writes
+           * Insert ... Select ... Union All Select ... using
+           * {@link org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator#UNION_SUDBIR_PREFIX}
+           */
           desc.setStatementId(queryTxnMgr.getStmtIdAndIncrement());
+          String unionAllSubdir = "/" + AbstractFileMergeOperator.UNION_SUDBIR_PREFIX;
+          if(desc.getInsertOverwrite() && desc.getDirName().toString().contains(unionAllSubdir) &&
+              desc.isFullAcidTable()) {
+            throw new UnsupportedOperationException("QueryId=" + plan.getQueryId() +
+                " is not supported due to OVERWRITE and UNION ALL.  Please use truncate + insert");
+          }
         }
       }
 

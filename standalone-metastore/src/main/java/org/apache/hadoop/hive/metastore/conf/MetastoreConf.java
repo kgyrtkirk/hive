@@ -602,6 +602,8 @@ public class MetastoreConf {
             "alongside the dropped table data. This ensures that the metadata will be cleaned up along with the dropped table data."),
     METRICS_ENABLED("metastore.metrics.enabled", "hive.metastore.metrics.enabled", false,
         "Enable metrics on the metastore."),
+    METRICS_HADOOP2_COMPONENT_NAME("metastore.metrics.hadoop2.component", "hive.service.metrics.hadoop2.component", "hivemetastore",
+                    "Component name to provide to Hadoop2 Metrics system."),
     METRICS_JSON_FILE_INTERVAL("metastore.metrics.file.frequency",
         "hive.service.metrics.file.frequency", 1, TimeUnit.MINUTES,
         "For json metric reporter, the frequency of updating JSON metrics file."),
@@ -748,6 +750,9 @@ public class MetastoreConf {
         "The class to use to read schemas from storage.  It must implement " +
         "org.apache.hadoop.hive.metastore.StorageSchemaReader"),
     STORE_MANAGER_TYPE("datanucleus.storeManagerType", "datanucleus.storeManagerType", "rdbms", "metadata store type"),
+    STRICT_MANAGED_TABLES("metastore.strict.managed.tables", "hive.strict.managed.tables", false,
+            "Whether strict managed tables mode is enabled. With this mode enabled, " +
+            "only transactional tables (both full and insert-only) are allowed to be created as managed tables"),
     SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES("metastore.support.special.characters.tablename",
         "hive.support.special.characters.tablename", true,
         "This flag should be set to true to enable support for special characters in table names.\n"
@@ -758,7 +763,8 @@ public class MetastoreConf {
         EventCleanerTask.class.getName() + "," + RuntimeStatsCleanerTask.class.getName() + "," +
         "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask" + "," +
         MaterializationsCacheCleanerTask.class.getName() + "," +
-            MaterializationsRebuildLockCleanerTask.class.getName() + "," + RuntimeStatsCleanerTask.class.getName(),
+            MaterializationsRebuildLockCleanerTask.class.getName() + "," + RuntimeStatsCleanerTask.class.getName() + "," +
+            "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask",
         "Comma separated list of tasks that will be started in separate threads.  These will " +
             "always be started, regardless of whether the metastore is running in embedded mode " +
             "or in server mode.  They must implement " + MetastoreTaskThread.class.getName()),
@@ -862,6 +868,10 @@ public class MetastoreConf {
         "validates existing schema against code. turn this on if you want to verify existing schema"),
     WAREHOUSE("metastore.warehouse.dir", "hive.metastore.warehouse.dir", "/user/hive/warehouse",
         "location of default database for the warehouse"),
+    WAREHOUSE_EXTERNAL("metastore.warehouse.external.dir",
+        "hive.metastore.warehouse.external.dir", "",
+        "Default location for external tables created in the warehouse. " +
+        "If not set or null, then the normal warehouse location will be used as the default location."),
     WRITE_SET_REAPER_INTERVAL("metastore.writeset.reaper.interval",
         "hive.writeset.reaper.interval", 60, TimeUnit.SECONDS,
         "Frequency of WriteSet reaper runs"),

@@ -27,11 +27,11 @@ import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.repl.ReplUtils;
-import org.apache.hadoop.hive.ql.exec.repl.ReplUtils.ReplLoadOpType;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.ReplLoadOpType;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState;
-import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.TaskTracker;
+import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.PathUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -103,12 +103,11 @@ public class LoadPartitions {
   private String location() throws MetaException, HiveException {
     Database parentDb = context.hiveDb.getDatabase(tableDesc.getDatabaseName());
     if (!tableContext.waitOnPrecursor()) {
-      return context.warehouse.getDefaultTablePath(parentDb, tableDesc.getTableName()).toString();
+      return context.warehouse.getDefaultTablePath(
+          parentDb, tableDesc.getTableName(), tableDesc.isExternal()).toString();
     } else {
-      Path tablePath = new Path(
-          context.warehouse.getDefaultDatabasePath(tableDesc.getDatabaseName()),
-          MetaStoreUtils.encodeTableName(tableDesc.getTableName().toLowerCase())
-      );
+      Path tablePath = context.warehouse.getDefaultTablePath(
+          tableDesc.getDatabaseName(), tableDesc.getTableName(), tableDesc.isExternal());
       return context.warehouse.getDnsPath(tablePath).toString();
     }
   }
@@ -285,7 +284,8 @@ public class LoadPartitions {
       if (table.getDataLocation() == null) {
         Database parentDb = context.hiveDb.getDatabase(tableDesc.getDatabaseName());
         return new Path(
-            context.warehouse.getDefaultTablePath(parentDb, tableDesc.getTableName()), child);
+            context.warehouse.getDefaultTablePath(parentDb, tableDesc.getTableName(), tableDesc.isExternal()),
+            child);
       } else {
         return new Path(table.getDataLocation().toString(), child);
       }

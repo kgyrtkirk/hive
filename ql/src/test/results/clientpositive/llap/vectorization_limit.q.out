@@ -25,6 +25,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((UDFToDouble(cbigint) < cdouble) and (cint > 0)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 183488 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(cbigint) < cdouble) and (cint > 0)) (type: boolean)
@@ -43,8 +44,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -121,6 +122,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ctinyint is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 146796 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -156,8 +158,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -314,8 +316,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -519,8 +521,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -678,8 +680,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -873,6 +875,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ctinyint is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 110096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -915,8 +918,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false

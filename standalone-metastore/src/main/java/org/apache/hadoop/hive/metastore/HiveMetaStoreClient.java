@@ -128,6 +128,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private long retryDelaySeconds = 0;
   private final ClientCapabilities version;
 
+  //copied from ErrorMsg.java
+  private static final String REPL_EVENTS_MISSING_IN_METASTORE = "Notification events are missing in the meta store.";
+  
   static final protected Logger LOG = LoggerFactory.getLogger(HiveMetaStoreClient.class);
 
   public HiveMetaStoreClient(Configuration conf) throws MetaException {
@@ -2503,10 +2506,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void replCommitTxn(long srcTxnId, String replPolicy)
+  public void replCommitTxn(CommitTxnRequest rqst)
           throws NoSuchTxnException, TxnAbortedException, TException {
-    CommitTxnRequest rqst = new CommitTxnRequest(srcTxnId);
-    rqst.setReplPolicy(replPolicy);
     client.commit_txn(rqst);
   }
 
@@ -2717,7 +2718,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                   + "Try setting higher value for hive.metastore.event.db.listener.timetolive. "
                   + "Also, bootstrap the system again to get back the consistent replicated state.",
                   nextEventId, e.getEventId());
-          throw new IllegalStateException("Notification events are missing.");
+          throw new IllegalStateException(REPL_EVENTS_MISSING_IN_METASTORE);
         }
         if ((filter != null) && filter.accept(e)) {
           filtered.addToEvents(e);
@@ -2751,6 +2752,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       rqst.setCatName(getDefaultCatalog(conf));
     }
     return client.fire_listener_event(rqst);
+  }
+
+  @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
+  @Override
+  public void addWriteNotificationLog(WriteNotificationLogRequest rqst) throws TException {
+    client.add_write_notification_log(rqst);
   }
 
   /**
