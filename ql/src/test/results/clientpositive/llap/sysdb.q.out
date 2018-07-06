@@ -2504,9 +2504,9 @@ POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@SCHEMATA
 POSTHOOK: Output: database:information_schema
 POSTHOOK: Lineage: SCHEMATA.catalog_name SIMPLE []
-POSTHOOK: Lineage: SCHEMATA.default_character_set_catalog EXPRESSION []
-POSTHOOK: Lineage: SCHEMATA.default_character_set_name EXPRESSION []
-POSTHOOK: Lineage: SCHEMATA.default_character_set_schema EXPRESSION []
+POSTHOOK: Lineage: SCHEMATA.default_character_set_catalog SIMPLE []
+POSTHOOK: Lineage: SCHEMATA.default_character_set_name SIMPLE []
+POSTHOOK: Lineage: SCHEMATA.default_character_set_schema SIMPLE []
 POSTHOOK: Lineage: SCHEMATA.schema_name SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 #### A masked pattern was here ####
 POSTHOOK: Lineage: SCHEMATA.sql_path SIMPLE [(dbs)d.FieldSchema(name:db_location_uri, type:string, comment:from deserializer), ]
@@ -2594,18 +2594,18 @@ POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@TABLES
 POSTHOOK: Output: database:information_schema
-POSTHOOK: Lineage: TABLES.commit_action EXPRESSION []
+POSTHOOK: Lineage: TABLES.commit_action SIMPLE []
 POSTHOOK: Lineage: TABLES.is_insertable_into EXPRESSION [(tbls)t.FieldSchema(name:view_original_text, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLES.is_typed SIMPLE []
-POSTHOOK: Lineage: TABLES.reference_generation EXPRESSION []
-POSTHOOK: Lineage: TABLES.self_referencing_column_name EXPRESSION []
+POSTHOOK: Lineage: TABLES.reference_generation SIMPLE []
+POSTHOOK: Lineage: TABLES.self_referencing_column_name SIMPLE []
 POSTHOOK: Lineage: TABLES.table_catalog SIMPLE []
 POSTHOOK: Lineage: TABLES.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLES.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLES.table_type EXPRESSION [(tbls)t.FieldSchema(name:view_original_text, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: TABLES.user_defined_type_catalog EXPRESSION []
-POSTHOOK: Lineage: TABLES.user_defined_type_name EXPRESSION []
-POSTHOOK: Lineage: TABLES.user_defined_type_schema EXPRESSION []
+POSTHOOK: Lineage: TABLES.user_defined_type_catalog SIMPLE []
+POSTHOOK: Lineage: TABLES.user_defined_type_name SIMPLE []
+POSTHOOK: Lineage: TABLES.user_defined_type_schema SIMPLE []
 PREHOOK: query: CREATE VIEW IF NOT EXISTS `TABLE_PRIVILEGES`
 (
   `GRANTOR`,
@@ -3018,13 +3018,13 @@ POSTHOOK: Output: INFORMATION_SCHEMA@COLUMNS
 POSTHOOK: Output: database:information_schema
 POSTHOOK: Lineage: COLUMNS.character_maximum_length EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.character_octet_length EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.character_set_catalog EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.character_set_name EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.character_set_schema EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.collation_catalog EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.collation_name EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.collation_schema EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.column_default EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.character_set_catalog SIMPLE []
+POSTHOOK: Lineage: COLUMNS.character_set_name SIMPLE []
+POSTHOOK: Lineage: COLUMNS.character_set_schema SIMPLE []
+POSTHOOK: Lineage: COLUMNS.collation_catalog SIMPLE []
+POSTHOOK: Lineage: COLUMNS.collation_name SIMPLE []
+POSTHOOK: Lineage: COLUMNS.collation_schema SIMPLE []
+POSTHOOK: Lineage: COLUMNS.column_default SIMPLE []
 POSTHOOK: Lineage: COLUMNS.column_name SIMPLE [(columns_v2)c.FieldSchema(name:column_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.data_type SIMPLE [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.datetime_precision EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
@@ -3032,15 +3032,15 @@ POSTHOOK: Lineage: COLUMNS.declared_data_type SIMPLE [(columns_v2)c.FieldSchema(
 POSTHOOK: Lineage: COLUMNS.declared_numeric_precision EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.declared_numeric_scale EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.dtd_identifier SIMPLE [(columns_v2)c.FieldSchema(name:cd_id, type:bigint, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.generation_expression EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_cycle EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_generation EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_increment EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_maximum EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_minimum EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.identity_start EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.interval_precision EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.interval_type EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.generation_expression SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_cycle SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_generation SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_increment SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_maximum SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_minimum SIMPLE []
+POSTHOOK: Lineage: COLUMNS.identity_start SIMPLE []
+POSTHOOK: Lineage: COLUMNS.interval_precision SIMPLE []
+POSTHOOK: Lineage: COLUMNS.interval_type SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_generated SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_identity SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_nullable SIMPLE []
@@ -3048,21 +3048,21 @@ POSTHOOK: Lineage: COLUMNS.is_self_referencing SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_system_time_period_end SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_system_time_period_start SIMPLE []
 POSTHOOK: Lineage: COLUMNS.is_updatable SIMPLE []
-POSTHOOK: Lineage: COLUMNS.maximum_cardinality EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.maximum_cardinality SIMPLE []
 POSTHOOK: Lineage: COLUMNS.numeric_precision EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.numeric_precision_radix EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.numeric_scale EXPRESSION [(columns_v2)c.FieldSchema(name:type_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.ordinal_position SIMPLE [(columns_v2)c.FieldSchema(name:integer_idx, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.scope_catalog EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.scope_name EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.scope_schema EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.system_time_period_timestamp_generation EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.scope_catalog SIMPLE []
+POSTHOOK: Lineage: COLUMNS.scope_name SIMPLE []
+POSTHOOK: Lineage: COLUMNS.scope_schema SIMPLE []
+POSTHOOK: Lineage: COLUMNS.system_time_period_timestamp_generation SIMPLE []
 POSTHOOK: Lineage: COLUMNS.table_catalog SIMPLE []
 POSTHOOK: Lineage: COLUMNS.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMNS.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
-POSTHOOK: Lineage: COLUMNS.udt_catalog EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.udt_name EXPRESSION []
-POSTHOOK: Lineage: COLUMNS.udt_schema EXPRESSION []
+POSTHOOK: Lineage: COLUMNS.udt_catalog SIMPLE []
+POSTHOOK: Lineage: COLUMNS.udt_name SIMPLE []
+POSTHOOK: Lineage: COLUMNS.udt_schema SIMPLE []
 PREHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMN_PRIVILEGES`
 (
   `GRANTOR`,
@@ -3241,7 +3241,7 @@ POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@VIEWS
 POSTHOOK: Output: database:information_schema
-POSTHOOK: Lineage: VIEWS.check_option EXPRESSION []
+POSTHOOK: Lineage: VIEWS.check_option SIMPLE []
 POSTHOOK: Lineage: VIEWS.is_insertable_into SIMPLE []
 POSTHOOK: Lineage: VIEWS.is_trigger_deletable SIMPLE []
 POSTHOOK: Lineage: VIEWS.is_trigger_insertable_into SIMPLE []
@@ -3647,15 +3647,15 @@ POSTHOOK: query: select table_name, column_name, num_nulls, num_distincts from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@tab_col_stats
 #### A masked pattern was here ####
-alltypesorc	cbigint	3115	6064
+alltypesorc	cbigint	3115	6062
 alltypesorc	cboolean1	3114	0
 alltypesorc	cboolean2	3115	0
-alltypesorc	cdouble	3114	5569
+alltypesorc	cdouble	3114	5566
 alltypesorc	cfloat	3115	131
-alltypesorc	cint	3115	6029
-alltypesorc	csmallint	3114	5594
-alltypesorc	cstring1	3114	6058
-alltypesorc	cstring2	3115	6040
+alltypesorc	cint	3115	6026
+alltypesorc	csmallint	3114	5591
+alltypesorc	cstring1	3114	6055
+alltypesorc	cstring2	3115	6039
 alltypesorc	ctimestamp1	3115	35
 PREHOOK: query: select table_name, partition_name, column_name, num_nulls, num_distincts from part_col_stats order by table_name, partition_name, column_name limit 10
 PREHOOK: type: QUERY
@@ -3716,10 +3716,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@table_params
 POSTHOOK: Input: sys@table_stats_view
 #### A masked pattern was here ####
-{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true","d":"true","e":"true","f":"true","g":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","rp_name":"true","trigger_expression":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"bucket_col_name":"true","integer_idx":"true","sd_id":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"cd_id":"true","column_name":"true","comment":"true","integer_idx":"true","type_name":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"cd_id":"true"}}	0	0	0	0
 #### A masked pattern was here ####
+{"BASIC_STATS":"true","COLUMN_STATS":{"entity_name":"true","entity_type":"true","ordering":"true","pool_path":"true","rp_name":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	0	0	0	0
 PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM PARTITION_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
 PREHOOK: type: QUERY
@@ -3827,14 +3827,14 @@ POSTHOOK: query: select max(num_distincts) from sys.tab_col_stats
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@tab_col_stats
 #### A masked pattern was here ####
-6064
+6062
 PREHOOK: query: use INFORMATION_SCHEMA
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:information_schema
 POSTHOOK: query: use INFORMATION_SCHEMA
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:information_schema
-Warning: Shuffle Join MERGEJOIN[20][tables = [d, t, p]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select count(*) from SCHEMATA
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@schemata
@@ -3850,7 +3850,7 @@ POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 3
-Warning: Shuffle Join MERGEJOIN[38][tables = [t, d, p]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[39][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from TABLES order by TABLE_SCHEMA, TABLE_NAME
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@tables
@@ -3936,7 +3936,7 @@ default	sys	wm_pools	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	wm_pools_to_triggers	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	wm_resourceplans	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	wm_triggers	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-Warning: Shuffle Join MERGEJOIN[60][tables = [p, t, d, p2]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[61][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from TABLE_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, PRIVILEGE_TYPE limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@table_privileges
@@ -3961,7 +3961,7 @@ hive_test_user	hive_test_user	default	default	alltypesparquet	SELECT	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesparquet	UPDATE	YES	NO
 hive_test_user	hive_test_user	default	default	cbo_t1	DELETE	YES	NO
 hive_test_user	hive_test_user	default	default	cbo_t1	INSERT	YES	NO
-Warning: Shuffle Join MERGEJOIN[82][tables = [c, s, t, d, p]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[81][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@columns
@@ -3980,7 +3980,7 @@ POSTHOOK: Input: sys@sds
 POSTHOOK: Input: sys@tbl_col_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[82][tables = [p, t, d, s, p2]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[82][tables = [$hdt$_3, $hdt$_4]] in Stage 'Reducer 10' is a cross product
 PREHOOK: query: select * from COLUMN_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@column_privileges
@@ -3999,7 +3999,7 @@ POSTHOOK: Input: sys@tbl_col_privs
 POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[38][tables = [d, t, p]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[37][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select TABLE_SCHEMA, TABLE_NAME from views order by TABLE_SCHEMA, TABLE_NAME
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@views
