@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.serde2;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.nio.charset.CharacterCodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
