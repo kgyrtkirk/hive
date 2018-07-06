@@ -11,6 +11,10 @@ CREATE EXTERNAL TABLE header_footer_table_1 (name string, message string, id int
 
 SELECT * FROM header_footer_table_1;
 
+explain
+SELECT count(distinct name) FROM header_footer_table_1;
+SELECT count(distinct name) FROM header_footer_table_1;
+
 SELECT * FROM header_footer_table_1 WHERE id < 50;
 
 CREATE EXTERNAL TABLE header_footer_table_2 (name string, message string, id int) PARTITIONED BY (year int, month int, day int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' tblproperties ("skip.header.line.count"="1", "skip.footer.line.count"="2");
