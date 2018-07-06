@@ -21,12 +21,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
-import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
-import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -102,7 +100,7 @@ public class HiveAlterHandler implements AlterHandler {
         && StatsSetupConst.TRUE.equals(environmentContext.getProperties().get(
             StatsSetupConst.CASCADE));
     if (newt == null) {
-      throw new InvalidOperationException("New table is invalid: " + newt);
+      throw new InvalidOperationException("New table is null");
     }
 
     String newTblName = newt.getTableName().toLowerCase();
@@ -127,17 +125,9 @@ public class HiveAlterHandler implements AlterHandler {
 
     Table oldt = null;
 
-    List<TransactionalMetaStoreEventListener> transactionalListeners = null;
-    List<MetaStoreEventListener> listeners = null;
+    List<TransactionalMetaStoreEventListener> transactionalListeners = handler.getTransactionalListeners();
+    List<MetaStoreEventListener> listeners = handler.getListeners();
     Map<String, String> txnAlterTableEventResponses = Collections.emptyMap();
-    Map<String, String> txnDropTableEventResponses = Collections.emptyMap();
-    Map<String, String> txnCreateTableEventResponses = Collections.emptyMap();
-    Map<String, String> txnAddPartitionEventResponses = Collections.emptyMap();
-
-    if (handler != null) {
-      transactionalListeners = handler.getTransactionalListeners();
-      listeners = handler.getListeners();
-    }
 
     try {
       boolean rename = false;
@@ -163,7 +153,7 @@ public class HiveAlterHandler implements AlterHandler {
       oldt = msdb.getTable(catName, dbname, name);
       if (oldt == null) {
         throw new InvalidOperationException("table " +
-            Warehouse.getCatalogQualifiedTableName(catName, dbname, name) + " doesn't exist");
+            TableName.getQualified(catName, dbname, name) + " doesn't exist");
       }
 
       if (oldt.getPartitionKeysSize() != 0) {
@@ -238,7 +228,7 @@ public class HiveAlterHandler implements AlterHandler {
           try {
             if (destFs.exists(destPath)) {
               throw new InvalidOperationException("New location for this table " +
-                  Warehouse.getCatalogQualifiedTableName(catName, newDbName, newTblName) +
+                  TableName.getQualified(catName, newDbName, newTblName) +
                       " already exists : " + destPath);
             }
             // check that src exists and also checks permissions necessary, rename src to dest
@@ -251,6 +241,14 @@ public class HiveAlterHandler implements AlterHandler {
             throw new InvalidOperationException("Alter Table operation for " + dbname + "." + name +
                 " failed to move data due to: '" + getSimpleMessage(e)
                 + "' See hive log file for details.");
+          }
+
+          if (!HiveMetaStore.isRenameAllowed(olddb, db)) {
+            LOG.error("Alter Table operation for " + TableName.getQualified(catName, dbname, name) +
+                    "to new table = " + TableName.getQualified(catName, newDbName, newTblName) + " failed ");
+            throw new MetaException("Alter table not allowed for table " +
+                    TableName.getQualified(catName, dbname, name) +
+                    "to new table = " + TableName.getQualified(catName, newDbName, newTblName));
           }
         }
 
@@ -310,6 +308,7 @@ public class HiveAlterHandler implements AlterHandler {
         }
       } else {
         // operations other than table rename
+
         if (MetaStoreUtils.requireCalStats(null, null, newt, environmentContext) &&
             !isPartitionedTable) {
           Database db = msdb.getDatabase(catName, newDbName);
@@ -347,29 +346,10 @@ public class HiveAlterHandler implements AlterHandler {
       }
 
       if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-        if (oldt.getDbName().equalsIgnoreCase(newt.getDbName())) {
-          txnAlterTableEventResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+        txnAlterTableEventResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                   EventMessage.EventType.ALTER_TABLE,
                   new AlterTableEvent(oldt, newt, false, true, handler),
                   environmentContext);
-        } else {
-          txnDropTableEventResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventMessage.EventType.DROP_TABLE,
-                  new DropTableEvent(oldt, true, false, handler),
-                  environmentContext);
-          txnCreateTableEventResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventMessage.EventType.CREATE_TABLE,
-                  new CreateTableEvent(newt, true, handler),
-                  environmentContext);
-          if (isPartitionedTable) {
-            String cName = newt.isSetCatName() ? newt.getCatName() : DEFAULT_CATALOG_NAME;
-            parts = msdb.getPartitions(cName, newt.getDbName(), newt.getTableName(), -1);
-            txnAddPartitionEventResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                    EventMessage.EventType.ADD_PARTITION,
-                    new AddPartitionEvent(newt, parts, true, handler),
-                    environmentContext);
-          }
-        }
       }
       // commit the changes
       success = msdb.commitTransaction();
@@ -390,8 +370,7 @@ public class HiveAlterHandler implements AlterHandler {
               + " Check metastore logs for detailed stack." + e.getMessage());
     } finally {
       if (!success) {
-        LOG.error("Failed to alter table " +
-            Warehouse.getCatalogQualifiedTableName(catName, dbname, name));
+        LOG.error("Failed to alter table " + TableName.getQualified(catName, dbname, name));
         msdb.rollbackTransaction();
         if (dataWasMoved) {
           try {
@@ -410,49 +389,12 @@ public class HiveAlterHandler implements AlterHandler {
     }
 
     if (!listeners.isEmpty()) {
-      // An ALTER_TABLE event will be created for any alter table operation happening inside the same
-      // database, otherwise a rename between databases is considered a DROP_TABLE from the old database
-      // and a CREATE_TABLE in the new database plus ADD_PARTITION operations if needed.
-      if (!success || dbname.equalsIgnoreCase(newDbName)) {
-        // I don't think event notifications in case of failures are necessary, but other HMS operations
-        // make this call whether the event failed or succeeded. To make this behavior consistent, then
-        // this call will be made also for failed events even for renaming the table between databases
-        // to avoid a large list of ADD_PARTITION unnecessary failed events.
-        MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALTER_TABLE,
-            new AlterTableEvent(oldt, newt, false, success, handler),
-            environmentContext, txnAlterTableEventResponses, msdb);
-      } else {
-        if(oldt.getParameters() != null && "true".equalsIgnoreCase(
-            oldt.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL))) {
-          /*Why does it split Alter into Drop + Create here?????  This causes onDropTable logic
-           * to wipe out acid related metadata and writeIds from old table don't make sense
-           * in the new table.*/
-          throw new IllegalStateException("Changing database name of a transactional table " +
-              Warehouse.getQualifiedName(oldt) + " is not supported.  Please use create-table-as" +
-              " or create new table manually followed by Insert.");
-        }
-        MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.DROP_TABLE,
-            new DropTableEvent(oldt, true, false, handler),
-            environmentContext, txnDropTableEventResponses, msdb);
-
-        MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.CREATE_TABLE,
-            new CreateTableEvent(newt, true, handler),
-            environmentContext, txnCreateTableEventResponses, msdb);
-
-        if (isPartitionedTable) {
-          try {
-            List<Partition> parts = msdb.getPartitions(catName, newDbName, newTblName, -1);
-            MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ADD_PARTITION,
-                new AddPartitionEvent(newt, parts, true, handler),
-                environmentContext, txnAddPartitionEventResponses, msdb);
-          } catch (NoSuchObjectException e) {
-            // Just log the error but not throw an exception as this post-commit event should
-            // not cause the HMS operation to fail.
-            LOG.error("ADD_PARTITION events for ALTER_TABLE rename operation cannot continue because the following " +
-                "table was not found on the metastore: " + newDbName + "." + newTblName, e);
-          }
-        }
-      }
+      // I don't think event notifications in case of failures are necessary, but other HMS operations
+      // make this call whether the event failed or succeeded. To make this behavior consistent,
+      // this call is made for failed events also.
+      MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALTER_TABLE,
+          new AlterTableEvent(oldt, newt, false, success, handler),
+          environmentContext, txnAlterTableEventResponses, msdb);
     }
   }
 
@@ -540,10 +482,11 @@ public class HiveAlterHandler implements AlterHandler {
         }
         success = msdb.commitTransaction();
       } catch (InvalidObjectException e) {
-        throw new InvalidOperationException("alter is not possible");
-      } catch (NoSuchObjectException e){
+        LOG.warn("Alter failed", e);
+        throw new InvalidOperationException("alter is not possible: " + e.getMessage());
+      } catch (NoSuchObjectException e) {
         //old partition does not exist
-        throw new InvalidOperationException("alter is not possible");
+        throw new InvalidOperationException("alter is not possible: " + e.getMessage());
       } finally {
         if(!success) {
           msdb.rollbackTransaction();

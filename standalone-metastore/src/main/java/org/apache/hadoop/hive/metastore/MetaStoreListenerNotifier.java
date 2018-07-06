@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
+import org.apache.hadoop.hive.metastore.events.AlterCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
@@ -53,6 +54,7 @@ import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
+import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import java.sql.Connection;
 import java.util.List;
@@ -210,6 +212,8 @@ public class MetaStoreListenerNotifier {
               (listener, event) -> listener.onCreateCatalog((CreateCatalogEvent)event))
           .put(EventType.DROP_CATALOG,
               (listener, event) -> listener.onDropCatalog((DropCatalogEvent)event))
+          .put(EventType.ALTER_CATALOG,
+              (listener, event) -> listener.onAlterCatalog((AlterCatalogEvent)event))
           .put(EventType.OPEN_TXN,
               (listener, event) -> listener.onOpenTxn((OpenTxnEvent) event, null, null))
           .put(EventType.COMMIT_TXN,
@@ -218,6 +222,8 @@ public class MetaStoreListenerNotifier {
               (listener, event) -> listener.onAbortTxn((AbortTxnEvent) event, null, null))
           .put(EventType.ALLOC_WRITE_ID,
               (listener, event) -> listener.onAllocWriteId((AllocWriteIdEvent) event, null, null))
+          .put(EventType.ACID_WRITE,
+                  (listener, event) -> listener.onAcidWrite((AcidWriteEvent) event, null, null))
           .build()
   );
 
@@ -238,6 +244,9 @@ public class MetaStoreListenerNotifier {
       .put(EventType.ALLOC_WRITE_ID,
         (listener, event, dbConn, sqlGenerator) ->
                 listener.onAllocWriteId((AllocWriteIdEvent) event, dbConn, sqlGenerator))
+      .put(EventType.ACID_WRITE,
+        (listener, event, dbConn, sqlGenerator) ->
+                listener.onAcidWrite((AcidWriteEvent) event, dbConn, sqlGenerator))
       .build()
   );
 

@@ -18,10 +18,12 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -322,13 +324,15 @@ public interface RawStore extends Configurable {
    * @param catName catalog name.
    * @param dbName database name.
    * @param tableName table name.
+   * @param partKeys list of partition keys used to generate the partition name.
    * @param part_vals list of partition values.
    * @return true if the partition exists, false otherwise.
    * @throws MetaException failure reading RDBMS
    * @throws NoSuchObjectException this is never thrown.
    */
   boolean doesPartitionExist(String catName, String dbName, String tableName,
-      List<String> part_vals) throws MetaException, NoSuchObjectException;
+      List<FieldSchema> partKeys, List<String> part_vals)
+      throws MetaException, NoSuchObjectException;
 
   /**
    * Drop a partition.
@@ -358,6 +362,21 @@ public interface RawStore extends Configurable {
    */
   List<Partition> getPartitions(String catName, String dbName,
       String tableName, int max) throws MetaException, NoSuchObjectException;
+
+  /**
+   * Get the location for every partition of a given table. If a partition location is a child of
+   * baseLocationToNotShow then the partitionName is returned, but the only null location is
+   * returned.
+   * @param catName catalog name.
+   * @param dbName database name.
+   * @param tblName table name.
+   * @param baseLocationToNotShow Partition locations which are child of this path are omitted, and
+   *     null value returned instead.
+   * @param max The maximum number of partition locations returned, or -1 for all
+   * @return The map of the partitionName, location pairs
+   */
+  Map<String, String> getPartitionLocations(String catName, String dbName, String tblName,
+      String baseLocationToNotShow, int max);
 
   /**
    * Alter a table.
@@ -754,7 +773,7 @@ public interface RawStore extends Configurable {
   boolean revokePrivileges(PrivilegeBag privileges, boolean grantOption)
   throws InvalidObjectException, MetaException, NoSuchObjectException;
 
-  boolean refreshPrivileges(HiveObjectRef objToRefresh, PrivilegeBag grantPrivileges)
+  boolean refreshPrivileges(HiveObjectRef objToRefresh, String authorizer, PrivilegeBag grantPrivileges)
   throws InvalidObjectException, MetaException, NoSuchObjectException;
 
   org.apache.hadoop.hive.metastore.api.Role getRole(
@@ -1177,8 +1196,9 @@ public interface RawStore extends Configurable {
   /**
    * Add a notification entry.  This should only be called from inside the metastore
    * @param event the notification to add
+   * @throws MetaException error accessing RDBMS
    */
-  void addNotificationEvent(NotificationEvent event);
+  void addNotificationEvent(NotificationEvent event) throws MetaException;
 
   /**
    * Remove older notification events.
@@ -1639,4 +1659,24 @@ public interface RawStore extends Configurable {
   /** Removes outdated statistics. */
   int deleteRuntimeStats(int maxRetainSecs) throws MetaException;
 
+  List<TableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException;
+
+  List<TableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException;
+
+  Map<String, List<String>> getPartitionColsWithStats(String catName, String dbName,
+      String tableName) throws MetaException, NoSuchObjectException;
+
+  /**
+   * Remove older notification events.
+   * @param olderThan Remove any events older than a given number of seconds
+   */
+  void cleanWriteNotificationEvents(int olderThan);
+
+  /**
+   * Get all write events for a specific transaction .
+   * @param txnId get all the events done by this transaction
+   * @param dbName the name of db for which dump is being taken
+   * @param tableName the name of the table for which the dump is being taken
+   */
+  List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException;
 }

@@ -30,7 +30,7 @@ import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.IntervalDayVector;
 import org.apache.arrow.vector.IntervalYearVector;
 import org.apache.arrow.vector.SmallIntVector;
-import org.apache.arrow.vector.TimeStampNanoVector;
+import org.apache.arrow.vector.TimeStampMicroTZVector;
 import org.apache.arrow.vector.TinyIntVector;
 import org.apache.arrow.vector.VarBinaryVector;
 import org.apache.arrow.vector.VarCharVector;
@@ -38,6 +38,7 @@ import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.complex.ListVector;
 import org.apache.arrow.vector.complex.MapVector;
 import org.apache.arrow.vector.complex.NullableMapVector;
+import org.apache.arrow.vector.types.TimeUnit;
 import org.apache.arrow.vector.types.Types;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.FieldType;
@@ -74,8 +75,10 @@ import java.util.List;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ARROW_BATCH_SIZE;
 import static org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil.createColumnVector;
-import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MS_PER_SECOND;
-import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_MS;
+import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MICROS_PER_MILLIS;
+import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MILLIS_PER_SECOND;
+import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_MICROS;
+import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_MILLIS;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.SECOND_PER_DAY;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.toStructListTypeInfo;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.toStructListVector;
@@ -175,7 +178,8 @@ class Serializer {
           case DATE:
             return Types.MinorType.DATEDAY.getType();
           case TIMESTAMP:
-            return Types.MinorType.TIMESTAMPNANO.getType();
+            // HIVE-19853: Prefer timestamp in microsecond with time zone because Spark supports it
+            return new ArrowType.Timestamp(TimeUnit.MICROSECOND, "UTC");
           case BINARY:
             return Types.MinorType.VARBINARY.getType();
           case DECIMAL:
@@ -430,22 +434,22 @@ class Serializer {
         break;
       case TIMESTAMP:
         {
-          final TimeStampNanoVector timeStampNanoVector = (TimeStampNanoVector) arrowVector;
+          final TimeStampMicroTZVector timeStampMicroTZVector = (TimeStampMicroTZVector) arrowVector;
           final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
           for (int i = 0; i < size; i++) {
             if (hiveVector.isNull[i]) {
-              timeStampNanoVector.setNull(i);
+              timeStampMicroTZVector.setNull(i);
             } else {
               // Time = second + sub-second
               final long secondInMillis = timestampColumnVector.getTime(i);
-              final long secondInNanos = (secondInMillis - secondInMillis % 1000) * NS_PER_MS; // second
-              final long subSecondInNanos = timestampColumnVector.getNanos(i); // sub-second
+              final long secondInMicros = (secondInMillis - secondInMillis % MILLIS_PER_SECOND) * MICROS_PER_MILLIS;
+              final long subSecondInMicros = timestampColumnVector.getNanos(i) / NS_PER_MICROS;
 
-              if ((secondInMillis > 0 && secondInNanos < 0) || (secondInMillis < 0 && secondInNanos > 0)) {
-                // If the timestamp cannot be represented in long nanosecond, set it as a null value
-                timeStampNanoVector.setNull(i);
+              if ((secondInMillis > 0 && secondInMicros < 0) || (secondInMillis < 0 && secondInMicros > 0)) {
+                // If the timestamp cannot be represented in long microsecond, set it as a null value
+                timeStampMicroTZVector.setNull(i);
               } else {
-                timeStampNanoVector.set(i, secondInNanos + subSecondInNanos);
+                timeStampMicroTZVector.set(i, secondInMicros + subSecondInMicros);
               }
             }
           }
@@ -502,8 +506,8 @@ class Serializer {
               final long totalSeconds = intervalDayTimeColumnVector.getTotalSeconds(i);
               final long days = totalSeconds / SECOND_PER_DAY;
               final long millis =
-                  (totalSeconds - days * SECOND_PER_DAY) * MS_PER_SECOND +
-                      intervalDayTimeColumnVector.getNanos(i) / NS_PER_MS;
+                  (totalSeconds - days * SECOND_PER_DAY) * MILLIS_PER_SECOND +
+                      intervalDayTimeColumnVector.getNanos(i) / NS_PER_MILLIS;
               intervalDayVector.set(i, (int) days, (int) millis);
             }
           }

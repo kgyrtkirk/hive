@@ -76,6 +76,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 
 import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
 import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
@@ -977,7 +978,7 @@ public class TestJdbcDriver2 {
     assertNotNull("ResultSet is null", res);
     assertTrue("getResultSet() not returning expected ResultSet", res == stmt
         .getResultSet());
-    assertEquals("get update count not as expected", -1, stmt.getUpdateCount());
+    assertEquals("get update count not as expected", 0, stmt.getUpdateCount());
     int i = 0;
 
     ResultSetMetaData meta = res.getMetaData();
@@ -2927,6 +2928,27 @@ public class TestJdbcDriver2 {
     stmt.close();
   }
 
+  @Test
+  public void testReplErrorScenarios() throws Exception {
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+
+    try {
+      // source of replication not set
+      stmt.execute("repl dump default");
+    } catch(SQLException e){
+      assertTrue(e.getErrorCode() == ErrorMsg.REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION.getErrorCode());
+    }
+
+    try {
+      // invalid load path
+      stmt.execute("repl load default1 from '/tmp/junk'");
+    } catch(SQLException e){
+      assertTrue(e.getErrorCode() == ErrorMsg.REPL_LOAD_PATH_NOT_FOUND.getErrorCode());
+    }
+
+    stmt.close();
+  }
+
   /**
    * Test {@link HiveStatement#executeAsync(String)} for an insert overwrite into a table
    * @throws Exception
@@ -2962,23 +2984,25 @@ public class TestJdbcDriver2 {
 
   private void testInsertOverwrite(HiveStatement stmt) throws SQLException {
     String tblName = "testInsertOverwriteExecAsync";
-    int rowCount = 0;
-    stmt.execute("create table " + tblName + " (col1 int , col2 string)");
-    boolean isResulSet =
-        stmt.executeAsync("insert overwrite table " + tblName + " select * from " + tableName);
-    assertFalse(isResulSet);
-    // HiveStatement#getUpdateCount blocks until the async query is complete
-    stmt.getUpdateCount();
-    // Read from the new table
-    ResultSet rs = stmt.executeQuery("select * from " + tblName);
-    assertNotNull(rs);
-    while (rs.next()) {
-      String value = rs.getString(2);
-      rowCount++;
-      assertNotNull(value);
+    try {
+      int rowCount = 0;
+      stmt.execute("create table " + tblName + " (col1 int , col2 string)");
+      boolean isResulSet =
+          stmt.executeAsync("insert overwrite table " + tblName + " select * from " + tableName);
+      assertFalse(isResulSet);
+      // HiveStatement#getUpdateCount blocks until the async query is complete
+      rowCount = stmt.getUpdateCount();
+      // Read from the new table
+      ResultSet rs = stmt.executeQuery("select * from " + tblName);
+      assertNotNull(rs);
+      while (rs.next()) {
+        String value = rs.getString(2);
+        assertNotNull(value);
+      }
+      assertEquals(dataFileRowCount, rowCount);
+    } finally {
+      stmt.execute("drop table " + tblName);
     }
-    assertEquals(rowCount, dataFileRowCount);
-    stmt.execute("drop table " + tblName);
   }
 
   // Test that opening a JDBC connection to a non-existent database throws a HiveSQLException

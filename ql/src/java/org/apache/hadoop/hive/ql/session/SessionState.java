@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
@@ -58,9 +59,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.Registry;
@@ -160,7 +164,7 @@ public class SessionState {
   /**
    * The flag to indicate if the session already started so we can skip the init
    */
-  private boolean isStarted = false;
+  private AtomicBoolean isStarted = new AtomicBoolean(false);
   /*
    * HiveHistory Object
    */
@@ -228,6 +232,8 @@ public class SessionState {
   private TezSessionState tezSessionState;
 
   private String currentDatabase;
+
+  private String currentCatalog;
 
   private final String CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER =
       "hive.internal.ss.authz.settings.applied.marker";
@@ -598,13 +604,14 @@ public class SessionState {
     startSs.tezSessionState.endOpen();
   }
 
-  synchronized private static void start(SessionState startSs, boolean isAsync, LogHelper console) {
+  private static void start(SessionState startSs, boolean isAsync, LogHelper console) {
     setCurrentSessionState(startSs);
 
-    if (startSs.isStarted) {
-      return;
+    synchronized(SessionState.class) {
+      if (!startSs.isStarted.compareAndSet(false, true)) {
+        return;
+      }
     }
-    startSs.isStarted = true;
 
     if (startSs.hiveHist == null){
       if (startSs.getConf().getBoolVar(HiveConf.ConfVars.HIVE_SESSION_HISTORY_ENABLED)) {
@@ -818,7 +825,7 @@ public class SessionState {
       return new Path(sessionPathString);
     }
     Preconditions.checkNotNull(ss.hdfsSessionPath,
-        "Non-local session path expected to be non-null");
+       "Non-local session path expected to be non-null");
     return ss.hdfsSessionPath;
   }
 
@@ -837,6 +844,12 @@ public class SessionState {
     Preconditions.checkNotNull(this.hdfsTmpTableSpace,
         "Temp table path expected to be non-null");
     return this.hdfsTmpTableSpace;
+  }
+
+  public static String generateTempTableLocation(Configuration conf) throws MetaException {
+    Path path = new Path(SessionState.getTempTableSpace(conf), UUID.randomUUID().toString());
+    path = Warehouse.getDnsPath(path, conf);
+    return path.toString();
   }
 
   @VisibleForTesting
@@ -884,7 +897,7 @@ public class SessionState {
   /**
    * Setup authentication and authorization plugins for this session.
    */
-  private void setupAuth() {
+  private synchronized void setupAuth() {
 
     if (authenticator != null) {
       // auth has been initialized
@@ -936,10 +949,10 @@ public class SessionState {
     if (sessionConf.get(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, "").equals(Boolean.TRUE.toString())) {
       return;
     }
-    String metastoreHook = sessionConf.get(ConfVars.METASTORE_FILTER_HOOK.name());
+    String metastoreHook = sessionConf.getVar(ConfVars.METASTORE_FILTER_HOOK);
     if (!ConfVars.METASTORE_FILTER_HOOK.getDefaultValue().equals(metastoreHook) &&
         !AuthorizationMetaStoreFilterHook.class.getName().equals(metastoreHook)) {
-      LOG.warn(ConfVars.METASTORE_FILTER_HOOK.name() +
+      LOG.warn(ConfVars.METASTORE_FILTER_HOOK.varname +
           " will be ignored, since hive.security.authorization.manager" +
           " is set to instance of HiveAuthorizerFactory.");
     }
@@ -1723,6 +1736,17 @@ public class SessionState {
 
   public void setCurrentDatabase(String currentDatabase) {
     this.currentDatabase = currentDatabase;
+  }
+
+  public String getCurrentCatalog() {
+    if (currentCatalog == null) {
+      currentCatalog = MetaStoreUtils.getDefaultCatalog(getConf());
+    }
+    return currentCatalog;
+  }
+
+  public void setCurrentCatalog(String currentCatalog) {
+    this.currentCatalog = currentCatalog;
   }
 
   public void close() throws IOException {

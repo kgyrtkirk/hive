@@ -456,6 +456,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
 
     // Create temp table directory
     Warehouse wh = getWh();
+    if (tbl.getSd().getLocation() == null) {
+      // Temp tables that do not go through SemanticAnalyzer may not have location set - do it here.
+      // For example export of acid tables generates a query plan that creates a temp table.
+      tbl.getSd().setLocation(SessionState.generateTempTableLocation(conf));
+    }
     Path tblPath = wh.getDnsPath(new Path(tbl.getSd().getLocation()));
     if (tblPath == null) {
       throw new MetaException("Temp table path not set for " + tbl.getTableName());
@@ -588,7 +593,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       return false;
     }
     boolean statsPresent = false;
-    for (String stat : StatsSetupConst.supportedStats) {
+    for (String stat : StatsSetupConst.SUPPORTED_STATS) {
       String statVal = props.get(stat);
       if (statVal != null && Long.parseLong(statVal) > 0) {
         statsPresent = true;
@@ -709,7 +714,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   private static Map<String, Map<String, Table>> getTempTables(String msg) {
     SessionState ss = SessionState.get();
     if (ss == null) {
-      LOG.warn("No current SessionState, skipping temp tables for " + msg);
+      LOG.debug("No current SessionState, skipping temp tables for " + msg);
       return Collections.emptyMap();
     }
     return ss.getTempTables();

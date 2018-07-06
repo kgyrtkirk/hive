@@ -30,6 +30,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem
+                  filterExpr: l_partkey is not null (type: boolean)
                   Statistics: Num rows: 100 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -67,8 +68,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -77,6 +77,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: li
+                  filterExpr: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
                   Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -111,8 +112,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -121,6 +121,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem
+                  filterExpr: ((l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
                   Statistics: Num rows: 100 Data size: 9200 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -166,8 +167,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -302,6 +302,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem
+                  filterExpr: l_partkey is not null (type: boolean)
                   Statistics: Num rows: 100 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -339,8 +340,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -349,6 +349,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: li
+                  filterExpr: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
                   Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -384,8 +385,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -394,6 +394,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem
+                  filterExpr: ((l_shipmode = 'AIR') and (l_linenumber = 1) and l_orderkey is not null) (type: boolean)
                   Statistics: Num rows: 100 Data size: 9600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -440,8 +441,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false

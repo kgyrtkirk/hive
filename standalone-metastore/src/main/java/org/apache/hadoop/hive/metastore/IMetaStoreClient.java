@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.CmRecycleRequest;
 import org.apache.hadoop.hive.metastore.api.CmRecycleResponse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
@@ -125,6 +126,7 @@ import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.thrift.TException;
@@ -187,6 +189,21 @@ public interface IMetaStoreClient {
    */
   void createCatalog(Catalog catalog)
       throws AlreadyExistsException, InvalidObjectException, MetaException, TException;
+
+  /**
+   * Alter an existing catalog.
+   * @param catalogName the name of the catalog to alter.
+   * @param newCatalog the new catalog object.  All relevant details of the catalog should be
+   *                   set, don't rely on the system to figure out what you changed and only copy
+   *                   that in.
+   * @throws NoSuchObjectException no catalog of this name exists
+   * @throws InvalidObjectException an attempt was made to make an unsupported change (such as
+   * catalog name).
+   * @throws MetaException usually indicates a database error
+   * @throws TException general thrift exception
+   */
+  void alterCatalog(String catalogName, Catalog newCatalog)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
 
   /**
    * Get a catalog object.
@@ -2567,12 +2584,13 @@ public interface IMetaStoreClient {
 
   /**
    * @param revokePrivileges
+   * @param authorizer
    * @param objToRefresh
    * @return true on success
    * @throws MetaException
    * @throws TException
    */
-  boolean refresh_privileges(HiveObjectRef objToRefresh, PrivilegeBag grantPrivileges)
+  boolean refresh_privileges(HiveObjectRef objToRefresh, String authorizer, PrivilegeBag grantPrivileges)
       throws MetaException, TException;
 
   /**
@@ -2855,8 +2873,8 @@ public interface IMetaStoreClient {
   /**
    * Commit a transaction.  This will also unlock any locks associated with
    * this transaction.
-   * @param srcTxnid id of transaction at source which is committed and to be replicated.
-   * @param replPolicy the replication policy to identify the source cluster
+   * @param rqst Information containing the txn info and write event information
+   * of transaction at source which is committed and to be replicated
    * @throws NoSuchTxnException if the requested transaction does not exist.
    * This can result fro the transaction having timed out and been deleted by
    * the compactor.
@@ -2864,7 +2882,7 @@ public interface IMetaStoreClient {
    * aborted.  This can result from the transaction timing out.
    * @throws TException
    */
-  void replCommitTxn(long srcTxnid, String replPolicy)
+  void replCommitTxn(CommitTxnRequest rqst)
           throws NoSuchTxnException, TxnAbortedException, TException;
 
   /**
@@ -3176,6 +3194,14 @@ public interface IMetaStoreClient {
 
   @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
   FireEventResponse fireListenerEvent(FireEventRequest request) throws TException;
+
+  /**
+   * Add a event related to write operations in an ACID table.
+   * @param rqst message containing information for acid write operation.
+   * @throws TException
+   */
+  @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
+  void addWriteNotificationLog(WriteNotificationLogRequest rqst) throws TException;
 
   class IncompatibleMetastoreException extends MetaException {
     IncompatibleMetastoreException(String message) {

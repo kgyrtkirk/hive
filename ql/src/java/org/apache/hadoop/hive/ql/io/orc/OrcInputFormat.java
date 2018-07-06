@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -160,6 +161,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   InputFormatChecker, VectorizedInputFormatInterface, LlapWrappableInputFormatInterface,
   SelfDescribingInputFormatInterface, AcidInputFormat<NullWritable, OrcStruct>,
   CombineHiveInputFormat.AvoidSplitCombination, BatchToRowInputFormat {
+
+  @Override
+  public VectorizedSupport.Support[] getSupportedFeatures() {
+    return new VectorizedSupport.Support[] {VectorizedSupport.Support.DECIMAL_64};
+  }
 
   static enum SplitStrategyKind {
     HYBRID,
@@ -328,7 +334,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     List<OrcProto.Type> types = OrcUtils.getOrcTypes(schema);
     options.include(genIncludedColumns(schema, conf));
     setSearchArgument(options, types, conf, isOriginal);
-    return file.rowsOptions(options);
+    return file.rowsOptions(options, conf);
   }
 
   public static boolean isOriginal(Reader file) {
@@ -2076,9 +2082,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
     ValidWriteIdList validWriteIdList
             = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
-    LOG.debug("getReader:: Read ValidWriteIdList: " + validWriteIdList.toString()
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("getReader:: Read ValidWriteIdList: " + validWriteIdList.toString()
             + " isTransactionalTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN));
-
+      LOG.debug("Creating merger for {} and {}", split.getPath(), Arrays.toString(deltas));
+    }
     final OrcRawRecordMerger records =
         new OrcRawRecordMerger(conf, true, reader, split.isOriginal(), bucket,
             validWriteIdList, readOptions, deltas, mergerOptions);
@@ -2574,8 +2582,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     if (haveSchemaEvolutionProperties) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Using schema evolution configuration variables schema.evolution.columns " +
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Using schema evolution configuration variables schema.evolution.columns " +
             schemaEvolutionColumnNames.toString() +
             " / schema.evolution.columns.types " +
             schemaEvolutionTypeDescrs.toString() +
@@ -2617,8 +2625,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         schemaEvolutionTypeDescrs = Lists.newArrayList(schemaEvolutionTypeDescrs.subList(0, virtualColumnClipNum));
       }
 
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Using column configuration variables columns " +
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Using column configuration variables columns " +
                 schemaEvolutionColumnNames.toString() +
                 " / columns.types " +
                 schemaEvolutionTypeDescrs.toString() +

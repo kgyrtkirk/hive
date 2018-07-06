@@ -37,6 +37,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("create_catalog\n");
   }
 
+  void alter_catalog(const AlterCatalogRequest& rqst) {
+    // Your implementation goes here
+    printf("alter_catalog\n");
+  }
+
   void get_catalog(GetCatalogResponse& _return, const GetCatalogRequest& catName) {
     // Your implementation goes here
     printf("get_catalog\n");
@@ -657,7 +662,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("grant_revoke_privileges\n");
   }
 
-  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest) {
+  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest) {
     // Your implementation goes here
     printf("refresh_privileges\n");
   }
@@ -840,6 +845,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void flushCache() {
     // Your implementation goes here
     printf("flushCache\n");
+  }
+
+  void add_write_notification_log(WriteNotificationLogResponse& _return, const WriteNotificationLogRequest& rqst) {
+    // Your implementation goes here
+    printf("add_write_notification_log\n");
   }
 
   void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request) {

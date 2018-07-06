@@ -30,6 +30,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -41,12 +42,9 @@ import static org.junit.Assert.assertNotNull;
 public class TestRuntimeStats extends MetaStoreClientTest {
   private final AbstractMetaStoreService metaStore;
   private IMetaStoreClient client;
-  private String metastoreName;
 
   public TestRuntimeStats(String name, AbstractMetaStoreService metaStore) throws Exception {
-    this.metastoreName = name;
     this.metaStore = metaStore;
-    this.metaStore.start();
   }
 
   @Before
@@ -57,7 +55,11 @@ public class TestRuntimeStats extends MetaStoreClientTest {
 
   @After
   public void tearDown() throws Exception {
-    client.close();
+    try {
+      client.close();
+    } catch (Exception e) {
+      // HIVE-19729: Shallow the exceptions based on the discussion in the Jira
+    }
     client = null;
   }
 
@@ -93,9 +95,9 @@ public class TestRuntimeStats extends MetaStoreClientTest {
     objStore.setConf(metaStore.getConf());
     objStore.deleteRuntimeStats(0);
     objStore.addRuntimeStat(createStat(1));
-    Thread.sleep(2000);
+    TimeUnit.SECONDS.sleep(6);
     objStore.addRuntimeStat(createStat(2));
-    int deleted = objStore.deleteRuntimeStats(1);
+    int deleted = objStore.deleteRuntimeStats(5);
     assertEquals(1, deleted);
 
     List<RuntimeStat> all = getRuntimeStats();

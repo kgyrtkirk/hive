@@ -34,6 +34,7 @@ import org.antlr.runtime.TokenRewriteStream;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -178,9 +179,23 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     String newTableName = getTmptTableNameForExport(exportTable); //this is db.table
     Map<String, String> tblProps = new HashMap<>();
     tblProps.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, Boolean.FALSE.toString());
+    String location;
+
+    // for temporary tables we set the location to something in the session's scratch dir
+    // it has the same life cycle as the tmp table
+    try {
+      // Generate a unique ID for temp table path.
+      // This path will be fixed for the life of the temp table.
+      Path path = new Path(SessionState.getTempTableSpace(conf), UUID.randomUUID().toString());
+      path = Warehouse.getDnsPath(path, conf);
+      location = path.toString();
+    } catch (MetaException err) {
+      throw new SemanticException("Error while generating temp table path:", err);
+    }
+
     CreateTableLikeDesc ctlt = new CreateTableLikeDesc(newTableName,
         false, true, null,
-        null, null, null, null,
+        null, location, null, null,
         tblProps,
         true, //important so we get an exception on name collision
         Warehouse.getQualifiedName(exportTable.getTTable()), false);
@@ -277,7 +292,9 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     TableSpec exportTableSpec = new TableSpec(db, conf, tableTree, false, true);
     if(exportTableSpec.getPartSpec() != null) {
       StringBuilder whereClause = null;
+      int partColsIdx = -1; //keep track of corresponding col in partCols
       for(Map.Entry<String, String> ent : exportTableSpec.getPartSpec().entrySet()) {
+        partColsIdx++;
         if(ent.getValue() == null) {
           continue; //partial spec
         }
@@ -288,7 +305,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
           whereClause.append(" AND ");
         }
         whereClause.append(HiveUtils.unparseIdentifier(ent.getKey(), conf))
-            .append(" = ").append(ent.getValue());
+            .append(" = ").append(genPartValueString(partCols.get(partColsIdx).getType(), ent.getValue()));
       }
       if(whereClause != null) {
         rewrittenQueryStr.append(whereClause);
@@ -299,7 +316,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
   /**
    * Makes the exportTask run after all other tasks of the "insert into T ..." are done.
    */
-  private void addExportTask(List<Task<? extends Serializable>> rootTasks,
+  private void addExportTask(List<Task<?>> rootTasks,
       Task<ExportWork> exportTask, Task<DDLWork> alterTable) {
     for(Task<? extends  Serializable> t : rootTasks) {
       if(t.getNumChild() <= 0) {
@@ -312,8 +329,9 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       }
     }
   }
-  private List<Task<? extends Serializable>> findStatsTasks(
-      List<Task<? extends Serializable>> rootTasks, List<Task<? extends Serializable>> statsTasks) {
+
+  private List<Task<?>> findStatsTasks(
+      List<Task<?>> rootTasks, List<Task<?>> statsTasks) {
     for(Task<? extends  Serializable> t : rootTasks) {
       if (t instanceof StatsTask) {
         if(statsTasks == null) {
@@ -327,16 +345,17 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     }
     return statsTasks;
   }
-  private void removeStatsTasks(List<Task<? extends Serializable>> rootTasks) {
-    List<Task<? extends Serializable>> statsTasks = findStatsTasks(rootTasks, null);
+
+  private void removeStatsTasks(List<Task<?>> rootTasks) {
+    List<Task<?>> statsTasks = findStatsTasks(rootTasks, null);
     if(statsTasks == null) {
       return;
     }
-    for(Task<? extends Serializable> statsTask : statsTasks) {
+    for (Task<?> statsTask : statsTasks) {
       if(statsTask.getParentTasks() == null) {
         continue; //should never happen
       }
-      for(Task<? extends Serializable> t : new ArrayList<>(statsTask.getParentTasks())) {
+      for (Task<?> t : new ArrayList<>(statsTask.getParentTasks())) {
         t.removeDependentTask(statsTask);
       }
     }
@@ -519,6 +538,8 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     // references.
     // todo: this may be a perf issue as it prevents the optimizer.. or not
     HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    // Disable LLAP IO wrapper; doesn't propagate extra ACID columns correctly.
+    HiveConf.setBoolVar(conf, ConfVars.LLAP_IO_ROW_WRAPPER_ENABLED, false);
     // Parse the rewritten query string
     Context rewrittenCtx;
     try {
@@ -531,6 +552,8 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     }
     rewrittenCtx.setExplainConfig(ctx.getExplainConfig());
     rewrittenCtx.setExplainPlan(ctx.isExplainPlan());
+    rewrittenCtx.setStatsSource(ctx.getStatsSource());
+    rewrittenCtx.setPlanMapper(ctx.getPlanMapper());
     rewrittenCtx.setIsUpdateDeleteMerge(true);
     rewrittenCtx.setCmd(rewrittenQueryStr.toString());
 
@@ -765,7 +788,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
 
   /**
    * This allows us to take an arbitrary ASTNode and turn it back into SQL that produced it.
-   * Since HiveLexer.g is written such that it strips away any ` (back ticks) around 
+   * Since HiveLexer.g is written such that it strips away any ` (back ticks) around
    * quoted identifiers we need to add those back to generated SQL.
    * Additionally, the parser only produces tokens of type Identifier and never
    * QuotedIdentifier (HIVE-6013).  So here we just quote all identifiers.
@@ -803,7 +826,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
   /**
    * This allows us to take an arbitrary ASTNode and turn it back into SQL that produced it without
    * needing to understand what it is (except for QuotedIdentifiers)
-   * 
+   *
    */
   private String getMatchedText(ASTNode n) {
     quotedIdenfierHelper.visit(n);
@@ -1091,10 +1114,10 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       .append("\n  SELECT cardinality_violation(")
       .append(getSimpleTableName(target)).append(".ROW__ID");
       addPartitionColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, target);
-    
+
       rewrittenQueryStr.append(")\n WHERE ").append(onClauseAsString)
       .append(" GROUP BY ").append(getSimpleTableName(target)).append(".ROW__ID");
-    
+
       addPartitionColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, target);
 
       rewrittenQueryStr.append(" HAVING count(*) > 1");

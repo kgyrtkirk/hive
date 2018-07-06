@@ -21,8 +21,8 @@ import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
 
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
@@ -32,7 +32,6 @@ import org.junit.runners.Parameterized.Parameters;
 import java.io.File;
 import java.util.List;
 
-@Ignore("HIVE-19509: Disable tests that are failing continuously")
 @RunWith(Parameterized.class)
 public class TestMiniDruidKafkaCliDriver {
 
@@ -57,6 +56,7 @@ public class TestMiniDruidKafkaCliDriver {
     this.qfile = qfile;
   }
 
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testCliDriver() throws Exception {
     adapter.runTest(name, qfile);

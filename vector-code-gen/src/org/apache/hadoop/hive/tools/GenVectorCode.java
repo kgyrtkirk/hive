@@ -269,14 +269,16 @@ public class GenVectorCode extends Task {
       {"ColumnDivideScalar", "Modulo", "double", "long", "%", "CHECKED"},
       {"ColumnDivideScalar", "Modulo", "double", "double", "%"},
       {"ColumnDivideScalar", "Modulo", "double", "double", "%", "CHECKED"},
-      {"ScalarDivideColumn", "Modulo", "long", "long", "%"},
-      {"ScalarDivideColumn", "Modulo", "long", "long", "%", "CHECKED"},
+      {"ScalarDivideColumn", "Modulo", "long", "long", "%", "MANUAL_DIVIDE_BY_ZERO_CHECK"},
+      {"ScalarDivideColumn", "Modulo", "long", "long", "%", "MANUAL_DIVIDE_BY_ZERO_CHECK,CHECKED"},
       {"ScalarDivideColumn", "Modulo", "long", "double", "%"},
       {"ScalarDivideColumn", "Modulo", "long", "double", "%", "CHECKED"},
       {"ScalarDivideColumn", "Modulo", "double", "long", "%"},
       {"ScalarDivideColumn", "Modulo", "double", "long", "%", "CHECKED"},
       {"ScalarDivideColumn", "Modulo", "double", "double", "%"},
       {"ScalarDivideColumn", "Modulo", "double", "double", "%", "CHECKED"},
+      {"ColumnDivideColumn", "Modulo", "long", "long", "%", "MANUAL_DIVIDE_BY_ZERO_CHECK"},
+      {"ColumnDivideColumn", "Modulo", "long", "long", "%", "MANUAL_DIVIDE_BY_ZERO_CHECK,CHECKED"},
       {"ColumnDivideColumn", "Modulo", "long", "double", "%"},
       {"ColumnDivideColumn", "Modulo", "long", "double", "%", "CHECKED"},
       {"ColumnDivideColumn", "Modulo", "double", "long", "%"},
@@ -1470,17 +1472,6 @@ public class GenVectorCode extends Task {
 
   private void generateFilterTruncStringColumnBetween(String[] tdesc) throws IOException {
     String truncStringTypeName = tdesc[1];
-    String truncStringHiveType;
-    String truncStringHiveGetBytes;
-    if ("Char".equals(truncStringTypeName)) {
-      truncStringHiveType = "HiveChar";
-      truncStringHiveGetBytes = "getStrippedValue().getBytes()";
-    } else if ("VarChar".equals(truncStringTypeName)) {
-      truncStringHiveType = "HiveVarchar";
-      truncStringHiveGetBytes = "getValue().getBytes()";
-    } else {
-      throw new Error("Unsupported string type: " + truncStringTypeName);
-    }
     String optionalNot = tdesc[2];
     String className = "Filter" + truncStringTypeName + "Column" + (optionalNot.equals("!") ? "Not" : "")
         + "Between";
@@ -1488,8 +1479,6 @@ public class GenVectorCode extends Task {
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<TruncStringTypeName>", truncStringTypeName);
-    templateString = templateString.replaceAll("<TruncStringHiveType>", truncStringHiveType);
-    templateString = templateString.replaceAll("<TruncStringHiveGetBytes>", truncStringHiveGetBytes);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<OptionalNot>", optionalNot);
 
@@ -1584,13 +1573,13 @@ public class GenVectorCode extends Task {
       getValueMethod = ".getBytes()";
       conversionMethod = "";
     } else if (operandType.equals("char")) {
-      defaultValue = "new HiveChar(\"\", 1)";
+      defaultValue = "new byte[0]";
       vectorType = "byte[]";
       getPrimitiveMethod = "getHiveChar";
       getValueMethod = ".getStrippedValue().getBytes()";  // Does vectorization use stripped char values?
       conversionMethod = "";
     } else if (operandType.equals("varchar")) {
-      defaultValue = "new HiveVarchar(\"\", 1)";
+      defaultValue = "new byte[0]";
       vectorType = "byte[]";
       getPrimitiveMethod = "getHiveVarchar";
       getValueMethod = ".getValue().getBytes()";
@@ -1600,14 +1589,14 @@ public class GenVectorCode extends Task {
       vectorType = "long";
       getPrimitiveMethod = "getDate";
       getValueMethod = "";
-      conversionMethod = "DateWritable.dateToDays";
+      conversionMethod = "DateWritableV2.dateToDays";
       // Special case - Date requires its own specific BetweenDynamicValue class, but derives from FilterLongColumnBetween
       typeName = "Long";
     } else if (operandType.equals("timestamp")) {
       defaultValue = "new Timestamp(0)";
       vectorType = "Timestamp";
       getPrimitiveMethod = "getTimestamp";
-      getValueMethod = "";
+      getValueMethod = ".toSqlTimestamp()";
       conversionMethod = "";
     } else {
       throw new IllegalArgumentException("Type " + operandType + " not supported");
@@ -2110,17 +2099,6 @@ public class GenVectorCode extends Task {
   private void generateStringCompareTruncStringScalar(String[] tdesc, String className, String baseClassName)
       throws IOException {
     String truncStringTypeName = tdesc[1];
-    String truncStringHiveType;
-    String truncStringHiveGetBytes;
-    if ("Char".equals(truncStringTypeName)) {
-      truncStringHiveType = "HiveChar";
-      truncStringHiveGetBytes = "getStrippedValue().getBytes()";
-    } else if ("VarChar".equals(truncStringTypeName)) {
-      truncStringHiveType = "HiveVarchar";
-      truncStringHiveGetBytes = "getValue().getBytes()";
-    } else {
-      throw new Error("Unsupported string type: " + truncStringTypeName);
-    }
     String operatorSymbol = tdesc[3];
     // Read the template into a string;
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
@@ -2130,8 +2108,6 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
     templateString = templateString.replaceAll("<TruncStringTypeName>", truncStringTypeName);
-    templateString = templateString.replaceAll("<TruncStringHiveType>", truncStringHiveType);
-    templateString = templateString.replaceAll("<TruncStringHiveGetBytes>", truncStringHiveGetBytes);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }
@@ -2150,7 +2126,7 @@ public class GenVectorCode extends Task {
     String inputColumnVectorType = this.getColumnVectorType(operandType);
     String outputColumnVectorType = inputColumnVectorType;
     String returnType = operandType;
-    boolean checked = (tdesc.length == 3 && "CHECKED".equals(tdesc[2]));
+    boolean checked = (tdesc.length == 3 && tdesc[2].contains("CHECKED"));
     String className = getCamelCaseType(operandType) + "ColUnaryMinus"
         + (checked ? "Checked" : "");
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
@@ -2368,7 +2344,7 @@ public class GenVectorCode extends Task {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
-    boolean checked = tdesc.length == 6 && "CHECKED".equals(tdesc[5]);
+    boolean checked = tdesc.length == 6 && tdesc[5].contains("CHECKED");
     String className = getCamelCaseType(operandType1)
         + "Col" + operatorName + getCamelCaseType(operandType2) + "Column"
         + (checked ? "Checked" : "");
@@ -2761,6 +2737,7 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
     templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
+
     templateString = evaluateIfDefined(templateString, ifDefined);
 
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
@@ -2969,7 +2946,7 @@ public class GenVectorCode extends Task {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
-    boolean checked = tdesc.length == 6 && "CHECKED".equals(tdesc[5]);
+    boolean checked = tdesc.length == 6 && tdesc[5].contains("CHECKED");
     String className = getCamelCaseType(operandType1)
         + "Col" + operatorName + getCamelCaseType(operandType2) + "Scalar"
         + (checked ? "Checked" : "");
@@ -3065,7 +3042,7 @@ public class GenVectorCode extends Task {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
-    boolean checked = (tdesc.length == 6 && "CHECKED".equals(tdesc[5]));
+    boolean checked = (tdesc.length == 6 && tdesc[5].contains("CHECKED"));
     String className = getCamelCaseType(operandType1)
         + "Scalar" + operatorName + getCamelCaseType(operandType2) + "Column"
         + (checked ? "Checked" : "");
@@ -3182,8 +3159,7 @@ public class GenVectorCode extends Task {
   private String getDTIScalarColumnDisplayBody(String type) {
     if (type.equals("date")) {
       return
-          "Date dt = new Date(0);" +
-          "    dt.setTime(DateWritable.daysToMillis((int) value));\n" +
+          "Date dt = Date.ofEpochMilli(DateWritableV2.daysToMillis((int) value));\n" +
           "    return  \"date \" + dt.toString() + \", \" + getColumnParamString(0, colNum);";
     } else {
       return
@@ -3194,8 +3170,7 @@ public class GenVectorCode extends Task {
   private String getDTIColumnScalarDisplayBody(String type) {
     if (type.equals("date")) {
       return
-          "Date dt = new Date(0);" +
-          "    dt.setTime(DateWritable.daysToMillis((int) value));\n" +
+          "Date dt = Date.ofEpochMilli(DateWritableV2.daysToMillis((int) value));\n" +
           "    return getColumnParamString(0, colNum) + \", date \" + dt.toString();";
     } else {
       return
@@ -3557,17 +3532,75 @@ public class GenVectorCode extends Task {
     return result;
   }
 
-  private int doIfDefinedStatement(String[] lines, int index, Set<String> definedSet,
+  private boolean matchesDefinedStrings(Set<String> defineSet, Set<String> newIfDefinedSet,
+      IfDefinedMode ifDefinedMode) {
+    switch (ifDefinedMode) {
+    case SINGLE:
+    case AND_ALL:
+      for (String candidateString : newIfDefinedSet) {
+        if (!defineSet.contains(candidateString)) {
+          return false;
+        }
+      }
+      return true;
+    case OR_ANY:
+      for (String candidateString : newIfDefinedSet) {
+        if (defineSet.contains(candidateString)) {
+          return true;
+        }
+      }
+      return false;
+    default:
+      throw new RuntimeException("Unexpected if defined mode " + ifDefinedMode);
+    }
+  }
+
+  public enum IfDefinedMode {
+    SINGLE,
+    AND_ALL,
+    OR_ANY;
+  }
+
+  private IfDefinedMode parseIfDefinedMode(String newIfDefinedString, Set<String> newIfDefinedSet) {
+    final String[] newIfDefinedStrings;
+    final IfDefinedMode ifDefinedMode;
+    int index = newIfDefinedString.indexOf("&&");
+    if (index != -1) {
+      newIfDefinedStrings = newIfDefinedString.split("&&");
+      ifDefinedMode = IfDefinedMode.AND_ALL;
+    } else {
+      index = newIfDefinedString.indexOf("||");
+      if (index == -1) {
+
+        // One element.
+        newIfDefinedSet.add(newIfDefinedString);
+        return IfDefinedMode.SINGLE;
+      } else {
+        newIfDefinedStrings = newIfDefinedString.split("\\|\\|");
+        ifDefinedMode = IfDefinedMode.OR_ANY;
+      }
+    }
+    for (String newDefinedString : newIfDefinedStrings) {
+      newIfDefinedSet.add(newDefinedString);
+    }
+    return ifDefinedMode;
+  }
+
+  private int doIfDefinedStatement(String[] lines, int index, Set<String> desiredIfDefinedSet,
       boolean outerInclude, StringBuilder sb) {
     String ifLine = lines[index];
     final int ifLineNumber = index + 1;
-    String commaDefinedString = ifLine.substring("#IF ".length());
-    boolean includeBody = containsDefinedStrings(definedSet, commaDefinedString);
+
+    String ifDefinedString = ifLine.substring("#IF ".length());
+    Set<String> ifDefinedSet = new HashSet<String>();
+    IfDefinedMode ifDefinedMode = parseIfDefinedMode(ifDefinedString, ifDefinedSet);
+    boolean includeBody = matchesDefinedStrings(desiredIfDefinedSet, ifDefinedSet, ifDefinedMode);
+
     index++;
     final int end = lines.length;
     while (true) {
       if (index >= end) {
-        throw new RuntimeException("Unmatched #IF at line " + index + " for " + commaDefinedString);
+        throw new RuntimeException("Unmatched #IF at line " + index + " for " + ifDefinedString);
       }
       String line = lines[index];
       if (line.length() == 0 || line.charAt(0) != '#') {
@@ -3582,7 +3615,9 @@ public class GenVectorCode extends Task {
       // A pound # statement (IF/ELSE/ENDIF).
       if (line.startsWith("#IF ")) {
         // Recurse.
-        index = doIfDefinedStatement(lines, index, definedSet, outerInclude && includeBody, sb);
+        index =
+            doIfDefinedStatement(
+                lines, index, desiredIfDefinedSet, outerInclude && includeBody, sb);
       } else if (line.equals("#ELSE")) {
         // Flip inclusion.
         includeBody = !includeBody;
@@ -3591,10 +3626,10 @@ public class GenVectorCode extends Task {
         throw new RuntimeException("Missing defined strings with #ENDIF on line " + (index + 1));
       } else if (line.startsWith("#ENDIF ")) {
         String endCommaDefinedString = line.substring("#ENDIF ".length());
-        if (!commaDefinedString.equals(endCommaDefinedString)) {
+        if (!ifDefinedString.equals(endCommaDefinedString)) {
           throw new RuntimeException(
               "#ENDIF defined names \"" + endCommaDefinedString + "\" (line " + ifLineNumber +
-              " do not match \"" + commaDefinedString + "\" (line " + (index + 1) + ")");
+              " do not match \"" + ifDefinedString + "\" (line " + (index + 1) + ")");
         }
         return ++index;
       } else {
@@ -3805,9 +3840,9 @@ public class GenVectorCode extends Task {
     } else if (primitiveType.equals("interval_day_time")) {
       return "HiveIntervalDayTimeWritable";
     } else if (primitiveType.equals("date")) {
-      return "HiveDateWritable";
+      return "DateWritableV2";
     } else if (primitiveType.equals("timestamp")) {
-      return "HiveTimestampWritable";
+      return "TimestampWritable";
     }
     throw new Exception("Unimplemented primitive output writable: " + primitiveType);
   }

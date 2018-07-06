@@ -170,7 +170,9 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	1                   
-	totalSize           	295544              
+	numRows             	12288               
+	rawDataSize         	0                   
+	totalSize           	295638              
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -205,9 +207,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-                  Statistics: Num rows: 5863 Data size: 2955440 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12288 Data size: 2956380 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 5863 Data size: 2955440 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 12288 Data size: 2956380 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -376,7 +378,9 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	1                   
-	totalSize           	1625                
+	numRows             	2                   
+	rawDataSize         	0                   
+	totalSize           	1652                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -411,9 +415,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-                  Statistics: Num rows: 32 Data size: 16250 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 16520 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 32 Data size: 16250 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 16520 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -509,7 +513,9 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	2                   
-	totalSize           	3250                
+	numRows             	4                   
+	rawDataSize         	0                   
+	totalSize           	3304                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -544,9 +550,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-                  Statistics: Num rows: 64 Data size: 32500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 33040 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 64 Data size: 32500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4 Data size: 33040 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -638,7 +644,9 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	3                   
-	totalSize           	298795              
+	numRows             	12292               
+	rawDataSize         	0                   
+	totalSize           	298943              
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -673,9 +681,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-                  Statistics: Num rows: 5928 Data size: 2987950 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12292 Data size: 2989430 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 5928 Data size: 2987950 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 12292 Data size: 2989430 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -906,17 +914,18 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sp
-                  Statistics: Num rows: 99 Data size: 58912 Basic stats: COMPLETE Column stats: COMPLETE
+                  filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
+                  Statistics: Num rows: 99 Data size: 58912 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 99 Data size: 58912 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 99 Data size: 58912 Basic stats: PARTIAL Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -927,10 +936,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

@@ -291,6 +291,8 @@ class Catalog;
 
 class CreateCatalogRequest;
 
+class AlterCatalogRequest;
+
 class GetCatalogRequest;
 
 class GetCatalogResponse;
@@ -443,6 +445,8 @@ class AbortTxnsRequest;
 
 class CommitTxnRequest;
 
+class WriteEventInfo;
+
 class ReplTblWriteIdStateRequest;
 
 class GetValidWriteIdsRequest;
@@ -514,6 +518,10 @@ class FireEventRequestData;
 class FireEventRequest;
 
 class FireEventResponse;
+
+class WriteNotificationLogRequest;
+
+class WriteNotificationLogResponse;
 
 class MetadataPpdResult;
 
@@ -1622,11 +1630,12 @@ inline std::ostream& operator<<(std::ostream& out, const PrivilegeGrantInfo& obj
 }
 
 typedef struct _HiveObjectPrivilege__isset {
-  _HiveObjectPrivilege__isset() : hiveObject(false), principalName(false), principalType(false), grantInfo(false) {}
+  _HiveObjectPrivilege__isset() : hiveObject(false), principalName(false), principalType(false), grantInfo(false), authorizer(false) {}
   bool hiveObject :1;
   bool principalName :1;
   bool principalType :1;
   bool grantInfo :1;
+  bool authorizer :1;
 } _HiveObjectPrivilege__isset;
 
 class HiveObjectPrivilege {
@@ -1634,7 +1643,7 @@ class HiveObjectPrivilege {
 
   HiveObjectPrivilege(const HiveObjectPrivilege&);
   HiveObjectPrivilege& operator=(const HiveObjectPrivilege&);
-  HiveObjectPrivilege() : principalName(), principalType((PrincipalType::type)0) {
+  HiveObjectPrivilege() : principalName(), principalType((PrincipalType::type)0), authorizer() {
   }
 
   virtual ~HiveObjectPrivilege() throw();
@@ -1642,6 +1651,7 @@ class HiveObjectPrivilege {
   std::string principalName;
   PrincipalType::type principalType;
   PrivilegeGrantInfo grantInfo;
+  std::string authorizer;
 
   _HiveObjectPrivilege__isset __isset;
 
@@ -1653,6 +1663,8 @@ class HiveObjectPrivilege {
 
   void __set_grantInfo(const PrivilegeGrantInfo& val);
 
+  void __set_authorizer(const std::string& val);
+
   bool operator == (const HiveObjectPrivilege & rhs) const
   {
     if (!(hiveObject == rhs.hiveObject))
@@ -1662,6 +1674,8 @@ class HiveObjectPrivilege {
     if (!(principalType == rhs.principalType))
       return false;
     if (!(grantInfo == rhs.grantInfo))
+      return false;
+    if (!(authorizer == rhs.authorizer))
       return false;
     return true;
   }
@@ -2439,6 +2453,58 @@ class CreateCatalogRequest {
 void swap(CreateCatalogRequest &a, CreateCatalogRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const CreateCatalogRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _AlterCatalogRequest__isset {
+  _AlterCatalogRequest__isset() : name(false), newCat(false) {}
+  bool name :1;
+  bool newCat :1;
+} _AlterCatalogRequest__isset;
+
+class AlterCatalogRequest {
+ public:
+
+  AlterCatalogRequest(const AlterCatalogRequest&);
+  AlterCatalogRequest& operator=(const AlterCatalogRequest&);
+  AlterCatalogRequest() : name() {
+  }
+
+  virtual ~AlterCatalogRequest() throw();
+  std::string name;
+  Catalog newCat;
+
+  _AlterCatalogRequest__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_newCat(const Catalog& val);
+
+  bool operator == (const AlterCatalogRequest & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(newCat == rhs.newCat))
+      return false;
+    return true;
+  }
+  bool operator != (const AlterCatalogRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AlterCatalogRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AlterCatalogRequest &a, AlterCatalogRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const AlterCatalogRequest& obj)
 {
   obj.printTo(out);
   return out;
@@ -6925,8 +6991,9 @@ inline std::ostream& operator<<(std::ostream& out, const AbortTxnsRequest& obj)
 }
 
 typedef struct _CommitTxnRequest__isset {
-  _CommitTxnRequest__isset() : replPolicy(false) {}
+  _CommitTxnRequest__isset() : replPolicy(false), writeEventInfos(false) {}
   bool replPolicy :1;
+  bool writeEventInfos :1;
 } _CommitTxnRequest__isset;
 
 class CommitTxnRequest {
@@ -6940,12 +7007,15 @@ class CommitTxnRequest {
   virtual ~CommitTxnRequest() throw();
   int64_t txnid;
   std::string replPolicy;
+  std::vector<WriteEventInfo>  writeEventInfos;
 
   _CommitTxnRequest__isset __isset;
 
   void __set_txnid(const int64_t val);
 
   void __set_replPolicy(const std::string& val);
+
+  void __set_writeEventInfos(const std::vector<WriteEventInfo> & val);
 
   bool operator == (const CommitTxnRequest & rhs) const
   {
@@ -6954,6 +7024,10 @@ class CommitTxnRequest {
     if (__isset.replPolicy != rhs.__isset.replPolicy)
       return false;
     else if (__isset.replPolicy && !(replPolicy == rhs.replPolicy))
+      return false;
+    if (__isset.writeEventInfos != rhs.__isset.writeEventInfos)
+      return false;
+    else if (__isset.writeEventInfos && !(writeEventInfos == rhs.writeEventInfos))
       return false;
     return true;
   }
@@ -6972,6 +7046,90 @@ class CommitTxnRequest {
 void swap(CommitTxnRequest &a, CommitTxnRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const CommitTxnRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WriteEventInfo__isset {
+  _WriteEventInfo__isset() : partition(false), tableObj(false), partitionObj(false) {}
+  bool partition :1;
+  bool tableObj :1;
+  bool partitionObj :1;
+} _WriteEventInfo__isset;
+
+class WriteEventInfo {
+ public:
+
+  WriteEventInfo(const WriteEventInfo&);
+  WriteEventInfo& operator=(const WriteEventInfo&);
+  WriteEventInfo() : writeId(0), database(), table(), files(), partition(), tableObj(), partitionObj() {
+  }
+
+  virtual ~WriteEventInfo() throw();
+  int64_t writeId;
+  std::string database;
+  std::string table;
+  std::string files;
+  std::string partition;
+  std::string tableObj;
+  std::string partitionObj;
+
+  _WriteEventInfo__isset __isset;
+
+  void __set_writeId(const int64_t val);
+
+  void __set_database(const std::string& val);
+
+  void __set_table(const std::string& val);
+
+  void __set_files(const std::string& val);
+
+  void __set_partition(const std::string& val);
+
+  void __set_tableObj(const std::string& val);
+
+  void __set_partitionObj(const std::string& val);
+
+  bool operator == (const WriteEventInfo & rhs) const
+  {
+    if (!(writeId == rhs.writeId))
+      return false;
+    if (!(database == rhs.database))
+      return false;
+    if (!(table == rhs.table))
+      return false;
+    if (!(files == rhs.files))
+      return false;
+    if (__isset.partition != rhs.__isset.partition)
+      return false;
+    else if (__isset.partition && !(partition == rhs.partition))
+      return false;
+    if (__isset.tableObj != rhs.__isset.tableObj)
+      return false;
+    else if (__isset.tableObj && !(tableObj == rhs.tableObj))
+      return false;
+    if (__isset.partitionObj != rhs.__isset.partitionObj)
+      return false;
+    else if (__isset.partitionObj && !(partitionObj == rhs.partitionObj))
+      return false;
+    return true;
+  }
+  bool operator != (const WriteEventInfo &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WriteEventInfo & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WriteEventInfo &a, WriteEventInfo &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WriteEventInfo& obj)
 {
   obj.printTo(out);
   return out;
@@ -8975,9 +9133,10 @@ inline std::ostream& operator<<(std::ostream& out, const NotificationEventsCount
 }
 
 typedef struct _InsertEventRequestData__isset {
-  _InsertEventRequestData__isset() : replace(false), filesAddedChecksum(false) {}
+  _InsertEventRequestData__isset() : replace(false), filesAddedChecksum(false), subDirectoryList(false) {}
   bool replace :1;
   bool filesAddedChecksum :1;
+  bool subDirectoryList :1;
 } _InsertEventRequestData__isset;
 
 class InsertEventRequestData {
@@ -8992,6 +9151,7 @@ class InsertEventRequestData {
   bool replace;
   std::vector<std::string>  filesAdded;
   std::vector<std::string>  filesAddedChecksum;
+  std::vector<std::string>  subDirectoryList;
 
   _InsertEventRequestData__isset __isset;
 
@@ -9000,6 +9160,8 @@ class InsertEventRequestData {
   void __set_filesAdded(const std::vector<std::string> & val);
 
   void __set_filesAddedChecksum(const std::vector<std::string> & val);
+
+  void __set_subDirectoryList(const std::vector<std::string> & val);
 
   bool operator == (const InsertEventRequestData & rhs) const
   {
@@ -9012,6 +9174,10 @@ class InsertEventRequestData {
     if (__isset.filesAddedChecksum != rhs.__isset.filesAddedChecksum)
       return false;
     else if (__isset.filesAddedChecksum && !(filesAddedChecksum == rhs.filesAddedChecksum))
+      return false;
+    if (__isset.subDirectoryList != rhs.__isset.subDirectoryList)
+      return false;
+    else if (__isset.subDirectoryList && !(subDirectoryList == rhs.subDirectoryList))
       return false;
     return true;
   }
@@ -9193,6 +9359,114 @@ class FireEventResponse {
 void swap(FireEventResponse &a, FireEventResponse &b);
 
 inline std::ostream& operator<<(std::ostream& out, const FireEventResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WriteNotificationLogRequest__isset {
+  _WriteNotificationLogRequest__isset() : partitionVals(false) {}
+  bool partitionVals :1;
+} _WriteNotificationLogRequest__isset;
+
+class WriteNotificationLogRequest {
+ public:
+
+  WriteNotificationLogRequest(const WriteNotificationLogRequest&);
+  WriteNotificationLogRequest& operator=(const WriteNotificationLogRequest&);
+  WriteNotificationLogRequest() : txnId(0), writeId(0), db(), table() {
+  }
+
+  virtual ~WriteNotificationLogRequest() throw();
+  int64_t txnId;
+  int64_t writeId;
+  std::string db;
+  std::string table;
+  InsertEventRequestData fileInfo;
+  std::vector<std::string>  partitionVals;
+
+  _WriteNotificationLogRequest__isset __isset;
+
+  void __set_txnId(const int64_t val);
+
+  void __set_writeId(const int64_t val);
+
+  void __set_db(const std::string& val);
+
+  void __set_table(const std::string& val);
+
+  void __set_fileInfo(const InsertEventRequestData& val);
+
+  void __set_partitionVals(const std::vector<std::string> & val);
+
+  bool operator == (const WriteNotificationLogRequest & rhs) const
+  {
+    if (!(txnId == rhs.txnId))
+      return false;
+    if (!(writeId == rhs.writeId))
+      return false;
+    if (!(db == rhs.db))
+      return false;
+    if (!(table == rhs.table))
+      return false;
+    if (!(fileInfo == rhs.fileInfo))
+      return false;
+    if (__isset.partitionVals != rhs.__isset.partitionVals)
+      return false;
+    else if (__isset.partitionVals && !(partitionVals == rhs.partitionVals))
+      return false;
+    return true;
+  }
+  bool operator != (const WriteNotificationLogRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WriteNotificationLogRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WriteNotificationLogRequest &a, WriteNotificationLogRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WriteNotificationLogRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class WriteNotificationLogResponse {
+ public:
+
+  WriteNotificationLogResponse(const WriteNotificationLogResponse&);
+  WriteNotificationLogResponse& operator=(const WriteNotificationLogResponse&);
+  WriteNotificationLogResponse() {
+  }
+
+  virtual ~WriteNotificationLogResponse() throw();
+
+  bool operator == (const WriteNotificationLogResponse & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const WriteNotificationLogResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WriteNotificationLogResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WriteNotificationLogResponse &a, WriteNotificationLogResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WriteNotificationLogResponse& obj)
 {
   obj.printTo(out);
   return out;

@@ -1820,15 +1820,16 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_1_default.testpart1: 240
    RECORDS_OUT_INTERMEDIATE_Map_1: 240
    RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
-   RECORDS_OUT_OPERATOR_FS_5: 74
-   RECORDS_OUT_OPERATOR_FS_6: 240
-   RECORDS_OUT_OPERATOR_GBY_3: 74
+   RECORDS_OUT_OPERATOR_FS_12: 240
+   RECORDS_OUT_OPERATOR_FS_9: 74
+   RECORDS_OUT_OPERATOR_GBY_7: 74
    RECORDS_OUT_OPERATOR_MAP_0: 0
-   RECORDS_OUT_OPERATOR_RS_7: 240
-   RECORDS_OUT_OPERATOR_SEL_4: 74
-   RECORDS_OUT_OPERATOR_SEL_5: 240
-   RECORDS_OUT_OPERATOR_SEL_6: 240
+   RECORDS_OUT_OPERATOR_RS_14: 240
+   RECORDS_OUT_OPERATOR_SEL_11: 240
+   RECORDS_OUT_OPERATOR_SEL_13: 240
+   RECORDS_OUT_OPERATOR_SEL_8: 74
    RECORDS_OUT_OPERATOR_TS_0: 240
+   TOTAL_TABLE_ROWS_WRITTEN: 240
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 922
    NUM_DECODED_BATCHES: 148
@@ -1858,6 +1859,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: v is not null (type: boolean)
                   Statistics: Num rows: 1000 Data size: 188000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: k (type: int), v (type: string)
@@ -1890,6 +1892,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
+                  filterExpr: v is not null (type: boolean)
                   Statistics: Num rows: 240 Data size: 45120 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: k (type: int), v (type: string)

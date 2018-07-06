@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
@@ -33,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.GenerationSpec;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -45,17 +48,22 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 
 import junit.framework.Assert;
 
@@ -222,34 +230,28 @@ public class TestVectorCastStatement {
     }
   }
 
+  private boolean needsValidDataTypeData(TypeInfo typeInfo) {
+    PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+    if (primitiveCategory == PrimitiveCategory.STRING ||
+        primitiveCategory == PrimitiveCategory.CHAR ||
+        primitiveCategory == PrimitiveCategory.VARCHAR ||
+        primitiveCategory == PrimitiveCategory.BINARY) {
+      return false;
+    }
+    return true;
+  }
+
   private void doIfTestOneCast(Random random, String typeName,
       DataTypePhysicalVariation dataTypePhysicalVariation,
       PrimitiveCategory targetPrimitiveCategory)
           throws Exception {
 
     TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+    PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
 
     boolean isDecimal64 = (dataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64);
     final int decimal64Scale =
         (isDecimal64 ? ((DecimalTypeInfo) typeInfo).getScale() : 0);
-
-    List<String> explicitTypeNameList = new ArrayList<String>();
-    List<DataTypePhysicalVariation> explicitDataTypePhysicalVariationList = new ArrayList<DataTypePhysicalVariation>();
-    explicitTypeNameList.add(typeName);
-    explicitDataTypePhysicalVariationList.add(dataTypePhysicalVariation);
-
-    VectorRandomRowSource rowSource = new VectorRandomRowSource();
-
-    rowSource.initExplicitSchema(
-        random, explicitTypeNameList, /* maxComplexDepth */ 0, /* allowNull */ true,
-        explicitDataTypePhysicalVariationList);
-
-    List<String> columns = new ArrayList<String>();
-    columns.add("col0");
-    ExprNodeColumnDesc col1Expr = new ExprNodeColumnDesc(typeInfo, "col0", "table", false);
-
-    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
-    children.add(col1Expr);
 
     //----------------------------------------------------------------------------------------------
 
@@ -267,6 +269,34 @@ public class TestVectorCastStatement {
     TypeInfo targetTypeInfo = TypeInfoUtils.getTypeInfoFromTypeString(targetTypeName);
 
     //----------------------------------------------------------------------------------------------
+
+    GenerationSpec generationSpec;
+    if (needsValidDataTypeData(targetTypeInfo) &&
+        (primitiveCategory == PrimitiveCategory.STRING ||
+         primitiveCategory == PrimitiveCategory.CHAR ||
+         primitiveCategory == PrimitiveCategory.VARCHAR)) {
+      generationSpec = GenerationSpec.createStringFamilyOtherTypeValue(typeInfo, targetTypeInfo);
+    } else {
+      generationSpec = GenerationSpec.createSameType(typeInfo);
+    }
+
+    List<GenerationSpec> generationSpecList = new ArrayList<GenerationSpec>();
+    List<DataTypePhysicalVariation> explicitDataTypePhysicalVariationList = new ArrayList<DataTypePhysicalVariation>();
+    generationSpecList.add(generationSpec);
+    explicitDataTypePhysicalVariationList.add(dataTypePhysicalVariation);
+
+    VectorRandomRowSource rowSource = new VectorRandomRowSource();
+
+    rowSource.initGenerationSpecSchema(
+        random, generationSpecList, /* maxComplexDepth */ 0, /* allowNull */ true,
+        explicitDataTypePhysicalVariationList);
+
+    List<String> columns = new ArrayList<String>();
+    columns.add("col0");
+    ExprNodeColumnDesc col1Expr = new ExprNodeColumnDesc(typeInfo, "col0", "table", false);
+
+    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
+    children.add(col1Expr);
 
     String[] columnNames = columns.toArray(new String[0]);
 
@@ -414,9 +444,12 @@ public class TestVectorCastStatement {
 
   private void extractResultObjects(VectorizedRowBatch batch, int rowIndex,
       VectorExtractRow resultVectorExtractRow, Object[] scrqtchRow, Object[] resultObjects) {
-    // UNDONE: selectedInUse
-    for (int i = 0; i < batch.size; i++) {
-      resultVectorExtractRow.extractRow(batch, i, scrqtchRow);
+
+    boolean selectedInUse = batch.selectedInUse;
+    int[] selected = batch.selected;
+    for (int logicalIndex = 0; logicalIndex < batch.size; logicalIndex++) {
+      final int batchIndex = (selectedInUse ? selected[logicalIndex] : logicalIndex);
+      resultVectorExtractRow.extractRow(batch, batchIndex, scrqtchRow);
 
       // UNDONE: Need to copy the object.
       resultObjects[rowIndex++] = scrqtchRow[0];

@@ -316,6 +316,9 @@ public class HiveConf extends Configuration {
   public static final String HIVE_SERVER2_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME =
       "hive.server2.authentication.ldap.userMembershipKey";
 
+  public static final String HIVE_SPARK_SUBMIT_CLIENT = "spark-submit";
+  public static final String HIVE_SPARK_LAUNCHER_CLIENT = "spark-launcher";
+
   /**
    * dbVars are the parameters can be set per database. If these
    * parameters are set as a database property, when switching to that
@@ -463,7 +466,8 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.DAYS),
         "TTL of dump dirs before cleanup."),
     REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
-        "Indicates whether replication dump only metadata information or data + metadata."),
+        "Indicates whether replication dump only metadata information or data + metadata. \n"
+          + "This config makes hive.repl.include.external.tables config ineffective."),
     REPL_DUMP_INCLUDE_ACID_TABLES("hive.repl.dump.include.acid.tables", false,
         "Indicates if repl dump should include information about ACID tables. It should be \n"
             + "used in conjunction with 'hive.repl.dump.metadata.only' to enable copying of \n"
@@ -479,6 +483,11 @@ public class HiveConf extends Configuration {
     REPL_ADD_RAW_RESERVED_NAMESPACE("hive.repl.add.raw.reserved.namespace", false,
         "For TDE with same encryption keys on source and target, allow Distcp super user to access \n"
             + "the raw bytes from filesystem without decrypting on source and then encrypting on target."),
+    REPL_INCLUDE_EXTERNAL_TABLES("hive.repl.include.external.tables", false,
+        "Indicates if repl dump should include information about external tables. It should be \n"
+          + "used in conjunction with 'hive.repl.dump.metadata.only' set to false. if 'hive.repl.dump.metadata.only' \n"
+          + " is set to true then this config parameter has no effect as external table meta data is flushed \n"
+          + " always by default."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
@@ -616,6 +625,17 @@ public class HiveConf extends Configuration {
         "Table alias will be added to column names for queries of type \"select *\" or \n" +
         "if query explicitly uses table alias \"select r1.x..\"."),
 
+    HIVE_PROTO_EVENTS_BASE_PATH("hive.hook.proto.base-directory", "",
+            "Base directory into which the proto event messages are written by HiveProtoLoggingHook."),
+    HIVE_PROTO_EVENTS_QUEUE_CAPACITY("hive.hook.proto.queue.capacity", 64,
+            "Queue capacity for the proto events logging threads."),
+    HIVE_PROTO_EVENTS_CLEAN_FREQ("hive.hook.proto.events.clean.freq", "1d",
+            new TimeValidator(TimeUnit.DAYS),
+            "Frequency at which timer task runs to purge expired proto event files."),
+    HIVE_PROTO_EVENTS_TTL("hive.hook.proto.events.ttl", "7d",
+            new TimeValidator(TimeUnit.DAYS),
+            "Time-To-Live (TTL) of proto event files before cleanup."),
+
     // Hadoop Configuration Properties
     // Properties with null values are ignored and exist only for the purpose of giving us
     // a symbolic name to reference in the Hive source code. Properties with non-null
@@ -643,6 +663,11 @@ public class HiveConf extends Configuration {
     @Deprecated
     METASTOREWAREHOUSE("hive.metastore.warehouse.dir", "/user/hive/warehouse",
         "location of default database for the warehouse"),
+
+    HIVE_METASTORE_WAREHOUSE_EXTERNAL("hive.metastore.warehouse.external.dir", null,
+        "Default location for external tables created in the warehouse. " +
+        "If not set or null, then the normal warehouse location will be used as the default location."),
+
     /**
      * @deprecated Use MetastoreConf.THRIFT_URIS
      */
@@ -1491,6 +1516,8 @@ public class HiveConf extends Configuration {
     HIVEQUERYID("hive.query.id", "",
         "ID for query being executed (might be multiple per a session)"),
 
+    HIVESPARKJOBNAMELENGTH("hive.spark.jobname.length", 100000, "max jobname length for Hive on " +
+            "Spark queries"),
     HIVEJOBNAMELENGTH("hive.jobname.length", 50, "max jobname length"),
 
     // hive jar
@@ -1551,6 +1578,8 @@ public class HiveConf extends Configuration {
     HIVE_STRICT_CHECKS_BUCKETING("hive.strict.checks.bucketing", true,
         "Enabling strict bucketing checks disallows the following:\n" +
         "  Load into bucketed tables."),
+    HIVE_LOAD_DATA_OWNER("hive.load.data.owner", "",
+        "Set the owner of files loaded using load data in managed tables."),
 
     @Deprecated
     HIVEMAPREDMODE("hive.mapred.mode", null,
@@ -1595,7 +1624,7 @@ public class HiveConf extends Configuration {
         "columns in operators such as Aggregate or Join so that we try to reduce the number of shuffling stages"),
 
     // materialized views
-    HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING("hive.materializedview.rewriting", false,
+    HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING("hive.materializedview.rewriting", true,
         "Whether to try to rewrite queries using the materialized views enabled for rewriting"),
     HIVE_MATERIALIZED_VIEW_REWRITING_SELECTION_STRATEGY("hive.materializedview.rewriting.strategy", "heuristic",
         new StringSet("heuristic", "costbased"),
@@ -1881,7 +1910,7 @@ public class HiveConf extends Configuration {
         "Maximum fraction of heap that can be used by Parquet file writers in one task.\n" +
         "It is for avoiding OutOfMemory error in tasks. Work with Parquet 1.6.0 and above.\n" +
         "This config parameter is defined in Parquet, so that it does not start with 'hive.'."),
-    HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION("hive.parquet.timestamp.skip.conversion", true,
+    HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION("hive.parquet.timestamp.skip.conversion", false,
       "Current Hive implementation of parquet stores timestamps to UTC, this flag allows skipping of the conversion" +
       "on reading parquet files from other tools"),
     HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS("hive.int.timestamp.conversion.in.seconds", false,
@@ -2071,7 +2100,7 @@ public class HiveConf extends Configuration {
     HIVE_ENFORCE_NOT_NULL_CONSTRAINT("hive.constraint.notnull.enforce", true,
         "Should \"IS NOT NULL \" constraint be enforced?"),
 
-    HIVE_AUTO_SORTMERGE_JOIN("hive.auto.convert.sortmerge.join", false,
+    HIVE_AUTO_SORTMERGE_JOIN("hive.auto.convert.sortmerge.join", true,
         "Will the join be automatically converted to a sort-merge join, if the joined tables pass the criteria for sort-merge join."),
     HIVE_AUTO_SORTMERGE_JOIN_REDUCE("hive.auto.convert.sortmerge.join.reduce.side", true,
         "Whether hive.auto.convert.sortmerge.join (if enabled) should be applied to reduce side."),
@@ -2103,7 +2132,7 @@ public class HiveConf extends Configuration {
         "Whether to provide the row offset virtual column"),
 
     // Optimizer
-    HIVEOPTINDEXFILTER("hive.optimize.index.filter", false, "Whether to enable automatic use of indexes"),
+    HIVEOPTINDEXFILTER("hive.optimize.index.filter", true, "Whether to enable automatic use of indexes"),
 
     HIVEOPTPPD("hive.optimize.ppd", true,
         "Whether to enable predicate pushdown"),
@@ -2835,6 +2864,12 @@ public class HiveConf extends Configuration {
         " on the assumption that data changes by external applications may have negative effects" +
         " on these operations."),
 
+    HIVE_EXTERNALTABLE_PURGE_DEFAULT("hive.external.table.purge.default", false,
+        "Set to true to set external.table.purge=true on newly created external tables," +
+        " which will specify that the table data should be deleted when the table is dropped." +
+        " Set to false maintain existing behavior that external tables do not delete data" +
+        " when the table is dropped."),
+
     HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false,
         "Whether to throw an exception if dynamic partition insert generates empty results."),
 
@@ -2977,8 +3012,6 @@ public class HiveConf extends Configuration {
     HIVE_SSL_PROTOCOL_BLACKLIST("hive.ssl.protocol.blacklist", "SSLv2,SSLv3",
         "SSL Versions to disable for all Hive Servers"),
 
-    HIVE_PRIVILEGE_SYNCHRONIZER("hive.privilege.synchronizer", false,
-        "Synchronize privileges from external authorizer such as ranger to Hive periodically in HS2"),
     HIVE_PRIVILEGE_SYNCHRONIZER_INTERVAL("hive.privilege.synchronizer.interval",
         "1800s", new TimeValidator(TimeUnit.SECONDS),
         "Interval to synchronize privileges from external authorizer periodically in HS2"),
@@ -3139,6 +3172,9 @@ public class HiveConf extends Configuration {
         "  EXECUTION: Log completion of tasks\n" +
         "  PERFORMANCE: Execution + Performance logs \n" +
         "  VERBOSE: All logs" ),
+    HIVE_SERVER2_OPERATION_LOG_CLEANUP_DELAY("hive.server2.operation.log.cleanup.delay", "300s",
+      new TimeValidator(TimeUnit.SECONDS), "When a query is cancelled (via kill query, query timeout or triggers),\n" +
+      " operation logs gets cleaned up after this delay"),
 
     // HS2 connections guard rails
     HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER("hive.server2.limit.connections.per.user", 0,
@@ -3548,7 +3584,7 @@ public class HiveConf extends Configuration {
         "The default value is false."),
     HIVE_VECTORIZATION_ROW_DESERIALIZE_INPUTFORMAT_EXCLUDES(
         "hive.vectorized.row.serde.inputformat.excludes",
-        "org.apache.parquet.hadoop.ParquetInputFormat,org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat,org.apache.hive.storage.jdbc.JdbcInputFormat",
+        "org.apache.parquet.hadoop.ParquetInputFormat,org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat",
         "The input formats not supported by row deserialize vectorization."),
     HIVE_VECTOR_ADAPTOR_USAGE_MODE("hive.vectorized.adaptor.usage.mode", "all", new StringSet("none", "chosen", "all"),
         "Specifies the extent to which the VectorUDFAdaptor will be used for UDFs that do not have a corresponding vectorized class.\n" +
@@ -3755,7 +3791,7 @@ public class HiveConf extends Configuration {
         "hive.server2.in.place.progress",
         true,
         "Allows hive server 2 to send progress bar update information. This is currently available"
-            + " only if the execution engine is tez."),
+            + " only if the execution engine is tez or Spark."),
     TEZ_DAG_STATUS_CHECK_INTERVAL("hive.tez.dag.status.check.interval", "500ms",
       new TimeValidator(TimeUnit.MILLISECONDS), "Interval between subsequent DAG status invocation."),
     SPARK_EXEC_INPLACE_PROGRESS("hive.spark.exec.inplace.progress", true,
@@ -3772,6 +3808,7 @@ public class HiveConf extends Configuration {
         false, "Use Tez cartesian product edge to speed up cross product"),
     // The default is different on the client and server, so it's null here.
     LLAP_IO_ENABLED("hive.llap.io.enabled", null, "Whether the LLAP IO layer is enabled."),
+    LLAP_IO_ROW_WRAPPER_ENABLED("hive.llap.io.row.wrapper.enabled", true, "Whether the LLAP IO row wrapper is enabled for non-vectorized queries."),
     LLAP_IO_ACID_ENABLED("hive.llap.io.acid", true, "Whether the LLAP IO layer is enabled for ACID."),
     LLAP_IO_TRACE_SIZE("hive.llap.io.trace.size", "2Mb",
         new SizeValidator(0L, true, (long)Integer.MAX_VALUE, false),
@@ -3786,7 +3823,7 @@ public class HiveConf extends Configuration {
         "LLAP IO memory usage; 'cache' (the default) uses data and metadata cache with a\n" +
         "custom off-heap allocator, 'none' doesn't use either (this mode may result in\n" +
         "significant performance degradation)"),
-    LLAP_ALLOCATOR_MIN_ALLOC("hive.llap.io.allocator.alloc.min", "16Kb", new SizeValidator(),
+    LLAP_ALLOCATOR_MIN_ALLOC("hive.llap.io.allocator.alloc.min", "4Kb", new SizeValidator(),
         "Minimum allocation possible from LLAP buddy allocator. Allocations below that are\n" +
         "padded to minimum allocation. For ORC, should generally be the same as the expected\n" +
         "compression buffer size, or next lowest power of 2. Must be a power of 2."),
@@ -3870,7 +3907,7 @@ public class HiveConf extends Configuration {
         "MR LineRecordRedader into LLAP cache, if this feature is enabled. Safety flag."),
     LLAP_ORC_ENABLE_TIME_COUNTERS("hive.llap.io.orc.time.counters", true,
         "Whether to enable time counters for LLAP IO layer (time spent in HDFS, etc.)"),
-    LLAP_IO_VRB_QUEUE_LIMIT_BASE("hive.llap.io.vrb.queue.limit.base", 10000,
+    LLAP_IO_VRB_QUEUE_LIMIT_BASE("hive.llap.io.vrb.queue.limit.base", 50000,
         "The default queue size for VRBs produced by a LLAP IO thread when the processing is\n" +
         "slower than the IO. The actual queue size is set per fragment, and is adjusted down\n" +
         "from the base, depending on the schema."),
@@ -4164,6 +4201,11 @@ public class HiveConf extends Configuration {
     LLAP_EXTERNAL_SPLITS_TEMP_TABLE_STORAGE_FORMAT("hive.llap.external.splits.temp.table.storage.format",
         "orc", new StringSet("default", "text", "orc"),
         "Storage format for temp tables created using LLAP external client"),
+    LLAP_EXTERNAL_SPLITS_ORDER_BY_FORCE_SINGLE_SPLIT("hive.llap.external.splits.order.by.force.single.split",
+      true,
+      "If LLAP external clients submits ORDER BY queries, force return a single split to guarantee reading\n" +
+        "data out in ordered way. Setting this to false will let external clients read data out in parallel\n" +
+        "losing the ordering (external clients are responsible for guaranteeing the ordering)"),
     LLAP_ENABLE_GRACE_JOIN_IN_LLAP("hive.llap.enable.grace.join.in.llap", false,
         "Override if grace join should be allowed to run in llap."),
 
@@ -4199,7 +4241,7 @@ public class HiveConf extends Configuration {
         "in shuffle. This should result in less shuffled data."),
     SPARK_CLIENT_FUTURE_TIMEOUT("hive.spark.client.future.timeout",
       "60s", new TimeValidator(TimeUnit.SECONDS),
-      "Timeout for requests from Hive client to remote Spark driver."),
+      "Timeout for requests between Hive client and remote Spark driver."),
     SPARK_JOB_MONITOR_TIMEOUT("hive.spark.job.monitor.timeout",
       "60s", new TimeValidator(TimeUnit.SECONDS),
       "Timeout for job monitor to get Spark job state."),
@@ -4247,6 +4289,11 @@ public class HiveConf extends Configuration {
             "If a Spark job contains more tasks than the maximum, it will be cancelled. A value of -1 means no limit."),
     SPARK_STAGE_MAX_TASKS("hive.spark.stage.max.tasks", -1, "The maximum number of tasks a stage in a Spark job may have.\n" +
         "If a Spark job stage contains more tasks than the maximum, the job will be cancelled. A value of -1 means no limit."),
+    SPARK_CLIENT_TYPE("hive.spark.client.type", HIVE_SPARK_SUBMIT_CLIENT,
+        "Controls how the Spark application is launched. If " + HIVE_SPARK_SUBMIT_CLIENT  + " is " +
+        "specified (default) then the spark-submit shell script is used to launch the Spark " +
+        "app. If " + HIVE_SPARK_LAUNCHER_CLIENT + " is specified then Spark's " +
+        "InProcessLauncher is used to programmatically launch the app."),
     NWAYJOINREORDER("hive.reorder.nway.joins", true,
       "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
     HIVE_MERGE_NWAY_JOINS("hive.merge.nway.joins", true,
@@ -4321,6 +4368,7 @@ public class HiveConf extends Configuration {
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
+        + "," + DRUID_METADATA_DB_PASSWORD.varname
         // Adding the S3 credentials from Hadoop config to be hidden
         + ",fs.s3.awsAccessKeyId"
         + ",fs.s3.awsSecretAccessKey"
@@ -4337,7 +4385,8 @@ public class HiveConf extends Configuration {
         "Comma separated list of variables which are used internally and should not be configurable."),
     HIVE_SPARK_RSC_CONF_LIST("hive.spark.rsc.conf.list",
         SPARK_OPTIMIZE_SHUFFLE_SERDE.varname + "," +
-            SPARK_CLIENT_FUTURE_TIMEOUT.varname,
+        SPARK_CLIENT_FUTURE_TIMEOUT.varname + "," +
+        SPARK_CLIENT_TYPE.varname,
         "Comma separated list of variables which are related to remote spark context.\n" +
             "Changing these variables will result in re-creating the spark session."),
     HIVE_QUERY_TIMEOUT_SECONDS("hive.query.timeout.seconds", "0s",
@@ -5804,5 +5853,4 @@ public class HiveConf extends Configuration {
     }
     return ret;
   }
-
 }

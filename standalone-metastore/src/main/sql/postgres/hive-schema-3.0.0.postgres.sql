@@ -1024,7 +1024,7 @@ ALTER TABLE ONLY "TBLS"
 --
 
 ALTER TABLE ONLY "DBS"
-    ADD CONSTRAINT "UNIQUE_DATABASE" UNIQUE ("NAME");
+    ADD CONSTRAINT "UNIQUE_DATABASE" UNIQUE ("NAME", "CTLG_NAME");
 
 
 --
@@ -1641,8 +1641,7 @@ CREATE TABLE TXNS (
   TXN_HOST varchar(128) NOT NULL,
   TXN_AGENT_INFO varchar(128),
   TXN_META_INFO varchar(128),
-  TXN_HEARTBEAT_COUNT integer,
-  TXN_TYPE integer
+  TXN_HEARTBEAT_COUNT integer
 );
 
 CREATE TABLE TXN_COMPONENTS (
@@ -1813,7 +1812,6 @@ CREATE TABLE REPL_TXN_MAP (
   PRIMARY KEY (RTM_REPL_POLICY, RTM_SRC_TXN_ID)
 );
 
-
 CREATE TABLE RUNTIME_STATS (
  RS_ID bigint primary key,
  CREATE_TIME bigint NOT NULL,
@@ -1822,7 +1820,6 @@ CREATE TABLE RUNTIME_STATS (
 );
 
 CREATE INDEX IDX_RUNTIME_STATS_CREATE_TIME ON RUNTIME_STATS(CREATE_TIME);
-
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script

@@ -44,9 +44,13 @@ public class HiveSchemaHelper {
   public static final String DB_MYSQL = "mysql";
   public static final String DB_POSTGRACE = "postgres";
   public static final String DB_ORACLE = "oracle";
-  public static final String EMBEDDED_HS2_URL = "jdbc:hive2://";
+  public static final String EMBEDDED_HS2_URL =
+      "jdbc:hive2://?hive.conf.restricted.list=;hive.security.authorization.sqlstd.confwhitelist=.*;"
+      + "hive.security.authorization.sqlstd.confwhitelist.append=.*;hive.security.authorization.enabled=false;"
+      + "hive.metastore.uris=;hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdConfOnlyAuthorizerFactory;"
+      + "hive.support.concurrency=false;hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager;"
+      + "hive.metastore.rawstore.impl=org.apache.hadoop.hive.metastore.ObjectStore";
   public static final String HIVE_JDBC_DRIVER = "org.apache.hive.jdbc.HiveDriver";
-  
 
   /***
    * Get JDBC connection to metastore db

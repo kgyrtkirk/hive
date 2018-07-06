@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
 
 import com.google.common.base.Joiner;
@@ -24,6 +25,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.apache.commons.collections.ListUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -64,7 +66,9 @@ import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.util.MachineList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javax.annotation.Nullable;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -91,7 +95,7 @@ import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.StringJoiner;
+import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -110,6 +114,7 @@ public class MetaStoreUtils {
     protected DateFormat initialValue() {
       DateFormat val = new SimpleDateFormat("yyyy-MM-dd");
       val.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
+      val.setTimeZone(TimeZone.getTimeZone("UTC"));
       return val;
     }
   };
@@ -140,6 +145,8 @@ public class MetaStoreUtils {
    * Mark a database as being empty (as distinct from null).
    */
   public static final String DB_EMPTY_MARKER = "!";
+
+  public static final String EXTERNAL_TABLE_PURGE = "external.table.purge";
 
   // Right now we only support one special character '/'.
   // More special characters can be added accordingly in the future.
@@ -265,7 +272,7 @@ public class MetaStoreUtils {
     }
     if (colStatsMap.size() < 1) {
       LOG.debug("No stats data found for: tblName= {}, partNames= {}, colNames= {}",
-          Warehouse.getCatalogQualifiedTableName(catName, dbName, tableName), partNames, colNames);
+          TableName.getQualified(catName, dbName, tableName), partNames, colNames);
       return new ArrayList<ColumnStatisticsObj>();
     }
     return aggrPartitionStats(colStatsMap, partNames, areAllPartsFound,
@@ -561,7 +568,11 @@ public class MetaStoreUtils {
   }
 
   public static boolean isExternal(Map<String, String> tableParams){
-    return "TRUE".equalsIgnoreCase(tableParams.get("EXTERNAL"));
+    return isPropertyTrue(tableParams, "EXTERNAL");
+  }
+
+  public static boolean isPropertyTrue(Map<String, String> tableParams, String prop) {
+    return "TRUE".equalsIgnoreCase(tableParams.get(prop));
   }
 
   // check if stats need to be (re)calculated
@@ -616,7 +627,7 @@ public class MetaStoreUtils {
    * @return True if the passed Parameters Map contains values for all "Fast Stats".
    */
   private static boolean containsAllFastStats(Map<String, String> partParams) {
-    for (String stat : StatsSetupConst.fastStats) {
+    for (String stat : StatsSetupConst.FAST_STATS) {
       if (!partParams.containsKey(stat)) {
         return false;
       }
@@ -627,7 +638,7 @@ public class MetaStoreUtils {
   public static boolean isFastStatsSame(Partition oldPart, Partition newPart) {
     // requires to calculate stats if new and old have different fast stats
     if ((oldPart != null) && (oldPart.getParameters() != null)) {
-      for (String stat : StatsSetupConst.fastStats) {
+      for (String stat : StatsSetupConst.FAST_STATS) {
         if (oldPart.getParameters().containsKey(stat)) {
           Long oldStat = Long.parseLong(oldPart.getParameters().get(stat));
           Long newStat = Long.parseLong(newPart.getParameters().get(stat));
@@ -708,22 +719,28 @@ public class MetaStoreUtils {
     LOG.trace("Populating quick stats based on {} files", fileStatus.size());
     int numFiles = 0;
     long tableSize = 0L;
+    int numErasureCodedFiles = 0;
     for (FileStatus status : fileStatus) {
       // don't take directories into account for quick stats TODO: wtf?
       if (!status.isDir()) {
         tableSize += status.getLen();
         numFiles += 1;
+        if (status.isErasureCoded()) {
+          numErasureCodedFiles++;
+        }
       }
     }
     params.put(StatsSetupConst.NUM_FILES, Integer.toString(numFiles));
     params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
+    params.put(StatsSetupConst.NUM_ERASURE_CODED_FILES, Integer.toString(numErasureCodedFiles));
   }
- 
+
   public static void clearQuickStats(Map<String, String> params) {
     params.remove(StatsSetupConst.NUM_FILES);
     params.remove(StatsSetupConst.TOTAL_SIZE);
+    params.remove(StatsSetupConst.NUM_ERASURE_CODED_FILES);
   }
- 
+
 
   public static boolean areSameColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     return ListUtils.isEqualList(oldCols, newCols);
@@ -1282,7 +1299,10 @@ public class MetaStoreUtils {
       for (Map.Entry<String,String> param : sd.getSerdeInfo().getParameters().entrySet()) {
         String key = param.getKey();
         if (schema.get(key) != null &&
-            (key.equals(cols) || key.equals(colTypes) || key.equals(parts))) {
+                (key.equals(cols) || key.equals(colTypes) || key.equals(parts) ||
+                        // skip Druid properties which are used in DruidSerde, since they are also updated
+                        // after SerDeInfo properties are copied.
+                        key.startsWith("druid."))) {
           continue;
         }
         schema.put(key, (param.getValue() != null) ? param.getValue() : StringUtils.EMPTY);
@@ -1797,4 +1817,5 @@ public class MetaStoreUtils {
     if (catName == null || "".equals(catName)) catName = Warehouse.DEFAULT_CATALOG_NAME;
     return catName;
   }
+
 }

@@ -25,6 +25,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void getMetaConf(std::string& _return, const std::string& key) = 0;
   virtual void setMetaConf(const std::string& key, const std::string& value) = 0;
   virtual void create_catalog(const CreateCatalogRequest& catalog) = 0;
+  virtual void alter_catalog(const AlterCatalogRequest& rqst) = 0;
   virtual void get_catalog(GetCatalogResponse& _return, const GetCatalogRequest& catName) = 0;
   virtual void get_catalogs(GetCatalogsResponse& _return) = 0;
   virtual void drop_catalog(const DropCatalogRequest& catName) = 0;
@@ -149,7 +150,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual bool grant_privileges(const PrivilegeBag& privileges) = 0;
   virtual bool revoke_privileges(const PrivilegeBag& privileges) = 0;
   virtual void grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const GrantRevokePrivilegeRequest& request) = 0;
-  virtual void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest) = 0;
+  virtual void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest) = 0;
   virtual void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names) = 0;
   virtual void get_delegation_token(std::string& _return, const std::string& token_owner, const std::string& renewer_kerberos_principal_name) = 0;
   virtual int64_t renew_delegation_token(const std::string& token_str_form) = 0;
@@ -186,6 +187,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_notification_events_count(NotificationEventsCountResponse& _return, const NotificationEventsCountRequest& rqst) = 0;
   virtual void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst) = 0;
   virtual void flushCache() = 0;
+  virtual void add_write_notification_log(WriteNotificationLogResponse& _return, const WriteNotificationLogRequest& rqst) = 0;
   virtual void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request) = 0;
   virtual void get_file_metadata_by_expr(GetFileMetadataByExprResult& _return, const GetFileMetadataByExprRequest& req) = 0;
   virtual void get_file_metadata(GetFileMetadataResult& _return, const GetFileMetadataRequest& req) = 0;
@@ -264,6 +266,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void create_catalog(const CreateCatalogRequest& /* catalog */) {
+    return;
+  }
+  void alter_catalog(const AlterCatalogRequest& /* rqst */) {
     return;
   }
   void get_catalog(GetCatalogResponse& /* _return */, const GetCatalogRequest& /* catName */) {
@@ -660,7 +665,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void grant_revoke_privileges(GrantRevokePrivilegeResponse& /* _return */, const GrantRevokePrivilegeRequest& /* request */) {
     return;
   }
-  void refresh_privileges(GrantRevokePrivilegeResponse& /* _return */, const HiveObjectRef& /* objToRefresh */, const GrantRevokePrivilegeRequest& /* grantRequest */) {
+  void refresh_privileges(GrantRevokePrivilegeResponse& /* _return */, const HiveObjectRef& /* objToRefresh */, const std::string& /* authorizer */, const GrantRevokePrivilegeRequest& /* grantRequest */) {
     return;
   }
   void set_ugi(std::vector<std::string> & /* _return */, const std::string& /* user_name */, const std::vector<std::string> & /* group_names */) {
@@ -774,6 +779,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void flushCache() {
+    return;
+  }
+  void add_write_notification_log(WriteNotificationLogResponse& /* _return */, const WriteNotificationLogRequest& /* rqst */) {
     return;
   }
   void cm_recycle(CmRecycleResponse& /* _return */, const CmRecycleRequest& /* request */) {
@@ -1243,6 +1251,126 @@ class ThriftHiveMetastore_create_catalog_presult {
   MetaException o3;
 
   _ThriftHiveMetastore_create_catalog_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_catalog_args__isset {
+  _ThriftHiveMetastore_alter_catalog_args__isset() : rqst(false) {}
+  bool rqst :1;
+} _ThriftHiveMetastore_alter_catalog_args__isset;
+
+class ThriftHiveMetastore_alter_catalog_args {
+ public:
+
+  ThriftHiveMetastore_alter_catalog_args(const ThriftHiveMetastore_alter_catalog_args&);
+  ThriftHiveMetastore_alter_catalog_args& operator=(const ThriftHiveMetastore_alter_catalog_args&);
+  ThriftHiveMetastore_alter_catalog_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_catalog_args() throw();
+  AlterCatalogRequest rqst;
+
+  _ThriftHiveMetastore_alter_catalog_args__isset __isset;
+
+  void __set_rqst(const AlterCatalogRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_alter_catalog_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_catalog_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_catalog_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_alter_catalog_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_catalog_pargs() throw();
+  const AlterCatalogRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_catalog_result__isset {
+  _ThriftHiveMetastore_alter_catalog_result__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_alter_catalog_result__isset;
+
+class ThriftHiveMetastore_alter_catalog_result {
+ public:
+
+  ThriftHiveMetastore_alter_catalog_result(const ThriftHiveMetastore_alter_catalog_result&);
+  ThriftHiveMetastore_alter_catalog_result& operator=(const ThriftHiveMetastore_alter_catalog_result&);
+  ThriftHiveMetastore_alter_catalog_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_catalog_result() throw();
+  NoSuchObjectException o1;
+  InvalidOperationException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_alter_catalog_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const InvalidOperationException& val);
+
+  void __set_o3(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_alter_catalog_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_catalog_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_catalog_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_catalog_presult__isset {
+  _ThriftHiveMetastore_alter_catalog_presult__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_alter_catalog_presult__isset;
+
+class ThriftHiveMetastore_alter_catalog_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_catalog_presult() throw();
+  NoSuchObjectException o1;
+  InvalidOperationException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_alter_catalog_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -17173,8 +17301,9 @@ class ThriftHiveMetastore_grant_revoke_privileges_presult {
 };
 
 typedef struct _ThriftHiveMetastore_refresh_privileges_args__isset {
-  _ThriftHiveMetastore_refresh_privileges_args__isset() : objToRefresh(false), grantRequest(false) {}
+  _ThriftHiveMetastore_refresh_privileges_args__isset() : objToRefresh(false), authorizer(false), grantRequest(false) {}
   bool objToRefresh :1;
+  bool authorizer :1;
   bool grantRequest :1;
 } _ThriftHiveMetastore_refresh_privileges_args__isset;
 
@@ -17183,22 +17312,27 @@ class ThriftHiveMetastore_refresh_privileges_args {
 
   ThriftHiveMetastore_refresh_privileges_args(const ThriftHiveMetastore_refresh_privileges_args&);
   ThriftHiveMetastore_refresh_privileges_args& operator=(const ThriftHiveMetastore_refresh_privileges_args&);
-  ThriftHiveMetastore_refresh_privileges_args() {
+  ThriftHiveMetastore_refresh_privileges_args() : authorizer() {
   }
 
   virtual ~ThriftHiveMetastore_refresh_privileges_args() throw();
   HiveObjectRef objToRefresh;
+  std::string authorizer;
   GrantRevokePrivilegeRequest grantRequest;
 
   _ThriftHiveMetastore_refresh_privileges_args__isset __isset;
 
   void __set_objToRefresh(const HiveObjectRef& val);
 
+  void __set_authorizer(const std::string& val);
+
   void __set_grantRequest(const GrantRevokePrivilegeRequest& val);
 
   bool operator == (const ThriftHiveMetastore_refresh_privileges_args & rhs) const
   {
     if (!(objToRefresh == rhs.objToRefresh))
+      return false;
+    if (!(authorizer == rhs.authorizer))
       return false;
     if (!(grantRequest == rhs.grantRequest))
       return false;
@@ -17222,6 +17356,7 @@ class ThriftHiveMetastore_refresh_privileges_pargs {
 
   virtual ~ThriftHiveMetastore_refresh_privileges_pargs() throw();
   const HiveObjectRef* objToRefresh;
+  const std::string* authorizer;
   const GrantRevokePrivilegeRequest* grantRequest;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -21092,6 +21227,110 @@ class ThriftHiveMetastore_flushCache_presult {
 
 
   virtual ~ThriftHiveMetastore_flushCache_presult() throw();
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_add_write_notification_log_args__isset {
+  _ThriftHiveMetastore_add_write_notification_log_args__isset() : rqst(false) {}
+  bool rqst :1;
+} _ThriftHiveMetastore_add_write_notification_log_args__isset;
+
+class ThriftHiveMetastore_add_write_notification_log_args {
+ public:
+
+  ThriftHiveMetastore_add_write_notification_log_args(const ThriftHiveMetastore_add_write_notification_log_args&);
+  ThriftHiveMetastore_add_write_notification_log_args& operator=(const ThriftHiveMetastore_add_write_notification_log_args&);
+  ThriftHiveMetastore_add_write_notification_log_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_write_notification_log_args() throw();
+  WriteNotificationLogRequest rqst;
+
+  _ThriftHiveMetastore_add_write_notification_log_args__isset __isset;
+
+  void __set_rqst(const WriteNotificationLogRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_add_write_notification_log_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_write_notification_log_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_write_notification_log_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_add_write_notification_log_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_write_notification_log_pargs() throw();
+  const WriteNotificationLogRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_write_notification_log_result__isset {
+  _ThriftHiveMetastore_add_write_notification_log_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_add_write_notification_log_result__isset;
+
+class ThriftHiveMetastore_add_write_notification_log_result {
+ public:
+
+  ThriftHiveMetastore_add_write_notification_log_result(const ThriftHiveMetastore_add_write_notification_log_result&);
+  ThriftHiveMetastore_add_write_notification_log_result& operator=(const ThriftHiveMetastore_add_write_notification_log_result&);
+  ThriftHiveMetastore_add_write_notification_log_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_write_notification_log_result() throw();
+  WriteNotificationLogResponse success;
+
+  _ThriftHiveMetastore_add_write_notification_log_result__isset __isset;
+
+  void __set_success(const WriteNotificationLogResponse& val);
+
+  bool operator == (const ThriftHiveMetastore_add_write_notification_log_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_write_notification_log_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_write_notification_log_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_write_notification_log_presult__isset {
+  _ThriftHiveMetastore_add_write_notification_log_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_add_write_notification_log_presult__isset;
+
+class ThriftHiveMetastore_add_write_notification_log_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_write_notification_log_presult() throw();
+  WriteNotificationLogResponse* success;
+
+  _ThriftHiveMetastore_add_write_notification_log_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -26101,6 +26340,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void create_catalog(const CreateCatalogRequest& catalog);
   void send_create_catalog(const CreateCatalogRequest& catalog);
   void recv_create_catalog();
+  void alter_catalog(const AlterCatalogRequest& rqst);
+  void send_alter_catalog(const AlterCatalogRequest& rqst);
+  void recv_alter_catalog();
   void get_catalog(GetCatalogResponse& _return, const GetCatalogRequest& catName);
   void send_get_catalog(const GetCatalogRequest& catName);
   void recv_get_catalog(GetCatalogResponse& _return);
@@ -26473,8 +26715,8 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const GrantRevokePrivilegeRequest& request);
   void send_grant_revoke_privileges(const GrantRevokePrivilegeRequest& request);
   void recv_grant_revoke_privileges(GrantRevokePrivilegeResponse& _return);
-  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest);
-  void send_refresh_privileges(const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest);
+  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest);
+  void send_refresh_privileges(const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest);
   void recv_refresh_privileges(GrantRevokePrivilegeResponse& _return);
   void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names);
   void send_set_ugi(const std::string& user_name, const std::vector<std::string> & group_names);
@@ -26584,6 +26826,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void flushCache();
   void send_flushCache();
   void recv_flushCache();
+  void add_write_notification_log(WriteNotificationLogResponse& _return, const WriteNotificationLogRequest& rqst);
+  void send_add_write_notification_log(const WriteNotificationLogRequest& rqst);
+  void recv_add_write_notification_log(WriteNotificationLogResponse& _return);
   void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request);
   void send_cm_recycle(const CmRecycleRequest& request);
   void recv_cm_recycle(CmRecycleResponse& _return);
@@ -26723,6 +26968,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_getMetaConf(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_setMetaConf(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_create_catalog(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_alter_catalog(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_catalog(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_catalogs(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_catalog(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -26884,6 +27130,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_notification_events_count(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_fire_listener_event(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_flushCache(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_add_write_notification_log(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_cm_recycle(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_file_metadata_by_expr(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_file_metadata(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -26933,6 +27180,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["getMetaConf"] = &ThriftHiveMetastoreProcessor::process_getMetaConf;
     processMap_["setMetaConf"] = &ThriftHiveMetastoreProcessor::process_setMetaConf;
     processMap_["create_catalog"] = &ThriftHiveMetastoreProcessor::process_create_catalog;
+    processMap_["alter_catalog"] = &ThriftHiveMetastoreProcessor::process_alter_catalog;
     processMap_["get_catalog"] = &ThriftHiveMetastoreProcessor::process_get_catalog;
     processMap_["get_catalogs"] = &ThriftHiveMetastoreProcessor::process_get_catalogs;
     processMap_["drop_catalog"] = &ThriftHiveMetastoreProcessor::process_drop_catalog;
@@ -27094,6 +27342,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_notification_events_count"] = &ThriftHiveMetastoreProcessor::process_get_notification_events_count;
     processMap_["fire_listener_event"] = &ThriftHiveMetastoreProcessor::process_fire_listener_event;
     processMap_["flushCache"] = &ThriftHiveMetastoreProcessor::process_flushCache;
+    processMap_["add_write_notification_log"] = &ThriftHiveMetastoreProcessor::process_add_write_notification_log;
     processMap_["cm_recycle"] = &ThriftHiveMetastoreProcessor::process_cm_recycle;
     processMap_["get_file_metadata_by_expr"] = &ThriftHiveMetastoreProcessor::process_get_file_metadata_by_expr;
     processMap_["get_file_metadata"] = &ThriftHiveMetastoreProcessor::process_get_file_metadata;
@@ -27195,6 +27444,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->create_catalog(catalog);
     }
     ifaces_[i]->create_catalog(catalog);
+  }
+
+  void alter_catalog(const AlterCatalogRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->alter_catalog(rqst);
+    }
+    ifaces_[i]->alter_catalog(rqst);
   }
 
   void get_catalog(GetCatalogResponse& _return, const GetCatalogRequest& catName) {
@@ -28385,13 +28643,13 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
-  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest) {
+  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->refresh_privileges(_return, objToRefresh, grantRequest);
+      ifaces_[i]->refresh_privileges(_return, objToRefresh, authorizer, grantRequest);
     }
-    ifaces_[i]->refresh_privileges(_return, objToRefresh, grantRequest);
+    ifaces_[i]->refresh_privileges(_return, objToRefresh, authorizer, grantRequest);
     return;
   }
 
@@ -28737,6 +28995,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->flushCache();
     }
     ifaces_[i]->flushCache();
+  }
+
+  void add_write_notification_log(WriteNotificationLogResponse& _return, const WriteNotificationLogRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->add_write_notification_log(_return, rqst);
+    }
+    ifaces_[i]->add_write_notification_log(_return, rqst);
+    return;
   }
 
   void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request) {
@@ -29174,6 +29442,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void create_catalog(const CreateCatalogRequest& catalog);
   int32_t send_create_catalog(const CreateCatalogRequest& catalog);
   void recv_create_catalog(const int32_t seqid);
+  void alter_catalog(const AlterCatalogRequest& rqst);
+  int32_t send_alter_catalog(const AlterCatalogRequest& rqst);
+  void recv_alter_catalog(const int32_t seqid);
   void get_catalog(GetCatalogResponse& _return, const GetCatalogRequest& catName);
   int32_t send_get_catalog(const GetCatalogRequest& catName);
   void recv_get_catalog(GetCatalogResponse& _return, const int32_t seqid);
@@ -29546,8 +29817,8 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const GrantRevokePrivilegeRequest& request);
   int32_t send_grant_revoke_privileges(const GrantRevokePrivilegeRequest& request);
   void recv_grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const int32_t seqid);
-  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest);
-  int32_t send_refresh_privileges(const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest);
+  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest);
+  int32_t send_refresh_privileges(const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest);
   void recv_refresh_privileges(GrantRevokePrivilegeResponse& _return, const int32_t seqid);
   void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names);
   int32_t send_set_ugi(const std::string& user_name, const std::vector<std::string> & group_names);
@@ -29657,6 +29928,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void flushCache();
   int32_t send_flushCache();
   void recv_flushCache(const int32_t seqid);
+  void add_write_notification_log(WriteNotificationLogResponse& _return, const WriteNotificationLogRequest& rqst);
+  int32_t send_add_write_notification_log(const WriteNotificationLogRequest& rqst);
+  void recv_add_write_notification_log(WriteNotificationLogResponse& _return, const int32_t seqid);
   void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request);
   int32_t send_cm_recycle(const CmRecycleRequest& request);
   void recv_cm_recycle(CmRecycleResponse& _return, const int32_t seqid);

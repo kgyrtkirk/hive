@@ -118,6 +118,7 @@ STAGE PLANS:
         $hdt$_0:d1 
           TableScan
             alias: d1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -148,6 +149,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: d2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -218,6 +220,7 @@ STAGE PLANS:
         $hdt$_1:$hdt$_1:d1 
           TableScan
             alias: d1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -236,6 +239,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: d2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -452,8 +456,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[34][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[33][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[46][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[39][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain select * from 
 (select A_n2.key from A_n2 group by key) ss join 
@@ -627,6 +631,7 @@ STAGE PLANS:
         $hdt$_1:$hdt$_1:d1 
           TableScan
             alias: d1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -645,6 +650,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: d2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

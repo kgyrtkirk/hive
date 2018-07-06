@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.hive.metastore.api.InitializeTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -39,8 +40,10 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.HiveStrictManagedUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +54,11 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
   public static final String DEFAULT_TRANSACTIONAL_PROPERTY = "default";
   public static final String INSERTONLY_TRANSACTIONAL_PROPERTY = "insert_only";
 
+  private final Set<String> supportedCatalogs = new HashSet<String>();
+
   TransactionalValidationListener(Configuration conf) {
     super(conf);
+    supportedCatalogs.add("hive");
   }
 
   @Override
@@ -71,11 +77,23 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
   }
 
   private void handle(PreAlterTableEvent context) throws MetaException {
-    handleAlterTableTransactionalProp(context);
+    if (supportedCatalogs.contains(getTableCatalog(context.getNewTable()))) {
+      handleAlterTableTransactionalProp(context);
+      HiveStrictManagedUtils.validateStrictManagedTableWithThrow(getConf(), context.getNewTable());
+    }
   }
 
   private void handle(PreCreateTableEvent context) throws MetaException {
-    handleCreateTableTransactionalProp(context);
+    if (supportedCatalogs.contains(getTableCatalog(context.getTable()))) {
+      handleCreateTableTransactionalProp(context);
+      HiveStrictManagedUtils.validateStrictManagedTableWithThrow(getConf(), context.getTable());
+    }
+  }
+
+  private String getTableCatalog(Table table) {
+    String catName = table.isSetCatName() ? table.getCatName() :
+      MetaStoreUtils.getDefaultCatalog(getConf());
+    return catName.toLowerCase();
   }
 
   /**
@@ -132,24 +150,26 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     }
     if ("true".equalsIgnoreCase(transactionalValue) && !"true".equalsIgnoreCase(oldTransactionalValue)) {
       if(!isTransactionalPropertiesPresent) {
-        normazlieTransactionalPropertyDefault(newTable);
+        normalizeTransactionalPropertyDefault(newTable);
         isTransactionalPropertiesPresent = true;
         transactionalPropertiesValue = DEFAULT_TRANSACTIONAL_PROPERTY;
       }
-      //only need to check conformance if alter table enabled acid
-      if (!conformToAcid(newTable)) {
-        // INSERT_ONLY tables don't have to conform to ACID requirement like ORC or bucketing
-        if (transactionalPropertiesValue == null || !"insert_only".equalsIgnoreCase(transactionalPropertiesValue)) {
-          throw new MetaException("The table must be stored using an ACID compliant format (such as ORC): "
-          + Warehouse.getQualifiedName(newTable));
-        }
+      // We only need to check conformance if alter table enabled acid.
+      // INSERT_ONLY tables don't have to conform to ACID requirement like ORC or bucketing.
+      boolean isFullAcid = transactionalPropertiesValue == null
+          || !"insert_only".equalsIgnoreCase(transactionalPropertiesValue);
+      if (isFullAcid && !conformToAcid(newTable)) {
+        throw new MetaException("The table must be stored using an ACID compliant "
+            + "format (such as ORC): " + Warehouse.getQualifiedName(newTable));
       }
 
       if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
         throw new MetaException(Warehouse.getQualifiedName(newTable) +
             " cannot be declared transactional because it's an external table");
       }
-      validateTableStructure(context.getHandler(), newTable);
+      if (isFullAcid) {
+        validateTableStructure(context.getHandler(), newTable);
+      }
       hasValidTransactionalValue = true;
     }
 
@@ -188,7 +208,17 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       }
     }
     checkSorted(newTable);
+    if(TxnUtils.isAcidTable(newTable) && !TxnUtils.isAcidTable(oldTable)) {
+      /* we just made an existing table full acid which wasn't acid before and it passed all checks
+      initialize the Write ID sequence so that we can handle assigning ROW_IDs to 'original'
+      files already present in the table. */
+      TxnStore t = TxnUtils.getTxnStore(getConf());
+      //For now assume no partition may have > 10M files.  Perhaps better to count them.
+      t.seedWriteIdOnAcidConversion(new InitializeTableWriteIdsRequest(newTable.getDbName(),
+          newTable.getTableName(), 10000000));
+    }
   }
+
   private void checkSorted(Table newTable) throws MetaException {
     if(!TxnUtils.isAcidTable(newTable)) {
       return;
@@ -216,7 +246,8 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
           newTable.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL));
       return;
     }
-    Configuration conf = MetastoreConf.newMetastoreConf();
+
+    Configuration conf = getConf();
     boolean makeAcid =
         //no point making an acid table if these other props are not set since it will just throw
         //exceptions when someone tries to use the table.
@@ -301,7 +332,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
         }
       }
 
-      if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
+      if (MetaStoreUtils.isExternalTable(newTable)) {
         throw new MetaException(Warehouse.getQualifiedName(newTable) +
             " cannot be declared transactional because it's an external table");
       }
@@ -309,7 +340,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       // normalize prop name
       parameters.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, Boolean.TRUE.toString());
       if(transactionalProperties == null) {
-        normazlieTransactionalPropertyDefault(newTable);
+        normalizeTransactionalPropertyDefault(newTable);
       }
       initializeTransactionalProperties(newTable);
       checkSorted(newTable);
@@ -325,7 +356,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
    * transactional_properties should take on the default value.  Easier to make this explicit in
    * table definition than keep checking everywhere if it's set or not.
    */
-  private void normazlieTransactionalPropertyDefault(Table table) {
+  private void normalizeTransactionalPropertyDefault(Table table) {
     table.getParameters().put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
         DEFAULT_TRANSACTIONAL_PROPERTY);
 
@@ -423,10 +454,9 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     try {
       Warehouse wh = hmsHandler.getWh();
       if (table.getSd().getLocation() == null || table.getSd().getLocation().isEmpty()) {
-        String catName = table.isSetCatName() ? table.getCatName() :
-            MetaStoreUtils.getDefaultCatalog(getConf());
+        String catName = getTableCatalog(table);
         tablePath = wh.getDefaultTablePath(hmsHandler.getMS().getDatabase(
-            catName, table.getDbName()), table.getTableName());
+            catName, table.getDbName()), table);
       } else {
         tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
       }

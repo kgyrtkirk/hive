@@ -128,6 +128,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private long retryDelaySeconds = 0;
   private final ClientCapabilities version;
 
+  //copied from ErrorMsg.java
+  private static final String REPL_EVENTS_MISSING_IN_METASTORE = "Notification events are missing in the meta store.";
+  
   static final protected Logger LOG = LoggerFactory.getLogger(HiveMetaStoreClient.class);
 
   public HiveMetaStoreClient(Configuration conf) throws MetaException {
@@ -616,6 +619,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public void alterCatalog(String catalogName, Catalog newCatalog) throws TException {
+    client.alter_catalog(new AlterCatalogRequest(catalogName, newCatalog));
+  }
+
+  @Override
   public Catalog getCatalog(String catName) throws TException {
     GetCatalogResponse rsp = client.get_catalog(new GetCatalogRequest(catName));
     return rsp == null ? null : filterHook.filterCatalog(rsp.getCatalog());
@@ -685,6 +693,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       return needResults ? new ArrayList<>() : null;
     }
     Partition part = parts.get(0);
+    // Have to set it for each partition too
+    if (!part.isSetCatName()) {
+      final String defaultCat = getDefaultCatalog(conf);
+      parts.forEach(p -> p.setCatName(defaultCat));
+    }
     AddPartitionsRequest req = new AddPartitionsRequest(
         part.getDbName(), part.getTableName(), parts, ifNotExists);
     req.setCatName(part.isSetCatName() ? part.getCatName() : getDefaultCatalog(conf));
@@ -2288,7 +2301,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public boolean refresh_privileges(HiveObjectRef objToRefresh,
+  public boolean refresh_privileges(HiveObjectRef objToRefresh, String authorizer,
       PrivilegeBag grantPrivileges) throws MetaException,
       TException {
     String defaultCat = getDefaultCatalog(conf);
@@ -2305,7 +2318,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     grantReq.setRequestType(GrantRevokeType.GRANT);
     grantReq.setPrivileges(grantPrivileges);
 
-    GrantRevokePrivilegeResponse res = client.refresh_privileges(objToRefresh, grantReq);
+    GrantRevokePrivilegeResponse res = client.refresh_privileges(objToRefresh, authorizer, grantReq);
     if (!res.isSetSuccess()) {
       throw new MetaException("GrantRevokePrivilegeResponse missing success field");
     }
@@ -2493,10 +2506,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void replCommitTxn(long srcTxnId, String replPolicy)
+  public void replCommitTxn(CommitTxnRequest rqst)
           throws NoSuchTxnException, TxnAbortedException, TException {
-    CommitTxnRequest rqst = new CommitTxnRequest(srcTxnId);
-    rqst.setReplPolicy(replPolicy);
     client.commit_txn(rqst);
   }
 
@@ -2707,7 +2718,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                   + "Try setting higher value for hive.metastore.event.db.listener.timetolive. "
                   + "Also, bootstrap the system again to get back the consistent replicated state.",
                   nextEventId, e.getEventId());
-          throw new IllegalStateException("Notification events are missing.");
+          throw new IllegalStateException(REPL_EVENTS_MISSING_IN_METASTORE);
         }
         if ((filter != null) && filter.accept(e)) {
           filtered.addToEvents(e);
@@ -2741,6 +2752,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       rqst.setCatName(getDefaultCatalog(conf));
     }
     return client.fire_listener_event(rqst);
+  }
+
+  @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
+  @Override
+  public void addWriteNotificationLog(WriteNotificationLogRequest rqst) throws TException {
+    client.add_write_notification_log(rqst);
   }
 
   /**

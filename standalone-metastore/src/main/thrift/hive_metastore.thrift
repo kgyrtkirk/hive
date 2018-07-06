@@ -255,6 +255,7 @@ struct HiveObjectPrivilege {
   2: string principalName,
   3: PrincipalType principalType,
   4: PrivilegeGrantInfo grantInfo,
+  5: string authorizer,
 }
 
 struct PrivilegeBag {
@@ -335,6 +336,11 @@ struct Catalog {
 
 struct CreateCatalogRequest {
   1: Catalog catalog
+}
+
+struct AlterCatalogRequest {
+  1: string name,
+  2: Catalog newCat
 }
 
 struct GetCatalogRequest {
@@ -861,6 +867,18 @@ struct AbortTxnsRequest {
 struct CommitTxnRequest {
     1: required i64 txnid,
     2: optional string replPolicy,
+    // Information related to write operations done in this transaction.
+    3: optional list<WriteEventInfo> writeEventInfos,
+}
+
+struct WriteEventInfo {
+    1: required i64    writeId,
+    2: required string database,
+    3: required string table,
+    4: required string files,
+    5: optional string partition,
+    6: optional string tableObj, // repl txn task does not need table object for commit
+    7: optional string partitionObj,
 }
 
 struct ReplTblWriteIdStateRequest {
@@ -1096,6 +1114,8 @@ struct InsertEventRequestData {
     2: required list<string> filesAdded,
     // Checksum of files (hex string of checksum byte payload)
     3: optional list<string> filesAddedChecksum,
+    // Used by acid operation to create the sub directory
+    4: optional list<string> subDirectoryList,
 }
 
 union FireEventRequestData {
@@ -1116,7 +1136,20 @@ struct FireEventRequest {
 struct FireEventResponse {
     // NOP for now, this is just a place holder for future responses
 }
-    
+
+struct WriteNotificationLogRequest {
+    1: required i64 txnId,
+    2: required i64 writeId,
+    3: required string db,
+    4: required string table,
+    5: required InsertEventRequestData fileInfo,
+    6: optional list<string> partitionVals,
+}
+
+struct WriteNotificationLogResponse {
+    // NOP for now, this is just a place holder for future responses
+}
+
 struct MetadataPpdResult {
   1: optional binary metadata,
   2: optional binary includeBitset
@@ -1610,6 +1643,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void setMetaConf(1:string key, 2:string value) throws(1:MetaException o1)
 
   void create_catalog(1: CreateCatalogRequest catalog) throws (1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3: MetaException o3)
+  void alter_catalog(1: AlterCatalogRequest rqst) throws (1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
   GetCatalogResponse get_catalog(1: GetCatalogRequest catName) throws (1:NoSuchObjectException o1, 2:MetaException o2)
   GetCatalogsResponse get_catalogs() throws (1:MetaException o1)
   void drop_catalog(1: DropCatalogRequest catName) throws (1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
@@ -2022,7 +2056,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   bool revoke_privileges(1:PrivilegeBag privileges) throws(1:MetaException o1)
   GrantRevokePrivilegeResponse grant_revoke_privileges(1:GrantRevokePrivilegeRequest request) throws(1:MetaException o1);
   // Revokes all privileges for the object and adds the newly granted privileges for it.
-  GrantRevokePrivilegeResponse refresh_privileges(1:HiveObjectRef objToRefresh, 2:GrantRevokePrivilegeRequest grantRequest) throws(1:MetaException o1);
+  GrantRevokePrivilegeResponse refresh_privileges(1:HiveObjectRef objToRefresh, 2:string authorizer, 3:GrantRevokePrivilegeRequest grantRequest) throws(1:MetaException o1);
 
   // this is used by metastore client to send UGI information to metastore server immediately
   // after setting up a connection.
@@ -2097,6 +2131,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   NotificationEventsCountResponse get_notification_events_count(1:NotificationEventsCountRequest rqst)
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()
+  WriteNotificationLogResponse add_write_notification_log(WriteNotificationLogRequest rqst)
 
   // Repl Change Management api
   CmRecycleResponse cm_recycle(1:CmRecycleRequest request) throws(1:MetaException o1)

@@ -67,6 +67,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (key = 5) (type: boolean)
             Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 5) (type: boolean)
@@ -78,6 +79,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
+            filterExpr: (key = 5) (type: boolean)
             Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 5) (type: boolean)
@@ -138,6 +140,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: c
+            filterExpr: (key = 5) (type: boolean)
             Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 5) (type: boolean)
@@ -149,6 +152,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: d
+            filterExpr: (key = 5) (type: boolean)
             Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 5) (type: boolean)
@@ -179,11 +183,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[34][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[33][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[48][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[40][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[35][bigTable=?] in task 'Stage-9:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[36][bigTable=?] in task 'Stage-10:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[49][bigTable=?] in task 'Stage-9:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[50][bigTable=?] in task 'Stage-10:MAPRED' is a cross product
 PREHOOK: query: explain 
 select * from (select a.key from smb_bucket_1_n4 a join smb_bucket_2_n4 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2_n4 c join smb_bucket_3_n4 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
 PREHOOK: type: QUERY
@@ -214,6 +218,7 @@ STAGE PLANS:
         $hdt$_0:$hdt$_1:b 
           TableScan
             alias: b
+            filterExpr: (key = 5) (type: boolean)
             Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 5) (type: boolean)
@@ -230,6 +235,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (key = 5) (type: boolean)
             Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 5) (type: boolean)
@@ -375,6 +381,7 @@ STAGE PLANS:
         $hdt$_1:$hdt$_1:c 
           TableScan
             alias: c
+            filterExpr: (key = 5) (type: boolean)
             Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 5) (type: boolean)
@@ -391,6 +398,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: d
+            filterExpr: (key = 5) (type: boolean)
             Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 5) (type: boolean)
@@ -420,11 +428,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[34][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[33][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[48][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[40][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[35][bigTable=?] in task 'Stage-9:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[36][bigTable=?] in task 'Stage-10:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[49][bigTable=?] in task 'Stage-9:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[50][bigTable=?] in task 'Stage-10:MAPRED' is a cross product
 PREHOOK: query: select * from (select a.key from smb_bucket_1_n4 a join smb_bucket_2_n4 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2_n4 c join smb_bucket_3_n4 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1_n4

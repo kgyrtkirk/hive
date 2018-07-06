@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.lang.reflect.Constructor;
-import java.sql.Date;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +34,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.hadoop.hive.common.type.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
@@ -68,7 +69,7 @@ import org.apache.hadoop.hive.ql.udf.*;
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
@@ -583,8 +584,8 @@ public class VectorizationContext {
 
         // Re-use an existing, available column of the same required type.
         if (usedOutputColumns.contains(i) ||
-            !(scratchVectorTypeNames)[i].equalsIgnoreCase(columnType) &&
-              scratchDataTypePhysicalVariations[i] == dataTypePhysicalVariation) {
+            !(scratchVectorTypeNames[i].equalsIgnoreCase(columnType) &&
+              scratchDataTypePhysicalVariations[i] == dataTypePhysicalVariation)) {
           continue;
         }
         //Use i
@@ -873,6 +874,7 @@ public class VectorizationContext {
       LOG.debug("Input Expression = " + exprDesc.toString()
           + ", Vectorized Expression = " + ve.toString());
     }
+
     return ve;
   }
 
@@ -1390,9 +1392,10 @@ public class VectorizationContext {
     case INT_FAMILY:
       return new ConstantVectorExpression(outCol, ((Number) constantValue).longValue(), typeInfo);
     case DATE:
-      return new ConstantVectorExpression(outCol, DateWritable.dateToDays((Date) constantValue), typeInfo);
+      return new ConstantVectorExpression(outCol, DateWritableV2.dateToDays((Date) constantValue), typeInfo);
     case TIMESTAMP:
-      return new ConstantVectorExpression(outCol, (Timestamp) constantValue, typeInfo);
+      return new ConstantVectorExpression(outCol,
+          ((org.apache.hadoop.hive.common.type.Timestamp) constantValue).toSqlTimestamp(), typeInfo);
     case INTERVAL_YEAR_MONTH:
       return new ConstantVectorExpression(outCol,
           ((HiveIntervalYearMonth) constantValue).getTotalMonths(), typeInfo);
@@ -1964,7 +1967,7 @@ public class VectorizationContext {
     return cleaned;
   }
 
-  private VectorExpression instantiateExpression(Class<?> vclass, TypeInfo returnTypeInfo,
+  public VectorExpression instantiateExpression(Class<?> vclass, TypeInfo returnTypeInfo,
       DataTypePhysicalVariation returnDataTypePhysicalVariation, Object...args)
       throws HiveException {
     VectorExpression ve = null;
@@ -2190,10 +2193,10 @@ public class VectorizationContext {
       return InConstantType.INT_FAMILY;
 
     case DATE:
-      return InConstantType.TIMESTAMP;
+      return InConstantType.DATE;
 
     case TIMESTAMP:
-      return InConstantType.DATE;
+      return InConstantType.TIMESTAMP;
 
     case FLOAT:
     case DOUBLE:
@@ -2799,6 +2802,8 @@ public class VectorizationContext {
       return createVectorExpression(CastDecimalToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
     } else if (isDateFamily(inputType)) {
       return createVectorExpression(CastDateToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+    } else if (isTimestampFamily(inputType)) {
+      return createVectorExpression(CastTimestampToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
     } else if (isStringFamily(inputType)) {
       return createVectorExpression(CastStringGroupToString.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
     }
@@ -2827,6 +2832,8 @@ public class VectorizationContext {
       return createVectorExpression(CastDecimalToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
     } else if (isDateFamily(inputType)) {
       return createVectorExpression(CastDateToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+    } else if (isTimestampFamily(inputType)) {
+      return createVectorExpression(CastTimestampToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
     } else if (isStringFamily(inputType)) {
       return createVectorExpression(CastStringGroupToChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
     }
@@ -2855,6 +2862,8 @@ public class VectorizationContext {
       return createVectorExpression(CastDecimalToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
     } else if (isDateFamily(inputType)) {
       return createVectorExpression(CastDateToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+    } else if (isTimestampFamily(inputType)) {
+      return createVectorExpression(CastTimestampToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
     } else if (isStringFamily(inputType)) {
       return createVectorExpression(CastStringGroupToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
     }
@@ -3459,20 +3468,20 @@ public class VectorizationContext {
 
   private Object getScalarValue(ExprNodeConstantDesc constDesc)
       throws HiveException {
-    if (constDesc.getTypeString().equalsIgnoreCase("String")) {
-      try {
-         byte[] bytes = ((String) constDesc.getValue()).getBytes("UTF-8");
-         return bytes;
-      } catch (Exception ex) {
-        throw new HiveException(ex);
-      }
-    } else if (constDesc.getTypeString().equalsIgnoreCase("boolean")) {
+    String typeString = constDesc.getTypeString();
+    if (typeString.equalsIgnoreCase("String")) {
+      return ((String) constDesc.getValue()).getBytes(StandardCharsets.UTF_8);
+    } else if (charTypePattern.matcher(typeString).matches()) {
+      return ((HiveChar) constDesc.getValue()).getStrippedValue().getBytes(StandardCharsets.UTF_8);
+    } else if (varcharTypePattern.matcher(typeString).matches()) {
+      return ((HiveVarchar) constDesc.getValue()).getValue().getBytes(StandardCharsets.UTF_8);
+    } else if (typeString.equalsIgnoreCase("boolean")) {
       if (constDesc.getValue().equals(Boolean.valueOf(true))) {
         return 1;
       } else {
         return 0;
       }
-    } else if (decimalTypePattern.matcher(constDesc.getTypeString()).matches()) {
+    } else if (decimalTypePattern.matcher(typeString).matches()) {
       return constDesc.getValue();
     } else {
       return constDesc.getValue();
@@ -3511,7 +3520,9 @@ public class VectorizationContext {
     Object scalarValue = getScalarValue(constDesc);
     switch (primitiveCategory) {
       case DATE:
-        return new Long(DateWritable.dateToDays((Date) scalarValue));
+        return new Long(DateWritableV2.dateToDays((Date) scalarValue));
+      case TIMESTAMP:
+        return ((org.apache.hadoop.hive.common.type.Timestamp) scalarValue).toSqlTimestamp();
       case INTERVAL_YEAR_MONTH:
         return ((HiveIntervalYearMonth) scalarValue).getTotalMonths();
       default:
@@ -3556,10 +3567,10 @@ public class VectorizationContext {
     Object constant = evaluator.evaluate(null);
     Object java = ObjectInspectorUtils.copyToStandardJavaObject(constant, output);
 
-    if (!(java instanceof Timestamp)) {
+    if (!(java instanceof org.apache.hadoop.hive.common.type.Timestamp)) {
       throw new HiveException("Udf: failed to convert to timestamp");
     }
-    Timestamp ts = (Timestamp) java;
+    Timestamp ts = ((org.apache.hadoop.hive.common.type.Timestamp) java).toSqlTimestamp();
     return ts;
   }
 

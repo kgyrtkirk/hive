@@ -954,8 +954,7 @@ CREATE TABLE TXNS (
   TXN_HOST varchar(128) NOT NULL,
   TXN_AGENT_INFO varchar2(128),
   TXN_META_INFO varchar2(128),
-  TXN_HEARTBEAT_COUNT number(10),
-  TXN_TYPE number(10)
+  TXN_HEARTBEAT_COUNT number(10)
 ) ROWDEPENDENCIES;
 
 CREATE TABLE TXN_COMPONENTS (
@@ -1134,7 +1133,6 @@ CREATE TABLE RUNTIME_STATS (
 );
 
 CREATE INDEX IDX_RUNTIME_STATS_CREATE_TIME ON RUNTIME_STATS(CREATE_TIME);
-
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script

@@ -86,9 +86,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   private transient boolean rootInitializeCalled = false;
   protected transient long numRows = 0;
   protected transient long runTimeNumRows = 0;
-  protected int indexForTezUnion = -1;
   private transient Configuration hconf;
   protected final transient Collection<Future<?>> asyncInitOperations = new HashSet<>();
+  private String marker;
 
   protected int bucketingVersion = -1;
   // It can be optimized later so that an operator operator (init/close) is performed
@@ -134,6 +134,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     initOperatorId();
   }
 
+  /** Kryo ctor. */
   protected Operator() {
     childOperators = new ArrayList<Operator<? extends OperatorDesc>>();
     parentOperators = new ArrayList<Operator<? extends OperatorDesc>>();
@@ -243,10 +244,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   // for output rows of this operator
   protected transient ObjectInspector outputObjInspector;
 
-
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * This function is not named getId(), to make sure java serialization does
@@ -661,6 +658,18 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   // an blocking operator (e.g. GroupByOperator and JoinOperator) can
   // override this method to forward its outputs
   public void flush() throws HiveException {
+  }
+
+  // Recursive flush to flush all the tree operators
+  public void flushRecursive() throws HiveException {
+    flush();
+    if (childOperators == null) {
+      return;
+    }
+
+    for (Operator<?> child : childOperators) {
+      child.flushRecursive();
+    }
   }
 
   public void processGroup(int tag) throws HiveException {
@@ -1155,12 +1164,16 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return operatorId;
   }
 
-  public void initOperatorId() {
-    setOperatorId(getName() + "_" + this.id);
+  public String getMarker() {
+    return marker;
   }
 
-  public void setOperatorId(String operatorId) {
-    this.operatorId = operatorId;
+  public void setMarker(String marker) {
+    this.marker = marker;
+  }
+
+  public void initOperatorId() {
+    this.operatorId = getName() + "_" + this.id;
   }
 
   /*
@@ -1527,7 +1540,12 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void setCompilationOpContext(CompilationOpContext ctx) {
+    if (cContext == ctx) {
+      return;
+    }
     cContext = ctx;
+    id = String.valueOf(ctx.nextOperatorId());
+    initOperatorId();
   }
 
   /** @return Compilation operator context. Only available during compilation. */
@@ -1538,8 +1556,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   private void publishRunTimeStats() throws HiveException {
     StatsPublisher statsPublisher = new FSStatsPublisher();
     StatsCollectionContext sContext = new StatsCollectionContext(hconf);
-    sContext.setIndexForTezUnion(indexForTezUnion);
     sContext.setStatsTmpDir(conf.getRuntimeStatsTmpDir());
+    sContext.setContextSuffix(getOperatorId());
 
     if (!statsPublisher.connect(sContext)) {
       LOG.error("StatsPublishing error: cannot connect to database");
@@ -1559,14 +1577,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       // Not changing the interface to maintain backward compatibility
       throw new HiveException(ErrorMsg.STATSPUBLISHER_CLOSING_ERROR.getErrorCodedMsg());
     }
-  }
-
-  public int getIndexForTezUnion() {
-    return indexForTezUnion;
-  }
-
-  public void setIndexForTezUnion(int indexForTezUnion) {
-    this.indexForTezUnion = indexForTezUnion;
   }
 
   /**

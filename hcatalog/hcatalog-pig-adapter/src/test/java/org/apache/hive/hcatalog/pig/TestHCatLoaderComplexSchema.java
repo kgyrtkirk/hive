@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeTrue;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
@@ -39,7 +41,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.StorageFormats;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.pig.ExecType;
+import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
 import org.apache.pig.PigServer;
 import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.backend.executionengine.ExecJob;
@@ -73,6 +75,9 @@ public class TestHCatLoaderComplexSchema {
         put(IOConstants.PARQUETFILE, new HashSet<String>() {{
           add("testMapNullKey");
         }});
+        put(IOConstants.JSONFILE, new HashSet<String>() {{
+          add("testMapNullKey");
+        }});
       }};
 
   private String storageFormat;
@@ -101,6 +106,16 @@ public class TestHCatLoaderComplexSchema {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     HiveConf hiveConf = new HiveConf(TestHCatLoaderComplexSchema.class);
+    Path workDir = new Path(System.getProperty("test.tmp.dir",
+        "target" + File.separator + "test" + File.separator + "tmp"));
+    hiveConf.set("mapred.local.dir", workDir + File.separator + "TestHCatLoaderComplexSchema"
+        + File.separator + "mapred" + File.separator + "local");
+    hiveConf.set("mapred.system.dir", workDir + File.separator + "TestHCatLoaderComplexSchema"
+        + File.separator + "mapred" + File.separator + "system");
+    hiveConf.set("mapreduce.jobtracker.staging.root.dir", workDir + File.separator + "TestHCatLoaderComplexSchema"
+        + File.separator + "mapred" + File.separator + "staging");
+    hiveConf.set("mapred.temp.dir", workDir + File.separator + "TestHCatLoaderComplexSchema"
+        + File.separator + "mapred" + File.separator + "temp");
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
@@ -212,7 +227,7 @@ public class TestHCatLoaderComplexSchema {
     MockLoader.setData(tablename + "Input", data);
     try {
       createTable(tablename, tableSchema);
-      PigServer server = new PigServer(ExecType.LOCAL);
+      PigServer server = HCatBaseTest.createPigServer(false);
       server.setBatchOn();
       server.registerQuery("A = load '" + tablename + "Input' using org.apache.hive.hcatalog.pig.MockLoader() AS (" + pigSchema + ");");
       Schema dumpedASchema = server.dumpSchema("A");
