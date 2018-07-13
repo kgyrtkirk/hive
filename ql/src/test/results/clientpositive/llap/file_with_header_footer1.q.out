@@ -42,6 +42,25 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_1
 #### A masked pattern was here ####
 chuan	1
+shanyu2	1
+dave	1
+david3	1
+xifa	1
+xifa2	1
+chuan2	1
+dave2	1
+shanyu	1
+steven	1
+steven2	1
+PREHOOK: query: SELECT name,count(*) FROM header_footer_table_1 group by name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@header_footer_table_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT name,count(*) FROM header_footer_table_1 group by name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@header_footer_table_1
+#### A masked pattern was here ####
+chuan	1
 footer2	3
 shanyu2	1
 dave	1

@@ -5,6 +5,10 @@ CREATE EXTERNAL TABLE header_footer_table_1 (name string, message string, id int
 LOAD DATA LOCAL INPATH '../../data/files/header_footer_table_1' OVERWRITE INTO TABLE header_footer_table_1;
 
 SELECT * FROM header_footer_table_1;
+
+set hive.vectorized.execution.enabled=false;
+SELECT name,count(*) FROM header_footer_table_1 group by name;
+set hive.vectorized.execution.enabled=true;
 SELECT name,count(*) FROM header_footer_table_1 group by name;
 
 explain

@@ -11,9 +11,11 @@ CREATE EXTERNAL TABLE header_footer_table_1 (name string, message string, id int
 
 SELECT * FROM header_footer_table_1;
 
+set hive.vectorized.execution.enabled=false;
+
 explain
 SELECT count(distinct name) FROM header_footer_table_1;
-SELECT count(distinct name) FROM header_footer_table_1;
+SELECT assert_true(count(distinct name)=11) FROM header_footer_table_1;
 
 SELECT * FROM header_footer_table_1 WHERE id < 50;
 
