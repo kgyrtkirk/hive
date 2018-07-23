@@ -552,7 +552,9 @@ public class HiveStreamingConnection implements StreamingConnection {
       getMSC().close();
       getHeatbeatMSC().close();
     }
-    LOG.info("Closed streaming connection. Agent: {} Stats: {}", getAgentInfo(), getConnectionStats());
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Closed streaming connection. Agent: {} Stats: {}", getAgentInfo(), getConnectionStats());
+    }
   }
 
   @Override
@@ -1037,7 +1039,7 @@ public class HiveStreamingConnection implements StreamingConnection {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Overriding HiveConf setting : " + var + " = " + value);
     }
-    conf.setBoolVar(var, true);
+    conf.setBoolVar(var, value);
   }
 
   private static void setHiveConf(HiveConf conf, String var) {

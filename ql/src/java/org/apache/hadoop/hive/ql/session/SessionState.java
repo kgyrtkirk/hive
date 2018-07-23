@@ -607,10 +607,8 @@ public class SessionState {
   private static void start(SessionState startSs, boolean isAsync, LogHelper console) {
     setCurrentSessionState(startSs);
 
-    synchronized(SessionState.class) {
-      if (!startSs.isStarted.compareAndSet(false, true)) {
-        return;
-      }
+    if (!startSs.isStarted.compareAndSet(false, true)) {
+      return;
     }
 
     if (startSs.hiveHist == null){
@@ -897,7 +895,7 @@ public class SessionState {
   /**
    * Setup authentication and authorization plugins for this session.
    */
-  private void setupAuth() {
+  private synchronized void setupAuth() {
 
     if (authenticator != null) {
       // auth has been initialized

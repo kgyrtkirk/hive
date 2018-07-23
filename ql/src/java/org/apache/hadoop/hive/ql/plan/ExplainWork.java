@@ -39,8 +39,8 @@ public class ExplainWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private Path resFile;
-  private ArrayList<Task<? extends Serializable>> rootTasks;
-  private Task<? extends Serializable> fetchTask;
+  private ArrayList<Task<?>> rootTasks;
+  private Task<?> fetchTask;
   private HashSet<ReadEntity> inputs;
   private ParseContext pCtx;
 
@@ -50,6 +50,8 @@ public class ExplainWork implements Serializable {
 
   String cboInfo;
 
+  private String optimizedSQL;
+
   private transient BaseSemanticAnalyzer analyzer;
 
   public ExplainWork() {
@@ -57,13 +59,14 @@ public class ExplainWork implements Serializable {
 
   public ExplainWork(Path resFile,
       ParseContext pCtx,
-      List<Task<? extends Serializable>> rootTasks,
-      Task<? extends Serializable> fetchTask,
+      List<Task<?>> rootTasks,
+      Task<?> fetchTask,
       BaseSemanticAnalyzer analyzer,
       ExplainConfiguration config,
-      String cboInfo) {
+      String cboInfo,
+      String optimizedSQL) {
     this.resFile = resFile;
-    this.rootTasks = new ArrayList<Task<? extends Serializable>>(rootTasks);
+    this.rootTasks = new ArrayList<Task<?>>(rootTasks);
     this.fetchTask = fetchTask;
     this.analyzer = analyzer;
     if (analyzer != null) {
@@ -71,6 +74,7 @@ public class ExplainWork implements Serializable {
     }
     this.pCtx = pCtx;
     this.cboInfo = cboInfo;
+    this.optimizedSQL = optimizedSQL;
     this.config = config;
   }
 
@@ -82,19 +86,19 @@ public class ExplainWork implements Serializable {
     this.resFile = resFile;
   }
 
-  public ArrayList<Task<? extends Serializable>> getRootTasks() {
+  public ArrayList<Task<?>> getRootTasks() {
     return rootTasks;
   }
 
-  public void setRootTasks(ArrayList<Task<? extends Serializable>> rootTasks) {
+  public void setRootTasks(ArrayList<Task<?>> rootTasks) {
     this.rootTasks = rootTasks;
   }
 
-  public Task<? extends Serializable> getFetchTask() {
+  public Task<?> getFetchTask() {
     return fetchTask;
   }
 
-  public void setFetchTask(Task<? extends Serializable> fetchTask) {
+  public void setFetchTask(Task<?> fetchTask) {
     this.fetchTask = fetchTask;
   }
 
@@ -168,6 +172,14 @@ public class ExplainWork implements Serializable {
 
   public void setCboInfo(String cboInfo) {
     this.cboInfo = cboInfo;
+  }
+
+  public String getOptimizedSQL() {
+    return optimizedSQL;
+  }
+
+  public void setOptimizedSQL(String optimizedSQL) {
+    this.optimizedSQL = optimizedSQL;
   }
 
   public ExplainConfiguration getConfig() {

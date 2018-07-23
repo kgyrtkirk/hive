@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.lang.reflect.Method;
+import java.util.function.BiFunction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -213,6 +214,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("ceiling", GenericUDFCeil.class);
     system.registerUDF("rand", UDFRand.class, false);
     system.registerGenericUDF("abs", GenericUDFAbs.class);
+    system.registerGenericUDF("json_read", GenericUDFJsonRead.class);
     system.registerGenericUDF("sq_count_check", GenericUDFSQCountCheck.class);
     system.registerGenericUDF("enforce_constraint", GenericUDFEnforceConstraint.class);
     system.registerGenericUDF("pmod", GenericUDFPosMod.class);
@@ -289,15 +291,15 @@ public final class FunctionRegistry {
     system.registerGenericUDF(UNARY_PLUS_FUNC_NAME, GenericUDFOPPositive.class);
     system.registerGenericUDF(UNARY_MINUS_FUNC_NAME, GenericUDFOPNegative.class);
 
-    system.registerUDF("day", UDFDayOfMonth.class, false);
-    system.registerUDF("dayofmonth", UDFDayOfMonth.class, false);
+    system.registerGenericUDF("day", UDFDayOfMonth.class);
+    system.registerGenericUDF("dayofmonth", UDFDayOfMonth.class);
     system.registerUDF("dayofweek", UDFDayOfWeek.class, false);
-    system.registerUDF("month", UDFMonth.class, false);
+    system.registerGenericUDF("month", UDFMonth.class);
     system.registerGenericUDF("quarter", GenericUDFQuarter.class);
-    system.registerUDF("year", UDFYear.class, false);
-    system.registerUDF("hour", UDFHour.class, false);
-    system.registerUDF("minute", UDFMinute.class, false);
-    system.registerUDF("second", UDFSecond.class, false);
+    system.registerGenericUDF("year", UDFYear.class);
+    system.registerGenericUDF("hour", UDFHour.class);
+    system.registerGenericUDF("minute", UDFMinute.class);
+    system.registerGenericUDF("second", UDFSecond.class);
     system.registerUDF("from_unixtime", UDFFromUnixTime.class, false);
     system.registerGenericUDF("to_date", GenericUDFDate.class);
     system.registerUDF("weekofyear", UDFWeekOfYear.class, false);
@@ -807,9 +809,16 @@ public final class FunctionRegistry {
     if (a.equals(b)) {
       return a;
     }
+
     if (a.getCategory() != Category.PRIMITIVE || b.getCategory() != Category.PRIMITIVE) {
+      // It is not primitive; check if it is a struct and we can infer a common class
+      if (a.getCategory() == Category.STRUCT && b.getCategory() == Category.STRUCT) {
+        return getCommonClassForStruct((StructTypeInfo)a, (StructTypeInfo)b,
+            (type1, type2) -> getCommonClassForComparison(type1, type2));
+      }
       return null;
     }
+
     PrimitiveCategory pcA = ((PrimitiveTypeInfo)a).getPrimitiveCategory();
     PrimitiveCategory pcB = ((PrimitiveTypeInfo)b).getPrimitiveCategory();
 
@@ -942,7 +951,8 @@ public final class FunctionRegistry {
     }
     // It is not primitive; check if it is a struct and we can infer a common class
     if (a.getCategory() == Category.STRUCT && b.getCategory() == Category.STRUCT) {
-      return getCommonClassForStruct((StructTypeInfo)a, (StructTypeInfo)b);
+      return getCommonClassForStruct((StructTypeInfo)a, (StructTypeInfo)b,
+          (type1, type2) -> getCommonClass(type1, type2));
     }
     return null;
   }
@@ -953,7 +963,8 @@ public final class FunctionRegistry {
    *
    * @return null if no common class could be found.
    */
-  public static TypeInfo getCommonClassForStruct(StructTypeInfo a, StructTypeInfo b) {
+  public static TypeInfo getCommonClassForStruct(StructTypeInfo a, StructTypeInfo b,
+      BiFunction<TypeInfo, TypeInfo, TypeInfo> commonClassFunction) {
     if (a == b || a.equals(b)) {
       return a;
     }
@@ -982,7 +993,7 @@ public final class FunctionRegistry {
     ArrayList<TypeInfo> fromTypes = a.getAllStructFieldTypeInfos();
     ArrayList<TypeInfo> toTypes = b.getAllStructFieldTypeInfos();
     for (int i = 0; i < fromTypes.size(); i++) {
-      TypeInfo commonType = getCommonClass(fromTypes.get(i), toTypes.get(i));
+      TypeInfo commonType = commonClassFunction.apply(fromTypes.get(i), toTypes.get(i));
       if (commonType == null) {
         return null;
       }

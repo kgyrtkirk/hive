@@ -347,11 +347,15 @@ public class TestVectorStringUnary {
     resultVectorExtractRow.init(new TypeInfo[] { targetTypeInfo }, new int[] { columns.size() });
     Object[] scrqtchRow = new Object[1];
 
+    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
+
+    /*
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo.toString() +
         " targetTypeInfo " + targetTypeInfo.toString() +
         " stringUnaryTestMode " + stringUnaryTestMode +
         " vectorExpression " + vectorExpression.getClass().getSimpleName());
+    */
 
     batchSource.resetBatchIteration();
     int rowIndex = 0;
