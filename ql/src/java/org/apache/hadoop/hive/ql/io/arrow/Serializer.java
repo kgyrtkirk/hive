@@ -30,7 +30,7 @@ import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.IntervalDayVector;
 import org.apache.arrow.vector.IntervalYearVector;
 import org.apache.arrow.vector.SmallIntVector;
-import org.apache.arrow.vector.TimeStampMicroVector;
+import org.apache.arrow.vector.TimeStampMicroTZVector;
 import org.apache.arrow.vector.TinyIntVector;
 import org.apache.arrow.vector.VarBinaryVector;
 import org.apache.arrow.vector.VarCharVector;
@@ -38,6 +38,7 @@ import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.complex.ListVector;
 import org.apache.arrow.vector.complex.MapVector;
 import org.apache.arrow.vector.complex.NullableMapVector;
+import org.apache.arrow.vector.types.TimeUnit;
 import org.apache.arrow.vector.types.Types;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.FieldType;
@@ -68,11 +69,13 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.arrow.memory.BufferAllocator;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ARROW_BATCH_SIZE;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ARROW_BATCH_ALLOCATOR_LIMIT;
 import static org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil.createColumnVector;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MICROS_PER_MILLIS;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MILLIS_PER_SECOND;
@@ -95,20 +98,29 @@ class Serializer {
   private final VectorizedRowBatch vectorizedRowBatch;
   private final VectorAssignRow vectorAssignRow;
   private int batchSize;
+  private BufferAllocator allocator;
 
   private final NullableMapVector rootVector;
 
   Serializer(ArrowColumnarBatchSerDe serDe) throws SerDeException {
     MAX_BUFFERED_ROWS = HiveConf.getIntVar(serDe.conf, HIVE_ARROW_BATCH_SIZE);
+    long childAllocatorLimit = HiveConf.getLongVar(serDe.conf, HIVE_ARROW_BATCH_ALLOCATOR_LIMIT);
     ArrowColumnarBatchSerDe.LOG.info("ArrowColumnarBatchSerDe max number of buffered columns: " + MAX_BUFFERED_ROWS);
+    String childAllocatorName = Thread.currentThread().getName();
+    //Use per-task allocator for accounting only, no need to reserve per-task memory
+    long childAllocatorReservation = 0L;
+    //Break out accounting of direct memory per-task, so we can check no memory is leaked when task is completed
+    allocator = serDe.rootAllocator.newChildAllocator(
+       childAllocatorName,
+       childAllocatorReservation,
+       childAllocatorLimit);
 
     // Schema
     structTypeInfo = (StructTypeInfo) getTypeInfoFromObjectInspector(serDe.rowObjectInspector);
     List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
     fieldSize = fieldTypeInfos.size();
-
     // Init Arrow stuffs
-    rootVector = NullableMapVector.empty(null, serDe.rootAllocator);
+    rootVector = NullableMapVector.empty(null, allocator);
 
     // Init Hive stuffs
     vectorizedRowBatch = new VectorizedRowBatch(fieldSize);
@@ -145,7 +157,7 @@ class Serializer {
 
     batchSize = 0;
     VectorSchemaRoot vectorSchemaRoot = new VectorSchemaRoot(rootVector);
-    return new ArrowWrapperWritable(vectorSchemaRoot);
+    return new ArrowWrapperWritable(vectorSchemaRoot, allocator, rootVector);
   }
 
   private FieldType toFieldType(TypeInfo typeInfo) {
@@ -177,8 +189,8 @@ class Serializer {
           case DATE:
             return Types.MinorType.DATEDAY.getType();
           case TIMESTAMP:
-            // HIVE-19723: Prefer microsecond because Spark supports it
-            return Types.MinorType.TIMESTAMPMICRO.getType();
+            // HIVE-19853: Prefer timestamp in microsecond with time zone because Spark supports it
+            return new ArrowType.Timestamp(TimeUnit.MICROSECOND, "UTC");
           case BINARY:
             return Types.MinorType.VARBINARY.getType();
           case DECIMAL:
@@ -433,11 +445,11 @@ class Serializer {
         break;
       case TIMESTAMP:
         {
-          final TimeStampMicroVector timeStampMicroVector = (TimeStampMicroVector) arrowVector;
+          final TimeStampMicroTZVector timeStampMicroTZVector = (TimeStampMicroTZVector) arrowVector;
           final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
           for (int i = 0; i < size; i++) {
             if (hiveVector.isNull[i]) {
-              timeStampMicroVector.setNull(i);
+              timeStampMicroTZVector.setNull(i);
             } else {
               // Time = second + sub-second
               final long secondInMillis = timestampColumnVector.getTime(i);
@@ -446,9 +458,9 @@ class Serializer {
 
               if ((secondInMillis > 0 && secondInMicros < 0) || (secondInMillis < 0 && secondInMicros > 0)) {
                 // If the timestamp cannot be represented in long microsecond, set it as a null value
-                timeStampMicroVector.setNull(i);
+                timeStampMicroTZVector.setNull(i);
               } else {
-                timeStampMicroVector.set(i, secondInMicros + subSecondInMicros);
+                timeStampMicroTZVector.set(i, secondInMicros + subSecondInMicros);
               }
             }
           }

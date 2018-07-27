@@ -213,9 +213,9 @@ public final class QueryResultsCache {
     }
 
     public String toString() {
-      return "CacheEntry query: [" + getQueryInfo().getLookupInfo().getQueryText()
-          + "], status: " + status + ", location: " + cachedResultsPath
-          + ", size: " + size;
+      return String.format("CacheEntry#%s query: [ %s ], status: %s, location: %s, size: %d",
+          System.identityHashCode(this), getQueryInfo().getLookupInfo().getQueryText(), status,
+          cachedResultsPath, size);
     }
 
     public boolean addReader() {
@@ -297,7 +297,7 @@ public final class QueryResultsCache {
      *         false if the status changes from PENDING to INVALID
      */
     public boolean waitForValidStatus() {
-      LOG.info("Waiting on pending cacheEntry");
+      LOG.info("Waiting on pending cacheEntry: {}", this);
       long timeout = 1000;
 
       long startTime = System.nanoTime();
@@ -540,6 +540,12 @@ public final class QueryResultsCache {
       } else {
         // No actual result directory, no need to move anything.
         cachedResultsPath = zeroRowsPath;
+        // Even if there are no results to move, at least check that we have permission
+        // to check the existence of zeroRowsPath, or the read using the cache will fail.
+        // A failure here will cause this query to not be added to the cache.
+        FileSystem cacheFs = cachedResultsPath.getFileSystem(conf);
+        boolean fakePathExists = cacheFs.exists(zeroRowsPath);
+
         resultSize = 0;
         requiresMove = false;
       }

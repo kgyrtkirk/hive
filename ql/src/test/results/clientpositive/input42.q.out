@@ -4,6 +4,9 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcpart a where a.ds='2008-04-08'
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -109,6 +112,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: a
+          filterExpr: (ds = '2008-04-08') (type: boolean)
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Select Operator
@@ -1135,6 +1139,9 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcpart a where a.ds='2008-04-08' and key < 200
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND `key` < 200
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1240,6 +1247,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: a
+          filterExpr: ((ds = '2008-04-08') and (UDFToDouble(key) < 200.0D)) (type: boolean)
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -1648,6 +1656,9 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcpart a where a.ds='2008-04-08' and rand(100) < 0.1
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND RAND(100) < 0.1
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

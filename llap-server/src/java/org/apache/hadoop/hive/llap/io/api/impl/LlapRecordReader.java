@@ -291,6 +291,12 @@ class LlapRecordReader
 
   private boolean checkOrcSchemaEvolution() {
     SchemaEvolution evolution = rp.getSchemaEvolution();
+
+    if (evolution.hasConversion() && !evolution.isOnlyImplicitConversion()) {
+
+      // We do not support data type conversion when reading encoded ORC data.
+      return false;
+    }
     // TODO: should this just use physical IDs?
     for (int i = 0; i < includes.getReaderLogicalColumnIds().size(); ++i) {
       int projectedColId = includes.getReaderLogicalColumnIds().get(i);

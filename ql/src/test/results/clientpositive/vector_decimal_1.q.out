@@ -705,7 +705,7 @@ STAGE PLANS:
                 native: true
                 vectorizationSchemaColumns: [0:t:decimal(4,2)/DECIMAL_64, 1:u:decimal(5,0)/DECIMAL_64, 2:v:decimal(10,0)/DECIMAL_64, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
-              expressions: UDFToString(t) (type: string)
+              expressions: CAST( t AS STRING) (type: string)
               outputColumnNames: _col0
               Select Vectorization:
                   className: VectorSelectOperator
@@ -861,7 +861,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
 NULL
-1969-12-31 16:00:17.29
+1970-01-01 00:00:17.29
 PREHOOK: query: drop table decimal_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_1

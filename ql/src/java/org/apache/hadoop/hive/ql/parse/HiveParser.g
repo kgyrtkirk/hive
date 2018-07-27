@@ -123,6 +123,7 @@ TOK_INT;
 TOK_BIGINT;
 TOK_BOOLEAN;
 TOK_FLOAT;
+TOK_REAL;
 TOK_DOUBLE;
 TOK_DATE;
 TOK_DATELITERAL;
@@ -333,6 +334,7 @@ TOK_TABNAME;
 TOK_TABSRC;
 TOK_RESTRICT;
 TOK_CASCADE;
+TOK_FORCE;
 TOK_TABLESKEWED;
 TOK_TABCOLVALUE;
 TOK_TABCOLVALUE_PAIR;
@@ -517,6 +519,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_INT", "INT");
     xlateMap.put("KW_BIGINT", "BIGINT");
     xlateMap.put("KW_FLOAT", "FLOAT");
+    xlateMap.put("KW_REAL", "REAL");
     xlateMap.put("KW_DOUBLE", "DOUBLE");
     xlateMap.put("KW_PRECISION", "PRECISION");
     xlateMap.put("KW_DATE", "DATE");
@@ -796,6 +799,7 @@ explainOption
     | KW_AUTHORIZATION
     | KW_ANALYZE
     | KW_REOPTIMIZATION
+    | KW_LOCKS
     | (KW_VECTORIZATION vectorizationOnly? vectorizatonDetail?)
     ;
 
@@ -983,6 +987,13 @@ ifNotExists
     -> ^(TOK_IFNOTEXISTS)
     ;
 
+force
+@init { msgs.push("force clause"); }
+@after { msgs.pop(); }
+    : KW_FORCE
+    -> ^(TOK_FORCE)
+    ;
+
 rewriteEnabled
 @init { pushMsg("rewrite enabled clause", state); }
 @after { popMsg(state); }
@@ -1104,7 +1115,8 @@ createTableStatement
 truncateTableStatement
 @init { pushMsg("truncate table statement", state); }
 @after { popMsg(state); }
-    : KW_TRUNCATE KW_TABLE tablePartitionPrefix (KW_COLUMNS LPAREN columnNameList RPAREN)? -> ^(TOK_TRUNCATETABLE tablePartitionPrefix columnNameList?);
+    : KW_TRUNCATE KW_TABLE tablePartitionPrefix (KW_COLUMNS LPAREN columnNameList RPAREN)? force?
+    -> ^(TOK_TRUNCATETABLE tablePartitionPrefix columnNameList? force?);
 
 dropTableStatement
 @init { pushMsg("drop statement", state); }
@@ -2522,6 +2534,7 @@ primitiveType
     | KW_BIGINT        ->    TOK_BIGINT
     | KW_BOOLEAN       ->    TOK_BOOLEAN
     | KW_FLOAT         ->    TOK_FLOAT
+    | KW_REAL         ->     TOK_FLOAT
     | KW_DOUBLE KW_PRECISION?       ->    TOK_DOUBLE
     | KW_DATE          ->    TOK_DATE
     | KW_DATETIME      ->    TOK_DATETIME

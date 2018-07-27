@@ -91,6 +91,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((cbigint = 762L) or ((UDFToFloat(csmallint) < cfloat) and (UDFToDouble(ctimestamp2) > -5.0D) and (cdouble <> UDFToDouble(cint))) or (cstring1 = 'a') or ((CAST( cbigint AS decimal(22,3)) <= -1.389) and (cstring2 <> 'a') and (CAST( cint AS decimal(13,3)) <> 79.553) and (cboolean2 <> cboolean1))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -263,7 +264,7 @@ WHERE  ((762 = cbigint)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-1.6000018929276082E8	1.5999646129276082E8	-1.5999646129276082E8	1.5999646129276082E8	2.5598867626205912E16	-8706342.964000002	-1.6000018929276082E8	5.481251832900263E8	4.095728233294762E24	8549.657499338193	-5.481251832900263E8	3.8812872199726546E8	2.12743126884874784E17	3.0054786945575117E17	-5.700752675298234	-3.0054786945575117E17	3.0054786945575117E17	973579.3664121248	5.482224634724039E8	-973579.3664121248	-18.377427808018613	-64	2044	-6.573680812059058E-5	18.377427808018613
+-1.2803533196894065E7	-1.2807261196894065E7	1.2807261196894065E7	-1.2807261196894065E7	1.6402593936546838E14	-275125.557	1.2803533196894065E7	6.102557176084042E8	-2.1007230485194618E21	9480.304481867239	-6.102557176084042E8	6.230629788052982E8	3.8022774524605715E17	3.7261870682317882E17	-11.503947368421052	-3.7261870682317882E17	3.7261870682317882E17	1083935.5552547143	6.104250214589658E8	-1083935.5552547143	46.53705506862114	-51	1029	-4.705076768887381E-5	-46.53705506862114
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT MAX(cint),
        (MAX(cint) / -3728),
@@ -351,6 +352,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (((cbigint <= 197L) and (UDFToLong(cint) < cbigint)) or ((cdouble >= -26.28D) and (UDFToDouble(csmallint) > cdouble)) or ((UDFToFloat(ctinyint) > cfloat) and cstring1 regexp '.*ss.*') or ((cfloat > 79.553) and (cstring2 like '10%'))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -603,6 +605,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((ctimestamp1 = ctimestamp2) or (cfloat = 762) or (cstring1 = 'ss') or ((UDFToLong(csmallint) <= cbigint) and (cboolean2 = 1)) or (cboolean1 is not null and ctimestamp2 is not null and (cstring2 > 'a'))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -834,6 +837,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (((ctimestamp2 <= ctimestamp1) and (UDFToDouble(cbigint) <> cdouble) and (cstring1 >= 'ss')) or ((csmallint < UDFToShort(ctinyint)) and (UDFToDouble(ctimestamp1) >= 0.0D)) or (cfloat = 17)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -979,7 +983,7 @@ WHERE  (((ctimestamp2 <= ctimestamp1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
--0.5934409161894847	6980.406559083811	6979.813118167622	2141851355	-11761.597368421053	-6980.406559083811	1.5852855222071928E8	-0.5934409161894847	2.5099887741860824E16	1.52140608502098611E18	-2141851355	-13.510823917813244	79.553	-3.998255191435152E19
+17.0	6998.0	7015.0	1942088700	412.6470588235294	-6998.0	1.7455632335840696E8	17.0	2.9018961928004512E16	1.0774839990192407E18	-1942088700	-11.125857045077739	17.0	-2.8316279494225646E19
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT cint,
        cdouble,
@@ -1073,6 +1077,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((cstring1 regexp 'a.*' and (cstring2 like '%ss%')) or ((cboolean2 <> 1) and (CAST( csmallint AS decimal(8,3)) < 79.553) and (UDFToInteger(ctinyint) <> -257)) or ((cdouble > UDFToDouble(ctinyint)) and (cfloat >= UDFToFloat(cint))) or ((UDFToLong(cint) < cbigint) and (UDFToLong(ctinyint) > cbigint))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1368,6 +1373,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (((UDFToInteger(ctinyint) < 197) and (UDFToLong(cint) = cbigint)) or (cbigint = 359L) or (cboolean1 < 0) or ((cstring1 like '%ss') and (cfloat <= UDFToFloat(ctinyint)))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1612,6 +1618,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (((CAST( csmallint AS decimal(7,2)) > -26.28) and (cstring2 like 'ss')) or ((cdouble <= UDFToDouble(cbigint)) and (cstring1 >= 'ss') and (UDFToDouble(cint) <> cdouble)) or (UDFToInteger(ctinyint) = -89010) or ((UDFToFloat(cbigint) <= cfloat) and (CAST( csmallint AS decimal(7,2)) >= -26.28))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1914,6 +1921,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (((CAST( cint AS decimal(13,3)) <= -1.389) and (csmallint < UDFToShort(ctinyint)) and (UDFToInteger(csmallint) < -6432)) or ((cdouble >= UDFToDouble(cfloat)) and (cstring2 <= 'a')) or ((cstring1 like 'ss%') and (CAST( cbigint AS decimal(22,3)) < 10.175))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2158,6 +2166,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((UDFToInteger(csmallint) >= -257) and ((UDFToInteger(csmallint) = -6432) or ((UDFToDouble(cint) >= cdouble) and (UDFToInteger(ctinyint) <= cint)))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2433,6 +2442,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((cdouble > 2563.58D) and (((cbigint >= UDFToLong(cint)) and (UDFToInteger(csmallint) < cint) and (cfloat < -5638.15)) or (CAST( ctinyint AS decimal(6,2)) = 2563.58) or ((cdouble <= UDFToDouble(cbigint)) and (CAST( cbigint AS decimal(21,2)) < -5638.15)))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2752,6 +2762,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((UDFToDouble(ctimestamp1) <> 0.0D) and (((UDFToInteger(ctinyint) <> -257) and cboolean2 is not null and cstring1 regexp '.*ss' and (UDFToDouble(ctimestamp1) > -3.0D)) or (UDFToDouble(ctimestamp2) = -5.0D) or ((UDFToDouble(ctimestamp1) < 0.0D) and (cstring2 like '%b%')) or (cdouble = UDFToDouble(cint)) or (cboolean1 is null and (cfloat < UDFToFloat(cint))))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -3152,6 +3163,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((((cdouble < UDFToDouble(csmallint)) and (cboolean2 = cboolean1) and (CAST( cbigint AS decimal(22,3)) <= -863.257)) or ((cint >= -257) and cstring1 is not null and (cboolean1 >= 1)) or cstring2 regexp 'b' or ((csmallint >= UDFToShort(ctinyint)) and ctimestamp2 is null)) and cboolean1 is not null) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -3697,7 +3709,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesnullorc
-                  Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12288 Data size: 9450 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -3705,7 +3717,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: []
-                    Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 12288 Data size: 9450 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       Group By Vectorization:
@@ -3808,7 +3820,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesnullorc
-                  Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 9450 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -3818,7 +3830,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0]
-                    Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 9450 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(ctinyint)
                       Group By Vectorization:
@@ -3921,7 +3933,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesnullorc
-                  Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 9450 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -3931,7 +3943,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 9450 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(cint)
                       Group By Vectorization:
@@ -4034,7 +4046,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesnullorc
-                  Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 9450 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -4044,7 +4056,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [4]
-                    Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 9450 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(cfloat)
                       Group By Vectorization:
@@ -4147,7 +4159,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesnullorc
-                  Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 9450 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -4157,7 +4169,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [6]
-                    Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 9450 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(cstring1)
                       Group By Vectorization:
@@ -4260,7 +4272,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesnullorc
-                  Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 9450 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -4270,7 +4282,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [10]
-                    Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 9450 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(cboolean1)
                       Group By Vectorization:

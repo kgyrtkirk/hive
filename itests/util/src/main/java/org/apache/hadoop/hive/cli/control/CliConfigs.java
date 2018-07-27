@@ -84,7 +84,7 @@ public class CliConfigs {
         setResultsDir("ql/src/test/results/compiler/errors");
         setLogDir("itests/qtest/target/qfile-results/negative");
 
-        setInitScript("q_test_init.sql");
+        setInitScript("q_test_init_parse.sql");
         setCleanupScript("q_test_cleanup.sql");
 
         setHiveConfDir("data/conf/perf-reg/");
@@ -704,6 +704,29 @@ public class CliConfigs {
       default:
         setHiveConfDir("data/conf");
         break;
+      }
+    }
+  }
+
+  public static class MiniDruidLlapLocalCliConfig extends AbstractCliConfig {
+    public MiniDruidLlapLocalCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive");
+
+        includesFrom(testConfigProps, "druid.llap.local.query.files");
+
+        setResultsDir("ql/src/test/results/clientpositive/druid");
+        setLogDir("itests/qtest/target/tmp/log");
+
+        setInitScript("q_test_druid_init.sql");
+        setCleanupScript("q_test_cleanup_druid.sql");
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.druidLocal);
+        setMetastoreType(MetastoreType.sql);
+        setFsType(QTestUtil.FsType.local);
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
       }
     }
   }
