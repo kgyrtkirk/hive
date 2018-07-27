@@ -315,12 +315,12 @@ STAGE PLANS:
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: (((key = '238') and (value = 'val_238')) or ((key = '484') and (value = 'val_484'))) (type: boolean)
-            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            predicate: (struct(key,value)) IN (const struct('484','val_484'), const struct('238','val_238')) (type: boolean)
+            Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT key, value FROM fact_daily_n2 WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))

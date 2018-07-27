@@ -588,7 +588,7 @@ STAGE PLANS:
             alias: t8
             Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((b = 1) or (b = 2)) and (b = 2)) (type: boolean)
+              predicate: ((b = 2) and (b) IN (1, 2)) (type: boolean)
               Statistics: Num rows: 8/8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a (type: int)
@@ -656,7 +656,7 @@ STAGE PLANS:
             alias: t8
             Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((b = 1) or (b = 2)) and ((b = 1) or (b = 3)) and (b = 2)) (type: boolean)
+              predicate: ((b = 2) and (b) IN (1)) (type: boolean)
               Statistics: Num rows: 8/0 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a (type: int)
@@ -740,7 +740,7 @@ STAGE PLANS:
             alias: t8
             Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((a = 3) or (a = 4)) and ((b = 1) or (b = 2)) and (a = 3) and (b = 2)) (type: boolean)
+              predicate: ((a = 3) and (a) IN (3, 4) and (b = 2) and (b) IN (1, 2)) (type: boolean)
               Statistics: Num rows: 8/0 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 Statistics: Num rows: 8/0 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE

@@ -777,12 +777,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcbucket_pruned
-                  filterExpr: (((key = 1) or (key = 2)) and (ds = '2008-04-08')) (type: boolean)
+                  filterExpr: ((key) IN (1, 2) and (ds = '2008-04-08')) (type: boolean)
+                  buckets included: [4,13,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (((key = 1) or (key = 2)) and (ds = '2008-04-08')) (type: boolean)
+                    predicate: ((ds = '2008-04-08') and (key) IN (1, 2)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: key (type: int), value (type: string), '2008-04-08' (type: string)
@@ -838,12 +839,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcbucket_pruned
-                  filterExpr: (((key = 1) or (key = 2)) and (value = 'One') and (ds = '2008-04-08')) (type: boolean)
+                  filterExpr: ((key) IN (1, 2) and (value = 'One') and (ds = '2008-04-08')) (type: boolean)
+                  buckets included: [4,13,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (((key = 1) or (key = 2)) and (ds = '2008-04-08') and (value = 'One')) (type: boolean)
+                    predicate: ((ds = '2008-04-08') and (key) IN (1, 2) and (value = 'One')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: key (type: int), 'One' (type: string), '2008-04-08' (type: string)
@@ -1270,12 +1272,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcbucket_pruned
-                  filterExpr: ((key = 1) and (ds = '2008-04-08') and ((value = 'One') or (value = 'Two'))) (type: boolean)
+                  filterExpr: ((value) IN ('One', 'Two') and (key = 1) and (ds = '2008-04-08')) (type: boolean)
+                  buckets included: [13,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (((value = 'One') or (value = 'Two')) and (ds = '2008-04-08') and (key = 1)) (type: boolean)
+                    predicate: ((ds = '2008-04-08') and (key = 1) and (value) IN ('One', 'Two')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: 1 (type: int), value (type: string), '2008-04-08' (type: string)
