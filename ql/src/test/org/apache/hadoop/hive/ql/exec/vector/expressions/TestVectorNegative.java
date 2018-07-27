@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.GenerationSpec;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -330,10 +331,12 @@ public class TestVectorNegative {
       ObjectInspector rowInspector,
       TypeInfo outputTypeInfo, Object[] resultObjects) throws Exception {
 
+    /*
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo.toString() +
         " negativeTestMode ROW_MODE" +
         " exprDesc " + exprDesc.toString());
+    */
 
     HiveConf hiveConf = new HiveConf();
     ExprNodeEvaluator evaluator =
@@ -404,6 +407,14 @@ public class TestVectorNegative {
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
     vectorExpression.transientInit();
 
+    if (negativeTestMode == NegativeTestMode.VECTOR_EXPRESSION &&
+        vectorExpression instanceof VectorUDFAdaptor) {
+      System.out.println(
+          "*NO NATIVE VECTOR EXPRESSION* typeInfo " + typeInfo.toString() +
+          " negativeTestMode " + negativeTestMode +
+          " vectorExpression " + vectorExpression.toString());
+    }
+
     String[] outputScratchTypeNames= vectorizationContext.getScratchColumnTypeNames();
 
     VectorizedRowBatchCtx batchContext =
@@ -425,10 +436,15 @@ public class TestVectorNegative {
         new TypeInfo[] { outputTypeInfo }, new int[] { vectorExpression.getOutputColumnNum() });
     Object[] scrqtchRow = new Object[1];
 
+    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
+
+    /*
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo.toString() +
         " negativeTestMode " + negativeTestMode +
         " vectorExpression " + vectorExpression.toString());
+    */
+
     batchSource.resetBatchIteration();
     int rowIndex = 0;
     while (true) {

@@ -33,12 +33,15 @@ import org.antlr.runtime.tree.TreeVisitorAction;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.adapter.druid.DruidSchema;
 import org.apache.calcite.adapter.druid.DruidTable;
+import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.adapter.jdbc.JdbcConvention;
+import org.apache.calcite.adapter.jdbc.JdbcImplementor;
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.calcite.adapter.jdbc.JdbcTable;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.config.CalciteConnectionProperty;
+import org.apache.calcite.config.NullCollation;
 import org.apache.calcite.interpreter.BindableConvention;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptMaterialization;
@@ -97,7 +100,9 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlLiteral;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.SqlSampleSpec;
 import org.apache.calcite.sql.SqlWindow;
+import org.apache.calcite.sql.dialect.HiveSqlDialect;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.ArraySqlType;
 import org.apache.calcite.sql.type.SqlTypeName;
@@ -308,6 +313,27 @@ public class CalcitePlanner extends SemanticAnalyzer {
   private boolean disableSemJoinReordering = true;
   private EnumSet<ExtendedCBOProfile> profilesCBO;
 
+  private static final CommonToken FROM_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_FROM, "TOK_FROM");
+  private static final CommonToken DEST_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_DESTINATION, "TOK_DESTINATION");
+  private static final CommonToken DIR_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_DIR, "TOK_DIR");
+  private static final CommonToken TMPFILE_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_TMP_FILE, "TOK_TMP_FILE");
+  private static final CommonToken SELECT_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_SELECT, "TOK_SELECT");
+  private static final CommonToken SELEXPR_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
+  private static final CommonToken TABLEORCOL_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL");
+  private static final CommonToken INSERT_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_INSERT, "TOK_INSERT");
+  private static final CommonToken QUERY_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_QUERY, "TOK_QUERY");
+  private static final CommonToken SUBQUERY_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_SUBQUERY, "TOK_SUBQUERY");
+
   public CalcitePlanner(QueryState queryState) throws SemanticException {
     super(queryState);
     if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)) {
@@ -446,8 +472,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
             this.ctx.setCboInfo("Plan optimized by CBO.");
             this.ctx.setCboSucceeded(true);
           } else {
-            // 1. Gen Optimized AST
-            ASTNode newAST = getOptimizedAST();
+            // 0. Gen Optimized Plan
+            final RelNode newPlan = logicalPlan();
+            // 1. Convert Plan to AST
+            ASTNode newAST = getOptimizedAST(newPlan);
 
             // 1.1. Fix up the query for insert/ctas/materialized views
             newAST = fixUpAfterCbo(ast, newAST, cboCtx);
@@ -518,7 +546,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
             LOG.info("CBO Succeeded; optimized logical plan.");
             this.ctx.setCboInfo("Plan optimized by CBO.");
             this.ctx.setCboSucceeded(true);
+            if (this.ctx.isExplainPlan()) {
+              ExplainConfiguration explainConfig = this.ctx.getExplainConfig();
+              if (explainConfig.isExtended() || explainConfig.isFormatted()) {
+                this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
+              }
+            }
             if (LOG.isTraceEnabled()) {
+              LOG.trace(getOptimizedSql(newPlan));
               LOG.trace(newAST.dump());
             }
           }
@@ -726,45 +761,45 @@ public class CalcitePlanner extends SemanticAnalyzer {
     //              TOK_TMP_FILE
     //        TOK_SELECT
     //           refs
-    ASTNode from = new ASTNode(new CommonToken(HiveParser.TOK_FROM, "TOK_FROM"));
+    ASTNode from = new ASTNode(FROM_TOKEN);
     from.addChild((ASTNode) ParseDriver.adaptor.dupTree(nodeOfInterest));
-    ASTNode destination = new ASTNode(new CommonToken(HiveParser.TOK_DESTINATION, "TOK_DESTINATION"));
-    ASTNode dir = new ASTNode(new CommonToken(HiveParser.TOK_DIR, "TOK_DIR"));
-    ASTNode tmpFile = new ASTNode(new CommonToken(HiveParser.TOK_TMP_FILE, "TOK_TMP_FILE"));
+    ASTNode destination = new ASTNode(DEST_TOKEN);
+    ASTNode dir = new ASTNode(DIR_TOKEN);
+    ASTNode tmpFile = new ASTNode(TMPFILE_TOKEN);
     dir.addChild(tmpFile);
     destination.addChild(dir);
-    ASTNode select = new ASTNode(new CommonToken(HiveParser.TOK_SELECT, "TOK_SELECT"));
+    ASTNode select = new ASTNode(SELECT_TOKEN);
     int num = 0;
     for (Collection<Object> selectIdentifier : aliasNodes.asMap().values()) {
       Iterator<Object> it = selectIdentifier.iterator();
       ASTNode node = (ASTNode) it.next();
       // Add select expression
-      ASTNode selectExpr = new ASTNode(new CommonToken(HiveParser.TOK_SELEXPR, "TOK_SELEXPR"));
+      ASTNode selectExpr = new ASTNode(SELEXPR_TOKEN);
       selectExpr.addChild((ASTNode) ParseDriver.adaptor.dupTree(node)); // Identifier
       String colAlias = "col" + num;
       selectExpr.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, colAlias))); // Alias
       select.addChild(selectExpr);
       // Rewrite all INSERT references (all the node values for this key)
-      ASTNode colExpr = new ASTNode(new CommonToken(HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL"));
+      ASTNode colExpr = new ASTNode(TABLEORCOL_TOKEN);
       colExpr.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, colAlias)));
       replaceASTChild(node, colExpr);
       while (it.hasNext()) {
         // Loop to rewrite rest of INSERT references
         node = (ASTNode) it.next();
-        colExpr = new ASTNode(new CommonToken(HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL"));
+        colExpr = new ASTNode(TABLEORCOL_TOKEN);
         colExpr.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, colAlias)));
         replaceASTChild(node, colExpr);
       }
       num++;
     }
-    ASTNode insert = new ASTNode(new CommonToken(HiveParser.TOK_INSERT, "TOK_INSERT"));
+    ASTNode insert = new ASTNode(INSERT_TOKEN);
     insert.addChild(destination);
     insert.addChild(select);
-    ASTNode newQuery = new ASTNode(new CommonToken(HiveParser.TOK_QUERY, "TOK_QUERY"));
+    ASTNode newQuery = new ASTNode(QUERY_TOKEN);
     newQuery.addChild(from);
     newQuery.addChild(insert);
     // 3. create subquery
-    ASTNode subq = new ASTNode(new CommonToken(HiveParser.TOK_SUBQUERY, "TOK_SUBQUERY"));
+    ASTNode subq = new ASTNode(SUBQUERY_TOKEN);
     subq.addChild(newQuery);
     subq.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, "subq")));
     replaceASTChild(nodeOfInterest, subq);
@@ -1421,13 +1456,57 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   /**
+   * Get SQL rewrite for a Calcite logical plan
+   *
+   * @return Optimized SQL text (or null, if failed)
+   */
+  public String getOptimizedSql(RelNode optimizedOptiqPlan) {
+    SqlDialect dialect = new HiveSqlDialect(SqlDialect.EMPTY_CONTEXT
+        .withDatabaseProduct(SqlDialect.DatabaseProduct.HIVE)
+        .withDatabaseMajorVersion(4) // TODO: should not be hardcoded
+        .withDatabaseMinorVersion(0)
+        .withIdentifierQuoteString("`")
+        .withNullCollation(NullCollation.LOW)) {
+      @Override
+      protected boolean allowsAs() {
+        return true;
+      }
+
+      @Override
+      public boolean supportsCharSet() {
+        return false;
+      }
+    };
+    try {
+      final JdbcImplementor jdbcImplementor =
+          new JdbcImplementor(dialect, (JavaTypeFactory) optimizedOptiqPlan.getCluster()
+              .getTypeFactory());
+      final JdbcImplementor.Result result = jdbcImplementor.visitChild(0, optimizedOptiqPlan);
+      String sql = result.asStatement().toSqlString(dialect).getSql();
+      return sql.replaceAll("VARCHAR\\(2147483647\\)", "STRING");
+    } catch (Exception ex) {
+      LOG.warn("Rel2SQL Rewrite threw error", ex);
+    }
+    return null;
+  }
+
+  /**
    * Get Optimized AST for the given QB tree in the semAnalyzer.
    *
    * @return Optimized operator tree translated in to Hive AST
    * @throws SemanticException
    */
   ASTNode getOptimizedAST() throws SemanticException {
-    RelNode optimizedOptiqPlan = logicalPlan();
+    return getOptimizedAST(logicalPlan());
+  }
+
+  /**
+   * Get Optimized AST for the given QB tree in the semAnalyzer.
+   *
+   * @return Optimized operator tree translated in to Hive AST
+   * @throws SemanticException
+   */
+  ASTNode getOptimizedAST(RelNode optimizedOptiqPlan) throws SemanticException {
     ASTNode optiqOptimizedAST = ASTConverter.convert(optimizedOptiqPlan, resultSchema,
             HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COLUMN_ALIGNMENT));
     return optiqOptimizedAST;
@@ -2081,18 +2160,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Add views to planner
       List<RelOptMaterialization> materializations = new ArrayList<>();
       try {
-        final String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
         if (mvRebuildMode != MaterializationRebuildMode.NONE) {
           // We only retrieve the materialization corresponding to the rebuild. In turn,
           // we pass 'true' for the forceMVContentsUpToDate parameter, as we cannot allow the
           // materialization contents to be stale for a rebuild if we want to use it.
           materializations = Hive.get().getValidMaterializedView(mvRebuildDbName, mvRebuildName,
-              true, validTxnsList);
+              getTablesUsed(basePlan), true);
         } else {
           // This is not a rebuild, we retrieve all the materializations. In turn, we do not need
           // to force the materialization contents to be up-to-date, as this is not a rebuild, and
           // we apply the user parameters (HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW) instead.
-          materializations = Hive.get().getAllValidMaterializedViews(false, validTxnsList);
+          materializations = Hive.get().getAllValidMaterializedViews(getTablesUsed(basePlan), false);
         }
         // We need to use the current cluster for the scan operator on views,
         // otherwise the planner will throw an Exception (different planners)
@@ -2129,7 +2207,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                       ImmutableList.<RelNode>of(dq.getTableScan()));
                 } else {
                   newScan = new HiveTableScan(optCluster, optCluster.traitSetOf(HiveRelNode.CONVENTION),
-                      (RelOptHiveTable) scan.getTable(), scan.getTable().getQualifiedName().get(0),
+                      (RelOptHiveTable) scan.getTable(), ((RelOptHiveTable) scan.getTable()).getName(),
                       null, false, false);
                 }
                 return newScan;
@@ -2169,7 +2247,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // A rewriting was produced, we will check whether it was part of an incremental rebuild
           // to try to replace INSERT OVERWRITE by INSERT
           if (mvRebuildMode == MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD &&
-              HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_INCREMENTAL) &&
               HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL)) {
             // First we need to check if it is valid to convert to MERGE/INSERT INTO.
             // If we succeed, we modify the plan and afterwards the AST.
@@ -2194,6 +2271,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
       }
       return basePlan;
+    }
+
+    private List<String> getTablesUsed(RelNode plan) {
+      List<String> tablesUsed = new ArrayList<>();
+      new RelVisitor() {
+        @Override
+        public void visit(RelNode node, int ordinal, RelNode parent) {
+          if (node instanceof TableScan) {
+            TableScan ts = (TableScan) node;
+            tablesUsed.add(((RelOptHiveTable) ts.getTable()).getHiveTableMD().getFullyQualifiedName());
+          }
+          super.visit(node, ordinal, parent);
+        }
+      }.go(plan);
+      return tablesUsed;
     }
 
     /**
@@ -2745,13 +2837,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // Build row type from field <type, name>
           RelDataType rowType = TypeConverter.getType(cluster, cIList);
           // Build RelOptAbstractTable
-          String fullyQualifiedTabName = tabMetaData.getDbName();
-          if (fullyQualifiedTabName != null && !fullyQualifiedTabName.isEmpty()) {
-            fullyQualifiedTabName = fullyQualifiedTabName + "." + tabMetaData.getTableName();
+          List<String> fullyQualifiedTabName = new ArrayList<>();
+          if (tabMetaData.getDbName() != null && !tabMetaData.getDbName().isEmpty()) {
+            fullyQualifiedTabName.add(tabMetaData.getDbName());
           }
-          else {
-            fullyQualifiedTabName = tabMetaData.getTableName();
-          }
+          fullyQualifiedTabName.add(tabMetaData.getTableName());
 
           if (tableType == TableType.DRUID) {
             // Build Druid query
@@ -2836,13 +2926,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // Build row type from field <type, name>
           RelDataType rowType = inferNotNullableColumns(tabMetaData, TypeConverter.getType(cluster, rr, null));
           // Build RelOptAbstractTable
-          String fullyQualifiedTabName = tabMetaData.getDbName();
-          if (fullyQualifiedTabName != null && !fullyQualifiedTabName.isEmpty()) {
-            fullyQualifiedTabName = fullyQualifiedTabName + "." + tabMetaData.getTableName();
+          List<String> fullyQualifiedTabName = new ArrayList<>();
+          if (tabMetaData.getDbName() != null && !tabMetaData.getDbName().isEmpty()) {
+            fullyQualifiedTabName.add(tabMetaData.getDbName());
           }
-          else {
-            fullyQualifiedTabName = tabMetaData.getTableName();
-          }
+          fullyQualifiedTabName.add(tabMetaData.getTableName());
           RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
               rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
               partitionCache, colStatsCache, noColsMissingStats);

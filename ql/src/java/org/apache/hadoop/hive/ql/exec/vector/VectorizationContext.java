@@ -440,6 +440,7 @@ public class VectorizationContext {
   // Set of UDF classes for type casting data types in row-mode.
   private static Set<Class<?>> castExpressionUdfs = new HashSet<Class<?>>();
   static {
+    castExpressionUdfs.add(GenericUDFToString.class);
     castExpressionUdfs.add(GenericUDFToDecimal.class);
     castExpressionUdfs.add(GenericUDFToBinary.class);
     castExpressionUdfs.add(GenericUDFToDate.class);
@@ -454,7 +455,6 @@ public class VectorizationContext {
     castExpressionUdfs.add(UDFToBoolean.class);
     castExpressionUdfs.add(UDFToDouble.class);
     castExpressionUdfs.add(UDFToFloat.class);
-    castExpressionUdfs.add(UDFToString.class);
     castExpressionUdfs.add(UDFToInteger.class);
     castExpressionUdfs.add(UDFToLong.class);
     castExpressionUdfs.add(UDFToShort.class);
@@ -1139,7 +1139,7 @@ public class VectorizationContext {
         udfClass = new UDFToDouble();
         break;
       case STRING:
-        udfClass = new UDFToString();
+        genericUdf = new GenericUDFToString();
         break;
       case CHAR:
         genericUdf = new GenericUDFToChar();
@@ -1207,11 +1207,7 @@ public class VectorizationContext {
           || udfClass.equals(UDFConv.class)
           || udfClass.equals(UDFFromUnixTime.class) && isIntFamily(arg0Type(expr))
           || isCastToIntFamily(udfClass) && isStringFamily(arg0Type(expr))
-          || isCastToFloatFamily(udfClass) && isStringFamily(arg0Type(expr))
-          || udfClass.equals(UDFToString.class) &&
-               (arg0Type(expr).equals("timestamp")
-                   || arg0Type(expr).equals("double")
-                   || arg0Type(expr).equals("float"))) {
+          || isCastToFloatFamily(udfClass) && isStringFamily(arg0Type(expr))) {
         return true;
       }
     } else if ((gudf instanceof GenericUDFTimestamp && isStringFamily(arg0Type(expr)))
@@ -1229,15 +1225,12 @@ public class VectorizationContext {
             || gudf instanceof GenericUDFCase
             || gudf instanceof GenericUDFWhen) {
       return true;
-    } else if (gudf instanceof GenericUDFToChar &&
+    } else if ((gudf instanceof GenericUDFToString
+                   || gudf instanceof GenericUDFToChar
+                   || gudf instanceof GenericUDFToVarchar) &&
                (arg0Type(expr).equals("timestamp")
                    || arg0Type(expr).equals("double")
                    || arg0Type(expr).equals("float"))) {
-      return true;
-    } else if (gudf instanceof GenericUDFToVarchar &&
-            (arg0Type(expr).equals("timestamp")
-                || arg0Type(expr).equals("double")
-                || arg0Type(expr).equals("float"))) {
       return true;
     } else if (gudf instanceof GenericUDFBetween && (mode == VectorExpressionDescriptor.Mode.PROJECTION)) {
       // between has 4 args here, but can be vectorized like this
@@ -1540,88 +1533,88 @@ public class VectorizationContext {
     return false;
   }
 
-  public boolean haveCandidateForDecimal64VectorExpression(int numChildren,
-      List<ExprNodeDesc> childExpr, TypeInfo returnType) throws HiveException {
-
-    // For now, just 2 Decimal64 inputs and a Decimal64 or boolean output.
-    return (numChildren == 2 &&
-        checkExprNodeDescForDecimal64(childExpr.get(0)) &&
-        checkExprNodeDescForDecimal64(childExpr.get(1)) &&
-        (checkTypeInfoForDecimal64(returnType) ||
-            returnType.equals(TypeInfoFactory.booleanTypeInfo)));
-  }
-
   private VectorExpression getDecimal64VectorExpressionForUdf(GenericUDF genericUdf,
-      Class<?> udfClass, List<ExprNodeDesc> childExpr, int numChildren,
-      VectorExpressionDescriptor.Mode mode, TypeInfo returnType) throws HiveException {
-
-    ExprNodeDesc child1 = childExpr.get(0);
-    ExprNodeDesc child2 = childExpr.get(1);
-
-    DecimalTypeInfo decimalTypeInfo1 = (DecimalTypeInfo) child1.getTypeInfo();
-    DecimalTypeInfo decimalTypeInfo2 = (DecimalTypeInfo) child2.getTypeInfo();
-
-    DataTypePhysicalVariation dataTypePhysicalVariation1 = DataTypePhysicalVariation.DECIMAL_64;
-    DataTypePhysicalVariation dataTypePhysicalVariation2 = DataTypePhysicalVariation.DECIMAL_64;
-
-    final int scale1 = decimalTypeInfo1.scale();
-    final int scale2 = decimalTypeInfo2.scale();
+      Class<?> udfClass, List<ExprNodeDesc> childExprs, int numChildren,
+      VectorExpressionDescriptor.Mode mode, TypeInfo returnTypeInfo) throws HiveException {
 
     VectorExpressionDescriptor.Builder builder = new VectorExpressionDescriptor.Builder();
     builder.setNumArguments(numChildren);
     builder.setMode(mode);
 
-    boolean isColumnScaleEstablished = false;
-    int columnScale = 0;
-    boolean hasScalar = false;
-    builder.setArgumentType(0, ArgumentType.DECIMAL_64);
-    if (child1 instanceof ExprNodeGenericFuncDesc ||
-        child1 instanceof ExprNodeColumnDesc) {
-      builder.setInputExpressionType(0, InputExpressionType.COLUMN);
-      isColumnScaleEstablished = true;
-      columnScale = scale1;
-    } else if (child1 instanceof ExprNodeConstantDesc) {
-      if (isNullConst(child1)) {
+    // DECIMAL_64 decimals must have same scale.
+    boolean anyDecimal64Expr = false;
+    boolean isDecimal64ScaleEstablished = false;
+    int decimal64ColumnScale = 0;
 
-        // Cannot handle NULL scalar parameter.
+    for (int i = 0; i < numChildren; i++) {
+      ExprNodeDesc childExpr = childExprs.get(i);
+
+      /*
+       * For columns, we check decimal columns for DECIMAL_64 DataTypePhysicalVariation.
+       * For UDFs, we check for @VectorizedExpressionsSupportDecimal64 annotation, etc.
+       */
+      final boolean isExprDecimal64 = checkExprNodeDescForDecimal64(childExpr);
+      if (isExprDecimal64) {
+        anyDecimal64Expr = true;
+      }
+
+      TypeInfo typeInfo = childExpr.getTypeInfo();
+      if (childExpr instanceof ExprNodeGenericFuncDesc ||
+          childExpr instanceof ExprNodeColumnDesc) {
+        if (isExprDecimal64) {
+          DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
+          if (!isDecimal64ScaleEstablished) {
+            decimal64ColumnScale = decimalTypeInfo.getScale();
+            isDecimal64ScaleEstablished = true;
+          } else if (decimalTypeInfo.getScale() != decimal64ColumnScale) {
+            return null;
+          }
+        }
+        builder.setInputExpressionType(i, InputExpressionType.COLUMN);
+      } else if (childExpr instanceof ExprNodeConstantDesc) {
+        if (isNullConst(childExpr)) {
+          // Cannot handle NULL scalar parameter.
+          return null;
+        }
+        builder.setInputExpressionType(i, InputExpressionType.SCALAR);
+      } else {
         return null;
       }
-      hasScalar = true;
-      builder.setInputExpressionType(0, InputExpressionType.SCALAR);
-    } else {
 
-      // Currently, only functions, columns, and scalars supported.
+      if (isExprDecimal64) {
+        builder.setArgumentType(i, ArgumentType.DECIMAL_64);
+      } else {
+        String undecoratedTypeName = getUndecoratedName(childExpr.getTypeString());
+        if (undecoratedTypeName == null) {
+          return null;
+        }
+        builder.setArgumentType(i, undecoratedTypeName);
+      }
+    }
+
+    if (!anyDecimal64Expr) {
       return null;
     }
 
-    builder.setArgumentType(1, ArgumentType.DECIMAL_64);
-    if (child2 instanceof ExprNodeGenericFuncDesc ||
-        child2 instanceof ExprNodeColumnDesc) {
-      builder.setInputExpressionType(1, InputExpressionType.COLUMN);
-      if (!isColumnScaleEstablished) {
-        isColumnScaleEstablished = true;
-        columnScale = scale2;
-      } else if (columnScale != scale2) {
-
-        // We only support Decimal64 on 2 columns when the have the same scale.
+    final boolean isReturnDecimal64 = checkTypeInfoForDecimal64(returnTypeInfo);
+    final DataTypePhysicalVariation returnDataTypePhysicalVariation;
+    if (isReturnDecimal64) {
+      DecimalTypeInfo returnDecimalTypeInfo = (DecimalTypeInfo) returnTypeInfo;
+      if (!isDecimal64ScaleEstablished) {
+        decimal64ColumnScale = returnDecimalTypeInfo.getScale();
+        isDecimal64ScaleEstablished = true;
+      } else if (returnDecimalTypeInfo.getScale() != decimal64ColumnScale) {
         return null;
       }
-    } else if (child2 instanceof ExprNodeConstantDesc) {
-      // Cannot have SCALAR, SCALAR.
-      if (!isColumnScaleEstablished) {
-        return null;
-      }
-      if (isNullConst(child2)) {
+      returnDataTypePhysicalVariation = DataTypePhysicalVariation.DECIMAL_64;
+    } else if (returnTypeInfo instanceof DecimalTypeInfo){
 
-        // Cannot handle NULL scalar parameter.
-        return null;
-      }
-      hasScalar = true;
-      builder.setInputExpressionType(1, InputExpressionType.SCALAR);
-    } else {
-
-      // Currently, only functions, columns, and scalars supported.
+      // Currently, we don't have any vectorized expressions that take DECIMAL_64 inputs
+      // and produce a regular decimal.  Or, currently, a way to express that in the
+      // descriptor.
       return null;
+    } else {
+      returnDataTypePhysicalVariation = DataTypePhysicalVariation.NONE;
     }
 
     VectorExpressionDescriptor.Descriptor descriptor = builder.build();
@@ -1639,19 +1632,26 @@ public class VectorizationContext {
 
     List<VectorExpression> children = new ArrayList<VectorExpression>();
     Object[] arguments = new Object[numChildren];
+    TypeInfo[] typeInfos = new TypeInfo[numChildren];
+    DataTypePhysicalVariation[] dataTypePhysicalVariations = new DataTypePhysicalVariation[numChildren];
 
     for (int i = 0; i < numChildren; i++) {
-      ExprNodeDesc child = childExpr.get(i);
-      if (child instanceof ExprNodeGenericFuncDesc) {
-        VectorExpression vChild = getVectorExpression(child, childrenMode);
+      ExprNodeDesc childExpr = childExprs.get(i);
+      TypeInfo typeInfo = childExpr.getTypeInfo();
+      typeInfos[i] = typeInfo;
+      dataTypePhysicalVariations[i] =
+          (checkTypeInfoForDecimal64(typeInfo) ?
+              DataTypePhysicalVariation.DECIMAL_64 : DataTypePhysicalVariation.NONE);
+      if (childExpr instanceof ExprNodeGenericFuncDesc) {
+        VectorExpression vChild = getVectorExpression(childExpr, childrenMode);
         children.add(vChild);
         arguments[i] = vChild.getOutputColumnNum();
-      } else if (child instanceof ExprNodeColumnDesc) {
-        int colIndex = getInputColumnIndex((ExprNodeColumnDesc) child);
+      } else if (childExpr instanceof ExprNodeColumnDesc) {
+        int colIndex = getInputColumnIndex((ExprNodeColumnDesc) childExpr);
         if (childrenMode == VectorExpressionDescriptor.Mode.FILTER) {
 
           VectorExpression filterExpr =
-              getFilterOnBooleanColumnExpression((ExprNodeColumnDesc) child, colIndex);
+              getFilterOnBooleanColumnExpression((ExprNodeColumnDesc) childExpr, colIndex);
           if (filterExpr == null) {
             return null;
           }
@@ -1660,16 +1660,27 @@ public class VectorizationContext {
         }
         arguments[i] = colIndex;
       } else {
-        Preconditions.checkState(child instanceof ExprNodeConstantDesc);
-        ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) child;
-        HiveDecimal hiveDecimal = (HiveDecimal) constDesc.getValue();
-        if (hiveDecimal.scale() > columnScale) {
+        Preconditions.checkState(childExpr instanceof ExprNodeConstantDesc);
+        ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) childExpr;
+        if (typeInfo instanceof DecimalTypeInfo) {
+          if (!isDecimal64ScaleEstablished) {
+            return null;
+          }
+          HiveDecimal hiveDecimal = (HiveDecimal) constDesc.getValue();
+          if (hiveDecimal.scale() > decimal64ColumnScale) {
 
-          // For now, bail out on decimal constants with larger scale than column scale.
-          return null;
+            // For now, bail out on decimal constants with larger scale than column scale.
+            return null;
+          }
+          final long decimal64Scalar =
+              new HiveDecimalWritable(hiveDecimal).serialize64(decimal64ColumnScale);
+          arguments[i] = decimal64Scalar;
+        } else {
+          Object scalarValue = getVectorTypeScalarValue(constDesc);
+          arguments[i] =
+              (scalarValue == null) ?
+                  getConstantVectorExpression(null, typeInfo, childrenMode) : scalarValue;
         }
-        final long decimal64Scalar = new HiveDecimalWritable(hiveDecimal).serialize64(columnScale);
-        arguments[i] = decimal64Scalar;
       }
     }
 
@@ -1679,13 +1690,13 @@ public class VectorizationContext {
      * The instantiateExpression method sets the output column and type information.
      */
     VectorExpression  vectorExpression =
-        instantiateExpression(vectorClass, returnType, DataTypePhysicalVariation.DECIMAL_64, arguments);
+        instantiateExpression(vectorClass, returnTypeInfo, returnDataTypePhysicalVariation, arguments);
     if (vectorExpression == null) {
-      handleCouldNotInstantiateVectorExpression(vectorClass, returnType, DataTypePhysicalVariation.DECIMAL_64, arguments);
+      handleCouldNotInstantiateVectorExpression(vectorClass, returnTypeInfo, returnDataTypePhysicalVariation, arguments);
     }
 
-    vectorExpression.setInputTypeInfos(decimalTypeInfo1, decimalTypeInfo2);
-    vectorExpression.setInputDataTypePhysicalVariations(dataTypePhysicalVariation1, dataTypePhysicalVariation2);
+    vectorExpression.setInputTypeInfos(typeInfos);
+    vectorExpression.setInputDataTypePhysicalVariations(dataTypePhysicalVariations);
 
     if ((vectorExpression != null) && !children.isEmpty()) {
       vectorExpression.setChildExpressions(children.toArray(new VectorExpression[0]));
@@ -1735,15 +1746,14 @@ public class VectorizationContext {
       return null;
     }
 
-    // Should we intercept here for a possible Decimal64 vector expression class?
-    if (haveCandidateForDecimal64VectorExpression(numChildren, childExpr, returnType)) {
-      VectorExpression result = getDecimal64VectorExpressionForUdf(genericUdf, udfClass,
-          childExpr, numChildren, mode, returnType);
-      if (result != null) {
-        return result;
-      }
-      // Otherwise, fall through and proceed with non-Decimal64 vector expression classes...
+    // Intercept here for a possible Decimal64 vector expression class.
+    VectorExpression result = getDecimal64VectorExpressionForUdf(genericUdf, udfClass,
+        childExpr, numChildren, mode, returnType);
+    if (result != null) {
+      return result;
     }
+
+    // Otherwise, fall through and proceed with non-Decimal64 vector expression classes...
 
     VectorExpressionDescriptor.Builder builder = new VectorExpressionDescriptor.Builder();
     builder.setNumArguments(numChildren);
@@ -2061,12 +2071,16 @@ public class VectorizationContext {
     } else if (udf instanceof GenericUDFBridge) {
       ve = getGenericUDFBridgeVectorExpression((GenericUDFBridge) udf, childExpr, mode,
           returnType);
+    } else if (udf instanceof GenericUDFToString) {
+      ve = getCastToString(childExpr, returnType);
     } else if (udf instanceof GenericUDFToDecimal) {
       ve = getCastToDecimal(childExpr, returnType);
     } else if (udf instanceof GenericUDFToChar) {
       ve = getCastToChar(childExpr, returnType);
     } else if (udf instanceof GenericUDFToVarchar) {
       ve = getCastToVarChar(childExpr, returnType);
+    } else if (udf instanceof GenericUDFToBinary) {
+      ve = getCastToBinary(childExpr, returnType);
     } else if (udf instanceof GenericUDFTimestamp) {
       ve = getCastToTimestamp((GenericUDFTimestamp)udf, childExpr, mode, returnType);
     }
@@ -2508,8 +2522,6 @@ public class VectorizationContext {
       ve = getCastToBoolean(childExpr);
     } else if (isCastToFloatFamily(cl)) {
       ve = getCastToDoubleExpression(cl, childExpr, returnType);
-    } else if (cl.equals(UDFToString.class)) {
-      ve = getCastToString(childExpr, returnType);
     }
     if (ve == null && childExpr instanceof ExprNodeGenericFuncDesc) {
       ve = getCustomUDFExpression((ExprNodeGenericFuncDesc) childExpr, mode);
@@ -2585,7 +2597,8 @@ public class VectorizationContext {
       return ((Number) scalar).toString();
     case DECIMAL:
       HiveDecimal decimalVal = (HiveDecimal) scalar;
-      return decimalVal.toString();
+      DecimalTypeInfo decType = (DecimalTypeInfo) type;
+      return decimalVal.toFormatString(decType.getScale());
     default:
       throw new HiveException("Unsupported type "+typename+" for cast to String");
     }
@@ -2866,6 +2879,25 @@ public class VectorizationContext {
       return createVectorExpression(CastTimestampToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
     } else if (isStringFamily(inputType)) {
       return createVectorExpression(CastStringGroupToVarChar.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+    }
+    return null;
+  }
+
+  private VectorExpression getCastToBinary(List<ExprNodeDesc> childExpr, TypeInfo returnType)
+      throws HiveException {
+    ExprNodeDesc child = childExpr.get(0);
+    String inputType = childExpr.get(0).getTypeString();
+    if (child instanceof ExprNodeConstantDesc) {
+      // Don't do constant folding here.  Wait until the optimizer is changed to do it.
+      // Family of related JIRAs: HIVE-7421, HIVE-7422, and HIVE-7424.
+      return null;
+    }
+    if (inputType.equalsIgnoreCase("string") || varcharTypePattern.matcher(inputType).matches()) {
+
+      // STRING and VARCHAR types require no conversion, so use a no-op.
+      return getIdentityExpression(childExpr);
+    } else if (charTypePattern.matcher(inputType).matches()) {
+      return createVectorExpression(CastCharToBinary.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
     }
     return null;
   }
