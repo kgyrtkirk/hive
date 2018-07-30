@@ -12,7 +12,7 @@ insert into t1 values (1),(2),(3),(4),(5),(6),(7),(8),(9),(0);
 insert into t3
 	select x1.a as a,x2.a as b,x3.a as c from
 		t1 x1
-		join t1 x2;
+		join t1 x2
 		join t1 x3;
 
 analyze table t3 compute statistics for columns;
