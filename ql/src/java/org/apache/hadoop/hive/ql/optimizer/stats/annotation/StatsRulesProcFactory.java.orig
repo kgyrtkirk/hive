@@ -280,12 +280,29 @@ public class StatsRulesProcFactory {
       }
 
 
+<<<<<<< HEAD
       if (parentStats != null) {
         ExprNodeDesc pred = fop.getConf().getPredicate();
+=======
+          // evaluate filter expression and update statistics
+          long newNumRows = evaluateExpression(parentStats, pred, aspCtx,
+              neededCols, fop, 0);
+          Statistics st = parentStats.clone();
+
+          if (satisfyPrecondition(parentStats)) {
+
+            // update statistics based on column statistics.
+            // OR conditions keeps adding the stats independently, this may
+            // result in number of rows getting more than the input rows in
+            // which case stats need not be updated
+            if (newNumRows <= parentStats.getNumRows()) {
+              updateStats(st, newNumRows, true, fop);
+            }
+>>>>>>> parent of 20b84523d7... HIVE-17465 Statistics: Drill-down filters don't reduce row-counts progressively (Vineet Garg, reviewed by Ashutosh Chauhan)
 
         // evaluate filter expression and update statistics
         long newNumRows = evaluateExpression(parentStats, pred, aspCtx,
-              neededCols, fop, parentStats.getNumRows()); // FIXME: HIVE-20260: 0~parentStats.getNumRows()
+            neededCols, fop, parentStats.getNumRows());
         Statistics st = parentStats.clone();
 
         if (satisfyPrecondition(parentStats)) {
@@ -323,7 +340,11 @@ public class StatsRulesProcFactory {
 
     protected long evaluateExpression(Statistics stats, ExprNodeDesc pred,
         AnnotateStatsProcCtx aspCtx, List<String> neededCols,
-        Operator<?> op /*, long evaluatedRowCount*/) throws CloneNotSupportedException, SemanticException {
+<<<<<<< HEAD
+        Operator<?> op, long currNumRows) throws SemanticException {
+=======
+        Operator<?> op, long evaluatedRowCount) throws CloneNotSupportedException, SemanticException {
+>>>>>>> parent of 20b84523d7... HIVE-17465 Statistics: Drill-down filters don't reduce row-counts progressively (Vineet Garg, reviewed by Ashutosh Chauhan)
       long newNumRows = 0;
       Statistics andStats = null;
 
@@ -662,8 +683,13 @@ public class StatsRulesProcFactory {
       }
     }
 
-    private long evaluateBetweenExpr(Statistics stats, ExprNodeDesc pred, AnnotateStatsProcCtx aspCtx,
+<<<<<<< HEAD
+    private long evaluateBetweenExpr(Statistics stats, ExprNodeDesc pred, long currNumRows, AnnotateStatsProcCtx aspCtx,
             List<String> neededCols, Operator<?> op) throws SemanticException {
+=======
+    private long evaluateBetweenExpr(Statistics stats, ExprNodeDesc pred, AnnotateStatsProcCtx aspCtx,
+            List<String> neededCols, Operator<?> op) throws SemanticException, CloneNotSupportedException {
+>>>>>>> parent of 20b84523d7... HIVE-17465 Statistics: Drill-down filters don't reduce row-counts progressively (Vineet Garg, reviewed by Ashutosh Chauhan)
       final ExprNodeGenericFuncDesc fd = (ExprNodeGenericFuncDesc) pred;
       final boolean invert = Boolean.TRUE.equals(
           ((ExprNodeConstantDesc) fd.getChildren().get(0)).getValue()); // boolean invert (not)
@@ -1001,7 +1027,11 @@ public class StatsRulesProcFactory {
 
     private long evaluateChildExpr(Statistics stats, ExprNodeDesc child,
         AnnotateStatsProcCtx aspCtx, List<String> neededCols,
-        Operator<?> op /*, long evaluatedRowCount */ ) throws SemanticException {
+<<<<<<< HEAD
+        Operator<?> op, long currNumRows) throws SemanticException {
+=======
+        Operator<?> op, long evaluatedRowCount) throws CloneNotSupportedException, SemanticException {
+>>>>>>> parent of 20b84523d7... HIVE-17465 Statistics: Drill-down filters don't reduce row-counts progressively (Vineet Garg, reviewed by Ashutosh Chauhan)
 
       long numRows = stats.getNumRows();
 
@@ -1743,8 +1773,17 @@ public class StatsRulesProcFactory {
             pred = jop.getConf().getResidualFilterExprs().get(0);
           }
           // evaluate filter expression and update statistics
+<<<<<<< HEAD
           newNumRows = evaluateExpression(stats, pred,
-                aspCtx, jop.getSchema().getColumnNames(), jop, stats.getNumRows()); // HIVE-20260 check this 0 ~> stats.getNumRows()
+              aspCtx, jop.getSchema().getColumnNames(), jop, stats.getNumRows());
+=======
+          try {
+            newNumRows = evaluateExpression(stats, pred,
+                aspCtx, jop.getSchema().getColumnNames(), jop, 0);
+          } catch (CloneNotSupportedException e) {
+            throw new SemanticException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
+          }
+>>>>>>> parent of 20b84523d7... HIVE-17465 Statistics: Drill-down filters don't reduce row-counts progressively (Vineet Garg, reviewed by Ashutosh Chauhan)
           // update statistics based on column statistics.
           // OR conditions keeps adding the stats independently, this may
           // result in number of rows getting more than the input rows in
@@ -1837,7 +1876,14 @@ public class StatsRulesProcFactory {
           }
           // evaluate filter expression and update statistics
             newNumRows = evaluateExpression(wcStats, pred,
+<<<<<<< HEAD
+                aspCtx, jop.getSchema().getColumnNames(), jop, wcStats.getNumRows());
+=======
                 aspCtx, jop.getSchema().getColumnNames(), jop, 0);
+          } catch (CloneNotSupportedException e) {
+            throw new SemanticException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
+          }
+>>>>>>> parent of 20b84523d7... HIVE-17465 Statistics: Drill-down filters don't reduce row-counts progressively (Vineet Garg, reviewed by Ashutosh Chauhan)
           // update only the basic statistics in the absence of column statistics
           if (newNumRows <= joinRowCount) {
             updateStats(wcStats, newNumRows, false, jop);
