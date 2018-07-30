@@ -166,7 +166,6 @@ public class TestCounterMapping {
   }
 
   @Test
-  @Ignore("needs calcite-1.17")
   public void testBreakupAnd() throws ParseException {
     String query =
         "explain select sum(id_uv) from tu where u=1  and (u=2 or u=1) group by u";
@@ -180,7 +179,6 @@ public class TestCounterMapping {
   }
 
   @Test
-  @Ignore("needs calcite-1.17")
   public void testBreakupAnd2() throws ParseException {
     String query =
         "explain select sum(id_uv) from tu where u in (1,2,3) and u=2 and u=2 and 2=u group by u";
