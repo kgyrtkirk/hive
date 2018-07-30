@@ -283,6 +283,7 @@ public class StatsRulesProcFactory {
         ExprNodeDesc pred = fop.getConf().getPredicate();
 
         // evaluate filter expression and update statistics
+        aspCtx.clearAffectedColumns();
         long newNumRows = evaluateExpression(parentStats, pred, aspCtx,
             neededCols, fop, parentStats.getNumRows());
         Statistics st = parentStats.clone();
@@ -294,7 +295,7 @@ public class StatsRulesProcFactory {
           // result in number of rows getting more than the input rows in
           // which case stats need not be updated
           if (newNumRows <= parentStats.getNumRows()) {
-            updateStats(st, newNumRows, true, fop);
+            updateStats(st, newNumRows, true, fop, aspCtx.getAffectedColumns());
           }
 
           if (LOG.isDebugEnabled()) {

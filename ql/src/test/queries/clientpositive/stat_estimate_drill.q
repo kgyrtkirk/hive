@@ -19,6 +19,8 @@ analyze table t3 compute statistics for columns;
 
 explain analyze select sum(a) from t3 where b in (2,3) group by b;
 
+explain analyze select sum(a) from t3 where a=1 or a=2 group by b;
+explain analyze select sum(a) from t3 where a=1 or (a=2  and b=3) group by b;
 explain analyze select sum(a) from t3 where a=1 group by b;
 explain analyze select sum(a) from t3 where a=1 and b=2 group by b;
 explain analyze select sum(a) from t3 where a=1 and b=2 and c=3 group by b;
