@@ -352,6 +352,10 @@ public class StatsRulesProcFactory {
                 aspCtx, neededCols, op, evaluatedRowCount);
             newNumRows = evaluatedRowCount;
             if (satisfyPrecondition(aspCtx.getAndExprStats())) {
+              // Assumption is that columns are uncorrelated.
+              // Ndv is reduced in a conservative manner - only taking affected columns
+              // (which might be a subset of the actual *real* affected columns due to current limitation)
+              // Goal is to not let a situation in which ndv-s asre underestimated happen.
               updateStats(aspCtx.getAndExprStats(), newNumRows, true, op, aspCtx.getAffectedColumns());
             } else {
               updateStats(aspCtx.getAndExprStats(), newNumRows, false, op);
@@ -364,6 +368,9 @@ public class StatsRulesProcFactory {
                 evaluateChildExpr(stats, child, aspCtx, neededCols, op, currNumRows),
                 newNumRows);
           }
+          // We have to clear the affected columns
+          // since currently it is not possible to get a real estimate of an or expression.
+          aspCtx.clearAffectedColumns();
           if (newNumRows > currNumRows) {
             newNumRows = currNumRows;
           }
