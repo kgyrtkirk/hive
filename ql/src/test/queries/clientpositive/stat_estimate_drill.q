@@ -24,3 +24,5 @@ explain analyze select sum(a) from t3 where a=1 or (a=2  and b=3) group by b;
 explain analyze select sum(a) from t3 where a=1 group by b;
 explain analyze select sum(a) from t3 where a=1 and b=2 group by b;
 explain analyze select sum(a) from t3 where a=1 and b=2 and c=3 group by b;
+
+explain analyze select sum(a) from t3 where (a=1 and b=2) or (a=2 and b=3) or (a=3 and b=4) group by b;

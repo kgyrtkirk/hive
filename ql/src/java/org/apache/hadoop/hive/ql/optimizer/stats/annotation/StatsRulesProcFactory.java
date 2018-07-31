@@ -2654,6 +2654,10 @@ public class StatsRulesProcFactory {
             newDV = (long) Math.ceil(ratio * oldDV);
           }
           cs.setCountDistint(newDV);
+          oldDV = newDV;
+        }
+        if (oldDV > newNumRows) {
+          cs.setCountDistint(newNumRows);
         }
       }
       stats.setColumnStats(colStats);
