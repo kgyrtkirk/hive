@@ -360,13 +360,9 @@ public class StatsRulesProcFactory {
         } else if (udf instanceof GenericUDFOPOr) {
           // for OR condition independently compute and update stats.
           for (ExprNodeDesc child : genFunc.getChildren()) {
-            aspCtx.clearAffectedColumns();
-            Statistics st = stats.clone();
-            long exprNumRows = evaluateChildExpr(st, child, aspCtx, neededCols, op, currNumRows);
-            newNumRows = StatsUtils.safeAdd(exprNumRows, newNumRows);
-            if (satisfyPrecondition(st)) {
-              updateStats(st, exprNumRows, true, op, aspCtx.getAffectedColumns());
-            }
+            newNumRows = StatsUtils.safeAdd(
+                evaluateChildExpr(stats, child, aspCtx, neededCols, op, currNumRows),
+                newNumRows);
           }
           if (newNumRows > currNumRows) {
             newNumRows = currNumRows;
