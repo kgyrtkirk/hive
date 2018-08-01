@@ -346,7 +346,7 @@ public class RexNodeConverter {
           // from IN [A,B] => EQUALS [A,B]
           // except complex types
           calciteOp = SqlStdOperatorTable.EQUALS;
-        } else {
+        } else if (RexUtil.isReferenceOrAccess(childRexNodeLst.get(0), true)) {
           // if it is more than an single item in an IN clause,
           // transform from IN [A,B,C] => OR [EQUALS [A,B], EQUALS [A,C]]
           // except complex types
