@@ -750,11 +750,11 @@ STAGE PLANS:
             Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((a = 3) or (a = 4)) and ((b = 1) or (b = 2)) and (a = 3) and (b = 2)) (type: boolean)
-              Statistics: Num rows: 8/0 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 2/0 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: 3 (type: int)
                 outputColumnNames: a
-                Statistics: Num rows: 8/0 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2/0 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(a)
                   keys: 2 (type: int)
