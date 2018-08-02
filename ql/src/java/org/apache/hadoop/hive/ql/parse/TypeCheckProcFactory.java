@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.math.BigDecimal;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,6 +30,7 @@ import java.util.Stack;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -1264,7 +1264,9 @@ public class TypeCheckProcFactory {
             }
           } catch (NumberFormatException nfe) {
             LOG.trace("Failed to narrow type of constant", nfe);
-            return null;
+            if (!NumberUtils.isNumber(constVal.toString())) {
+              return null;
+            }
           }
         }
 
