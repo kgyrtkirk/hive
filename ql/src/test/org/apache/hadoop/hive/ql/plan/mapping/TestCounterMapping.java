@@ -157,7 +157,7 @@ public class TestCounterMapping {
 
     IDriver driver = createDriver();
     HiveConf conf = env_setup.getTestCtx().hiveConf;
-    conf.setBoolVar(ConfVars.HIVE_CBO_ENABLED, false);
+    conf.setIntVar(ConfVars.HIVEPOINTLOOKUPOPTIMIZERMIN, 10);
 
     PlanMapper pm = getMapperForQuery(driver, query);
     List<FilterOperator> fos = pm.getAll(FilterOperator.class);
