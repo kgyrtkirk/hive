@@ -155,9 +155,9 @@ public class TestCounterMapping {
     String query =
         "explain select sum(id_uv) from tu where u in (1,2) group by u";
 
-    IDriver driver = createDriver();
     HiveConf conf = env_setup.getTestCtx().hiveConf;
     conf.setIntVar(ConfVars.HIVEPOINTLOOKUPOPTIMIZERMIN, 10);
+    IDriver driver = createDriver();
 
     PlanMapper pm = getMapperForQuery(driver, query);
     List<FilterOperator> fos = pm.getAll(FilterOperator.class);
