@@ -528,13 +528,14 @@ public class StatsRulesProcFactory {
         // distinct value array doesn not help that much here; think (1,1),(1,2),(2,1),(2,2) as values
         // but that will look like (1,2) as column values...
         factor *= children.size() - 1;
-      } else {
-        factor *= values.get(0).size();
       }
       for (int i = 0; i < columnStats.size(); i++) {
         long dvs = columnStats.get(i) == null ? 0 : columnStats.get(i).getCountDistint();
         // (num of distinct vals for col in IN clause  / num of distinct vals for col )
         double columnFactor = dvs == 0 ? 0.5d : (1.0d / dvs);
+        if (!multiColumn) {
+          columnFactor *=values.get(0).size();
+        }
         // max can be 1, even when ndv is larger in IN clause than in column stats
         factor *= columnFactor > 1d ? 1d : columnFactor;
       }
