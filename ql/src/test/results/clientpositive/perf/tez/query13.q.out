@@ -165,9 +165,9 @@ Stage-0
                             <-Map 12 [SIMPLE_EDGE] vectorized
                               SHUFFLE [RS_140]
                                 PartitionCols:_col0
-                                Select Operator [SEL_139] (rows=3600 width=107)
+                                Select Operator [SEL_139] (rows=7200 width=107)
                                   Output:["_col0","_col1"]
-                                  Filter Operator [FIL_138] (rows=3600 width=107)
+                                  Filter Operator [FIL_138] (rows=7200 width=107)
                                     predicate:((hd_dep_count) IN (3, 1) and hd_demo_sk is not null)
                                     TableScan [TS_9] (rows=7200 width=107)
                                       default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_dep_count"]
@@ -179,9 +179,9 @@ Stage-0
                                 <-Map 10 [SIMPLE_EDGE] vectorized
                                   SHUFFLE [RS_132]
                                     PartitionCols:_col0
-                                    Select Operator [SEL_131] (rows=465450 width=385)
+                                    Select Operator [SEL_131] (rows=1861800 width=385)
                                       Output:["_col0","_col1","_col2"]
-                                      Filter Operator [FIL_130] (rows=465450 width=385)
+                                      Filter Operator [FIL_130] (rows=1861800 width=385)
                                         predicate:((cd_education_status) IN ('4 yr Degree', 'Primary', 'Advanced Degree') and (cd_marital_status) IN ('M', 'D', 'U') and cd_demo_sk is not null)
                                         TableScan [TS_6] (rows=1861800 width=385)
                                           default@customer_demographics,customer_demographics,Tbl:COMPLETE,Col:NONE,Output:["cd_demo_sk","cd_marital_status","cd_education_status"]
@@ -211,12 +211,12 @@ Stage-0
                                             <-Reducer 11 [BROADCAST_EDGE] vectorized
                                               BROADCAST [RS_137]
                                                 Group By Operator [GBY_136] (rows=1 width=12)
-                                                  Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                                  Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1861800)"]
                                                 <-Map 10 [CUSTOM_SIMPLE_EDGE] vectorized
                                                   SHUFFLE [RS_135]
                                                     Group By Operator [GBY_134] (rows=1 width=12)
-                                                      Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                                      Select Operator [SEL_133] (rows=465450 width=385)
+                                                      Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1861800)"]
+                                                      Select Operator [SEL_133] (rows=1861800 width=385)
                                                         Output:["_col0"]
                                                          Please refer to the previous Select Operator [SEL_131]
                                             <-Reducer 13 [BROADCAST_EDGE] vectorized
@@ -227,7 +227,7 @@ Stage-0
                                                   SHUFFLE [RS_143]
                                                     Group By Operator [GBY_142] (rows=1 width=12)
                                                       Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                                      Select Operator [SEL_141] (rows=3600 width=107)
+                                                      Select Operator [SEL_141] (rows=7200 width=107)
                                                         Output:["_col0"]
                                                          Please refer to the previous Select Operator [SEL_139]
                                             <-Reducer 15 [BROADCAST_EDGE] vectorized

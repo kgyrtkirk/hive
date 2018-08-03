@@ -173,9 +173,9 @@ Stage-0
                                 <-Map 8 [SIMPLE_EDGE] vectorized
                                   SHUFFLE [RS_150]
                                     PartitionCols:_col0
-                                    Select Operator [SEL_149] (rows=116363 width=385)
+                                    Select Operator [SEL_149] (rows=930900 width=385)
                                       Output:["_col0","_col1","_col2"]
-                                      Filter Operator [FIL_148] (rows=116363 width=385)
+                                      Filter Operator [FIL_148] (rows=930900 width=385)
                                         predicate:((cd_education_status) IN ('Unknown', 'Advanced Degree') and (cd_marital_status) IN ('M', 'W') and (struct(cd_marital_status,cd_education_status)) IN (const struct('M','Unknown'), const struct('W','Advanced Degree')) and cd_demo_sk is not null)
                                         TableScan [TS_3] (rows=1861800 width=385)
                                           default@customer_demographics,customer_demographics,Tbl:COMPLETE,Col:NONE,Output:["cd_demo_sk","cd_marital_status","cd_education_status"]
