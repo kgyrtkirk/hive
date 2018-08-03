@@ -451,7 +451,10 @@ public class StatsRulesProcFactory {
             return numRows / 2;
           }
           columns.add(columnChild);
-          aspCtx.addAffectedColumn((ExprNodeColumnDesc) columnChild);
+
+          // not adding column as affected; since that would rescale ndv based on the other columns
+          // selectivity as well...which leads to underestimation
+          // aspCtx.addAffectedColumn((ExprNodeColumnDesc) columnChild);
           final String columnName = ((ExprNodeColumnDesc) columnChild).getColumn();
           // if column name is not contained in needed column list then it
           // is a partition column. We do not need to evaluate partition columns
