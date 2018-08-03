@@ -6358,11 +6358,11 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(hour) = 11.0D) and (date) IN ('2008-04-08', '2008-04-09') and ds is not null and hr is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
                       outputColumnNames: _col0, _col2
-                      Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: string), UDFToDouble(_col1) (type: double)
@@ -6370,27 +6370,27 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
                             Target Columns: [Map 1 -> [ds:string (ds)]]
-                            Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: UDFToDouble(_col2) (type: double)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: double)
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
                             Target Columns: [Map 1 -> [hr:int (UDFToDouble(hr))]]
-                            Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
 
