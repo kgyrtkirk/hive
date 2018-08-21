@@ -19,6 +19,10 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static org.junit.Assert.assertEquals;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
+import org.antlr.runtime.DFA;
 import org.junit.Test;
 
 
@@ -114,4 +118,25 @@ public class TestParseDriver {
       assertTree((ASTNode) astNode1.getChild(i), (ASTNode) astNode2.getChild(i));
     }
   }
+
+  @Test // (timeout = 1000)
+  public void testGreatestParse() throws Exception {
+    Field dF = DFA.class.getDeclaredField("debug");
+    dF.setAccessible(true);
+
+    clearFinalModifier(dF);
+
+    dF.setBoolean(null, true);
+    boolean x = DFA.debug;
+    parseDriver.parse(
+        " select greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,(greatest(1,greatest(1,2)))))))))))))))))))");
+
+  }
+
+  private void clearFinalModifier(Field field) throws Exception {
+    Field modifiersField = Field.class.getDeclaredField("modifiers");
+    modifiersField.setAccessible(true);
+    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+  }
+
 }

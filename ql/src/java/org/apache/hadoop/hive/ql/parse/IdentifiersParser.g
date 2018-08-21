@@ -423,7 +423,7 @@ expression
 atomExpression
     :
     constant
-    | (intervalExpression) => intervalExpression
+//    | (intervalExpression) => intervalExpression
     | castExpression
     | extractExpression
     | floorExpression
@@ -431,16 +431,21 @@ atomExpression
     | whenExpression
     | (subQueryExpression)=> (subQueryExpression)
         -> ^(TOK_SUBQUERY_EXPR TOK_SUBQUERY_OP subQueryExpression)
-    | (function) => function
+    | (functionName LPAREN) => function
     | tableOrColumn
     | expressionsInParenthesis[true, false]
     ;
 
 precedenceFieldExpression
     :
-    atomExpression ((LSQUARE^ expression RSQUARE!) | (DOT^ identifier))*
+    (precedenceFieldExpression0) => precedenceFieldExpression0
+    | atomExpression
     ;
 
+precedenceFieldExpression0
+    :
+    identifier ((LSQUARE^ expression RSQUARE!) | (DOT^ identifier))+
+    ;
 precedenceUnaryOperator
     :
     PLUS | MINUS | TILDE
