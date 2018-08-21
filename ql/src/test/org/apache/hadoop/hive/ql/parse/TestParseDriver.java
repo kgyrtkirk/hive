@@ -128,7 +128,9 @@ public class TestParseDriver {
   public void testNestedFunctionCalls() throws Exception {
     // Expectation here is not to run into a timeout
     parseDriver.parse(
-        "select greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,(greatest(1,greatest(1,2)))))))))))))))))))");
+        "select greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,"
+            + "greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,"
+            + "greatest(1,greatest(1,(greatest(1,greatest(1,2)))))))))))))))))))");
   }
 
   @Test(timeout = 1000)
