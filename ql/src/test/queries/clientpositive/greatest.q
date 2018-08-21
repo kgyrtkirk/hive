@@ -1,0 +1,4 @@
+ select greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,(greatest(1,greatest(1,2)))))))))))))))))));
+ select greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,(greatest(1,greatest(1,2)))))))))))))))))));
+ select greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,(greatest(1,greatest(1,2)))))))))))))))))));
+ select greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,greatest(1,(greatest(1,greatest(1,2)))))))))))))))))));
