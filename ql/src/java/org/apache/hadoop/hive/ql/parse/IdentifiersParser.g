@@ -423,7 +423,7 @@ expression
 atomExpression
     :
     constant
-//    | (intervalExpression) => intervalExpression
+    | (intervalExpression) => intervalExpression
     | castExpression
     | extractExpression
     | floorExpression
@@ -438,14 +438,9 @@ atomExpression
 
 precedenceFieldExpression
     :
-    (precedenceFieldExpression0) => precedenceFieldExpression0
-    | atomExpression
+    atomExpression ((LSQUARE^ expression RSQUARE!) | (DOT^ identifier))*
     ;
 
-precedenceFieldExpression0
-    :
-    identifier ((LSQUARE^ expression RSQUARE!) | (DOT^ identifier))+
-    ;
 precedenceUnaryOperator
     :
     PLUS | MINUS | TILDE
