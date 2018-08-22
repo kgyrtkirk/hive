@@ -96,13 +96,12 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
-import org.apache.hive.common.util.TxnIdUtils;
 import org.apache.thrift.TException;
 import org.datanucleus.AbstractNucleusContext;
 import org.datanucleus.ClassLoaderResolver;
@@ -1307,9 +1306,6 @@ public class ObjectStore implements RawStore, Configurable {
               TableName.getQualified(catName, dbName, tableName));
         }
 
-        // TODO## remove? unused
-        Table table = convertToTable(tbl);
-
         List<MConstraint> tabConstraints = listAllTableConstraintsWithOptionalConstraintName(
                                            catName, dbName, tableName, null);
         if (CollectionUtils.isNotEmpty(tabConstraints)) {
@@ -1902,7 +1898,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   /** Makes shallow copy of a map to avoid DataNucleus mucking with our objects. */
   private Map<String, String> convertMap(Map<String, String> dnMap) {
-    return MetaStoreUtils.trimMapNulls(dnMap,
+    return MetaStoreServerUtils.trimMapNulls(dnMap,
         MetastoreConf.getBoolVar(getConf(), ConfVars.ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS));
   }
 
@@ -2299,7 +2295,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   private boolean isValidPartition(
       Partition part, List<FieldSchema> partitionKeys, boolean ifNotExists) throws MetaException {
-    MetaStoreUtils.validatePartitionNameCharacters(part.getValues(),
+    MetaStoreServerUtils.validatePartitionNameCharacters(part.getValues(),
         partitionValidationPattern);
     boolean doesExist = doesPartitionExist(part.getCatName(),
         part.getDbName(), part.getTableName(), partitionKeys, part.getValues());
@@ -4116,7 +4112,8 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setDatabase(newt.getDatabase());
       oldt.setTableName(normalizeIdentifier(newt.getTableName()));
       boolean isTxn = TxnUtils.isTransactionalTable(newTable);
-      if (isTxn && areTxnStatsSupported) {
+      boolean isToTxn = isTxn && !TxnUtils.isTransactionalTable(oldt.getParameters());
+      if (!isToTxn && isTxn && areTxnStatsSupported) {
         // Transactional table is altered without a txn. Make sure there are no changes to the flag.
         String errorMsg = verifyStatsChangeCtx(oldt.getParameters(), newTable.getParameters(),
             newTable.getWriteId(), queryValidWriteIds, false);
@@ -4124,7 +4121,6 @@ public class ObjectStore implements RawStore, Configurable {
           throw new MetaException(errorMsg);
         }
       }
-      boolean isToTxn = isTxn && !TxnUtils.isTransactionalTable(oldt.getParameters());
       oldt.setParameters(newt.getParameters());
       oldt.setOwner(newt.getOwner());
       oldt.setOwnerType(newt.getOwnerType());
@@ -4146,12 +4142,11 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setRewriteEnabled(newt.isRewriteEnabled());
 
       // If transactional, update the stats state for the current Stats updater query.
-      // Don't update for conversion to acid - it doesn't modify stats but passes in qVWIds.
-      // The fact that it doesn't update stats is verified above.
+      // Set stats invalid for ACID conversion; it doesn't pass in the write ID.
       if (isTxn) {
-        if (!areTxnStatsSupported) {
+        if (!areTxnStatsSupported || isToTxn) {
           StatsSetupConst.setBasicStatsState(oldt.getParameters(), StatsSetupConst.FALSE);
-        } else if (queryValidWriteIds != null && (!isToTxn || newTable.getWriteId() > 0)) {
+        } else if (queryValidWriteIds != null && newTable.getWriteId() > 0) {
           // Check concurrent INSERT case and set false to the flag.
           if (!isCurrentStatsValidForTheQuery(oldt, queryValidWriteIds, true)) {
             StatsSetupConst.setBasicStatsState(oldt.getParameters(), StatsSetupConst.FALSE);
@@ -8452,7 +8447,7 @@ public class ObjectStore implements RawStore, Configurable {
         // There is no need to add colname again, otherwise we will get duplicate colNames.
       }
 
-      // TODO## ideally the col stats stats should be in colstats, not in the table!
+      // TODO: (HIVE-20109) ideally the col stats stats should be in colstats, not in the table!
       // Set the table properties
       // No need to check again if it exists.
       String dbname = table.getDbName();
@@ -8552,7 +8547,7 @@ public class ObjectStore implements RawStore, Configurable {
         writeMPartitionColumnStatistics(table, partition, mStatsObj,
             oldStats.get(statsObj.getColName()));
       }
-      // TODO## ideally the col stats stats should be in colstats, not in the partition!
+      // TODO: (HIVE-20109) the col stats stats should be in colstats, not in the partition!
       Map<String, String> newParams = new HashMap<>(mPartition.getParameters());
       StatsSetupConst.setColumnStatsState(newParams, colNames);
       boolean isTxn = TxnUtils.isTransactionalTable(table);
@@ -8759,7 +8754,7 @@ public class ObjectStore implements RawStore, Configurable {
           cs.setIsStatsCompliant(false);
         }
       } else {
-        // TODO## this could be improved to get partitions in bulk
+        // TODO: this could be improved to get partitions in bulk
         for (ColumnStatistics cs : allStats) {
           MPartition mpart = getMPartition(catName, dbName, tableName,
               Warehouse.getPartValuesFromPartName(cs.getStatsDesc().getPartName()));
@@ -8892,21 +8887,21 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<MetaStoreUtils.ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName)
+  public List<MetaStoreServerUtils.ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName)
       throws MetaException, NoSuchObjectException {
     final boolean enableBitVector =
         MetastoreConf.getBoolVar(getConf(), ConfVars.STATS_FETCH_BITVECTOR);
-    return new GetHelper<List<MetaStoreUtils.ColStatsObjWithSourceInfo>>(
+    return new GetHelper<List<MetaStoreServerUtils.ColStatsObjWithSourceInfo>>(
         catName, dbName, null, true, false) {
       @Override
-      protected List<MetaStoreUtils.ColStatsObjWithSourceInfo> getSqlResult(
-          GetHelper<List<MetaStoreUtils.ColStatsObjWithSourceInfo>> ctx) throws MetaException {
+      protected List<MetaStoreServerUtils.ColStatsObjWithSourceInfo> getSqlResult(
+          GetHelper<List<MetaStoreServerUtils.ColStatsObjWithSourceInfo>> ctx) throws MetaException {
         return directSql.getColStatsForAllTablePartitions(catName, dbName, enableBitVector);
       }
 
       @Override
-      protected List<MetaStoreUtils.ColStatsObjWithSourceInfo> getJdoResult(
-          GetHelper<List<MetaStoreUtils.ColStatsObjWithSourceInfo>> ctx)
+      protected List<MetaStoreServerUtils.ColStatsObjWithSourceInfo> getJdoResult(
+          GetHelper<List<MetaStoreServerUtils.ColStatsObjWithSourceInfo>> ctx)
           throws MetaException, NoSuchObjectException {
         // This is fast path for query optimizations, if we can find this info
         // quickly using directSql, do it. No point in failing back to slow path
@@ -9795,10 +9790,11 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       long lastEvent = rqst.getLastEvent();
-      int maxEvents = rqst.getMaxEvents() > 0 ? rqst.getMaxEvents() : Integer.MAX_VALUE;
       query = pm.newQuery(MNotificationLog.class, "eventId > lastEvent");
       query.declareParameters("java.lang.Long lastEvent");
       query.setOrdering("eventId ascending");
+      int maxEventResponse = MetastoreConf.getIntVar(conf, ConfVars.METASTORE_MAX_EVENT_RESPONSE);
+      int maxEvents = (rqst.getMaxEvents() < maxEventResponse && rqst.getMaxEvents() > 0) ? rqst.getMaxEvents() : maxEventResponse;
       query.setRange(0, maxEvents);
       Collection<MNotificationLog> events = (Collection) query.execute(lastEvent);
       commited = commitTransaction();
@@ -12473,8 +12469,7 @@ public class ObjectStore implements RawStore, Configurable {
       boolean isCompleteStatsWriter) throws MetaException {
 
     // Note: can be changed to debug/info to verify the calls.
-    // TODO## change this to debug when merging
-    LOG.info("isCurrentStatsValidForTheQuery with stats write ID {}; query {}; writer: {} params {}",
+    LOG.debug("isCurrentStatsValidForTheQuery with stats write ID {}; query {}; writer: {} params {}",
         statsWriteId, queryValidWriteIdList, isCompleteStatsWriter, statsParams);
     // return true since the stats does not seem to be transactional.
     if (statsWriteId < 1) {

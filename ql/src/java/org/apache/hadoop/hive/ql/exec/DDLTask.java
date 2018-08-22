@@ -48,16 +48,16 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.concurrent.ExecutionException;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -65,6 +65,7 @@ import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.Constants;
@@ -288,8 +289,6 @@ import org.apache.hive.common.util.RetryUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.ST;
-
-import static org.apache.commons.lang.StringUtils.join;
 
 /**
  * DDLTask implementation.
@@ -1436,7 +1435,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private int touch(Hive db, AlterTableSimpleDesc touchDesc)
       throws HiveException {
-
+    // TODO: catalog
     Table tbl = db.getTable(touchDesc.getTableName());
     EnvironmentContext environmentContext = new EnvironmentContext();
     environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
@@ -1451,7 +1450,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         throw new HiveException("Specified partition does not exist");
       }
       try {
-        db.alterPartition(touchDesc.getTableName(), part, environmentContext, true);
+        db.alterPartition(tbl.getCatalogName(), tbl.getDbName(), tbl.getTableName(),
+            part, environmentContext, true);
       } catch (InvalidOperationException e) {
         throw new HiveException(e);
       }
@@ -1800,6 +1800,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             authority.toString(),
             harPartitionDir.getPath()); // make in Path to ensure no slash at the end
         setArchived(p, harPath, partSpecInfo.values.size());
+        // TODO: catalog
         db.alterPartition(simpleDesc.getTableName(), p, null, true);
       }
     } catch (Exception e) {
@@ -2006,6 +2007,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     for(Partition p: partitions) {
       setUnArchived(p);
       try {
+        // TODO: catalog
         db.alterPartition(simpleDesc.getTableName(), p, null, true);
       } catch (InvalidOperationException e) {
         throw new HiveException(e);
@@ -2779,6 +2781,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int showTablesOrViews(Hive db, ShowTablesDesc showDesc) throws HiveException {
     // get the tables/views for the desired pattern - populate the output stream
     List<String> tablesOrViews = null;
+    List<Table> materializedViews = null;
 
     String dbName      = showDesc.getDbName();
     String pattern     = showDesc.getPattern(); // if null, all tables/views are returned
@@ -2790,8 +2793,21 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     LOG.debug("pattern: {}", pattern);
-    tablesOrViews = db.getTablesByType(dbName, pattern, type);
-    LOG.debug("Found {} tables/view(s) matching the SHOW TABLES/VIEWS statement.", tablesOrViews.size());
+    if (type == null) {
+      tablesOrViews = new ArrayList<>();
+      tablesOrViews.addAll(db.getTablesByType(dbName, pattern, TableType.MANAGED_TABLE));
+      tablesOrViews.addAll(db.getTablesByType(dbName, pattern, TableType.EXTERNAL_TABLE));
+      LOG.debug("Found {} table(s) matching the SHOW TABLES statement.", tablesOrViews.size());
+    } else if (type == TableType.MATERIALIZED_VIEW) {
+      materializedViews = new ArrayList<>();
+      materializedViews.addAll(db.getAllMaterializedViewObjects(dbName));
+      LOG.debug("Found {} materialized view(s) matching the SHOW MATERIALIZED VIEWS statement.", materializedViews.size());
+    } else if (type == TableType.VIRTUAL_VIEW) {
+      tablesOrViews = db.getTablesByType(dbName, pattern, type);
+      LOG.debug("Found {} view(s) matching the SHOW VIEWS statement.", tablesOrViews.size());
+    } else {
+      throw new HiveException("Option not recognized in SHOW TABLES/VIEWS/MATERIALIZED VIEWS");
+    }
 
     // write the results in the file
     DataOutputStream outStream = null;
@@ -2799,11 +2815,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Path resFile = new Path(resultsFile);
       FileSystem fs = resFile.getFileSystem(conf);
       outStream = fs.create(resFile);
-
-      SortedSet<String> sortedSet = new TreeSet<String>(tablesOrViews);
-      formatter.showTables(outStream, sortedSet);
+      // Sort by name and print
+      if (tablesOrViews != null) {
+        SortedSet<String> sortedSet = new TreeSet<String>(tablesOrViews);
+        formatter.showTables(outStream, sortedSet);
+      } else {
+        Collections.sort(materializedViews, Comparator.comparing(Table::getTableName));
+        formatter.showMaterializedViews(outStream, materializedViews);
+      }
       outStream.close();
-      outStream = null;
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "in database" + dbName);
     } finally {
@@ -3279,7 +3299,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int killQuery(Hive db, KillQueryDesc desc) throws HiveException {
     SessionState sessionState = SessionState.get();
     for (String queryId : desc.getQueryIds()) {
-      sessionState.getKillQuery().killQuery(queryId, "User invoked KILL QUERY");
+      sessionState.getKillQuery().killQuery(queryId, "User invoked KILL QUERY", db.getConf());
     }
     LOG.info("kill query called ({})", desc.getQueryIds());
     return 0;
@@ -3738,13 +3758,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         storageHandlerInfo = db.getStorageHandlerInfo(tbl);
       }
       fixDecimalColumnTypeName(cols);
+      // Information for materialized views
+      if (tbl.isMaterializedView()) {
+        final String validTxnsList = db.getConf().get(ValidTxnList.VALID_TXNS_KEY);
+        if (validTxnsList != null) {
+          final List<String> tablesUsed =
+              new ArrayList<>(tbl.getCreationMetadata().getTablesUsed());
+          final ValidTxnWriteIdList currentTxnWriteIds =
+              SessionState.get().getTxnMgr().getValidWriteIds(tablesUsed, validTxnsList);
+          final long defaultTimeWindow =
+              HiveConf.getTimeVar(db.getConf(), HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW,
+                  TimeUnit.MILLISECONDS);
+          tbl.setOutdatedForRewriting(Hive.isOutdatedMaterializedView(tbl,
+              currentTxnWriteIds, defaultTimeWindow, tablesUsed, false));
+        }
+      }
       // In case the query is served by HiveServer2, don't pad it with spaces,
       // as HiveServer2 output is consumed by JDBC/ODBC clients.
       boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
       formatter.describeTable(outStream, colPath, tableName, tbl, part,
-          cols, descTbl.isFormatted(), descTbl.isExt(),
-          isOutputPadded, colStats,
-          pkInfo, fkInfo, ukInfo, nnInfo, dInfo, cInfo, storageHandlerInfo);
+          cols, descTbl.isFormatted(), descTbl.isExt(), isOutputPadded,
+          colStats, pkInfo, fkInfo, ukInfo, nnInfo, dInfo, cInfo,
+          storageHandlerInfo);
 
       LOG.debug("DDLTask: written data for {}", tableName);
 
@@ -4734,6 +4769,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // drop the table
+    // TODO: API w/catalog name
     db.dropTable(dropTbl.getTableName(), dropTbl.getIfPurge());
     if (tbl != null) {
       // Remove from cache if it is a materialized view

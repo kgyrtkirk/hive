@@ -259,7 +259,12 @@ public final class Utilities {
    * VALUE: record value
    */
   public static enum ReduceField {
-    KEY, VALUE
+    KEY(0), VALUE(1);
+
+    int position;
+    ReduceField(int position) {
+      this.position = position;
+    };
   };
 
   public static List<String> reduceFieldNameList;
@@ -3755,32 +3760,6 @@ public final class Utilities {
 
   public static void clearWorkMap(Configuration conf) {
     gWorkMap.get(conf).clear();
-  }
-
-  /**
-   * Create a temp dir in specified baseDir
-   * This can go away once hive moves to support only JDK 7
-   *  and can use Files.createTempDirectory
-   *  Guava Files.createTempDir() does not take a base dir
-   * @param baseDir - directory under which new temp dir will be created
-   * @return File object for new temp dir
-   */
-  public static File createTempDir(String baseDir){
-    //try creating the temp dir MAX_ATTEMPTS times
-    final int MAX_ATTEMPS = 30;
-    for(int i = 0; i < MAX_ATTEMPS; i++){
-      //pick a random file name
-      String tempDirName = "tmp_" + ((int)(100000 * Math.random()));
-
-      //return if dir could successfully be created with that file name
-      File tempDir = new File(baseDir, tempDirName);
-      if(tempDir.mkdir()){
-        return tempDir;
-      }
-    }
-    throw new IllegalStateException("Failed to create a temp dir under "
-    + baseDir + " Giving up after " + MAX_ATTEMPS + " attempts");
-
   }
 
   /**
