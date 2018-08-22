@@ -168,7 +168,8 @@ CREATE TABLE "PARTITIONS" (
     "LAST_ACCESS_TIME" bigint NOT NULL,
     "PART_NAME" character varying(767) DEFAULT NULL::character varying,
     "SD_ID" bigint,
-    "TBL_ID" bigint
+    "TBL_ID" bigint,
+    "WRITE_ID" bigint DEFAULT 0
 );
 
 
@@ -218,7 +219,7 @@ CREATE TABLE "PARTITION_KEY_VALS" (
 CREATE TABLE "PARTITION_PARAMS" (
     "PART_ID" bigint NOT NULL,
     "PARAM_KEY" character varying(256) NOT NULL,
-    "PARAM_VALUE" character varying(4000) DEFAULT NULL::character varying
+    "PARAM_VALUE" text DEFAULT NULL
 );
 
 
@@ -392,7 +393,8 @@ CREATE TABLE "TBLS" (
     "TBL_TYPE" character varying(128) DEFAULT NULL::character varying,
     "VIEW_EXPANDED_TEXT" text,
     "VIEW_ORIGINAL_TEXT" text,
-    "IS_REWRITE_ENABLED" boolean NOT NULL DEFAULT false
+    "IS_REWRITE_ENABLED" boolean NOT NULL DEFAULT false,
+    "WRITE_ID" bigint DEFAULT 0
 );
 
 --

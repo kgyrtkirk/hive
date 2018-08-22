@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -31,7 +32,6 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.Table;
 
 import static org.junit.Assert.assertEquals;
-
 
 /**
  * A wrapper around {@link ObjectStore} that allows us to inject custom behaviour
@@ -135,6 +135,11 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   }
 
   @Override
+  public Table getTable(String catName, String dbName, String tableName, String writeIdList) throws MetaException {
+    return getTableModifier.apply(super.getTable(catName, dbName, tableName, writeIdList));
+  }
+
+  @Override
   public Partition getPartition(String catName, String dbName, String tableName,
                                 List<String> partVals) throws NoSuchObjectException, MetaException {
     return getPartitionModifier.apply(super.getPartition(catName, dbName, tableName, partVals));
@@ -207,5 +212,15 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
       }
     }
     return super.addForeignKeys(fks);
+  }
+
+  @Override
+  public boolean alterDatabase(String catalogName, String dbname, Database db)
+          throws NoSuchObjectException, MetaException {
+    if (callerVerifier != null) {
+      CallerArguments args = new CallerArguments(dbname);
+      callerVerifier.apply(args);
+    }
+    return super.alterDatabase(catalogName, dbname, db);
   }
 }

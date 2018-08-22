@@ -245,7 +245,7 @@ public class TestObjectStore {
     newTbl1.setOwner("role1");
     newTbl1.setOwnerType(PrincipalType.ROLE);
 
-    objectStore.alterTable(DEFAULT_CATALOG_NAME, DB1, TABLE1, newTbl1);
+    objectStore.alterTable(DEFAULT_CATALOG_NAME, DB1, TABLE1, newTbl1, null);
     tables = objectStore.getTables(DEFAULT_CATALOG_NAME, DB1, "new*");
     Assert.assertEquals(1, tables.size());
     Assert.assertEquals("new" + TABLE1, tables.get(0));
@@ -559,7 +559,7 @@ public class TestObjectStore {
         ColumnStatisticsObj partStats = new ColumnStatisticsObj("test_part_col", "int", data);
         statsObjList.add(partStats);
 
-        objectStore.updatePartitionColumnStatistics(stats, part.getValues());
+        objectStore.updatePartitionColumnStatistics(stats, part.getValues(), null, -1);
       }
     }
     if (withPrivileges) {
@@ -809,6 +809,24 @@ public class TestObjectStore {
     objectStore.cleanNotificationEvents(1);
     eventResponse = objectStore.getNextNotification(new NotificationEventRequest());
     Assert.assertEquals(0, eventResponse.getEventsSize());
+  }
+
+  /**
+   * Test metastore configuration property METASTORE_MAX_EVENT_RESPONSE
+   */
+  @Test
+  public void testMaxEventResponse() throws InterruptedException, MetaException {
+    NotificationEvent event =
+        new NotificationEvent(0, 0, EventMessage.EventType.CREATE_DATABASE.toString(), "");
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.METASTORE_MAX_EVENT_RESPONSE, 1);
+    ObjectStore objs = new ObjectStore();
+    objs.setConf(conf);
+    // Verify if METASTORE_MAX_EVENT_RESPONSE will limit number of events to respond
+    for (int i = 0; i < 3; i++) {
+      objs.addNotificationEvent(event);
+    }
+    NotificationEventResponse eventResponse = objs.getNextNotification(new NotificationEventRequest());
+    Assert.assertEquals(1, eventResponse.getEventsSize());
   }
 
   @Ignore(

@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePolicyProvider;
@@ -166,19 +167,25 @@ public class PrivilegeSynchonizer implements Runnable {
       long interval = HiveConf.getTimeVar(hiveConf, ConfVars.HIVE_PRIVILEGE_SYNCHRONIZER_INTERVAL, TimeUnit.SECONDS);
       try {
         for (HivePolicyProvider policyProvider : policyProviderContainer) {
+          LOG.info("Start synchronize privilege " + policyProvider.getClass().getName());
           String authorizer = policyProvider.getClass().getSimpleName();
           if (!privilegeSynchonizerLatch.await(interval, TimeUnit.SECONDS)) {
+            LOG.info("Not selected as leader, skip");
             continue;
           }
-          LOG.info("Start synchonize privilege");
+          int numDb = 0, numTbl = 0;
           for (String dbName : hiveClient.getAllDatabases()) {
+            numDb++;
             HiveObjectRef dbToRefresh = getObjToRefresh(HiveObjectType.DATABASE, dbName, null);
             PrivilegeBag grantDatabaseBag = new PrivilegeBag();
             addGrantPrivilegesToBag(policyProvider, grantDatabaseBag, HiveObjectType.DATABASE,
                 dbName, null, null, authorizer);
             hiveClient.refresh_privileges(dbToRefresh, authorizer, grantDatabaseBag);
+            LOG.debug("processing " + dbName);
 
             for (String tblName : hiveClient.getAllTables(dbName)) {
+              numTbl++;
+              LOG.debug("processing " + dbName + "." + tblName);
               HiveObjectRef tableToRefresh = getObjToRefresh(HiveObjectType.TABLE, dbName, tblName);
               PrivilegeBag grantTableBag = new PrivilegeBag();
               addGrantPrivilegesToBag(policyProvider, grantTableBag, HiveObjectType.TABLE,
@@ -187,25 +194,31 @@ public class PrivilegeSynchonizer implements Runnable {
 
               HiveObjectRef tableOfColumnsToRefresh = getObjToRefresh(HiveObjectType.COLUMN, dbName, tblName);
               PrivilegeBag grantColumnBag = new PrivilegeBag();
-              Table tbl = hiveClient.getTable(dbName, tblName);
-              for (FieldSchema fs : tbl.getPartitionKeys()) {
-                addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN,
-                    dbName, tblName, fs.getName(), authorizer);
+              Table tbl = null;
+              try {
+                tbl = hiveClient.getTable(dbName, tblName);
+                for (FieldSchema fs : tbl.getPartitionKeys()) {
+                  addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN,
+                          dbName, tblName, fs.getName(), authorizer);
+                }
+                for (FieldSchema fs : tbl.getSd().getCols()) {
+                  addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN,
+                          dbName, tblName, fs.getName(), authorizer);
+                }
+                hiveClient.refresh_privileges(tableOfColumnsToRefresh, authorizer, grantColumnBag);
+              } catch (MetaException e) {
+                LOG.debug("Unable to synchronize " + tblName + ":" + e.getMessage());
               }
-              for (FieldSchema fs : tbl.getSd().getCols()) {
-                addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN,
-                    dbName, tblName, fs.getName(), authorizer);
-              }
-              hiveClient.refresh_privileges(tableOfColumnsToRefresh, authorizer, grantColumnBag);
             }
           }
-          // Wait if no exception happens, otherwise, retry immediately
+          LOG.info("Success synchronize privilege " + policyProvider.getClass().getName() + ":" + numDb + " databases, "
+                  + numTbl + " tables");
         }
+        // Wait if no exception happens, otherwise, retry immediately
+        LOG.info("Wait for " + interval + " seconds");
         Thread.sleep(interval * 1000);
-        LOG.info("Success synchonize privilege");
-
       } catch (Exception e) {
-        LOG.error("Error initializing PrivilegeSynchonizer: " + e.getMessage(), e);
+        LOG.error("Error initializing PrivilegeSynchronizer: " + e.getMessage(), e);
       }
     }
   }

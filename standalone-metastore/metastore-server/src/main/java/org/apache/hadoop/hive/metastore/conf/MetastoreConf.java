@@ -19,17 +19,6 @@ package org.apache.hadoop.hive.metastore.conf;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader;
-import org.apache.hadoop.hive.metastore.HiveAlterHandler;
-import org.apache.hadoop.hive.metastore.MaterializationsRebuildLockCleanerTask;
-import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
-import org.apache.hadoop.hive.metastore.RuntimeStatsCleanerTask;
-import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
-import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
-import org.apache.hadoop.hive.metastore.txn.AcidCompactionHistoryService;
-import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
-import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
-import org.apache.hadoop.hive.metastore.txn.AcidWriteSetService;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +58,40 @@ public class MetastoreConf {
 
   private static final Logger LOG = LoggerFactory.getLogger(MetastoreConf.class);
   private static final Pattern TIME_UNIT_SUFFIX = Pattern.compile("([0-9]+)([a-zA-Z]+)");
+
+  @VisibleForTesting
+  static final String DEFAULT_STORAGE_SCHEMA_READER_CLASS =
+      "org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader";
+  @VisibleForTesting
+  static final String HIVE_ALTER_HANDLE_CLASS =
+      "org.apache.hadoop.hive.metastore.HiveAlterHandler";
+  @VisibleForTesting
+  static final String MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS =
+      "org.apache.hadoop.hive.metastore.MaterializationsRebuildLockCleanerTask";
+  @VisibleForTesting
+  static final String METASTORE_TASK_THREAD_CLASS =
+      "org.apache.hadoop.hive.metastore.MetastoreTaskThread";
+  @VisibleForTesting
+  static final String RUNTIME_STATS_CLEANER_TASK_CLASS =
+      "org.apache.hadoop.hive.metastore.RuntimeStatsCleanerTask";
+  @VisibleForTesting
+  static final String EVENT_CLEANER_TASK_CLASS =
+      "org.apache.hadoop.hive.metastore.events.EventCleanerTask";
+  @VisibleForTesting
+  static final String METASTORE_DELEGATION_MANAGER_CLASS =
+      "org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager";
+  @VisibleForTesting
+  static final String ACID_COMPACTION_HISTORY_SERVICE_CLASS =
+      "org.apache.hadoop.hive.metastore.txn.AcidCompactionHistoryService";
+  @VisibleForTesting
+  static final String ACID_HOUSE_KEEPER_SERVICE_CLASS =
+      "org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService";
+  @VisibleForTesting
+  static final String ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS =
+      "org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService";
+  @VisibleForTesting
+  static final String ACID_WRITE_SET_SERVICE_CLASS =
+      "org.apache.hadoop.hive.metastore.txn.AcidWriteSetService";
 
   private static final Map<String, ConfVars> metaConfs = new HashMap<>();
   private static URL hiveDefaultURL = null;
@@ -260,7 +283,7 @@ public class MetastoreConf {
         "hive.metastore.aggregate.stats.cache.ttl", 600, TimeUnit.SECONDS,
         "Number of seconds for a cached node to be active in the cache before they become stale."),
     ALTER_HANDLER("metastore.alter.handler", "hive.metastore.alter.impl",
-        HiveAlterHandler.class.getName(),
+        HIVE_ALTER_HANDLE_CLASS,
         "Alter handler.  For now defaults to the Hive one.  Really need a better default option"),
     ASYNC_LOG_ENABLED("metastore.async.log.enabled", "hive.async.log.enabled", true,
         "Whether to enable Log4j2's asynchronous logging. Asynchronous logging can give\n" +
@@ -436,7 +459,7 @@ public class MetastoreConf {
     DELEGATION_TOKEN_RENEW_INTERVAL("metastore.cluster.delegation.token.renew-interval",
       "hive.cluster.delegation.token.renew-interval", 1, TimeUnit.DAYS, ""),
     DELEGATION_TOKEN_STORE_CLS("metastore.cluster.delegation.token.store.class",
-        "hive.cluster.delegation.token.store.class", MetastoreDelegationTokenManager.class.getName(),
+        "hive.cluster.delegation.token.store.class", METASTORE_DELEGATION_MANAGER_CLASS,
         "Class to store delegation tokens"),
     DETACH_ALL_ON_COMMIT("javax.jdo.option.DetachAllOnCommit",
         "javax.jdo.option.DetachAllOnCommit", true,
@@ -594,6 +617,8 @@ public class MetastoreConf {
         "When used in conjunction with the org.apache.hadoop.hive.ql.parse.MetaDataExportListener pre event listener, \n" +
             "it is the location to which the metadata will be exported. The default is an empty string, which results in the \n" +
             "metadata being exported to the current user's home directory on HDFS."),
+    METASTORE_MAX_EVENT_RESPONSE("metastore.max.event.response", "hive.metastore.max.event.response", 1000000,
+        "The parameter will decide the maximum number of events that HMS will respond."),
     MOVE_EXPORTED_METADATA_TO_TRASH("metastore.metadata.move.exported.metadata.to.trash",
         "hive.metadata.move.exported.metadata.to.trash", true,
         "When used in conjunction with the org.apache.hadoop.hive.ql.parse.MetaDataExportListener pre event listener, \n" +
@@ -652,7 +677,7 @@ public class MetastoreConf {
         "org.apache.hadoop.hive.metastore.ObjectStore",
         "Name of the class that implements org.apache.riven.rawstore interface. \n" +
             "This class is used to store and retrieval of raw metadata objects such as table, database"),
-    REPLCMDIR("metastore.repl.cmrootdir", "hive.repl.cmrootdir", "/user/hive/cmroot/",
+    REPLCMDIR("metastore.repl.cmrootdir", "hive.repl.cmrootdir", "/user/${system:user.name}/cmroot/",
         "Root dir for ChangeManager, used for deleted files."),
     REPLCMRETIAN("metastore.repl.cm.retain", "hive.repl.cm.retain",  24, TimeUnit.HOURS,
         "Time to retain removed files in cmrootdir."),
@@ -660,7 +685,7 @@ public class MetastoreConf {
         "Inteval for cmroot cleanup thread."),
     REPLCMENABLED("metastore.repl.cm.enabled", "hive.repl.cm.enabled", false,
         "Turn on ChangeManager, so delete files will go to cmrootdir."),
-    REPLDIR("metastore.repl.rootdir", "hive.repl.rootdir", "/user/hive/repl/",
+    REPLDIR("metastore.repl.rootdir", "hive.repl.rootdir", "/user/${system:user.name}/repl/",
         "HDFS root dir for all replication dumps."),
     REPL_COPYFILE_MAXNUMFILES("metastore.repl.copyfile.maxnumfiles",
         "hive.exec.copyfile.maxnumfiles", 1L,
@@ -745,7 +770,7 @@ public class MetastoreConf {
         "hive.metastore.stats.auto.analyze.worker.count", 1,
         "Number of parallel analyze commands to run for background stats update."),
     STORAGE_SCHEMA_READER_IMPL("metastore.storage.schema.reader.impl", "metastore.storage.schema.reader.impl",
-        DefaultStorageSchemaReader.class.getName(),
+        DEFAULT_STORAGE_SCHEMA_READER_CLASS,
         "The class to use to read schemas from storage.  It must implement " +
         "org.apache.hadoop.hive.metastore.StorageSchemaReader"),
     STORE_MANAGER_TYPE("datanucleus.storeManagerType", "datanucleus.storeManagerType", "rdbms", "metadata store type"),
@@ -759,21 +784,21 @@ public class MetastoreConf {
             + "The only supported special character right now is '/'. This flag applies only to quoted table names.\n"
             + "The default value is true."),
     TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
-        EventCleanerTask.class.getName() + "," + RuntimeStatsCleanerTask.class.getName() + "," +
+        EVENT_CLEANER_TASK_CLASS + "," + RUNTIME_STATS_CLEANER_TASK_CLASS + "," +
         "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask" + "," +
             "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask",
         "Comma separated list of tasks that will be started in separate threads.  These will " +
             "always be started, regardless of whether the metastore is running in embedded mode " +
-            "or in server mode.  They must implement " + MetastoreTaskThread.class.getName()),
+            "or in server mode.  They must implement " + METASTORE_TASK_THREAD_CLASS),
     TASK_THREADS_REMOTE_ONLY("metastore.task.threads.remote", "metastore.task.threads.remote",
-        AcidHouseKeeperService.class.getName() + "," +
-            AcidOpenTxnsCounterService.class.getName() + "," +
-            AcidCompactionHistoryService.class.getName() + "," +
-            AcidWriteSetService.class.getName() + "," +
-            MaterializationsRebuildLockCleanerTask.class.getName(),
+        ACID_HOUSE_KEEPER_SERVICE_CLASS + "," +
+            ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS + "," +
+            ACID_COMPACTION_HISTORY_SERVICE_CLASS + "," +
+            ACID_WRITE_SET_SERVICE_CLASS + "," +
+            MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS,
         "Command separated list of tasks that will be started in separate threads.  These will be" +
             " started only when the metastore is running as a separate service.  They must " +
-            "implement " + MetastoreTaskThread.class.getName()),
+            "implement " + METASTORE_TASK_THREAD_CLASS),
     TCP_KEEP_ALIVE("metastore.server.tcp.keepalive",
         "hive.metastore.server.tcp.keepalive", true,
         "Whether to enable TCP keepalive for the metastore server. Keepalive will prevent accumulation of half-open connections."),
@@ -918,6 +943,8 @@ public class MetastoreConf {
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", "hive.support.concurrency", false,
         "Whether Hive supports concurrency control or not. \n" +
             "A ZooKeeper instance must be up and running when using zookeeper Hive lock manager "),
+    HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", "hive.txn.stats.enabled", true,
+        "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated

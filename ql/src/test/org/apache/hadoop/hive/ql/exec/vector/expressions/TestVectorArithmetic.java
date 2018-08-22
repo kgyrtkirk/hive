@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.GenerationSpec;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -88,7 +89,7 @@ public class TestVectorArithmetic {
   public TestVectorArithmetic() {
     // Arithmetic operations rely on getting conf from SessionState, need to initialize here.
     SessionState ss = new SessionState(new HiveConf());
-    ss.getConf().setVar(HiveConf.ConfVars.HIVE_COMPAT, "latest");
+    ss.getConf().setVar(HiveConf.ConfVars.HIVE_COMPAT, "default");
     SessionState.setCurrentSessionState(ss);
   }
 
@@ -363,7 +364,7 @@ public class TestVectorArithmetic {
         new ArrayList<DataTypePhysicalVariation>();
 
     List<String> columns = new ArrayList<String>();
-    int columnNum = 0;
+    int columnNum = 1;
 
     ExprNodeDesc col1Expr;
     Object scalar1Object = null;
@@ -671,6 +672,16 @@ public class TestVectorArithmetic {
             hiveConf);
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
     vectorExpression.transientInit();
+
+    if (arithmeticTestMode == ArithmeticTestMode.VECTOR_EXPRESSION &&
+        vectorExpression instanceof VectorUDFAdaptor) {
+      System.out.println(
+          "*NO NATIVE VECTOR EXPRESSION* typeInfo1 " + typeInfo1.toString() +
+          " typeInfo2 " + typeInfo2.toString() +
+          " arithmeticTestMode " + arithmeticTestMode +
+          " columnScalarMode " + columnScalarMode +
+          " vectorExpression " + vectorExpression.toString());
+    }
 
     String[] outputScratchTypeNames= vectorizationContext.getScratchColumnTypeNames();
     DataTypePhysicalVariation[] outputDataTypePhysicalVariations =

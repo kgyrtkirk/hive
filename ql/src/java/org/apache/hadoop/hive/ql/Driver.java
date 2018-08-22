@@ -118,6 +118,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
+import org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
@@ -145,6 +146,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.hive.common.util.TxnIdUtils;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -650,6 +652,10 @@ public class Driver implements IDriver {
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
 
       if (!retrial) {
+        if ((queryState.getHiveOperation() != null)
+                && queryState.getHiveOperation().equals(HiveOperation.REPLDUMP)) {
+          setLastReplIdForDump(queryState.getConf());
+        }
         openTransaction();
         generateValidTxnList();
       }
@@ -896,6 +902,22 @@ public class Driver implements IDriver {
     ctx.setWmContext(wmContext);
   }
 
+  /**
+   * Last repl id should be captured before opening txn by current REPL DUMP operation.
+   * This is needed to avoid losing data which are added/modified by concurrent txns when bootstrap
+   * dump in progress.
+   * @param conf Query configurations
+   * @throws HiveException
+   * @throws TException
+   */
+  private void setLastReplIdForDump(HiveConf conf) throws HiveException, TException {
+    // Last logged notification event id would be the last repl Id for the current REPl DUMP.
+    Hive hiveDb = Hive.get();
+    Long lastReplId = hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
+    conf.setLong(ReplicationSemanticAnalyzer.LAST_REPL_ID_KEY, lastReplId);
+    LOG.debug("Setting " + ReplicationSemanticAnalyzer.LAST_REPL_ID_KEY + " = " + lastReplId);
+  }
+
   private void openTransaction() throws LockException, CommandProcessorResponse {
     if (checkConcurrency() && startImplicitTxn(queryTxnMgr)) {
       String userFromUGI = getUserFromUGI();
@@ -903,7 +925,7 @@ public class Driver implements IDriver {
         if (userFromUGI == null) {
           throw createProcessorResponse(10);
         }
-        long txnid = queryTxnMgr.openTxn(ctx, userFromUGI);
+        queryTxnMgr.openTxn(ctx, userFromUGI);
       }
     }
   }
@@ -1008,7 +1030,8 @@ public class Driver implements IDriver {
     PrintStream ps = new PrintStream(baos);
     try {
       List<Task<?>> rootTasks = sem.getAllRootTasks();
-      task.getJSONPlan(ps, rootTasks, sem.getFetchTask(), false, true, true, plan.getOptimizedQueryString());
+      task.getJSONPlan(ps, rootTasks, sem.getFetchTask(), false, true, true, sem.getCboInfo(),
+          plan.getOptimizedQueryString());
       ret = baos.toString();
     } catch (Exception e) {
       LOG.warn("Exception generating explain output: " + e, e);
@@ -1424,7 +1447,7 @@ public class Driver implements IDriver {
 
   // Write the current set of valid write ids for the operated acid tables into the conf file so
   // that it can be read by the input format.
-  private void recordValidWriteIds(HiveTxnManager txnMgr) throws LockException {
+  private ValidTxnWriteIdList recordValidWriteIds(HiveTxnManager txnMgr) throws LockException {
     String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
     if ((txnString == null) || (txnString.isEmpty())) {
       throw new IllegalStateException("calling recordValidWritsIdss() without initializing ValidTxnList " +
@@ -1467,6 +1490,7 @@ public class Driver implements IDriver {
       }
     }
     LOG.debug("Encoding valid txn write ids info " + writeIdStr + " txnid:" + txnMgr.getCurrentTxnId());
+    return txnWriteIds;
   }
 
   // Make the list of transactional tables list which are getting read or written by current txn
@@ -1603,10 +1627,16 @@ public class Driver implements IDriver {
         }
       }
 
-      // Note: the sinks and DDL cannot coexist at this time; but if they could we would
-      //       need to make sure we don't get two write IDs for the same table.
+      if (plan.getAcidAnalyzeTable() != null) {
+        // Allocate write ID for the table being analyzed.
+        Table t = plan.getAcidAnalyzeTable().getTable();
+        queryTxnMgr.getTableWriteId(t.getDbName(), t.getTableName());
+      }
+
+
       DDLDescWithWriteId acidDdlDesc = plan.getAcidDdlDesc();
-      if (acidDdlDesc != null && acidDdlDesc.mayNeedWriteId()) {
+      boolean hasAcidDdl = acidDdlDesc != null && acidDdlDesc.mayNeedWriteId();
+      if (hasAcidDdl) {
         String fqTableName = acidDdlDesc.getFullTableName();
         long writeId = queryTxnMgr.getTableWriteId(
             Utilities.getDatabaseName(fqTableName), Utilities.getTableName(fqTableName));
@@ -1621,9 +1651,11 @@ public class Driver implements IDriver {
         throw new IllegalStateException("calling recordValidTxn() more than once in the same " +
             JavaUtils.txnIdToString(queryTxnMgr.getCurrentTxnId()));
       }
-      if (plan.hasAcidResourcesInQuery()) {
+
+      if (plan.hasAcidResourcesInQuery() || hasAcidDdl) {
         recordValidWriteIds(queryTxnMgr);
       }
+
     } catch (Exception e) {
       errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
       SQLState = ErrorMsg.findSQLState(e.getMessage());

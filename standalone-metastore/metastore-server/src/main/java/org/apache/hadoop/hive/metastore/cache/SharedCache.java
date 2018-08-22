@@ -47,7 +47,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstimator;
@@ -468,6 +468,16 @@ public class SharedCache {
       }
     }
 
+    public void removeAllTableColStats() {
+      try {
+        tableLock.writeLock().lock();
+        tableColStatsCache.clear();
+        isTableColStatsCacheDirty.set(true);
+      } finally {
+        tableLock.writeLock().unlock();
+      }
+    }
+
     public ColumnStatisticsObj getPartitionColStats(List<String> partVal, String colName) {
       try {
         tableLock.readLock().lock();
@@ -529,6 +539,20 @@ public class SharedCache {
       try {
         tableLock.writeLock().lock();
         partitionColStatsCache.remove(CacheUtils.buildPartitonColStatsCacheKey(partVals, colName));
+        isPartitionColStatsCacheDirty.set(true);
+        // Invalidate cached aggregate stats
+        if (!aggrColStatsCache.isEmpty()) {
+          aggrColStatsCache.clear();
+        }
+      } finally {
+        tableLock.writeLock().unlock();
+      }
+    }
+
+    public void removeAllPartitionColStats() {
+      try {
+        tableLock.writeLock().lock();
+        partitionColStatsCache.clear();
         isPartitionColStatsCacheDirty.set(true);
         // Invalidate cached aggregate stats
         if (!aggrColStatsCache.isEmpty()) {
@@ -685,7 +709,7 @@ public class SharedCache {
       }
       setTable(tblCopy);
       if (tblCopy.getSd() != null) {
-        sdHash = MetaStoreUtils.hashStorageDescriptor(tblCopy.getSd(), md);
+        sdHash = MetaStoreServerUtils.hashStorageDescriptor(tblCopy.getSd(), md);
         StorageDescriptor sd = tblCopy.getSd();
         sharedCache.increSd(sd, sdHash);
         tblCopy.setSd(null);
@@ -703,7 +727,7 @@ public class SharedCache {
       Partition partCopy = part.deepCopy();
       PartitionWrapper wrapper;
       if (part.getSd() != null) {
-        byte[] sdHash = MetaStoreUtils.hashStorageDescriptor(part.getSd(), md);
+        byte[] sdHash = MetaStoreServerUtils.hashStorageDescriptor(part.getSd(), md);
         StorageDescriptor sd = part.getSd();
         sharedCache.increSd(sd, sdHash);
         partCopy.setSd(null);
@@ -1122,7 +1146,7 @@ public class SharedCache {
       }
     }
     if (tbl.getSd() != null) {
-      byte[] sdHash = MetaStoreUtils.hashStorageDescriptor(tbl.getSd(), md);
+      byte[] sdHash = MetaStoreServerUtils.hashStorageDescriptor(tbl.getSd(), md);
       StorageDescriptor sd = tbl.getSd();
       increSd(sd, sdHash);
       tblCopy.setSd(null);
@@ -1286,6 +1310,18 @@ public class SharedCache {
       TableWrapper tblWrapper = tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));
       if (tblWrapper != null) {
         tblWrapper.removeTableColStats(colName);
+      }
+    } finally {
+      cacheLock.readLock().unlock();
+    }
+  }
+
+  public void removeAllTableColStatsFromCache(String catName, String dbName, String tblName) {
+    try {
+      cacheLock.readLock().lock();
+      TableWrapper tblWrapper = tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));
+      if (tblWrapper != null) {
+        tblWrapper.removeAllTableColStats();
       }
     } finally {
       cacheLock.readLock().unlock();
@@ -1499,6 +1535,18 @@ public class SharedCache {
       TableWrapper tblWrapper = tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));
       if (tblWrapper != null) {
         tblWrapper.removePartitionColStats(partVals, colName);
+      }
+    } finally {
+      cacheLock.readLock().unlock();
+    }
+  }
+
+  public void removeAllPartitionColStatsFromCache(String catName, String dbName, String tblName) {
+    try {
+      cacheLock.readLock().lock();
+      TableWrapper tblWrapper = tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));
+      if (tblWrapper != null) {
+        tblWrapper.removeAllPartitionColStats();
       }
     } finally {
       cacheLock.readLock().unlock();

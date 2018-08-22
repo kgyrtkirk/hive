@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.GenerationSpec;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -180,7 +181,7 @@ public class TestVectorDateAddSub {
         new ArrayList<DataTypePhysicalVariation>();
 
     List<String> columns = new ArrayList<String>();
-    int columnNum = 0;
+    int columnNum = 1;
     ExprNodeDesc col1Expr;
     if (columnScalarMode == ColumnScalarMode.COLUMN_COLUMN ||
         columnScalarMode == ColumnScalarMode.COLUMN_SCALAR) {
@@ -252,8 +253,8 @@ public class TestVectorDateAddSub {
       // Fixup numbers to limit the range to 0 ... N-1.
       for (int i = 0; i < randomRows.length; i++) {
         Object[] row = randomRows[i];
-        if (row[columnNum - 1] != null) {
-          row[columnNum - 1] =
+        if (row[columnNum - 2] != null) {
+          row[columnNum - 2] =
               smallerRange(
                   random, integerPrimitiveCategory, /* wantWritable */ true);
         }
@@ -447,6 +448,15 @@ public class TestVectorDateAddSub {
             hiveConf);
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
     vectorExpression.transientInit();
+
+    if (dateAddSubTestMode == DateAddSubTestMode.VECTOR_EXPRESSION &&
+        vectorExpression instanceof VectorUDFAdaptor) {
+      System.out.println(
+          "*NO NATIVE VECTOR EXPRESSION* dateTimeStringTypeInfo " + dateTimeStringTypeInfo.toString() +
+          " dateAddSubTestMode " + dateAddSubTestMode +
+          " columnScalarMode " + columnScalarMode +
+          " vectorExpression " + vectorExpression.toString());
+    }
 
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
 
