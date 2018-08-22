@@ -242,7 +242,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     if (networkCostDPHJ < networkCostMJ) {
       LOG.info("Dynamically partitioned Hash Join chosen");
       long maxSize = context.conf.getLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
-      return convertJoinDynamicPartitionedHashJoin(joinOp, context, maxSize);
+      return convertJoinDynamicPartitionedHashJoin(joinOp, context);
     } else if (numBuckets > 1) {
       LOG.info("Bucket Map Join chosen");
       return convertJoinBucketMapJoin(joinOp, context, mapJoinConversionPos, tezBucketJoinProcCtx);
@@ -1275,8 +1275,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return numBuckets;
   }
 
-  private boolean convertJoinDynamicPartitionedHashJoin(JoinOperator joinOp, OptimizeTezProcContext context,
-    final long maxSize)
+  private boolean convertJoinDynamicPartitionedHashJoin(JoinOperator joinOp, OptimizeTezProcContext context)
     throws SemanticException {
     // Attempt dynamic partitioned hash join
     // Since we don't have big table index yet, must start with estimate of numReducers
@@ -1322,7 +1321,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       throws SemanticException {
     if (context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) &&
         context.conf.getBoolVar(HiveConf.ConfVars.HIVEDYNAMICPARTITIONHASHJOIN)) {
-      if (convertJoinDynamicPartitionedHashJoin(joinOp, context, maxSize)) {
+      if (convertJoinDynamicPartitionedHashJoin(joinOp, context)) {
         return;
       }
     }
