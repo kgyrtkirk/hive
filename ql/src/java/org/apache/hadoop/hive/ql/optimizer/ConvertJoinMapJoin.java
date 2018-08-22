@@ -126,7 +126,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       if (retval == null) {
         return retval;
       } else {
-        fallbackToReduceSideJoin(joinOp, context, maxSize);
+        fallbackToReduceSideJoin(joinOp, context);
         return null;
       }
     }
@@ -149,7 +149,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       } else {
         // only case is full outer join with SMB enabled which is not possible. Convert to regular
         // join.
-        fallbackToReduceSideJoin(joinOp, context, maxSize);
+        fallbackToReduceSideJoin(joinOp, context);
         return null;
       }
     }
@@ -175,7 +175,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     if (mapJoinConversionPos < 0) {
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
-      fallbackToReduceSideJoin(joinOp, context, maxSize);
+      fallbackToReduceSideJoin(joinOp, context);
       return null;
     }
 
@@ -325,7 +325,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     if (!(HiveConf.getBoolVar(context.conf, ConfVars.HIVE_AUTO_SORTMERGE_JOIN))
       || ((!HiveConf.getBoolVar(context.conf, ConfVars.HIVE_AUTO_SORTMERGE_JOIN_REDUCE))
           && joinOp.getOpTraits().getNumReduceSinks() >= 2)) {
-      fallbackToReduceSideJoin(joinOp, context, maxSize);
+      fallbackToReduceSideJoin(joinOp, context);
       return null;
     }
     Class<? extends BigTableSelectorForAutoSMJ> bigTableMatcherClass = null;
@@ -354,7 +354,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       // contains aliases from sub-query
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
-      fallbackToReduceSideJoin(joinOp, context, maxSize);
+      fallbackToReduceSideJoin(joinOp, context);
       return null;
     }
 
@@ -364,7 +364,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     } else {
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
-      fallbackToReduceSideJoin(joinOp, context, maxSize);
+      fallbackToReduceSideJoin(joinOp, context);
     }
     return null;
   }
@@ -1317,7 +1317,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return false;
   }
 
-  private void fallbackToReduceSideJoin(JoinOperator joinOp, OptimizeTezProcContext context, final long maxSize)
+  private void fallbackToReduceSideJoin(JoinOperator joinOp, OptimizeTezProcContext context)
       throws SemanticException {
     if (context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) &&
         context.conf.getBoolVar(HiveConf.ConfVars.HIVEDYNAMICPARTITIONHASHJOIN)) {
