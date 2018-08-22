@@ -87,6 +87,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(ConvertJoinMapJoin.class.getName());
   private float hashTableLoadFactor;
+  private long maxJoinMemory;
 
   @Override
   /*
@@ -113,6 +114,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     joinOp.getConf().setMemoryMonitorInfo(memoryMonitorInfo);
     // XXX
     long maxSize = memoryMonitorInfo.getNoConditionalTaskSize();
+    maxJoinMemory = maxSize;//memoryMonitorInfo.getAdjustedNoConditionalTaskSize();
 
     TezBucketJoinProcCtx tezBucketJoinProcCtx = new TezBucketJoinProcCtx(context.conf);
     boolean hiveConvertJoin = context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) &
@@ -1280,7 +1282,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // Since we don't have big table index yet, must start with estimate of numReducers
     int numReducers = estimateNumBuckets(joinOp, false);
     LOG.info("Try dynamic partitioned hash join with estimated " + numReducers + " reducers");
-    int bigTablePos = getMapJoinConversionPos(joinOp, context, numReducers, false, maxSize,false);
+    int bigTablePos = getMapJoinConversionPos(joinOp, context, numReducers, false, maxJoinMemory, false);
     if (bigTablePos >= 0) {
       // Now that we have the big table index, get real numReducers value based on big table RS
       ReduceSinkOperator bigTableParentRS =
