@@ -240,7 +240,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     if (networkCostDPHJ < networkCostMJ) {
       LOG.info("Dynamically partitioned Hash Join chosen");
-      long maxSize = context.conf.getLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
       return convertJoinDynamicPartitionedHashJoin(joinOp, context);
     } else if (numBuckets > 1) {
       LOG.info("Bucket Map Join chosen");
