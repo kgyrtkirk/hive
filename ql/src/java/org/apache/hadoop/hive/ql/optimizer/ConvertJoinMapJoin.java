@@ -113,8 +113,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     MemoryMonitorInfo memoryMonitorInfo = getMemoryMonitorInfo(context.conf, llapInfo);
     joinOp.getConf().setMemoryMonitorInfo(memoryMonitorInfo);
     // XXX
-    long maxSize = memoryMonitorInfo.getNoConditionalTaskSize();
-    maxJoinMemory = maxSize;//memoryMonitorInfo.getAdjustedNoConditionalTaskSize();
+    maxJoinMemory = memoryMonitorInfo.getNoConditionalTaskSize();//memoryMonitorInfo.getAdjustedNoConditionalTaskSize();
 
     TezBucketJoinProcCtx tezBucketJoinProcCtx = new TezBucketJoinProcCtx(context.conf);
     boolean hiveConvertJoin = context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) &
