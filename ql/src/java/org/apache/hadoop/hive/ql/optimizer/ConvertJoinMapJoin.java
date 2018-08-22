@@ -103,15 +103,16 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     hashTableLoadFactor = context.conf.getFloatVar(ConfVars.HIVEHASHTABLELOADFACTOR);
 
     JoinOperator joinOp = (JoinOperator) nd;
-    long maxSize = context.conf.getLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
     // adjust noconditional task size threshold for LLAP
     LlapClusterStateForCompile llapInfo = null;
     if ("llap".equalsIgnoreCase(context.conf.getVar(ConfVars.HIVE_EXECUTION_MODE))) {
       llapInfo = LlapClusterStateForCompile.getClusterInfo(context.conf);
       llapInfo.initClusterInfo();
     }
-    MemoryMonitorInfo memoryMonitorInfo = getMemoryMonitorInfo(maxSize, context.conf, llapInfo);
+    MemoryMonitorInfo memoryMonitorInfo = getMemoryMonitorInfo(context.conf, llapInfo);
     joinOp.getConf().setMemoryMonitorInfo(memoryMonitorInfo);
+    // XXX
+    long maxSize = memoryMonitorInfo.getNoConditionalTaskSize();
 
     TezBucketJoinProcCtx tezBucketJoinProcCtx = new TezBucketJoinProcCtx(context.conf);
     boolean hiveConvertJoin = context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) &
@@ -271,9 +272,10 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   }
 
   @VisibleForTesting
-  public MemoryMonitorInfo getMemoryMonitorInfo(final long maxSize,
+  public MemoryMonitorInfo getMemoryMonitorInfo(
                                                 final HiveConf conf,
                                                 LlapClusterStateForCompile llapInfo) {
+    long maxSize = conf.getLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
     final double overSubscriptionFactor = conf.getFloatVar(ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR);
     final int maxSlotsPerQuery = conf.getIntVar(ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY);
     final long memoryCheckInterval = conf.getLongVar(ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL);
