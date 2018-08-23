@@ -74,6 +74,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       super(operand(Filter.class, any()), minNumORClauses);
     }
 
+    @Override
     public void onMatch(RelOptRuleCall call) {
       final Filter filter = call.rel(0);
       final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
@@ -93,12 +94,13 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
  * to generate an IN clause (which is more efficient). If the OR operator contains
  * AND operator children, the optimization might generate an IN clause that uses
  * structs.
- */  
+ */
   public static class JoinCondition extends HivePointLookupOptimizerRule {
     public JoinCondition (int minNumORClauses) {
       super(operand(Join.class, any()), minNumORClauses);
     }
-    
+
+    @Override
     public void onMatch(RelOptRuleCall call) {
       final Join join = call.rel(0);
       final RexBuilder rexBuilder = join.getCluster().getRexBuilder();
@@ -132,7 +134,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
   public void analyzeCondition(RelOptRuleCall call,
           RexBuilder rexBuilder,
-          AbstractRelNode node, 
+          AbstractRelNode node,
           RexNode condition) {
 
     // 1. We try to transform possible candidates
@@ -173,29 +175,31 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     @Override public RexNode visitCall(RexCall call) {
       RexNode node;
       switch (call.getKind()) {
-        case AND:
-          ImmutableList<RexNode> operands = RexUtil.flattenAnd(((RexCall) call).getOperands());
-          List<RexNode> newOperands = new ArrayList<RexNode>();
-          for (RexNode operand: operands) {
-            RexNode newOperand;
-            if (operand.getKind() == SqlKind.OR) {
-              try {
-                newOperand = transformIntoInClauseCondition(rexBuilder,
-                        nodeOp.getRowType(), operand, minNumORClauses);
-                if (newOperand == null) {
-                  newOperand = operand;
-                }
-              } catch (SemanticException e) {
-                LOG.error("Exception in HivePointLookupOptimizerRule", e);
-                return call;
+      // FIXME: I don't think there is a need for this right now...calcite have already done the flattening/etc
+      // removing this case clause will not miss the OR below AND
+      case AND:
+        ImmutableList<RexNode> operands = RexUtil.flattenAnd(call.getOperands());
+        List<RexNode> newOperands = new ArrayList<RexNode>();
+        for (RexNode operand : operands) {
+          RexNode newOperand;
+          if (operand.getKind() == SqlKind.OR) {
+            try {
+              newOperand = transformIntoInClauseCondition(rexBuilder,
+                  nodeOp.getRowType(), operand, minNumORClauses);
+              if (newOperand == null) {
+                newOperand = operand;
               }
-            } else {
-              newOperand = operand;
+            } catch (SemanticException e) {
+              LOG.error("Exception in HivePointLookupOptimizerRule", e);
+              return call;
             }
-            newOperands.add(newOperand);
+          } else {
+            newOperand = operand;
           }
-          node = RexUtil.composeConjunction(rexBuilder, newOperands, false);
-          break;
+          newOperands.add(newOperand);
+        }
+        node = RexUtil.composeConjunction(rexBuilder, newOperands, false);
+        break;
         case OR:
           try {
             node = transformIntoInClauseCondition(rexBuilder,
@@ -337,7 +341,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       switch (call.getKind()) {
         case AND:
           // IN clauses need to be combined by keeping only common elements
-          operands = Lists.newArrayList(RexUtil.flattenAnd(((RexCall) call).getOperands()));
+          operands = Lists.newArrayList(RexUtil.flattenAnd(call.getOperands()));
           for (int i = 0; i < operands.size(); i++) {
             RexNode operand = operands.get(i);
             if (operand.getKind() == SqlKind.IN) {
@@ -374,7 +378,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           break;
         case OR:
           // IN clauses need to be combined by keeping all elements
-          operands = Lists.newArrayList(RexUtil.flattenOr(((RexCall) call).getOperands()));
+          operands = Lists.newArrayList(RexUtil.flattenOr(call.getOperands()));
           for (int i = 0; i < operands.size(); i++) {
             RexNode operand = operands.get(i);
             if (operand.getKind() == SqlKind.IN) {
