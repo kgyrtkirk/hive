@@ -44,12 +44,11 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
-import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
@@ -57,8 +56,8 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
-
 
 public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
@@ -218,6 +217,80 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       return node;
     }
 
+    static class Constraint {
+
+      private RexLiteral literal;
+      private RexInputRef inputRef;
+
+      public Constraint(RexInputRef inputRef, RexLiteral literal) {
+        this.literal = literal;
+        this.inputRef = inputRef;
+      }
+
+      public static Constraint of(RexNode n) {
+        if (!(n instanceof RexCall)) {
+          return null;
+        }
+        RexCall call = (RexCall) n;
+        if (call.getOperator().getKind() != SqlKind.EQUALS) {
+          return null;
+        }
+        RexNode opA = call.operands.get(0);
+        RexNode opB = call.operands.get(1);
+        if (opA instanceof RexLiteral && opB instanceof RexInputRef) {
+          RexLiteral rexLiteral = (RexLiteral) opA;
+          RexInputRef rexInputRef = (RexInputRef) opB;
+          return new Constraint(rexInputRef, rexLiteral);
+        }
+        if (opA instanceof RexInputRef && opB instanceof RexLiteral) {
+          RexLiteral rexLiteral = (RexLiteral) opB;
+          RexInputRef rexInputRef = (RexInputRef) opA;
+          return new Constraint(rexInputRef, rexLiteral);
+        }
+        return null;
+      }
+
+      public RexInputRef getKey() {
+        return inputRef;
+      }
+
+    }
+
+    static class MX {
+
+      public static final Function<MX, Set<RexInputRef>> KEY_FUNCTION = new Function<MX, Set<RexInputRef>>() {
+
+        @Override
+        public Set<RexInputRef> apply(MX a) {
+          return a.key;
+        }
+      };
+      private Map<RexInputRef, Constraint> constraints;
+      private RexNode originalRexNode;
+      private Set<RexInputRef> key;
+
+      public MX(RexNode rexNode) {
+        originalRexNode = rexNode;
+
+        final List<RexNode> conjunctions = RelOptUtil.conjunctions(rexNode);
+
+        for (RexNode n : conjunctions) {
+
+          Constraint c = Constraint.of(n);
+          if (c == null) {
+            // interpretation failed; make this node opaque
+            return;
+          }
+          constraints.put(c.getKey(), c);
+        }
+        if (constraints.size() != conjunctions.size()) {
+          LOG.info("unexpected situation; giving up on this branch");
+          return;
+        }
+        key = constraints.keySet();
+      }
+    }
+
     private static RexNode transformIntoInClauseCondition(RexBuilder rexBuilder, RelDataType inputSchema,
             RexNode condition, int minNumORClauses) throws SemanticException {
       assert condition.getKind() == SqlKind.OR;
@@ -226,52 +299,84 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       //    filter
       ListMultimap<RexInputRef,RexLiteral> columnConstantsMap = ArrayListMultimap.create();
       ImmutableList<RexNode> operands = RexUtil.flattenOr(((RexCall) condition).getOperands());
+      // FIXME: this needs rethinking
       if (operands.size() < minNumORClauses) {
         // We bail out
         return null;
       }
+      List<MX> allNodes = new ArrayList<>();
+      List<MX> processedNodes = new ArrayList<>();
       for (int i = 0; i < operands.size(); i++) {
-        final List<RexNode> conjunctions = RelOptUtil.conjunctions(operands.get(i));
-        for (RexNode conjunction: conjunctions) {
-          // 1.1. If it is not a RexCall, we bail out
-          if (!(conjunction instanceof RexCall)) {
-            return null;
-          }
-          // 1.2. We extract the information that we need
-          RexCall conjCall = (RexCall) conjunction;
-          if(conjCall.getOperator().getKind() == SqlKind.EQUALS) {
-            if (conjCall.operands.get(0) instanceof RexInputRef &&
-                    conjCall.operands.get(1) instanceof RexLiteral) {
-              RexInputRef ref = (RexInputRef) conjCall.operands.get(0);
-              RexLiteral literal = (RexLiteral) conjCall.operands.get(1);
-              columnConstantsMap.put(ref, literal);
-              if (columnConstantsMap.get(ref).size() != i+1) {
-                // If we have not added to this column before, we bail out
-                return null;
-              }
-            } else if (conjCall.operands.get(1) instanceof RexInputRef &&
-                    conjCall.operands.get(0) instanceof RexLiteral) {
-              RexInputRef ref = (RexInputRef) conjCall.operands.get(1);
-              RexLiteral literal = (RexLiteral) conjCall.operands.get(0);
-              columnConstantsMap.put(ref, literal);
-              if (columnConstantsMap.get(ref).size() != i+1) {
-                // If we have not added to this column before, we bail out
-                return null;
-              }
-            } else {
-              // Bail out
-              return null;
-            }
-          } else {
-            return null;
-          }
-        }
+        MX m = new MX(operands.get(i));
+        allNodes.add(m);
       }
+
+      Multimap<Set<RexInputRef>, MX> a = Multimaps.index(allNodes, MX.KEY_FUNCTION);
+
+      for (Entry<Set<RexInputRef>, Collection<MX>> sa : a.asMap().entrySet()) {
+        // skip opaque
+        if (sa.getKey() == null ) {
+          continue;
+        }
+        // not enough equalities should not be handled
+        if (sa.getValue().size() < 2 || sa.getValue().size() < minNumORClauses) {
+          continue;
+        }
+
+        allNodes.add(new MX(buildInFor(sa.getKey(), sa.getValue())));
+        processedNodes.addAll(sa.getValue());
+      }
+
+
 
       // 3. We build the new predicate and return it
       List<RexNode> newOperands = new ArrayList<RexNode>(operands.size());
       // 3.1 Create structs
       List<RexInputRef> columns = new ArrayList<RexInputRef>();
+      for (int i = 0; i < operands.size(); i++) {
+        List<RexLiteral> constantFields = new ArrayList<RexLiteral>(operands.size());
+
+        for (RexInputRef ref : columnConstantsMap.keySet()) {
+          // If any of the elements was not referenced by every operand, we bail out
+          if (columnConstantsMap.get(ref).size() <= i) {
+            return null;
+          }
+          RexLiteral columnConstant = columnConstantsMap.get(ref).get(i);
+          if (i == 0) {
+            columns.add(ref);
+          }
+          constantFields.add(columnConstant);
+        }
+
+        if (i == 0) {
+          RexNode columnsRefs;
+          if (columns.size() == 1) {
+            columnsRefs = columns.get(0);
+          } else {
+            // Create STRUCT clause
+            columnsRefs = rexBuilder.makeCall(SqlStdOperatorTable.ROW, columns);
+          }
+          newOperands.add(columnsRefs);
+        }
+        RexNode values;
+        if (constantFields.size() == 1) {
+          values = constantFields.get(0);
+        } else {
+          // Create STRUCT clause
+          values = rexBuilder.makeCall(SqlStdOperatorTable.ROW, constantFields);
+        }
+        newOperands.add(values);
+      }
+
+      // 4. Create and return IN clause
+      return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
+    }
+
+    private static RexNode buildInFor(Set<RexInputRef> set, Collection<MX> value) {
+      return null;
+      /*
+      List<RexInputRef> columns = new ArrayList<RexInputRef>();
+
       List<String> names = new ArrayList<String>();
       ImmutableList.Builder<RelDataType> paramsTypes = ImmutableList.builder();
       List<TypeInfo> structReturnType = new ArrayList<TypeInfo>();
@@ -318,6 +423,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
       // 4. Create and return IN clause
       return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
+      */
     }
 
   }
