@@ -23,7 +23,6 @@ import static org.junit.Assert.assertEquals;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptSchema;
-import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.RelNode;
@@ -57,11 +56,10 @@ public class TestHivePointLookupOptimizerRule {
   private HepPlanner planner;
   private RelBuilder builder;
 
+  @SuppressWarnings("unused")
   private static class MyRecord {
     public int f1;
     public int f2;
-    public int _int;
-    public String _str;
   }
 
   @Before
@@ -97,6 +95,36 @@ public class TestHivePointLookupOptimizerRule {
   }
 
   @Test
+  public void testSimpleCase() {
+
+    // @formatter:off
+    final RelNode basePlan = builder
+          .scan("t")
+          .filter(
+              and(
+                or(
+                    eq("f1",1),
+                    eq("f1",2)
+                    ),
+                or(
+                    eq("f2",3),
+                    eq("f2",4)
+                    )
+                )
+              )
+          .build();
+    // @formatter:on
+
+    planner.setRoot(basePlan);
+    RelNode optimizedRelNode = planner.findBestExp();
+
+    HiveFilter filter = (HiveFilter) optimizedRelNode;
+    RexNode condition = filter.getCondition();
+    System.out.println(condition);
+    assertEquals("AND(IN($0, 1, 2), IN($1, 3, 4))", condition.toString());
+  }
+
+  @Test
   public void testSimpleStructCase() {
 
     // @formatter:off
@@ -114,14 +142,8 @@ public class TestHivePointLookupOptimizerRule {
     planner.setRoot(basePlan);
     RelNode optimizedRelNode = planner.findBestExp();
 
-    System.out.println(RelOptUtil.toString(optimizedRelNode));
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
     assertEquals("IN(ROW($0, $1), ROW(1, 1), ROW(2, 2))", condition.toString());
-    System.out.println(condition);
-    //    assertEquals("missing literal", SqlKind.LITERAL, optimizedRelNode.getChildExps().get(0).getKind());
-    //  RexLiteral val = (RexLiteral) optimizedRelNode.getChildExps().get(0);
-    //assertEquals(true, val.getValue());
-
   }
 }
