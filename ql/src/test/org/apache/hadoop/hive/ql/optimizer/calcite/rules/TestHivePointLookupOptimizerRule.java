@@ -120,7 +120,6 @@ public class TestHivePointLookupOptimizerRule {
 
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
-    System.out.println(condition);
     assertEquals("AND(IN($0, 1, 2), IN($1, 3, 4))", condition.toString());
   }
 
@@ -145,5 +144,31 @@ public class TestHivePointLookupOptimizerRule {
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
     assertEquals("IN(ROW($0, $1), ROW(1, 1), ROW(2, 2))", condition.toString());
+  }
+
+  /** Despite the fact that f2=99 is there...the extraction should happen */
+  @Test
+  public void testObscuredSimple() {
+
+    // @formatter:off
+    final RelNode basePlan = builder
+          .scan("t")
+          .filter(
+              or(
+                  eq("f2",99),
+                  eq("f1",1),
+                  eq("f1",2)
+                  )
+              )
+          .build();
+    // @formatter:on
+
+    planner.setRoot(basePlan);
+    RelNode optimizedRelNode = planner.findBestExp();
+
+    HiveFilter filter = (HiveFilter) optimizedRelNode;
+    RexNode condition = filter.getCondition();
+    System.out.println(condition);
+    assertEquals("X", condition.toString());
   }
 }
