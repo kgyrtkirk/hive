@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -264,10 +266,13 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
         @Override
         public Set<RexInputRef> apply(MX a) {
+          if (a.key == null) {
+            return Collections.EMPTY_SET;
+          }
           return a.key;
         }
       };
-      private Map<RexInputRef, Constraint> constraints;
+      private Map<RexInputRef, Constraint> constraints = new HashMap<>();
       private RexNode originalRexNode;
       private Set<RexInputRef> key;
 
@@ -291,9 +296,21 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         }
         key = constraints.keySet();
       }
+
+      public List<RexNode> getValuesInOrder(List<RexInputRef> columns) throws SemanticException {
+        List<RexNode> ret = new ArrayList<>();
+        for (RexInputRef rexInputRef : columns) {
+          Constraint constraint = constraints.get(rexInputRef);
+          if(constraint== null) {
+            throw new SemanticException("tried to get data for non-existent column");
+          }
+          ret.add(constraint.literal);
+        }
+        return ret;
+      }
     }
 
-    private static RexNode transformIntoInClauseCondition(RexBuilder rexBuilder, RelDataType inputSchema,
+    private static RexNode transformIntoInClauseCondition2(RexBuilder rexBuilder, RelDataType inputSchema,
         RexNode condition, int minNumORClauses) throws SemanticException {
       assert condition.getKind() == SqlKind.OR;
 
@@ -395,7 +412,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
     }
 
-    private static RexNode transformIntoInClauseCondition2(RexBuilder rexBuilder, RelDataType inputSchema,
+    private RexNode transformIntoInClauseCondition(RexBuilder rexBuilder, RelDataType inputSchema,
             RexNode condition, int minNumORClauses) throws SemanticException {
       assert condition.getKind() == SqlKind.OR;
 
@@ -431,56 +448,39 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         processedNodes.addAll(sa.getValue());
       }
 
+      if (processedNodes.isEmpty()) {
+        return null;
+      }
+      allNodes.removeAll(processedNodes);
 
-
-      // 3. We build the new predicate and return it
-      List<RexNode> newOperands = new ArrayList<RexNode>(operands.size());
-      // 3.1 Create structs
-      List<RexInputRef> columns = new ArrayList<RexInputRef>();
-      for (int i = 0; i < operands.size(); i++) {
-        List<RexLiteral> constantFields = new ArrayList<RexLiteral>(operands.size());
-
-        for (RexInputRef ref : columnConstantsMap.keySet()) {
-          // If any of the elements was not referenced by every operand, we bail out
-          if (columnConstantsMap.get(ref).size() <= i) {
-            return null;
-          }
-          RexLiteral columnConstant = columnConstantsMap.get(ref).get(i);
-          if (i == 0) {
-            columns.add(ref);
-          }
-          constantFields.add(columnConstant);
-        }
-
-        if (i == 0) {
-          RexNode columnsRefs;
-          if (columns.size() == 1) {
-            columnsRefs = columns.get(0);
-          } else {
-            // Create STRUCT clause
-            columnsRefs = rexBuilder.makeCall(SqlStdOperatorTable.ROW, columns);
-          }
-          newOperands.add(columnsRefs);
-        }
-        RexNode values;
-        if (constantFields.size() == 1) {
-          values = constantFields.get(0);
-        } else {
-          // Create STRUCT clause
-          values = rexBuilder.makeCall(SqlStdOperatorTable.ROW, constantFields);
-        }
-        newOperands.add(values);
+      List<RexNode> ops = new ArrayList<>();
+      for (MX mx : allNodes) {
+        ops.add(mx.originalRexNode);
+      }
+      if(ops.size()==1) {
+        return ops.get(0);
+      } else {
+        return rexBuilder.makeCall(SqlStdOperatorTable.OR, ops);
       }
 
-      // 4. Create and return IN clause
-      return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
     }
 
-    private static RexNode buildInFor(Set<RexInputRef> set, Collection<MX> value) {
-      return null;
-      /*
-      List<RexInputRef> columns = new ArrayList<RexInputRef>();
+    private RexNode buildInFor(Set<RexInputRef> set, Collection<MX> value) throws SemanticException {
 
+      List<RexInputRef> columns = new ArrayList<RexInputRef>();
+      columns.addAll(set);
+      List<RexNode >operands = new ArrayList<>();
+
+      operands.add(makeOrBreak(columns));
+      for (MX node : value) {
+        List<RexNode> values = node.getValuesInOrder(columns);
+        operands.add(makeOrBreak(values));
+      }
+
+      return rexBuilder.makeCall(HiveIn.INSTANCE, operands);
+
+      //      return null;
+      /*
       List<String> names = new ArrayList<String>();
       ImmutableList.Builder<RelDataType> paramsTypes = ImmutableList.builder();
       List<TypeInfo> structReturnType = new ArrayList<TypeInfo>();
@@ -528,6 +528,15 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       // 4. Create and return IN clause
       return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
       */
+    }
+
+    private RexNode makeOrBreak(List<? extends RexNode> columns) {
+      // Create STRUCT clause
+      if (columns.size() == 1) {
+        return columns.get(0);
+      } else {
+        return rexBuilder.makeCall(SqlStdOperatorTable.ROW, columns);
+      }
     }
 
   }
