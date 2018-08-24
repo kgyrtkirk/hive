@@ -436,7 +436,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
       for (Entry<Set<RexInputRef>, Collection<MX>> sa : a.asMap().entrySet()) {
         // skip opaque
-        if (sa.getKey() == null ) {
+        if (sa.getKey() == null || sa.getKey().size()==0 ) {
           continue;
         }
         // not enough equalities should not be handled
