@@ -221,6 +221,11 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       return node;
     }
 
+    /**
+     * Represents a simple contraint.
+     *
+     * Example: a=1
+     */
     static class Constraint {
 
       private RexLiteral literal;
@@ -231,6 +236,9 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         this.inputRef = inputRef;
       }
 
+      /**
+       * Interprets argument as a constraint; if not possible returns null.
+       */
       public static Constraint of(RexNode n) {
         if (!(n instanceof RexCall)) {
           return null;
@@ -260,12 +268,23 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
     }
 
-    static class MX {
+    /**
+     * A group of Constraints.
+     *
+     * Examples:
+     *  (a=1 && b=1)
+     *  (a=1)
+     *
+     * Note: any rexNode is accepted as constraint; but it might be keyed with the empty key;
+     * which means it can't be parsed as a constraint for some reason; but for completeness...
+     *
+     */
+    static class ConstraintGroup {
 
-      public static final Function<MX, Set<RexInputRef>> KEY_FUNCTION = new Function<MX, Set<RexInputRef>>() {
+      public static final Function<ConstraintGroup, Set<RexInputRef>> KEY_FUNCTION = new Function<ConstraintGroup, Set<RexInputRef>>() {
 
         @Override
-        public Set<RexInputRef> apply(MX a) {
+        public Set<RexInputRef> apply(ConstraintGroup a) {
           if (a.key == null) {
             return Collections.EMPTY_SET;
           }
@@ -276,7 +295,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       private RexNode originalRexNode;
       private Set<RexInputRef> key;
 
-      public MX(RexNode rexNode) {
+      public ConstraintGroup(RexNode rexNode) {
         originalRexNode = rexNode;
 
         final List<RexNode> conjunctions = RelOptUtil.conjunctions(rexNode);
@@ -425,16 +444,16 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         // We bail out
         return null;
       }
-      List<MX> allNodes = new ArrayList<>();
-      List<MX> processedNodes = new ArrayList<>();
+      List<ConstraintGroup> allNodes = new ArrayList<>();
+      List<ConstraintGroup> processedNodes = new ArrayList<>();
       for (int i = 0; i < operands.size(); i++) {
-        MX m = new MX(operands.get(i));
+        ConstraintGroup m = new ConstraintGroup(operands.get(i));
         allNodes.add(m);
       }
 
-      Multimap<Set<RexInputRef>, MX> a = Multimaps.index(allNodes, MX.KEY_FUNCTION);
+      Multimap<Set<RexInputRef>, ConstraintGroup> a = Multimaps.index(allNodes, ConstraintGroup.KEY_FUNCTION);
 
-      for (Entry<Set<RexInputRef>, Collection<MX>> sa : a.asMap().entrySet()) {
+      for (Entry<Set<RexInputRef>, Collection<ConstraintGroup>> sa : a.asMap().entrySet()) {
         // skip opaque
         if (sa.getKey() == null || sa.getKey().size()==0 ) {
           continue;
@@ -444,7 +463,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           continue;
         }
 
-        allNodes.add(new MX(buildInFor(sa.getKey(), sa.getValue())));
+        allNodes.add(new ConstraintGroup(buildInFor(sa.getKey(), sa.getValue())));
         processedNodes.addAll(sa.getValue());
       }
 
@@ -454,7 +473,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       allNodes.removeAll(processedNodes);
 
       List<RexNode> ops = new ArrayList<>();
-      for (MX mx : allNodes) {
+      for (ConstraintGroup mx : allNodes) {
         ops.add(mx.originalRexNode);
       }
       if(ops.size()==1) {
@@ -465,14 +484,14 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
     }
 
-    private RexNode buildInFor(Set<RexInputRef> set, Collection<MX> value) throws SemanticException {
+    private RexNode buildInFor(Set<RexInputRef> set, Collection<ConstraintGroup> value) throws SemanticException {
 
       List<RexInputRef> columns = new ArrayList<RexInputRef>();
       columns.addAll(set);
       List<RexNode >operands = new ArrayList<>();
 
       operands.add(makeOrBreak(columns));
-      for (MX node : value) {
+      for (ConstraintGroup node : value) {
         List<RexNode> values = node.getValuesInOrder(columns);
         operands.add(makeOrBreak(values));
       }
