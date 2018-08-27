@@ -281,15 +281,12 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
         @Override
         public Set<RexInputRef> apply(ConstraintGroup a) {
-          if (a.key == null) {
-            return Collections.EMPTY_SET;
-          }
           return a.key;
         }
       };
       private Map<RexInputRef, Constraint> constraints = new HashMap<>();
       private RexNode originalRexNode;
-      private Set<RexInputRef> key;
+      private final Set<RexInputRef> key;
 
       public ConstraintGroup(RexNode rexNode) {
         originalRexNode = rexNode;
@@ -301,12 +298,14 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           Constraint c = Constraint.of(n);
           if (c == null) {
             // interpretation failed; make this node opaque
+            key = Collections.emptySet();
             return;
           }
           constraints.put(c.getKey(), c);
         }
         if (constraints.size() != conjunctions.size()) {
           LOG.info("unexpected situation; giving up on this branch");
+          key = Collections.emptySet();
           return;
         }
         key = constraints.keySet();
@@ -346,7 +345,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
       for (Entry<Set<RexInputRef>, Collection<ConstraintGroup>> sa : assignmentGroups.asMap().entrySet()) {
         // skip opaque
-        if (sa.getKey() == null || sa.getKey().size() == 0) {
+        if (sa.getKey().size() == 0) {
           continue;
         }
         // not enough equalities should not be handled
