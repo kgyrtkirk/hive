@@ -46,9 +46,7 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
-import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -329,108 +327,6 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       }
     }
 
-    private static RexNode transformIntoInClauseCondition2(RexBuilder rexBuilder, RelDataType inputSchema,
-        RexNode condition, int minNumORClauses) throws SemanticException {
-      assert condition.getKind() == SqlKind.OR;
-
-      // 1. We extract the information necessary to create the predicate for the new
-      //    filter
-      ListMultimap<RexInputRef, RexLiteral> columnConstantsMap = ArrayListMultimap.create();
-      ImmutableList<RexNode> operands = RexUtil.flattenOr(((RexCall) condition).getOperands());
-      if (operands.size() < minNumORClauses) {
-        // We bail out
-        return null;
-      }
-      for (int i = 0; i < operands.size(); i++) {
-        final List<RexNode> conjunctions = RelOptUtil.conjunctions(operands.get(i));
-        for (RexNode conjunction : conjunctions) {
-          // 1.1. If it is not a RexCall, we bail out
-          if (!(conjunction instanceof RexCall)) {
-            return null;
-          }
-          // 1.2. We extract the information that we need
-          RexCall conjCall = (RexCall) conjunction;
-          if (conjCall.getOperator().getKind() == SqlKind.EQUALS) {
-            if (conjCall.operands.get(0) instanceof RexInputRef &&
-                conjCall.operands.get(1) instanceof RexLiteral) {
-              RexInputRef ref = (RexInputRef) conjCall.operands.get(0);
-              RexLiteral literal = (RexLiteral) conjCall.operands.get(1);
-              columnConstantsMap.put(ref, literal);
-              if (columnConstantsMap.get(ref).size() != i + 1) {
-                // If we have not added to this column before, we bail out
-                return null;
-              }
-            } else if (conjCall.operands.get(1) instanceof RexInputRef &&
-                conjCall.operands.get(0) instanceof RexLiteral) {
-              RexInputRef ref = (RexInputRef) conjCall.operands.get(1);
-              RexLiteral literal = (RexLiteral) conjCall.operands.get(0);
-              columnConstantsMap.put(ref, literal);
-              if (columnConstantsMap.get(ref).size() != i + 1) {
-                // If we have not added to this column before, we bail out
-                return null;
-              }
-            } else {
-              // Bail out
-              return null;
-            }
-          } else {
-            return null;
-          }
-        }
-      }
-
-      // 3. We build the new predicate and return it
-      List<RexNode> newOperands = new ArrayList<RexNode>(operands.size());
-      // 3.1 Create structs
-      List<RexInputRef> columns = new ArrayList<RexInputRef>();
-      List<String> names = new ArrayList<String>();
-      ImmutableList.Builder<RelDataType> paramsTypes = ImmutableList.builder();
-      List<TypeInfo> structReturnType = new ArrayList<TypeInfo>();
-      ImmutableList.Builder<RelDataType> newOperandsTypes = ImmutableList.builder();
-      for (int i = 0; i < operands.size(); i++) {
-        List<RexLiteral> constantFields = new ArrayList<RexLiteral>(operands.size());
-
-        for (RexInputRef ref : columnConstantsMap.keySet()) {
-          // If any of the elements was not referenced by every operand, we bail out
-          if (columnConstantsMap.get(ref).size() <= i) {
-            return null;
-          }
-          RexLiteral columnConstant = columnConstantsMap.get(ref).get(i);
-          if (i == 0) {
-            columns.add(ref);
-            names.add(inputSchema.getFieldNames().get(ref.getIndex()));
-            paramsTypes.add(ref.getType());
-            structReturnType.add(TypeConverter.convert(ref.getType()));
-          }
-          constantFields.add(columnConstant);
-        }
-
-        if (i == 0) {
-          RexNode columnsRefs;
-          if (columns.size() == 1) {
-            columnsRefs = columns.get(0);
-          } else {
-            // Create STRUCT clause
-            columnsRefs = rexBuilder.makeCall(SqlStdOperatorTable.ROW, columns);
-          }
-          newOperands.add(columnsRefs);
-          newOperandsTypes.add(columnsRefs.getType());
-        }
-        RexNode values;
-        if (constantFields.size() == 1) {
-          values = constantFields.get(0);
-        } else {
-          // Create STRUCT clause
-          values = rexBuilder.makeCall(SqlStdOperatorTable.ROW, constantFields);
-        }
-        newOperands.add(values);
-        newOperandsTypes.add(values.getType());
-      }
-
-      // 4. Create and return IN clause
-      return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
-    }
-
     private RexNode transformIntoInClauseCondition(RexBuilder rexBuilder, RelDataType inputSchema,
             RexNode condition, int minNumORClauses) throws SemanticException {
       assert condition.getKind() == SqlKind.OR;
@@ -490,66 +386,16 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       columns.addAll(set);
       List<RexNode >operands = new ArrayList<>();
 
-      operands.add(makeOrBreak(columns));
+      operands.add(useStructIfNeeded(columns));
       for (ConstraintGroup node : value) {
         List<RexNode> values = node.getValuesInOrder(columns);
-        operands.add(makeOrBreak(values));
+        operands.add(useStructIfNeeded(values));
       }
 
       return rexBuilder.makeCall(HiveIn.INSTANCE, operands);
-
-      //      return null;
-      /*
-      List<String> names = new ArrayList<String>();
-      ImmutableList.Builder<RelDataType> paramsTypes = ImmutableList.builder();
-      List<TypeInfo> structReturnType = new ArrayList<TypeInfo>();
-      ImmutableList.Builder<RelDataType> newOperandsTypes = ImmutableList.builder();
-      for (int i = 0; i < operands.size(); i++) {
-        List<RexLiteral> constantFields = new ArrayList<RexLiteral>(operands.size());
-
-        for (RexInputRef ref : columnConstantsMap.keySet()) {
-          // If any of the elements was not referenced by every operand, we bail out
-          if (columnConstantsMap.get(ref).size() <= i) {
-            return null;
-          }
-          RexLiteral columnConstant = columnConstantsMap.get(ref).get(i);
-          if (i == 0) {
-            columns.add(ref);
-            names.add(inputSchema.getFieldNames().get(ref.getIndex()));
-            paramsTypes.add(ref.getType());
-            structReturnType.add(TypeConverter.convert(ref.getType()));
-          }
-          constantFields.add(columnConstant);
-        }
-
-        if (i == 0) {
-          RexNode columnsRefs;
-          if (columns.size() == 1) {
-            columnsRefs = columns.get(0);
-          } else {
-            // Create STRUCT clause
-            columnsRefs = rexBuilder.makeCall(SqlStdOperatorTable.ROW, columns);
-          }
-          newOperands.add(columnsRefs);
-          newOperandsTypes.add(columnsRefs.getType());
-        }
-        RexNode values;
-        if (constantFields.size() == 1) {
-          values = constantFields.get(0);
-        } else {
-          // Create STRUCT clause
-          values = rexBuilder.makeCall(SqlStdOperatorTable.ROW, constantFields);
-        }
-        newOperands.add(values);
-        newOperandsTypes.add(values.getType());
-      }
-
-      // 4. Create and return IN clause
-      return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
-      */
     }
 
-    private RexNode makeOrBreak(List<? extends RexNode> columns) {
+    private RexNode useStructIfNeeded(List<? extends RexNode> columns) {
       // Create STRUCT clause
       if (columns.size() == 1) {
         return columns.get(0);
