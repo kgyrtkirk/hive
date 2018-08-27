@@ -51,10 +51,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -331,11 +329,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
             RexNode condition, int minNumORClauses) throws SemanticException {
       assert condition.getKind() == SqlKind.OR;
 
-      // 1. We extract the information necessary to create the predicate for the new
-      //    filter
-      ListMultimap<RexInputRef,RexLiteral> columnConstantsMap = ArrayListMultimap.create();
       ImmutableList<RexNode> operands = RexUtil.flattenOr(((RexCall) condition).getOperands());
-      // FIXME: this needs rethinking
       if (operands.size() < minNumORClauses) {
         // We bail out
         return null;
@@ -347,11 +341,12 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         allNodes.add(m);
       }
 
-      Multimap<Set<RexInputRef>, ConstraintGroup> a = Multimaps.index(allNodes, ConstraintGroup.KEY_FUNCTION);
+      Multimap<Set<RexInputRef>, ConstraintGroup> assignmentGroups =
+          Multimaps.index(allNodes, ConstraintGroup.KEY_FUNCTION);
 
-      for (Entry<Set<RexInputRef>, Collection<ConstraintGroup>> sa : a.asMap().entrySet()) {
+      for (Entry<Set<RexInputRef>, Collection<ConstraintGroup>> sa : assignmentGroups.asMap().entrySet()) {
         // skip opaque
-        if (sa.getKey() == null || sa.getKey().size()==0 ) {
+        if (sa.getKey() == null || sa.getKey().size() == 0) {
           continue;
         }
         // not enough equalities should not be handled
@@ -367,12 +362,11 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         return null;
       }
       allNodes.removeAll(processedNodes);
-
       List<RexNode> ops = new ArrayList<>();
       for (ConstraintGroup mx : allNodes) {
         ops.add(mx.originalRexNode);
       }
-      if(ops.size()==1) {
+      if (ops.size() == 1) {
         return ops.get(0);
       } else {
         return rexBuilder.makeCall(SqlStdOperatorTable.OR, ops);
