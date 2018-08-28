@@ -55,18 +55,18 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                     Sorted Merge Bucket Map Join Operator
                       condition map:
                            Left Outer Join 0 to 1
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
-                      Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -119,18 +119,18 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                     Sorted Merge Bucket Map Join Operator
                       condition map:
                            Right Outer Join 0 to 1
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
-                      Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash

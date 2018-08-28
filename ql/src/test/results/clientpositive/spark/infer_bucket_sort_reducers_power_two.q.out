@@ -39,7 +39,7 @@ Table:              	test_table_n14
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	5                   
+	numFiles            	19                  
 	numRows             	309                 
 	rawDataSize         	1482                
 	totalSize           	1791                
@@ -88,7 +88,7 @@ Table:              	test_table_n14
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	9                   
+	numFiles            	106                 
 	numRows             	1028                
 	rawDataSize         	10968               
 	totalSize           	11996               
@@ -137,7 +137,7 @@ Table:              	test_table_n14
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	9                   
+	numFiles            	143                 
 	numRows             	1028                
 	rawDataSize         	10968               
 	totalSize           	11996               
@@ -186,7 +186,7 @@ Table:              	test_table_n14
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	13                  
+	numFiles            	141                 
 	numRows             	2654                
 	rawDataSize         	28466               
 	totalSize           	31120               
@@ -235,7 +235,7 @@ Table:              	test_table_n14
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	9                   
+	numFiles            	150                 
 	numRows             	2654                
 	rawDataSize         	28466               
 	totalSize           	31120               

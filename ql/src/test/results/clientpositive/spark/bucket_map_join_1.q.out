@@ -63,12 +63,12 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: (key is not null and value is not null) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 210 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: (key is not null and value is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 210 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 key (type: string), value (type: string)
@@ -144,12 +144,12 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: (key is not null and value is not null) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: (key is not null and value is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -159,7 +159,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Position of Big Table: 0
-                      Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash

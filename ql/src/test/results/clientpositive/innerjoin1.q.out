@@ -77,36 +77,36 @@ STAGE PLANS:
           TableScan
             alias: c1
             filterExpr: COALESCE(a1,a2) is not null (type: boolean)
-            Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: COALESCE(a1,a2) is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a1 (type: string), a2 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: COALESCE(_col0,_col1) (type: string)
                   sort order: +
                   Map-reduce partition columns: COALESCE(_col0,_col1) (type: string)
-                  Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string)
           TableScan
             alias: c2
             filterExpr: COALESCE(b1,b2) is not null (type: boolean)
-            Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: COALESCE(b1,b2) is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: b1 (type: string), b2 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: COALESCE(_col0,_col1) (type: string)
                   sort order: +
                   Map-reduce partition columns: COALESCE(_col0,_col1) (type: string)
-                  Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -116,10 +116,10 @@ STAGE PLANS:
             0 COALESCE(_col0,_col1) (type: string)
             1 COALESCE(_col0,_col1) (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -158,36 +158,36 @@ STAGE PLANS:
           TableScan
             alias: c1
             filterExpr: COALESCE(a1,a2) is not null (type: boolean)
-            Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: COALESCE(a1,a2) is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a1 (type: string), a2 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: COALESCE(_col0,_col1) (type: string)
                   sort order: +
                   Map-reduce partition columns: COALESCE(_col0,_col1) (type: string)
-                  Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string)
           TableScan
             alias: c2
             filterExpr: COALESCE(b1,b2) is not null (type: boolean)
-            Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: COALESCE(b1,b2) is not null (type: boolean)
-              Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: b1 (type: string), b2 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: COALESCE(_col0,_col1) (type: string)
                   sort order: +
                   Map-reduce partition columns: COALESCE(_col0,_col1) (type: string)
-                  Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -197,10 +197,10 @@ STAGE PLANS:
             0 COALESCE(_col0,_col1) (type: string)
             1 COALESCE(_col0,_col1) (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

@@ -44,23 +44,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hdfs_table
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
               expressions: key (type: int)
               outputColumnNames: key
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: int)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   auto parallelism: false
       Execution mode: vectorized
@@ -123,7 +123,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -152,7 +152,7 @@ STAGE PLANS:
               key expressions: _col0 (type: int)
               null sort order: a
               sort order: +
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               tag: -1
               auto parallelism: false
       Execution mode: vectorized
@@ -188,13 +188,13 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 1
             directory: ### BLOBSTORE_STAGING_PATH ###
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -226,22 +226,22 @@ STAGE PLANS:
           Select Operator
             expressions: _col0 (type: int)
             outputColumnNames: key
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: compute_stats(key, 'hll')
               mode: complete
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 424 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 424 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 424 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -319,23 +319,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hdfs_table
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
               expressions: key (type: int)
               outputColumnNames: key
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: int)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   auto parallelism: false
       Execution mode: vectorized
@@ -398,7 +398,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -427,7 +427,7 @@ STAGE PLANS:
               key expressions: _col0 (type: int)
               null sort order: a
               sort order: +
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               tag: -1
               auto parallelism: false
       Execution mode: vectorized
@@ -463,13 +463,13 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 1
             directory: ### BLOBSTORE_STAGING_PATH ###
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -501,22 +501,22 @@ STAGE PLANS:
           Select Operator
             expressions: _col0 (type: int)
             outputColumnNames: key
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: compute_stats(key, 'hll')
               mode: complete
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 424 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 424 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 424 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat

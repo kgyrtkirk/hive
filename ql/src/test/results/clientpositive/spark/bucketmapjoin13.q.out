@@ -87,12 +87,12 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 7216 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 475 Data size: 6855 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 key (type: int)
@@ -167,12 +167,12 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 14428 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 950 Data size: 13706 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -182,7 +182,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Position of Big Table: 0
-                      Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1045 Data size: 15076 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -386,12 +386,12 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 7216 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 475 Data size: 6855 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 key (type: int)
@@ -471,12 +471,12 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: ((part = '2') and key is not null) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 7216 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 475 Data size: 6855 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -486,7 +486,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Position of Big Table: 0
-                      Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 522 Data size: 7540 Basic stats: COMPLETE Column stats: NONE
                       BucketMapJoin: true
                       Group By Operator
                         aggregations: count()
@@ -651,12 +651,12 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 7216 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 475 Data size: 6855 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 key (type: int)
@@ -736,12 +736,12 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 7216 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 475 Data size: 6855 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -751,7 +751,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Position of Big Table: 0
-                      Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 522 Data size: 7540 Basic stats: COMPLETE Column stats: NONE
                       BucketMapJoin: true
                       Group By Operator
                         aggregations: count()
@@ -916,12 +916,12 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 7216 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 475 Data size: 6855 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 key (type: int)
@@ -1001,12 +1001,12 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 7216 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 475 Data size: 6855 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -1016,7 +1016,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 3
                       Position of Big Table: 0
-                      Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 522 Data size: 7540 Basic stats: COMPLETE Column stats: NONE
                       BucketMapJoin: true
                       Group By Operator
                         aggregations: count()

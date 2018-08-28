@@ -38,19 +38,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
                       directory: hdfs://### HDFS PATH ###
                       NumFilesPerFileSink: 1
                       Static Partition Specification: ds=2008-04-08/hr=11/
-                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                       table:
                           input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat

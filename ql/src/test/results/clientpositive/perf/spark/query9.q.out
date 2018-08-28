@@ -142,22 +142,22 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_quantity BETWEEN 21 AND 40 (type: boolean)
-                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 575995635 Data size: 63809443588 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 21 AND 40 (type: boolean)
-                    Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 63999515 Data size: 7089938304 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_ext_list_price (type: decimal(7,2))
                       outputColumnNames: ss_ext_list_price
-                      Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 63999515 Data size: 7089938304 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(ss_ext_list_price), count(ss_ext_list_price)
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint)
             Execution mode: vectorized
         Map 12 
@@ -165,22 +165,22 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_quantity BETWEEN 21 AND 40 (type: boolean)
-                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 575995635 Data size: 63808191988 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 21 AND 40 (type: boolean)
-                    Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 63999515 Data size: 7089799200 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: decimal(7,2))
                       outputColumnNames: ss_net_paid_inc_tax
-                      Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 63999515 Data size: 7089799200 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(ss_net_paid_inc_tax), count(ss_net_paid_inc_tax)
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint)
             Execution mode: vectorized
         Map 14 
@@ -188,20 +188,20 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_quantity BETWEEN 41 AND 60 (type: boolean)
-                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 575995635 Data size: 2200320404 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 41 AND 60 (type: boolean)
-                    Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 63999515 Data size: 244480048 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 63999515 Data size: 244480048 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
             Execution mode: vectorized
         Map 16 
@@ -209,22 +209,22 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_quantity BETWEEN 41 AND 60 (type: boolean)
-                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 575995635 Data size: 63809443588 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 41 AND 60 (type: boolean)
-                    Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 63999515 Data size: 7089938304 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_ext_list_price (type: decimal(7,2))
                       outputColumnNames: ss_ext_list_price
-                      Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 63999515 Data size: 7089938304 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(ss_ext_list_price), count(ss_ext_list_price)
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint)
             Execution mode: vectorized
         Map 18 
@@ -232,22 +232,22 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_quantity BETWEEN 41 AND 60 (type: boolean)
-                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 575995635 Data size: 63808191988 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 41 AND 60 (type: boolean)
-                    Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 63999515 Data size: 7089799200 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: decimal(7,2))
                       outputColumnNames: ss_net_paid_inc_tax
-                      Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 63999515 Data size: 7089799200 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(ss_net_paid_inc_tax), count(ss_net_paid_inc_tax)
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint)
             Execution mode: vectorized
         Map 2 
@@ -255,20 +255,20 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_quantity BETWEEN 1 AND 20 (type: boolean)
-                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 575995635 Data size: 2200320404 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 1 AND 20 (type: boolean)
-                    Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 191998545 Data size: 733440136 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 191998545 Data size: 733440136 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
             Execution mode: vectorized
         Map 20 
@@ -276,20 +276,20 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_quantity BETWEEN 61 AND 80 (type: boolean)
-                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 575995635 Data size: 2200320404 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 61 AND 80 (type: boolean)
-                    Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 63999515 Data size: 244480048 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 63999515 Data size: 244480048 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
             Execution mode: vectorized
         Map 22 
@@ -297,22 +297,22 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_quantity BETWEEN 61 AND 80 (type: boolean)
-                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 575995635 Data size: 63809443588 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 61 AND 80 (type: boolean)
-                    Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 63999515 Data size: 7089938304 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_ext_list_price (type: decimal(7,2))
                       outputColumnNames: ss_ext_list_price
-                      Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 63999515 Data size: 7089938304 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(ss_ext_list_price), count(ss_ext_list_price)
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint)
             Execution mode: vectorized
         Map 24 
@@ -320,22 +320,22 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_quantity BETWEEN 61 AND 80 (type: boolean)
-                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 575995635 Data size: 63808191988 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 61 AND 80 (type: boolean)
-                    Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 63999515 Data size: 7089799200 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: decimal(7,2))
                       outputColumnNames: ss_net_paid_inc_tax
-                      Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 63999515 Data size: 7089799200 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(ss_net_paid_inc_tax), count(ss_net_paid_inc_tax)
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint)
             Execution mode: vectorized
         Map 26 
@@ -343,20 +343,20 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_quantity BETWEEN 81 AND 100 (type: boolean)
-                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 575995635 Data size: 2200320404 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 81 AND 100 (type: boolean)
-                    Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 63999515 Data size: 244480048 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 63999515 Data size: 244480048 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
             Execution mode: vectorized
         Map 28 
@@ -364,22 +364,22 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_quantity BETWEEN 81 AND 100 (type: boolean)
-                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 575995635 Data size: 63809443588 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 81 AND 100 (type: boolean)
-                    Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 63999515 Data size: 7089938304 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_ext_list_price (type: decimal(7,2))
                       outputColumnNames: ss_ext_list_price
-                      Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 63999515 Data size: 7089938304 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(ss_ext_list_price), count(ss_ext_list_price)
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint)
             Execution mode: vectorized
         Map 30 
@@ -387,22 +387,22 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_quantity BETWEEN 81 AND 100 (type: boolean)
-                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 575995635 Data size: 63808191988 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 81 AND 100 (type: boolean)
-                    Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 63999515 Data size: 7089799200 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: decimal(7,2))
                       outputColumnNames: ss_net_paid_inc_tax
-                      Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 63999515 Data size: 7089799200 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(ss_net_paid_inc_tax), count(ss_net_paid_inc_tax)
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint)
             Execution mode: vectorized
         Map 4 
@@ -410,22 +410,22 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_quantity BETWEEN 1 AND 20 (type: boolean)
-                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 575995635 Data size: 63809443588 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 1 AND 20 (type: boolean)
-                    Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 191998545 Data size: 21269814568 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_ext_list_price (type: decimal(7,2))
                       outputColumnNames: ss_ext_list_price
-                      Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 191998545 Data size: 21269814568 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(ss_ext_list_price), count(ss_ext_list_price)
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint)
             Execution mode: vectorized
         Map 6 
@@ -433,22 +433,22 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_quantity BETWEEN 1 AND 20 (type: boolean)
-                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 575995635 Data size: 63808191988 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 1 AND 20 (type: boolean)
-                    Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 191998545 Data size: 21269397368 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: decimal(7,2))
                       outputColumnNames: ss_net_paid_inc_tax
-                      Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 191998545 Data size: 21269397368 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(ss_net_paid_inc_tax), count(ss_net_paid_inc_tax)
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint)
             Execution mode: vectorized
         Map 8 
@@ -456,20 +456,20 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_quantity BETWEEN 21 AND 40 (type: boolean)
-                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 575995635 Data size: 2200320404 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 21 AND 40 (type: boolean)
-                    Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 63999515 Data size: 244480048 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 63999515 Data size: 5646055787 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 63999515 Data size: 244480048 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
             Execution mode: vectorized
         Reducer 11 
@@ -481,11 +481,11 @@ STAGE PLANS:
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: (_col0 / _col1) (type: decimal(37,22))
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   Spark HashTable Sink Operator
                     keys:
                       0 
@@ -499,11 +499,11 @@ STAGE PLANS:
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: (_col0 / _col1) (type: decimal(37,22))
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   Spark HashTable Sink Operator
                     keys:
                       0 
@@ -517,7 +517,7 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Spark HashTable Sink Operator
                   keys:
                     0 
@@ -531,11 +531,11 @@ STAGE PLANS:
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: (_col0 / _col1) (type: decimal(37,22))
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   Spark HashTable Sink Operator
                     keys:
                       0 
@@ -549,11 +549,11 @@ STAGE PLANS:
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: (_col0 / _col1) (type: decimal(37,22))
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   Spark HashTable Sink Operator
                     keys:
                       0 
@@ -567,7 +567,7 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Spark HashTable Sink Operator
                   keys:
                     0 
@@ -581,11 +581,11 @@ STAGE PLANS:
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: (_col0 / _col1) (type: decimal(37,22))
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   Spark HashTable Sink Operator
                     keys:
                       0 
@@ -599,11 +599,11 @@ STAGE PLANS:
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: (_col0 / _col1) (type: decimal(37,22))
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   Spark HashTable Sink Operator
                     keys:
                       0 
@@ -617,7 +617,7 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Spark HashTable Sink Operator
                   keys:
                     0 
@@ -631,11 +631,11 @@ STAGE PLANS:
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: (_col0 / _col1) (type: decimal(37,22))
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   Spark HashTable Sink Operator
                     keys:
                       0 
@@ -649,7 +649,7 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Spark HashTable Sink Operator
                   keys:
                     0 
@@ -663,11 +663,11 @@ STAGE PLANS:
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: (_col0 / _col1) (type: decimal(37,22))
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   Spark HashTable Sink Operator
                     keys:
                       0 
@@ -681,11 +681,11 @@ STAGE PLANS:
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: (_col0 / _col1) (type: decimal(37,22))
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   Spark HashTable Sink Operator
                     keys:
                       0 
@@ -699,11 +699,11 @@ STAGE PLANS:
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: (_col0 / _col1) (type: decimal(37,22))
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   Spark HashTable Sink Operator
                     keys:
                       0 
@@ -717,7 +717,7 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Spark HashTable Sink Operator
                   keys:
                     0 
@@ -732,12 +732,12 @@ STAGE PLANS:
                 TableScan
                   alias: reason
                   filterExpr: (r_reason_sk = 1) (type: boolean)
-                  Statistics: Num rows: 72 Data size: 14400 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 72 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (r_reason_sk = 1) (type: boolean)
-                    Statistics: Num rows: 36 Data size: 7200 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 36 Data size: 7200 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Left Outer Join 0 to 1
@@ -747,7 +747,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Reducer 3
-                        Statistics: Num rows: 36 Data size: 7524 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
                                Left Outer Join 0 to 1
@@ -757,7 +757,7 @@ STAGE PLANS:
                           outputColumnNames: _col1, _col2
                           input vertices:
                             1 Reducer 5
-                          Statistics: Num rows: 36 Data size: 11880 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
                                  Left Outer Join 0 to 1
@@ -767,7 +767,7 @@ STAGE PLANS:
                             outputColumnNames: _col1, _col2, _col3
                             input vertices:
                               1 Reducer 7
-                            Statistics: Num rows: 36 Data size: 16236 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 2 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
                             Map Join Operator
                               condition map:
                                    Left Outer Join 0 to 1
@@ -777,7 +777,7 @@ STAGE PLANS:
                               outputColumnNames: _col1, _col2, _col3, _col4
                               input vertices:
                                 1 Reducer 9
-                              Statistics: Num rows: 36 Data size: 16560 Basic stats: COMPLETE Column stats: NONE
+                              Statistics: Num rows: 2 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
                               Map Join Operator
                                 condition map:
                                      Left Outer Join 0 to 1
@@ -787,7 +787,7 @@ STAGE PLANS:
                                 outputColumnNames: _col1, _col2, _col3, _col4, _col5
                                 input vertices:
                                   1 Reducer 11
-                                Statistics: Num rows: 36 Data size: 20916 Basic stats: COMPLETE Column stats: NONE
+                                Statistics: Num rows: 2 Data size: 704 Basic stats: COMPLETE Column stats: COMPLETE
                                 Map Join Operator
                                   condition map:
                                        Left Outer Join 0 to 1
@@ -797,7 +797,7 @@ STAGE PLANS:
                                   outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6
                                   input vertices:
                                     1 Reducer 13
-                                  Statistics: Num rows: 36 Data size: 25272 Basic stats: COMPLETE Column stats: NONE
+                                  Statistics: Num rows: 2 Data size: 928 Basic stats: COMPLETE Column stats: COMPLETE
                                   Map Join Operator
                                     condition map:
                                          Left Outer Join 0 to 1
@@ -807,7 +807,7 @@ STAGE PLANS:
                                     outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7
                                     input vertices:
                                       1 Reducer 15
-                                    Statistics: Num rows: 36 Data size: 25596 Basic stats: COMPLETE Column stats: NONE
+                                    Statistics: Num rows: 2 Data size: 944 Basic stats: COMPLETE Column stats: COMPLETE
                                     Map Join Operator
                                       condition map:
                                            Left Outer Join 0 to 1
@@ -817,7 +817,7 @@ STAGE PLANS:
                                       outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                                       input vertices:
                                         1 Reducer 17
-                                      Statistics: Num rows: 36 Data size: 29952 Basic stats: COMPLETE Column stats: NONE
+                                      Statistics: Num rows: 2 Data size: 1168 Basic stats: COMPLETE Column stats: COMPLETE
                                       Map Join Operator
                                         condition map:
                                              Left Outer Join 0 to 1
@@ -827,7 +827,7 @@ STAGE PLANS:
                                         outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
                                         input vertices:
                                           1 Reducer 19
-                                        Statistics: Num rows: 36 Data size: 34308 Basic stats: COMPLETE Column stats: NONE
+                                        Statistics: Num rows: 2 Data size: 1392 Basic stats: COMPLETE Column stats: COMPLETE
                                         Map Join Operator
                                           condition map:
                                                Left Outer Join 0 to 1
@@ -837,7 +837,7 @@ STAGE PLANS:
                                           outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
                                           input vertices:
                                             1 Reducer 21
-                                          Statistics: Num rows: 36 Data size: 34632 Basic stats: COMPLETE Column stats: NONE
+                                          Statistics: Num rows: 2 Data size: 1408 Basic stats: COMPLETE Column stats: COMPLETE
                                           Map Join Operator
                                             condition map:
                                                  Left Outer Join 0 to 1
@@ -847,7 +847,7 @@ STAGE PLANS:
                                             outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
                                             input vertices:
                                               1 Reducer 23
-                                            Statistics: Num rows: 36 Data size: 38988 Basic stats: COMPLETE Column stats: NONE
+                                            Statistics: Num rows: 2 Data size: 1632 Basic stats: COMPLETE Column stats: COMPLETE
                                             Map Join Operator
                                               condition map:
                                                    Left Outer Join 0 to 1
@@ -857,7 +857,7 @@ STAGE PLANS:
                                               outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
                                               input vertices:
                                                 1 Reducer 25
-                                              Statistics: Num rows: 36 Data size: 43344 Basic stats: COMPLETE Column stats: NONE
+                                              Statistics: Num rows: 2 Data size: 1856 Basic stats: COMPLETE Column stats: COMPLETE
                                               Map Join Operator
                                                 condition map:
                                                      Left Outer Join 0 to 1
@@ -867,7 +867,7 @@ STAGE PLANS:
                                                 outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
                                                 input vertices:
                                                   1 Reducer 27
-                                                Statistics: Num rows: 36 Data size: 43668 Basic stats: COMPLETE Column stats: NONE
+                                                Statistics: Num rows: 2 Data size: 1872 Basic stats: COMPLETE Column stats: COMPLETE
                                                 Map Join Operator
                                                   condition map:
                                                        Left Outer Join 0 to 1
@@ -877,7 +877,7 @@ STAGE PLANS:
                                                   outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
                                                   input vertices:
                                                     1 Reducer 29
-                                                  Statistics: Num rows: 36 Data size: 48024 Basic stats: COMPLETE Column stats: NONE
+                                                  Statistics: Num rows: 2 Data size: 2096 Basic stats: COMPLETE Column stats: COMPLETE
                                                   Map Join Operator
                                                     condition map:
                                                          Left Outer Join 0 to 1
@@ -887,14 +887,14 @@ STAGE PLANS:
                                                     outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
                                                     input vertices:
                                                       1 Reducer 31
-                                                    Statistics: Num rows: 36 Data size: 52380 Basic stats: COMPLETE Column stats: NONE
+                                                    Statistics: Num rows: 2 Data size: 2320 Basic stats: COMPLETE Column stats: COMPLETE
                                                     Select Operator
                                                       expressions: CASE WHEN ((_col1 > 409437L)) THEN (_col2) ELSE (_col3) END (type: decimal(37,22)), CASE WHEN ((_col4 > 4595804L)) THEN (_col5) ELSE (_col6) END (type: decimal(37,22)), CASE WHEN ((_col7 > 7887297L)) THEN (_col8) ELSE (_col9) END (type: decimal(37,22)), CASE WHEN ((_col10 > 10872978L)) THEN (_col11) ELSE (_col12) END (type: decimal(37,22)), CASE WHEN ((_col13 > 43571537L)) THEN (_col14) ELSE (_col15) END (type: decimal(37,22))
                                                       outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                                                      Statistics: Num rows: 36 Data size: 52380 Basic stats: COMPLETE Column stats: NONE
+                                                      Statistics: Num rows: 2 Data size: 1120 Basic stats: COMPLETE Column stats: COMPLETE
                                                       File Output Operator
                                                         compressed: false
-                                                        Statistics: Num rows: 36 Data size: 52380 Basic stats: COMPLETE Column stats: NONE
+                                                        Statistics: Num rows: 2 Data size: 1120 Basic stats: COMPLETE Column stats: COMPLETE
                                                         table:
                                                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

@@ -154,14 +154,14 @@ STAGE PLANS:
           TableScan
             alias: t1
             filterExpr: decimal0801_col_4 is not null (type: boolean)
-            Statistics: Num rows: 1080 Data size: 951862 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1080 Data size: 115024 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: decimal0801_col_4 is not null (type: boolean)
-              Statistics: Num rows: 1080 Data size: 951862 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1026 Data size: 109272 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: decimal0801_col_4 (type: decimal(8,1))
                 outputColumnNames: _col0
-                Statistics: Num rows: 1080 Data size: 951862 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1026 Data size: 109272 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: decimal(9,2))
@@ -173,7 +173,7 @@ STAGE PLANS:
           TableScan
             alias: t2
             filterExpr: decimal0402_col_20 is not null (type: boolean)
-            Statistics: Num rows: 1000 Data size: 2087309 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 110316 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:tinyint_col_1:tinyint, 1:float_col_2:float, 2:bigint_col_3:bigint, 3:boolean_col_4:boolean, 4:decimal0202_col_5:decimal(2,2)/DECIMAL_64, 5:decimal1612_col_6:decimal(16,12)/DECIMAL_64, 6:double_col_7:double, 7:char0205_col_8:char(205), 8:bigint_col_9:bigint, 9:decimal1202_col_10:decimal(12,2)/DECIMAL_64, 10:boolean_col_11:boolean, 11:double_col_12:double, 12:decimal2208_col_13:decimal(22,8), 13:decimal3722_col_14:decimal(37,22), 14:smallint_col_15:smallint, 15:decimal2824_col_16:decimal(28,24), 16:boolean_col_17:boolean, 17:float_col_18:float, 18:timestamp_col_19:timestamp, 19:decimal0402_col_20:decimal(4,2)/DECIMAL_64, 20:char0208_col_21:char(208), 21:char0077_col_22:char(77), 22:decimal2915_col_23:decimal(29,15), 23:char0234_col_24:char(234), 24:timestamp_col_25:timestamp, 25:tinyint_col_26:tinyint, 26:decimal3635_col_27:decimal(36,35), 27:boolean_col_28:boolean, 28:float_col_29:float, 29:smallint_col_30:smallint, 30:varchar0200_col_31:varchar(200), 31:boolean_col_32:boolean, 32:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -183,7 +183,7 @@ STAGE PLANS:
                   native: true
                   predicateExpression: SelectColumnIsNotNull(col 19:decimal(4,2)/DECIMAL_64)
               predicate: decimal0402_col_20 is not null (type: boolean)
-              Statistics: Num rows: 1000 Data size: 2087309 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 950 Data size: 104800 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: smallint_col_15 (type: smallint), decimal0402_col_20 (type: decimal(4,2))
                 outputColumnNames: _col0, _col1
@@ -191,7 +191,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [14, 19]
-                Statistics: Num rows: 1000 Data size: 2087309 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 950 Data size: 104800 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -207,7 +207,7 @@ STAGE PLANS:
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Optimized Table and Supports Key Types IS false
                       nativeNotSupportedKeyTypes: DECIMAL
                   outputColumnNames: _col1
-                  Statistics: Num rows: 1188 Data size: 1047048 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1128 Data size: 120199 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count(_col1)
                     Group By Vectorization:
@@ -307,14 +307,14 @@ STAGE PLANS:
           TableScan
             alias: t1
             filterExpr: decimal0801_col_4 is not null (type: boolean)
-            Statistics: Num rows: 1080 Data size: 951862 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1080 Data size: 115024 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: decimal0801_col_4 is not null (type: boolean)
-              Statistics: Num rows: 1080 Data size: 951862 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1026 Data size: 109272 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: decimal0801_col_4 (type: decimal(8,1))
                 outputColumnNames: _col0
-                Statistics: Num rows: 1080 Data size: 951862 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1026 Data size: 109272 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: decimal(9,2))
@@ -326,7 +326,7 @@ STAGE PLANS:
           TableScan
             alias: t2
             filterExpr: decimal0402_col_20 is not null (type: boolean)
-            Statistics: Num rows: 1000 Data size: 2087309 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 110316 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:tinyint_col_1:tinyint, 1:float_col_2:float, 2:bigint_col_3:bigint, 3:boolean_col_4:boolean, 4:decimal0202_col_5:decimal(2,2), 5:decimal1612_col_6:decimal(16,12), 6:double_col_7:double, 7:char0205_col_8:char(205), 8:bigint_col_9:bigint, 9:decimal1202_col_10:decimal(12,2), 10:boolean_col_11:boolean, 11:double_col_12:double, 12:decimal2208_col_13:decimal(22,8), 13:decimal3722_col_14:decimal(37,22), 14:smallint_col_15:smallint, 15:decimal2824_col_16:decimal(28,24), 16:boolean_col_17:boolean, 17:float_col_18:float, 18:timestamp_col_19:timestamp, 19:decimal0402_col_20:decimal(4,2), 20:char0208_col_21:char(208), 21:char0077_col_22:char(77), 22:decimal2915_col_23:decimal(29,15), 23:char0234_col_24:char(234), 24:timestamp_col_25:timestamp, 25:tinyint_col_26:tinyint, 26:decimal3635_col_27:decimal(36,35), 27:boolean_col_28:boolean, 28:float_col_29:float, 29:smallint_col_30:smallint, 30:varchar0200_col_31:varchar(200), 31:boolean_col_32:boolean, 32:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -336,7 +336,7 @@ STAGE PLANS:
                   native: true
                   predicateExpression: SelectColumnIsNotNull(col 19:decimal(4,2))
               predicate: decimal0402_col_20 is not null (type: boolean)
-              Statistics: Num rows: 1000 Data size: 2087309 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 950 Data size: 104800 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: smallint_col_15 (type: smallint), decimal0402_col_20 (type: decimal(4,2))
                 outputColumnNames: _col0, _col1
@@ -344,7 +344,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [14, 19]
-                Statistics: Num rows: 1000 Data size: 2087309 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 950 Data size: 104800 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -360,7 +360,7 @@ STAGE PLANS:
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Optimized Table and Supports Key Types IS false
                       nativeNotSupportedKeyTypes: DECIMAL
                   outputColumnNames: _col1
-                  Statistics: Num rows: 1188 Data size: 1047048 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1128 Data size: 120199 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count(_col1)
                     Group By Vectorization:

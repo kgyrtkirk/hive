@@ -49,11 +49,11 @@ STAGE PLANS:
         b_n14 
           TableScan
             alias: b_n14
-            Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: key, value
-              Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 
@@ -64,11 +64,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a_n18
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: key, value
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -76,10 +76,10 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: key, value, key0, value0
-                Statistics: Num rows: 5000 Data size: 106120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 5000 Data size: 3596680 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 5000 Data size: 106120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 5000 Data size: 3596680 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -118,11 +118,11 @@ STAGE PLANS:
         a_n18 
           TableScan
             alias: a_n18
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: key, value
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 
@@ -131,14 +131,14 @@ STAGE PLANS:
           TableScan
             alias: d1
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: key, value
-                Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 key (type: string)
@@ -150,14 +150,14 @@ STAGE PLANS:
           TableScan
             alias: d2
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: key, value
-                Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -165,7 +165,7 @@ STAGE PLANS:
                     0 key (type: string)
                     1 key (type: string)
                   outputColumnNames: key, value, key0, value0
-                  Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 11 Data size: 4048 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
@@ -173,10 +173,10 @@ STAGE PLANS:
                       0 
                       1 
                     outputColumnNames: key, value, key0, value0, key1, value1
-                    Statistics: Num rows: 5500 Data size: 116432 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5500 Data size: 3956348 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 5500 Data size: 116432 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 5500 Data size: 3956348 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -221,14 +221,14 @@ STAGE PLANS:
           TableScan
             alias: od1:d1
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: key
-                Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 key (type: string)
@@ -240,14 +240,14 @@ STAGE PLANS:
           TableScan
             alias: od1:d2
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: key
-                Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -255,21 +255,21 @@ STAGE PLANS:
                     0 key (type: string)
                     1 key (type: string)
                   outputColumnNames: key
-                  Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 11 Data size: 2024 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: key
-                    Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 11 Data size: 2024 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: key (type: string)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 11 Data size: 2024 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 11 Data size: 2024 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
@@ -278,7 +278,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: key
-          Statistics: Num rows: 5 Data size: 47 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -296,11 +296,11 @@ STAGE PLANS:
         a_n18 
           TableScan
             alias: a_n18
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: key, value
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 
@@ -317,10 +317,10 @@ STAGE PLANS:
                 0 
                 1 
               outputColumnNames: key, value, key0
-              Statistics: Num rows: 2500 Data size: 52560 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2500 Data size: 1338340 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 2500 Data size: 52560 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2500 Data size: 1338340 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -359,11 +359,11 @@ STAGE PLANS:
         od1:d1 
           TableScan
             alias: od1:d1
-            Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
               outputColumnNames: key
-              Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 
@@ -384,21 +384,21 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: key
-                Statistics: Num rows: 100 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 100 Data size: 18900 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: key (type: string)
                   outputColumnNames: key
-                  Statistics: Num rows: 100 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 100 Data size: 18900 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: key (type: string)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 100 Data size: 18900 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 100 Data size: 1460 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 100 Data size: 18900 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
@@ -407,7 +407,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: key
-          Statistics: Num rows: 50 Data size: 730 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 50 Data size: 9450 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -425,11 +425,11 @@ STAGE PLANS:
         a_n18 
           TableScan
             alias: a_n18
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: key, value
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 
@@ -446,10 +446,10 @@ STAGE PLANS:
                 0 
                 1 
               outputColumnNames: key, value, key0
-              Statistics: Num rows: 25000 Data size: 655600 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 25000 Data size: 13508400 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 25000 Data size: 655600 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 25000 Data size: 13508400 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -493,28 +493,28 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss:a_n18
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
               outputColumnNames: key
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: string)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: key
-          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 250 Data size: 43792 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -550,10 +550,10 @@ STAGE PLANS:
                 0 
                 1 
               outputColumnNames: key, key0
-              Statistics: Num rows: 1250 Data size: 26280 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1250 Data size: 450210 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 1250 Data size: 26280 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1250 Data size: 450210 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -587,10 +587,10 @@ STAGE PLANS:
                 0 
                 1 
               outputColumnNames: key, key0
-              Statistics: Num rows: 1250 Data size: 26280 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1250 Data size: 450210 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 1250 Data size: 26280 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1250 Data size: 450210 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -605,12 +605,12 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 250 Data size: 43792 Basic stats: COMPLETE Column stats: NONE
               value expressions: key (type: string)
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 5 Data size: 47 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: NONE
               value expressions: key (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -620,10 +620,10 @@ STAGE PLANS:
             0 
             1 
           outputColumnNames: key, key0
-          Statistics: Num rows: 1250 Data size: 26280 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1250 Data size: 450210 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1250 Data size: 26280 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1250 Data size: 450210 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -640,14 +640,14 @@ STAGE PLANS:
           TableScan
             alias: od1:d1
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: key
-                Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 key (type: string)
@@ -659,14 +659,14 @@ STAGE PLANS:
           TableScan
             alias: od1:d2
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: key
-                Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -674,21 +674,21 @@ STAGE PLANS:
                     0 key (type: string)
                     1 key (type: string)
                   outputColumnNames: key
-                  Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 11 Data size: 2024 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: key
-                    Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 11 Data size: 2024 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: key (type: string)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 11 Data size: 2024 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 11 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 11 Data size: 2024 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
@@ -697,7 +697,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: key
-          Statistics: Num rows: 5 Data size: 47 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:

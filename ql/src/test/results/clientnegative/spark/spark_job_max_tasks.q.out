@@ -22,21 +22,21 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
-                  Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: key
-                    Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: key (type: string)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
@@ -44,18 +44,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 12 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
                 Transform Operator
                   command: python sleep.py
                   output info:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  Statistics: Num rows: 12 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
-                    Statistics: Num rows: 12 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: string)
         Reducer 3 
             Execution mode: vectorized
@@ -63,10 +63,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 12 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 12 Data size: 91 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
