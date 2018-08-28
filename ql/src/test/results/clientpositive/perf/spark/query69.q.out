@@ -406,14 +406,14 @@ STAGE PLANS:
                         outputColumnNames: _col6, _col7, _col8, _col9, _col10, _col14
                         input vertices:
                           1 Reducer 14
-                        Statistics: Num rows: 844 Data size: 306372 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 844 Data size: 303000 Basic stats: COMPLETE Column stats: COMPLETE
                         Filter Operator
                           predicate: _col14 is null (type: boolean)
-                          Statistics: Num rows: 1 Data size: 363 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 844 Data size: 303000 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
                             expressions: _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: int), _col10 (type: string)
                             outputColumnNames: _col6, _col7, _col8, _col9, _col10
-                            Statistics: Num rows: 1 Data size: 363 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 844 Data size: 303000 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
                               keys: _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: int), _col10 (type: string)
