@@ -42,11 +42,11 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class asd {
+public class TestVectorMapJoinFastHashTable {
 
   long keyCount = 15_000_000;
 
-  private static final Logger LOG = LoggerFactory.getLogger(asd.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(TestVectorMapJoinFastHashTable.class.getName());
 
   @Test
   public void checkFast2estimations() throws Exception {
