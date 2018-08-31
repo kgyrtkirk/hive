@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import java.nio.ByteBuffer;
+import java.nio.LongBuffer;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.VectorMapJoinFastTableContainer;
@@ -28,18 +31,22 @@ import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationType;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKind;
+import org.apache.hadoop.hive.serde2.ByteStream.Output;
+import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 import org.apache.hadoop.io.BytesWritable;
 import org.junit.Test;
 import org.openjdk.jol.info.GraphLayout;
 
-public class asd {
+import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 
+public class asd {
 
   @Test
   public void a() throws Exception {
     MapJoinDesc desc = new MapJoinDesc();
     VectorMapJoinDesc vectorDesc = new VectorMapJoinDesc();
-    vectorDesc.setHashTableKeyType(HashTableKeyType.MULTI_KEY);
+    vectorDesc.setHashTableKeyType(HashTableKeyType.LONG);
+    //    vectorDesc.setHashTableKeyType(HashTableKeyType.MULTI_KEY);
     vectorDesc.setIsFastHashTableEnabled(true);
     vectorDesc.setHashTableImplementationType(HashTableImplementationType.FAST);
     //    vectorDesc.setHashTableKind(HashTableKind.HASH_MAP);
@@ -54,12 +61,31 @@ public class asd {
 
 
     long dataSize = 0;
+    //    ByteBuffer.allocate(8);
     BytesWritable value = new BytesWritable("123456789".getBytes());
+    LongBuffer lb = LongBuffer.allocate(1);
+
+    byte b[] = new byte[8];
+    ByteBuffer bb = ByteBuffer.wrap(b);
+
+    BinarySortableSerializeWrite nsw = new BinarySortableSerializeWrite(1);
+
     for (int i = 0; i < keyCount; i++) {
-      BytesWritable key = new BytesWritable((Integer.toHexString(i) + "xxxxxxxxxxxxxxxxxx").getBytes());
+      Output outp = new Output();
+      Output outp2 = new Output();
+      nsw.set(outp);
+      nsw.writeLong(i);
+      nsw.set(outp2);
+      nsw.writeLong(i * 2);
+
+      //      nsw.
+      //      bb.rewind();
+//      bb.putLong(i);
+      BytesWritable key = new BytesWritable(outp.getData());
+      value = new BytesWritable(outp2.getData());
       container.putRow(key, value);
       dataSize += key.getLength();
-      dataSize += value.getLength();
+      dataSize += 8;//value.getLength();
     }
 
     //    new Vecor
@@ -72,12 +98,19 @@ public class asd {
     ConvertJoinMapJoin cjm = new ConvertJoinMapJoin();
     cjm.hashTableLoadFactor = .75f;
     long est = cjm.computeOnlineDataSize(stat);
+    long estO = cjm.computeOnlineDataSizeOptimized(stat);
 
-    System.out.println("compiler:" + est);
+    System.out.println("compilerF2:" + cjm.computeOnlineDataSizeFast2(stat));
+    System.out.println("compilerF3:" + cjm.computeOnlineDataSizeFast3(stat));
+    System.out.println("compilerO:" + cjm.computeOnlineDataSizeOptimized(stat));
+    long s = ObjectSizeCalculator.getObjectSize(container);
+    System.out.println("osc:" + s);
+
     //    LOG.info(x.toFootprint());
     //    LOG.info("Finished loading hash table for input: {} cacheKey: {} numEntries: {} " +
     //        "estimatedMemoryUsage: {}", inputName, cacheKey, numEntries,
     //        vectorMapJoinFastTableContainer.getEstimatedMemorySize());
   }
+
 
 }
