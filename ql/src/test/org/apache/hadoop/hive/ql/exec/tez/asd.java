@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 import org.apache.hadoop.io.BytesWritable;
 import org.junit.Test;
-import org.openjdk.jol.info.GraphLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,12 +50,12 @@ public class asd {
 
   @Test
   public void checkFast2estimations() throws Exception {
-      runEstimationCheck(HashTableKeyType.LONG);
+    runEstimationCheck(HashTableKeyType.LONG);
   }
 
   @Test
   public void checkFast3estimations() throws Exception {
-    //    runEstimationCheck(HashTableKeyType.MULTI_KEY);
+    runEstimationCheck(HashTableKeyType.MULTI_KEY);
   }
 
   private void runEstimationCheck(HashTableKeyType l) throws SerDeException, IOException, HiveException {
@@ -92,18 +91,14 @@ public class asd {
       dataSize += 8;
     }
 
-    GraphLayout x = GraphLayout.parseInstance(container); //    LOG.info("FFFF");
-    System.out.println(x.toFootprint());
-
-    System.out.println(container.getEstimatedMemorySize());
     Statistics stat = new Statistics(keyCount, dataSize, 0);
-    ConvertJoinMapJoin cjm = new ConvertJoinMapJoin();
-    cjm.hashTableLoadFactor = .75f;
 
     Long realObjectSize = getObjectSize(container);
     Long executionEstimate = container.getEstimatedMemorySize();
     Long compilerEstimate = null;
 
+    ConvertJoinMapJoin cjm = new ConvertJoinMapJoin();
+    cjm.hashTableLoadFactor = .75f;
     switch (l) {
     case MULTI_KEY:
       compilerEstimate = cjm.computeOnlineDataSizeFast3(stat);
@@ -112,6 +107,7 @@ public class asd {
       compilerEstimate = cjm.computeOnlineDataSizeFast2(stat);
       break;
     }
+    LOG.info("stats: {}", stat);
     LOG.info("realObjectSize: {}", realObjectSize);
     LOG.info("executionEstimate : {}", executionEstimate);
     LOG.info("compilerEstimate: {}", compilerEstimate);
@@ -119,7 +115,6 @@ public class asd {
     checkRelativeError(realObjectSize, executionEstimate, .05);
     checkRelativeError(realObjectSize, compilerEstimate, .05);
     checkRelativeError(compilerEstimate, executionEstimate, .05);
-
   }
 
   private void checkRelativeError(Long v1, Long v2, double err) {
