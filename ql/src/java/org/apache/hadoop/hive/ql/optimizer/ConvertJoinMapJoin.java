@@ -252,48 +252,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   }
 
   public long computeOnlineDataSize(Statistics statistics) {
-    return computeOnlineDataSizeFast2(statistics);
-  }
-
-  public long computeOnlineDataSizeFast3(Statistics statistics) {
-    // The datastructure doing the actual storage during mapjoins has no per row orhead;
-    // but uses a 192 bit wide table
-    long onlineDataSize = 0;
-    long memoryOverHeadPerRow = 0;
-
-    long numRows = statistics.getNumRows();
-    if (numRows <= 0) {
-      numRows = 1;
-    }
-    long worstCaseNeededSlots = 1L << DoubleMath.log2(numRows / hashTableLoadFactor, RoundingMode.UP);
-
-    onlineDataSize += statistics.getDataSize();
-    onlineDataSize += memoryOverHeadPerRow * statistics.getNumRows();
-    onlineDataSize += 3 * 8 * worstCaseNeededSlots; // every slot is a long
-
-    //    return onlineDataSize;
-    return computeOnlineDataSizeX1(statistics,
-        0, // key is stored in a bytearray
-        3 * 8 // maintenance sturcture consists of 3 longs
-    );
-  }
-
-  public long computeOnlineDataSizeX1(Statistics statistics, long overHeadPerRow, long overHeadPerSlot) {
-    // The datastructure doing the actual storage during mapjoins has no per row orhead;
-    // but uses a 192 bit wide table
-    long onlineDataSize = 0;
-
-    long numRows = statistics.getNumRows();
-    if (numRows <= 0) {
-      numRows = 1;
-    }
-    long worstCaseNeededSlots = 1L << DoubleMath.log2(numRows / hashTableLoadFactor, RoundingMode.UP);
-
-    onlineDataSize += statistics.getDataSize();
-    onlineDataSize += overHeadPerRow * statistics.getNumRows();
-    onlineDataSize += overHeadPerSlot * worstCaseNeededSlots;
-
-    return onlineDataSize;
+    return computeOnlineDataSizeFast3(statistics);
   }
 
   public long computeOnlineDataSizeFast2(Statistics statistics) {
@@ -303,24 +262,34 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     );
   }
 
-  public long computeOnlineDataSizeOptimized(Statistics statistics) {
-    // The datastructure doing the actual storage during mapjoins has some per row overhead
-    long onlineDataSize = 0;
-    long memoryOverHeadPerRow = 0;
-    long vLongEstimatedLength = 6; // LazyBinaryUtils.writeVLongToByteArray
-    memoryOverHeadPerRow += vLongEstimatedLength; // offset
-    memoryOverHeadPerRow += vLongEstimatedLength; // length
+  public long computeOnlineDataSizeFast3(Statistics statistics) {
+    // The datastructure doing the actual storage during mapjoins has no per row orhead;
+    // but uses a 192 bit wide table
+    return computeOnlineDataSizeX1(statistics,
+        0, // key is stored in a bytearray
+        3 * 8 // maintenance sturcture consists of 3 longs
+    );
+  }
 
+  public long computeOnlineDataSizeOptimized(Statistics statistics) {
+    return computeOnlineDataSizeX1(statistics,
+        2 * 6, // 2 offsets are stored using:  LazyBinaryUtils.writeVLongToByteArray
+        8 // maintenance sturcture consists of 3 longs
+    );
+  }
+
+
+  public long computeOnlineDataSizeX1(Statistics statistics, long overHeadPerRow, long overHeadPerSlot) {
+
+    long onlineDataSize = 0;
     long numRows = statistics.getNumRows();
     if (numRows <= 0) {
-      numRows=1;
+      numRows = 1;
     }
     long worstCaseNeededSlots = 1L << DoubleMath.log2(numRows / hashTableLoadFactor, RoundingMode.UP);
-
     onlineDataSize += statistics.getDataSize();
-    onlineDataSize += memoryOverHeadPerRow * statistics.getNumRows();
-    onlineDataSize += 8 * worstCaseNeededSlots; // every slot is a long
-
+    onlineDataSize += overHeadPerRow * statistics.getNumRows();
+    onlineDataSize += overHeadPerSlot * worstCaseNeededSlots;
     return onlineDataSize;
   }
 
