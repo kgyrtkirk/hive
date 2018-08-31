@@ -252,6 +252,25 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   }
 
   public long computeOnlineDataSize(Statistics statistics) {
+    // The datastructure doing the actual storage during mapjoins has no per row orhead;
+    // but uses a 192 bit wide table
+    long onlineDataSize = 0;
+    long memoryOverHeadPerRow = 0;
+
+    long numRows = statistics.getNumRows();
+    if (numRows <= 0) {
+      numRows = 1;
+    }
+    long worstCaseNeededSlots = 1L << DoubleMath.log2(numRows / hashTableLoadFactor, RoundingMode.UP);
+
+    onlineDataSize += statistics.getDataSize();
+    onlineDataSize += memoryOverHeadPerRow * statistics.getNumRows();
+    onlineDataSize += 3 * 8 * worstCaseNeededSlots; // every slot is a long
+
+    return onlineDataSize;
+  }
+
+  public long computeOnlineDataSizeOptimized(Statistics statistics) {
     // The datastructure doing the actual storage during mapjoins has some per row overhead
     long onlineDataSize = 0;
     long memoryOverHeadPerRow = 0;
