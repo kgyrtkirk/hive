@@ -256,7 +256,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   }
 
   public long computeOnlineDataSizeFast2(Statistics statistics) {
-    return computeOnlineDataSizeX1(statistics,
+    return computeOnlineDataSizeGeneric(statistics,
         -8, // the long key is stored in a slot
         2 * 8 // maintenance structure consists of 2 longs
     );
@@ -265,7 +265,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   public long computeOnlineDataSizeFast3(Statistics statistics) {
     // The datastructure doing the actual storage during mapjoins has no per row orhead;
     // but uses a 192 bit wide table
-    return computeOnlineDataSizeX1(statistics,
+    return computeOnlineDataSizeGeneric(statistics,
         0, // key is stored in a bytearray
         3 * 8 // maintenance structure consists of 3 longs
     );
@@ -273,14 +273,14 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
   public long computeOnlineDataSizeOptimized(Statistics statistics) {
     // BytesBytesMultiHashMap
-    return computeOnlineDataSizeX1(statistics,
+    return computeOnlineDataSizeGeneric(statistics,
         2 * 6, // 2 offsets are stored using:  LazyBinaryUtils.writeVLongToByteArray
         8 // maintenance structure consists of 1 long
     );
   }
 
 
-  public long computeOnlineDataSizeX1(Statistics statistics, long overHeadPerRow, long overHeadPerSlot) {
+  public long computeOnlineDataSizeGeneric(Statistics statistics, long overHeadPerRow, long overHeadPerSlot) {
 
     long onlineDataSize = 0;
     long numRows = statistics.getNumRows();
