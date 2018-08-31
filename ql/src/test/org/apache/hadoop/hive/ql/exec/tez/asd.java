@@ -18,9 +18,15 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+import java.lang.reflect.Method;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.VectorMapJoinFastTableContainer;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
@@ -29,58 +35,62 @@ import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationT
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKind;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 import org.apache.hadoop.io.BytesWritable;
 import org.junit.Test;
 import org.openjdk.jol.info.GraphLayout;
-
-import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class asd {
 
+  long keyCount = 15_000_000;
+
+  private static final Logger LOG = LoggerFactory.getLogger(asd.class.getName());
+
   @Test
   public void checkFast2estimations() throws Exception {
+      runEstimationCheck(HashTableKeyType.LONG);
+  }
+
+  @Test
+  public void checkFast3estimations() throws Exception {
+    //    runEstimationCheck(HashTableKeyType.MULTI_KEY);
+  }
+
+  private void runEstimationCheck(HashTableKeyType l) throws SerDeException, IOException, HiveException {
     MapJoinDesc desc = new MapJoinDesc();
     VectorMapJoinDesc vectorDesc = new VectorMapJoinDesc();
-    vectorDesc.setHashTableKeyType(HashTableKeyType.LONG);
-    //    vectorDesc.setHashTableKeyType(HashTableKeyType.MULTI_KEY);
+    vectorDesc.setHashTableKeyType(l);
     vectorDesc.setIsFastHashTableEnabled(true);
     vectorDesc.setHashTableImplementationType(HashTableImplementationType.FAST);
-    //    vectorDesc.setHashTableKind(HashTableKind.HASH_MAP);
     vectorDesc.setHashTableKind(HashTableKind.HASH_MAP);
     desc.setVectorDesc(vectorDesc);
     Configuration hconf = new HiveConf();
-    long keyCount = 10_000_000;
     VectorMapJoinFastTableContainer container = new VectorMapJoinFastTableContainer(desc, hconf, keyCount);
 
     container.setSerde(null, null);
 
-
     long dataSize = 0;
-    //    ByteBuffer.allocate(8);
 
-
-    BinarySortableSerializeWrite nsw = new BinarySortableSerializeWrite(1);
+    BinarySortableSerializeWrite bsw = new BinarySortableSerializeWrite(1);
 
     Output outp = new Output();
-    Output outp2 = new Output();
     BytesWritable key = new BytesWritable();
     BytesWritable value = new BytesWritable();
     for (int i = 0; i < keyCount; i++) {
-      nsw.set(outp);
-      nsw.writeLong(i);
-      nsw.set(outp2);
-      nsw.writeLong(i * 2);
-
+      bsw.set(outp);
+      bsw.writeLong(i);
       key = new BytesWritable(outp.getData(), outp.getLength());
-      value = new BytesWritable(outp2.getData(), outp2.getLength());
+      bsw.set(outp);
+      bsw.writeLong(i * 2);
+      value = new BytesWritable(outp.getData(), outp.getLength());
 
       container.putRow(key, value);
       dataSize += 8;
       dataSize += 8;
     }
-
-    //    new Vecor
 
     GraphLayout x = GraphLayout.parseInstance(container); //    LOG.info("FFFF");
     System.out.println(x.toFootprint());
@@ -89,20 +99,48 @@ public class asd {
     Statistics stat = new Statistics(keyCount, dataSize, 0);
     ConvertJoinMapJoin cjm = new ConvertJoinMapJoin();
     cjm.hashTableLoadFactor = .75f;
-    long est = cjm.computeOnlineDataSize(stat);
-    long estO = cjm.computeOnlineDataSizeOptimized(stat);
 
-    System.out.println("compilerF2:" + cjm.computeOnlineDataSizeFast2(stat));
-    System.out.println("compilerF3:" + cjm.computeOnlineDataSizeFast3(stat));
-    System.out.println("compilerO:" + cjm.computeOnlineDataSizeOptimized(stat));
-    long s = ObjectSizeCalculator.getObjectSize(container);
-    System.out.println("osc:" + s);
+    Long realObjectSize = getObjectSize(container);
+    Long executionEstimate = container.getEstimatedMemorySize();
+    Long compilerEstimate = null;
 
-    //    LOG.info(x.toFootprint());
-    //    LOG.info("Finished loading hash table for input: {} cacheKey: {} numEntries: {} " +
-    //        "estimatedMemoryUsage: {}", inputName, cacheKey, numEntries,
-    //        vectorMapJoinFastTableContainer.getEstimatedMemorySize());
+    switch (l) {
+    case MULTI_KEY:
+      compilerEstimate = cjm.computeOnlineDataSizeFast3(stat);
+      break;
+    case LONG:
+      compilerEstimate = cjm.computeOnlineDataSizeFast2(stat);
+      break;
+    }
+    LOG.info("realObjectSize: {}", realObjectSize);
+    LOG.info("executionEstimate : {}", executionEstimate);
+    LOG.info("compilerEstimate: {}", compilerEstimate);
+
+    checkRelativeError(realObjectSize, executionEstimate, .05);
+    checkRelativeError(realObjectSize, compilerEstimate, .05);
+    checkRelativeError(compilerEstimate, executionEstimate, .05);
+
   }
 
+  private void checkRelativeError(Long v1, Long v2, double err) {
+    if (v1 == null || v2 == null) {
+      return;
+    }
+    double d = (double) v1 / v2;
+    assertEquals("error is outside of tolerance margin", 1.0, d, err);
+  }
+
+  // jdk.nashorn.internal.ir.debug.ObjectSizeCalculator is only present in hotspot
+  private Long getObjectSize(Object o) {
+    try {
+      Class<?> clazz = Class.forName("jdk.nashorn.internal.ir.debug.ObjectSizeCalculator");
+      Method method = clazz.getMethod("getObjectSize", Object.class);
+      long l = (long) method.invoke(null, o);
+      return l;
+    } catch (Exception e) {
+      LOG.warn("Nashorn estimator not found", e);
+      return null;
+    }
+  }
 
 }
