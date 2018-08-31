@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.nio.ByteBuffer;
-import java.nio.LongBuffer;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.VectorMapJoinFastTableContainer;
@@ -42,7 +39,7 @@ import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 public class asd {
 
   @Test
-  public void a() throws Exception {
+  public void checkFast2estimations() throws Exception {
     MapJoinDesc desc = new MapJoinDesc();
     VectorMapJoinDesc vectorDesc = new VectorMapJoinDesc();
     vectorDesc.setHashTableKeyType(HashTableKeyType.LONG);
@@ -54,7 +51,6 @@ public class asd {
     desc.setVectorDesc(vectorDesc);
     Configuration hconf = new HiveConf();
     long keyCount = 10_000_000;
-    //    MapJoinBytesTableContainer container = new MapJoinBytesTableContainer(hconf, null, keyCount, 11111l);
     VectorMapJoinFastTableContainer container = new VectorMapJoinFastTableContainer(desc, hconf, keyCount);
 
     container.setSerde(null, null);
@@ -62,30 +58,26 @@ public class asd {
 
     long dataSize = 0;
     //    ByteBuffer.allocate(8);
-    BytesWritable value = new BytesWritable("123456789".getBytes());
-    LongBuffer lb = LongBuffer.allocate(1);
 
-    byte b[] = new byte[8];
-    ByteBuffer bb = ByteBuffer.wrap(b);
 
     BinarySortableSerializeWrite nsw = new BinarySortableSerializeWrite(1);
 
     Output outp = new Output();
     Output outp2 = new Output();
+    BytesWritable key = new BytesWritable();
+    BytesWritable value = new BytesWritable();
     for (int i = 0; i < keyCount; i++) {
       nsw.set(outp);
       nsw.writeLong(i);
       nsw.set(outp2);
       nsw.writeLong(i * 2);
 
-      //      nsw.
-      //      bb.rewind();
-//      bb.putLong(i);
-      BytesWritable key = new BytesWritable(outp.getData());
-      value = new BytesWritable(outp2.getData());
+      key = new BytesWritable(outp.getData(), outp.getLength());
+      value = new BytesWritable(outp2.getData(), outp2.getLength());
+
       container.putRow(key, value);
-      dataSize += key.getLength();
-      dataSize += 8;//value.getLength();
+      dataSize += 8;
+      dataSize += 8;
     }
 
     //    new Vecor
