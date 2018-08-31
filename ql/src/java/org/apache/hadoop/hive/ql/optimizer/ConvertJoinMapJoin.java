@@ -86,7 +86,7 @@ import com.google.common.math.DoubleMath;
 public class ConvertJoinMapJoin implements NodeProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(ConvertJoinMapJoin.class.getName());
-  private float hashTableLoadFactor;
+  public float hashTableLoadFactor;
   private long maxJoinMemory;
 
   @Override
@@ -251,7 +251,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return false;
   }
 
-  private long computeOnlineDataSize(Statistics statistics) {
+  public long computeOnlineDataSize(Statistics statistics) {
     // The datastructure doing the actual storage during mapjoins has some per row overhead
     long onlineDataSize = 0;
     long memoryOverHeadPerRow = 0;

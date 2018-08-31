@@ -8,8 +8,8 @@ create external table t_good0 (id bigint,str bigint,s2 double)
         stored as textfile
         TBLPROPERTIES('transactional'='false');
 
-LOAD DATA LOCAL INPATH '../../data/files/I100M2.data.txt' INTO TABLE t_bad0;
-LOAD DATA LOCAL INPATH '../../data/files/I100M2.data.txt' INTO TABLE t_good0;
+LOAD DATA LOCAL INPATH '../../../hwx/data/files/I100M2.data.txt' INTO TABLE t_bad0;
+LOAD DATA LOCAL INPATH '../../../hwx/data/files/I100M2.data.txt' INTO TABLE t_good0;
 
 set hive.mapred.mode=nonstrict;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
