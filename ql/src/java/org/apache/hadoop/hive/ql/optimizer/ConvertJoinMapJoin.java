@@ -252,6 +252,10 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   }
 
   public long computeOnlineDataSize(Statistics statistics) {
+    return computeOnlineDataSizeFast(statistics);
+  }
+
+  public long computeOnlineDataSizeFast(Statistics statistics) {
     // The datastructure doing the actual storage during mapjoins has no per row orhead;
     // but uses a 192 bit wide table
     long onlineDataSize = 0;
