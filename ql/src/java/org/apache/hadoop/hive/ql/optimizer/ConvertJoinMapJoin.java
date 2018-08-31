@@ -258,7 +258,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   public long computeOnlineDataSizeFast2(Statistics statistics) {
     return computeOnlineDataSizeX1(statistics,
         -8, // the long key is stored in a slot
-        2 * 8 // maintenance sturcture consists of 2 longs
+        2 * 8 // maintenance structure consists of 2 longs
     );
   }
 
@@ -267,14 +267,15 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // but uses a 192 bit wide table
     return computeOnlineDataSizeX1(statistics,
         0, // key is stored in a bytearray
-        3 * 8 // maintenance sturcture consists of 3 longs
+        3 * 8 // maintenance structure consists of 3 longs
     );
   }
 
   public long computeOnlineDataSizeOptimized(Statistics statistics) {
+    // BytesBytesMultiHashMap
     return computeOnlineDataSizeX1(statistics,
         2 * 6, // 2 offsets are stored using:  LazyBinaryUtils.writeVLongToByteArray
-        8 // maintenance sturcture consists of 3 longs
+        8 // maintenance structure consists of 1 long
     );
   }
 

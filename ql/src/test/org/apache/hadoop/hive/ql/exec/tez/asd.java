@@ -70,9 +70,9 @@ public class asd {
 
     BinarySortableSerializeWrite nsw = new BinarySortableSerializeWrite(1);
 
+    Output outp = new Output();
+    Output outp2 = new Output();
     for (int i = 0; i < keyCount; i++) {
-      Output outp = new Output();
-      Output outp2 = new Output();
       nsw.set(outp);
       nsw.writeLong(i);
       nsw.set(outp2);
