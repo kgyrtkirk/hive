@@ -24,15 +24,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.llap.LlapDaemonInfo;
-import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
-import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
+import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
+import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
 import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableConf;
@@ -53,6 +51,8 @@ import org.apache.hadoop.io.Writable;
 import org.apache.tez.runtime.api.Input;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.library.api.KeyValueReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HashTableLoader for Tez constructs the hashtable from records read from
@@ -66,6 +66,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
   private MapJoinDesc desc;
   private TezContext tezContext;
   private String cacheKey;
+  private Map<String, Long> operatorStatsMap;
 
   @Override
   public void init(ExecMapperContext context, MapredContext mrContext, Configuration hconf,
@@ -74,6 +75,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     this.hconf = hconf;
     this.desc = joinOp.getConf();
     this.cacheKey = joinOp.getCacheKey();
+    this.operatorStatsMap = joinOp.getStats();
   }
 
   @Override
@@ -247,6 +249,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
               String msg = "Hash table loading exceeded memory limits for input: " + inputName +
                 " numEntries: " + numEntries + " estimatedMemoryUsage: " + estMemUsage +
                 " effectiveThreshold: " + effectiveThreshold + " memoryMonitorInfo: " + memoryMonitorInfo;
+              publishCounters(inputName, numEntries, estMemUsage, effectiveThreshold);
               LOG.error(msg);
               throw new MapJoinMemoryExhaustionError(msg);
             } else {
@@ -260,17 +263,27 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         }
         tableContainer.seal();
         mapJoinTables[pos] = tableContainer;
+        final long estMemUsage = tableContainer.getEstimatedMemorySize();
         if (doMemCheck) {
           LOG.info("Finished loading hash table for input: {} cacheKey: {} numEntries: {} estimatedMemoryUsage: {}",
-            inputName, cacheKey, numEntries, tableContainer.getEstimatedMemorySize());
+              inputName, cacheKey, numEntries, estMemUsage);
+          publishCounters(inputName, numEntries, estMemUsage, effectiveThreshold);
         } else {
           LOG.info("Finished loading hash table for input: {} cacheKey: {} numEntries: {}", inputName, cacheKey,
             numEntries);
+          publishCounters(inputName, numEntries, estMemUsage, effectiveThreshold);
         }
       } catch (Exception e) {
         throw new HiveException(e);
       }
     }
+  }
+
+  private void publishCounters(String inputName, long numEntries, long estMemUsage, long effectiveThreshold) {
+    String prefix = cacheKey;
+    operatorStatsMap.put(prefix + "_NUM_ENTRIES", numEntries);
+    operatorStatsMap.put(prefix + "_EST_MEM_USAGE", estMemUsage);
+    operatorStatsMap.put(prefix + "_EFFECTIVE_THRESHOLD", effectiveThreshold);
   }
 
   private static Map<Integer, Long> divideHybridHashTableMemory(
