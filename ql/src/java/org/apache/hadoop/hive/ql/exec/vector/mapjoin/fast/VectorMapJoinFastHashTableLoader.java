@@ -21,12 +21,15 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
@@ -38,9 +41,6 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.tez.runtime.api.Input;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.library.api.KeyValueReader;
-import org.openjdk.jol.info.GraphLayout;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * HashTableLoader for Tez constructs the hashtable from records read from
@@ -151,9 +151,6 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
         vectorMapJoinFastTableContainer.seal();
         mapJoinTables[pos] = vectorMapJoinFastTableContainer;
         if (doMemCheck) {
-          GraphLayout x = GraphLayout.parseInstance(vectorMapJoinFastTableContainer);
-          LOG.info("FFFF");
-          LOG.info(x.toFootprint());
           LOG.info("Finished loading hash table for input: {} cacheKey: {} numEntries: {} " +
               "estimatedMemoryUsage: {}", inputName, cacheKey, numEntries,
             vectorMapJoinFastTableContainer.getEstimatedMemorySize());
