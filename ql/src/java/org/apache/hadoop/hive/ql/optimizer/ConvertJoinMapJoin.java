@@ -68,6 +68,9 @@ import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +91,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(ConvertJoinMapJoin.class.getName());
   public float hashTableLoadFactor;
   private long maxJoinMemory;
+  private HashMapDataStructureType hashMapDataStructure;
 
   @Override
   /*
@@ -115,6 +119,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     maxJoinMemory = memoryMonitorInfo.getAdjustedNoConditionalTaskSize();
 
     LOG.info("maxJoinMemory: {}", maxJoinMemory);
+
+    hashMapDataStructure = HashMapDataStructureType.of(joinOp.getConf());
 
     TezBucketJoinProcCtx tezBucketJoinProcCtx = new TezBucketJoinProcCtx(context.conf);
     boolean hiveConvertJoin = context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) &
@@ -193,6 +199,30 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return null;
   }
 
+  private enum HashMapDataStructureType {
+    COMPOSITE_KEYED, LONG_KEYED;
+
+    public static HashMapDataStructureType of(JoinDesc conf) {
+      ExprNodeDesc[][] keys = conf.getJoinKeys();
+      if (keys[0].length == 1) {
+        TypeInfo typeInfo = keys[0][0].getTypeInfo();
+        if (typeInfo instanceof PrimitiveTypeInfo) {
+          PrimitiveTypeInfo pti = ((PrimitiveTypeInfo) typeInfo);
+          PrimitiveCategory pCat = pti.getPrimitiveCategory();
+          switch (pCat) {
+          case BOOLEAN:
+          case BYTE:
+          case SHORT:
+          case INT:
+          case LONG:
+            return HashMapDataStructureType.LONG_KEYED;
+          }
+        }
+      }
+      return HashMapDataStructureType.COMPOSITE_KEYED;
+    }
+  }
+
   private boolean selectJoinForLlap(OptimizeTezProcContext context, JoinOperator joinOp,
                           TezBucketJoinProcCtx tezBucketJoinProcCtx,
                           LlapClusterStateForCompile llapInfo,
@@ -252,7 +282,22 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   }
 
   public long computeOnlineDataSize(Statistics statistics) {
-    return computeOnlineDataSizeFast3(statistics);
+    boolean haveFastDS = true;
+    long estimate = 0;
+    if (haveFastDS) {
+      switch (hashMapDataStructure) {
+      case LONG_KEYED:
+        estimate = computeOnlineDataSizeFast2(statistics);
+        break;
+      case COMPOSITE_KEYED:
+
+        estimate = computeOnlineDataSizeFast3(statistics);
+        break;
+      }
+    } else {
+      estimate = computeOnlineDataSizeOptimized(statistics);
+    }
+    return estimate;
   }
 
   public long computeOnlineDataSizeFast2(Statistics statistics) {
