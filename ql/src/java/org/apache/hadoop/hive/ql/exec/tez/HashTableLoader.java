@@ -24,13 +24,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
 import org.apache.hadoop.hive.ql.exec.persistence.HybridHashTableConf;
@@ -51,9 +53,6 @@ import org.apache.hadoop.io.Writable;
 import org.apache.tez.runtime.api.Input;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.library.api.KeyValueReader;
-import org.openjdk.jol.info.GraphLayout;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * HashTableLoader for Tez constructs the hashtable from records read from
@@ -262,10 +261,6 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         tableContainer.seal();
         mapJoinTables[pos] = tableContainer;
         if (doMemCheck) {
-          GraphLayout x = GraphLayout.parseInstance(tableContainer);
-          LOG.info("FFFF");
-          LOG.info(x.toFootprint());
-
           LOG.info("Finished loading hash table for input: {} cacheKey: {} numEntries: {} estimatedMemoryUsage: {}",
             inputName, cacheKey, numEntries, tableContainer.getEstimatedMemorySize());
         } else {
