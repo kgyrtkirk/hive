@@ -98,14 +98,14 @@ STAGE PLANS:
                       Statistics: Num rows: 287946 Data size: 32999156 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col1), count(_col1)
-                        keys: 410 (type: int)
+                        keys: true (type: boolean)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 258 Data size: 31992 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
-                          key expressions: _col0 (type: int)
+                          key expressions: _col0 (type: boolean)
                           sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
+                          Map-reduce partition columns: _col0 (type: boolean)
                           Statistics: Num rows: 258 Data size: 31992 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
             Execution mode: vectorized
@@ -116,7 +116,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
-                keys: KEY._col0 (type: int)
+                keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
@@ -172,7 +172,6 @@ STAGE PLANS:
                     predicate: i_item_sk is not null (type: boolean)
                     Statistics: Num rows: 462000 Data size: 51282000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-<<<<<<< HEAD
                       expressions: i_item_sk (type: int), i_product_name (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 462000 Data size: 51282000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -194,58 +193,6 @@ STAGE PLANS:
             Local Work:
               Map Reduce Local Work
         Reducer 4 
-=======
-                      expressions: ss_net_profit (type: decimal(7,2))
-                      outputColumnNames: _col1
-                      Statistics: Num rows: 143998908 Data size: 12703625455 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: sum(_col1), count(_col1)
-                        keys: true (type: boolean)
-                        mode: hash
-                        outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 143998908 Data size: 12703625455 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: boolean)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: boolean)
-                          Statistics: Num rows: 143998908 Data size: 12703625455 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
-            Execution mode: vectorized
-        Reducer 10 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: sum(VALUE._col0), count(VALUE._col1)
-                keys: KEY._col0 (type: boolean)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 71999454 Data size: 6351812727 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: (_col1 / _col2) (type: decimal(37,22))
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 71999454 Data size: 6351812727 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 71999454 Data size: 6351812727 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: decimal(37,22))
-        Reducer 12 
-            Reduce Operator Tree:
-              Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col1, _col3
-                Statistics: Num rows: 1267180808338276 Data size: 224849298143006048 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col3 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: _col3 (type: int)
-                  Statistics: Num rows: 1267180808338276 Data size: 224849298143006048 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: string)
-        Reducer 14 
->>>>>>> asf/master
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -372,26 +319,8 @@ STAGE PLANS:
                               TopN Hash Memory Usage: 0.1
                               value expressions: _col1 (type: string), _col2 (type: string)
             Execution mode: vectorized
-<<<<<<< HEAD
             Local Work:
               Map Reduce Local Work
-=======
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: sum(VALUE._col0), count(VALUE._col1)
-                keys: KEY._col0 (type: boolean)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 71999454 Data size: 6351812727 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: (_col1 / _col2) (type: decimal(37,22))
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 71999454 Data size: 6351812727 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 71999454 Data size: 6351812727 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: decimal(37,22))
->>>>>>> asf/master
         Reducer 2 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -431,14 +360,14 @@ STAGE PLANS:
                       Statistics: Num rows: 287946 Data size: 32999156 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col1), count(_col1)
-                        keys: 410 (type: int)
+                        keys: true (type: boolean)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 258 Data size: 31992 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
-                          key expressions: _col0 (type: int)
+                          key expressions: _col0 (type: boolean)
                           sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
+                          Map-reduce partition columns: _col0 (type: boolean)
                           Statistics: Num rows: 258 Data size: 31992 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
             Execution mode: vectorized
@@ -449,7 +378,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
-                keys: KEY._col0 (type: int)
+                keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE

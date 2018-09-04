@@ -119,75 +119,40 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 8 vectorized
-<<<<<<< ours
-      File Output Operator [FS_334]
-        Limit [LIM_333] (rows=100 width=88)
+      File Output Operator [FS_324]
+        Limit [LIM_323] (rows=100 width=658)
           Number of rows:100
-          Select Operator [SEL_332] (rows=843315280 width=88)
-=======
-      File Output Operator [FS_310]
-        Limit [LIM_309] (rows=100 width=658)
-          Number of rows:100
-          Select Operator [SEL_308] (rows=301730 width=658)
->>>>>>> theirs
+          Select Operator [SEL_322] (rows=301730 width=658)
             Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
           <-Reducer 7 [SIMPLE_EDGE]
             SHUFFLE [RS_108]
               Select Operator [SEL_107] (rows=301730 width=658)
                 Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
-<<<<<<< ours
-                Merge Join Operator [MERGEJOIN_279] (rows=843315280 width=88)
-                  Conds:RS_320._col0, _col1, _col2, _col3, (_col5 + 1)=RS_331._col0, _col1, _col2, _col3, _col8(Inner),RS_331._col0, _col1, _col2, _col3, _col8=RS_315._col0, _col1, _col2, _col3, (_col5 - 1)(Inner),Output:["_col4","_col6","_col10","_col11","_col12","_col13","_col19"]
-                <-Reducer 11 [SIMPLE_EDGE] vectorized
-                  SHUFFLE [RS_331]
-                    PartitionCols:_col0, _col1, _col2, _col3, _col8
-                    Select Operator [SEL_330] (rows=31943759 width=88)
-                      Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
-                      Filter Operator [FIL_329] (rows=31943759 width=88)
-                        predicate:CASE WHEN ((_col0 > 0)) THEN (((abs((_col7 - _col0)) / _col0) > 0.1)) ELSE (null) END
-                        Select Operator [SEL_328] (rows=63887519 width=88)
-                          Output:["rank_window_1","_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
-                          Filter Operator [FIL_327] (rows=63887519 width=88)
-                            predicate:((_col0 > 0) and (_col1 = 2000) and rank_window_1 is not null)
-                            PTF Operator [PTF_326] (rows=383325119 width=88)
-                              Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST, _col2 ASC NULLS FIRST","partition by:":"_col4, _col3, _col5, _col6"}]
-                              Select Operator [SEL_325] (rows=383325119 width=88)
-                                Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
-                              <-Reducer 10 [SIMPLE_EDGE] vectorized
-                                SHUFFLE [RS_324]
-                                  PartitionCols:_col3, _col2, _col4, _col5
-                                  Select Operator [SEL_323] (rows=383325119 width=88)
-                                    Output:["avg_window_0","_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-                                    PTF Operator [PTF_322] (rows=383325119 width=88)
-                                      Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col3 ASC NULLS FIRST, _col2 ASC NULLS FIRST, _col4 ASC NULLS FIRST, _col5 ASC NULLS FIRST, _col0 ASC NULLS FIRST","partition by:":"_col3, _col2, _col4, _col5, _col0"}]
-                                      Select Operator [SEL_321] (rows=383325119 width=88)
-=======
                 Merge Join Operator [MERGEJOIN_279] (rows=301730 width=546)
-                  Conds:RS_103._col0, _col1, _col2, _col3, (_col5 + 1)=RS_104._col0, _col1, _col2, _col3, _col8(Inner),RS_104._col0, _col1, _col2, _col3, _col8=RS_105._col0, _col1, _col2, _col3, (_col5 - 1)(Inner),Output:["_col4","_col6","_col10","_col11","_col12","_col13","_col19"]
-                <-Reducer 11 [SIMPLE_EDGE]
-                  SHUFFLE [RS_104]
+                  Conds:RS_310._col0, _col1, _col2, _col3, (_col5 + 1)=RS_321._col0, _col1, _col2, _col3, _col8(Inner),RS_321._col0, _col1, _col2, _col3, _col8=RS_305._col0, _col1, _col2, _col3, (_col5 - 1)(Inner),Output:["_col4","_col6","_col10","_col11","_col12","_col13","_col19"]
+                <-Reducer 11 [SIMPLE_EDGE] vectorized
+                  SHUFFLE [RS_321]
                     PartitionCols:_col0, _col1, _col2, _col3, _col8
-                    Select Operator [SEL_67] (rows=301730 width=605)
+                    Select Operator [SEL_320] (rows=301730 width=605)
                       Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
-                      Filter Operator [FIL_169] (rows=301730 width=605)
+                      Filter Operator [FIL_319] (rows=301730 width=605)
                         predicate:CASE WHEN ((_col0 > 0)) THEN (((abs((_col7 - _col0)) / _col0) > 0.1)) ELSE (null) END
-                        Select Operator [SEL_66] (rows=603460 width=601)
+                        Select Operator [SEL_318] (rows=603460 width=601)
                           Output:["rank_window_1","_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
-                          Filter Operator [FIL_170] (rows=603460 width=601)
+                          Filter Operator [FIL_317] (rows=603460 width=601)
                             predicate:((_col0 > 0) and (_col1 = 2000) and rank_window_1 is not null)
-                            PTF Operator [PTF_65] (rows=202762560 width=601)
+                            PTF Operator [PTF_316] (rows=202762560 width=601)
                               Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST, _col2 ASC NULLS FIRST","partition by:":"_col4, _col3, _col5, _col6"}]
-                              Select Operator [SEL_64] (rows=202762560 width=601)
+                              Select Operator [SEL_315] (rows=202762560 width=601)
                                 Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
                               <-Reducer 10 [SIMPLE_EDGE] vectorized
-                                SHUFFLE [RS_306]
+                                SHUFFLE [RS_314]
                                   PartitionCols:_col3, _col2, _col4, _col5
-                                  Select Operator [SEL_305] (rows=202762560 width=489)
+                                  Select Operator [SEL_313] (rows=202762560 width=489)
                                     Output:["avg_window_0","_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-                                    PTF Operator [PTF_304] (rows=202762560 width=489)
+                                    PTF Operator [PTF_312] (rows=202762560 width=489)
                                       Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col3 ASC NULLS FIRST, _col2 ASC NULLS FIRST, _col4 ASC NULLS FIRST, _col5 ASC NULLS FIRST, _col0 ASC NULLS FIRST","partition by:":"_col3, _col2, _col4, _col5, _col0"}]
-                                      Select Operator [SEL_303] (rows=202762560 width=489)
->>>>>>> theirs
+                                      Select Operator [SEL_311] (rows=202762560 width=489)
                                         Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
                                       <-Reducer 5 [SIMPLE_EDGE] vectorized
                                         SHUFFLE [RS_300]
@@ -258,80 +223,31 @@ Stage-0
                                                                           Select Operator [SEL_283] (rows=752 width=4)
                                                                             Output:["_col0"]
                                                                              Please refer to the previous Select Operator [SEL_281]
-<<<<<<< ours
-                                                                <-Reducer 15 [BROADCAST_EDGE] vectorized
-                                                                  BROADCAST [RS_295]
-                                                                    Group By Operator [GBY_294] (rows=1 width=12)
-                                                                      Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
-                                                                    <-Map 14 [CUSTOM_SIMPLE_EDGE] vectorized
-                                                                      SHUFFLE [RS_293]
-                                                                        Group By Operator [GBY_292] (rows=1 width=12)
-                                                                          Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                                                          Select Operator [SEL_291] (rows=462000 width=1436)
-                                                                            Output:["_col0"]
-                                                                             Please refer to the previous Select Operator [SEL_289]
-                                                                <-Reducer 17 [BROADCAST_EDGE] vectorized
-                                                                  BROADCAST [RS_303]
-                                                                    Group By Operator [GBY_302] (rows=1 width=12)
-                                                                      Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
-                                                                    <-Map 16 [CUSTOM_SIMPLE_EDGE] vectorized
-                                                                      SHUFFLE [RS_301]
-                                                                        Group By Operator [GBY_300] (rows=1 width=12)
-                                                                          Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                                                          Select Operator [SEL_299] (rows=1704 width=1910)
-                                                                            Output:["_col0"]
-                                                                             Please refer to the previous Select Operator [SEL_297]
                 <-Reducer 6 [SIMPLE_EDGE] vectorized
-                  SHUFFLE [RS_315]
+                  SHUFFLE [RS_305]
                     PartitionCols:_col0, _col1, _col2, _col3, (_col5 - 1)
-                    Select Operator [SEL_314] (rows=383325119 width=88)
+                    Select Operator [SEL_304] (rows=202762560 width=485)
                       Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-                      Filter Operator [FIL_313] (rows=383325119 width=88)
+                      Filter Operator [FIL_303] (rows=202762560 width=489)
                         predicate:rank_window_0 is not null
-                        PTF Operator [PTF_312] (rows=383325119 width=88)
+                        PTF Operator [PTF_302] (rows=202762560 width=489)
                           Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST","partition by:":"_col3, _col2, _col4, _col5"}]
-                          Select Operator [SEL_311] (rows=383325119 width=88)
-=======
-                <-Reducer 6 [SIMPLE_EDGE]
-                  SHUFFLE [RS_105]
-                    PartitionCols:_col0, _col1, _col2, _col3, (_col5 - 1)
-                    Select Operator [SEL_99] (rows=202762560 width=485)
-                      Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-                      Filter Operator [FIL_175] (rows=202762560 width=489)
-                        predicate:rank_window_0 is not null
-                        PTF Operator [PTF_98] (rows=202762560 width=489)
-                          Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST","partition by:":"_col3, _col2, _col4, _col5"}]
-                          Select Operator [SEL_97] (rows=202762560 width=489)
->>>>>>> theirs
+                          Select Operator [SEL_301] (rows=202762560 width=489)
                             Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
                           <-Reducer 5 [SIMPLE_EDGE] vectorized
                             SHUFFLE [RS_298]
                               PartitionCols:_col3, _col2, _col4, _col5
-<<<<<<< ours
-                               Please refer to the previous Group By Operator [GBY_307]
-                <-Reducer 9 [SIMPLE_EDGE] vectorized
-                  SHUFFLE [RS_320]
-                    PartitionCols:_col0, _col1, _col2, _col3, (_col5 + 1)
-                    Select Operator [SEL_319] (rows=383325119 width=88)
-                      Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-                      Filter Operator [FIL_318] (rows=383325119 width=88)
-                        predicate:rank_window_0 is not null
-                        PTF Operator [PTF_317] (rows=383325119 width=88)
-                          Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST","partition by:":"_col3, _col2, _col4, _col5"}]
-                          Select Operator [SEL_316] (rows=383325119 width=88)
-=======
                                Please refer to the previous Group By Operator [GBY_297]
-                <-Reducer 9 [SIMPLE_EDGE]
-                  SHUFFLE [RS_103]
+                <-Reducer 9 [SIMPLE_EDGE] vectorized
+                  SHUFFLE [RS_310]
                     PartitionCols:_col0, _col1, _col2, _col3, (_col5 + 1)
-                    Select Operator [SEL_29] (rows=202762560 width=485)
+                    Select Operator [SEL_309] (rows=202762560 width=485)
                       Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-                      Filter Operator [FIL_164] (rows=202762560 width=489)
+                      Filter Operator [FIL_308] (rows=202762560 width=489)
                         predicate:rank_window_0 is not null
-                        PTF Operator [PTF_28] (rows=202762560 width=489)
+                        PTF Operator [PTF_307] (rows=202762560 width=489)
                           Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST","partition by:":"_col3, _col2, _col4, _col5"}]
-                          Select Operator [SEL_27] (rows=202762560 width=489)
->>>>>>> theirs
+                          Select Operator [SEL_306] (rows=202762560 width=489)
                             Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
                           <-Reducer 5 [SIMPLE_EDGE] vectorized
                             SHUFFLE [RS_299]
