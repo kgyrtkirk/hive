@@ -92,8 +92,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   public float hashTableLoadFactor;
   private long maxJoinMemory;
   private HashMapDataStructureType hashMapDataStructure;
-  private boolean fastDSEnabled;
-  private boolean enableFastDS;
+  private boolean fastHashTableAvailable;
+  private boolean useFastHashTable;
 
   @Override
   /*
@@ -108,7 +108,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     OptimizeTezProcContext context = (OptimizeTezProcContext) procCtx;
 
     hashTableLoadFactor = context.conf.getFloatVar(ConfVars.HIVEHASHTABLELOADFACTOR);
-    fastDSEnabled = context.conf.getBoolVar(ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_FAST_HASHTABLE_ENABLED);
+    fastHashTableAvailable = context.conf.getBoolVar(ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_FAST_HASHTABLE_ENABLED);
 
     JoinOperator joinOp = (JoinOperator) nd;
     // adjust noconditional task size threshold for LLAP
@@ -294,7 +294,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
   public long computeOnlineDataSize(Statistics statistics) {
     long estimate = computeOnlineDataSizeOptimized(statistics);
-    if (fastDSEnabled) {
+    if (fastHashTableAvailable) {
       estimate = Long.min(estimate, computeOnlineDataSizeFast(statistics));
     }
     return estimate;
@@ -1086,7 +1086,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // which is calculated as totalSize/buckets, with totalSize
     // equal to sum of small tables size.
     joinOp.getConf().setInMemoryDataSize(totalSize / buckets);
-    enableFastDS = (totalSizeFast / buckets <= maxJoinMemory);
+    useFastHashTable = (totalSizeFast / buckets <= maxJoinMemory);
 
     return bigTablePosition;
   }
@@ -1157,7 +1157,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     if (joinExprs.size() == 0) {  // In case of cross join, we disable hybrid grace hash join
       mapJoinOp.getConf().setHybridHashJoin(false);
     }
-    mapJoinOp.getConf().setUseFastHashTables(enableFastDS);
+    mapJoinOp.getConf().setUseFastHashTables(fastHashTableAvailable && useFastHashTable);
 
     Operator<? extends OperatorDesc> parentBigTableOp =
         mapJoinOp.getParentOperators().get(bigTablePosition);
