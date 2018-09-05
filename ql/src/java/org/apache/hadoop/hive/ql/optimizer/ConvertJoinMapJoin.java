@@ -171,6 +171,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       return null;
     }
 
+    mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, numBuckets, false, maxJoinMemory, true);
     if (numBuckets > 1) {
       if (context.conf.getBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ)) {
         // Check if we are in LLAP, if so it needs to be determined if we should use BMJ or DPHJ
