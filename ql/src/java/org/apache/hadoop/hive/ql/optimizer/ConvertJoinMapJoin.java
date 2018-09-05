@@ -915,58 +915,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return true;
   }
 
-  class MapJoinCandidate {
-
-    private int pos;
-    private Operator<? extends OperatorDesc> parentOp;
-    private Statistics stat;
-    private long onlineSize;
-
-    public MapJoinCandidate(int pos, Operator<? extends OperatorDesc> parentOp, long maxSize, int buckets) {
-      this.pos = pos;
-      this.parentOp = parentOp;
-
-      stat = parentOp.getStatistics();
-      if (stat == null) {
-        LOG.warn("Couldn't get statistics from: " + parentOp);
-        return;
-      }
-      onlineSize = computeOnlineDataSize(stat);
-
-      LOG.info("Join input#{}; onlineDataSize: {}; Statistics: {}", pos, onlineSize, stat);
-
-      boolean fitsIntoMemory = (onlineSize / buckets) <= maxSize;
-      boolean currentInputNotFittingInMemory = false;
-
-      if ((bigInputStat == null)
-          || (inputSize > computeOnlineDataSize(bigInputStat))) {
-
-        if (foundInputNotFittingInMemory) {
-          // cannot convert to map join; we've already chosen a big table
-          // on size and there's another one that's bigger.
-          return -1;
-        }
-
-        if (inputSize / buckets > maxSize) {
-          if (!bigTableCandidateSet.contains(pos)) {
-            // can't use the current table as the big table, but it's too
-            // big for the map side.
-            return -1;
-          }
-
-          currentInputNotFittingInMemory = true;
-          foundInputNotFittingInMemory = true;
-        }
-      }
-
-    }
-
-    boolean isValid() {
-      return stat != null;
-    }
-
-  }
-
   /**
    * Obtain big table position for join.
    *
@@ -1015,12 +963,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // convert to DPHJ
     boolean convertDPHJ = false;
 
-    List<MapJoinCandidate> candidates = new ArrayList();
     for (int pos = 0; pos < joinOp.getParentOperators().size(); pos++) {
       Operator<? extends OperatorDesc> parentOp = joinOp.getParentOperators().get(pos);
-
-      MapJoinCandidate mjc = new MapJoinCandidate(pos, parentOp, maxSize, buckets);
-      candidates.add(mjc);
 
       Statistics currInputStat = parentOp.getStatistics();
       if (currInputStat == null) {
