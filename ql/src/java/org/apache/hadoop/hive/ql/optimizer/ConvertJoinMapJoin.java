@@ -92,7 +92,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   public float hashTableLoadFactor;
   private long maxJoinMemory;
   private HashMapDataStructureType hashMapDataStructure;
-  private boolean haveFastDS;
+  private boolean fastDSEnabled;
 
   @Override
   /*
@@ -107,7 +107,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     OptimizeTezProcContext context = (OptimizeTezProcContext) procCtx;
 
     hashTableLoadFactor = context.conf.getFloatVar(ConfVars.HIVEHASHTABLELOADFACTOR);
-    haveFastDS = context.conf.getBoolVar(ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_FAST_HASHTABLE_ENABLED);
+    fastDSEnabled = context.conf.getBoolVar(ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_FAST_HASHTABLE_ENABLED);
 
     JoinOperator joinOp = (JoinOperator) nd;
     // adjust noconditional task size threshold for LLAP
@@ -288,7 +288,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
   public long computeOnlineDataSize(Statistics statistics) {
     long estimate = 0;
-    if (haveFastDS) {
+    if (fastDSEnabled) {
       switch (hashMapDataStructure) {
       case LONG_KEYED:
         estimate = computeOnlineDataSizeFast2(statistics);
