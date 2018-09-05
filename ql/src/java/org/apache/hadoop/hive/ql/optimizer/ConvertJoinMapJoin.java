@@ -216,6 +216,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
           case INT:
           case LONG:
             return HashMapDataStructureType.LONG_KEYED;
+          default:
+            break;
           }
         }
       }
