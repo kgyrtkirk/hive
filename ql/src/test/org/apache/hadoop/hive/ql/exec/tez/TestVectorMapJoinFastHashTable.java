@@ -138,20 +138,4 @@ public class TestVectorMapJoinFastHashTable {
     }
   }
 
-
-  @Test
-  public void vc() {
-    Statistics stat = new Statistics(keyCount, 1, 0);
-
-    ConvertJoinMapJoin cjm = new ConvertJoinMapJoin();
-    cjm.hashTableLoadFactor = .75f;
-      long f3 = cjm.computeOnlineDataSizeFast3(stat);
-      long f2 = cjm.computeOnlineDataSizeFast2(stat);
-      long o = cjm.computeOnlineDataSizeOptimized(stat);
-      System.out.println(o);
-      System.out.println(f2);
-      System.out.println(f3);
-  }
-  
-
 }
