@@ -204,7 +204,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     public static HashMapDataStructureType of(JoinDesc conf) {
       ExprNodeDesc[][] keys = conf.getJoinKeys();
-      if (keys[0].length == 1) {
+      if (keys != null && keys[0].length == 1) {
         TypeInfo typeInfo = keys[0][0].getTypeInfo();
         if (typeInfo instanceof PrimitiveTypeInfo) {
           PrimitiveTypeInfo pti = ((PrimitiveTypeInfo) typeInfo);
