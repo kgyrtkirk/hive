@@ -93,6 +93,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   private long maxJoinMemory;
   private HashMapDataStructureType hashMapDataStructure;
   private boolean fastDSEnabled;
+  private boolean enableFastDS;
 
   @Override
   /*
@@ -1085,7 +1086,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // which is calculated as totalSize/buckets, with totalSize
     // equal to sum of small tables size.
     joinOp.getConf().setInMemoryDataSize(totalSize / buckets);
-    boolean enableFast = (totalSizeFast / buckets < maxJoinMemory);
+    enableFastDS = (totalSizeFast / buckets <= maxJoinMemory);
 
     return bigTablePosition;
   }
@@ -1156,6 +1157,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     if (joinExprs.size() == 0) {  // In case of cross join, we disable hybrid grace hash join
       mapJoinOp.getConf().setHybridHashJoin(false);
     }
+    mapJoinOp.getConf().setUseFastHashTables(enableFastDS);
 
     Operator<? extends OperatorDesc> parentBigTableOp =
         mapJoinOp.getParentOperators().get(bigTablePosition);
