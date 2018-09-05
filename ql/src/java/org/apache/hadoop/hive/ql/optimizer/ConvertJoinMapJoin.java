@@ -959,7 +959,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     // total size of the inputs
     long totalSize = 0;
-    long totalSizeFast = 0;
 
     // convert to DPHJ
     boolean convertDPHJ = false;
@@ -1025,7 +1024,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         // We are replacing the current big table with a new one, thus
         // we need to count the current one as a map table then.
         totalSize += computeOnlineDataSize(bigInputStat);
-        totalSizeFast += computeOnlineDataSizeFast(bigInputStat);
         // Check if number of distinct keys is greater than given max number of entries
         // for HashMap
         if (checkMapJoinThresholds && !checkNumberOfEntriesForHashTable(joinOp, bigTablePosition, context)) {
@@ -1035,7 +1033,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         // This is not the first table and we are not using it as big table,
         // in fact, we're adding this table as a map table
         totalSize += inputSize;
-        totalSizeFast += computeOnlineDataSize(currInputStat);
         // Check if number of distinct keys is greater than given max number of entries
         // for HashMap
         if (checkMapJoinThresholds && !checkNumberOfEntriesForHashTable(joinOp, pos, context)) {
@@ -1085,7 +1082,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // which is calculated as totalSize/buckets, with totalSize
     // equal to sum of small tables size.
     joinOp.getConf().setInMemoryDataSize(totalSize / buckets);
-    boolean enableFast = (totalSizeFast / buckets < maxJoinMemory);
 
     return bigTablePosition;
   }
