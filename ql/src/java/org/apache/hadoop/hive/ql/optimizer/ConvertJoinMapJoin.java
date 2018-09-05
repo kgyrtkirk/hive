@@ -154,6 +154,23 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       }
     }
 
+    // check if we can convert to map join no bucket scaling.
+    mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, 1, false, maxJoinMemory, true);
+    if (mapJoinConversionPos >= 0) {
+      LOG.info("Convert to non-bucketed map join");
+      MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, mapJoinConversionPos, true);
+      // map join operator by default has no bucket cols and num of reduce sinks
+      // reduced by 1
+      mapJoinOp.setOpTraits(new OpTraits(null, -1, null,
+          joinOp.getOpTraits().getNumReduceSinks(), joinOp.getOpTraits().getBucketingVersion()));
+      preserveOperatorInfos(mapJoinOp, joinOp, context);
+      // propagate this change till the next RS
+      for (Operator<? extends OperatorDesc> childOp : mapJoinOp.getChildOperators()) {
+        setAllChildrenTraits(childOp, mapJoinOp.getOpTraits());
+      }
+      return null;
+    }
+
     if (numBuckets > 1) {
       if (context.conf.getBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ)) {
         // Check if we are in LLAP, if so it needs to be determined if we should use BMJ or DPHJ
@@ -166,31 +183,11 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         }
       }
     }
-
-    // check if we can convert to map join no bucket scaling.
-    LOG.info("Convert to non-bucketed map join");
-    if (numBuckets != 1) {
-      mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, 1, false, maxJoinMemory, true);
-    }
-    if (mapJoinConversionPos < 0) {
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
       fallbackToReduceSideJoin(joinOp, context);
       return null;
-    }
 
-    MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, mapJoinConversionPos, true);
-    // map join operator by default has no bucket cols and num of reduce sinks
-    // reduced by 1
-    mapJoinOp.setOpTraits(new OpTraits(null, -1, null,
-        joinOp.getOpTraits().getNumReduceSinks(), joinOp.getOpTraits().getBucketingVersion()));
-    preserveOperatorInfos(mapJoinOp, joinOp, context);
-    // propagate this change till the next RS
-    for (Operator<? extends OperatorDesc> childOp : mapJoinOp.getChildOperators()) {
-      setAllChildrenTraits(childOp, mapJoinOp.getOpTraits());
-    }
-
-    return null;
   }
 
   private boolean selectJoinForLlap(OptimizeTezProcContext context, JoinOperator joinOp,
