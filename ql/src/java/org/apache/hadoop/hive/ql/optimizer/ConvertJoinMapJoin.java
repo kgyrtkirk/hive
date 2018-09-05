@@ -274,6 +274,11 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     LOG.info("Cost of Bucket Map Join : numNodes = " + numNodes + " total small table size = "
     + totalSize + " networkCostMJ = " + networkCostMJ);
 
+    if (totalSize <= maxJoinMemory) {
+      // mapjoin is applicable; don't try the below algos..
+      return false;
+    }
+
     if (networkCostDPHJ < networkCostMJ) {
       LOG.info("Dynamically partitioned Hash Join chosen");
       return convertJoinDynamicPartitionedHashJoin(joinOp, context);
@@ -287,21 +292,22 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   }
 
   public long computeOnlineDataSize(Statistics statistics) {
-    long estimate = 0;
+    long estimate = computeOnlineDataSizeOptimized(statistics);
     if (fastDSEnabled) {
-      switch (hashMapDataStructure) {
-      case LONG_KEYED:
-        estimate = computeOnlineDataSizeFast2(statistics);
-        break;
-      case COMPOSITE_KEYED:
-
-        estimate = computeOnlineDataSizeFast3(statistics);
-        break;
-      }
-    } else {
-      estimate = computeOnlineDataSizeOptimized(statistics);
+      estimate = Long.min(estimate, computeOnlineDataSizeFast(statistics));
     }
     return estimate;
+  }
+
+  public long computeOnlineDataSizeFast(Statistics statistics) {
+    switch (hashMapDataStructure) {
+    case LONG_KEYED:
+      return computeOnlineDataSizeFast2(statistics);
+    case COMPOSITE_KEYED:
+      return computeOnlineDataSizeFast3(statistics);
+    default:
+      throw new RuntimeException("invalid mode");
+    }
   }
 
   public long computeOnlineDataSizeFast2(Statistics statistics) {
@@ -1075,7 +1081,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // We store the total memory that this MapJoin is going to use,
     // which is calculated as totalSize/buckets, with totalSize
     // equal to sum of small tables size.
-    joinOp.getConf().setInMemoryDataSize(totalSize/buckets);
+    joinOp.getConf().setInMemoryDataSize(totalSize / buckets);
 
     return bigTablePosition;
   }
