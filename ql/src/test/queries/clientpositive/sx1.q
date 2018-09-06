@@ -1,5 +1,5 @@
 set hive.mapred.mode=nonstrict;
-set hive.optimize.skewjoin.compiletime = true;
+--set hive.optimize.skewjoin.compiletime = true;
 set hive.auto.convert.join=true;
 --set hive.stats.fetch.column.stats=true;
 set hive.explain.user=true;
