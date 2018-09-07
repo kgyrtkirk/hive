@@ -93,7 +93,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   private long maxJoinMemory;
   private HashMapDataStructureType hashMapDataStructure;
   private boolean fastHashTableAvailable;
-  private boolean useFastHashTable;
 
   @Override
   /*
@@ -293,32 +292,32 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   }
 
   public long computeOnlineDataSize(Statistics statistics) {
-    long estimate = computeOnlineDataSizeOptimized(statistics);
     if (fastHashTableAvailable) {
-      estimate = Long.min(estimate, computeOnlineDataSizeFast(statistics));
+      return computeOnlineDataSizeFast(statistics);
+    } else {
+      return computeOnlineDataSizeOptimized(statistics);
     }
-    return estimate;
   }
 
   public long computeOnlineDataSizeFast(Statistics statistics) {
     switch (hashMapDataStructure) {
     case LONG_KEYED:
-      return computeOnlineDataSizeFast2(statistics);
+      return computeOnlineDataSizeFastLongKeyed(statistics);
     case COMPOSITE_KEYED:
-      return computeOnlineDataSizeFast3(statistics);
+      return computeOnlineDataSizeFastCompositeKeyed(statistics);
     default:
       throw new RuntimeException("invalid mode");
     }
   }
 
-  public long computeOnlineDataSizeFast2(Statistics statistics) {
+  public long computeOnlineDataSizeFastLongKeyed(Statistics statistics) {
     return computeOnlineDataSizeGeneric(statistics,
         -8, // the long key is stored in a slot
         2 * 8 // maintenance structure consists of 2 longs
     );
   }
 
-  public long computeOnlineDataSizeFast3(Statistics statistics) {
+  public long computeOnlineDataSizeFastCompositeKeyed(Statistics statistics) {
     // The datastructure doing the actual storage during mapjoins has no per row orhead;
     // but uses a 192 bit wide table
     return computeOnlineDataSizeGeneric(statistics,
@@ -960,7 +959,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     // total size of the inputs
     long totalSize = 0;
-    long totalSizeFast = 0;
 
     // convert to DPHJ
     boolean convertDPHJ = false;
@@ -1026,7 +1024,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         // We are replacing the current big table with a new one, thus
         // we need to count the current one as a map table then.
         totalSize += computeOnlineDataSize(bigInputStat);
-        totalSizeFast += computeOnlineDataSizeFast(bigInputStat);
         // Check if number of distinct keys is greater than given max number of entries
         // for HashMap
         if (checkMapJoinThresholds && !checkNumberOfEntriesForHashTable(joinOp, bigTablePosition, context)) {
@@ -1036,7 +1033,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         // This is not the first table and we are not using it as big table,
         // in fact, we're adding this table as a map table
         totalSize += inputSize;
-        totalSizeFast += computeOnlineDataSize(currInputStat);
         // Check if number of distinct keys is greater than given max number of entries
         // for HashMap
         if (checkMapJoinThresholds && !checkNumberOfEntriesForHashTable(joinOp, pos, context)) {
@@ -1086,7 +1082,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // which is calculated as totalSize/buckets, with totalSize
     // equal to sum of small tables size.
     joinOp.getConf().setInMemoryDataSize(totalSize / buckets);
-    useFastHashTable = (totalSizeFast / buckets <= maxJoinMemory);
 
     return bigTablePosition;
   }
@@ -1157,7 +1152,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     if (joinExprs.size() == 0) {  // In case of cross join, we disable hybrid grace hash join
       mapJoinOp.getConf().setHybridHashJoin(false);
     }
-    mapJoinOp.getConf().setUseFastHashTables(fastHashTableAvailable && useFastHashTable);
 
     Operator<? extends OperatorDesc> parentBigTableOp =
         mapJoinOp.getParentOperators().get(bigTablePosition);
