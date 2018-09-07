@@ -390,8 +390,6 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   private static final Set<String> vectorizableMapJoinNativeEngines =
       new LinkedHashSet<String>(Arrays.asList("tez", "spark"));
 
-  private boolean useFastHashTables;
-
   public class MapJoinOperatorExplainVectorization extends OperatorExplainVectorization {
 
     private final MapJoinDesc mapJoinDesc;
@@ -596,14 +594,6 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
       return null;
     }
     return new SMBJoinOperatorExplainVectorization((SMBJoinDesc) this, vectorSMBJoinDesc);
-  }
-
-  public void setUseFastHashTables(boolean useFastHashTables) {
-    this.useFastHashTables = useFastHashTables;
-  }
-
-  public boolean getUseFastHashTables() {
-    return useFastHashTables;
   }
 
   @Override
