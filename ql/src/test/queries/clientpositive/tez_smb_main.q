@@ -69,8 +69,8 @@ from tab_n11 a join tab_part_n12 b on a.key = b.key;
 select count(*)
 from tab_n11 a join tab_part_n12 b on a.key = b.key;
 
-
-set hive.auto.convert.join.noconditionaltask.size=1400;
+-- x0
+set hive.auto.convert.join.noconditionaltask.size=1200;
 set hive.mapjoin.hybridgrace.minwbsize=125;
 set hive.mapjoin.hybridgrace.minnumpartitions=4;
 set hive.llap.memory.oversubscription.max.executors.per.query=0;
