@@ -145,11 +145,19 @@ STAGE PLANS:
                   Statistics: Num rows: 575995635 Data size: 63809443588 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 21 AND 40 (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 63999515 Data size: 7089938304 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_ext_list_price (type: decimal(7,2))
                       outputColumnNames: ss_ext_list_price
                       Statistics: Num rows: 63999515 Data size: 7089938304 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_ext_list_price (type: decimal(7,2))
+                      outputColumnNames: ss_ext_list_price
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Group By Operator
                         aggregations: sum(ss_ext_list_price), count(ss_ext_list_price)
                         mode: hash
@@ -168,11 +176,19 @@ STAGE PLANS:
                   Statistics: Num rows: 575995635 Data size: 63808191988 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 21 AND 40 (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 63999515 Data size: 7089799200 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: decimal(7,2))
                       outputColumnNames: ss_net_paid_inc_tax
                       Statistics: Num rows: 63999515 Data size: 7089799200 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_net_paid_inc_tax (type: decimal(7,2))
+                      outputColumnNames: ss_net_paid_inc_tax
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Group By Operator
                         aggregations: sum(ss_net_paid_inc_tax), count(ss_net_paid_inc_tax)
                         mode: hash
@@ -191,9 +207,15 @@ STAGE PLANS:
                   Statistics: Num rows: 575995635 Data size: 2200320404 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 41 AND 60 (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 63999515 Data size: 244480048 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 63999515 Data size: 244480048 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -212,11 +234,19 @@ STAGE PLANS:
                   Statistics: Num rows: 575995635 Data size: 63809443588 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 41 AND 60 (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 63999515 Data size: 7089938304 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_ext_list_price (type: decimal(7,2))
                       outputColumnNames: ss_ext_list_price
                       Statistics: Num rows: 63999515 Data size: 7089938304 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_ext_list_price (type: decimal(7,2))
+                      outputColumnNames: ss_ext_list_price
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Group By Operator
                         aggregations: sum(ss_ext_list_price), count(ss_ext_list_price)
                         mode: hash
@@ -235,11 +265,19 @@ STAGE PLANS:
                   Statistics: Num rows: 575995635 Data size: 63808191988 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 41 AND 60 (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 63999515 Data size: 7089799200 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: decimal(7,2))
                       outputColumnNames: ss_net_paid_inc_tax
                       Statistics: Num rows: 63999515 Data size: 7089799200 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_net_paid_inc_tax (type: decimal(7,2))
+                      outputColumnNames: ss_net_paid_inc_tax
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Group By Operator
                         aggregations: sum(ss_net_paid_inc_tax), count(ss_net_paid_inc_tax)
                         mode: hash
@@ -258,9 +296,15 @@ STAGE PLANS:
                   Statistics: Num rows: 575995635 Data size: 2200320404 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 1 AND 20 (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 191998545 Data size: 733440136 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 191998545 Data size: 733440136 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -279,9 +323,15 @@ STAGE PLANS:
                   Statistics: Num rows: 575995635 Data size: 2200320404 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 61 AND 80 (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 63999515 Data size: 244480048 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 63999515 Data size: 244480048 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -300,11 +350,19 @@ STAGE PLANS:
                   Statistics: Num rows: 575995635 Data size: 63809443588 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 61 AND 80 (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 63999515 Data size: 7089938304 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_ext_list_price (type: decimal(7,2))
                       outputColumnNames: ss_ext_list_price
                       Statistics: Num rows: 63999515 Data size: 7089938304 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_ext_list_price (type: decimal(7,2))
+                      outputColumnNames: ss_ext_list_price
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Group By Operator
                         aggregations: sum(ss_ext_list_price), count(ss_ext_list_price)
                         mode: hash
@@ -323,11 +381,19 @@ STAGE PLANS:
                   Statistics: Num rows: 575995635 Data size: 63808191988 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 61 AND 80 (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 63999515 Data size: 7089799200 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: decimal(7,2))
                       outputColumnNames: ss_net_paid_inc_tax
                       Statistics: Num rows: 63999515 Data size: 7089799200 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_net_paid_inc_tax (type: decimal(7,2))
+                      outputColumnNames: ss_net_paid_inc_tax
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Group By Operator
                         aggregations: sum(ss_net_paid_inc_tax), count(ss_net_paid_inc_tax)
                         mode: hash
@@ -346,9 +412,15 @@ STAGE PLANS:
                   Statistics: Num rows: 575995635 Data size: 2200320404 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 81 AND 100 (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 63999515 Data size: 244480048 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 63999515 Data size: 244480048 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -367,11 +439,19 @@ STAGE PLANS:
                   Statistics: Num rows: 575995635 Data size: 63809443588 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 81 AND 100 (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 63999515 Data size: 7089938304 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_ext_list_price (type: decimal(7,2))
                       outputColumnNames: ss_ext_list_price
                       Statistics: Num rows: 63999515 Data size: 7089938304 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_ext_list_price (type: decimal(7,2))
+                      outputColumnNames: ss_ext_list_price
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Group By Operator
                         aggregations: sum(ss_ext_list_price), count(ss_ext_list_price)
                         mode: hash
@@ -390,11 +470,19 @@ STAGE PLANS:
                   Statistics: Num rows: 575995635 Data size: 63808191988 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 81 AND 100 (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 63999515 Data size: 7089799200 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: decimal(7,2))
                       outputColumnNames: ss_net_paid_inc_tax
                       Statistics: Num rows: 63999515 Data size: 7089799200 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_net_paid_inc_tax (type: decimal(7,2))
+                      outputColumnNames: ss_net_paid_inc_tax
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Group By Operator
                         aggregations: sum(ss_net_paid_inc_tax), count(ss_net_paid_inc_tax)
                         mode: hash
@@ -413,11 +501,19 @@ STAGE PLANS:
                   Statistics: Num rows: 575995635 Data size: 63809443588 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 1 AND 20 (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 191998545 Data size: 21269814568 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_ext_list_price (type: decimal(7,2))
                       outputColumnNames: ss_ext_list_price
                       Statistics: Num rows: 191998545 Data size: 21269814568 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_ext_list_price (type: decimal(7,2))
+                      outputColumnNames: ss_ext_list_price
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Group By Operator
                         aggregations: sum(ss_ext_list_price), count(ss_ext_list_price)
                         mode: hash
@@ -436,11 +532,19 @@ STAGE PLANS:
                   Statistics: Num rows: 575995635 Data size: 63808191988 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 1 AND 20 (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 191998545 Data size: 21269397368 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: decimal(7,2))
                       outputColumnNames: ss_net_paid_inc_tax
                       Statistics: Num rows: 191998545 Data size: 21269397368 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_net_paid_inc_tax (type: decimal(7,2))
+                      outputColumnNames: ss_net_paid_inc_tax
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Group By Operator
                         aggregations: sum(ss_net_paid_inc_tax), count(ss_net_paid_inc_tax)
                         mode: hash
@@ -459,9 +563,15 @@ STAGE PLANS:
                   Statistics: Num rows: 575995635 Data size: 2200320404 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 21 AND 40 (type: boolean)
+<<<<<<< HEAD
                     Statistics: Num rows: 63999515 Data size: 244480048 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 63999515 Data size: 244480048 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                       Group By Operator
                         aggregations: count()
                         mode: hash

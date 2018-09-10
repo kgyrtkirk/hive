@@ -137,9 +137,15 @@ Stage-0
                           <-Map 12 [SIMPLE_EDGE] vectorized
                             SHUFFLE [RS_199]
                               PartitionCols:_col1
+<<<<<<< HEAD
                               Select Operator [SEL_197] (rows=8116 width=8)
                                 Output:["_col1"]
                                 Filter Operator [FIL_195] (rows=8116 width=8)
+=======
+                              Select Operator [SEL_214] (rows=73049 width=1119)
+                                Output:["_col1"]
+                                Filter Operator [FIL_212] (rows=73049 width=1119)
+>>>>>>> asf/master
                                   predicate:(d_month_seq BETWEEN 1197 AND 1208 and d_week_seq is not null)
                                   TableScan [TS_15] (rows=73049 width=8)
                                     default@date_dim,d,Tbl:COMPLETE,Col:COMPLETE,Output:["d_month_seq","d_week_seq"]
@@ -197,9 +203,15 @@ Stage-0
                         <-Map 12 [SIMPLE_EDGE] vectorized
                           SHUFFLE [RS_198]
                             PartitionCols:_col1
+<<<<<<< HEAD
                             Select Operator [SEL_196] (rows=8116 width=8)
                               Output:["_col1"]
                               Filter Operator [FIL_194] (rows=8116 width=8)
+=======
+                            Select Operator [SEL_213] (rows=73049 width=1119)
+                              Output:["_col1"]
+                              Filter Operator [FIL_211] (rows=73049 width=1119)
+>>>>>>> asf/master
                                 predicate:(d_month_seq BETWEEN 1185 AND 1196 and d_week_seq is not null)
                                  Please refer to the previous TableScan [TS_15]
                         <-Reducer 3 [SIMPLE_EDGE] vectorized

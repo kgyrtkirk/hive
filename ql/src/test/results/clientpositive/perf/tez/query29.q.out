@@ -212,9 +212,15 @@ Stage-0
                                         <-Map 15 [SIMPLE_EDGE] vectorized
                                           SHUFFLE [RS_223]
                                             PartitionCols:_col0
+<<<<<<< HEAD
                                             Select Operator [SEL_220] (rows=72 width=12)
                                               Output:["_col0"]
                                               Filter Operator [FIL_218] (rows=72 width=12)
+=======
+                                            Select Operator [SEL_220] (rows=36524 width=1119)
+                                              Output:["_col0"]
+                                              Filter Operator [FIL_218] (rows=36524 width=1119)
+>>>>>>> asf/master
                                                 predicate:((d_year = 1999) and d_date_sk is not null and d_moy BETWEEN 4 AND 7)
                                                 TableScan [TS_9] (rows=73049 width=12)
                                                   default@date_dim,d1,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_year","d_moy"]
