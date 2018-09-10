@@ -304,7 +304,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           constraints.put(c.getKey(), c);
         }
         if (constraints.size() != conjunctions.size()) {
-          LOG.info("unexpected situation; giving up on this branch");
+          LOG.debug("unexpected situation; giving up on this branch");
           key = Collections.emptySet();
           return;
         }
@@ -315,8 +315,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         List<RexNode> ret = new ArrayList<>();
         for (RexInputRef rexInputRef : columns) {
           Constraint constraint = constraints.get(rexInputRef);
-          if(constraint== null) {
-            throw new SemanticException("tried to get data for non-existent column");
+          if (constraint == null) {
+            throw new SemanticException("Unable to find constraint which was earlier added.");
           }
           ret.add(constraint.literal);
         }
