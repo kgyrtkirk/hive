@@ -320,6 +320,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_item_sk (type: int), ss_store_sk (type: int), ss_sales_price (type: decimal(7,2))
                       outputColumnNames: _col0, _col1, _col2, _col3
+<<<<<<< HEAD
                       Statistics: Num rows: 525329897 Data size: 62304061328 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
@@ -337,6 +338,35 @@ STAGE PLANS:
                           Map-reduce partition columns: _col1 (type: int)
                           Statistics: Num rows: 216343183 Data size: 24949638264 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col2 (type: int), _col3 (type: decimal(7,2)), _col5 (type: int), _col6 (type: int)
+=======
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: decimal(7,2))
+            Execution mode: vectorized
+        Map 17 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  filterExpr: (((struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1)) or (d_year = 2000)) and d_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (((struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1)) or (d_year = 2000)) and d_date_sk is not null) (type: boolean)
+                    Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: d_date_sk (type: int), d_year (type: int), d_moy (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: int), _col2 (type: int)
+>>>>>>> asf/master
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -372,6 +402,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: ss_sold_date_sk (type: int), ss_item_sk (type: int), ss_store_sk (type: int), ss_sales_price (type: decimal(7,2))
                       outputColumnNames: _col0, _col1, _col2, _col3
+<<<<<<< HEAD
                       Statistics: Num rows: 525329897 Data size: 62304061328 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
@@ -389,6 +420,35 @@ STAGE PLANS:
                           Map-reduce partition columns: _col1 (type: int)
                           Statistics: Num rows: 216343183 Data size: 24949638264 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col2 (type: int), _col3 (type: decimal(7,2)), _col5 (type: int), _col6 (type: int)
+=======
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: decimal(7,2))
+            Execution mode: vectorized
+        Map 25 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  filterExpr: (((struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1)) or (d_year = 2000)) and d_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (((struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1)) or (d_year = 2000)) and d_date_sk is not null) (type: boolean)
+                    Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: d_date_sk (type: int), d_year (type: int), d_moy (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: int), _col2 (type: int)
+>>>>>>> asf/master
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -415,6 +475,29 @@ STAGE PLANS:
         Map 8 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
+=======
+                  alias: date_dim
+                  filterExpr: (((struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1)) or (d_year = 2000)) and d_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (((struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1)) or (d_year = 2000)) and d_date_sk is not null) (type: boolean)
+                    Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: d_date_sk (type: int), d_year (type: int), d_moy (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: int), _col2 (type: int)
+            Execution mode: vectorized
+        Map 9 
+            Map Operator Tree:
+                TableScan
+>>>>>>> asf/master
                   alias: item
                   filterExpr: (i_item_sk is not null and i_category is not null and i_brand is not null) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 89628000 Basic stats: COMPLETE Column stats: COMPLETE
