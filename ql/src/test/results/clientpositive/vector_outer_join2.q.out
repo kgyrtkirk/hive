@@ -267,19 +267,11 @@ STAGE PLANS:
         $hdt$_1:cd 
           TableScan
             alias: cd
-<<<<<<< HEAD
             Statistics: Num rows: 20 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: cint (type: int)
               outputColumnNames: _col0
               Statistics: Num rows: 20 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-            Statistics: Num rows: 20 Data size: 4274 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: cint (type: int)
-              outputColumnNames: _col0
-              Statistics: Num rows: 20 Data size: 4274 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
               HashTable Sink Operator
                 keys:
                   0 _col0 (type: int)
@@ -287,19 +279,11 @@ STAGE PLANS:
         $hdt$_2:hd 
           TableScan
             alias: hd
-<<<<<<< HEAD
             Statistics: Num rows: 20 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: cbigint (type: bigint)
               outputColumnNames: _col0
               Statistics: Num rows: 20 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-            Statistics: Num rows: 20 Data size: 4274 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: cbigint (type: bigint)
-              outputColumnNames: _col0
-              Statistics: Num rows: 20 Data size: 4274 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
               HashTable Sink Operator
                 keys:
                   0 _col1 (type: bigint)
@@ -310,11 +294,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: c
-<<<<<<< HEAD
             Statistics: Num rows: 20 Data size: 132 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-            Statistics: Num rows: 20 Data size: 4274 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -325,11 +305,7 @@ STAGE PLANS:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [2, 3]
-<<<<<<< HEAD
               Statistics: Num rows: 20 Data size: 132 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-              Statistics: Num rows: 20 Data size: 4274 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
               Map Join Operator
                 condition map:
                      Left Outer Join 0 to 1
@@ -344,11 +320,7 @@ STAGE PLANS:
                     nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                 outputColumnNames: _col1
-<<<<<<< HEAD
                 Statistics: Num rows: 50 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                Statistics: Num rows: 22 Data size: 4701 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                 Map Join Operator
                   condition map:
                        Left Outer Join 0 to 1
@@ -363,11 +335,7 @@ STAGE PLANS:
                       nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                   outputColumnNames: _col1
-<<<<<<< HEAD
-                  Statistics: Num rows: 142 Data size: 1064 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  Statistics: Num rows: 24 Data size: 5171 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+                  Statistics: Num rows: 100 Data size: 728 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(), sum(_col1)
                     Group By Vectorization:
