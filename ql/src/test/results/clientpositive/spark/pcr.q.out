@@ -84,7 +84,7 @@ STAGE PLANS:
                       Statistics: Num rows: 40 Data size: 14692 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col2 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 40 Data size: 14692 Basic stats: COMPLETE Column stats: PARTIAL
                         tag: -1
@@ -288,7 +288,7 @@ STAGE PLANS:
                       Statistics: Num rows: 60 Data size: 10904 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Statistics: Num rows: 60 Data size: 10904 Basic stats: COMPLETE Column stats: PARTIAL
                         tag: -1
@@ -578,7 +578,7 @@ STAGE PLANS:
                       Statistics: Num rows: 40 Data size: 14692 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col2 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 40 Data size: 14692 Basic stats: COMPLETE Column stats: PARTIAL
                         tag: -1
@@ -784,7 +784,7 @@ STAGE PLANS:
                       Statistics: Num rows: 15 Data size: 5580 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col2 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 15 Data size: 5580 Basic stats: COMPLETE Column stats: PARTIAL
                         tag: -1
@@ -992,7 +992,7 @@ STAGE PLANS:
                       Statistics: Num rows: 22 Data size: 8184 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col2 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 22 Data size: 8184 Basic stats: COMPLETE Column stats: PARTIAL
                         tag: -1
@@ -1259,7 +1259,7 @@ STAGE PLANS:
                       Statistics: Num rows: 25 Data size: 9300 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col2 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 25 Data size: 9300 Basic stats: COMPLETE Column stats: PARTIAL
                         tag: -1
@@ -1530,7 +1530,7 @@ STAGE PLANS:
                       Statistics: Num rows: 5 Data size: 956 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Statistics: Num rows: 5 Data size: 956 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
@@ -1715,7 +1715,7 @@ STAGE PLANS:
                     Statistics: Num rows: 40 Data size: 7652 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col1 (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Statistics: Num rows: 40 Data size: 7652 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -1944,7 +1944,7 @@ STAGE PLANS:
                     Statistics: Num rows: 60 Data size: 11384 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col1 (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Statistics: Num rows: 60 Data size: 11384 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
@@ -2244,7 +2244,7 @@ STAGE PLANS:
                       Statistics: Num rows: 20 Data size: 7440 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                        null sort order: aaa
+                        null sort order: zzz
                         sort order: +++
                         Statistics: Num rows: 20 Data size: 7440 Basic stats: COMPLETE Column stats: PARTIAL
                         tag: -1
@@ -2600,7 +2600,7 @@ STAGE PLANS:
                   Statistics: Num rows: 20 Data size: 4096 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Statistics: Num rows: 20 Data size: 4096 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -2889,7 +2889,7 @@ STAGE PLANS:
                   Statistics: Num rows: 20 Data size: 4096 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Statistics: Num rows: 20 Data size: 4096 Basic stats: COMPLETE Column stats: NONE
                     tag: -1
@@ -3028,7 +3028,7 @@ STAGE PLANS:
                       Statistics: Num rows: 13 Data size: 4836 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                        null sort order: aaa
+                        null sort order: zzz
                         sort order: +++
                         Statistics: Num rows: 13 Data size: 4836 Basic stats: COMPLETE Column stats: PARTIAL
                         tag: -1
@@ -3365,7 +3365,7 @@ STAGE PLANS:
                       Statistics: Num rows: 22 Data size: 8184 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                        null sort order: aaa
+                        null sort order: zzz
                         sort order: +++
                         Statistics: Num rows: 22 Data size: 8184 Basic stats: COMPLETE Column stats: PARTIAL
                         tag: -1
@@ -4161,7 +4161,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       tag: -1
@@ -4304,7 +4304,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col2 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: -1
@@ -4503,7 +4503,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col2 (type: string)
-                        null sort order: aa
+                        null sort order: zz
                         sort order: ++
                         Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: PARTIAL
                         tag: -1

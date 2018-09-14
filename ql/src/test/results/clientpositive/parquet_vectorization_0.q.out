@@ -30964,7 +30964,7 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col1 (type: string)
-              null sort order: a
+              null sort order: z
               sort order: +
               Statistics: Num rows: 300 Data size: 23550 Basic stats: COMPLETE Column stats: COMPLETE
               tag: -1

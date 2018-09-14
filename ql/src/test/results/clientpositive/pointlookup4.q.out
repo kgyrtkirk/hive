@@ -79,7 +79,7 @@ STAGE PLANS:
                 Statistics: Num rows: 6 Data size: 2772 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                  null sort order: aaaa
+                  null sort order: zzzz
                   sort order: ++++
                   Statistics: Num rows: 6 Data size: 2772 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
@@ -278,7 +278,7 @@ STAGE PLANS:
                 Statistics: Num rows: 20 Data size: 9240 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                  null sort order: aaaa
+                  null sort order: zzzz
                   sort order: ++++
                   Statistics: Num rows: 20 Data size: 9240 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1

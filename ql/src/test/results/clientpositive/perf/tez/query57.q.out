@@ -135,9 +135,15 @@ Stage-0
                           Output:["rank_window_1","_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
                           Filter Operator [FIL_317] (rows=346989 width=520)
                             predicate:((_col0 > 0) and (_col1 = 2000) and rank_window_1 is not null)
+<<<<<<< HEAD
                             PTF Operator [PTF_316] (rows=116588247 width=520)
                               Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS FIRST, _col2 ASC NULLS FIRST","partition by:":"_col5, _col4, _col3"}]
                               Select Operator [SEL_315] (rows=116588247 width=520)
+=======
+                            PTF Operator [PTF_326] (rows=191657247 width=135)
+                              Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 ASC NULLS LAST, _col2 ASC NULLS LAST","partition by:":"_col5, _col4, _col3"}]
+                              Select Operator [SEL_325] (rows=191657247 width=135)
+>>>>>>> asf/master
                                 Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
                               <-Reducer 10 [SIMPLE_EDGE] vectorized
                                 SHUFFLE [RS_314]
@@ -224,9 +230,15 @@ Stage-0
                       Output:["_col0","_col1","_col2","_col3","_col4"]
                       Filter Operator [FIL_303] (rows=116588247 width=408)
                         predicate:rank_window_0 is not null
+<<<<<<< HEAD
                         PTF Operator [PTF_302] (rows=116588247 width=408)
                           Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST","partition by:":"_col4, _col3, _col2"}]
                           Select Operator [SEL_301] (rows=116588247 width=408)
+=======
+                        PTF Operator [PTF_312] (rows=191657247 width=135)
+                          Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col0 ASC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col4, _col3, _col2"}]
+                          Select Operator [SEL_311] (rows=191657247 width=135)
+>>>>>>> asf/master
                             Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
                           <-Reducer 5 [SIMPLE_EDGE] vectorized
                             SHUFFLE [RS_298]
@@ -239,9 +251,15 @@ Stage-0
                       Output:["_col0","_col1","_col2","_col3","_col4"]
                       Filter Operator [FIL_308] (rows=116588247 width=408)
                         predicate:rank_window_0 is not null
+<<<<<<< HEAD
                         PTF Operator [PTF_307] (rows=116588247 width=408)
                           Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col0 ASC NULLS FIRST, _col1 ASC NULLS FIRST","partition by:":"_col4, _col3, _col2"}]
                           Select Operator [SEL_306] (rows=116588247 width=408)
+=======
+                        PTF Operator [PTF_317] (rows=191657247 width=135)
+                          Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col0 ASC NULLS LAST, _col1 ASC NULLS LAST","partition by:":"_col4, _col3, _col2"}]
+                          Select Operator [SEL_316] (rows=191657247 width=135)
+>>>>>>> asf/master
                             Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
                           <-Reducer 5 [SIMPLE_EDGE] vectorized
                             SHUFFLE [RS_299]
