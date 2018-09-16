@@ -645,30 +645,35 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Reducer 5 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
-        Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (shipdate_date is not null and (shipdate_date BETWEEN DynamicValue(RS_7_b_shipdate_date_min) AND DynamicValue(RS_7_b_shipdate_date_max) and in_bloom_filter(shipdate_date, DynamicValue(RS_7_b_shipdate_date_bloom_filter)))) (type: boolean)
+                  filterExpr: shipdate_date is not null (type: boolean)
                   Statistics: Num rows: 100 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((shipdate_date BETWEEN DynamicValue(RS_7_b_shipdate_date_min) AND DynamicValue(RS_7_b_shipdate_date_max) and in_bloom_filter(shipdate_date, DynamicValue(RS_7_b_shipdate_date_bloom_filter))) and shipdate_date is not null) (type: boolean)
+                    predicate: shipdate_date is not null (type: boolean)
                     Statistics: Num rows: 100 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: shipdate_date (type: date)
                       outputColumnNames: _col0
                       Statistics: Num rows: 100 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: date)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: date)
-                        Statistics: Num rows: 100 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col0 (type: date)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 50 Data size: 3200 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: date)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: date)
+                          Statistics: Num rows: 50 Data size: 3200 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
@@ -684,50 +689,62 @@ STAGE PLANS:
                       expressions: shipdate_date (type: date)
                       outputColumnNames: _col0
                       Statistics: Num rows: 20 Data size: 1120 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: date)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: date)
-                        Statistics: Num rows: 20 Data size: 1120 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: _col0 (type: date)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 20 Data size: 1120 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
-                          mode: hash
-                          outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                            value expressions: _col0 (type: date), _col1 (type: date), _col2 (type: binary)
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col0 (type: date)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 10 Data size: 640 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: date)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: date)
+                          Statistics: Num rows: 10 Data size: 640 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: date)
-                  1 _col0 (type: date)
-                Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: bigint)
-        Reducer 3 
-            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: date)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 5 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: date)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 25 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
+                Merge Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: date)
+                    1 _col0 (type: date)
+                  outputColumnNames: _col1, _col3
+                  Statistics: Num rows: 125 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: (_col1 * _col3) (type: bigint)
+                    outputColumnNames: _col4
+                    Statistics: Num rows: 125 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: $sum0(_col4)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: $sum0(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -738,18 +755,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
-                mode: final
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: date), _col1 (type: date), _col2 (type: binary)
 
   Stage: Stage-0
     Fetch Operator
@@ -781,30 +786,35 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Reducer 5 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
-        Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (shipdate_ts is not null and (shipdate_ts BETWEEN DynamicValue(RS_7_b_shipdate_ts_min) AND DynamicValue(RS_7_b_shipdate_ts_max) and in_bloom_filter(shipdate_ts, DynamicValue(RS_7_b_shipdate_ts_bloom_filter)))) (type: boolean)
+                  filterExpr: shipdate_ts is not null (type: boolean)
                   Statistics: Num rows: 100 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((shipdate_ts BETWEEN DynamicValue(RS_7_b_shipdate_ts_min) AND DynamicValue(RS_7_b_shipdate_ts_max) and in_bloom_filter(shipdate_ts, DynamicValue(RS_7_b_shipdate_ts_bloom_filter))) and shipdate_ts is not null) (type: boolean)
+                    predicate: shipdate_ts is not null (type: boolean)
                     Statistics: Num rows: 100 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: shipdate_ts (type: timestamp)
                       outputColumnNames: _col0
                       Statistics: Num rows: 100 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: timestamp)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: timestamp)
-                        Statistics: Num rows: 100 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col0 (type: timestamp)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 50 Data size: 2400 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: timestamp)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: timestamp)
+                          Statistics: Num rows: 50 Data size: 2400 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
@@ -820,50 +830,62 @@ STAGE PLANS:
                       expressions: shipdate_ts (type: timestamp)
                       outputColumnNames: _col0
                       Statistics: Num rows: 20 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: timestamp)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: timestamp)
-                        Statistics: Num rows: 20 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: _col0 (type: timestamp)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 20 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
-                          mode: hash
-                          outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
-                            value expressions: _col0 (type: timestamp), _col1 (type: timestamp), _col2 (type: binary)
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col0 (type: timestamp)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 10 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: timestamp)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: timestamp)
+                          Statistics: Num rows: 10 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: timestamp)
-                  1 _col0 (type: timestamp)
-                Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: bigint)
-        Reducer 3 
-            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: timestamp)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 5 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: timestamp)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 25 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
+                Merge Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: timestamp)
+                    1 _col0 (type: timestamp)
+                  outputColumnNames: _col1, _col3
+                  Statistics: Num rows: 125 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: (_col1 * _col3) (type: bigint)
+                    outputColumnNames: _col4
+                    Statistics: Num rows: 125 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: $sum0(_col4)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: $sum0(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -874,18 +896,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
-                mode: final
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: timestamp), _col1 (type: timestamp), _col2 (type: binary)
 
   Stage: Stage-0
     Fetch Operator
@@ -917,30 +927,35 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Reducer 5 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
-        Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (shipdate_string is not null and (shipdate_string BETWEEN DynamicValue(RS_7_b_shipdate_string_min) AND DynamicValue(RS_7_b_shipdate_string_max) and in_bloom_filter(shipdate_string, DynamicValue(RS_7_b_shipdate_string_bloom_filter)))) (type: boolean)
+                  filterExpr: shipdate_string is not null (type: boolean)
                   Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((shipdate_string BETWEEN DynamicValue(RS_7_b_shipdate_string_min) AND DynamicValue(RS_7_b_shipdate_string_max) and in_bloom_filter(shipdate_string, DynamicValue(RS_7_b_shipdate_string_bloom_filter))) and shipdate_string is not null) (type: boolean)
+                    predicate: shipdate_string is not null (type: boolean)
                     Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: shipdate_string (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 50 Data size: 5100 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 50 Data size: 5100 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
@@ -956,50 +971,62 @@ STAGE PLANS:
                       expressions: shipdate_string (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: _col0 (type: string)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
-                          mode: hash
-                          outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
-                            value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 10 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 10 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: string)
-                  1 _col0 (type: string)
-                Statistics: Num rows: 21 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: bigint)
-        Reducer 3 
-            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 10 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 50 Data size: 5100 Basic stats: COMPLETE Column stats: COMPLETE
+                Merge Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: string)
+                    1 _col0 (type: string)
+                  outputColumnNames: _col1, _col3
+                  Statistics: Num rows: 10 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: (_col1 * _col3) (type: bigint)
+                    outputColumnNames: _col4
+                    Statistics: Num rows: 10 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: $sum0(_col4)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: $sum0(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1010,18 +1037,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
-                mode: final
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
 
   Stage: Stage-0
     Fetch Operator
@@ -1053,30 +1068,35 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Reducer 5 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
-        Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (shipdate_char is not null and (shipdate_char BETWEEN DynamicValue(RS_7_b_shipdate_char_min) AND DynamicValue(RS_7_b_shipdate_char_max) and in_bloom_filter(shipdate_char, DynamicValue(RS_7_b_shipdate_char_bloom_filter)))) (type: boolean)
+                  filterExpr: shipdate_char is not null (type: boolean)
                   Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((shipdate_char BETWEEN DynamicValue(RS_7_b_shipdate_char_min) AND DynamicValue(RS_7_b_shipdate_char_max) and in_bloom_filter(shipdate_char, DynamicValue(RS_7_b_shipdate_char_bloom_filter))) and shipdate_char is not null) (type: boolean)
+                    predicate: shipdate_char is not null (type: boolean)
                     Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: shipdate_char (type: char(10))
                       outputColumnNames: _col0
                       Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: char(10))
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: char(10))
-                        Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col0 (type: char(10))
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 50 Data size: 5100 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: char(10))
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: char(10))
+                          Statistics: Num rows: 50 Data size: 5100 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
@@ -1092,50 +1112,62 @@ STAGE PLANS:
                       expressions: shipdate_char (type: char(10))
                       outputColumnNames: _col0
                       Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: char(10))
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: char(10))
-                        Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: _col0 (type: char(10))
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
-                          mode: hash
-                          outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 1 Data size: 282 Basic stats: COMPLETE Column stats: COMPLETE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 282 Basic stats: COMPLETE Column stats: COMPLETE
-                            value expressions: _col0 (type: char(10)), _col1 (type: char(10)), _col2 (type: binary)
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col0 (type: char(10))
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 10 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: char(10))
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: char(10))
+                          Statistics: Num rows: 10 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: char(10))
-                  1 _col0 (type: char(10))
-                Statistics: Num rows: 21 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: bigint)
-        Reducer 3 
-            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: char(10))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 10 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: char(10))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 50 Data size: 5100 Basic stats: COMPLETE Column stats: COMPLETE
+                Merge Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: char(10))
+                    1 _col0 (type: char(10))
+                  outputColumnNames: _col1, _col3
+                  Statistics: Num rows: 10 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: (_col1 * _col3) (type: bigint)
+                    outputColumnNames: _col4
+                    Statistics: Num rows: 10 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: $sum0(_col4)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: $sum0(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1146,18 +1178,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
-                mode: final
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 282 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 282 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: char(10)), _col1 (type: char(10)), _col2 (type: binary)
 
   Stage: Stage-0
     Fetch Operator
@@ -1189,30 +1209,35 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Reducer 5 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
-        Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (shipdate_varchar is not null and (shipdate_varchar BETWEEN DynamicValue(RS_7_b_shipdate_varchar_min) AND DynamicValue(RS_7_b_shipdate_varchar_max) and in_bloom_filter(shipdate_varchar, DynamicValue(RS_7_b_shipdate_varchar_bloom_filter)))) (type: boolean)
+                  filterExpr: shipdate_varchar is not null (type: boolean)
                   Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((shipdate_varchar BETWEEN DynamicValue(RS_7_b_shipdate_varchar_min) AND DynamicValue(RS_7_b_shipdate_varchar_max) and in_bloom_filter(shipdate_varchar, DynamicValue(RS_7_b_shipdate_varchar_bloom_filter))) and shipdate_varchar is not null) (type: boolean)
+                    predicate: shipdate_varchar is not null (type: boolean)
                     Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: shipdate_varchar (type: varchar(10))
                       outputColumnNames: _col0
                       Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: varchar(10))
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: varchar(10))
-                        Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col0 (type: varchar(10))
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 50 Data size: 5100 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: varchar(10))
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: varchar(10))
+                          Statistics: Num rows: 50 Data size: 5100 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
@@ -1228,50 +1253,62 @@ STAGE PLANS:
                       expressions: shipdate_varchar (type: varchar(10))
                       outputColumnNames: _col0
                       Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: varchar(10))
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: varchar(10))
-                        Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: _col0 (type: varchar(10))
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
-                          mode: hash
-                          outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 1 Data size: 282 Basic stats: COMPLETE Column stats: COMPLETE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 282 Basic stats: COMPLETE Column stats: COMPLETE
-                            value expressions: _col0 (type: varchar(10)), _col1 (type: varchar(10)), _col2 (type: binary)
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col0 (type: varchar(10))
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 10 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: varchar(10))
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: varchar(10))
+                          Statistics: Num rows: 10 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: varchar(10))
-                  1 _col0 (type: varchar(10))
-                Statistics: Num rows: 21 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
-                  aggregations: count()
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: bigint)
-        Reducer 3 
-            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: varchar(10))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 10 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: varchar(10))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 50 Data size: 5100 Basic stats: COMPLETE Column stats: COMPLETE
+                Merge Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: varchar(10))
+                    1 _col0 (type: varchar(10))
+                  outputColumnNames: _col1, _col3
+                  Statistics: Num rows: 10 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: (_col1 * _col3) (type: bigint)
+                    outputColumnNames: _col4
+                    Statistics: Num rows: 10 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: $sum0(_col4)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: $sum0(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1282,18 +1319,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
-                mode: final
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 282 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 282 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: varchar(10)), _col1 (type: varchar(10)), _col2 (type: binary)
 
   Stage: Stage-0
     Fetch Operator

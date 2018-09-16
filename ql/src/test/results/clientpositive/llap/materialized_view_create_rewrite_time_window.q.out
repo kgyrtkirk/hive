@@ -99,8 +99,9 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (ONE_TO_ONE_EDGE), Reducer 5 (SIMPLE_EDGE)
+        Reducer 5 <- Map 4 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -116,11 +117,16 @@ STAGE PLANS:
                       expressions: a (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 4 
@@ -136,15 +142,32 @@ STAGE PLANS:
                       expressions: a (type: int), c (type: decimal(10,2))
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                      Group By Operator
+                        keys: _col0 (type: int), _col1 (type: decimal(10,2))
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: decimal(10,2))
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int), _col1 (type: decimal(10,2))
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
+                          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -154,18 +177,20 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col2
-                Statistics: Num rows: 3 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
-                  keys: _col0 (type: int), _col2 (type: decimal(10,2))
-                  mode: hash
+                Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), _col2 (type: decimal(10,2))
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int), _col1 (type: decimal(10,2))
-                    sort order: ++
-                    Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 3 
+                    table:
+                        input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                        serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                        name: default.cmv_mat_view_n3
+        Reducer 5 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -173,14 +198,12 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.cmv_mat_view_n3
+                  value expressions: _col1 (type: decimal(10,2))
 
   Stage: Stage-2
     Dependency Collection
@@ -253,11 +276,11 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
-	numFiles            	2                   
+	numFiles            	1                   
 	numRows             	2                   
 	rawDataSize         	232                 
 	rewriting.time.window	5min                
-	totalSize           	608                 
+	totalSize           	326                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -301,8 +324,9 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (ONE_TO_ONE_EDGE), Reducer 5 (SIMPLE_EDGE)
+        Reducer 5 <- Map 4 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -318,11 +342,16 @@ STAGE PLANS:
                       expressions: a (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 4 
@@ -338,15 +367,32 @@ STAGE PLANS:
                       expressions: a (type: int), c (type: decimal(10,2))
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                      Group By Operator
+                        keys: _col0 (type: int), _col1 (type: decimal(10,2))
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: decimal(10,2))
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int), _col1 (type: decimal(10,2))
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
+                          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -355,19 +401,16 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col0, _col2
-                Statistics: Num rows: 3 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
-                Group By Operator
-                  keys: _col0 (type: int), _col2 (type: decimal(10,2))
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int), _col1 (type: decimal(10,2))
-                    sort order: ++
-                    Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
-                    Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 3 
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 5 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -378,14 +421,12 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: int)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator
@@ -478,11 +519,11 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
-	numFiles            	2                   
+	numFiles            	1                   
 	numRows             	2                   
 	rawDataSize         	232                 
 	rewriting.time.window	5min                
-	totalSize           	608                 
+	totalSize           	326                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

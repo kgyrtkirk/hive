@@ -108,68 +108,41 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 10 <- Map 13 (PARTITION-LEVEL SORT, 754), Reducer 9 (PARTITION-LEVEL SORT, 754)
-        Reducer 11 <- Reducer 10 (GROUP, 481)
-        Reducer 15 <- Map 14 (PARTITION-LEVEL SORT, 398), Map 18 (PARTITION-LEVEL SORT, 398)
-        Reducer 16 <- Map 19 (PARTITION-LEVEL SORT, 754), Reducer 15 (PARTITION-LEVEL SORT, 754)
-        Reducer 17 <- Reducer 16 (GROUP, 481)
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 398), Map 6 (PARTITION-LEVEL SORT, 398)
-        Reducer 21 <- Map 20 (PARTITION-LEVEL SORT, 154), Map 25 (PARTITION-LEVEL SORT, 154)
-        Reducer 22 <- Map 26 (PARTITION-LEVEL SORT, 486), Reducer 21 (PARTITION-LEVEL SORT, 486)
-        Reducer 23 <- Reducer 22 (GROUP, 186)
-        Reducer 24 <- Reducer 23 (PARTITION-LEVEL SORT, 278), Reducer 30 (PARTITION-LEVEL SORT, 278), Reducer 36 (PARTITION-LEVEL SORT, 278)
-        Reducer 28 <- Map 27 (PARTITION-LEVEL SORT, 154), Map 31 (PARTITION-LEVEL SORT, 154)
-        Reducer 29 <- Map 32 (PARTITION-LEVEL SORT, 486), Reducer 28 (PARTITION-LEVEL SORT, 486)
-        Reducer 3 <- Map 7 (PARTITION-LEVEL SORT, 754), Reducer 2 (PARTITION-LEVEL SORT, 754)
-        Reducer 30 <- Reducer 29 (GROUP, 186)
-        Reducer 34 <- Map 33 (PARTITION-LEVEL SORT, 154), Map 37 (PARTITION-LEVEL SORT, 154)
-        Reducer 35 <- Map 38 (PARTITION-LEVEL SORT, 486), Reducer 34 (PARTITION-LEVEL SORT, 486)
-        Reducer 36 <- Reducer 35 (GROUP, 186)
-        Reducer 4 <- Reducer 3 (GROUP, 481)
-        Reducer 5 <- Reducer 11 (PARTITION-LEVEL SORT, 925), Reducer 17 (PARTITION-LEVEL SORT, 925), Reducer 24 (PARTITION-LEVEL SORT, 925), Reducer 4 (PARTITION-LEVEL SORT, 925)
-        Reducer 9 <- Map 12 (PARTITION-LEVEL SORT, 398), Map 8 (PARTITION-LEVEL SORT, 398)
+        Reducer 11 <- Map 1 (GROUP, 318)
+        Reducer 12 <- Reducer 11 (PARTITION-LEVEL SORT, 377), Reducer 16 (PARTITION-LEVEL SORT, 377)
+        Reducer 13 <- Reducer 12 (GROUP, 241)
+        Reducer 15 <- Map 14 (PARTITION-LEVEL SORT, 398), Map 17 (PARTITION-LEVEL SORT, 398)
+        Reducer 16 <- Reducer 15 (GROUP, 437)
+        Reducer 19 <- Map 1 (GROUP, 318)
+        Reducer 2 <- Map 1 (GROUP, 318)
+        Reducer 20 <- Reducer 19 (PARTITION-LEVEL SORT, 377), Reducer 24 (PARTITION-LEVEL SORT, 377)
+        Reducer 21 <- Reducer 20 (GROUP, 241)
+        Reducer 23 <- Map 22 (PARTITION-LEVEL SORT, 398), Map 25 (PARTITION-LEVEL SORT, 398)
+        Reducer 24 <- Reducer 23 (GROUP, 437)
+        Reducer 27 <- Map 1 (GROUP, 318)
+        Reducer 28 <- Reducer 27 (PARTITION-LEVEL SORT, 243), Reducer 33 (PARTITION-LEVEL SORT, 243)
+        Reducer 29 <- Reducer 28 (GROUP, 93)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 377), Reducer 8 (PARTITION-LEVEL SORT, 377)
+        Reducer 30 <- Reducer 29 (PARTITION-LEVEL SORT, 139), Reducer 38 (PARTITION-LEVEL SORT, 139), Reducer 46 (PARTITION-LEVEL SORT, 139)
+        Reducer 32 <- Map 31 (PARTITION-LEVEL SORT, 154), Map 34 (PARTITION-LEVEL SORT, 154)
+        Reducer 33 <- Reducer 32 (GROUP, 169)
+        Reducer 36 <- Map 1 (GROUP, 318)
+        Reducer 37 <- Reducer 36 (PARTITION-LEVEL SORT, 243), Reducer 41 (PARTITION-LEVEL SORT, 243)
+        Reducer 38 <- Reducer 37 (GROUP, 93)
+        Reducer 4 <- Reducer 3 (GROUP, 241)
+        Reducer 40 <- Map 39 (PARTITION-LEVEL SORT, 154), Map 42 (PARTITION-LEVEL SORT, 154)
+        Reducer 41 <- Reducer 40 (GROUP, 169)
+        Reducer 44 <- Map 1 (GROUP, 318)
+        Reducer 45 <- Reducer 44 (PARTITION-LEVEL SORT, 243), Reducer 49 (PARTITION-LEVEL SORT, 243)
+        Reducer 46 <- Reducer 45 (GROUP, 93)
+        Reducer 48 <- Map 47 (PARTITION-LEVEL SORT, 154), Map 50 (PARTITION-LEVEL SORT, 154)
+        Reducer 49 <- Reducer 48 (GROUP, 169)
+        Reducer 5 <- Reducer 13 (PARTITION-LEVEL SORT, 463), Reducer 21 (PARTITION-LEVEL SORT, 463), Reducer 30 (PARTITION-LEVEL SORT, 463), Reducer 4 (PARTITION-LEVEL SORT, 463)
+        Reducer 7 <- Map 6 (PARTITION-LEVEL SORT, 398), Map 9 (PARTITION-LEVEL SORT, 398)
+        Reducer 8 <- Reducer 7 (GROUP, 437)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: store_sales
-                  filterExpr: (ss_sold_date_sk is not null and ss_addr_sk is not null) (type: boolean)
-                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (ss_addr_sk is not null and ss_sold_date_sk is not null) (type: boolean)
-                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ss_sold_date_sk (type: int), ss_addr_sk (type: int), ss_ext_sales_price (type: decimal(7,2))
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: int), _col2 (type: decimal(7,2))
-            Execution mode: vectorized
-        Map 12 
-            Map Operator Tree:
-                TableScan
-                  alias: date_dim
-                  filterExpr: ((d_qoy = 1) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
-                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((d_qoy = 1) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
-                    Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: d_date_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized
-        Map 13 
             Map Operator Tree:
                 TableScan
                   alias: customer_address
@@ -182,12 +155,18 @@ STAGE PLANS:
                       expressions: ca_address_sk (type: int), ca_county (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col0 (type: int), _col1 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: string)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int), _col1 (type: string)
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                          Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col2 (type: bigint)
             Execution mode: vectorized
         Map 14 
             Map Operator Tree:
@@ -209,66 +188,7 @@ STAGE PLANS:
                         Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: decimal(7,2))
             Execution mode: vectorized
-        Map 18 
-            Map Operator Tree:
-                TableScan
-                  alias: date_dim
-                  filterExpr: ((d_qoy = 3) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
-                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((d_qoy = 3) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
-                    Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: d_date_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized
-        Map 19 
-            Map Operator Tree:
-                TableScan
-                  alias: customer_address
-                  filterExpr: (ca_address_sk is not null and ca_county is not null) (type: boolean)
-                  Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (ca_address_sk is not null and ca_county is not null) (type: boolean)
-                    Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ca_address_sk (type: int), ca_county (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: string)
-            Execution mode: vectorized
-        Map 20 
-            Map Operator Tree:
-                TableScan
-                  alias: web_sales
-                  filterExpr: (ws_sold_date_sk is not null and ws_bill_addr_sk is not null) (type: boolean)
-                  Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (ws_bill_addr_sk is not null and ws_sold_date_sk is not null) (type: boolean)
-                    Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ws_sold_date_sk (type: int), ws_bill_addr_sk (type: int), ws_ext_sales_price (type: decimal(7,2))
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: int), _col2 (type: decimal(7,2))
-            Execution mode: vectorized
-        Map 25 
+        Map 17 
             Map Operator Tree:
                 TableScan
                   alias: date_dim
@@ -287,184 +207,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
-        Map 26 
-            Map Operator Tree:
-                TableScan
-                  alias: customer_address
-                  filterExpr: (ca_address_sk is not null and ca_county is not null) (type: boolean)
-                  Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (ca_address_sk is not null and ca_county is not null) (type: boolean)
-                    Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ca_address_sk (type: int), ca_county (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: string)
-            Execution mode: vectorized
-        Map 27 
-            Map Operator Tree:
-                TableScan
-                  alias: web_sales
-                  filterExpr: (ws_sold_date_sk is not null and ws_bill_addr_sk is not null) (type: boolean)
-                  Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (ws_bill_addr_sk is not null and ws_sold_date_sk is not null) (type: boolean)
-                    Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ws_sold_date_sk (type: int), ws_bill_addr_sk (type: int), ws_ext_sales_price (type: decimal(7,2))
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: int), _col2 (type: decimal(7,2))
-            Execution mode: vectorized
-        Map 31 
-            Map Operator Tree:
-                TableScan
-                  alias: date_dim
-                  filterExpr: ((d_qoy = 2) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
-                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((d_qoy = 2) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
-                    Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: d_date_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized
-        Map 32 
-            Map Operator Tree:
-                TableScan
-                  alias: customer_address
-                  filterExpr: (ca_address_sk is not null and ca_county is not null) (type: boolean)
-                  Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (ca_address_sk is not null and ca_county is not null) (type: boolean)
-                    Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ca_address_sk (type: int), ca_county (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: string)
-            Execution mode: vectorized
-        Map 33 
-            Map Operator Tree:
-                TableScan
-                  alias: web_sales
-                  filterExpr: (ws_sold_date_sk is not null and ws_bill_addr_sk is not null) (type: boolean)
-                  Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (ws_bill_addr_sk is not null and ws_sold_date_sk is not null) (type: boolean)
-                    Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ws_sold_date_sk (type: int), ws_bill_addr_sk (type: int), ws_ext_sales_price (type: decimal(7,2))
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: int), _col2 (type: decimal(7,2))
-            Execution mode: vectorized
-        Map 37 
-            Map Operator Tree:
-                TableScan
-                  alias: date_dim
-                  filterExpr: ((d_qoy = 3) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
-                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((d_qoy = 3) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
-                    Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: d_date_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized
-        Map 38 
-            Map Operator Tree:
-                TableScan
-                  alias: customer_address
-                  filterExpr: (ca_address_sk is not null and ca_county is not null) (type: boolean)
-                  Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (ca_address_sk is not null and ca_county is not null) (type: boolean)
-                    Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ca_address_sk (type: int), ca_county (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: string)
-            Execution mode: vectorized
-        Map 6 
-            Map Operator Tree:
-                TableScan
-                  alias: date_dim
-                  filterExpr: ((d_qoy = 2) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
-                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((d_qoy = 2) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
-                    Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: d_date_sk (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: customer_address
-                  filterExpr: (ca_address_sk is not null and ca_county is not null) (type: boolean)
-                  Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (ca_address_sk is not null and ca_county is not null) (type: boolean)
-                    Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ca_address_sk (type: int), ca_county (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: string)
-            Execution mode: vectorized
-        Map 8 
+        Map 22 
             Map Operator Tree:
                 TableScan
                   alias: store_sales
@@ -484,29 +227,223 @@ STAGE PLANS:
                         Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: decimal(7,2))
             Execution mode: vectorized
-        Reducer 10 
+        Map 25 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  filterExpr: ((d_qoy = 3) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((d_qoy = 3) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
+                    Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: d_date_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Map 31 
+            Map Operator Tree:
+                TableScan
+                  alias: web_sales
+                  filterExpr: (ws_sold_date_sk is not null and ws_bill_addr_sk is not null) (type: boolean)
+                  Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (ws_bill_addr_sk is not null and ws_sold_date_sk is not null) (type: boolean)
+                    Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ws_sold_date_sk (type: int), ws_bill_addr_sk (type: int), ws_ext_sales_price (type: decimal(7,2))
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: int), _col2 (type: decimal(7,2))
+            Execution mode: vectorized
+        Map 34 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  filterExpr: ((d_qoy = 1) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((d_qoy = 1) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
+                    Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: d_date_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Map 39 
+            Map Operator Tree:
+                TableScan
+                  alias: web_sales
+                  filterExpr: (ws_sold_date_sk is not null and ws_bill_addr_sk is not null) (type: boolean)
+                  Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (ws_bill_addr_sk is not null and ws_sold_date_sk is not null) (type: boolean)
+                    Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ws_sold_date_sk (type: int), ws_bill_addr_sk (type: int), ws_ext_sales_price (type: decimal(7,2))
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: int), _col2 (type: decimal(7,2))
+            Execution mode: vectorized
+        Map 42 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  filterExpr: ((d_qoy = 2) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((d_qoy = 2) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
+                    Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: d_date_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Map 47 
+            Map Operator Tree:
+                TableScan
+                  alias: web_sales
+                  filterExpr: (ws_sold_date_sk is not null and ws_bill_addr_sk is not null) (type: boolean)
+                  Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (ws_bill_addr_sk is not null and ws_sold_date_sk is not null) (type: boolean)
+                    Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ws_sold_date_sk (type: int), ws_bill_addr_sk (type: int), ws_ext_sales_price (type: decimal(7,2))
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: int), _col2 (type: decimal(7,2))
+            Execution mode: vectorized
+        Map 50 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  filterExpr: ((d_qoy = 3) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((d_qoy = 3) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
+                    Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: d_date_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  filterExpr: (ss_sold_date_sk is not null and ss_addr_sk is not null) (type: boolean)
+                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (ss_addr_sk is not null and ss_sold_date_sk is not null) (type: boolean)
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_sold_date_sk (type: int), ss_addr_sk (type: int), ss_ext_sales_price (type: decimal(7,2))
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: int), _col2 (type: decimal(7,2))
+            Execution mode: vectorized
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  filterExpr: ((d_qoy = 2) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((d_qoy = 2) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
+                    Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: d_date_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 11 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 20000000 Data size: 20297597642 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 20000000 Data size: 20297597642 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: string), _col2 (type: bigint)
+        Reducer 12 
             Reduce Operator Tree:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: int)
+                  0 _col0 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col2, _col7
-                Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: sum(_col2)
-                  keys: _col7 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: decimal(17,2))
-        Reducer 11 
+                outputColumnNames: _col1, _col2, _col4
+                Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: string), CAST( (_col2 * _col4) AS decimal(17,2)) (type: decimal(17,2))
+                  outputColumnNames: _col1, _col5
+                  Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: sum(_col5)
+                    keys: _col1 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: decimal(27,2))
+        Reducer 13 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -514,13 +451,13 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 174238687 Data size: 15371387547 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: decimal(17,2))
+                  Statistics: Num rows: 174238687 Data size: 15371387547 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: decimal(27,2))
         Reducer 15 
             Reduce Operator Tree:
               Join Operator
@@ -531,35 +468,90 @@ STAGE PLANS:
                   1 _col0 (type: int)
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col1 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: _col1 (type: int)
+                Group By Operator
+                  aggregations: sum(_col2)
+                  keys: _col1 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col2 (type: decimal(7,2))
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: decimal(17,2))
         Reducer 16 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 316797606 Data size: 27947976754 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 316797606 Data size: 27947976754 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: decimal(17,2))
+        Reducer 19 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 20000000 Data size: 20297597642 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 20000000 Data size: 20297597642 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: string), _col2 (type: bigint)
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 20000000 Data size: 20297597642 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 20000000 Data size: 20297597642 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: string), _col2 (type: bigint)
+        Reducer 20 
             Reduce Operator Tree:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: int)
+                  0 _col0 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col2, _col7
-                Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: sum(_col2)
-                  keys: _col7 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: decimal(17,2))
-        Reducer 17 
+                outputColumnNames: _col1, _col2, _col4
+                Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: string), CAST( (_col2 * _col4) AS decimal(17,2)) (type: decimal(17,2))
+                  outputColumnNames: _col1, _col5
+                  Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: sum(_col5)
+                    keys: _col1 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: decimal(27,2))
+        Reducer 21 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -567,14 +559,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 174238687 Data size: 15371387547 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: decimal(17,2))
-        Reducer 2 
+                  Statistics: Num rows: 174238687 Data size: 15371387547 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: decimal(27,2))
+        Reducer 23 
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -584,13 +576,49 @@ STAGE PLANS:
                   1 _col0 (type: int)
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col1 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: _col1 (type: int)
+                Group By Operator
+                  aggregations: sum(_col2)
+                  keys: _col1 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col2 (type: decimal(7,2))
-        Reducer 21 
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: decimal(17,2))
+        Reducer 24 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 316797606 Data size: 27947976754 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 316797606 Data size: 27947976754 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: decimal(17,2))
+        Reducer 27 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 20000000 Data size: 20297597642 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 20000000 Data size: 20297597642 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: string), _col2 (type: bigint)
+        Reducer 28 
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -598,37 +626,25 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col1, _col2
-                Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col1 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: _col1 (type: int)
-                  Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col2 (type: decimal(7,2))
-        Reducer 22 
-            Reduce Operator Tree:
-              Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col1 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col2, _col7
-                Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: sum(_col2)
-                  keys: _col7 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: decimal(17,2))
-        Reducer 23 
+                outputColumnNames: _col1, _col2, _col4
+                Statistics: Num rows: 87121617 Data size: 11846020431 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: string), CAST( (_col2 * _col4) AS decimal(17,2)) (type: decimal(17,2))
+                  outputColumnNames: _col1, _col5
+                  Statistics: Num rows: 87121617 Data size: 11846020431 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: sum(_col5)
+                    keys: _col1 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 87121617 Data size: 11846020431 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 87121617 Data size: 11846020431 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: decimal(27,2))
+        Reducer 29 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -636,14 +652,40 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 87121617 Data size: 11846020363 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 43560808 Data size: 5923010147 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 87121617 Data size: 11846020363 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: decimal(17,2))
-        Reducer 24 
+                  Statistics: Num rows: 43560808 Data size: 5923010147 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: decimal(27,2))
+        Reducer 3 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col1, _col2, _col4
+                Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: string), CAST( (_col2 * _col4) AS decimal(17,2)) (type: decimal(17,2))
+                  outputColumnNames: _col1, _col5
+                  Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: sum(_col5)
+                    keys: _col1 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: decimal(27,2))
+        Reducer 30 
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -654,14 +696,14 @@ STAGE PLANS:
                   1 _col0 (type: string)
                   2 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col3, _col5
-                Statistics: Num rows: 191667561 Data size: 26061245363 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 95833779 Data size: 13030622605 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 191667561 Data size: 26061245363 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: decimal(17,2)), _col3 (type: decimal(17,2)), _col5 (type: decimal(17,2))
-        Reducer 28 
+                  Statistics: Num rows: 95833779 Data size: 13030622605 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: decimal(27,2)), _col3 (type: decimal(27,2)), _col5 (type: decimal(27,2))
+        Reducer 32 
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -671,124 +713,89 @@ STAGE PLANS:
                   1 _col0 (type: int)
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col1 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: _col1 (type: int)
+                Group By Operator
+                  aggregations: sum(_col2)
+                  keys: _col1 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col2 (type: decimal(7,2))
-        Reducer 29 
-            Reduce Operator Tree:
-              Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col1 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col2, _col7
-                Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: sum(_col2)
-                  keys: _col7 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col0 (type: string)
+                    key expressions: _col0 (type: int)
                     sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: decimal(17,2))
-        Reducer 3 
-            Reduce Operator Tree:
-              Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col1 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col2, _col7
-                Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: sum(_col2)
-                  keys: _col7 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: decimal(17,2))
-        Reducer 30 
+        Reducer 33 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
-                keys: KEY._col0 (type: string)
+                keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 87121617 Data size: 11846020363 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 79201469 Data size: 10769109250 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string)
+                  key expressions: _col0 (type: int)
                   sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 87121617 Data size: 11846020363 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 79201469 Data size: 10769109250 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: decimal(17,2))
-        Reducer 34 
-            Reduce Operator Tree:
-              Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col1, _col2
-                Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col1 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: _col1 (type: int)
-                  Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col2 (type: decimal(7,2))
-        Reducer 35 
-            Reduce Operator Tree:
-              Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col1 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col2, _col7
-                Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: sum(_col2)
-                  keys: _col7 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: decimal(17,2))
         Reducer 36 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 20000000 Data size: 20297597642 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 20000000 Data size: 20297597642 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: string), _col2 (type: bigint)
+        Reducer 37 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col1, _col2, _col4
+                Statistics: Num rows: 87121617 Data size: 11846020431 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: string), CAST( (_col2 * _col4) AS decimal(17,2)) (type: decimal(17,2))
+                  outputColumnNames: _col1, _col5
+                  Statistics: Num rows: 87121617 Data size: 11846020431 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: sum(_col5)
+                    keys: _col1 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 87121617 Data size: 11846020431 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 87121617 Data size: 11846020431 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: decimal(27,2))
+        Reducer 38 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
                 aggregations: sum(VALUE._col0)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 87121617 Data size: 11846020363 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 43560808 Data size: 5923010147 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 87121617 Data size: 11846020363 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: decimal(17,2))
+                  Statistics: Num rows: 43560808 Data size: 5923010147 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: decimal(27,2))
         Reducer 4 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -797,12 +804,142 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 174238687 Data size: 15371387547 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 174238687 Data size: 15371387547 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: decimal(27,2))
+        Reducer 40 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col1, _col2
+                Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: sum(_col2)
+                  keys: _col1 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: decimal(17,2))
+        Reducer 41 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 79201469 Data size: 10769109250 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 79201469 Data size: 10769109250 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: decimal(17,2))
+        Reducer 44 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 20000000 Data size: 20297597642 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 20000000 Data size: 20297597642 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: string), _col2 (type: bigint)
+        Reducer 45 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col1, _col2, _col4
+                Statistics: Num rows: 87121617 Data size: 11846020431 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: string), CAST( (_col2 * _col4) AS decimal(17,2)) (type: decimal(17,2))
+                  outputColumnNames: _col1, _col5
+                  Statistics: Num rows: 87121617 Data size: 11846020431 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: sum(_col5)
+                    keys: _col1 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 87121617 Data size: 11846020431 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 87121617 Data size: 11846020431 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: decimal(27,2))
+        Reducer 46 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 43560808 Data size: 5923010147 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 43560808 Data size: 5923010147 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: decimal(27,2))
+        Reducer 48 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col1, _col2
+                Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: sum(_col2)
+                  keys: _col1 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: decimal(17,2))
+        Reducer 49 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 79201469 Data size: 10769109250 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 79201469 Data size: 10769109250 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: decimal(17,2))
         Reducer 5 
             Reduce Operator Tree:
@@ -817,22 +954,22 @@ STAGE PLANS:
                   2 _col0 (type: string)
                   3 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col3, _col5, _col7, _col9, _col11
-                Statistics: Num rows: 1149975359 Data size: 101451160012 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 574987679 Data size: 50725580004 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (CASE WHEN ((_col1 > 0)) THEN (CASE WHEN ((_col9 > 0)) THEN (((_col11 / _col9) > (_col5 / _col1))) ELSE ((null > (_col5 / _col1))) END) ELSE (CASE WHEN ((_col9 > 0)) THEN (((_col11 / _col9) > null)) ELSE (null) END) END and CASE WHEN ((_col3 > 0)) THEN (CASE WHEN ((_col7 > 0)) THEN (((_col9 / _col7) > (_col1 / _col3))) ELSE ((null > (_col1 / _col3))) END) ELSE (CASE WHEN ((_col7 > 0)) THEN (((_col9 / _col7) > null)) ELSE (null) END) END) (type: boolean)
-                  Statistics: Num rows: 287493839 Data size: 25362789936 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 143746919 Data size: 12681394934 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: _col0 (type: string), 2000 (type: int), (_col9 / _col7) (type: decimal(37,20)), (_col1 / _col3) (type: decimal(37,20)), (_col11 / _col9) (type: decimal(37,20)), (_col5 / _col1) (type: decimal(37,20))
+                    expressions: _col0 (type: string), 2000 (type: int), (_col9 / _col7) (type: decimal(38,11)), (_col1 / _col3) (type: decimal(38,11)), (_col11 / _col9) (type: decimal(38,11)), (_col5 / _col1) (type: decimal(38,11))
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 287493839 Data size: 25362789936 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 143746919 Data size: 12681394934 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 287493839 Data size: 25362789936 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 143746919 Data size: 12681394934 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 9 
+        Reducer 7 
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -842,12 +979,33 @@ STAGE PLANS:
                   1 _col0 (type: int)
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col1 (type: int)
-                  sort order: +
-                  Map-reduce partition columns: _col1 (type: int)
+                Group By Operator
+                  aggregations: sum(_col2)
+                  keys: _col1 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col2 (type: decimal(7,2))
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: decimal(17,2))
+        Reducer 8 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 316797606 Data size: 27947976754 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 316797606 Data size: 27947976754 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: decimal(17,2))
 
   Stage: Stage-0
     Fetch Operator
