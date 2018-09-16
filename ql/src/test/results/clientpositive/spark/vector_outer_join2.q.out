@@ -262,11 +262,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cd
-<<<<<<< HEAD
                   Statistics: Num rows: 20 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -277,11 +273,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-<<<<<<< HEAD
                     Statistics: Num rows: 20 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                    Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Spark HashTable Sink Operator
                       Spark Hash Table Sink Vectorization:
                           className: VectorSparkHashTableSinkOperator
@@ -311,11 +303,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: hd
-<<<<<<< HEAD
                   Statistics: Num rows: 20 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -326,11 +314,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [3]
-<<<<<<< HEAD
                     Statistics: Num rows: 20 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                    Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Spark HashTable Sink Operator
                       Spark Hash Table Sink Vectorization:
                           className: VectorSparkHashTableSinkOperator
@@ -367,11 +351,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-<<<<<<< HEAD
                   Statistics: Num rows: 20 Data size: 132 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -382,11 +362,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2, 3]
-<<<<<<< HEAD
                     Statistics: Num rows: 20 Data size: 132 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                    Statistics: Num rows: 20 Data size: 4531 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                     Map Join Operator
                       condition map:
                            Left Outer Join 0 to 1
@@ -404,11 +380,7 @@ STAGE PLANS:
                       outputColumnNames: _col1
                       input vertices:
                         1 Map 3
-<<<<<<< HEAD
                       Statistics: Num rows: 50 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                      Statistics: Num rows: 22 Data size: 4984 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                       Map Join Operator
                         condition map:
                              Left Outer Join 0 to 1
@@ -426,11 +398,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 4
-<<<<<<< HEAD
-                        Statistics: Num rows: 142 Data size: 1064 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                        Statistics: Num rows: 24 Data size: 5482 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+                        Statistics: Num rows: 100 Data size: 728 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count(), sum(_col1)
                           Group By Vectorization:
