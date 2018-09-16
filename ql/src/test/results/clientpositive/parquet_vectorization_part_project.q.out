@@ -64,7 +64,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesparquet_part_n0
-            Statistics: Num rows: 200 Data size: 1592 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 200 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: (cdouble + 2.0D) (type: double)
               outputColumnNames: _col0
