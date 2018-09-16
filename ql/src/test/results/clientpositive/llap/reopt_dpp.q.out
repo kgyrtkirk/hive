@@ -245,6 +245,7 @@ Stage-0
   Fetch Operator
     limit:-1
     Stage-1
+<<<<<<< HEAD
       Reducer 3 llap
       File Output Operator [FS_25]
         Group By Operator [GBY_23] (runtime: rows=1 width=8)
@@ -290,4 +291,35 @@ Stage-0
                           Output:["_col0"]
                           TableScan [TS_0] (rows=123457 width=14)
                             default@x1_store_sales,s,Tbl:COMPLETE,Col:COMPLETE
+=======
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_35]
+        Group By Operator [GBY_34] (runtime: rows=1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
+          PARTITION_ONLY_SHUFFLE [RS_33]
+            Group By Operator [GBY_32] (runtime: rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Map Join Operator [MAPJOIN_31] (runtime: rows=1 width=8)
+                Conds:SEL_30._col0=RS_26._col0(Inner)
+              <-Map 3 [BROADCAST_EDGE] vectorized, llap
+                BROADCAST [RS_26]
+                  PartitionCols:_col0
+                  Select Operator [SEL_25] (runtime: rows=1 width=8)
+                    Output:["_col0"]
+                    Filter Operator [FIL_24] (runtime: rows=1 width=8)
+                      predicate:((d_year = 2000) and d_date_sk is not null)
+                      TableScan [TS_3] (runtime: rows=1 width=8)
+                        default@x1_date_dim,d,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_year"]
+                Dynamic Partitioning Event Operator [EVENT_29] (runtime: rows=1 width=8)
+                  Group By Operator [GBY_28] (runtime: rows=1 width=8)
+                    Output:["_col0"],keys:_col0
+                    Select Operator [SEL_27] (runtime: rows=1 width=8)
+                      Output:["_col0"]
+                       Please refer to the previous Select Operator [SEL_25]
+              <-Select Operator [SEL_30] (runtime: rows=1 width=4)
+                  Output:["_col0"]
+                  TableScan [TS_0] (rows=123457 width=14)
+                    default@x1_store_sales,s,Tbl:COMPLETE,Col:COMPLETE
+>>>>>>> asf/master
 
