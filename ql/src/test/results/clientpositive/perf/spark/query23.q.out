@@ -125,7 +125,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 9 
+        Map 14 
             Map Operator Tree:
                 TableScan
                   alias: date_dim
@@ -150,7 +150,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 8 
+        Map 13 
             Map Operator Tree:
                 TableScan
                   alias: store_sales
@@ -171,7 +171,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         outputColumnNames: _col1, _col2, _col3
                         input vertices:
-                          1 Map 9
+                          1 Map 14
                         Statistics: Num rows: 18762463 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                         Spark HashTable Sink Operator
                           keys:
@@ -888,7 +888,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 14 
+        Map 9 
             Map Operator Tree:
                 TableScan
                   alias: date_dim
@@ -913,7 +913,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 13 
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: store_sales
@@ -934,7 +934,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         outputColumnNames: _col1, _col2, _col3
                         input vertices:
-                          1 Map 14
+                          1 Map 9
                         Statistics: Num rows: 18762463 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                         Spark HashTable Sink Operator
                           keys:
