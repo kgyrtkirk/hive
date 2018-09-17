@@ -161,6 +161,16 @@ POSTHOOK: query: Select page FROM druid_kafka_test order by page
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_kafka_test
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+Cherno Alpha
+Cherno Alpha
+Coyote Tango
+Coyote Tango
+Crimson Typhoon
+Crimson Typhoon
+Gypsy Danger
+Gypsy Danger
+Striker Eureka
+Striker Eureka
 PREHOOK: query: CREATE TABLE languages(shortname string, fullname string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

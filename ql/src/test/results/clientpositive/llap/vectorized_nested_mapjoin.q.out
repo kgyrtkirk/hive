@@ -228,4 +228,4 @@ POSTHOOK: query: select sum(t1.td) from (select  v1.csmallint as tsi, v1.cdouble
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-6.06519093248695E11
+6.065190932486951E11
