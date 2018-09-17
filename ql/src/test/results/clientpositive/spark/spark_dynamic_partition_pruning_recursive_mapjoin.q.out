@@ -474,18 +474,6 @@ STAGE PLANS:
                         1 _col1 (type: int)
                         2 _col1 (type: int)
                         3 _col0 (type: int)
-                    Select Operator
-                      expressions: _col1 (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
-                      Group By Operator
-                        keys: _col0 (type: int)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
-                        Spark Partition Pruning Sink Operator
-                          Target Columns: [Map 3 -> [part3_col:int (part3_col)]]
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
             Local Work:
               Map Reduce Local Work
         Map 2 
@@ -503,6 +491,18 @@ STAGE PLANS:
                         1 _col1 (type: int)
                         2 _col1 (type: int)
                         3 _col0 (type: int)
+                    Select Operator
+                      expressions: _col1 (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                        Spark Partition Pruning Sink Operator
+                          Target Columns: [Map 3 -> [part3_col:int (part3_col)]]
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
             Local Work:
               Map Reduce Local Work
         Map 4 
@@ -677,18 +677,6 @@ STAGE PLANS:
                         2 _col1 (type: int)
                         3 _col1 (type: int)
                         4 _col0 (type: int)
-                    Select Operator
-                      expressions: _col1 (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
-                      Group By Operator
-                        keys: _col0 (type: int)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
-                        Spark Partition Pruning Sink Operator
-                          Target Columns: [Map 4 -> [part4_col:int (part4_col)]]
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
             Local Work:
               Map Reduce Local Work
         Map 2 
@@ -707,6 +695,18 @@ STAGE PLANS:
                         2 _col1 (type: int)
                         3 _col1 (type: int)
                         4 _col0 (type: int)
+                    Select Operator
+                      expressions: _col1 (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                        Spark Partition Pruning Sink Operator
+                          Target Columns: [Map 4 -> [part4_col:int (part4_col)]]
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
             Local Work:
               Map Reduce Local Work
         Map 3 
@@ -922,18 +922,6 @@ STAGE PLANS:
                         3 _col1 (type: int)
                         4 _col1 (type: int)
                         5 _col0 (type: int)
-                    Select Operator
-                      expressions: _col1 (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
-                      Group By Operator
-                        keys: _col0 (type: int)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
-                        Spark Partition Pruning Sink Operator
-                          Target Columns: [Map 5 -> [part5_col:int (part5_col)]]
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
             Local Work:
               Map Reduce Local Work
         Map 2 
@@ -953,6 +941,18 @@ STAGE PLANS:
                         3 _col1 (type: int)
                         4 _col1 (type: int)
                         5 _col0 (type: int)
+                    Select Operator
+                      expressions: _col1 (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                        Spark Partition Pruning Sink Operator
+                          Target Columns: [Map 5 -> [part5_col:int (part5_col)]]
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
             Local Work:
               Map Reduce Local Work
         Map 3 
