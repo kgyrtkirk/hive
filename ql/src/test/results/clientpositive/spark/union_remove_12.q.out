@@ -229,7 +229,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	2                   
-	totalSize           	194                 
+	totalSize           	192                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -250,6 +250,10 @@ POSTHOOK: query: select * from outputTbl1_n29
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1_n29
 #### A masked pattern was here ####
+	18
+	18
+	28
+	28
 1	1
 1	11
 2	1
@@ -260,7 +264,3 @@ POSTHOOK: Input: default@outputtbl1_n29
 7	17
 8	1
 8	1
-8	18
-8	18
-8	28
-8	28

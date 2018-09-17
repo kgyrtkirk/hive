@@ -137,18 +137,12 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                         Map Join Vectorization:
-<<<<<<< HEAD
-                            bigTableKeyColumnNums: [0]
-                            bigTableRetainedColumnNums: [0]
-=======
                             bigTableKeyColumns: 0:int
-                            bigTableRetainColumnNums: [0]
-                            bigTableValueColumns: 0:int
->>>>>>> asf/master
+                            bigTableRetainColumnNums: []
                             className: VectorMapJoinInnerBigOnlyLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                            nonOuterSmallTableKeyMapping: []
+                            nonOuterSmallTableKeyMapping: [0]
                             projectedOutput: 0:int
                             hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col1
@@ -526,25 +520,15 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col1 (type: int)
                         Map Join Vectorization:
-<<<<<<< HEAD
-                            bigTableKeyColumnNums: [1]
-                            bigTableRetainedColumnNums: [0, 1]
-                            bigTableValueColumnNums: [0, 1]
+                            bigTableKeyColumns: 1:int
+                            bigTableRetainColumnNums: [0, 1]
+                            bigTableValueColumns: 0:string, 1:int
                             className: VectorMapJoinInnerBigOnlyLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutputColumnNums: [0, 1]
-=======
-                            bigTableKeyColumns: 0:int
-                            bigTableRetainColumnNums: []
-                            className: VectorMapJoinInnerLongOperator
-                            native: true
-                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                            nonOuterSmallTableKeyMapping: [0]
-                            projectedOutput: 3:string, 0:int
-                            smallTableValueMapping: 3:string
+                            nonOuterSmallTableKeyMapping: []
+                            projectedOutput: 0:string, 1:int
                             hashTableImplementationType: OPTIMIZED
->>>>>>> asf/master
                         outputColumnNames: _col1, _col2
                         input vertices:
                           0 Map 1

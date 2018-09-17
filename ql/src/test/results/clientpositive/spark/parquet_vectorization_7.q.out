@@ -98,12 +98,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-<<<<<<< HEAD
-                            valueColumnNums: []
                         Statistics: Num rows: 5461 Data size: 923616 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                        Statistics: Num rows: 5461 Data size: 65532 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
             Map Vectorization:
