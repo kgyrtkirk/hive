@@ -1,5 +1,4 @@
 --! qt:dataset:srcpart
-set hive.metastore.aggregate.stats.cache.enabled=false;
 set hive.stats.fetch.column.stats=true;
 
 set hive.mapred.mode=nonstrict;

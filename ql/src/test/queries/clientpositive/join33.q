@@ -2,7 +2,6 @@
 --! qt:dataset:src1
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
-set hive.metastore.aggregate.stats.cache.enabled=false;
 set hive.stats.fetch.column.stats=true;
 -- SORT_QUERY_RESULTS
 
@@ -26,3 +25,6 @@ FROM src1 x JOIN src y ON (x.key = y.key)
 JOIN srcpart z ON (x.value = z.value and z.ds='2008-04-08' and z.hr=11);
 
 select * from dest_j1_n7;
+
+
+
