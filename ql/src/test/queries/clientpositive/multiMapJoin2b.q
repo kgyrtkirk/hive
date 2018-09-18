@@ -5,6 +5,11 @@ set hive.vectorized.execution.enabled=false;
 
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask.size=10000000;
+
+
+
+set hive.vectorized.execution.enabled=true;
+
 -- HIVE-5891 Alias conflict when merging multiple mapjoin tasks into their common
 -- child mapred task
 EXPLAIN ANALYZE
