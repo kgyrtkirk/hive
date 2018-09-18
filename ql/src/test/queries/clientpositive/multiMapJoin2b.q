@@ -4,7 +4,6 @@
 set hive.transpose.aggr.join=true;
 
 set hive.auto.convert.join=true;
-set hive.optimize.correlation=true;
 set hive.auto.convert.join.noconditionaltask.size=10000000;
 -- HIVE-5891 Alias conflict when merging multiple mapjoin tasks into their common
 -- child mapred task
