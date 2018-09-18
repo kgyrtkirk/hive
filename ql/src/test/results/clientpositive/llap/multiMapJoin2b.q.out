@@ -29,11 +29,9 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 4 (BROADCAST_EDGE), Union 2 (CONTAINS)
-        Map 4 <- Map 5 (BROADCAST_EDGE)
-        Map 5 <- Map 7 (BROADCAST_EDGE)
-        Map 6 <- Map 5 (BROADCAST_EDGE), Union 2 (CONTAINS)
-        Reducer 3 <- Union 2 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (BROADCAST_EDGE), Map 2 (SIMPLE_EDGE), Map 6 (BROADCAST_EDGE), Union 4 (CONTAINS)
+        Reducer 5 <- Union 4 (SIMPLE_EDGE)
+        Reducer 9 <- Map 10 (BROADCAST_EDGE), Map 7 (BROADCAST_EDGE), Map 8 (SIMPLE_EDGE), Union 4 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -49,23 +47,39 @@ STAGE PLANS:
                       expressions: key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Map Join Operator
-                        condition map:
-                             Left Semi Join 0 to 1
-                        keys:
-                          0 _col0 (type: string)
-                          1 _col0 (type: string)
-                        outputColumnNames: _col0
-                        input vertices:
-                          1 Map 4
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 10 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
                           sort order: +
-                          Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
-        Map 4 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -78,29 +92,19 @@ STAGE PLANS:
                       expressions: key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: string)
-                          1 _col0 (type: string)
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
                         outputColumnNames: _col0
-                        input vertices:
-                          1 Map 5
-                        Statistics: Num rows: 791 Data size: 68817 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          keys: _col0 (type: string)
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 316 Data size: 27492 Basic stats: COMPLETE Column stats: COMPLETE
-                          Reduce Output Operator
-                            key expressions: _col0 (type: string)
-                            sort order: +
-                            Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 316 Data size: 27492 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
-        Map 5 
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -113,34 +117,19 @@ STAGE PLANS:
                       expressions: key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: string)
-                          1 _col0 (type: string)
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
                         outputColumnNames: _col0
-                        input vertices:
-                          1 Map 7
-                        Statistics: Num rows: 791 Data size: 68817 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          keys: _col0 (type: string)
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 316 Data size: 27492 Basic stats: COMPLETE Column stats: COMPLETE
-                          Reduce Output Operator
-                            key expressions: _col0 (type: string)
-                            sort order: +
-                            Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 316 Data size: 27492 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
-        Map 6 
+        Map 7 
             Map Operator Tree:
                 TableScan
                   alias: c
@@ -153,26 +142,17 @@ STAGE PLANS:
                       expressions: key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Map Join Operator
-                        condition map:
-                             Left Semi Join 0 to 1
-                        keys:
-                          0 _col0 (type: string)
-                          1 _col0 (type: string)
-                        outputColumnNames: _col0
-                        input vertices:
-                          1 Map 5
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
-        Map 7 
+        Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: a
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -182,29 +162,98 @@ STAGE PLANS:
                       expressions: key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                Map Join Operator
+                  condition map:
+                       Left Semi Join 0 to 1
+                  keys:
+                    0 _col0 (type: string)
+                    1 _col0 (type: string)
+                  outputColumnNames: _col0
+                  input vertices:
+                    1 Map 6
+                  Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 _col0 (type: string)
+                      1 _col0 (type: string)
+                    outputColumnNames: _col0
+                    input vertices:
+                      0 Map 1
+                    Statistics: Num rows: 395 Data size: 34365 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Statistics: Num rows: 790 Data size: 68730 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 790 Data size: 68730 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 790 Data size: 68730 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Union 2 
-            Vertex: Union 2
+        Reducer 9 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                Map Join Operator
+                  condition map:
+                       Left Semi Join 0 to 1
+                  keys:
+                    0 _col0 (type: string)
+                    1 _col0 (type: string)
+                  outputColumnNames: _col0
+                  input vertices:
+                    1 Map 10
+                  Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 _col0 (type: string)
+                      1 _col0 (type: string)
+                    outputColumnNames: _col0
+                    input vertices:
+                      0 Map 7
+                    Statistics: Num rows: 395 Data size: 34365 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Statistics: Num rows: 790 Data size: 68730 Basic stats: COMPLETE Column stats: COMPLETE
+        Union 4 
+            Vertex: Union 4
 
   Stage: Stage-0
     Fetch Operator
@@ -237,118 +286,686 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 RUN: Stage-1:MAPRED
-0
-0
-0
-0
-0
-0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 10
 10
-100
-100
-100
-100
-103
-103
-103
-103
-104
-104
-104
-104
 105
 105
 11
 11
 111
 111
-113
-113
-113
-113
 114
 114
 116
 116
-118
-118
-118
-118
-119
-119
-119
-119
-119
-119
-12
-12
-12
-12
-120
-120
-120
-120
-125
-125
-125
-125
 126
 126
-128
-128
-128
-128
-128
-128
-129
-129
-129
-129
 131
 131
 133
 133
-134
-134
-134
-134
 136
 136
-137
-137
-137
-137
-138
-138
-138
-138
-138
-138
-138
-138
 143
 143
 145
 145
-146
-146
-146
-146
-149
-149
-149
-149
-15
-15
-15
-15
 150
 150
-152
-152
-152
-152
 153
 153
 155
@@ -365,64 +982,18 @@ RUN: Stage-1:MAPRED
 162
 163
 163
-164
-164
-164
-164
-165
-165
-165
-165
 166
 166
-167
-167
-167
-167
-167
-167
 168
 168
-169
-169
-169
-169
-169
-169
-169
-169
 17
 17
 170
 170
-172
-172
-172
-172
-174
-174
-174
-174
-175
-175
-175
-175
-176
-176
-176
-176
 177
 177
 178
 178
-179
-179
-179
-179
-18
-18
-18
-18
 180
 180
 181
@@ -431,162 +1002,40 @@ RUN: Stage-1:MAPRED
 183
 186
 186
-187
-187
-187
-187
-187
-187
 189
 189
 19
 19
 190
 190
-191
-191
-191
-191
 192
 192
-193
-193
-193
-193
-193
-193
 194
 194
-195
-195
-195
-195
 196
 196
-197
-197
-197
-197
-199
-199
-199
-199
-199
-199
 2
 2
 20
 20
-200
-200
-200
-200
 201
 201
 202
 202
-203
-203
-203
-203
-205
-205
-205
-205
-207
-207
-207
-207
-208
-208
-208
-208
-208
-208
-209
-209
-209
-209
-213
-213
-213
-213
 214
 214
-216
-216
-216
-216
-217
-217
-217
-217
 218
 218
-219
-219
-219
-219
-221
-221
-221
-221
 222
 222
-223
-223
-223
-223
-224
-224
-224
-224
 226
 226
 228
 228
-229
-229
-229
-229
-230
-230
-230
-230
-230
-230
-230
-230
-230
-230
-233
-233
-233
-233
 235
 235
-237
-237
-237
-237
-238
-238
-238
-238
-239
-239
-239
-239
-24
-24
-24
-24
 241
 241
-242
-242
-242
-242
 244
 244
 247
@@ -597,76 +1046,26 @@ RUN: Stage-1:MAPRED
 249
 252
 252
-255
-255
-255
-255
-256
-256
-256
-256
 257
 257
 258
 258
-26
-26
-26
-26
 260
 260
 262
 262
 263
 263
-265
-265
-265
-265
 266
 266
 27
 27
-272
-272
-272
-272
-273
-273
-273
-273
-273
-273
 274
 274
 275
 275
-277
-277
-277
-277
-277
-277
-277
-277
-278
-278
-278
-278
 28
 28
-280
-280
-280
-280
-281
-281
-281
-281
-282
-282
-282
-282
 283
 283
 284
@@ -677,10 +1076,6 @@ RUN: Stage-1:MAPRED
 286
 287
 287
-288
-288
-288
-288
 289
 289
 291
@@ -689,12 +1084,6 @@ RUN: Stage-1:MAPRED
 292
 296
 296
-298
-298
-298
-298
-298
-298
 30
 30
 302
@@ -703,74 +1092,18 @@ RUN: Stage-1:MAPRED
 305
 306
 306
-307
-307
-307
-307
 308
 308
-309
-309
-309
-309
 310
 310
-311
-311
-311
-311
-311
-311
 315
 315
-316
-316
-316
-316
-316
-316
-317
-317
-317
-317
-318
-318
-318
-318
-318
-318
-321
-321
-321
-321
-322
-322
-322
-322
 323
 323
-325
-325
-325
-325
-327
-327
-327
-327
-327
-327
 33
 33
-331
-331
-331
-331
 332
 332
-333
-333
-333
-333
 335
 335
 336
@@ -783,38 +1116,10 @@ RUN: Stage-1:MAPRED
 34
 341
 341
-342
-342
-342
-342
-344
-344
-344
-344
 345
 345
-348
-348
-348
-348
-348
-348
-348
-348
-348
-348
-35
-35
-35
-35
-35
-35
 351
 351
-353
-353
-353
-353
 356
 356
 360
@@ -827,22 +1132,8 @@ RUN: Stage-1:MAPRED
 365
 366
 366
-367
-367
-367
-367
 368
 368
-369
-369
-369
-369
-369
-369
-37
-37
-37
-37
 373
 373
 374
@@ -855,16 +1146,6 @@ RUN: Stage-1:MAPRED
 378
 379
 379
-382
-382
-382
-382
-384
-384
-384
-384
-384
-384
 386
 386
 389
@@ -875,118 +1156,28 @@ RUN: Stage-1:MAPRED
 393
 394
 394
-395
-395
-395
-395
-396
-396
-396
-396
-396
-396
-397
-397
-397
-397
-399
-399
-399
-399
 4
 4
 400
 400
-401
-401
-401
-401
-401
-401
-401
-401
-401
-401
 402
 402
-403
-403
-403
-403
-403
-403
-404
-404
-404
-404
-406
-406
-406
-406
-406
-406
-406
-406
 407
 407
-409
-409
-409
-409
-409
-409
 41
 41
 411
 411
-413
-413
-413
-413
-414
-414
-414
-414
-417
-417
-417
-417
-417
-417
 418
 418
 419
 419
-42
-42
-42
-42
 421
 421
-424
-424
-424
-424
 427
 427
-429
-429
-429
-429
 43
 43
-430
-430
-430
-430
-430
-430
-431
-431
-431
-431
-431
-431
 432
 432
 435
@@ -995,16 +1186,6 @@ RUN: Stage-1:MAPRED
 436
 437
 437
-438
-438
-438
-438
-438
-438
-439
-439
-439
-439
 44
 44
 443
@@ -1021,60 +1202,14 @@ RUN: Stage-1:MAPRED
 452
 453
 453
-454
-454
-454
-454
-454
-454
 455
 455
 457
 457
-458
-458
-458
-458
-459
-459
-459
-459
 460
 460
-462
-462
-462
-462
-463
-463
-463
-463
-466
-466
-466
-466
-466
-466
 467
 467
-468
-468
-468
-468
-468
-468
-468
-468
-469
-469
-469
-469
-469
-469
-469
-469
-469
-469
 47
 47
 470
@@ -1085,18 +1220,8 @@ RUN: Stage-1:MAPRED
 475
 477
 477
-478
-478
-478
-478
 479
 479
-480
-480
-480
-480
-480
-480
 481
 481
 482
@@ -1109,22 +1234,10 @@ RUN: Stage-1:MAPRED
 485
 487
 487
-489
-489
-489
-489
-489
-489
-489
-489
 490
 490
 491
 491
-492
-492
-492
-492
 493
 493
 494
@@ -1135,60 +1248,22 @@ RUN: Stage-1:MAPRED
 496
 497
 497
-498
-498
-498
-498
-498
-498
-5
-5
-5
-5
-5
-5
-51
-51
-51
-51
 53
 53
 54
 54
 57
 57
-58
-58
-58
-58
 64
 64
 65
 65
 66
 66
-67
-67
-67
-67
 69
 69
-70
-70
-70
-70
-70
-70
-72
-72
-72
-72
 74
 74
-76
-76
-76
-76
 77
 77
 78
@@ -1199,14 +1274,6 @@ RUN: Stage-1:MAPRED
 80
 82
 82
-83
-83
-83
-83
-84
-84
-84
-84
 85
 85
 86
@@ -1215,25 +1282,7 @@ RUN: Stage-1:MAPRED
 87
 9
 9
-90
-90
-90
-90
-90
-90
 92
 92
-95
-95
-95
-95
 96
 96
-97
-97
-97
-97
-98
-98
-98
-98
