@@ -1,7 +1,7 @@
 --! qt:dataset:src1
 --! qt:dataset:src
 
-set hive.transpose.aggr.join=false;
+set hive.transpose.aggr.join=true;
 
 set hive.mapred.mode=nonstrict;
 set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecutePrinter,org.apache.hadoop.hive.ql.hooks.PrintCompletedTasksHook;
