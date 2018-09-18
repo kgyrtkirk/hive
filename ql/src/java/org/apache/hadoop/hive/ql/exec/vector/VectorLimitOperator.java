@@ -88,7 +88,7 @@ public class VectorLimitOperator extends LimitOperator implements VectorizationO
           batch.selected[i] = batch.selected[skipSize + i];
         }
       }
-      vectorForward(batch);
+      forward(row, inputObjInspectors[tag], true);
       currCount += batch.size;
     }
   }

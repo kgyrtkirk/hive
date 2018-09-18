@@ -128,7 +128,7 @@ public class VectorTopNKeyOperator extends TopNKeyOperator implements Vectorizat
 
     // Forward the result
     if (size > 0) {
-      vectorForward(batch);
+      forward(batch, null, true);
     }
 
     // Restore the original selected vector

@@ -4,8 +4,7 @@ set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.map.aggr = true;
 
--- SORT_QUERY_RESULTS
-
+-- SORT_BEFORE_DIFF
 -- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
 
 explain 

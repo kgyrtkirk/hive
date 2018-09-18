@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.util.collectoroperator;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.hadoop.hive.ql.exec.util.rowobjects.RowTestObjects;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -31,30 +28,19 @@ public abstract class RowCollectorTestOperator extends RowCollectorTestOperatorB
   private static final long serialVersionUID = 1L;
 
   private final ObjectInspector[] outputObjectInspectors;
-  private final int columnSize;
 
   public RowCollectorTestOperator(ObjectInspector[] outputObjectInspectors) {
     super();
     this.outputObjectInspectors = outputObjectInspectors;
-    columnSize = outputObjectInspectors.length;
   }
 
   @Override
   public void process(Object row, int tag) throws HiveException {
     rowCount++;
-    Object[] resultObjectArray = new Object[columnSize];
-    if (row instanceof ArrayList) {
-      List<Object> rowObjectList = (ArrayList<Object>) row;
-      for (int c = 0; c < columnSize; c++) {
-        resultObjectArray[c] =
-            ((PrimitiveObjectInspector) outputObjectInspectors[c]).copyObject(rowObjectList.get(c));
-      }
-    } else {
-      Object[] rowObjectArray = (Object[]) row;
-      for (int c = 0; c < columnSize; c++) {
-        resultObjectArray[c] =
-            ((PrimitiveObjectInspector) outputObjectInspectors[c]).copyObject(rowObjectArray[c]);
-      }
+    Object[] rowObjectArray = (Object[]) row;
+    Object[] resultObjectArray = new Object[rowObjectArray.length];
+    for (int c = 0; c < rowObjectArray.length; c++) {
+      resultObjectArray[c] = ((PrimitiveObjectInspector) outputObjectInspectors[c]).copyObject(rowObjectArray[c]);
     }
     nextTestRow(new RowTestObjects(resultObjectArray));
   }

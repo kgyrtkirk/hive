@@ -37,10 +37,8 @@ public abstract class VectorMapJoinFastHashSet
   }
 
   public VectorMapJoinFastHashSet(
-        boolean isFullOuter,
+        boolean isOuterJoin,
         int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
-    super(
-        isFullOuter,
-        initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
+    super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
   }
 }

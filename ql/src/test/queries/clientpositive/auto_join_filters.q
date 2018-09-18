@@ -7,13 +7,7 @@ LOAD DATA LOCAL INPATH '../../data/files/in3.txt' INTO TABLE myinput1_n5;
 SELECT sum(hash(a.key,a.value,b.key,b.value))  FROM myinput1_n5 a JOIN myinput1_n5 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
 SELECT sum(hash(a.key,a.value,b.key,b.value))  FROM myinput1_n5 a LEFT OUTER JOIN myinput1_n5 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
 SELECT sum(hash(a.key,a.value,b.key,b.value))  FROM myinput1_n5 a RIGHT OUTER JOIN myinput1_n5 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SET hive.mapjoin.full.outer=false;
 SELECT sum(hash(a.key,a.value,b.key,b.value))  FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SET hive.mapjoin.full.outer=true;
-SET hive.merge.nway.joins=false;
-EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value))  FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SELECT sum(hash(a.key,a.value,b.key,b.value))  FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SET hive.merge.nway.joins=true;
 
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a JOIN myinput1_n5 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a JOIN myinput1_n5 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
@@ -30,19 +24,10 @@ SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a RIGHT OUTER JOI
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a RIGHT OUTER JOIN myinput1_n5 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a RIGHT OUTER JOIN myinput1_n5 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
 
-SET hive.mapjoin.full.outer=false;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SET hive.mapjoin.full.outer=true;
-SET hive.merge.nway.joins=false;
-EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SET hive.merge.nway.joins=true;
 
 SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1_n5 a LEFT OUTER JOIN myinput1_n5 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1_n5 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value);
 SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1_n5 a RIGHT OUTER JOIN myinput1_n5 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1_n5 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value);
@@ -66,12 +51,7 @@ SET hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a JOIN myinput1_n5 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a LEFT OUTER JOIN myinput1_n5 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a RIGHT OUTER JOIN myinput1_n5 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SET hive.mapjoin.full.outer=false;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SET hive.mapjoin.full.outer=true;
-SET hive.merge.nway.joins=false;
-SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SET hive.merge.nway.joins=true;
 
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a JOIN myinput1_n5 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a JOIN myinput1_n5 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
@@ -88,19 +68,10 @@ SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a RIGHT OUTER JOI
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a RIGHT OUTER JOIN myinput1_n5 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a RIGHT OUTER JOIN myinput1_n5 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
 
-SET hive.mapjoin.full.outer=false;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SET hive.mapjoin.full.outer=true;
-SET hive.merge.nway.joins=false;
-EXPLAIN SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n5 a FULL OUTER JOIN myinput1_n5 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
-SET hive.merge.nway.joins=true;
 
 SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1_n5 a LEFT OUTER JOIN myinput1_n5 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1_n5 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value);
 SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1_n5 a RIGHT OUTER JOIN myinput1_n5 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1_n5 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value);

@@ -9,7 +9,7 @@ set hive.vectorized.execution.reduce.enabled=false;
 
 -- SORT_QUERY_RESULTS
 
-EXPLAIN VECTORIZATION EXPRESSION
+EXPLAIN VECTORIZATION DETAIL
 SELECT   cfloat,
          cboolean1,
          cdouble,

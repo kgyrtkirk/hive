@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Random;
 import java.util.Map.Entry;
 
@@ -28,15 +27,16 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.util.rowobjects.RowTestObjects;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExtractRow;
-import org.apache.hadoop.hive.ql.exec.vector.VectorRandomBatchSource;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource;
-import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.GenerationSpec;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.util.batchgen.VectorBatchGenerator;
+import org.apache.hadoop.hive.ql.exec.vector.util.batchgen.VectorBatchGenerator.GenerateType;
+import org.apache.hadoop.hive.ql.exec.vector.util.batchgen.VectorBatchGenerator.GenerateType.GenerateCategory;
+import org.apache.hadoop.hive.ql.exec.vector.util.batchgen.VectorBatchGenerateStream;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.MapJoinTestDescription.SmallTableGenerationParameters;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.MapJoinTestDescription.SmallTableGenerationParameters.ValueOption;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.VectorMapJoinVariation;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -44,170 +44,107 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 public class MapJoinTestData {
 
-  final Random random;
+  final long bigTableRandomSeed;
+  final long smallTableRandomSeed;
 
-  final List<GenerationSpec> generationSpecList;
-  final VectorRandomRowSource bigTableRowSource;
-  final Object[][] bigTableRandomRows;
-  final VectorRandomBatchSource bigTableBatchSource;
+  final GenerateType[] generateTypes;
+  final VectorBatchGenerator generator;
 
   public final VectorizedRowBatch bigTableBatch;
+
+  public final VectorBatchGenerateStream bigTableBatchStream;
 
   final SmallTableGenerationParameters smallTableGenerationParameters;
 
   HashMap<RowTestObjects, Integer> smallTableKeyHashMap;
 
-  List<RowTestObjects> fullOuterAdditionalSmallTableKeys;
-
   ArrayList<Integer> smallTableValueCounts;
   ArrayList<ArrayList<RowTestObjects>> smallTableValues;
 
   public MapJoinTestData(int rowCount, MapJoinTestDescription testDesc,
-      long randomSeed) throws HiveException {
+      long bigTableRandomSeed, long smallTableRandomSeed) throws HiveException {
 
-    random = new Random(randomSeed);
+    this.bigTableRandomSeed = bigTableRandomSeed;
 
-    boolean isOuterJoin =
-        (testDesc.vectorMapJoinVariation == VectorMapJoinVariation.OUTER ||
-         testDesc.vectorMapJoinVariation == VectorMapJoinVariation.FULL_OUTER);
+    this.smallTableRandomSeed = smallTableRandomSeed;
 
-    generationSpecList = generationSpecListFromTypeInfos(
-        testDesc.bigTableTypeInfos,
-        testDesc.bigTableKeyColumnNums.length,
-        isOuterJoin);
+    generateTypes = generateTypesFromTypeInfos(testDesc.bigTableTypeInfos);
+    generator = new VectorBatchGenerator(generateTypes);
 
-    bigTableRowSource = new VectorRandomRowSource();
-
-    bigTableRowSource.initGenerationSpecSchema(
-        random, generationSpecList, /* maxComplexDepth */ 0,
-        /* allowNull */ true, /* isUnicodeOk */ true, null);
-
-    // UNDONE: 100000
-    bigTableRandomRows = bigTableRowSource.randomRows(10);
-
-    bigTableBatchSource =
-        VectorRandomBatchSource.createInterestingBatches(
-            random,
-            bigTableRowSource,
-            bigTableRandomRows,
-            null);
-
-    bigTableBatch = createBigTableBatch(testDesc);
+    bigTableBatch = generator.createBatch();
 
     // Add small table result columns.
-
-    // Only [FULL] OUTER MapJoin needs a physical column.
-    final int smallTableRetainKeySize =
-        (isOuterJoin ? testDesc.smallTableRetainKeyColumnNums.length : 0);
-    ColumnVector[] newCols =
-        new ColumnVector[
-            bigTableBatch.cols.length +
-            smallTableRetainKeySize +
-            testDesc.smallTableValueTypeInfos.length];
+    ColumnVector[] newCols = new ColumnVector[bigTableBatch.cols.length + testDesc.smallTableValueTypeInfos.length];
     System.arraycopy(bigTableBatch.cols, 0, newCols, 0, bigTableBatch.cols.length);
 
-    int colIndex = bigTableBatch.cols.length;
-
-    if (isOuterJoin) {
-      for (int s = 0; s < smallTableRetainKeySize; s++) {
-        final int smallTableKeyColumnNum = testDesc.smallTableRetainKeyColumnNums[s];
-        newCols[colIndex++] =
-            VectorizedBatchUtil.createColumnVector(
-                testDesc.smallTableKeyTypeInfos[smallTableKeyColumnNum]);
-      }
-    }
     for (int s = 0; s < testDesc.smallTableValueTypeInfos.length; s++) {
-      newCols[colIndex++] =
+      newCols[bigTableBatch.cols.length + s] =
           VectorizedBatchUtil.createColumnVector(testDesc.smallTableValueTypeInfos[s]);
     }
     bigTableBatch.cols = newCols;
     bigTableBatch.numCols = newCols.length;
+ 
+    // This stream will be restarted with the same random seed over and over.
+    bigTableBatchStream = new VectorBatchGenerateStream(
+        bigTableRandomSeed, generator, rowCount);
 
-    VectorExtractRow keyVectorExtractRow = new VectorExtractRow();
-    keyVectorExtractRow.init(testDesc.bigTableKeyTypeInfos, testDesc.bigTableKeyColumnNums);
+    VectorExtractRow vectorExtractRow = new VectorExtractRow();
+    vectorExtractRow.init(testDesc.bigTableKeyTypeInfos);
 
     smallTableGenerationParameters = testDesc.getSmallTableGenerationParameters();
 
-    HashMap<RowTestObjects, Integer> bigTableKeyHashMap = new HashMap<RowTestObjects, Integer>();
     smallTableKeyHashMap = new HashMap<RowTestObjects, Integer>();
+    Random smallTableRandom = new Random(smallTableRandomSeed);
+                                                  // Start small table random generation
+                                                  // from beginning.
 
     ValueOption valueOption = smallTableGenerationParameters.getValueOption();
-    if (valueOption != ValueOption.NO_REGULAR_SMALL_KEYS) {
-      int keyOutOfAThousand = smallTableGenerationParameters.getKeyOutOfAThousand();
+    int keyOutOfAThousand = smallTableGenerationParameters.getKeyOutOfAThousand();
 
-      bigTableBatchSource.resetBatchIteration();
-      while (bigTableBatchSource.fillNextBatch(bigTableBatch)) {
+    bigTableBatchStream.reset();
+    while (bigTableBatchStream.isNext()) {
+      bigTableBatch.reset();
+      bigTableBatchStream.fillNext(bigTableBatch);
 
-        final int size = bigTableBatch.size;
-        for (int logical = 0; logical < size; logical++) {
-          final int batchIndex =
-              (bigTableBatch.selectedInUse ? bigTableBatch.selected[logical] : logical);
+      final int size = bigTableBatch.size;
+      for (int i = 0; i < size; i++) {
 
-          RowTestObjects testKey = getTestKey(bigTableBatch, batchIndex, keyVectorExtractRow,
+        if (smallTableRandom.nextInt(1000) <= keyOutOfAThousand) {
+
+          RowTestObjects testKey = getTestKey(bigTableBatch, i, vectorExtractRow,
               testDesc.bigTableKeyTypeInfos.length,
               testDesc.bigTableObjectInspectors);
-          bigTableKeyHashMap.put((RowTestObjects) testKey.clone(), -1);
 
-          if (random.nextInt(1000) <= keyOutOfAThousand) {
-
-            if (valueOption == ValueOption.ONLY_ONE) {
-              if (smallTableKeyHashMap.containsKey(testKey)) {
-                continue;
-              }
+          if (valueOption == ValueOption.ONLY_ONE) {
+            if (smallTableKeyHashMap.containsKey(testKey)) {
+              continue;
             }
-            smallTableKeyHashMap.put((RowTestObjects) testKey.clone(), -1);
           }
+          smallTableKeyHashMap.put((RowTestObjects) testKey.clone(), -1);
         }
       }
     }
 
     //---------------------------------------------------------------------------------------------
 
-    // Add more small table keys that are not in Big Table or Small Table for FULL OUTER.
-
-    fullOuterAdditionalSmallTableKeys = new ArrayList<RowTestObjects>();
-
-    VectorRandomRowSource altBigTableRowSource = new VectorRandomRowSource();
-
-    altBigTableRowSource.initGenerationSpecSchema(
-        random, generationSpecList, /* maxComplexDepth */ 0,
-        /* allowNull */ true, /* isUnicodeOk */ true, null);
-
-    Object[][] altBigTableRandomRows = altBigTableRowSource.randomRows(10000);
-
-    VectorRandomBatchSource altBigTableBatchSource =
-        VectorRandomBatchSource.createInterestingBatches(
-            random,
-            altBigTableRowSource,
-            altBigTableRandomRows,
-            null);
-
-    altBigTableBatchSource.resetBatchIteration();
-    while (altBigTableBatchSource.fillNextBatch(bigTableBatch)) {
-      final int size = bigTableBatch.size;
-      for (int logical = 0; logical < size; logical++) {
-        final int batchIndex =
-            (bigTableBatch.selectedInUse ? bigTableBatch.selected[logical] : logical);
-        RowTestObjects testKey = getTestKey(bigTableBatch, batchIndex, keyVectorExtractRow,
-            testDesc.bigTableKeyTypeInfos.length,
-            testDesc.bigTableObjectInspectors);
-        if (bigTableKeyHashMap.containsKey(testKey) ||
-            smallTableKeyHashMap.containsKey(testKey)) {
-          continue;
-        }
-        RowTestObjects testKeyClone = (RowTestObjects) testKey.clone();
-        smallTableKeyHashMap.put(testKeyClone, -1);
-        fullOuterAdditionalSmallTableKeys.add(testKeyClone);
-      }
+    // UNDONE: For now, don't add more small keys...
+    /*
+    // Add more small table keys that are not in Big Table batches.
+    final int smallTableAdditionalLength = 1 + random.nextInt(4);
+    final int smallTableAdditionalSize = smallTableAdditionalLength * maxBatchSize;
+    VectorizedRowBatch[] smallTableAdditionalBatches = createBigTableBatches(generator, smallTableAdditionalLength);
+    for (int i = 0; i < smallTableAdditionalLength; i++) {
+      generator.generateBatch(smallTableAdditionalBatches[i], random, maxBatchSize);
     }
-
-    // Make sure there is a NULL key.
-    Object[] nullKeyRowObjects = new Object[testDesc.bigTableKeyTypeInfos.length];
-    RowTestObjects nullTestKey = new RowTestObjects(nullKeyRowObjects);
-    if (!smallTableKeyHashMap.containsKey(nullTestKey)) {
-      smallTableKeyHashMap.put(nullTestKey, -1);
-      fullOuterAdditionalSmallTableKeys.add(nullTestKey);
+    TestRow[] additionalTestKeys = getTestKeys(smallTableAdditionalBatches, vectorExtractRow,
+        testDesc.bigTableKeyTypeInfos.length, testDesc.bigTableObjectInspectors);
+    final int smallTableAdditionKeyProbes = smallTableAdditionalSize / 2;
+    for (int i = 0; i < smallTableAdditionKeyProbes; i++) {
+      int index = random.nextInt(smallTableAdditionalSize);
+      TestRow additionalTestKey = additionalTestKeys[index];
+      smallTableKeyHashMap.put((TestRow) additionalTestKey.clone(), -1);
     }
+    */
 
     // Number the test rows with collection order.
     int addCount = 0;
@@ -215,26 +152,15 @@ public class MapJoinTestData {
       testRowEntry.setValue(addCount++);
     }
 
-    generateVariationData(this, testDesc, random);
+    generateVariationData(this, testDesc, smallTableRandom);
   }
 
-  public VectorRandomBatchSource getBigTableBatchSource() {
-    return bigTableBatchSource;
+  public VectorBatchGenerateStream getBigTableBatchStream() {
+    return bigTableBatchStream;
   }
 
   public VectorizedRowBatch getBigTableBatch() {
     return bigTableBatch;
-  }
-
-  public VectorizedRowBatch createBigTableBatch(MapJoinTestDescription testDesc) {
-    final int bigTableColumnCount = testDesc.bigTableTypeInfos.length;
-    VectorizedRowBatch batch = new VectorizedRowBatch(bigTableColumnCount);
-    for (int i = 0; i < bigTableColumnCount; i++) {
-      batch.cols[i] =
-          VectorizedBatchUtil.createColumnVector(
-              testDesc.bigTableTypeInfos[i]);
-    }
-    return batch;
   }
 
   private RowTestObjects getTestKey(VectorizedRowBatch bigTableBatch, int batchIndex,
@@ -251,29 +177,37 @@ public class MapJoinTestData {
       MapJoinOperator operator) throws HiveException {
 
     VectorExtractRow vectorExtractRow = new VectorExtractRow();
-    vectorExtractRow.init(testDesc.bigTableTypeInfos);
+    vectorExtractRow.init(testDesc.bigTableKeyTypeInfos);
 
-    Object[][] bigTableRandomRows = testData.bigTableRandomRows;
-    final int rowCount = bigTableRandomRows.length;
-    for (int i = 0; i < rowCount; i++) {
-      Object[] row = bigTableRandomRows[i];
-      operator.process(row, 0);
+    final int columnCount = testDesc.bigTableKeyTypeInfos.length;
+    Object[] row = new Object[columnCount];
+
+    testData.bigTableBatchStream.reset();
+    while (testData.bigTableBatchStream.isNext()) {
+      testData.bigTableBatch.reset();
+      testData.bigTableBatchStream.fillNext(testData.bigTableBatch);
+
+      // Extract rows and call process per row
+      final int size = testData.bigTableBatch.size;
+      for (int r = 0; r < size; r++) {
+        vectorExtractRow.extractRow(testData.bigTableBatch, r, row);
+        operator.process(row, 0);
+      }
     }
-
-    // Close the operator tree.
-    operator.close(false);
+    operator.closeOp(false);
   }
 
   public static void driveVectorBigTableData(MapJoinTestDescription testDesc, MapJoinTestData testData,
       MapJoinOperator operator) throws HiveException {
 
-    testData.bigTableBatchSource.resetBatchIteration();
-    while (testData.bigTableBatchSource.fillNextBatch(testData.bigTableBatch)) {
+    testData.bigTableBatchStream.reset();
+    while (testData.bigTableBatchStream.isNext()) {
+      testData.bigTableBatch.reset();
+      testData.bigTableBatchStream.fillNext(testData.bigTableBatch);
+
       operator.process(testData.bigTableBatch, 0);
     }
-
-    // Close the operator tree.
-    operator.close(false);
+    operator.closeOp(false);
   }
 
   public static void generateVariationData(MapJoinTestData testData,
@@ -285,7 +219,6 @@ public class MapJoinTestData {
       break;
     case INNER:
     case OUTER:
-    case FULL_OUTER:
       testData.generateRandomSmallTableCounts(testDesc, random);
       testData.generateRandomSmallTableValues(testDesc, random);
       break;
@@ -297,15 +230,10 @@ public class MapJoinTestData {
   private static RowTestObjects generateRandomSmallTableValueRow(MapJoinTestDescription testDesc, Random random) {
 
     final int columnCount = testDesc.smallTableValueTypeInfos.length;
-    PrimitiveTypeInfo[] primitiveTypeInfos = new PrimitiveTypeInfo[columnCount];
-    for (int i = 0; i < columnCount; i++) {
-      primitiveTypeInfos[i] = (PrimitiveTypeInfo) testDesc.smallTableValueTypeInfos[i];
-    }
-    Object[] smallTableValueRow =
-        VectorRandomRowSource.randomWritablePrimitiveRow(
-            columnCount, random, primitiveTypeInfos);
+    Object[] smallTableValueRow = VectorRandomRowSource.randomWritablePrimitiveRow(columnCount, random,
+        testDesc.smallTableValuePrimitiveTypeInfos);
     for (int c = 0; c < smallTableValueRow.length; c++) {
-      smallTableValueRow[c] = ((PrimitiveObjectInspector) testDesc.smallTableValueObjectInspectors[c]).copyObject(smallTableValueRow[c]);
+      smallTableValueRow[c] = ((PrimitiveObjectInspector) testDesc.smallTableObjectInspectors[c]).copyObject(smallTableValueRow[c]);
     }
     return new RowTestObjects(smallTableValueRow);
   }
@@ -313,7 +241,7 @@ public class MapJoinTestData {
   private void generateRandomSmallTableCounts(MapJoinTestDescription testDesc, Random random) {
     smallTableValueCounts = new ArrayList<Integer>();
     for (Entry<RowTestObjects, Integer> testKeyEntry : smallTableKeyHashMap.entrySet()) {
-      final int valueCount = 1 + random.nextInt(3);
+      final int valueCount = 1 + random.nextInt(19);
       smallTableValueCounts.add(valueCount);
     }
   }
@@ -330,26 +258,15 @@ public class MapJoinTestData {
     }
   }
 
-  private static List<GenerationSpec> generationSpecListFromTypeInfos(TypeInfo[] typeInfos,
-      int keyCount, boolean isOuterJoin) {
-
-    List<GenerationSpec> generationSpecList = new ArrayList<GenerationSpec>();
-
+  private static GenerateType[] generateTypesFromTypeInfos(TypeInfo[] typeInfos) {
     final int size = typeInfos.length;
+    GenerateType[] generateTypes = new GenerateType[size];
     for (int i = 0; i < size; i++) {
-      TypeInfo typeInfo = typeInfos[i];
-      final boolean columnAllowNulls;
-      if (i >= keyCount) {
-
-        // Value columns can be NULL.
-        columnAllowNulls = true;
-      } else {
-
-        // Non-OUTER JOIN operators expect NULL keys to have been filtered out.
-        columnAllowNulls = isOuterJoin;
-      }
-      generationSpecList.add(GenerationSpec.createSameType(typeInfo, columnAllowNulls));
+      PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfos[i];
+      GenerateCategory category =
+          GenerateCategory.generateCategoryFromPrimitiveCategory(primitiveTypeInfo.getPrimitiveCategory());
+      generateTypes[i] = new GenerateType(category);
     }
-    return generationSpecList;
+    return generateTypes;
   }
 }

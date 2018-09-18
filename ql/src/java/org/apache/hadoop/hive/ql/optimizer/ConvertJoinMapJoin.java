@@ -150,9 +150,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       numBuckets = 1;
     }
     LOG.info("Estimated number of buckets " + numBuckets);
-    MapJoinConversion mapJoinConversion =
-        getMapJoinConversion(joinOp, context, numBuckets, false, maxJoinMemory, true);
-    if (mapJoinConversion == null) {
+    int mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, numBuckets, false, maxJoinMemory, true);
+    if (mapJoinConversionPos < 0) {
       Object retval = checkAndConvertSMBJoin(context, joinOp, tezBucketJoinProcCtx);
       if (retval == null) {
         return retval;
@@ -168,10 +167,10 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       if (context.conf.getBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ)) {
         // Check if we are in LLAP, if so it needs to be determined if we should use BMJ or DPHJ
         if (llapInfo != null) {
-          if (selectJoinForLlap(context, joinOp, tezBucketJoinProcCtx, llapInfo, mapJoinConversion, numBuckets)) {
+          if (selectJoinForLlap(context, joinOp, tezBucketJoinProcCtx, llapInfo, mapJoinConversionPos, numBuckets)) {
             return null;
           }
-        } else if (convertJoinBucketMapJoin(joinOp, context, mapJoinConversion, tezBucketJoinProcCtx)) {
+        } else if (convertJoinBucketMapJoin(joinOp, context, mapJoinConversionPos, tezBucketJoinProcCtx)) {
           return null;
         }
       }
@@ -180,27 +179,16 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // check if we can convert to map join no bucket scaling.
     LOG.info("Convert to non-bucketed map join");
     if (numBuckets != 1) {
-      mapJoinConversion = getMapJoinConversion(joinOp, context, 1, false, maxJoinMemory, true);
+      mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, 1, false, maxJoinMemory, true);
     }
-    if (mapJoinConversion == null) {
+    if (mapJoinConversionPos < 0) {
       // we are just converting to a common merge join operator. The shuffle
       // join in map-reduce case.
       fallbackToReduceSideJoin(joinOp, context);
       return null;
     }
 
-    // Currently, this is a MJ path and we don's support FULL OUTER MapJoin yet.
-    if (mapJoinConversion.getIsFullOuterJoin() &&
-        !mapJoinConversion.getIsFullOuterEnabledForMapJoin()) {
-      fallbackToReduceSideJoin(joinOp, context);
-      return null;
-    }
-
-    MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, mapJoinConversion, true);
-    if (mapJoinOp == null) {
-      fallbackToReduceSideJoin(joinOp, context);
-      return null;
-    }
+    MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, mapJoinConversionPos, true);
     // map join operator by default has no bucket cols and num of reduce sinks
     // reduced by 1
     mapJoinOp.setOpTraits(new OpTraits(null, -1, null,
@@ -243,11 +231,11 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   private boolean selectJoinForLlap(OptimizeTezProcContext context, JoinOperator joinOp,
                           TezBucketJoinProcCtx tezBucketJoinProcCtx,
                           LlapClusterStateForCompile llapInfo,
-                          MapJoinConversion mapJoinConversion, int numBuckets) throws SemanticException {
+                          int mapJoinConversionPos, int numBuckets) throws SemanticException {
     if (!context.conf.getBoolVar(HiveConf.ConfVars.HIVEDYNAMICPARTITIONHASHJOIN)
             && numBuckets > 1) {
       // DPHJ is disabled, only attempt BMJ or mapjoin
-      return convertJoinBucketMapJoin(joinOp, context, mapJoinConversion, tezBucketJoinProcCtx);
+      return convertJoinBucketMapJoin(joinOp, context, mapJoinConversionPos, tezBucketJoinProcCtx);
     }
 
     int numExecutorsPerNode = -1;
@@ -263,7 +251,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     LOG.debug("Number of nodes = " + numNodes + ". Number of Executors per node = " + numExecutorsPerNode);
 
     // Determine the size of small table inputs
-    final int mapJoinConversionPos = mapJoinConversion.getBigTablePos();
     long totalSize = 0;
     for (int pos = 0; pos < joinOp.getParentOperators().size(); pos++) {
       if (pos == mapJoinConversionPos) {
@@ -297,7 +284,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       return convertJoinDynamicPartitionedHashJoin(joinOp, context);
     } else if (numBuckets > 1) {
       LOG.info("Bucket Map Join chosen");
-      return convertJoinBucketMapJoin(joinOp, context, mapJoinConversion, tezBucketJoinProcCtx);
+      return convertJoinBucketMapJoin(joinOp, context, mapJoinConversionPos, tezBucketJoinProcCtx);
     }
     // fallback to mapjoin no bucket scaling
     LOG.info("Falling back to mapjoin no bucket scaling");
@@ -572,13 +559,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   }
 
   private boolean convertJoinBucketMapJoin(JoinOperator joinOp, OptimizeTezProcContext context,
-      MapJoinConversion mapJoinConversion, TezBucketJoinProcCtx tezBucketJoinProcCtx) throws SemanticException {
+      int bigTablePosition, TezBucketJoinProcCtx tezBucketJoinProcCtx) throws SemanticException {
 
-    if (mapJoinConversion.getIsFullOuterJoin() &&
-        !mapJoinConversion.getIsFullOuterEnabledForMapJoin()) {
-      return false;
-    }
-    final int bigTablePosition = mapJoinConversion.getBigTablePos();
     if (!checkConvertJoinBucketMapJoin(joinOp, bigTablePosition, tezBucketJoinProcCtx)) {
       LOG.info("Check conversion to bucket map join failed.");
       return false;
@@ -610,7 +592,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       }
     }
 
-    MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, mapJoinConversion, true);
+    MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, bigTablePosition, true);
     if (mapJoinOp == null) {
       LOG.debug("Conversion to bucket map join failed.");
       return false;
@@ -932,46 +914,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   }
 
   /**
-   * Return result for getMapJoinConversion method.
-   */
-  public static class MapJoinConversion {
-
-    private final int bigTablePos;
-
-    private final boolean isFullOuterJoin;
-    private final boolean isFullOuterEnabledForDynamicPartitionHashJoin;
-    private final boolean isFullOuterEnabledForMapJoin;
-
-    public MapJoinConversion(int bigTablePos, boolean isFullOuterJoin,
-        boolean isFullOuterEnabledForDynamicPartitionHashJoin, boolean isFullOuterEnabledForMapJoin) {
-      this.bigTablePos = bigTablePos;
-
-      this.isFullOuterJoin = isFullOuterJoin;
-      this.isFullOuterEnabledForDynamicPartitionHashJoin = isFullOuterEnabledForDynamicPartitionHashJoin;
-      this.isFullOuterEnabledForMapJoin = isFullOuterEnabledForMapJoin;
-    }
-
-    public int getBigTablePos() {
-      return bigTablePos;
-    }
-
-    /*
-     * Do we have a single FULL OUTER JOIN here?
-     */
-    public boolean getIsFullOuterJoin() {
-      return isFullOuterJoin;
-    }
-
-    public boolean getIsFullOuterEnabledForDynamicPartitionHashJoin() {
-      return isFullOuterEnabledForDynamicPartitionHashJoin;
-    }
-
-    public boolean getIsFullOuterEnabledForMapJoin() {
-      return isFullOuterEnabledForMapJoin;
-    }
-  }
-
-  /**
    * Obtain big table position for join.
    *
    * @param joinOp join operator
@@ -984,11 +926,9 @@ public class ConvertJoinMapJoin implements NodeProcessor {
    * @return returns big table position or -1 if it cannot be determined
    * @throws SemanticException
    */
-  public MapJoinConversion getMapJoinConversion(JoinOperator joinOp, OptimizeTezProcContext context,
+  public int getMapJoinConversionPos(JoinOperator joinOp, OptimizeTezProcContext context,
       int buckets, boolean skipJoinTypeChecks, long maxSize, boolean checkMapJoinThresholds)
               throws SemanticException {
-    JoinDesc joinDesc = joinOp.getConf();
-    JoinCondDesc[] conds = joinDesc.getConds();
     if (!skipJoinTypeChecks) {
       /*
        * HIVE-9038: Join tests fail in tez when we have more than 1 join on the same key and there is
@@ -997,32 +937,14 @@ public class ConvertJoinMapJoin implements NodeProcessor {
        * new operation to be able to support this. This seems like a corner case enough to special
        * case this for now.
        */
-      if (conds.length > 1) {
+      if (joinOp.getConf().getConds().length > 1) {
         if (hasOuterJoin(joinOp)) {
-          return null;
+          return -1;
         }
       }
     }
-
-    // Assume.
-    boolean isFullOuterEnabledForDynamicPartitionHashJoin = false;
-    boolean isFullOuterEnabledForMapJoin = false;
-
-    boolean isFullOuterJoin =
-        MapJoinProcessor.precheckFullOuter(context.conf, joinOp);
-    if (isFullOuterJoin) {
-
-      boolean isFullOuterEnabled = MapJoinProcessor.isFullOuterMapEnabled(context.conf, joinOp);
-      if (isFullOuterEnabled) {
-
-        // FUTURE: Currently, we only support DPHJ.
-        isFullOuterEnabledForDynamicPartitionHashJoin =
-            MapJoinProcessor.isFullOuterEnabledForDynamicPartitionHashJoin(context.conf, joinOp);
-      }
-    }
-
     Set<Integer> bigTableCandidateSet =
-        MapJoinProcessor.getBigTableCandidates(conds, /* isSupportFullOuter */ true);
+        MapJoinProcessor.getBigTableCandidates(joinOp.getConf().getConds());
     int bigTablePosition = -1;
     // big input cumulative row count
     long bigInputCumulativeCardinality = -1L;
@@ -1045,7 +967,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       Statistics currInputStat = parentOp.getStatistics();
       if (currInputStat == null) {
         LOG.warn("Couldn't get statistics from: " + parentOp);
-        return null;
+        return -1;
       }
 
       long inputSize = computeOnlineDataSize(currInputStat);
@@ -1058,14 +980,14 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         if (foundInputNotFittingInMemory) {
           // cannot convert to map join; we've already chosen a big table
           // on size and there's another one that's bigger.
-          return null;
+          return -1;
         }
 
         if (inputSize/buckets > maxSize) {
           if (!bigTableCandidateSet.contains(pos)) {
             // can't use the current table as the big table, but it's too
             // big for the map side.
-            return null;
+            return -1;
           }
 
           currentInputNotFittingInMemory = true;
@@ -1080,7 +1002,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         Long cardinality = computeCumulativeCardinality(parentOp);
         if (cardinality == null) {
           // We could not get stats, we cannot convert
-          return null;
+          return -1;
         }
         currentInputCumulativeCardinality = cardinality;
       }
@@ -1119,7 +1041,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       if (totalSize/buckets > maxSize) {
         // sum of small tables size in this join exceeds configured limit
         // hence cannot convert.
-        return null;
+        return -1;
       }
 
       if (selectedBigTable) {
@@ -1134,7 +1056,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     if (checkMapJoinThresholds && convertDPHJ
             && checkShuffleSizeForLargeTable(joinOp, bigTablePosition, context)) {
       LOG.debug("Conditions to convert to MapJoin are not met");
-      return null;
+      return -1;
     }
 
     // only allow cross product in map joins if build side is 'small'
@@ -1148,7 +1070,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
             HiveConf.getIntVar(context.conf, HiveConf.ConfVars.XPRODSMALLTABLEROWSTHRESHOLD)) {
             // if any of smaller side is estimated to generate more than
             // threshold rows we would disable mapjoin
-            return null;
+            return -1;
           }
         }
       }
@@ -1159,12 +1081,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // equal to sum of small tables size.
     joinOp.getConf().setInMemoryDataSize(totalSize / buckets);
 
-    return
-        new MapJoinConversion(
-            bigTablePosition,
-            isFullOuterJoin,
-            isFullOuterEnabledForDynamicPartitionHashJoin,
-            isFullOuterEnabledForMapJoin);
+    return bigTablePosition;
   }
 
   // This is akin to CBO cumulative cardinality model
@@ -1213,8 +1130,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
    * for tez.
    */
   public MapJoinOperator convertJoinMapJoin(JoinOperator joinOp, OptimizeTezProcContext context,
-      MapJoinConversion mapJoinConversion, boolean removeReduceSink) throws SemanticException {
-
+      int bigTablePosition, boolean removeReduceSink) throws SemanticException {
     // bail on mux operator because currently the mux operator masks the emit keys
     // of the constituent reduce sinks.
     for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
@@ -1224,20 +1140,15 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     }
 
     // can safely convert the join to a map join.
-    final int bigTablePosition = mapJoinConversion.getBigTablePos();
     MapJoinOperator mapJoinOp =
         MapJoinProcessor.convertJoinOpMapJoinOp(context.conf, joinOp,
             joinOp.getConf().isLeftInputJoin(), joinOp.getConf().getBaseSrc(),
             joinOp.getConf().getMapAliases(), bigTablePosition, true, removeReduceSink);
-    if (mapJoinOp == null) {
-      return null;
-    }
-    MapJoinDesc mapJoinDesc = mapJoinOp.getConf();
-    mapJoinDesc.setHybridHashJoin(HiveConf.getBoolVar(context.conf,
+    mapJoinOp.getConf().setHybridHashJoin(HiveConf.getBoolVar(context.conf,
         HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN));
-    List<ExprNodeDesc> joinExprs = mapJoinDesc.getKeys().values().iterator().next();
+    List<ExprNodeDesc> joinExprs = mapJoinOp.getConf().getKeys().values().iterator().next();
     if (joinExprs.size() == 0) {  // In case of cross join, we disable hybrid grace hash join
-      mapJoinDesc.setHybridHashJoin(false);
+      mapJoinOp.getConf().setHybridHashJoin(false);
     }
 
     Operator<? extends OperatorDesc> parentBigTableOp =
@@ -1445,29 +1356,18 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // Since we don't have big table index yet, must start with estimate of numReducers
     int numReducers = estimateNumBuckets(joinOp, false);
     LOG.info("Try dynamic partitioned hash join with estimated " + numReducers + " reducers");
-    MapJoinConversion mapJoinConversion =
-        getMapJoinConversion(joinOp, context, numReducers, false, maxJoinMemory, false);
-    if (mapJoinConversion != null) {
-      if (mapJoinConversion.getIsFullOuterJoin() &&
-          !mapJoinConversion.getIsFullOuterEnabledForDynamicPartitionHashJoin()) {
-        return false;
-      }
-      final int bigTablePos = mapJoinConversion.getBigTablePos();
-
+    int bigTablePos = getMapJoinConversionPos(joinOp, context, numReducers, false, maxJoinMemory, false);
+    if (bigTablePos >= 0) {
       // Now that we have the big table index, get real numReducers value based on big table RS
       ReduceSinkOperator bigTableParentRS =
           (ReduceSinkOperator) (joinOp.getParentOperators().get(bigTablePos));
       numReducers = bigTableParentRS.getConf().getNumReducers();
       LOG.debug("Real big table reducers = " + numReducers);
 
-      MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, mapJoinConversion, false);
+      MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, bigTablePos, false);
       if (mapJoinOp != null) {
         LOG.info("Selected dynamic partitioned hash join");
-        MapJoinDesc mapJoinDesc = mapJoinOp.getConf();
-        mapJoinDesc.setDynamicPartitionHashJoin(true);
-        if (mapJoinConversion.getIsFullOuterJoin()) {
-          FullOuterMapJoinOptimization.removeFilterMap(mapJoinDesc);
-        }
+        mapJoinOp.getConf().setDynamicPartitionHashJoin(true);
         // Set OpTraits for dynamically partitioned hash join:
         // bucketColNames: Re-use previous joinOp's bucketColNames. Parent operators should be
         //   reduce sink, which should have bucket columns based on the join keys.
@@ -1508,15 +1408,11 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
   private void fallbackToMergeJoin(JoinOperator joinOp, OptimizeTezProcContext context)
       throws SemanticException {
-    MapJoinConversion mapJoinConversion =
-        getMapJoinConversion(
-            joinOp, context, estimateNumBuckets(joinOp, false), true, Long.MAX_VALUE, false);
-    final int pos;
-    if (mapJoinConversion == null || mapJoinConversion.getBigTablePos() == -1) {
+    int pos = getMapJoinConversionPos(joinOp, context, estimateNumBuckets(joinOp, false),
+                  true, Long.MAX_VALUE, false);
+    if (pos < 0) {
       LOG.info("Could not get a valid join position. Defaulting to position 0");
       pos = 0;
-    } else {
-      pos = mapJoinConversion.getBigTablePos();
     }
     LOG.info("Fallback to common merge join operator");
     convertJoinSMBJoin(joinOp, context, pos, 0, false);
@@ -1539,6 +1435,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     for (String key : keys) {
       ColStatistics cs = inputStats.getColumnStatisticsFromColName(key);
       if (cs == null) {
+        LOG.debug("Couldn't get statistics for: {}", key);
         return true;
       }
       columnStats.add(cs);

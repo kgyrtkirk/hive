@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -992,17 +991,6 @@ public class VectorAssignRow {
         assignConvertRowColumn(batch, batchIndex, i, objects[i]);
       } else {
         assignRowColumn(batch, batchIndex, i, objects[i]);
-      }
-    }
-  }
-
-  public void assignRow(VectorizedRowBatch batch, int batchIndex, ArrayList<Object> objectList) {
-    final int count = isConvert.length;
-    for (int i = 0; i < count; i++) {
-      if (isConvert[i]) {
-        assignConvertRowColumn(batch, batchIndex, i, objectList.get(i));
-      } else {
-        assignRowColumn(batch, batchIndex, i, objectList.get(i));
       }
     }
   }

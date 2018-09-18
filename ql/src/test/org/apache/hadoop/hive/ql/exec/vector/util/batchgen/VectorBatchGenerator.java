@@ -23,10 +23,8 @@ import java.util.Random;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.util.batchgen.VectorBatchGenerator.GenerateType.GenerateCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -111,23 +109,13 @@ public class VectorBatchGenerator {
     }
 
     private GenerateCategory category;
-    private boolean allowNulls;
 
     public GenerateType(GenerateCategory category) {
       this.category = category;
     }
 
-    public GenerateType(GenerateCategory category, boolean allowNulls) {
-      this.category = category;
-      this.allowNulls = allowNulls;
-    }
-
     public GenerateCategory getCategory() {
       return category;
-    }
-
-    public boolean getAllowNulls() {
-      return allowNulls;
     }
 
     /*
@@ -192,7 +180,6 @@ public class VectorBatchGenerator {
     case SHORT:
     case INT:
     case LONG:
-    case DATE:
       colVector = new LongColumnVector();
       break;
 
@@ -202,22 +189,16 @@ public class VectorBatchGenerator {
       break;
 
     case STRING:
-    case CHAR:
-    case VARCHAR:
-    case BINARY:
       colVector = new BytesColumnVector();
       break;
 
-    case TIMESTAMP:
-      colVector = new TimestampColumnVector();
-      break;
-
-    case DECIMAL:
-      colVector = new DecimalColumnVector(38, 18);
-      break;
-
     // UNDONE
-
+    case DATE:
+    case TIMESTAMP:
+    case BINARY:
+    case DECIMAL:
+    case VARCHAR:
+    case CHAR:
     case LIST:
     case MAP:
     case STRUCT:

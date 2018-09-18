@@ -5,7 +5,7 @@ set hive.fetch.task.conversion=none;
 
 -- SORT_QUERY_RESULTS
 
-EXPLAIN VECTORIZATION EXPRESSION
+EXPLAIN VECTORIZATION DETAIL
 SELECT STDDEV_SAMP(csmallint),
        (STDDEV_SAMP(csmallint) - 10.175),
        STDDEV_POP(ctinyint),

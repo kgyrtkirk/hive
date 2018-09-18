@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.common.MemoryEstimate;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.NonMatchedSmallTableIterator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
 import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBatch;
@@ -41,7 +40,6 @@ import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
-import org.apache.hadoop.hive.serde2.WriteBuffers.ByteSegmentRef;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
@@ -67,8 +65,6 @@ import org.apache.hive.common.util.HashCodeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
-
 /**
  * Table container that serializes keys and values using LazyBinarySerDe into
  * BytesBytesMultiHashMap, with very low memory overhead. However,
@@ -92,7 +88,6 @@ public class MapJoinBytesTableContainer
    * compare the large table keys correctly when we do, we need to serialize them with correct
    * ordering. Hence, remember the ordering here; it is null if we do use LazyBinarySerDe.
    */
-  private AbstractSerDe keySerde;
   private boolean[] sortableSortOrders;
   private byte[] nullMarkers;
   private byte[] notNullMarkers;
@@ -341,17 +336,9 @@ public class MapJoinBytesTableContainer
 
     @Override
     public byte updateStateByte(Byte previousValue) {
-      if (!hasTag || filterGetter == null) {
-        return (byte) 0xff;
-      }
+      if (filterGetter == null) return (byte)0xff;
       byte aliasFilter = (previousValue == null) ? (byte)0xff : previousValue.byteValue();
-      BinaryComparable binaryComparableValue = (BinaryComparable) value;
-      if (binaryComparableValue.getLength() == 0) {
-
-        // Skip empty values just like MapJoinEagerRowContainer.read does.
-        return (byte) 0xff;
-      }
-      filterGetter.init(binaryComparableValue);
+      filterGetter.init((BinaryComparable)value);
       aliasFilter &= filterGetter.getShort();
       return aliasFilter;
     }
@@ -420,8 +407,7 @@ public class MapJoinBytesTableContainer
   @Override
   public void setSerde(MapJoinObjectSerDeContext keyContext, MapJoinObjectSerDeContext valueContext)
       throws SerDeException {
-    keySerde = keyContext.getSerDe();
-    AbstractSerDe valSerde = valueContext.getSerDe();
+    AbstractSerDe keySerde = keyContext.getSerDe(), valSerde = valueContext.getSerDe();
     if (writeHelper == null) {
       LOG.info("Initializing container with " + keySerde.getClass().getName() + " and "
           + valSerde.getClass().getName());
@@ -467,12 +453,6 @@ public class MapJoinBytesTableContainer
       throw new AssertionError("No key expected from loader but got " + keyTypeFromLoader);
     }
     return new GetAdaptor();
-  }
-
-  @Override
-  public NonMatchedSmallTableIterator createNonMatchedSmallTableIterator(
-      MatchTracker matchTracker) {
-    return new NonMatchedSmallTableIteratorImpl(matchTracker);
   }
 
   @Override
@@ -561,44 +541,6 @@ public class MapJoinBytesTableContainer
                   sortableSortOrders, nullMarkers, notNullMarkers));
     }
 
-    /*
-     * This variation is for FULL OUTER MapJoin.  It does key match tracking only if the key has
-     * no NULLs.
-     */
-    @Override
-    public JoinUtil.JoinResult setFromVectorNoNulls(VectorHashKeyWrapperBase kw,
-        VectorExpressionWriter[] keyOutputWriters, VectorHashKeyWrapperBatch keyWrapperBatch,
-        MatchTracker matchTracker)
-        throws HiveException {
-      if (nulls == null) {
-        nulls = new boolean[keyOutputWriters.length];
-        currentKey = new Object[keyOutputWriters.length];
-        vectorKeyOIs = new ArrayList<ObjectInspector>();
-        for (int i = 0; i < keyOutputWriters.length; i++) {
-          vectorKeyOIs.add(keyOutputWriters[i].getObjectInspector());
-        }
-      } else {
-        assert nulls.length == keyOutputWriters.length;
-      }
-      boolean hasNulls = false;
-      for (int i = 0; i < keyOutputWriters.length; i++) {
-        currentKey[i] = keyWrapperBatch.getWritableKeyValue(kw, i, keyOutputWriters[i]);
-        if (currentKey[i] == null) {
-          nulls[i] = true;
-          hasNulls = true;
-        } else {
-          nulls[i] = false;
-        }
-      }
-      if (hasNulls) {
-        currentValue.reset();
-        return JoinUtil.JoinResult.NOMATCH;
-      }
-      return currentValue.setFromOutput(
-          MapJoinKey.serializeRow(output, currentKey, vectorKeyOIs,
-                  sortableSortOrders, nullMarkers, notNullMarkers), matchTracker);
-    }
-
     @Override
     public JoinUtil.JoinResult setFromRow(Object row, List<ExprNodeEvaluator> fields,
         List<ObjectInspector> ois) throws HiveException {
@@ -613,36 +555,6 @@ public class MapJoinBytesTableContainer
       return currentValue.setFromOutput(
           MapJoinKey.serializeRow(output, currentKey, ois,
                   sortableSortOrders, nullMarkers, notNullMarkers));
-    }
-
-    /*
-     * This variation is for FULL OUTER MapJoin.  It does key match tracking only if the key has
-     * no NULLs.
-     */
-    @Override
-    public JoinUtil.JoinResult setFromRowNoNulls(Object row, List<ExprNodeEvaluator> fields,
-        List<ObjectInspector> ois, MatchTracker matchTracker) throws HiveException {
-      if (nulls == null) {
-        nulls = new boolean[fields.size()];
-        currentKey = new Object[fields.size()];
-      }
-      boolean hasNulls = false;
-      for (int keyIndex = 0; keyIndex < fields.size(); ++keyIndex) {
-        currentKey[keyIndex] = fields.get(keyIndex).evaluate(row);
-        if (currentKey[keyIndex] == null) {
-          nulls[keyIndex] = true;
-          hasNulls = true;
-        } else {
-          nulls[keyIndex] = false;
-        }
-      }
-      if (hasNulls) {
-        currentValue.reset();
-        return JoinUtil.JoinResult.NOMATCH;
-      }
-      return currentValue.setFromOutput(
-          MapJoinKey.serializeRow(output, currentKey, ois,
-                  sortableSortOrders, nullMarkers, notNullMarkers), matchTracker);
     }
 
     @Override
@@ -679,14 +591,8 @@ public class MapJoinBytesTableContainer
 
     @Override
     public JoinUtil.JoinResult setDirect(byte[] bytes, int offset, int length,
-        BytesBytesMultiHashMap.Result hashMapResult, MatchTracker matchTracker) {
-      return currentValue.setDirect(
-          bytes, offset, length, hashMapResult, matchTracker);
-    }
-
-    @Override
-    public MatchTracker createMatchTracker() {
-      return MatchTracker.create(hashMap.getNumHashBuckets());
+        BytesBytesMultiHashMap.Result hashMapResult) {
+      return currentValue.setDirect(bytes, offset, length, hashMapResult);
     }
 
     @Override
@@ -713,7 +619,6 @@ public class MapJoinBytesTableContainer
     private final LazyBinaryStruct valueStruct;
     private final boolean needsComplexObjectFixup;
     private final ArrayList<Object> complexObjectArrayBuffer;
-    private final WriteBuffers.Position noResultReadPos;
 
     public ReusableRowContainer() {
       if (internalValueOi != null) {
@@ -734,18 +639,13 @@ public class MapJoinBytesTableContainer
       }
       uselessIndirection = new ByteArrayRef();
       hashMapResult = new BytesBytesMultiHashMap.Result();
-      noResultReadPos = new WriteBuffers.Position();
       clearRows();
-    }
-
-    public BytesBytesMultiHashMap.Result getHashMapResult() {
-      return hashMapResult;
     }
 
     public JoinUtil.JoinResult setFromOutput(Output output) {
 
       aliasFilter = hashMap.getValueResult(
-              output.getData(), 0, output.getLength(), hashMapResult, /* matchTracker */ null);
+              output.getData(), 0, output.getLength(), hashMapResult);
       dummyRow = null;
       if (hashMapResult.hasRows()) {
         return JoinUtil.JoinResult.MATCH;
@@ -753,24 +653,8 @@ public class MapJoinBytesTableContainer
         aliasFilter = (byte) 0xff;
         return JoinUtil.JoinResult.NOMATCH;
       }
-    }
 
-    public JoinUtil.JoinResult setFromOutput(Output output, MatchTracker matchTracker) {
-
-      aliasFilter = hashMap.getValueResult(
-              output.getData(), 0, output.getLength(), hashMapResult, matchTracker);
-      dummyRow = null;
-      if (hashMapResult.hasRows()) {
-        return JoinUtil.JoinResult.MATCH;
-      } else {
-        aliasFilter = (byte) 0xff;
-        return JoinUtil.JoinResult.NOMATCH;
-      }
-    }
-
-    public void reset() {
-      hashMapResult.forget();
-    }
+   }
 
     @Override
     public boolean hasRows() {
@@ -889,8 +773,8 @@ public class MapJoinBytesTableContainer
     // Direct access.
 
     public JoinUtil.JoinResult setDirect(byte[] bytes, int offset, int length,
-        BytesBytesMultiHashMap.Result hashMapResult, MatchTracker matchTracker) {
-      aliasFilter = hashMap.getValueResult(bytes, offset, length, hashMapResult, matchTracker);
+        BytesBytesMultiHashMap.Result hashMapResult) {
+      aliasFilter = hashMap.getValueResult(bytes, offset, length, hashMapResult);
       dummyRow = null;
       if (hashMapResult.hasRows()) {
         return JoinUtil.JoinResult.MATCH;
@@ -898,71 +782,6 @@ public class MapJoinBytesTableContainer
         aliasFilter = (byte) 0xff;
         return JoinUtil.JoinResult.NOMATCH;
       }
-    }
-  }
-
-  /**
-   * For FULL OUTER MapJoin: Iterates through the Small Table hash table and returns the key and
-   * value rows for any non-matched keys.
-   */
-  private class NonMatchedSmallTableIteratorImpl implements NonMatchedSmallTableIterator {
-
-    private final MatchTracker matchTracker;
-
-    private int currentIndex;
-
-    private final WriteBuffers.ByteSegmentRef keyRef;
-    private final BytesWritable bytesWritable;
-    private final ReusableRowContainer currentValue;
-
-    NonMatchedSmallTableIteratorImpl(MatchTracker matchTracker) {
-      this.matchTracker = matchTracker;
-
-      Preconditions.checkState(keySerde != null);
-
-      currentIndex = -1;
-
-      keyRef = new WriteBuffers.ByteSegmentRef();
-      bytesWritable = new BytesWritable();
-
-      currentValue = new ReusableRowContainer();
-    }
-
-    @Override
-    public boolean isNext() {
-
-      // If another non-matched key is found, the key bytes will be referenced by keyRef, and
-      // our ReusableRowContainer's BytesBytesMultiHashMap.Result will reference the value rows.
-      currentIndex =
-          hashMap.findNextNonMatched(
-              currentIndex, keyRef, currentValue.getHashMapResult(), matchTracker);
-      return (currentIndex != -1);
-    }
-
-    @Override
-    public List<Object> getCurrentKey() throws HiveException {
-      List<Object> deserializedList =
-          MapJoinKey.deserializeRow(
-              keyRef.getBytes(),
-              (int) keyRef.getOffset(),
-              keyRef.getLength(),
-              bytesWritable, keySerde);
-      return deserializedList;
-    }
-
-    @Override
-    public ByteSegmentRef getCurrentKeyAsRef() {
-      return keyRef;
-    }
-
-    @Override
-    public MapJoinRowContainer getCurrentRows() {
-      return currentValue;
-    }
-
-    @Override
-    public BytesBytesMultiHashMap.Result getHashMapResult() {
-      return currentValue.getHashMapResult();
     }
   }
 

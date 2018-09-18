@@ -35,9 +35,11 @@ public class VectorMapJoinFastStringCommon {
 
   public static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastStringCommon.class);
 
+  private boolean isOuterJoin;
+
   private BinarySortableDeserializeRead keyBinarySortableDeserializeRead;
 
-  public boolean adaptPutRow(VectorMapJoinFastBytesHashTable hashTable,
+  public void adaptPutRow(VectorMapJoinFastBytesHashTable hashTable,
           BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException {
 
     byte[] keyBytes = currentKey.getBytes();
@@ -45,7 +47,7 @@ public class VectorMapJoinFastStringCommon {
     keyBinarySortableDeserializeRead.set(keyBytes, 0, keyLength);
     try {
       if (!keyBinarySortableDeserializeRead.readNextField()) {
-        return false;
+        return;
       }
     } catch (Exception e) {
       throw new HiveException(
@@ -59,10 +61,10 @@ public class VectorMapJoinFastStringCommon {
         keyBinarySortableDeserializeRead.currentBytesStart,
         keyBinarySortableDeserializeRead.currentBytesLength,
         currentValue);
-    return true;
   }
 
-  public VectorMapJoinFastStringCommon() {
+  public VectorMapJoinFastStringCommon(boolean isOuterJoin) {
+    this.isOuterJoin = isOuterJoin;
     PrimitiveTypeInfo[] primitiveTypeInfos = { TypeInfoFactory.stringTypeInfo };
     keyBinarySortableDeserializeRead =
         new BinarySortableDeserializeRead(

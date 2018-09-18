@@ -128,11 +128,8 @@ public abstract class VectorMapJoinFastBytesHashTable
   }
 
   public VectorMapJoinFastBytesHashTable(
-      boolean isFullOuter,
-      int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
-    super(
-        isFullOuter,
-        initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
+        int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
+    super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
     unsafeReadPos = new WriteBuffers.Position();
     allocateBucketArray();
   }

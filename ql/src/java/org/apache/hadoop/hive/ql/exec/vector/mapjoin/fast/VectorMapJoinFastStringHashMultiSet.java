@@ -30,29 +30,18 @@ import org.apache.hadoop.io.BytesWritable;
  */
 public class VectorMapJoinFastStringHashMultiSet extends VectorMapJoinFastBytesHashMultiSet {
 
-  private final VectorMapJoinFastStringCommon stringCommon;
-
-  private long fullOuterNullKeyValueCount;
+  private VectorMapJoinFastStringCommon stringCommon;
 
   @Override
   public void putRow(BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException {
-    if (!stringCommon.adaptPutRow(this, currentKey, currentValue)) {
-
-      // Ignore NULL keys, except for FULL OUTER.
-      if (isFullOuter) {
-        fullOuterNullKeyValueCount++;
-      }
-    }
+    stringCommon.adaptPutRow(this, currentKey, currentValue);
   }
 
   public VectorMapJoinFastStringHashMultiSet(
-      boolean isFullOuter,
+      boolean isOuterJoin,
       int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
-    super(
-        isFullOuter,
-        initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
-    fullOuterNullKeyValueCount = 0;
-    stringCommon = new VectorMapJoinFastStringCommon();
+    super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
+    stringCommon = new VectorMapJoinFastStringCommon(isOuterJoin);
   }
 
   @Override

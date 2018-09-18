@@ -29,7 +29,6 @@ import java.util.Set;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc.ReduceSinkKeyType;
@@ -194,17 +193,6 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return outputKeyColumnNames;
   }
 
-  // NOTE: Debugging only.
-  @Explain(displayName = "output key column names", explainLevels = { Level.DEBUG })
-  public List<String> getOutputKeyColumnNamesDisplay() {
-    List<String> result = new ArrayList<String>();
-    for (String name : outputKeyColumnNames) {
-      result.add(Utilities.ReduceField.KEY.name() + "." + name);
-    }
-    return result;
-  }
-
-
   public void setOutputKeyColumnNames(
       java.util.ArrayList<java.lang.String> outputKeyColumnNames) {
     this.outputKeyColumnNames = outputKeyColumnNames;
@@ -212,16 +200,6 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   public java.util.ArrayList<java.lang.String> getOutputValueColumnNames() {
     return outputValueColumnNames;
-  }
-
-  // NOTE: Debugging only.
-  @Explain(displayName = "output value column names", explainLevels = { Level.DEBUG })
-  public List<String> getOutputValueColumnNamesDisplay() {
-    List<String> result = new ArrayList<String>();
-    for (String name : outputValueColumnNames) {
-      result.add(Utilities.ReduceField.VALUE.name() + "." + name);
-    }
-    return result;
   }
 
   public void setOutputValueColumnNames(
@@ -562,41 +540,34 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       return vectorExpressionsToStringList(vectorReduceSinkInfo.getReduceSinkValueExpressions());
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "keyColumns",
-        explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public List<String> getKeyColumns() {
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "keyColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getKeyColumnNums() {
       if (!isNative) {
         return null;
       }
       int[] keyColumnMap = vectorReduceSinkInfo.getReduceSinkKeyColumnMap();
       if (keyColumnMap == null) {
         // Always show an array.
-        return new ArrayList<String>();
+        keyColumnMap = new int[0];
       }
-      return outputColumnsAndTypesToStringList(
-          vectorReduceSinkInfo.getReduceSinkKeyColumnMap(),
-          vectorReduceSinkInfo.getReduceSinkKeyTypeInfos());
+      return Arrays.toString(keyColumnMap);
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "valueColumns",
-        explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public List<String> getValueColumns() {
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "valueColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getValueColumnNums() {
       if (!isNative) {
         return null;
       }
       int[] valueColumnMap = vectorReduceSinkInfo.getReduceSinkValueColumnMap();
       if (valueColumnMap == null) {
         // Always show an array.
-        return new ArrayList<String>();
+        valueColumnMap = new int[0];
       }
-      return outputColumnsAndTypesToStringList(
-          vectorReduceSinkInfo.getReduceSinkValueColumnMap(),
-          vectorReduceSinkInfo.getReduceSinkValueTypeInfos());
+      return Arrays.toString(valueColumnMap);
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "bucketColumns",
-        explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public List<String> getBucketColumns() {
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "bucketColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getBucketColumnNums() {
       if (!isNative) {
         return null;
       }
@@ -605,14 +576,11 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
         // Suppress empty column map.
         return null;
       }
-      return outputColumnsAndTypesToStringList(
-          vectorReduceSinkInfo.getReduceSinkBucketColumnMap(),
-          vectorReduceSinkInfo.getReduceSinkBucketTypeInfos());
+      return Arrays.toString(bucketColumnMap);
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "partitionColumns",
-        explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public List<String> getPartitionColumns() {
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "partitionColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getPartitionColumnNums() {
       if (!isNative) {
         return null;
       }
@@ -621,9 +589,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
        // Suppress empty column map.
         return null;
       }
-      return outputColumnsAndTypesToStringList(
-          vectorReduceSinkInfo.getReduceSinkPartitionColumnMap(),
-          vectorReduceSinkInfo.getReduceSinkPartitionTypeInfos());
+      return Arrays.toString(partitionColumnMap);
     }
 
     private VectorizationCondition[] createNativeConditions() {
@@ -632,8 +598,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
       String engine = vectorReduceSinkDesc.getEngine();
       String engineInSupportedCondName =
-          HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname + " " + engine + " IN " +
-              vectorizableReduceSinkNativeEngines;
+          HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname + " " + engine + " IN " + vectorizableReduceSinkNativeEngines;
       boolean engineInSupported = vectorizableReduceSinkNativeEngines.contains(engine);
 
       VectorizationCondition[] conditions = new VectorizationCondition[] {
@@ -668,8 +633,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       return conditions;
     }
 
-    @Explain(vectorization = Vectorization.OPERATOR, displayName = "nativeConditionsMet",
-        explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    @Explain(vectorization = Vectorization.OPERATOR, displayName = "nativeConditionsMet", explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public List<String> getNativeConditionsMet() {
       if (nativeConditions == null) {
         nativeConditions = createNativeConditions();
@@ -677,8 +641,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       return VectorizationCondition.getConditionsMet(nativeConditions);
     }
 
-    @Explain(vectorization = Vectorization.OPERATOR, displayName = "nativeConditionsNotMet",
-        explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    @Explain(vectorization = Vectorization.OPERATOR, displayName = "nativeConditionsNotMet", explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public List<String> getNativeConditionsNotMet() {
       if (nativeConditions == null) {
         nativeConditions = createNativeConditions();
@@ -687,8 +650,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     }
   }
 
-  @Explain(vectorization = Vectorization.OPERATOR, displayName = "Reduce Sink Vectorization",
-      explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  @Explain(vectorization = Vectorization.OPERATOR, displayName = "Reduce Sink Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public ReduceSinkOperatorExplainVectorization getReduceSinkVectorization() {
     VectorReduceSinkDesc vectorReduceSinkDesc = (VectorReduceSinkDesc) getVectorDesc();
     if (vectorReduceSinkDesc == null) {

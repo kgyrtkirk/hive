@@ -126,7 +126,7 @@ public class JoinCondDesc implements Serializable {
       sb.append("Inner Join ");
       break;
     case JoinDesc.FULL_OUTER_JOIN:
-      sb.append("Full Outer Join ");
+      sb.append("Outer Join ");
       break;
     case JoinDesc.LEFT_OUTER_JOIN:
       sb.append("Left Outer Join ");

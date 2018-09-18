@@ -26,129 +26,55 @@ import java.util.Map.Entry;
 import org.apache.hadoop.hive.ql.exec.util.rowobjects.RowTestObjects;
 
 public class RowTestObjectsMultiSet {
-
-  public enum RowFlag {
-    NONE        (0),
-    REGULAR     (0x01),
-    LEFT_OUTER  (0x02),
-    FULL_OUTER  (0x04);
-
-    public final long value;
-    RowFlag(long value) {
-      this.value = value;
-    }
-  }
-
-  private static class Value {
-
-    // Mutable.
-    public int count;
-    public long rowFlags;
-
-    public final int initialKeyCount;
-    public final int initialValueCount;
-    public final RowFlag initialRowFlag;
-
-    public Value(int count, RowFlag rowFlag, int totalKeyCount, int totalValueCount) {
-      this.count = count;
-      this.rowFlags = rowFlag.value;
-
-      initialKeyCount = totalKeyCount;
-      initialValueCount = totalValueCount;
-      initialRowFlag = rowFlag;
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("count ");
-      sb.append(count);
-      return sb.toString();
-    }
-  }
-
-  private SortedMap<RowTestObjects, Value> sortedMap;
-  private int totalKeyCount;
-  private int totalValueCount;
+  private SortedMap<RowTestObjects, Integer> sortedMap;
+  private int rowCount;
+  private int totalCount;
 
   public RowTestObjectsMultiSet() {
-    sortedMap = new TreeMap<RowTestObjects, Value>();
-    totalKeyCount = 0;
-    totalValueCount = 0;
+    sortedMap = new TreeMap<RowTestObjects, Integer>();
+    rowCount = 0;
+    totalCount = 0;
   }
 
-  public int getTotalKeyCount() {
-    return totalKeyCount;
+  public int getRowCount() {
+    return rowCount;
   }
 
-  public int getTotalValueCount() {
-    return totalValueCount;
+  public int getTotalCount() {
+    return totalCount;
   }
 
-  public void add(RowTestObjects testRow, RowFlag rowFlag) {
+  public void add(RowTestObjects testRow) {
     if (sortedMap.containsKey(testRow)) {
-      Value value = sortedMap.get(testRow);
-      value.count++;
-      value.rowFlags |= rowFlag.value;
-      totalValueCount++;
+      Integer count = sortedMap.get(testRow);
+      count++;
     } else {
-      sortedMap.put(testRow, new Value(1, rowFlag, ++totalKeyCount, ++totalValueCount));
+      sortedMap.put(testRow, 1);
+      rowCount++;
     }
-
+    totalCount++;
   }
 
-  public void add(RowTestObjects testRow, int count) {
-    if (sortedMap.containsKey(testRow)) {
-      throw new RuntimeException();
-    }
-    sortedMap.put(testRow, new Value(count, RowFlag.NONE, ++totalKeyCount, ++totalValueCount));
-  }
-
-  public String displayRowFlags(long rowFlags) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("{");
-    for (RowFlag rowFlag : RowFlag.values()) {
-      if ((rowFlags & rowFlag.value) != 0) {
-        if (sb.length() > 1) {
-          sb.append(", ");
-        }
-        sb.append(rowFlag.name());
-      }
-    }
-    sb.append("}");
-    return sb.toString();
-  }
-
-  public boolean verify(RowTestObjectsMultiSet other, String left, String right) {
+  public boolean verify(RowTestObjectsMultiSet other) {
 
     final int thisSize = this.sortedMap.size();
     final int otherSize = other.sortedMap.size();
     if (thisSize != otherSize) {
-      System.out.println("*BENCHMARK* " + left + " count " + thisSize + " doesn't match " + right + " " + otherSize);
+      System.out.println("*VERIFY* count " + thisSize + " doesn't match otherSize " + otherSize);
       return false;
     }
-    Iterator<Entry<RowTestObjects, Value>> thisIterator = this.sortedMap.entrySet().iterator();
-    Iterator<Entry<RowTestObjects, Value>> otherIterator = other.sortedMap.entrySet().iterator();
+    Iterator<Entry<RowTestObjects, Integer>> thisIterator = this.sortedMap.entrySet().iterator();
+    Iterator<Entry<RowTestObjects, Integer>> otherIterator = other.sortedMap.entrySet().iterator();
     for (int i = 0; i < thisSize; i++) {
-      Entry<RowTestObjects, Value> thisEntry = thisIterator.next();
-      Entry<RowTestObjects, Value> otherEntry = otherIterator.next();
+      Entry<RowTestObjects, Integer> thisEntry = thisIterator.next();
+      Entry<RowTestObjects, Integer> otherEntry = otherIterator.next();
       if (!thisEntry.getKey().equals(otherEntry.getKey())) {
-        System.out.println("*BENCHMARK* " + left + " row " + thisEntry.getKey().toString() +
-            " (rowFlags " + displayRowFlags(thisEntry.getValue().rowFlags) +
-            " count " + thisEntry.getValue().count + ")" +
-            " but found " + right + " row " + otherEntry.getKey().toString() +
-            " (initialKeyCount " + + otherEntry.getValue().initialKeyCount +
-            " initialValueCount " + otherEntry.getValue().initialValueCount + ")");
+        System.out.println("*VERIFY* thisEntry.getKey() " + thisEntry.getKey() + " doesn't match otherEntry.getKey() " + otherEntry.getKey());
         return false;
       }
       // Check multi-set count.
-      if (thisEntry.getValue().count != otherEntry.getValue().count) {
-        System.out.println("*BENCHMARK* " + left + " row " + thisEntry.getKey().toString() +
-            " count " + thisEntry.getValue().count +
-            " (rowFlags " + displayRowFlags(thisEntry.getValue().rowFlags) + ")" +
-            " doesn't match " + right + " row count " + otherEntry.getValue().count +
-            " (initialKeyCount " + + otherEntry.getValue().initialKeyCount +
-            " initialValueCount " + otherEntry.getValue().initialValueCount + ")");
+      if (!thisEntry.getValue().equals(otherEntry.getValue())) {
+        System.out.println("*VERIFY* key " + thisEntry.getKey() + " count " + thisEntry.getValue() + " doesn't match " + otherEntry.getValue());
         return false;
       }
     }
@@ -156,51 +82,6 @@ public class RowTestObjectsMultiSet {
       return false;
     }
     return true;
-  }
-
-  public RowTestObjectsMultiSet subtract(RowTestObjectsMultiSet other) {
-    RowTestObjectsMultiSet result = new RowTestObjectsMultiSet();
-
-    Iterator<Entry<RowTestObjects, Value>> thisIterator = this.sortedMap.entrySet().iterator();
-    while (thisIterator.hasNext()) {
-      Entry<RowTestObjects, Value> thisEntry = thisIterator.next();
-
-      if (other.sortedMap.containsKey(thisEntry.getKey())) {
-        Value thisValue = thisEntry.getValue();
-        Value otherValue = other.sortedMap.get(thisEntry.getKey());
-        if (thisValue.count == otherValue.count) {
-          continue;
-        }
-      }
-      result.add(thisEntry.getKey(), thisEntry.getValue().count);
-    }
-
-    return result;
-  }
-
-  public void displayDifferences(RowTestObjectsMultiSet other, String left, String right) {
-
-    RowTestObjectsMultiSet leftOnly = this.subtract(other);
-    Iterator<Entry<RowTestObjects, Value>> leftOnlyIterator =
-        leftOnly.sortedMap.entrySet().iterator();
-    while (leftOnlyIterator.hasNext()) {
-      Entry<RowTestObjects, Value> leftOnlyEntry = leftOnlyIterator.next();
-      System.out.println(
-          "*BENCHMARK* " + left + " only row " + leftOnlyEntry.getKey().toString() +
-          " count " + leftOnlyEntry.getValue().count +
-          " (initialRowFlag " + leftOnlyEntry.getValue().initialRowFlag.name() + ")");
-    }
-
-    RowTestObjectsMultiSet rightOnly = other.subtract(this);
-    Iterator<Entry<RowTestObjects, Value>> rightOnlyIterator =
-        rightOnly.sortedMap.entrySet().iterator();
-    while (rightOnlyIterator.hasNext()) {
-      Entry<RowTestObjects, Value> rightOnlyEntry = rightOnlyIterator.next();
-      System.out.println(
-          "*BENCHMARK* " + right + " only row " + rightOnlyEntry.getKey().toString() +
-          " count " + rightOnlyEntry.getValue().count +
-          " (initialRowFlag " + rightOnlyEntry.getValue().initialRowFlag.name() + ")");
-    }
   }
 
   @Override

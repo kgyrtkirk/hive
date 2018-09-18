@@ -116,4 +116,16 @@ public class VectorMapJoinOptimizedCreateHashTable {
     }
     return hashTable;
   }
+
+  /*
+  @Override
+  public com.esotericsoftware.kryo.io.Output getHybridBigTableSpillOutput(int partitionId) {
+
+    HybridHashTableContainer ht = (HybridHashTableContainer) mapJoinTableContainer;
+
+    HashPartition hp = ht.getHashPartitions()[partitionId];
+
+    return hp.getMatchfileOutput();
+  }
+  */
 }

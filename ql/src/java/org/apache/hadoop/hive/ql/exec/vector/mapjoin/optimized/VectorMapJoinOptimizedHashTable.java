@@ -26,25 +26,21 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.persistence.BytesBytesMultiHashMap;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
-import org.apache.hadoop.hive.ql.exec.persistence.MatchTracker;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerDirectAccess;
 import org.apache.hadoop.hive.ql.exec.persistence.ReusableGetAdaptorDirectAccess;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.ReusableGetAdaptor;
-import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashTable;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTable;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTableResult;
-import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinNonMatchedIterator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 
-/**
+/*
  * Root interface for a vector map join hash table (which could be a hash map, hash multi-set, or
  * hash set).
  */
-public abstract class VectorMapJoinOptimizedHashTable
-    implements VectorMapJoinHashTable, VectorMapJoinBytesHashTable {
+public abstract class VectorMapJoinOptimizedHashTable implements VectorMapJoinHashTable {
 
   private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinOptimizedMultiKeyHashMap.class.getName());
 
@@ -56,16 +52,6 @@ public abstract class VectorMapJoinOptimizedHashTable
     byte[] bytes;
     int offset;
     int length;
-  }
-
-  @Override
-  public VectorMapJoinNonMatchedIterator createNonMatchedIterator(MatchTracker matchTracker) {
-    throw new RuntimeException("Not implemented");
-  }
-
-  @Override
-  public int spillPartitionId() {
-    return adapatorDirectAccess.directSpillPartitionId();
   }
 
   @Override
@@ -83,13 +69,13 @@ public abstract class VectorMapJoinOptimizedHashTable
 
   public JoinUtil.JoinResult doLookup(byte[] keyBytes, int keyOffset, int keyLength,
           BytesBytesMultiHashMap.Result bytesBytesMultiHashMapResult,
-          VectorMapJoinHashTableResult hashTableResult, MatchTracker matchTracker) {
+          VectorMapJoinHashTableResult hashTableResult) {
 
     hashTableResult.forget();
 
     JoinUtil.JoinResult joinResult =
             adapatorDirectAccess.setDirect(keyBytes, keyOffset, keyLength,
-                bytesBytesMultiHashMapResult, matchTracker);
+                bytesBytesMultiHashMapResult);
     if (joinResult == JoinUtil.JoinResult.SPILL) {
       hashTableResult.setSpillPartitionId(adapatorDirectAccess.directSpillPartitionId());
     }
@@ -118,10 +104,5 @@ public abstract class VectorMapJoinOptimizedHashTable
     size += originalTableContainer == null ? 0 : originalTableContainer.getEstimatedMemorySize();
     size += (2 * JavaDataModel.get().object());
     return size;
-  }
-
-  @Override
-  public MatchTracker createMatchTracker() {
-    return adapatorDirectAccess.createMatchTracker();
   }
 }

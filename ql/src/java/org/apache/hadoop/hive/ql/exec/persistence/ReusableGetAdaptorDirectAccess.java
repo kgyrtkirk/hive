@@ -24,9 +24,7 @@ import org.apache.hadoop.hive.ql.exec.JoinUtil.JoinResult;
 public interface ReusableGetAdaptorDirectAccess {
 
   JoinResult setDirect(byte[] bytes, int offset, int length,
-      BytesBytesMultiHashMap.Result hashMapResult, MatchTracker matchTracker);
+      BytesBytesMultiHashMap.Result hashMapResult);
 
   int directSpillPartitionId();
-
-  MatchTracker createMatchTracker();
 }
