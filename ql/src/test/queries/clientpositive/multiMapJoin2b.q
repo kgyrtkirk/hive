@@ -4,9 +4,7 @@
 set hive.transpose.aggr.join=true;
 
 set hive.mapred.mode=nonstrict;
-set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecutePrinter,org.apache.hadoop.hive.ql.hooks.PrintCompletedTasksHook;
 set hive.auto.convert.join=true;
-set hive.optimize.semijoin.conversion=false;
 set hive.optimize.correlation=true;
 set hive.auto.convert.join.noconditionaltask.size=10000000;
 -- HIVE-5891 Alias conflict when merging multiple mapjoin tasks into their common
