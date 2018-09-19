@@ -9,6 +9,9 @@ explain insert into acs_t11 values(1,1,'2011-11-11');
 insert into acs_t11 values(1,1,'2011-11-11');
 describe formatted acs_t11 d;
 
+insert into acs_t11 values(1,1,NULL);
+describe formatted acs_t11 d;
+
 insert into acs_t11 values(1,1,'2006-11-11');
 describe formatted acs_t11 d;
 
