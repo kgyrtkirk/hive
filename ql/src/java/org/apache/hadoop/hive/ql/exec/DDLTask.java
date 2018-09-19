@@ -1950,7 +1950,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         try {
           ret = ToolRunner.run(fss, args.toArray(new String[0]));
         } catch (Exception e) {
-          e.printStackTrace();
           throw new HiveException(e);
         }
 
@@ -5156,7 +5155,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       }
 
-      if (!crtView.isReplace()) {
+      if (!crtView.isReplace() && !crtView.getIfNotExists()) {
         // View already exists, thus we should be replacing
         throw new HiveException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(crtView.getViewName()));
       }

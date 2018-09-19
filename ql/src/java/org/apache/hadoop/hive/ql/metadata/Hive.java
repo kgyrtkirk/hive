@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
@@ -1885,7 +1886,8 @@ public class Hive {
       //       to ACID updates. So the are not themselves ACID.
 
       // Note: this assumes both paths are qualified; which they are, currently.
-      if ((isMmTableWrite || isFullAcidTable) && loadPath.equals(newPartPath)) {
+      if (((isMmTableWrite || isFullAcidTable) && loadPath.equals(newPartPath)) ||
+              (loadFileType == LoadFileType.IGNORE)) {
         // MM insert query, move itself is a no-op.
         if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
           Utilities.FILE_OP_LOGGER.trace("not moving " + loadPath + " to " + newPartPath + " (MM)");
@@ -2496,7 +2498,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     // Note: this assumes both paths are qualified; which they are, currently.
-    if ((isMmTable || isFullAcidTable) && loadPath.equals(tbl.getPath())) {
+    if (((isMmTable || isFullAcidTable) && loadPath.equals(tbl.getPath())) || (loadFileType == LoadFileType.IGNORE)) {
       /**
        * some operations on Transactional tables (e.g. Import) write directly to the final location
        * and avoid the 'move' operation.  Since MoveTask does other things, setting 'loadPath' to be
@@ -4362,16 +4364,52 @@ private void constructOneLBLocationMap(FileStatus fSta,
           listNewFilesRecursively(destFs, destf, newFiles);
         }
       } else {
+        final Map<Future<Boolean>, Path> moveFutures = Maps.newLinkedHashMapWithExpectedSize(srcs.length);
+        final int moveFilesThreadCount = HiveConf.getIntVar(conf, ConfVars.HIVE_MOVE_FILES_THREAD_COUNT);
+        final ExecutorService pool = moveFilesThreadCount > 0
+            ? Executors.newFixedThreadPool(
+                moveFilesThreadCount,
+                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Replace-Thread-%d").build())
+            : MoreExecutors.newDirectExecutorService();
+        final SessionState parentSession = SessionState.get();
         // its either a file or glob
         for (FileStatus src : srcs) {
           Path destFile = new Path(destf, src.getPath().getName());
-          if (!moveFile(conf, src.getPath(), destFile, true, isSrcLocal, isManaged)) {
+          moveFutures.put(
+              pool.submit(
+                  new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                      SessionState.setCurrentSessionState(parentSession);
+                      return moveFile(
+                          conf, src.getPath(), destFile, true, isSrcLocal, isManaged);
+                    }
+                  }),
+              destFile);
+        }
+
+        pool.shutdown();
+        for (Map.Entry<Future<Boolean>, Path> moveFuture : moveFutures.entrySet()) {
+          boolean moveFailed;
+          try {
+            moveFailed = !moveFuture.getKey().get();
+          } catch (InterruptedException | ExecutionException e) {
+            pool.shutdownNow();
+            if (e.getCause() instanceof IOException) {
+              throw (IOException) e.getCause();
+            }
+            if (e.getCause() instanceof HiveException) {
+              throw (HiveException) e.getCause();
+            }
+            throw handlePoolException(pool, e);
+          }
+          if (moveFailed) {
             throw new IOException("Error moving: " + srcf + " into: " + destf);
           }
 
           // Add file paths of the files that will be moved to the destination if the caller needs it
           if (null != newFiles) {
-            newFiles.add(destFile);
+            newFiles.add(moveFuture.getValue());
           }
         }
       }
@@ -4409,7 +4447,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
 
-  private void cleanUpOneDirectoryForReplace(Path path, FileSystem fs,
+  public void cleanUpOneDirectoryForReplace(Path path, FileSystem fs,
       PathFilter pathFilter, HiveConf conf, boolean purge, boolean isNeedRecycle) throws IOException, HiveException {
     if (isNeedRecycle && conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
       recycleDirToCmPath(path, purge);

@@ -39,6 +39,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,7 +55,14 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.io.BinaryEncoder;
+import org.apache.avro.io.DatumWriter;
+import org.apache.avro.io.EncoderFactory;
+import org.apache.avro.specific.SpecificDatumWriter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang.StringUtils;
@@ -112,6 +121,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.StreamPrinter;
 import org.apache.hive.druid.MiniDruidCluster;
 import org.apache.hive.kafka.SingleNodeKafkaCluster;
+import org.apache.hive.kafka.Wikipedia;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.tools.ant.BuildException;
 import org.apache.zookeeper.WatchedEvent;
@@ -143,6 +153,7 @@ public class QTestUtil {
   static final Logger LOG = LoggerFactory.getLogger("QTestUtil");
   private final static String defaultInitScript = "q_test_init.sql";
   private final static String defaultCleanupScript = "q_test_cleanup.sql";
+  private static SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
   private final String[] testOnlyCommands = new String[]{"crypto", "erasure"};
 
   public static final String TEST_TMP_DIR_PROPERTY = "test.tmp.dir"; // typically target/tmp
@@ -423,7 +434,6 @@ public class QTestUtil {
     llap(CoreClusterType.TEZ, FsType.hdfs),
     llap_local(CoreClusterType.TEZ, FsType.local),
     none(CoreClusterType.MR, FsType.local),
-    druid(CoreClusterType.TEZ, FsType.hdfs),
     druidLocal(CoreClusterType.TEZ, FsType.local),
     druidKafka(CoreClusterType.TEZ, FsType.hdfs),
     kafka(CoreClusterType.TEZ, FsType.hdfs);
@@ -461,8 +471,6 @@ public class QTestUtil {
         return llap;
       } else if (type.equals("llap_local")) {
         return llap_local;
-      } else if (type.equals("druid")) {
-        return druid;
       } else if (type.equals("druidLocal")) {
         return druidLocal;
       } else if (type.equals("druid-kafka")) {
@@ -625,8 +633,7 @@ public class QTestUtil {
 
     String uriString = fs.getUri().toString();
 
-    if (clusterType == MiniClusterType.druid
-        || clusterType == MiniClusterType.druidKafka
+    if (clusterType == MiniClusterType.druidKafka
         || clusterType == MiniClusterType.druidLocal) {
       final String tempDir = System.getProperty("test.tmp.dir");
       druidCluster = new MiniDruidCluster("mini-druid",
@@ -659,6 +666,7 @@ public class QTestUtil {
           "test-topic",
           new File(getScriptsDir(), "kafka_init_data.json")
       );
+      kafkaCluster.createTopicWithData("wiki_kafka_avro_table", getAvroRows());
     }
 
     if (clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
@@ -671,7 +679,7 @@ public class QTestUtil {
           MiniClusterType.llap,
           MiniClusterType.llap_local,
           MiniClusterType.druidLocal,
-          MiniClusterType.druid
+          MiniClusterType.druidKafka
       ).contains(clusterType)) {
         llapCluster = LlapItUtils.startAndGetMiniLlapCluster(conf, setup.zooKeeperCluster, confDir);
       } else {
@@ -687,7 +695,7 @@ public class QTestUtil {
             conf,
             numTrackers,
             uriString,
-            EnumSet.of(MiniClusterType.llap, MiniClusterType.llap_local, MiniClusterType.druid).contains(clusterType)
+            EnumSet.of(MiniClusterType.llap, MiniClusterType.llap_local, MiniClusterType.druidKafka).contains(clusterType)
         );
       }
     } else if (clusterType == MiniClusterType.miniSparkOnYarn) {
@@ -697,6 +705,48 @@ public class QTestUtil {
     }
   }
 
+  private static List<byte[]> getAvroRows() {
+    int numRows = 10;
+    List<byte[]> events;
+    final DatumWriter<GenericRecord> writer = new SpecificDatumWriter<>(Wikipedia.getClassSchema());
+    events =
+        IntStream.rangeClosed(0, numRows)
+            .mapToObj(i -> Wikipedia.newBuilder()
+                // 1534736225090 -> 08/19/2018 20:37:05
+                .setTimestamp(formatter.format(new Timestamp(1534736225090L + 1000 * 3600 * i)))
+                .setAdded(i * 300)
+                .setDeleted(-i)
+                .setIsrobot(i % 2 == 0)
+                .setChannel("chanel number " + i)
+                .setComment("comment number " + i)
+                .setCommentlength(i)
+                .setDiffurl(String.format("url %s", i))
+                .setFlags("flag")
+                .setIsminor(i % 2 > 0)
+                .setIsanonymous(i % 3 != 0)
+                .setNamespace("namespace")
+                .setIsunpatrolled(new Boolean(i % 3 == 0))
+                .setIsnew(new Boolean(i % 2 > 0))
+                .setPage(String.format("page is %s", i * 100))
+                .setDelta(i)
+                .setDeltabucket(i * 100.4)
+                .setUser("test-user-" + i)
+                .build())
+            .map(genericRecord -> {
+              java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+              BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(out, null);
+              try {
+                writer.write(genericRecord, encoder);
+                encoder.flush();
+                out.close();
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              }
+              return out.toByteArray();
+            })
+            .collect(Collectors.toList());
+    return events;
+  }
 
   public void shutdown() throws Exception {
     if (System.getenv(QTEST_LEAVE_FILES) == null) {
