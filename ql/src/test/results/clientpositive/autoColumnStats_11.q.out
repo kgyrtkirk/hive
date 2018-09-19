@@ -161,6 +161,36 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"d\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: insert into acs_t11 values(1,1,NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@acs_t11
+POSTHOOK: query: insert into acs_t11 values(1,1,NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acs_t11
+POSTHOOK: Lineage: acs_t11.a SCRIPT []
+POSTHOOK: Lineage: acs_t11.b SCRIPT []
+POSTHOOK: Lineage: acs_t11.d EXPRESSION []
+PREHOOK: query: describe formatted acs_t11 d
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@acs_t11
+POSTHOOK: query: describe formatted acs_t11 d
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@acs_t11
+col_name            	d                   	 	 	 	 	 	 	 	 	 	 
+data_type           	date                	 	 	 	 	 	 	 	 	 	 
+min                 	2011-11-11          	 	 	 	 	 	 	 	 	 	 
+max                 	2011-11-11          	 	 	 	 	 	 	 	 	 	 
+num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"d\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: insert into acs_t11 values(1,1,'2006-11-11')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -182,7 +212,7 @@ col_name            	d
 data_type           	date                	 	 	 	 	 	 	 	 	 	 
 min                 	2006-11-11          	 	 	 	 	 	 	 	 	 	 
 max                 	2011-11-11          	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
 distinct_count      	2                   	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
 max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
@@ -212,7 +242,7 @@ col_name            	d
 data_type           	date                	 	 	 	 	 	 	 	 	 	 
 min                 	2001-11-11          	 	 	 	 	 	 	 	 	 	 
 max                 	2011-11-11          	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
 distinct_count      	3                   	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
 max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
@@ -242,7 +272,7 @@ col_name            	d
 data_type           	date                	 	 	 	 	 	 	 	 	 	 
 min                 	2001-11-11          	 	 	 	 	 	 	 	 	 	 
 max                 	2011-11-11          	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
 distinct_count      	4                   	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
 max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
@@ -265,11 +295,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acs_t11
-            Statistics: Num rows: 4 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 62 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: int), b (type: int), d (type: date)
               outputColumnNames: a, b, d
-              Statistics: Num rows: 4 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 5 Data size: 62 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(a, 'hll'), compute_stats(b, 'hll'), compute_stats(d, 'hll')
                 mode: hash
@@ -321,7 +351,7 @@ col_name            	d
 data_type           	date                	 	 	 	 	 	 	 	 	 	 
 min                 	2001-11-11          	 	 	 	 	 	 	 	 	 	 
 max                 	2011-11-11          	 	 	 	 	 	 	 	 	 	 
-num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+num_nulls           	1                   	 	 	 	 	 	 	 	 	 	 
 distinct_count      	4                   	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
 max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
