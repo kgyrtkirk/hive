@@ -1175,25 +1175,22 @@ public class TypeCheckProcFactory {
               children.set(constIdx, newChild);
             }
         }
-        if (genericUDF instanceof GenericUDFIn && children.get(0) instanceof ExprNodeColumnDesc) {
-          ExprNodeColumnDesc columnDesc = (ExprNodeColumnDesc) children.get(0);
-          final PrimitiveTypeInfo colTypeInfo =
-              TypeInfoFactory.getPrimitiveTypeInfo(columnDesc.getTypeString().toLowerCase());
+        if (genericUDF instanceof GenericUDFIn) {
+          ExprNodeDesc columnDesc = children.get(0);
           List<ExprNodeDesc> outputOpList = children.subList(1, children.size());
           ArrayList<ExprNodeDesc> inOperands = new ArrayList<>(outputOpList);
           outputOpList.clear();
 
           for (ExprNodeDesc oldChild : inOperands) {
-            if(oldChild !=null && oldChild instanceof ExprNodeConstantDesc) {
-              ExprNodeDesc newChild = interpretNodeAs(colTypeInfo, oldChild);
-              if(newChild == null) {
-                // non interpretable as target type; skip
-                continue;
-              }
-              outputOpList.add(newChild);
-            }else{
-              outputOpList.add(oldChild);
+            if (oldChild == null) {
+              continue;
             }
+            ExprNodeDesc newChild = interpretNodeAsStruct(columnDesc, oldChild);
+            if (newChild == null) {
+              // non interpretable as target type; skip
+              continue;
+            }
+            outputOpList.add(newChild);
           }
         }
         if (genericUDF instanceof GenericUDFOPOr) {
@@ -1256,6 +1253,16 @@ public class TypeCheckProcFactory {
       }
       assert (desc != null);
       return desc;
+    }
+
+    private ExprNodeDesc interpretNodeAsStruct(ExprNodeDesc columnDesc, ExprNodeDesc oldChild) {
+      if(columnDesc instanceof ExprNodeColumnDesc) {
+        ExprNodeColumnDesc exprNodeColumnDesc = (ExprNodeColumnDesc) columnDesc;
+        final PrimitiveTypeInfo typeInfo =
+            TypeInfoFactory.getPrimitiveTypeInfo(exprNodeColumnDesc.getTypeString().toLowerCase());
+        return interpretNodeAs(typeInfo, oldChild);
+      }
+      return oldChild;
     }
 
     private ExprNodeDesc interpretNodeAs(PrimitiveTypeInfo colTypeInfo, ExprNodeDesc constChild) {
