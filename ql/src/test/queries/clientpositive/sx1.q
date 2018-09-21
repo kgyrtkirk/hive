@@ -18,7 +18,7 @@ from customer_demographics
 where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
 or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'));
 
-select '2 is expected:',count(1) 
+select '3 is expected:',count(1) 
 from customer_demographics
 where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
 or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'));
@@ -31,7 +31,7 @@ from customer_demographics
 where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
 or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'));
 
-select '2 is expected:',count(1) 
+select '3 is expected:',count(1) 
 from customer_demographics
 where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
 or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'));
