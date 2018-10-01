@@ -281,7 +281,7 @@ Stage-0
               Select Operator [SEL_138] (rows=479156399 width=88)
                 Output:["_col0"]
                 Filter Operator [FIL_136] (rows=479156399 width=88)
-                  predicate:(CASE WHEN (_col3 is not null) THEN (CASE WHEN (_col5 is not null) THEN (((_col9 / _col5) > (_col12 / _col3))) ELSE ((null > (_col12 / _col3))) END) ELSE (CASE WHEN (_col5 is not null) THEN (((_col9 / _col5) > null)) ELSE (null) END) END and CASE WHEN (_col7 is not null) THEN (CASE WHEN (_col5 is not null) THEN (((_col9 / _col5) > (_col1 / _col7))) ELSE ((null > (_col1 / _col7))) END) ELSE (CASE WHEN (_col5 is not null) THEN (((_col9 / _col5) > null)) ELSE (null) END) END)
+                  predicate:(CASE WHEN (_col3 is not null) THEN (CASE WHEN (_col5 is not null) THEN (((_col9 / _col5) > (_col12 / _col3))) ELSE (null) END) ELSE (null) END and CASE WHEN (_col7 is not null) THEN (CASE WHEN (_col5 is not null) THEN (((_col9 / _col5) > (_col1 / _col7))) ELSE (null) END) ELSE (null) END)
                   Merge Join Operator [MERGEJOIN_470] (rows=1916625598 width=88)
                     Conds:RS_530._col0=RS_542._col0(Inner),RS_542._col0=RS_554._col0(Inner),RS_542._col0=RS_564._col0(Inner),RS_542._col0=RS_574._col0(Inner),RS_542._col0=RS_584._col0(Inner),Output:["_col1","_col3","_col5","_col7","_col9","_col11","_col12"]
                   <-Reducer 10 [SIMPLE_EDGE] vectorized

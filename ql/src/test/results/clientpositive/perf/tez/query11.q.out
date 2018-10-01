@@ -199,7 +199,7 @@ Stage-0
               Select Operator [SEL_92] (rows=574987679 width=88)
                 Output:["_col0"]
                 Filter Operator [FIL_91] (rows=574987679 width=88)
-                  predicate:CASE WHEN (_col3 is not null) THEN (CASE WHEN (_col5 is not null) THEN (((_col1 / _col5) > (_col8 / _col3))) ELSE ((null > (_col8 / _col3))) END) ELSE (CASE WHEN (_col5 is not null) THEN (((_col1 / _col5) > null)) ELSE (null) END) END
+                  predicate:CASE WHEN (_col3 is not null) THEN (CASE WHEN (_col5 is not null) THEN (((_col1 / _col5) > (_col8 / _col3))) ELSE (null) END) ELSE (null) END
                   Merge Join Operator [MERGEJOIN_283] (rows=1149975359 width=88)
                     Conds:RS_325._col0=RS_337._col0(Inner),RS_337._col0=RS_347._col0(Inner),RS_337._col0=RS_357._col0(Inner),Output:["_col1","_col3","_col5","_col7","_col8"]
                   <-Reducer 10 [SIMPLE_EDGE] vectorized
