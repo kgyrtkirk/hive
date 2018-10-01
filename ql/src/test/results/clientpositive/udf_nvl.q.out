@@ -13,19 +13,37 @@ Example:
   bla
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFNvl
 Function type:BUILTIN
-PREHOOK: query: EXPLAIN
-SELECT NVL( 1 , 2 ) AS COL1,
-       NVL( NULL, 5 ) AS COL2
-FROM src tablesample (1 rows)
+PREHOOK: query: create table t (a integer, b integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (a integer, b integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: insert into t values (null,1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values (null,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a EXPRESSION []
+POSTHOOK: Lineage: t.b SCRIPT []
+PREHOOK: query: EXPLAIN
+SELECT NVL( a , b ) AS COL1,
+       NVL( NULL, a ) AS COL2
+FROM t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
-SELECT NVL( 1 , 2 ) AS COL1,
-       NVL( NULL, 5 ) AS COL2
-FROM src tablesample (1 rows)
+SELECT NVL( a , b ) AS COL1,
+       NVL( NULL, a ) AS COL2
+FROM t
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -36,25 +54,24 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: src
-          Row Limit Per Split: 1
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+          alias: t
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: 1 (type: int), 5 (type: int)
+            expressions: NVL(a,b) (type: int), NVL(null,a) (type: int)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: SELECT NVL( 1 , 2 ) AS COL1,
-       NVL( NULL, 5 ) AS COL2
-FROM src tablesample (1 rows)
+PREHOOK: query: SELECT NVL( a , b ) AS COL1,
+       NVL( NULL, a ) AS COL2
+FROM t
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: default@t
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT NVL( 1 , 2 ) AS COL1,
-       NVL( NULL, 5 ) AS COL2
-FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT NVL( a , b ) AS COL1,
+       NVL( NULL, a ) AS COL2
+FROM t
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: default@t
 #### A masked pattern was here ####
-1	5
+1	NULL
