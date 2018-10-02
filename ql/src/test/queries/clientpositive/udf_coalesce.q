@@ -2,6 +2,9 @@
 --! qt:dataset:src
 set hive.fetch.task.conversion=more;
 
+create table t (a integer, b integer);
+insert into t values (null,1);
+
 DESCRIBE FUNCTION coalesce;
 DESCRIBE FUNCTION EXTENDED coalesce;
 
