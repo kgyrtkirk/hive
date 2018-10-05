@@ -25,14 +25,12 @@ import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
-import org.apache.hadoop.hive.metastore.security.TUGIContainingTransport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.set_ugi_args;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.set_ugi_result;
+import org.apache.hadoop.hive.metastore.security.TUGIContainingTransport;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.ProcessFunction;
 import org.apache.thrift.TApplicationException;
@@ -44,6 +42,8 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TProtocolException;
 import org.apache.thrift.protocol.TProtocolUtil;
 import org.apache.thrift.protocol.TType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** TUGIBasedProcessor is used in unsecure mode for thrift metastore client server communication.
  *  This processor checks whether the first rpc call after connection is set up is set_ugi()
@@ -56,7 +56,7 @@ import org.apache.thrift.protocol.TType;
 public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<Iface> {
 
   private final I iface;
-  private final Map<String,  org.apache.thrift.ProcessFunction<Iface, ? extends  TBase>>
+  private final Map<String, org.apache.thrift.ProcessFunction<Iface, ?>>
     functions;
   static final Logger LOG = LoggerFactory.getLogger(TUGIBasedProcessor.class);
 
