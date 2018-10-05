@@ -71,13 +71,13 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [1, 3]
-                        selectExpressions: CastStringToLong(col 4:string)(children: VectorUDFAdaptor(CASE WHEN (str1 is not null) THEN (str1) ELSE (0) END)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string) -> 3:int
+                        projectedOutputColumnNums: [1, 6]
+                        selectExpressions: CastStringToLong(col 5:string)(children: IfExprColumnCondExpr(col 3:boolean, col 0:stringcol 4:string)(children: IsNotNull(col 0:string) -> 3:boolean, col 0:string, ConstantVectorExpression(val 0) -> 4:string) -> 5:string) -> 6:int
                     Statistics: Num rows: 5 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 3:int) -> bigint
+                          aggregators: VectorUDAFSumLong(col 6:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 1:string
@@ -107,7 +107,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
@@ -213,8 +213,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: VectorUDFAdaptor(CASE WHEN (str1 is not null) THEN (str1) ELSE (0) END)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: IfExprColumnCondExpr(col 3:boolean, col 0:stringcol 4:string)(children: IsNotNull(col 0:string) -> 3:boolean, col 0:string, ConstantVectorExpression(val 0) -> 4:string) -> 5:string
                     Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -235,7 +235,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
 
   Stage: Stage-0
@@ -304,13 +304,13 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [1, 3]
-                        selectExpressions: CastStringToLong(col 4:string)(children: VectorUDFAdaptor(CASE WHEN (str1 is not null) THEN (str1) ELSE (0) END)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string) -> 3:int
+                        projectedOutputColumnNums: [1, 6]
+                        selectExpressions: CastStringToLong(col 5:string)(children: IfExprColumnCondExpr(col 3:boolean, col 0:stringcol 4:string)(children: IsNotNull(col 0:string) -> 3:boolean, col 0:string, ConstantVectorExpression(val 0) -> 4:string) -> 5:string) -> 6:int
                     Statistics: Num rows: 5 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 3:int) -> bigint
+                          aggregators: VectorUDAFSumLong(col 6:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 1:string
@@ -340,7 +340,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
@@ -446,8 +446,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: VectorUDFAdaptor(CASE WHEN (str1 is not null) THEN (str1) ELSE (0) END)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: IfExprColumnCondExpr(col 3:boolean, col 0:stringcol 4:string)(children: IsNotNull(col 0:string) -> 3:boolean, col 0:string, ConstantVectorExpression(val 0) -> 4:string) -> 5:string
                     Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -468,7 +468,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
 
   Stage: Stage-0
