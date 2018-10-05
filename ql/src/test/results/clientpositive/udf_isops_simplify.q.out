@@ -47,7 +47,7 @@ STAGE PLANS:
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: (not (_col0 > 0) is not true) (type: boolean)
+            expressions: (_col0 > 0) is true (type: boolean)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             File Output Operator
@@ -105,7 +105,7 @@ STAGE PLANS:
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: (not (_col0 > 0) is not false) (type: boolean)
+            expressions: (_col0 > 0) is false (type: boolean)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             File Output Operator
@@ -221,7 +221,7 @@ STAGE PLANS:
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: (not (_col0 > 0) is true) (type: boolean)
+            expressions: (_col0 > 0) is not true (type: boolean)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             File Output Operator
@@ -279,7 +279,7 @@ STAGE PLANS:
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: (not (_col0 > 0) is false) (type: boolean)
+            expressions: (_col0 > 0) is not false (type: boolean)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             File Output Operator

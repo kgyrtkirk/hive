@@ -239,7 +239,6 @@ public class SqlFunctionConverter {
         case IN:
         case BETWEEN:
         case ROW:
-        case NOT:
         case IS_NOT_TRUE:
         case IS_TRUE:
         case IS_NOT_FALSE:
