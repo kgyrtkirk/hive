@@ -3100,6 +3100,8 @@ public class HiveConf extends Configuration {
         "Bind host on which to run the HiveServer2 Thrift service."),
     HIVE_SERVER2_PARALLEL_COMPILATION("hive.driver.parallel.compilation", false, "Whether to\n" +
         "enable parallel compilation of the queries between sessions and within the same session on HiveServer2. The default is false."),
+    HIVE_SERVER2_PARALLEL_COMPILATION_LIMIT("hive.driver.parallel.compilation.global.limit", -1, "Determines the " +
+        "degree of parallelism for compilation queries between sessions on HiveServer2. The default is -1."),
     HIVE_SERVER2_COMPILE_LOCK_TIMEOUT("hive.server2.compile.lock.timeout", "0s",
         new TimeValidator(TimeUnit.SECONDS),
         "Number of seconds a request will wait to acquire the compile lock before giving up. " +
@@ -3138,6 +3140,17 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT("hive.server2.webui.explain.output", false,
         "When set to true, the EXPLAIN output for every query is displayed"
             + " in the HS2 WebUI / Drilldown / Query Plan tab.\n"),
+    HIVE_SERVER2_WEBUI_SHOW_GRAPH("hive.server2.webui.show.graph", false,
+        "Set this to true to to display query plan as a graph instead of text in the WebUI. " +
+        "Only works with hive.server2.webui.explain.output set to true."),
+    HIVE_SERVER2_WEBUI_MAX_GRAPH_SIZE("hive.server2.webui.max.graph.size", 25,
+        "Max number of stages graph can display. If number of stages exceeds this, no query" +
+        "plan will be shown. Only works when hive.server2.webui.show.graph and " +
+        "hive.server2.webui.explain.output set to true."),
+    HIVE_SERVER2_WEBUI_SHOW_STATS("hive.server2.webui.show.stats", false,
+        "Set this to true to to display statistics for MapReduce tasks in the WebUI. " +
+        "Only works when hive.server2.webui.show.graph and hive.server2.webui.explain.output " +
+        "set to true."),
     HIVE_SERVER2_WEBUI_ENABLE_CORS("hive.server2.webui.enable.cors", false,
       "Whether to enable cross origin requests (CORS)\n"),
     HIVE_SERVER2_WEBUI_CORS_ALLOWED_ORIGINS("hive.server2.webui.cors.allowed.origins", "*",
@@ -3897,6 +3910,8 @@ public class HiveConf extends Configuration {
         "Maximum size for IO allocator or ORC low-level cache.", "hive.llap.io.cache.orc.size"),
     LLAP_ALLOCATOR_DIRECT("hive.llap.io.allocator.direct", true,
         "Whether ORC low-level cache should use direct allocation."),
+    LLAP_ALLOCATOR_PREALLOCATE("hive.llap.io.allocator.preallocate", true,
+            "Whether to preallocate the entire IO memory at init time."),
     LLAP_ALLOCATOR_MAPPED("hive.llap.io.allocator.mmap", false,
         "Whether ORC low-level cache should use memory mapped allocation (direct I/O). \n" +
         "This is recommended to be used along-side NVDIMM (DAX) or NVMe flash storage."),
@@ -3940,7 +3955,8 @@ public class HiveConf extends Configuration {
         "is unneeded. This is only necessary for ORC files written before HIVE-9660."),
     LLAP_IO_USE_FILEID_PATH("hive.llap.io.use.fileid.path", true,
         "Whether LLAP should use fileId (inode)-based path to ensure better consistency for the\n" +
-        "cases of file overwrites. This is supported on HDFS."),
+        "cases of file overwrites. This is supported on HDFS. Disabling this also turns off any\n" +
+        "cache consistency checks based on fileid comparisons."),
     // Restricted to text for now as this is a new feature; only text files can be sliced.
     LLAP_IO_ENCODE_ENABLED("hive.llap.io.encode.enabled", true,
         "Whether LLAP should try to re-encode and cache data for non-ORC formats. This is used\n" +
@@ -4444,7 +4460,8 @@ public class HiveConf extends Configuration {
         + ",fs.s3a.secret.key"
         + ",fs.s3a.proxy.password"
         + ",dfs.adls.oauth2.credential"
-        + ",fs.adl.oauth2.credential",
+        + ",fs.adl.oauth2.credential"
+        + ",hive.driver.parallel.compilation.global.limit",
         "Comma separated list of configuration options which should not be read by normal user like passwords"),
     HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
         "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
