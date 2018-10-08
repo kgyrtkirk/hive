@@ -7,7 +7,8 @@ insert into t2 values (1),(2),(3);
 explain
 select * from t,t2 where
 	a*a=b+3 and (
-		(a=1 and b=3) or (a=1 and a<b)
+		(a in (1,2) and b in (1,2) ) or 
+		(a in (2,3) and b in (2,3) and b>a )
 			)
 	;
 
