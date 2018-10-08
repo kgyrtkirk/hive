@@ -64,6 +64,7 @@ public class HiveRexExecutorImpl extends RexExecutorImpl {
           try {
             // convert constant back to RexNode
             reducedValues.add(rexNodeConverter.convert((ExprNodeConstantDesc) constant));
+            
           } catch (Exception e) {
             LOG.warn(e.getMessage());
             reducedValues.add(rexNode);
