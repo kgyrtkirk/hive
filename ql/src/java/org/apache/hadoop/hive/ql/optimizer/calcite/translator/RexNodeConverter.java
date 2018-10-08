@@ -17,15 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.plan.RelOptCluster;
@@ -106,11 +102,14 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class RexNodeConverter {
@@ -822,7 +821,8 @@ public class RexNodeConverter {
        SqlParserPos(1, 1)));
        break;
     case VOID:
-      calciteLiteral = cluster.getRexBuilder().makeLiteral(null, calciteDataType, true);
+      calciteLiteral = cluster.getRexBuilder().makeLiteral(null,
+          cluster.getTypeFactory().createSqlType(SqlTypeName.NULL), true);
       break;
     case BINARY:
     case UNKNOWN:
