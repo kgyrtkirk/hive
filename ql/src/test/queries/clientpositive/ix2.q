@@ -8,7 +8,7 @@ explain
 select * from t,t2 where
 	a*a=b+3 and (
 		(a in (1,2) and b in (1,2) ) or 
-		(a in (2,3) and b in (2,3) and b>a )
+		(a in (2,3) and b in (2,3) )
 			)
 	;
 

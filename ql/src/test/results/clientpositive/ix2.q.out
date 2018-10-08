@@ -36,7 +36,7 @@ PREHOOK: query: explain
 select * from t,t2 where
 	a*a=b+3 and (
 		(a in (1,2) and b in (1,2) ) or 
-		(a in (2,3) and b in (2,3) and b>a )
+		(a in (2,3) and b in (2,3) )
 			)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
@@ -46,7 +46,7 @@ POSTHOOK: query: explain
 select * from t,t2 where
 	a*a=b+3 and (
 		(a in (1,2) and b in (1,2) ) or 
-		(a in (2,3) and b in (2,3) and b>a )
+		(a in (2,3) and b in (2,3) )
 			)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
@@ -104,11 +104,11 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: ((((_col0 = 1) or (_col0 = 2)) and ((_col1 = 1) or (_col1 = 2))) or (((_col0 = 2) or (_col0 = 3)) and ((_col1 = 2) or (_col1 = 3)) and (_col1 > _col0))) (type: boolean)
-            Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+            predicate: ((((_col0 = 1) or (_col0 = 2)) and ((_col1 = 1) or (_col1 = 2))) or (((_col0 = 2) or (_col0 = 3)) and ((_col1 = 2) or (_col1 = 3)))) (type: boolean)
+            Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
