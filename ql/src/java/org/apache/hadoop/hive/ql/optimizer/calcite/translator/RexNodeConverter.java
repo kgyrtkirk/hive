@@ -664,10 +664,10 @@ public class RexNodeConverter {
   }
 
   protected RexNode convert(ExprNodeConstantDesc literal) throws CalciteSemanticException {
-    RexBuilder rexBuilder = cluster.getRexBuilder();
-    RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
-    PrimitiveTypeInfo hiveType = (PrimitiveTypeInfo) literal.getTypeInfo();
-    RelDataType calciteDataType = TypeConverter.convert(hiveType, dtFactory);
+    final RexBuilder rexBuilder = cluster.getRexBuilder();
+    final RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
+    final PrimitiveTypeInfo hiveType = (PrimitiveTypeInfo) literal.getTypeInfo();
+    final RelDataType calciteDataType = TypeConverter.convert(hiveType, dtFactory);
 
     PrimitiveCategory hiveTypeCategory = hiveType.getPrimitiveCategory();
 
@@ -821,7 +821,7 @@ public class RexNodeConverter {
        SqlParserPos(1, 1)));
        break;
     case VOID:
-      calciteLiteral = cluster.getRexBuilder().makeLiteral(null, calciteDataType, true);
+      calciteLiteral = rexBuilder.makeLiteral(null, calciteDataType, true);
       break;
     case BINARY:
     case UNKNOWN:
