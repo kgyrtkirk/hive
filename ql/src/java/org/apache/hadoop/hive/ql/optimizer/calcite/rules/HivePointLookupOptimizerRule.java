@@ -174,6 +174,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     @Override public RexNode visitCall(RexCall call) {
       RexNode node;
       switch (call.getKind()) {
+      /*
       // FIXME: I don't think there is a need for this right now...calcite have already done the flattening/etc
       // removing this case clause will not miss the OR below AND
       case AND:
@@ -193,28 +194,32 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
               return call;
             }
           } else {
-            newOperand = operand;
+            if (operand instanceof RexCall) {
+              newOperand = super.visitCall((RexCall) operand);
+            } else {
+              newOperand = operand;
+            }
           }
           newOperands.add(newOperand);
         }
         node = RexUtil.composeConjunction(rexBuilder, newOperands, false);
-        break;
+        break;*/
         case OR:
           try {
             node = transformIntoInClauseCondition(rexBuilder,
                     nodeOp.getRowType(), call, minNumORClauses);
             if (node == null) {
               return super.visitCall(call);
+            } else {
+            return super.visitCall((RexCall) node);
             }
           } catch (SemanticException e) {
             LOG.error("Exception in HivePointLookupOptimizerRule", e);
             return call;
           }
-          break;
         default:
           return super.visitCall(call);
       }
-      return node;
     }
 
     /**
