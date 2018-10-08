@@ -210,7 +210,8 @@ public class TestHivePointLookupOptimizerRule {
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
     System.out.println(condition);
-    assertEquals("OR(IN($0, 1, 2), =($1, 99))", condition.toString());
+    assertEquals("AND(IN($0, 1, 2), OR(AND(IN($1, 1, 2), IN($2, 1, 2)), AND(IN($1, 3, 4), IN($2, 3, 4))))",
+        condition.toString());
   }
 
 }
