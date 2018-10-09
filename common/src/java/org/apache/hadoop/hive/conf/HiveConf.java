@@ -612,6 +612,9 @@ public class HiveConf extends Configuration {
     HIVE_MAPJOIN_TESTING_NO_HASH_TABLE_LOAD("hive.mapjoin.testing.no.hash.table.load", false, "internal use only, true when in testing map join",
         true),
 
+    HIVE_IN_REPL_TEST_FILES_SORTED("hive.in.repl.test.files.sorted", false,
+      "internal usage only, set to true if the file listing is required in sorted order during bootstrap load", true),
+
     LOCALMODEAUTO("hive.exec.mode.local.auto", false,
         "Let Hive determine whether to run in local mode automatically"),
     LOCALMODEMAXBYTES("hive.exec.mode.local.auto.inputbytes.max", 134217728L,
@@ -1628,6 +1631,10 @@ public class HiveConf extends Configuration {
                                                                  + " expressed as multiple of Local FS read cost"),
     HIVE_CBO_SHOW_WARNINGS("hive.cbo.show.warnings", true,
          "Toggle display of CBO warnings like missing column stats"),
+    HIVE_CBO_STATS_CORRELATED_MULTI_KEY_JOINS("hive.cbo.stats.correlated.multi.key.joins", false,
+        "When CBO estimates output rows for a join involving multiple columns, the default behavior assumes" +
+            "the columns are independent. Setting this flag to true will cause the estimator to assume" +
+            "the columns are correlated."),
     AGGR_JOIN_TRANSPOSE("hive.transpose.aggr.join", false, "push aggregates through join"),
     SEMIJOIN_CONVERSION("hive.optimize.semijoin.conversion", true, "convert group by followed by inner equi join into semijoin"),
     HIVE_COLUMN_ALIGNMENT("hive.order.columnalignment", true, "Flag to control whether we want to try to align" +
@@ -1854,7 +1861,10 @@ public class HiveConf extends Configuration {
         + "into memory to optimize for performance. To prevent out-of-memory errors, this is a rough heuristic\n"
         + "that limits the total number of delete events that can be loaded into memory at once.\n"
         + "Roughly it has been set to 10 million delete events per bucket (~160 MB).\n"),
-
+    FILTER_DELETE_EVENTS("hive.txn.filter.delete.events", true,
+        "If true, VectorizedOrcAcidRowBatchReader will compute min/max " +
+            "ROW__ID for the split and only load delete events in that range.\n"
+    ),
     HIVESAMPLERANDOMNUM("hive.sample.seednumber", 0,
         "A number used to percentage sampling. By changing this number, user will change the subsets of data sampled."),
 
@@ -2064,13 +2074,21 @@ public class HiveConf extends Configuration {
     HIVEHASHTABLEFOLLOWBYGBYMAXMEMORYUSAGE("hive.mapjoin.followby.gby.localtask.max.memory.usage", (float) 0.55,
         "This number means how much memory the local task can take to hold the key/value into an in-memory hash table \n" +
         "when this map join is followed by a group by. If the local task's memory usage is more than this number, \n" +
-        "the local task will abort by itself. It means the data of the small table is too large to be held in memory."),
+        "the local task will abort by itself. It means the data of the small table is too large " +
+        "to be held in memory. Does not apply to Hive-on-Spark (replaced by " +
+        "hive.mapjoin.max.gc.time.percentage)"),
     HIVEHASHTABLEMAXMEMORYUSAGE("hive.mapjoin.localtask.max.memory.usage", (float) 0.90,
         "This number means how much memory the local task can take to hold the key/value into an in-memory hash table. \n" +
         "If the local task's memory usage is more than this number, the local task will abort by itself. \n" +
-        "It means the data of the small table is too large to be held in memory."),
+        "It means the data of the small table is too large to be held in memory. Does not apply to " +
+        "Hive-on-Spark (replaced by hive.mapjoin.max.gc.time.percentage)"),
     HIVEHASHTABLESCALE("hive.mapjoin.check.memory.rows", (long)100000,
         "The number means after how many rows processed it needs to check the memory usage"),
+    HIVEHASHTABLEMAXGCTIMEPERCENTAGE("hive.mapjoin.max.gc.time.percentage", (float) 0.60,
+        new RangeValidator(0.0f, 1.0f), "This number means how much time (what percentage, " +
+        "0..1, of wallclock time) the JVM is allowed to spend in garbage collection when running " +
+        "the local task. If GC time percentage exceeds this number, the local task will abort by " +
+        "itself. Applies to Hive-on-Spark only"),
 
     HIVEDEBUGLOCALTASK("hive.debug.localtask",false, ""),
 
@@ -2266,6 +2284,10 @@ public class HiveConf extends Configuration {
     HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION("hive.optimize.shared.work.extended", true,
         "Whether to enable shared work extended optimizer. The optimizer tries to merge equal operators\n" +
         "after a work boundary after shared work optimizer has been executed. Requires hive.optimize.shared.work\n" +
+        "to be set to true. Tez only."),
+    HIVE_SHARED_WORK_REUSE_MAPJOIN_CACHE("hive.optimize.shared.work.mapjoin.cache.reuse", true,
+        "When shared work optimizer is enabled, whether we should reuse the cache for the broadcast side\n" +
+        "of mapjoin operators that share same broadcast input. Requires hive.optimize.shared.work\n" +
         "to be set to true. Tez only."),
     HIVE_COMBINE_EQUIVALENT_WORK_OPTIMIZATION("hive.combine.equivalent.work.optimization", true, "Whether to " +
             "combine equivalent work objects during physical optimization.\n This optimization looks for equivalent " +
@@ -2683,6 +2705,9 @@ public class HiveConf extends Configuration {
     MERGE_CARDINALITY_VIOLATION_CHECK("hive.merge.cardinality.check", true,
       "Set to true to ensure that each SQL Merge statement ensures that for each row in the target\n" +
         "table there is at most 1 matching row in the source table per SQL Specification."),
+    OPTIMIZE_ACID_META_COLUMNS("hive.optimize.acid.meta.columns", true,
+        "If true, don't decode Acid metadata columns from storage unless" +
+        " they are needed."),
 
     // For Arrow SerDe
     HIVE_ARROW_ROOT_ALLOCATOR_LIMIT("hive.arrow.root.allocator.limit", Long.MAX_VALUE,
@@ -3082,6 +3107,8 @@ public class HiveConf extends Configuration {
         "Bind host on which to run the HiveServer2 Thrift service."),
     HIVE_SERVER2_PARALLEL_COMPILATION("hive.driver.parallel.compilation", false, "Whether to\n" +
         "enable parallel compilation of the queries between sessions and within the same session on HiveServer2. The default is false."),
+    HIVE_SERVER2_PARALLEL_COMPILATION_LIMIT("hive.driver.parallel.compilation.global.limit", -1, "Determines the " +
+        "degree of parallelism for compilation queries between sessions on HiveServer2. The default is -1."),
     HIVE_SERVER2_COMPILE_LOCK_TIMEOUT("hive.server2.compile.lock.timeout", "0s",
         new TimeValidator(TimeUnit.SECONDS),
         "Number of seconds a request will wait to acquire the compile lock before giving up. " +
@@ -3120,6 +3147,17 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT("hive.server2.webui.explain.output", false,
         "When set to true, the EXPLAIN output for every query is displayed"
             + " in the HS2 WebUI / Drilldown / Query Plan tab.\n"),
+    HIVE_SERVER2_WEBUI_SHOW_GRAPH("hive.server2.webui.show.graph", false,
+        "Set this to true to to display query plan as a graph instead of text in the WebUI. " +
+        "Only works with hive.server2.webui.explain.output set to true."),
+    HIVE_SERVER2_WEBUI_MAX_GRAPH_SIZE("hive.server2.webui.max.graph.size", 25,
+        "Max number of stages graph can display. If number of stages exceeds this, no query" +
+        "plan will be shown. Only works when hive.server2.webui.show.graph and " +
+        "hive.server2.webui.explain.output set to true."),
+    HIVE_SERVER2_WEBUI_SHOW_STATS("hive.server2.webui.show.stats", false,
+        "Set this to true to to display statistics for MapReduce tasks in the WebUI. " +
+        "Only works when hive.server2.webui.show.graph and hive.server2.webui.explain.output " +
+        "set to true."),
     HIVE_SERVER2_WEBUI_ENABLE_CORS("hive.server2.webui.enable.cors", false,
       "Whether to enable cross origin requests (CORS)\n"),
     HIVE_SERVER2_WEBUI_CORS_ALLOWED_ORIGINS("hive.server2.webui.cors.allowed.origins", "*",
@@ -3879,6 +3917,8 @@ public class HiveConf extends Configuration {
         "Maximum size for IO allocator or ORC low-level cache.", "hive.llap.io.cache.orc.size"),
     LLAP_ALLOCATOR_DIRECT("hive.llap.io.allocator.direct", true,
         "Whether ORC low-level cache should use direct allocation."),
+    LLAP_ALLOCATOR_PREALLOCATE("hive.llap.io.allocator.preallocate", true,
+            "Whether to preallocate the entire IO memory at init time."),
     LLAP_ALLOCATOR_MAPPED("hive.llap.io.allocator.mmap", false,
         "Whether ORC low-level cache should use memory mapped allocation (direct I/O). \n" +
         "This is recommended to be used along-side NVDIMM (DAX) or NVMe flash storage."),
@@ -3922,7 +3962,8 @@ public class HiveConf extends Configuration {
         "is unneeded. This is only necessary for ORC files written before HIVE-9660."),
     LLAP_IO_USE_FILEID_PATH("hive.llap.io.use.fileid.path", true,
         "Whether LLAP should use fileId (inode)-based path to ensure better consistency for the\n" +
-        "cases of file overwrites. This is supported on HDFS."),
+        "cases of file overwrites. This is supported on HDFS. Disabling this also turns off any\n" +
+        "cache consistency checks based on fileid comparisons."),
     // Restricted to text for now as this is a new feature; only text files can be sliced.
     LLAP_IO_ENCODE_ENABLED("hive.llap.io.encode.enabled", true,
         "Whether LLAP should try to re-encode and cache data for non-ORC formats. This is used\n" +
@@ -4426,7 +4467,8 @@ public class HiveConf extends Configuration {
         + ",fs.s3a.secret.key"
         + ",fs.s3a.proxy.password"
         + ",dfs.adls.oauth2.credential"
-        + ",fs.adl.oauth2.credential",
+        + ",fs.adl.oauth2.credential"
+        + ",hive.driver.parallel.compilation.global.limit",
         "Comma separated list of configuration options which should not be read by normal user like passwords"),
     HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
         "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",

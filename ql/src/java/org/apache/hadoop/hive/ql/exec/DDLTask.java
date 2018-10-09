@@ -2799,7 +2799,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       LOG.debug("Found {} table(s) matching the SHOW TABLES statement.", tablesOrViews.size());
     } else if (type == TableType.MATERIALIZED_VIEW) {
       materializedViews = new ArrayList<>();
-      materializedViews.addAll(db.getAllMaterializedViewObjects(dbName));
+      materializedViews.addAll(db.getMaterializedViewObjectsByPattern(dbName, pattern));
       LOG.debug("Found {} materialized view(s) matching the SHOW MATERIALIZED VIEWS statement.", materializedViews.size());
     } else if (type == TableType.VIRTUAL_VIEW) {
       tablesOrViews = db.getTablesByType(dbName, pattern, type);
@@ -5103,6 +5103,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       tbl.getTTable().setTemporary(crtTbl.isTemporary());
+      tbl.getTTable().unsetId();
 
       if (crtTbl.isExternal()) {
         tbl.setProperty("EXTERNAL", "TRUE");

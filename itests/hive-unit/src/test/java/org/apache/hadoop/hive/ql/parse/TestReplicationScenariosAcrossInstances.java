@@ -878,6 +878,46 @@ public class TestReplicationScenariosAcrossInstances {
   }
 
   @Test
+  public void testIncrementalDumpEmptyDumpDirectory() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(tuple.lastReplicationId);
+
+    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(tuple.lastReplicationId);
+
+    // create events for some other database and then dump the primaryDbName to dump an empty directory.
+    String testDbName = primaryDbName + "_test";
+    tuple = primary.run(" create database " + testDbName)
+            .run("create table " + testDbName + ".tbl (fld int)")
+            .dump(primaryDbName, tuple.lastReplicationId);
+
+    // Incremental load to existing database with empty dump directory should set the repl id to the last event at src.
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(tuple.lastReplicationId);
+
+    // Incremental load to non existing db should return database not exist error.
+    tuple = primary.dump("someJunkDB", tuple.lastReplicationId);
+    CommandProcessorResponse response = replica.runCommand("REPL LOAD someJunkDB from " + tuple.dumpLocation);
+    response.getErrorMessage().toLowerCase().contains("org.apache.hadoop.hive.ql.metadata.hiveException: " +
+            "database does not exist");
+
+    // Bootstrap load from an empty dump directory should return empty load directory error.
+    tuple = primary.dump("someJunkDB", null);
+    response = replica.runCommand("REPL LOAD someJunkDB from " + tuple.dumpLocation);
+    response.getErrorMessage().toLowerCase().contains("org.apache.hadoop.hive.ql.parse.semanticException:" +
+            " no data to load in path");
+
+    primary.run(" drop database if exists " + testDbName + " cascade");
+  }
+
+  @Test
   public void testIncrementalDumpMultiIteration() throws Throwable {
     WarehouseInstance.Tuple bootstrapTuple = primary.dump(primaryDbName, null);
 
@@ -1529,5 +1569,56 @@ public class TestReplicationScenariosAcrossInstances {
             .verifyResult("t1")
             .run("show partitions t1")
             .verifyResults(new String[] { "country=india", "country=us" });
+  }
+
+  // This requires the tables are loaded in a fixed sorted order.
+  @Test
+  public void testBootstrapLoadRetryAfterFailureForAlterTable() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create table t1 (place string)")
+            .run("insert into table t1 values ('testCheck')")
+            .run("create table t2 (place string) partitioned by (country string)")
+            .run("insert into table t2 partition(country='china') values ('shenzhen')")
+            .run("insert into table t2 partition(country='india') values ('banaglore')")
+            .dump(primaryDbName, null);
+
+    // fail setting ckpt directory property for table t1.
+    BehaviourInjection<CallerArguments, Boolean> callerVerifier
+            = new BehaviourInjection<CallerArguments, Boolean>() {
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable CallerArguments args) {
+        if (args.tblName.equalsIgnoreCase("t1") && args.dbName.equalsIgnoreCase(replicatedDbName)) {
+          injectionPathCalled = true;
+          LOG.warn("Verifier - DB : " + args.dbName + " TABLE : " + args.tblName);
+          return false;
+        }
+        return true;
+      }
+    };
+
+    // Fail repl load before the ckpt proeprty is set for t1 and after it is set for t2. So in the next run, for
+    // t2 it goes directly to partion load with no task for table tracker and for t1 it loads the table
+    // again from start.
+    InjectableBehaviourObjectStore.setAlterTableModifier(callerVerifier);
+    try {
+      replica.loadFailure(replicatedDbName, tuple.dumpLocation);
+      callerVerifier.assertInjectionsPerformed(true, false);
+    } finally {
+      InjectableBehaviourObjectStore.resetAlterTableModifier();
+    }
+
+    // Retry with same dump with which it was already loaded should resume the bootstrap load. Make sure that table t1,
+    // is loaded before t2. So that scope is set to table in first iteration for table t1. In the next iteration, it
+    // loads only remaining partitions of t2, so that the table tracker has no tasks.
+    List<String> withConfigs = Arrays.asList("'hive.in.repl.test.files.sorted'='true'");
+    replica.load(replicatedDbName, tuple.dumpLocation, withConfigs);
+
+    replica.run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("select country from t2 order by country")
+            .verifyResults(Arrays.asList("china", "india"));
   }
 }

@@ -20,12 +20,22 @@ SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN srcpart z ON (x.value = z.value and z.ds='2008-04-08' and z.hr=11)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@dest_j1_n21
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j1_n21
 SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN srcpart z ON (x.value = z.value and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@dest_j1_n21
 OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
@@ -564,6 +574,9 @@ FROM src w JOIN src1 x ON (x.value = w.value)
 JOIN src y ON (x.key = y.key) 
 JOIN src1 z ON (x.key = z.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@dest_j1_n21
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j1_n21
 SELECT x.key, z.value, y.value
@@ -571,6 +584,9 @@ FROM src w JOIN src1 x ON (x.value = w.value)
 JOIN src y ON (x.key = y.key) 
 JOIN src1 z ON (x.key = z.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@dest_j1_n21
 OPTIMIZED SQL: SELECT `t4`.`key`, `t6`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `value`
 FROM `default`.`src`
@@ -1199,12 +1215,22 @@ SELECT res.key, z.value, res.value
 FROM (select x.key, x.value from src1 x JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart z ON (res.value = z.value and z.ds='2008-04-08' and z.hr=11)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@dest_j2_n1
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j2_n1
 SELECT res.key, z.value, res.value
 FROM (select x.key, x.value from src1 x JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart z ON (res.value = z.value and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@dest_j2_n1
 OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`, `t4`.`value` AS `value1`
 FROM (SELECT `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
@@ -1742,12 +1768,22 @@ SELECT res.key, z.value, res.value
 FROM (select x.key, x.value from src1 x LEFT OUTER JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart z ON (res.value = z.value and z.ds='2008-04-08' and z.hr=11)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@dest_j2_n1
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j2_n1
 SELECT res.key, z.value, res.value
 FROM (select x.key, x.value from src1 x LEFT OUTER JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart z ON (res.value = z.value and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@dest_j2_n1
 OPTIMIZED SQL: SELECT `t2`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
@@ -2016,13 +2052,13 @@ STAGE PLANS:
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1
                 Position of Big Table: 0
-                Statistics: Num rows: 39 Data size: 6825 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 64 Data size: 11200 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 39 Data size: 6825 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 64 Data size: 11200 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 0
                   value expressions: _col0 (type: string)
                   auto parallelism: true
@@ -2038,17 +2074,17 @@ STAGE PLANS:
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col3
                 Position of Big Table: 0
-                Statistics: Num rows: 63 Data size: 16758 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 104 Data size: 27664 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), _col3 (type: string), _col1 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 63 Data size: 16758 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 104 Data size: 27664 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics: Num rows: 63 Data size: 16758 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 104 Data size: 27664 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2079,7 +2115,7 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                     outputColumnNames: key, value, val2
-                    Statistics: Num rows: 63 Data size: 16758 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 104 Data size: 27664 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll'), compute_stats(val2, 'hll')
                       mode: hash
@@ -2300,12 +2336,22 @@ SELECT res.key, x.value, res.value
 FROM (select x.key, x.value from src1 x JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart x ON (res.value = x.value and x.ds='2008-04-08' and x.hr=11)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@dest_j2_n1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_j2_n1
 SELECT res.key, x.value, res.value  
 FROM (select x.key, x.value from src1 x JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart x ON (res.value = x.value and x.ds='2008-04-08' and x.hr=11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@dest_j2_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2589,12 +2635,22 @@ SELECT res.key, y.value, res.value
 FROM (select x.key, x.value from src1 x JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart y ON (res.value = y.value and y.ds='2008-04-08' and y.hr=11)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@dest_j2_n1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_j2_n1
 SELECT res.key, y.value, res.value
 FROM (select x.key, x.value from src1 x JOIN src y ON (x.key = y.key)) res 
 JOIN srcpart y ON (res.value = y.value and y.ds='2008-04-08' and y.hr=11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@dest_j2_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

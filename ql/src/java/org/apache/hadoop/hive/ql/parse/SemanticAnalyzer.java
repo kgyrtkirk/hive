@@ -2075,9 +2075,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       getMetaData(qb, null);
     } catch (HiveException e) {
-      // Has to use full name to make sure it does not conflict with
-      // org.apache.commons.lang.StringUtils
-      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
       if (e instanceof SemanticException) {
         throw (SemanticException)e;
       }
@@ -7265,7 +7262,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       lbCtx = constructListBucketingCtx(destinationTable.getSkewedColNames(),
           destinationTable.getSkewedColValues(), destinationTable.getSkewedColValueLocationMaps(),
-          destinationTable.isStoredAsSubDirectories(), conf);
+          destinationTable.isStoredAsSubDirectories());
 
       // Create the work for moving the table
       // NOTE: specify Dynamic partitions in dest_tab for WriteEntity
@@ -7344,10 +7341,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       checkImmutableTable(qb, destinationTable, partPath, true);
 
-      // if the table is in a different dfs than the partition,
-      // replace the partition's dfs with the table's dfs.
-      destinationPath = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
-          .getAuthority(), partPath.toUri().getPath());
+      // Previous behavior (HIVE-1707) used to replace the partition's dfs with the table's dfs.
+      // The changes in HIVE-19891 appears to no longer support that behavior.
+      destinationPath = partPath;
+
+      if (MetaStoreUtils.isArchived(destinationPartition.getTPartition())) {
+        try {
+          String conflictingArchive = ArchiveUtils.conflictingArchiveNameOrNull(
+                  db, destinationTable, destinationPartition.getSpec());
+          String message = String.format("Insert conflict with existing archive: %s",
+                  conflictingArchive);
+          throw new SemanticException(message);
+        } catch (SemanticException err) {
+          throw err;
+        } catch (HiveException err) {
+          throw new SemanticException(err);
+        }
+      }
 
       isMmTable = AcidUtils.isInsertOnlyTable(destinationTable.getParameters());
       queryTmpdir = isMmTable ? destinationPath : ctx.getTempDirForFinalJobPath(destinationPath);
@@ -7369,7 +7379,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       lbCtx = constructListBucketingCtx(destinationPartition.getSkewedColNames(),
           destinationPartition.getSkewedColValues(), destinationPartition.getSkewedColValueLocationMaps(),
-          destinationPartition.isStoredAsSubDirectories(), conf);
+          destinationPartition.isStoredAsSubDirectories());
       AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
       if (destTableIsFullAcid) {
         acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest);
