@@ -177,4 +177,4 @@ or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customer_demographics
 #### A masked pattern was here ####
-3 is expected:	0
+3 is expected:	3
