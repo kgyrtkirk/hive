@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -33,8 +36,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
 
-import java.util.HashSet;
-import java.util.Set;
+import com.esotericsoftware.minlog.Log;
 
 /**
  * GenericUDFIn
@@ -84,7 +86,7 @@ public class GenericUDFIn extends GenericUDF {
     conversionHelper = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
 
     for (ObjectInspector oi : arguments) {
-      if (!conversionHelper.update(oi)) {
+      if(!conversionHelper.updateForComparison(oi)) {
         StringBuilder sb = new StringBuilder();
         sb.append("The arguments for IN should be the same type! Types are: {");
         sb.append(arguments[0].getTypeName());
@@ -119,34 +121,16 @@ public class GenericUDFIn extends GenericUDF {
   // (and those from IN(...) follow it)
   private void prepareInSet(DeferredObject[] arguments) throws HiveException {
     constantInSet = new HashSet<Object>();
-    for (int i = 1; i < arguments.length; ++i) {
-      Object valueObject;
-      ObjectInspector oi = argumentOIs[i];
-      DeferredObject argument = arguments[i];
-      valueObject = extracted(oi, argument);
-      constantInSet.add(valueObject);
-    }
-  }
-
-  private Object extracted(ObjectInspector oi, DeferredObject argument) throws HiveException {
-    switch (compareOI.getCategory()) {
-    case PRIMITIVE:
-      return ((PrimitiveObjectInspector) compareOI)
-          .getPrimitiveJavaObject(conversionHelper
-              .convertIfNecessary(argument.get(), oi));
-    case LIST:
-      return ((ListObjectInspector) compareOI).getList(conversionHelper
-          .convertIfNecessary(argument.get(), oi));
-
-    case MAP:
-      return ((MapObjectInspector) compareOI).getMap(conversionHelper
-          .convertIfNecessary(argument.get(), oi));
-
-    case STRUCT:
-      return ((StructObjectInspector) compareOI).getStructFieldsDataAsList(conversionHelper
-          .convertIfNecessary(argument.get(), oi));
-    default:
-      return ((ConstantObjectInspector) oi).getWritableConstantValue();
+    if (compareOI.getCategory().equals(ObjectInspector.Category.PRIMITIVE)) {
+      for (int i = 1; i < arguments.length; ++i) {
+        constantInSet.add(((PrimitiveObjectInspector) compareOI)
+            .getPrimitiveJavaObject(conversionHelper
+                .convertIfNecessary(arguments[i].get(), argumentOIs[i])));
+      }
+    } else {
+      for (int i = 1; i < arguments.length; ++i) {
+        constantInSet.add(((ConstantObjectInspector) argumentOIs[i]).getWritableConstantValue());
+      }
     }
   }
 
@@ -162,16 +146,44 @@ public class GenericUDFIn extends GenericUDF {
       if (constantInSet == null) {
         prepareInSet(arguments);
       }
-
-      Object val = extracted(argumentOIs[0], arguments[0]);
-      if (constantInSet.contains(val)) {
-        bw.set(true);
-        return bw;
+      switch (compareOI.getCategory()) {
+      case PRIMITIVE: {
+        if (constantInSet.contains(((PrimitiveObjectInspector) compareOI)
+            .getPrimitiveJavaObject(conversionHelper.convertIfNecessary(arguments[0].get(),
+                argumentOIs[0])))) {
+          bw.set(true);
+          return bw;
+        }
+        break;
       }
-//      default:
-//      }
-//      throw new RuntimeException("Compare of unsupported constant type: "
-//          + compareOI.getCategory());
+      case LIST: {
+        if (constantInSet.contains(((ListObjectInspector) compareOI).getList(conversionHelper
+            .convertIfNecessary(arguments[0].get(), argumentOIs[0])))) {
+          bw.set(true);
+          return bw;
+        }
+        break;
+      }
+      case MAP: {
+        if (constantInSet.contains(((MapObjectInspector) compareOI).getMap(conversionHelper
+            .convertIfNecessary(arguments[0].get(), argumentOIs[0])))) {
+          bw.set(true);
+          return bw;
+        }
+        break;
+      }
+      case STRUCT: {
+        if (constantInSet.contains(((StructObjectInspector) compareOI).getStructFieldsDataAsList(conversionHelper
+           .convertIfNecessary(arguments[0].get(), argumentOIs[0])))) {
+          bw.set(true);
+          return bw;
+        }
+        break;
+      }
+      default:
+        throw new RuntimeException("Compare of unsupported constant type: "
+            + compareOI.getCategory());
+      }
       if (constantInSet.contains(null)) {
         return null;
       }
