@@ -30,12 +30,16 @@ from customer_demographics
 where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
 or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_demographics
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1)
 from customer_demographics
 where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
 or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_demographics
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -82,33 +86,37 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select '2 is expected:',count(1) 
+PREHOOK: query: select '3 is expected:',count(1) 
 from customer_demographics
 where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
 or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@customer_demographics
 #### A masked pattern was here ####
-POSTHOOK: query: select '2 is expected:',count(1) 
+POSTHOOK: query: select '3 is expected:',count(1) 
 from customer_demographics
 where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
 or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customer_demographics
 #### A masked pattern was here ####
-2 is expected:	3
+3 is expected:	3
 PREHOOK: query: explain
 select count(1)
 from customer_demographics
 where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
 or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_demographics
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(1)
 from customer_demographics
 where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
 or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_demographics
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -155,18 +163,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select '2 is expected:',count(1) 
+PREHOOK: query: select '3 is expected:',count(1) 
 from customer_demographics
 where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
 or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@customer_demographics
 #### A masked pattern was here ####
-POSTHOOK: query: select '2 is expected:',count(1) 
+POSTHOOK: query: select '3 is expected:',count(1) 
 from customer_demographics
 where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
 or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customer_demographics
 #### A masked pattern was here ####
-2 is expected:	3
+3 is expected:	3
