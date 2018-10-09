@@ -18,16 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-
 import org.apache.calcite.rel.RelNode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -107,6 +97,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 
 /**
@@ -1339,7 +1339,11 @@ public class TypeCheckProcFactory {
         if (newConst == null) {
           return null;
         }
-        return new ExprNodeConstantDesc(colTypeInfo, newConst);
+        if(newConst == constVal) {
+          return constChild;
+        } else {
+          return new ExprNodeConstantDesc(colTypeInfo, newConst);
+        }
       }
       return constChild;
     }
