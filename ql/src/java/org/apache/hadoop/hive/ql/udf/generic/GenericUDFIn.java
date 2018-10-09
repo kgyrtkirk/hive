@@ -125,11 +125,10 @@ public class GenericUDFIn extends GenericUDF {
         valueObject = ((PrimitiveObjectInspector) compareOI)
             .getPrimitiveJavaObject(conversionHelper
                 .convertIfNecessary(arguments[i].get(), argumentOIs[i]));
-        constantInSet.add(valueObject);
       } else {
         valueObject = ((ConstantObjectInspector) argumentOIs[i]).getWritableConstantValue();
-        constantInSet.add(valueObject);
       }
+      constantInSet.add(valueObject);
     }
   }
 
