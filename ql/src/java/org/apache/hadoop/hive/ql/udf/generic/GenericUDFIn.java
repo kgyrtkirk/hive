@@ -121,11 +121,13 @@ public class GenericUDFIn extends GenericUDF {
     constantInSet = new HashSet<Object>();
     for (int i = 1; i < arguments.length; ++i) {
       if (compareOI.getCategory().equals(ObjectInspector.Category.PRIMITIVE)) {
-        constantInSet.add(((PrimitiveObjectInspector) compareOI)
+        Object valueObject = ((PrimitiveObjectInspector) compareOI)
             .getPrimitiveJavaObject(conversionHelper
-                .convertIfNecessary(arguments[i].get(), argumentOIs[i])));
+                .convertIfNecessary(arguments[i].get(), argumentOIs[i]));
+        constantInSet.add(valueObject);
       } else {
-        constantInSet.add(((ConstantObjectInspector) argumentOIs[i]).getWritableConstantValue());
+        Object valueObject = ((ConstantObjectInspector) argumentOIs[i]).getWritableConstantValue();
+        constantInSet.add(valueObject);
       }
     }
   }
