@@ -120,13 +120,14 @@ public class GenericUDFIn extends GenericUDF {
   private void prepareInSet(DeferredObject[] arguments) throws HiveException {
     constantInSet = new HashSet<Object>();
     for (int i = 1; i < arguments.length; ++i) {
+      Object valueObject;
       if (compareOI.getCategory().equals(ObjectInspector.Category.PRIMITIVE)) {
-        Object valueObject = ((PrimitiveObjectInspector) compareOI)
+        valueObject = ((PrimitiveObjectInspector) compareOI)
             .getPrimitiveJavaObject(conversionHelper
                 .convertIfNecessary(arguments[i].get(), argumentOIs[i]));
         constantInSet.add(valueObject);
       } else {
-        Object valueObject = ((ConstantObjectInspector) argumentOIs[i]).getWritableConstantValue();
+        valueObject = ((ConstantObjectInspector) argumentOIs[i]).getWritableConstantValue();
         constantInSet.add(valueObject);
       }
     }
