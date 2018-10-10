@@ -354,14 +354,18 @@ public class TypeCheckProcFactory {
     }
 
     public static ExprNodeConstantDesc createDecimal(String strVal, boolean notNull) {
-      // Note: the normalize() call with rounding in HiveDecimal will currently reduce the
-      //       precision and scale of the value by throwing away trailing zeroes. This may or may
-      //       not be desirable for the literals; however, this used to be the default behavior
-      //       for explicit decimal literals (e.g. 1.0BD), so we keep this behavior for now.
       HiveDecimal hd = HiveDecimal.create(strVal);
       if (notNull && hd == null) {
         return null;
       }
+      return new ExprNodeConstantDesc(adjustType(hd), hd);
+    }
+
+    private static DecimalTypeInfo adjustType(HiveDecimal hd) {
+      // Note: the normalize() call with rounding in HiveDecimal will currently reduce the
+      //       precision and scale of the value by throwing away trailing zeroes. This may or may
+      //       not be desirable for the literals; however, this used to be the default behavior
+      //       for explicit decimal literals (e.g. 1.0BD), so we keep this behavior for now.
       int prec = 1;
       int scale = 0;
       if (hd != null) {
@@ -369,7 +373,7 @@ public class TypeCheckProcFactory {
         scale = hd.scale();
       }
       DecimalTypeInfo typeInfo = TypeInfoFactory.getDecimalTypeInfo(prec, scale);
-      return new ExprNodeConstantDesc(typeInfo, hd);
+      return typeInfo;
     }
 
   }
@@ -1342,10 +1346,17 @@ public class TypeCheckProcFactory {
         if(newConst == constVal) {
           return constChild;
         } else {
-          return new ExprNodeConstantDesc(colTypeInfo, newConst);
+          return new ExprNodeConstantDesc(adjustType(colTypeInfo, newConst), newConst);
         }
       }
       return constChild;
+    }
+
+    private TypeInfo adjustType(PrimitiveTypeInfo colTypeInfo, Object newConst) {
+      if (newConst instanceof HiveDecimal) {
+        return NumExprProcessor.adjustType((HiveDecimal) newConst);
+      }
+      return colTypeInfo;
     }
 
     private Object interpretConstantAsPrimitive(PrimitiveTypeInfo colTypeInfo, Object constVal, TypeInfo constTypeInfo) {
@@ -1366,7 +1377,7 @@ public class TypeCheckProcFactory {
           } else if (PrimitiveObjectInspectorUtils.shortTypeEntry.equals(primitiveTypeEntry)) {
             return (new Short(constVal.toString()));
           } else if (PrimitiveObjectInspectorUtils.decimalTypeEntry.equals(primitiveTypeEntry)) {
-            return NumExprProcessor.createDecimal(constVal.toString(), false);
+            return HiveDecimal.create(constVal.toString());
           }
         } catch (NumberFormatException nfe) {
           LOG.trace("Failed to narrow type of constant", nfe);
