@@ -1168,17 +1168,19 @@ public class TypeCheckProcFactory {
           ExprNodeDesc constChild = children.get(constIdx);
           ExprNodeDesc columnChild = children.get(1 - constIdx);
 
-            final PrimitiveTypeInfo colTypeInfo =
-                TypeInfoFactory.getPrimitiveTypeInfo(columnChild.getTypeString().toLowerCase());
-            ExprNodeDesc newChild = interpretNodeAs(colTypeInfo, constChild);
-            if (newChild == null) {
-              // non-interpretabe as that type...
-              if (genericUDF instanceof GenericUDFOPEqual) {
-                return new ExprNodeConstantDesc(false);
-              }
-            } else {
-              children.set(constIdx, newChild);
+          final PrimitiveTypeInfo colTypeInfo =
+              TypeInfoFactory.getPrimitiveTypeInfo(columnChild.getTypeString().toLowerCase());
+          ExprNodeDesc newChild = interpretNodeAs(colTypeInfo, constChild);
+          if (newChild == null) {
+            // non-interpretabe as that type...
+            // TODO: all comparisions with null should result in null
+            if (genericUDF instanceof GenericUDFOPEqual) {
+              // TODO: result should be null; and not false
+              return new ExprNodeConstantDesc(false);
             }
+          } else {
+            children.set(constIdx, newChild);
+          }
         }
         if (genericUDF instanceof GenericUDFIn) {
           ExprNodeDesc columnDesc = children.get(0);
@@ -1186,16 +1188,27 @@ public class TypeCheckProcFactory {
           ArrayList<ExprNodeDesc> inOperands = new ArrayList<>(outputOpList);
           outputOpList.clear();
 
+          boolean hasNullValue = false;
           for (ExprNodeDesc oldChild : inOperands) {
             if (oldChild == null) {
+              hasNullValue = true;
               continue;
             }
             ExprNodeDesc newChild = interpretNodeAsStruct(columnDesc, oldChild);
             if (newChild == null) {
-              // non interpretable as target type; skip
+              hasNullValue = true;
               continue;
             }
             outputOpList.add(newChild);
+          }
+
+          if (hasNullValue) {
+            ExprNodeConstantDesc nullConst = new ExprNodeConstantDesc(columnDesc.getTypeInfo(), null);
+            if (outputOpList.size() == 0) {
+              // we have found only null values...remove the IN ; it will be null all the time.
+              return nullConst;
+            }
+            outputOpList.add(nullConst);
           }
         }
         if (genericUDF instanceof GenericUDFOPOr) {
