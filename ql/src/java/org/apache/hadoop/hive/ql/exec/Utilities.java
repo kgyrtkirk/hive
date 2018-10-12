@@ -255,6 +255,9 @@ public final class Utilities {
 
   public static Random randGen = new Random();
 
+  private static final Object INPUT_SUMMARY_LOCK = new Object();
+  private static final Object ROOT_HDFS_DIR_LOCK  = new Object();
+
   /**
    * ReduceField:
    * KEY: record key
@@ -2130,9 +2133,19 @@ public final class Utilities {
   public static List<String> getColumnNames(Properties props) {
     List<String> names = new ArrayList<String>();
     String colNames = props.getProperty(serdeConstants.LIST_COLUMNS);
+    return splitColNames(names, colNames);
+  }
+
+  public static List<String> getColumnNames(Configuration conf) {
+    List<String> names = new ArrayList<String>();
+    String colNames = conf.get(serdeConstants.LIST_COLUMNS);
+    return splitColNames(names, colNames);
+  }
+
+  private static List<String> splitColNames(List<String> names, String colNames) {
     String[] cols = colNames.trim().split(",");
-    for (String col : cols) {
-      if (StringUtils.isNotBlank(col)) {
+    for(String col : cols) {
+      if(StringUtils.isNotBlank(col)) {
         names.add(col);
       }
     }
@@ -2316,8 +2329,6 @@ public final class Utilities {
       }
     }
   }
-
-  private static final Object INPUT_SUMMARY_LOCK = new Object();
 
   /**
    * Returns the maximum number of executors required to get file information from several input locations.
@@ -4463,11 +4474,16 @@ public final class Utilities {
   public static void ensurePathIsWritable(Path rootHDFSDirPath, HiveConf conf) throws IOException {
     FsPermission writableHDFSDirPermission = new FsPermission((short)00733);
     FileSystem fs = rootHDFSDirPath.getFileSystem(conf);
+
     if (!fs.exists(rootHDFSDirPath)) {
-      Utilities.createDirsWithPermission(conf, rootHDFSDirPath, writableHDFSDirPermission, true);
+      synchronized (ROOT_HDFS_DIR_LOCK) {
+        if (!fs.exists(rootHDFSDirPath)) {
+          Utilities.createDirsWithPermission(conf, rootHDFSDirPath, writableHDFSDirPermission, true);
+        }
+      }
     }
     FsPermission currentHDFSDirPermission = fs.getFileStatus(rootHDFSDirPath).getPermission();
-    if (rootHDFSDirPath != null && rootHDFSDirPath.toUri() != null) {
+    if (rootHDFSDirPath.toUri() != null) {
       String schema = rootHDFSDirPath.toUri().getScheme();
       LOG.debug("HDFS dir: " + rootHDFSDirPath + " with schema " + schema + ", permission: " +
           currentHDFSDirPermission);
