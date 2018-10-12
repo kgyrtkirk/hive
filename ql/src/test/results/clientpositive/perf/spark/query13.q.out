@@ -308,21 +308,7 @@ STAGE PLANS:
                 outputColumnNames: _col2, _col6, _col7, _col8, _col9, _col10, _col14, _col16
                 Statistics: Num rows: 93701693 Data size: 8266390734 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-<<<<<<< ours
-                  predicate: (((_col18) IN ('KY', 'GA', 'NM') and _col9 BETWEEN 100 AND 200) or ((_col18) IN ('MT', 'OR', 'IN') and _col9 BETWEEN 150 AND 300) or ((_col18) IN ('WI', 'MO', 'WV') and _col9 BETWEEN 50 AND 250)) (type: boolean)
-                  Statistics: Num rows: 7333332 Data size: 7442451276 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 _col4 (type: int)
-                      1 _col0 (type: int)
-                    outputColumnNames: _col5, _col7, _col8
-                    input vertices:
-                      1 Map 10
-                    Statistics: Num rows: 8066665 Data size: 8186696581 Basic stats: COMPLETE Column stats: NONE
-=======
-                  predicate: ((((_col16 = 'KY') or (_col16 = 'GA') or (_col16 = 'NM')) and _col10 BETWEEN 100 AND 200) or (((_col16 = 'MT') or (_col16 = 'OR') or (_col16 = 'IN')) and _col10 BETWEEN 150 AND 300) or (((_col16 = 'WI') or (_col16 = 'MO') or (_col16 = 'WV')) and _col10 BETWEEN 50 AND 250)) (type: boolean)
+                  predicate: (((_col16) IN ('KY', 'GA', 'NM') and _col10 BETWEEN 100 AND 200) or ((_col16) IN ('MT', 'OR', 'IN') and _col10 BETWEEN 150 AND 300) or ((_col16) IN ('WI', 'MO', 'WV') and _col10 BETWEEN 50 AND 250)) (type: boolean)
                   Statistics: Num rows: 31233897 Data size: 2755463519 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: int)
@@ -347,7 +333,6 @@ STAGE PLANS:
                     expressions: _col6 (type: int), _col8 (type: decimal(7,2)), _col9 (type: decimal(7,2))
                     outputColumnNames: _col6, _col8, _col9
                     Statistics: Num rows: 1431552 Data size: 126291937 Basic stats: COMPLETE Column stats: NONE
->>>>>>> theirs
                     Group By Operator
                       aggregations: sum(_col6), count(_col6), sum(_col8), count(_col8), sum(_col9), count(_col9)
                       mode: hash
