@@ -1401,6 +1401,26 @@ public class TypeCheckProcFactory {
           }
         }
       }
+      if (constVal instanceof HiveDecimal) {
+        HiveDecimal hiveDecimal = (HiveDecimal) constVal;
+
+        PrimitiveTypeEntry primitiveTypeEntry = colTypeInfo.getPrimitiveTypeEntry();
+        if (PrimitiveObjectInspectorUtils.byteTypeEntry.equals(primitiveTypeEntry)) {
+          return hiveDecimal.isByte() ? Byte.valueOf(hiveDecimal.byteValue()) : null;
+        } else if (PrimitiveObjectInspectorUtils.shortTypeEntry.equals(primitiveTypeEntry)) {
+          return hiveDecimal.isShort() ? Short.valueOf(hiveDecimal.shortValue()) : null;
+        } else if (PrimitiveObjectInspectorUtils.intTypeEntry.equals(primitiveTypeEntry)) {
+          return hiveDecimal.isInt() ? Integer.valueOf(hiveDecimal.intValue()) : null;
+        } else if (PrimitiveObjectInspectorUtils.longTypeEntry.equals(primitiveTypeEntry)) {
+          return hiveDecimal.isLong() ? Long.valueOf(hiveDecimal.longValue()) : null;
+        } else if (PrimitiveObjectInspectorUtils.doubleTypeEntry.equals(primitiveTypeEntry)) {
+          return hiveDecimal.doubleValue();
+        } else if (PrimitiveObjectInspectorUtils.floatTypeEntry.equals(primitiveTypeEntry)) {
+          return hiveDecimal.floatValue();
+        } else if (PrimitiveObjectInspectorUtils.decimalTypeEntry.equals(primitiveTypeEntry)) {
+          return hiveDecimal;
+        }
+      }
 
       // if column type is char and constant type is string, then convert the constant to char
       // type with padded spaces.
