@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFNvl;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
@@ -1174,7 +1175,8 @@ public class TypeCheckProcFactory {
           if (newChild == null) {
             // non-interpretabe as that type...
             // TODO: all comparisions with null should result in null
-            if (genericUDF instanceof GenericUDFOPEqual) {
+            if (genericUDF instanceof GenericUDFOPEqual
+                && !(genericUDF instanceof GenericUDFOPEqualNS)) {
               // TODO: result should be null; and not false
               return new ExprNodeConstantDesc(false);
             }
