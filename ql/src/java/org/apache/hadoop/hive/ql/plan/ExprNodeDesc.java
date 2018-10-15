@@ -118,7 +118,7 @@ public abstract class ExprNodeDesc implements Serializable, Node {
   public final static class ExprNodeDescEqualityWrapper {
     private final ExprNodeDesc exprNodeDesc;
     // beware of any implementation whose hashcode is mutable by reference
-    // inserting into a Map and then changing the hashcode can make it 
+    // inserting into a Map and then changing the hashcode can make it
     // disappear out of the Map during lookups
     private final int hashcode;
 
