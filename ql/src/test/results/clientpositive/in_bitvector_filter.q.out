@@ -47,27 +47,27 @@ STAGE PLANS:
           TableScan
             alias: t2
             filterExpr: (a) IN (-1, 0, 1, 2, 10, 11, 12, 13, 14, 15, 20, 30, 40) (type: boolean)
-            Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (a) IN (-1, 0, 1, 2, 10, 11, 12, 13, 14, 15, 20, 30, 40) (type: boolean)
-              Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
-                  Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -98,27 +98,27 @@ STAGE PLANS:
           TableScan
             alias: t2
             filterExpr: (a) IN (-1, 0, 1, 2, 10, 11, 12, 13, 14, 15, 20, 30, 40) (type: boolean)
-            Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (a) IN (-1, 0, 1, 2, 10, 11, 12, 13, 14, 15, 20, 30, 40) (type: boolean)
-              Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
-                  Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -149,27 +149,27 @@ STAGE PLANS:
           TableScan
             alias: t2
             filterExpr: (b) IN ('A3', 'ABC', 'AXZ') (type: boolean)
-            Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (b) IN ('A3', 'ABC', 'AXZ') (type: boolean)
-              Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
-                  Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -200,27 +200,27 @@ STAGE PLANS:
           TableScan
             alias: t2
             filterExpr: (b) IN ('A3', 'B1', 'B5') (type: boolean)
-            Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (b) IN ('A3', 'B1', 'B5') (type: boolean)
-              Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 270 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
-                  Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 10 Data size: 900 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
