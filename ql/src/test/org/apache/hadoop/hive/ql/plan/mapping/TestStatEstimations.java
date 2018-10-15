@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.plan.mapping;
 
+import java.util.List;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.DriverFactory;
@@ -30,15 +32,12 @@ import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
-
-import jdk.nashorn.internal.ir.annotations.Ignore;
 
 public class TestStatEstimations {
 

@@ -1,5 +1,5 @@
 set hive.stats.fetch.column.stats=true;
-set metastore.stats.fetch.bitvector=false;
+set metastore.stats.fetch.bitvector=true;
 
 set hive.mapred.mode=nonstrict;
 -- start query 1 in stream 0 using template query17.tpl and seed 1819994127

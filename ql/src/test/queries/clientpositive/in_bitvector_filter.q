@@ -7,16 +7,16 @@ analyze table t2 compute statistics for columns;
 set hive.stats.fetch.bitvector=false;
 
 -- 0,1,2,10,11,12,13,14,15,20 => 10 
-explain select a from t2 where a IN (-1,0,1,2,10,11,12,13,14,15,20,30,40) order by a
+explain select a from t2 where a IN (-1,0,1,2,10,11,12,13,14,15,20,30,40) order by a;
 
 
 set hive.stats.fetch.bitvector=true;
 
 -- 0,1,2,20 => 4
-explain select a from t2 where a IN (-1,0,1,2,10,11,12,13,14,15,20,30,40) order by a
+explain select a from t2 where a IN (-1,0,1,2,10,11,12,13,14,15,20,30,40) order by a;
 
 -- A3 only => 1
-explain select a from t2 where b IN ('A3', 'ABC', 'AXZ') order by a
+explain select a from t2 where b IN ('A3', 'ABC', 'AXZ') order by a;
 
 -- A3,B1,B5 => 3
-explain select a from t2 where b IN ('A3', 'B1', 'B5') order by a
+explain select a from t2 where b IN ('A3', 'B1', 'B5') order by a;
