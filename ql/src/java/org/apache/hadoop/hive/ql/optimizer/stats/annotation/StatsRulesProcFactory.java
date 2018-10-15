@@ -537,7 +537,7 @@ public class StatsRulesProcFactory {
       }
       for (int i = 0; i < columnStats.size(); i++) {
         long dvs = columnStats.get(i) == null ? 0 : columnStats.get(i).getCountDistint();
-        long intersectionSize = estimateIntersectionSize(columnStats.get(i), values.get(i));
+        long intersectionSize = estimateIntersectionSize(aspCtx.getConf(), columnStats.get(i), values.get(i));
         // (num of distinct vals for col in IN clause  / num of distinct vals for col )
         double columnFactor = dvs == 0 ? 0.5d : (1.0d / dvs);
         if (!multiColumn) {
@@ -556,8 +556,13 @@ public class StatsRulesProcFactory {
       return Math.round(numRows * factor * inFactor);
     }
 
-    private long estimateIntersectionSize(ColStatistics colStatistics, Set<ExprNodeDescEqualityWrapper> values) {
+    private long estimateIntersectionSize(HiveConf conf, ColStatistics colStatistics,
+        Set<ExprNodeDescEqualityWrapper> values) {
       try {
+        boolean useBitVectors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_USE_BITVECTORS);
+        if (!useBitVectors) {
+          return values.size();
+        }
         if (colStatistics == null) {
           return values.size();
         }

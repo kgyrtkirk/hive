@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.conf;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -43,7 +40,10 @@ import org.apache.hive.common.HiveCompat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.login.LoginException;
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -69,6 +69,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.security.auth.login.LoginException;
 
 /**
  * Hive Configuration.
@@ -2453,6 +2455,8 @@ public class HiveConf extends Configuration {
         "UDTFs change the number of rows of the output. A common UDTF is the explode() method that creates\n" +
         "multiple rows for each element in the input array. This factor is applied to the number of\n" +
         "output rows and output size."),
+    HIVE_STATS_USE_BITVECTORS("hive.stats.use.bitvectors", false,
+        "Enables to use bitvectors for estimating selectivity."),
 
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false,

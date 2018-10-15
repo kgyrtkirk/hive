@@ -140,6 +140,7 @@ public class TestStatEstimations {
   private static IDriver createDriver() {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
+    conf.setBoolVar(ConfVars.HIVE_STATS_USE_BITVECTORS, true);
     conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
