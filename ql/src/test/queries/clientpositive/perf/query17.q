@@ -1,7 +1,3 @@
-set hive.stats.fetch.column.stats=true;
-set hive.stats.use.bitvectors=false;
-
-
 set hive.mapred.mode=nonstrict;
 -- start query 1 in stream 0 using template query17.tpl and seed 1819994127
 explain
