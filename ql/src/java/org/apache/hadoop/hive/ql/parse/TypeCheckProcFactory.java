@@ -68,7 +68,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
@@ -1277,7 +1276,7 @@ public class TypeCheckProcFactory {
     /**
      * Interprets the given value as columnDesc if possible
      */
-    private ExprNodeDesc interpretNodeAsStruct(ExprNodeDesc columnDesc, ExprNodeDesc valueDesc)
+    private static ExprNodeDesc interpretNodeAsStruct(ExprNodeDesc columnDesc, ExprNodeDesc valueDesc)
         throws SemanticException {
       if(columnDesc instanceof ExprNodeColumnDesc) {
         ExprNodeColumnDesc exprNodeColumnDesc = (ExprNodeColumnDesc) columnDesc;
@@ -1285,7 +1284,7 @@ public class TypeCheckProcFactory {
             TypeInfoFactory.getPrimitiveTypeInfo(exprNodeColumnDesc.getTypeString().toLowerCase());
         return interpretNodeAs(typeInfo, valueDesc);
       }
-      if (isStructUDF(columnDesc) && isConstantStruct(valueDesc)) {
+      if (ExprNodeDescUtils.isStructUDF(columnDesc) && ExprNodeDescUtils.isConstantStruct(valueDesc)) {
         List<ExprNodeDesc> columnChilds = ((ExprNodeGenericFuncDesc) columnDesc).getChildren();
         ExprNodeConstantDesc valueConstDesc = (ExprNodeConstantDesc) valueDesc;
         StructTypeInfo structTypeInfo = (StructTypeInfo) valueConstDesc.getTypeInfo();
@@ -1300,7 +1299,6 @@ public class TypeCheckProcFactory {
         for (int i = 0; i < columnChilds.size(); i++) {
           newStructFieldInfos.add(columnChilds.get(i).getTypeInfo());
           Object newValue = interpretConstantAsPrimitive(
-              // FIXME: columnChilds.get(i) not a column!?@
               (PrimitiveTypeInfo) columnChilds.get(i).getTypeInfo(),
               oldValues.get(i),
               structFieldInfos.get(i));
@@ -1312,7 +1310,7 @@ public class TypeCheckProcFactory {
         return new ExprNodeConstantDesc(sti, newValues);
 
       }
-      if (isStructUDF(columnDesc) && isStructUDF(valueDesc)) {
+      if (ExprNodeDescUtils.isStructUDF(columnDesc) && ExprNodeDescUtils.isStructUDF(valueDesc)) {
         List<ExprNodeDesc> columnChilds = ((ExprNodeGenericFuncDesc) columnDesc).getChildren();
         List<ExprNodeDesc> valueChilds = ((ExprNodeGenericFuncDesc) valueDesc).getChildren();
         if (columnChilds.size() != valueChilds.size()) {
@@ -1328,19 +1326,7 @@ public class TypeCheckProcFactory {
       return valueDesc;
     }
 
-    private boolean isConstantStruct(ExprNodeDesc valueDesc) {
-      return valueDesc instanceof ExprNodeConstantDesc && valueDesc.getTypeInfo() instanceof StructTypeInfo;
-    }
-
-    private boolean isStructUDF(ExprNodeDesc columnDesc) {
-      if (columnDesc instanceof ExprNodeGenericFuncDesc) {
-        ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) columnDesc;
-        return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFStruct);
-      }
-      return false;
-    }
-
-    private ExprNodeDesc interpretNodeAs(PrimitiveTypeInfo colTypeInfo, ExprNodeDesc constChild) {
+    private static ExprNodeDesc interpretNodeAs(PrimitiveTypeInfo colTypeInfo, ExprNodeDesc constChild) {
       if (constChild instanceof ExprNodeConstantDesc) {
         // Try to narrow type of constant
         Object constVal = ((ExprNodeConstantDesc) constChild).getValue();
@@ -1361,14 +1347,15 @@ public class TypeCheckProcFactory {
       return constChild;
     }
 
-    private TypeInfo adjustType(PrimitiveTypeInfo colTypeInfo, Object newConst) {
+    private static TypeInfo adjustType(PrimitiveTypeInfo colTypeInfo, Object newConst) {
       if (newConst instanceof HiveDecimal) {
         return NumExprProcessor.adjustType((HiveDecimal) newConst);
       }
       return colTypeInfo;
     }
 
-    private Object interpretConstantAsPrimitive(PrimitiveTypeInfo colTypeInfo, Object constVal, TypeInfo constTypeInfo) {
+    private static Object interpretConstantAsPrimitive(PrimitiveTypeInfo colTypeInfo, Object constVal,
+        TypeInfo constTypeInfo) {
       String constTypeInfoName = constTypeInfo.getTypeName();
       if (constVal instanceof Number || constVal instanceof String) {
         try {
