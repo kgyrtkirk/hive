@@ -1173,8 +1173,8 @@ public class TypeCheckProcFactory {
               TypeInfoFactory.getPrimitiveTypeInfo(columnChild.getTypeString().toLowerCase());
           ExprNodeDesc newChild = interpretNodeAs(colTypeInfo, constChild);
           if (newChild == null) {
-            // non-interpretabe as target type...
-            // TODO: all comparisions with null should result in null
+            // non-interpretable as target type...
+            // TODO: all comparisons with null should result in null
             if (genericUDF instanceof GenericUDFOPEqual
                 && !(genericUDF instanceof GenericUDFOPEqualNS)) {
               // TODO: result should be null; and not false
@@ -1278,7 +1278,8 @@ public class TypeCheckProcFactory {
     /**
      * Interprets the given value as columnDesc if possible
      */
-    private ExprNodeDesc interpretNodeAsStruct(ExprNodeDesc columnDesc, ExprNodeDesc valueDesc) {
+    private ExprNodeDesc interpretNodeAsStruct(ExprNodeDesc columnDesc, ExprNodeDesc valueDesc)
+        throws SemanticException {
       if(columnDesc instanceof ExprNodeColumnDesc) {
         ExprNodeColumnDesc exprNodeColumnDesc = (ExprNodeColumnDesc) columnDesc;
         final PrimitiveTypeInfo typeInfo =
@@ -1291,10 +1292,9 @@ public class TypeCheckProcFactory {
         StructTypeInfo structTypeInfo = (StructTypeInfo) valueConstDesc.getTypeInfo();
         ArrayList<TypeInfo> structFieldInfos = structTypeInfo.getAllStructFieldTypeInfos();
         ArrayList<TypeInfo> newStructFieldInfos = new ArrayList<>();
-        ;
 
         if (columnChilds.size() != structFieldInfos.size()) {
-          return valueDesc;
+          throw new SemanticException(ErrorMsg.INCOMPATIBLE_STRUCT.getMsg(columnChilds + " and " + structFieldInfos));
         }
         List<Object> oldValues = (List<Object>) valueConstDesc.getValue();
         List<Object> newValues = new ArrayList<>();
@@ -1321,7 +1321,7 @@ public class TypeCheckProcFactory {
         List<ExprNodeDesc> columnChilds = ((ExprNodeGenericFuncDesc) columnDesc).getChildren();
         List<ExprNodeDesc> valueChilds = ((ExprNodeGenericFuncDesc) valueDesc).getChildren();
         if (columnChilds.size() != valueChilds.size()) {
-          return valueDesc;
+          throw new SemanticException(ErrorMsg.INCOMPATIBLE_STRUCT.getMsg(columnChilds + " and " + valueChilds));
         }
         List<ExprNodeDesc> newValueChilds = new ArrayList<>();
         for (int i = 0; i < valueChilds.size(); i++) {
