@@ -1304,10 +1304,6 @@ public class TypeCheckProcFactory {
               (PrimitiveTypeInfo) columnChilds.get(i).getTypeInfo(),
               oldValues.get(i),
               structFieldInfos.get(i));
-          if (newValue == null) {
-            // this will kill the whole subtree
-            return null;
-          }
           newValues.add(newValue);
         }
         StructTypeInfo sti = new StructTypeInfo();
@@ -1326,10 +1322,6 @@ public class TypeCheckProcFactory {
         valueChilds.clear();
         for (int i = 0; i < oldValueChilds.size(); i++) {
           ExprNodeDesc newValue = interpretNodeAsStruct(columnChilds.get(i), oldValueChilds.get(i));
-          if (newValue == null) {
-            // this will recursively kill the whole subtree
-            return null;
-          }
           valueChilds.add(newValue);
         }
       }
