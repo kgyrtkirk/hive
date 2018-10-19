@@ -1418,7 +1418,7 @@ public class TypeCheckProcFactory {
       if (constTypeInfoName.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME) && colTypeInfo instanceof CharTypeInfo) {
         final String constValue = constVal.toString();
         final int length = TypeInfoUtils.getCharacterLengthForType(colTypeInfo);
-        final HiveChar newValue = new HiveChar(constValue, length);
+        final HiveChar newValue = HiveChar.create(constValue, length);
         return newValue;
       }
       return constVal;
