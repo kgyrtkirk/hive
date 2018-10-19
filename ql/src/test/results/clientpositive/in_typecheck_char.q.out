@@ -154,31 +154,30 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
 expected 3	3
-PREHOOK: query: select 'expected 2',* from ax where t = 'a         '
+PREHOOK: query: select 'expected 2',count(*) from ax where t = 'a         '
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ax
 #### A masked pattern was here ####
-POSTHOOK: query: select 'expected 2',* from ax where t = 'a         '
+POSTHOOK: query: select 'expected 2',count(*) from ax where t = 'a         '
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
-expected 2	a	a         
-expected 2	a	a         
-PREHOOK: query: select 'expected 2',* from ax where t = 'a          '
+expected 2	2
+PREHOOK: query: select 'expected 2',count(*) from ax where t = 'a          '
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ax
 #### A masked pattern was here ####
-POSTHOOK: query: select 'expected 2',* from ax where t = 'a          '
+POSTHOOK: query: select 'expected 2',count(*) from ax where t = 'a          '
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
-expected 2	a	a         
-expected 2	a	a         
-PREHOOK: query: select 'expected 0',* from ax where t = 'a          d'
+expected 2	2
+PREHOOK: query: select 'expected 0',count(*) from ax where t = 'a          d'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ax
 #### A masked pattern was here ####
-POSTHOOK: query: select 'expected 0',* from ax where t = 'a          d'
+POSTHOOK: query: select 'expected 0',count(*) from ax where t = 'a          d'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
+expected 0	0

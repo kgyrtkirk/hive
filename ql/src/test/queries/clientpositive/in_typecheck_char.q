@@ -13,6 +13,6 @@ explain
 select 'expected 3',count(*) from ax where (s,t) in (('a','a'),('b','bb'));
 select 'expected 3',count(*) from ax where (s,t) in (('a','a'),('b','bb'));
 
-select 'expected 2',* from ax where t = 'a         ';
-select 'expected 2',* from ax where t = 'a          ';
-select 'expected 0',* from ax where t = 'a          d';
+select 'expected 2',count(*) from ax where t = 'a         ';
+select 'expected 2',count(*) from ax where t = 'a          ';
+select 'expected 0',count(*) from ax where t = 'a          d';
