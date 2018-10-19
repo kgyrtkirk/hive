@@ -1177,7 +1177,7 @@ public class TypeCheckProcFactory {
             // TODO: all comparisons with null should result in null
             if (genericUDF instanceof GenericUDFOPEqual
                 && !(genericUDF instanceof GenericUDFOPEqualNS)) {
-              return new ExprNodeConstantDesc(columnChild.getTypeInfo(), null);
+              return new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, null);
             }
           } else {
             children.set(constIdx, newChild);
