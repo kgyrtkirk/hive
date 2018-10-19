@@ -14,34 +14,6 @@ POSTHOOK: query: CREATE TABLE srcbucket_unpruned(key int, value string) partitio
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_unpruned
-PREHOOK: query: create table t (a int)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (a int)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values(1),(0),(-1)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values(1),(0),(-1)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.a SCRIPT []
-PREHOOK: query: select 3.0D/a from t
-PREHOOK: type: QUERY
-PREHOOK: Input: default@t
-#### A masked pattern was here ####
-POSTHOOK: query: select 3.0D/a from t
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
-#### A masked pattern was here ####
-3.0
-NULL
--3.0
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1
 PREHOOK: type: QUERY
