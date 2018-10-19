@@ -365,7 +365,11 @@ public class RexNodeConverter {
       } else if (calciteOp == HiveToDateSqlOperator.INSTANCE) {
         childRexNodeLst = rewriteToDateChildren(childRexNodeLst);
       }
-      expr = cluster.getRexBuilder().makeCall(retType, calciteOp, childRexNodeLst);
+      if (calciteOp == SqlStdOperatorTable.CASE) {
+        expr = cluster.getRexBuilder().makeCall(calciteOp, childRexNodeLst);
+      } else {
+        expr = cluster.getRexBuilder().makeCall(retType, calciteOp, childRexNodeLst);
+      }
     } else {
       retType = expr.getType();
     }
