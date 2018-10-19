@@ -10,6 +10,12 @@ CREATE TABLE srcbucket_pruned(key int, value string) partitioned by (ds string) 
 -- cannot prune 2-key scenarios without a smarter optimizer
 CREATE TABLE srcbucket_unpruned(key int, value string) partitioned by (ds string) CLUSTERED BY (key,value) INTO 16 BUCKETS STORED AS TEXTFILE;
 
+
+create table t (a int);
+
+insert into t values(1),(0),(-1);
+select 3.0D/a from t;
+
 -- good cases
 
 explain extended
