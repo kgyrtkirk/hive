@@ -19,4 +19,7 @@ select 'expected 0',count(*) from ax where t = 'a          d';
 
 
 select 'expected 2',count(*) from ax where (s,t) in (('a','a'),(null, 'bb'));
+
+
+-- this is right now broken; HIVE-20779 should fix it
 select 'expected 1',count(*) from ax where ((s,t) in (('a','a'),(null, 'bb'))) is null;

@@ -1344,7 +1344,10 @@ public class TypeCheckProcFactory {
       if (constChild instanceof ExprNodeConstantDesc) {
         // Try to narrow type of constant
         Object constVal = ((ExprNodeConstantDesc) constChild).getValue();
-        //        String constType = constChild.getTypeString().toLowerCase();
+        if (constVal == null) {
+          // adjust type of null
+          return new ExprNodeConstantDesc(colTypeInfo, null);
+        }
         Object newConst = interpretConstantAsPrimitive(colTypeInfo, constVal, constChild.getTypeInfo());
         if (newConst == null) {
           return null;
