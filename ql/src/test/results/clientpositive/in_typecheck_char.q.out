@@ -182,5 +182,3 @@ POSTHOOK: query: select 'expected 0',* from ax where t = 'a          d'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
-expected 0	a	a         
-expected 0	a	a         
