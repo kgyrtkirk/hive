@@ -16,3 +16,7 @@ select 'expected 3',count(*) from ax where (s,t) in (('a','a'),('b','bb'));
 select 'expected 2',count(*) from ax where t = 'a         ';
 select 'expected 2',count(*) from ax where t = 'a          ';
 select 'expected 0',count(*) from ax where t = 'a          d';
+
+
+select 'expected 2',count(*) from ax where (s,t) in (('a','a'),(null, 'bb'));
+select 'expected 1',count(*) from ax where ((s,t) in (('a','a'),(null, 'bb'))) is null;
