@@ -1400,6 +1400,8 @@ public class TypeCheckProcFactory {
           }
         }
       }
+
+      // Comparision of decimal and float/double happens in float/double.
       if (constVal instanceof HiveDecimal) {
         HiveDecimal hiveDecimal = (HiveDecimal) constVal;
 
