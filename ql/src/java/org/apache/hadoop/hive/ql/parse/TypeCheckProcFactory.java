@@ -1183,7 +1183,7 @@ public class TypeCheckProcFactory {
             children.set(constIdx, newChild);
           }
         }
-        if (genericUDF instanceof GenericUDFIn) {
+        if (false && genericUDF instanceof GenericUDFIn) {
           ExprNodeDesc columnDesc = children.get(0);
           List<ExprNodeDesc> outputOpList = children.subList(1, children.size());
           ArrayList<ExprNodeDesc> inOperands = new ArrayList<>(outputOpList);
