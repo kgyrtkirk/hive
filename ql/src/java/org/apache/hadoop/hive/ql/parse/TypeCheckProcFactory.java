@@ -1183,7 +1183,7 @@ public class TypeCheckProcFactory {
             children.set(constIdx, newChild);
           }
         }
-        if (false && genericUDF instanceof GenericUDFIn) {
+        if (genericUDF instanceof GenericUDFIn) {
           ExprNodeDesc columnDesc = children.get(0);
           List<ExprNodeDesc> outputOpList = children.subList(1, children.size());
           ArrayList<ExprNodeDesc> inOperands = new ArrayList<>(outputOpList);
@@ -1322,16 +1322,16 @@ public class TypeCheckProcFactory {
         if (columnChilds.size() != valueChilds.size()) {
           throw new SemanticException(ErrorMsg.INCOMPATIBLE_STRUCT.getMsg(columnChilds + " and " + valueChilds));
         }
-        List<ExprNodeDesc> newValueChilds = new ArrayList<>();
-        for (int i = 0; i < valueChilds.size(); i++) {
-          ExprNodeDesc newValue = interpretNodeAsStruct(columnChilds.get(i), valueChilds.get(i));
+        List<ExprNodeDesc> oldValueChilds = new ArrayList<>(valueChilds);
+        valueChilds.clear();
+        for (int i = 0; i < oldValueChilds.size(); i++) {
+          ExprNodeDesc newValue = interpretNodeAsStruct(columnChilds.get(i), oldValueChilds.get(i));
           if (newValue == null) {
             // this will recursively kill the whole subtree
             return null;
           }
-          newValueChilds.add(newValue);
+          valueChilds.add(newValue);
         }
-        ((ExprNodeGenericFuncDesc) valueDesc).setChildren(newValueChilds);
       }
       return valueDesc;
     }
