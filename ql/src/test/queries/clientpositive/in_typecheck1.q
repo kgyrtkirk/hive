@@ -12,3 +12,7 @@ select 'expected 2',count(*) from ax where s = 'a' and t = 'a';
 explain
 select 'expected 3',count(*) from ax where (s,t) in (('a','a'),('b','bb'));
 select 'expected 3',count(*) from ax where (s,t) in (('a','a'),('b','bb'));
+
+select 'expected 2',* from ax where t = 'a         ';
+select 'expected 2',* from ax where t = 'a          ';
+select 'expected 0',* from ax where t = 'a          d';

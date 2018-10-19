@@ -1173,7 +1173,7 @@ public class TypeCheckProcFactory {
               TypeInfoFactory.getPrimitiveTypeInfo(columnChild.getTypeString().toLowerCase());
           ExprNodeDesc newChild = interpretNodeAs(colTypeInfo, constChild);
           if (newChild == null) {
-            // non-interpretabe as that type...
+            // non-interpretabe as target type...
             // TODO: all comparisions with null should result in null
             if (genericUDF instanceof GenericUDFOPEqual
                 && !(genericUDF instanceof GenericUDFOPEqualNS)) {
