@@ -1,6 +1,4 @@
 
-set hive.vectorized.execution.enabled=false;
-
 create table customer_demographics (cd_marital_status char(1), cd_education_status char(20));
 
 insert into customer_demographics values

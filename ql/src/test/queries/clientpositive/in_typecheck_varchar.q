@@ -1,6 +1,4 @@
 
-set hive.vectorized.execution.enabled=false;
-
 create table ax(s varchar(1),t varchar(10));
 
 insert into ax values ('a','a'),('a','a '),('b','bb');
