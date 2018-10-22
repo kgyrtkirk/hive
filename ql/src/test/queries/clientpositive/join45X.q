@@ -1,8 +1,5 @@
 --! qt:dataset:src
 --! qt:dataset:src1
---! qt:dataset:cbo_t1
-
---set hive.cbo.enable=true;
 
 set hive.strict.checks.cartesian.product=false;
 
