@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import com.google.common.collect.Lists;
+
 import org.apache.calcite.rel.RelNode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -95,8 +97,6 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hive.common.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -1183,32 +1183,14 @@ public class TypeCheckProcFactory {
           }
         }
         if (genericUDF instanceof GenericUDFIn) {
-          ExprNodeDesc columnDesc = children.get(0);
-          List<ExprNodeDesc> outputOpList = children.subList(1, children.size());
-          ArrayList<ExprNodeDesc> inOperands = new ArrayList<>(outputOpList);
-          outputOpList.clear();
-
-          boolean hasNullValue = false;
-          for (ExprNodeDesc oldChild : inOperands) {
-            if (oldChild == null) {
-              hasNullValue = true;
-              continue;
-            }
-            ExprNodeDesc newChild = interpretNodeAsStruct(columnDesc, oldChild);
-            if (newChild == null) {
-              hasNullValue = true;
-              continue;
-            }
-            outputOpList.add(newChild);
-          }
-
-          if (hasNullValue) {
-            ExprNodeConstantDesc nullConst = new ExprNodeConstantDesc(columnDesc.getTypeInfo(), null);
-            if (outputOpList.size() == 0) {
-              // we have found only null values...remove the IN ; it will be null all the time.
-              return nullConst;
-            }
-            outputOpList.add(nullConst);
+          ArrayList<ExprNodeDesc> orOperands = rewriteInToOR(children);
+          if (orOperands != null) {
+            funcText = "or";
+            genericUDF = new GenericUDFOPOr();
+            children.clear();
+            children.addAll(orOperands);
+            // add a false child to ensure that at least 2 childs; will be removed
+            children.add(new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, false));
           }
         }
         if (genericUDF instanceof GenericUDFOPOr) {
@@ -1271,6 +1253,87 @@ public class TypeCheckProcFactory {
       }
       assert (desc != null);
       return desc;
+    }
+
+    private ArrayList<ExprNodeDesc> rewriteInToOR(ArrayList<ExprNodeDesc> inOperands)
+        throws SemanticException {
+      ExprNodeDesc columnDesc = inOperands.get(0);
+
+      ArrayList<ExprNodeDesc> orOperands = new ArrayList<>();
+      for (int i = 1; i < inOperands.size(); i++) {
+        ExprNodeDesc andExpr = buildEqualsArr(columnDesc, inOperands.get(i));
+        if (andExpr == null) {
+          return null;
+        }
+        orOperands.add(andExpr);
+      }
+      return orOperands;
+    }
+
+    private ExprNodeDesc buildEqualsArr(ExprNodeDesc columnDesc, ExprNodeDesc exprNodeDesc) throws SemanticException {
+      List<ExprNodeDesc> lNodes = asListOfNodes(columnDesc);
+      List<ExprNodeDesc> rNodes = asListOfNodes(exprNodeDesc);
+      if (lNodes == null || rNodes == null) {
+        // something went wrong
+        return null;
+      }
+      if(lNodes.size()!=rNodes.size()) {
+        throw new SemanticException(ErrorMsg.INCOMPATIBLE_STRUCT.getMsg(columnDesc + " and " + exprNodeDesc));
+      }
+
+      List<ExprNodeDesc> ret = new ArrayList<>();
+      for (int i = 0; i < lNodes.size(); i++) {
+        ExprNodeDesc newRNode = interpretNodeAsStruct(lNodes.get(i), rNodes.get(i));
+        ret.add(buildEquals(lNodes.get(i), newRNode));
+      }
+      return buildAnd(ret);
+    }
+
+    private ExprNodeGenericFuncDesc buildEquals(ExprNodeDesc columnDesc, ExprNodeDesc valueDesc) {
+      return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPEqual(),
+          Lists.newArrayList(columnDesc, valueDesc));
+    }
+
+    private ExprNodeDesc buildAnd(List<ExprNodeDesc> values) {
+      if (values.size() == 1) {
+        return values.get(0);
+      } else {
+        return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPAnd(),
+            values);
+      }
+    }
+
+    private ExprNodeGenericFuncDesc buildOr(List<ExprNodeDesc> values) {
+      return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPOr(),
+          values);
+    }
+
+    private List<ExprNodeDesc> asListOfNodes(ExprNodeDesc desc) {
+      if (desc instanceof ExprNodeColumnDesc) {
+        return Lists.newArrayList(desc);
+      }
+      ExprNodeDesc valueDesc = desc;
+      if (ExprNodeDescUtils.isStructUDF(desc)) {
+        List<ExprNodeDesc> valueChilds = ((ExprNodeGenericFuncDesc) valueDesc).getChildren();
+        return valueChilds;
+      }
+      if (ExprNodeDescUtils.isConstantStruct(valueDesc)) {
+        ExprNodeConstantDesc valueConstDesc = (ExprNodeConstantDesc) valueDesc;
+        List<Object> oldValues = (List<Object>) valueConstDesc.getValue();
+        StructTypeInfo structTypeInfo = (StructTypeInfo) valueConstDesc.getTypeInfo();
+        ArrayList<TypeInfo> structFieldInfos = structTypeInfo.getAllStructFieldTypeInfos();
+
+        ArrayList ret = new ArrayList<>();
+        for (int i = 0; i < oldValues.size(); i++) {
+          ret.add(new ExprNodeConstantDesc(structFieldInfos.get(i), oldValues.get(i)));
+        }
+        return ret;
+      }
+      if (valueDesc instanceof ExprNodeConstantDesc) {
+        return Lists.newArrayList(valueDesc);
+      }
+
+      return null;
     }
 
     /**

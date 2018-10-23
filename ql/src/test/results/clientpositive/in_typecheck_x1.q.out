@@ -35,10 +35,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t
-            filterExpr: ((UDFToDouble(a) = 1.0D) or (UDFToDouble(a) = null) or (UDFToDouble(a) = 2.0D)) (type: boolean)
+            filterExpr: ((UDFToDouble(a) = 1.0D) or (a = 'x') or (UDFToDouble(a) = 2.0D)) (type: boolean)
             Statistics: Num rows: 3 Data size: 5 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(a) = 1.0D) or (UDFToDouble(a) = 2.0D) or (UDFToDouble(a) = null)) (type: boolean)
+              predicate: ((UDFToDouble(a) = 1.0D) or (UDFToDouble(a) = 2.0D) or (a = 'x')) (type: boolean)
               Statistics: Num rows: 3 Data size: 5 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: a (type: string)
@@ -68,4 +68,5 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 1
+x
 2.0
