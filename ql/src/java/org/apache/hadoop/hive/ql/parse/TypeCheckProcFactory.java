@@ -1311,8 +1311,7 @@ public class TypeCheckProcFactory {
 
       List<ExprNodeDesc> ret = new ArrayList<>();
       for (int i = 0; i < lNodes.size(); i++) {
-        ExprNodeDesc newRNode = interpretNodeAsStruct(lNodes.get(i), rNodes.get(i));
-        ret.add(buildEquals(lNodes.get(i), newRNode));
+        ret.add(buildEquals(lNodes.get(i), rNodes.get(i)));
       }
       return buildAnd(ret);
     }
