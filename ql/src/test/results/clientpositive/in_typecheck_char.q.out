@@ -106,10 +106,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ax
-            filterExpr: (((CAST( s AS STRING) = 'a') and (CAST( t AS STRING) = 'a')) or ((CAST( s AS STRING) = 'b') and (CAST( t AS STRING) = 'bb'))) (type: boolean)
+            filterExpr: (((s = 'a') and (t = 'a         ')) or ((s = 'b') and (t = 'bb        ')) or false) (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((CAST( s AS STRING) = 'a') and (CAST( t AS STRING) = 'a')) or ((CAST( s AS STRING) = 'b') and (CAST( t AS STRING) = 'bb'))) (type: boolean)
+              predicate: (((s = 'a') and (t = 'a         ')) or ((s = 'b') and (t = 'bb        ')) or false) (type: boolean)
               Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
