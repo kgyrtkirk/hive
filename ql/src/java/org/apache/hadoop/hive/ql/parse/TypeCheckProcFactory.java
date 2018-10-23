@@ -1213,6 +1213,9 @@ public class TypeCheckProcFactory {
           }
           if (!ctx.isCBOExecuted()) {
             ArrayList<ExprNodeDesc> orOperands = rewriteInToOR(children);
+            if (orOperands.size() == 1) {
+              orOperands.add(new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, false));
+            }
             if (orOperands != null) {
               funcText = "or";
               genericUDF = new GenericUDFOPOr();
