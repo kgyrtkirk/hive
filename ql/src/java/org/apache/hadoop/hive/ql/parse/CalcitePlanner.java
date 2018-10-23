@@ -528,7 +528,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
             this.ctx.setCboSucceeded(true);
             if (this.ctx.isExplainPlan()) {
               ExplainConfiguration explainConfig = this.ctx.getExplainConfig();
-              if (explainConfig.isExtended() || explainConfig.isFormatted()) {
+              if (explainConfig.isCbo()) {
+                if (explainConfig.isCboExtended()) {
+                  // Include join cost
+                  this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan, SqlExplainLevel.ALL_ATTRIBUTES));
+                } else {
+                  // Do not include join cost
+                  this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan));
+                }
+              } else if (explainConfig.isExtended() || explainConfig.isFormatted()) {
                 this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
               }
             }
@@ -1785,16 +1793,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
         calcitePreCboPlan =
             hepPlan(calcitePreCboPlan, false, mdProvider.getMetadataProvider(), null,
                     HiveRemoveSqCountCheck.INSTANCE);
-        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
-                              "Calcite: Removing sq_count_check UDF ");
+        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Removing sq_count_check UDF ");
       }
-      //  4.1 Remove Projects between Joins so that JoinToMultiJoinRule can merge them to MultiJoin.
-      //    Don't run this rule if hive is to remove sq_count_check since that rule expects to have project b/w join.
-      calcitePreCboPlan = hepPlan(calcitePreCboPlan, true, mdProvider.getMetadataProvider(), executorProvider,
-          HepMatchOrder.BOTTOM_UP, HiveJoinProjectTransposeRule.LEFF_PROJECT_BTW_JOIN,
-          HiveJoinProjectTransposeRule.RIGHT_PROJECT_BTW_JOIN);
 
-      // 4.2 Apply join order optimizations: reordering MST algorithm
+      //  Remove Projects between Joins so that JoinToMultiJoinRule can merge them to MultiJoin
+      calcitePreCboPlan = hepPlan(calcitePreCboPlan, true, mdProvider.getMetadataProvider(), executorProvider,
+          HepMatchOrder.BOTTOM_UP, HiveJoinProjectTransposeRule.LEFT_PROJECT_BTW_JOIN,
+          HiveJoinProjectTransposeRule.RIGHT_PROJECT_BTW_JOIN, HiveProjectMergeRule.INSTANCE);
+
+      // 4. Apply join order optimizations: reordering MST algorithm
       //    If join optimizations failed because of missing stats, we continue with
       //    the rest of optimizations
       if (profilesCBO.contains(ExtendedCBOProfile.JOIN_REORDERING)) {
