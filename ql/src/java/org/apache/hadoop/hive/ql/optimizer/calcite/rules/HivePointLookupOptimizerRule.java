@@ -17,14 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -50,14 +50,14 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
@@ -223,6 +223,10 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         }
         RexNode opA = call.operands.get(0);
         RexNode opB = call.operands.get(1);
+        if (RexUtil.isNull(opA) || RexUtil.isNull(opB)) {
+          // dont try to compare nulls
+          return null;
+        }
         if (opA instanceof RexLiteral && opB instanceof RexInputRef) {
           RexLiteral rexLiteral = (RexLiteral) opA;
           RexInputRef rexInputRef = (RexInputRef) opB;
