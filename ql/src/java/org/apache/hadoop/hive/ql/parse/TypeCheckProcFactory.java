@@ -1189,8 +1189,6 @@ public class TypeCheckProcFactory {
             genericUDF = new GenericUDFOPOr();
             children.clear();
             children.addAll(orOperands);
-            // add a false child to ensure that at least 2 childs; will be removed
-            children.add(new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, false));
           }
         }
         if (genericUDF instanceof GenericUDFOPOr) {

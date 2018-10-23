@@ -70,3 +70,30 @@ POSTHOOK: Input: default@t
 1
 x
 2.0
+PREHOOK: query: create table ax(s char(1),t char(10))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ax
+POSTHOOK: query: create table ax(s char(1),t char(10))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ax
+PREHOOK: query: insert into ax values ('a','a'),('a','a '),('b','bb')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ax
+POSTHOOK: query: insert into ax values ('a','a'),('a','a '),('b','bb')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ax
+POSTHOOK: Lineage: ax.s SCRIPT []
+POSTHOOK: Lineage: ax.t SCRIPT []
+PREHOOK: query: select 'expected 1',count(*) from ax where ((s,t) in (('a','a'),(null, 'bb'))) is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ax
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expected 1',count(*) from ax where ((s,t) in (('a','a'),(null, 'bb'))) is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ax
+#### A masked pattern was here ####
+expected 1	1
