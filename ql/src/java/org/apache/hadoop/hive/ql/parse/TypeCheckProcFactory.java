@@ -1183,12 +1183,14 @@ public class TypeCheckProcFactory {
           }
         }
         if (genericUDF instanceof GenericUDFIn) {
-          ArrayList<ExprNodeDesc> orOperands = rewriteInToOR(children);
-          if (orOperands != null) {
-            funcText = "or";
-            genericUDF = new GenericUDFOPOr();
-            children.clear();
-            children.addAll(orOperands);
+          if (!ctx.isCBOExecuted()) {
+            ArrayList<ExprNodeDesc> orOperands = rewriteInToOR(children);
+            if (orOperands != null) {
+              funcText = "or";
+              genericUDF = new GenericUDFOPOr();
+              children.clear();
+              children.addAll(orOperands);
+            }
           }
         }
         if (genericUDF instanceof GenericUDFOPOr) {
