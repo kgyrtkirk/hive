@@ -1486,6 +1486,8 @@ public class TypeCheckProcFactory {
         return hiveDecimal;
       }
 
+      // TODO : Char and string comparison happens in char. But, varchar and string comparison happens in String.
+
       // if column type is char and constant type is string, then convert the constant to char
       // type with padded spaces.
       if (constTypeInfoName.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME) && colTypeInfo instanceof CharTypeInfo) {
