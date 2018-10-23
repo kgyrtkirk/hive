@@ -82,9 +82,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToChar;
@@ -104,7 +101,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 import java.math.BigDecimal;
@@ -178,8 +174,7 @@ public class RexNodeConverter {
 
   public RexNode convert(ExprNodeDesc expr) throws SemanticException {
     if (expr instanceof ExprNodeGenericFuncDesc) {
-      ExprNodeGenericFuncDesc expr2 = rewriteIn((ExprNodeGenericFuncDesc) expr);
-      return convert(expr2);
+      return convert((ExprNodeGenericFuncDesc) expr);
     } else if (expr instanceof ExprNodeConstantDesc) {
       return convert((ExprNodeConstantDesc) expr);
     } else if (expr instanceof ExprNodeColumnDesc) {
@@ -243,57 +238,6 @@ public class RexNodeConverter {
       throw new CalciteSemanticException("Unexpected rexnode : "
           + rexNode.getClass().getCanonicalName(), UnsupportedFeature.Schema_less_table);
     }
-  }
-
-  private ExprNodeGenericFuncDesc rewriteIn(ExprNodeGenericFuncDesc func) {
-    GenericUDF tgtUdf = func.getGenericUDF();
-    boolean isIN = tgtUdf instanceof GenericUDFIn;
-    if (true || !isIN) {
-      return func;
-    }
-
-    ExprNodeDesc l = func.getChildren().get(0);
-    List<ExprNodeDesc> orOperands = new ArrayList<>();
-    for (int i = 1; i < func.getChildren().size(); ++i) {
-      ExprNodeDesc r = func.getChildren().get(i);
-      ExprNodeDesc newOperand = buildEqualsArr(l, r);
-      if (newOperand == null) {
-        return func;
-      }
-      orOperands.add(newOperand);
-    }
-    return buildOr(orOperands);
-  }
-
-  private ExprNodeDesc buildEqualsArr(ExprNodeDesc columnDesc, ExprNodeDesc valueDesc) {
-    List<ExprNodeDesc> operands = new ArrayList<>();
-    if (columnDesc instanceof ExprNodeColumnDesc) {
-      operands.add(buildEquals(columnDesc, valueDesc));
-    }
-    if (ExprNodeDescUtils.isStructUDF(columnDesc) && ExprNodeDescUtils.isConstantStruct(valueDesc)) {
-      List<ExprNodeDesc> columnChilds = ((ExprNodeGenericFuncDesc) columnDesc).getChildren();
-      ExprNodeConstantDesc valueConstDesc = (ExprNodeConstantDesc) valueDesc;
-      for (int i = 0; i < columnChilds.size(); i++) {
-        operands.add(buildEquals(columnChilds.get(i), valueConstDesc));
-      }
-    }
-
-    return buildAnd(operands);
-  }
-
-  private ExprNodeGenericFuncDesc buildEquals(ExprNodeDesc columnDesc, ExprNodeDesc valueDesc) {
-    return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPEqual(),
-        Lists.newArrayList(columnDesc, valueDesc));
-  }
-
-  private ExprNodeGenericFuncDesc buildAnd(List<ExprNodeDesc> values) {
-    return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPAnd(),
-        values);
-  }
-
-  private ExprNodeGenericFuncDesc buildOr(List<ExprNodeDesc> values) {
-    return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPOr(),
-        values);
   }
 
   private RexNode convert(ExprNodeGenericFuncDesc func) throws SemanticException {
