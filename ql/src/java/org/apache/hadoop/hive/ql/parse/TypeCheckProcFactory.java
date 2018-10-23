@@ -1183,7 +1183,35 @@ public class TypeCheckProcFactory {
           }
         }
         if (genericUDF instanceof GenericUDFIn) {
-          if (!ctx.isCBOExecuted()) {
+
+          ExprNodeDesc columnDesc = children.get(0);
+          List<ExprNodeDesc> outputOpList = children.subList(1, children.size());
+          ArrayList<ExprNodeDesc> inOperands = new ArrayList<>(outputOpList);
+          outputOpList.clear();
+
+          boolean hasNullValue = false;
+          for (ExprNodeDesc oldChild : inOperands) {
+            if (oldChild == null) {
+              hasNullValue = true;
+              continue;
+            }
+            ExprNodeDesc newChild = interpretNodeAsStruct(columnDesc, oldChild);
+            if (newChild == null) {
+              hasNullValue = true;
+              continue;
+            }
+            outputOpList.add(newChild);
+          }
+
+          if (hasNullValue) {
+            ExprNodeConstantDesc nullConst = new ExprNodeConstantDesc(columnDesc.getTypeInfo(), null);
+            if (outputOpList.size() == 0) {
+              // we have found only null values...remove the IN ; it will be null all the time.
+              return nullConst;
+            }
+            outputOpList.add(nullConst);
+          }
+          if (false && !ctx.isCBOExecuted()) {
             ArrayList<ExprNodeDesc> orOperands = rewriteInToOR(children);
             if (orOperands != null) {
               funcText = "or";

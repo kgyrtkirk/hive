@@ -35,10 +35,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t
-            filterExpr: ((UDFToDouble(a) = 1.0D) or (a = 'x') or (UDFToDouble(a) = 2.0D)) (type: boolean)
+            filterExpr: ((UDFToDouble(a) = 1.0D) or (UDFToDouble(a) = null) or (UDFToDouble(a) = 2.0D)) (type: boolean)
             Statistics: Num rows: 3 Data size: 5 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(a) = 1.0D) or (UDFToDouble(a) = 2.0D) or (a = 'x')) (type: boolean)
+              predicate: ((UDFToDouble(a) = 1.0D) or (UDFToDouble(a) = 2.0D) or (UDFToDouble(a) = null)) (type: boolean)
               Statistics: Num rows: 3 Data size: 5 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: a (type: string)
@@ -68,7 +68,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 1
-x
 2.0
 PREHOOK: query: create table ax(s char(1),t char(10))
 PREHOOK: type: CREATETABLE
@@ -96,4 +95,4 @@ POSTHOOK: query: select 'expected 1',count(*) from ax where ((s,t) in (('a','a')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
-expected 1	1
+expected 1	0
