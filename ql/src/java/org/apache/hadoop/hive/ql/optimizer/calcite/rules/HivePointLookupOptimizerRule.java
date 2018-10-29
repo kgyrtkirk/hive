@@ -132,18 +132,31 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
     @Override
     public void onMatch(RelOptRuleCall call) {
-      //        final Project project = call.rel(0);
-      //        project.get
-      //        final RexBuilder rexBuilder = join.getCluster().getRexBuilder();
-      //        final RexNode condition = RexUtil.pullFactors(rexBuilder, join.getCondition());
-      //        analyzeCondition(call , rexBuilder, join, condition);
+      final Project project = call.rel(0);
+      boolean changed = false;
+      final RexBuilder rexBuilder = project.getCluster().getRexBuilder();
+      List<RexNode> newProjects = new ArrayList<>();
+      for (RexNode oldNode : project.getProjects()) {
+        RexNode newNode = analyzeRexNode(rexBuilder, oldNode);
+        if (!newNode.toString().equals(oldNode.toString())) {
+          changed = true;
+          newProjects.add(newNode);
+        } else {
+          newProjects.add(oldNode);
+        }
+      }
+      if (!changed) {
+        return;
+      }
+      Project newProject = project.copy(project.getTraitSet(), project.getInput(), newProjects,
+          project.getRowType(), project.getFlags());
+      call.transformTo(newProject);
+
     }
 
     @Override
     protected RelNode copyNode(AbstractRelNode node, RexNode newCondition) {
-      final Join join = (Join) node;
-      return join.copy(join.getTraitSet(), newCondition, join.getLeft(), join.getRight(), join.getJoinType(),
-          join.isSemiJoinDone());
+      return null;
     }
   }
 
@@ -165,13 +178,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           AbstractRelNode node,
           RexNode condition) {
 
-    // 1. We try to transform possible candidates
-    RexTransformIntoInClause transformIntoInClause = new RexTransformIntoInClause(rexBuilder, minNumORClauses);
-    RexNode newCondition = transformIntoInClause.apply(condition);
-
-    // 2. We merge IN expressions
-    RexMergeInClause mergeInClause = new RexMergeInClause(rexBuilder);
-    newCondition = mergeInClause.apply(newCondition);
+    RexNode newCondition = analyzeRexNode(rexBuilder, condition);
 
     // 3. If we could not transform anything, we bail out
     if (newCondition.toString().equals(condition.toString())) {
@@ -182,6 +189,17 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     RelNode newNode = copyNode(node, newCondition);
 
     call.transformTo(newNode);
+  }
+
+  public RexNode analyzeRexNode(RexBuilder rexBuilder, RexNode condition) {
+    // 1. We try to transform possible candidates
+    RexTransformIntoInClause transformIntoInClause = new RexTransformIntoInClause(rexBuilder, minNumORClauses);
+    RexNode newCondition = transformIntoInClause.apply(condition);
+
+    // 2. We merge IN expressions
+    RexMergeInClause mergeInClause = new RexMergeInClause(rexBuilder);
+    newCondition = mergeInClause.apply(newCondition);
+    return newCondition;
   }
 
 
