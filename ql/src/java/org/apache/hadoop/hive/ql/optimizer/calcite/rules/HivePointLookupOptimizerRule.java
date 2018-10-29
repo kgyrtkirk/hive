@@ -116,8 +116,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
   }
 
   /** Rule adapter to apply the transformation to Projections. */
-  public static class JoinCondition2 extends HivePointLookupOptimizerRule {
-    public JoinCondition2(int minNumORClauses) {
+  public static class Projections extends HivePointLookupOptimizerRule {
+    public Projections(int minNumORClauses) {
       super(operand(Project.class, any()), minNumORClauses);
     }
 
