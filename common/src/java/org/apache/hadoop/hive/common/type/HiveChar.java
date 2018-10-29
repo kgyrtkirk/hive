@@ -29,6 +29,20 @@ public class HiveChar extends HiveBaseChar
 
   public static final int MAX_CHAR_LENGTH = 255;
 
+  /**
+   * Creates a HiveChar for the value.
+   *
+   * If the value is not representable at char(length) returns null.
+   */
+  public static HiveChar create(String constValue, int length) {
+    HiveChar maxCharConst = new HiveChar(constValue, MAX_CHAR_LENGTH);
+    HiveChar charVal = new HiveChar(constValue, length);
+    if (maxCharConst.equals(charVal)) {
+      return charVal;
+    }
+    return null;
+  }
+
   public HiveChar() {
   }
 

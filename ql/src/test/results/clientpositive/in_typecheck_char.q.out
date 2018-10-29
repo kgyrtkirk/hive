@@ -181,7 +181,7 @@ POSTHOOK: query: select 'expected 0',count(*) from ax where t = 'a          d'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
-expected 0	2
+expected 0	0
 PREHOOK: query: select 'expected 2',count(*) from ax where (s,t) in (('a','a'),(null, 'bb'))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ax

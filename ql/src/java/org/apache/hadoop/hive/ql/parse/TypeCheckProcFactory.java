@@ -1183,17 +1183,36 @@ public class TypeCheckProcFactory {
           }
         }
         if (genericUDF instanceof GenericUDFIn) {
-          if (ctx.isCBOExecuted()) {
-            ExprNodeDesc columnDesc = children.get(0);
-            for (int i = 1; i < children.size(); i++) {
-              ExprNodeDesc newChild = interpretNodeAsStruct(columnDesc, children.get(i));
-              if (newChild == null) {
-                throw new SemanticException("Found null value in IN clause, it should not happen");
-              }
-              children.set(i, newChild);
+
+          ExprNodeDesc columnDesc = children.get(0);
+          List<ExprNodeDesc> outputOpList = children.subList(1, children.size());
+          ArrayList<ExprNodeDesc> inOperands = new ArrayList<>(outputOpList);
+          outputOpList.clear();
+
+          boolean hasNullValue = false;
+          for (ExprNodeDesc oldChild : inOperands) {
+            if (oldChild == null) {
+              hasNullValue = true;
+              continue;
             }
-          } else {
-            List<ExprNodeDesc> orOperands = rewriteInToOR(children);
+            ExprNodeDesc newChild = interpretNodeAsStruct(columnDesc, oldChild);
+            if (newChild == null) {
+              hasNullValue = true;
+              continue;
+            }
+            outputOpList.add(newChild);
+          }
+
+          if (hasNullValue) {
+            ExprNodeConstantDesc nullConst = new ExprNodeConstantDesc(columnDesc.getTypeInfo(), null);
+            if (outputOpList.size() == 0) {
+              // we have found only null values...remove the IN ; it will be null all the time.
+              return nullConst;
+            }
+            outputOpList.add(nullConst);
+          }
+          if (!ctx.isCBOExecuted()) {
+            ArrayList<ExprNodeDesc> orOperands = rewriteInToOR(children);
             if (orOperands != null) {
               if (orOperands.size() == 1) {
                 orOperands.add(new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, false));
@@ -1301,10 +1320,8 @@ public class TypeCheckProcFactory {
     }
 
     private ExprNodeGenericFuncDesc buildEquals(ExprNodeDesc columnDesc, ExprNodeDesc valueDesc) {
-      final PrimitiveTypeInfo colTypeInfo =
-          TypeInfoFactory.getPrimitiveTypeInfo(columnDesc.getTypeString().toLowerCase());
       return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPEqual(),
-          Lists.newArrayList(columnDesc, interpretNodeAs(colTypeInfo, valueDesc)));
+          Lists.newArrayList(columnDesc, valueDesc));
     }
 
     private ExprNodeDesc buildAnd(List<ExprNodeDesc> values) {
@@ -1479,7 +1496,8 @@ public class TypeCheckProcFactory {
       if (constTypeInfoName.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME) && colTypeInfo instanceof CharTypeInfo) {
         final String constValue = constVal.toString();
         final int length = TypeInfoUtils.getCharacterLengthForType(colTypeInfo);
-        return new HiveChar(constValue, length);
+        final HiveChar newValue = HiveChar.create(constValue, length);
+        return newValue;
       }
       return constVal;
     }
