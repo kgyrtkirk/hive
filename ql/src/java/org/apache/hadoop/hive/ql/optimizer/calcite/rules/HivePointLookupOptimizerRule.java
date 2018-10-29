@@ -59,15 +59,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+/**
+ * This optimization attempts to identify and close expanded INs. 
+ * 
+ * Basically:
+ * <pre>
+ * (c) IN ( v1, v2, ...) &lt;=&gt; c1=v1 || c1=v2 || ...
+ * </pre>
+ * If c is struct; then c=v1 is a group of anded equations.
+ */
 public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
-/**
- * This optimization will take a Filter or expression, and if its predicate contains
- * an OR operator whose children are constant equality expressions, it will try
- * to generate an IN clause (which is more efficient). If the OR operator contains
- * AND operator children, the optimization might generate an IN clause that uses
- * structs.
- */
+  /** Rule adapter to apply the transformation to Filter conditions. */
   public static class FilterCondition extends HivePointLookupOptimizerRule {
     public FilterCondition (int minNumORClauses) {
       super(operand(Filter.class, any()), minNumORClauses);
@@ -87,13 +90,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     }
   }
 
-/**
- * This optimization will take a Join or expression, and if its join condition contains
- * an OR operator whose children are constant equality expressions, it will try
- * to generate an IN clause (which is more efficient). If the OR operator contains
- * AND operator children, the optimization might generate an IN clause that uses
- * structs.
- */
+  /** Rule adapter to apply the transformation to Join conditions. */
   public static class JoinCondition extends HivePointLookupOptimizerRule {
     public JoinCondition (int minNumORClauses) {
       super(operand(Join.class, any()), minNumORClauses);
@@ -118,13 +115,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     }
   }
 
-  /**
-   * This optimization will take a Join or expression, and if its join condition contains
-   * an OR operator whose children are constant equality expressions, it will try
-   * to generate an IN clause (which is more efficient). If the OR operator contains
-   * AND operator children, the optimization might generate an IN clause that uses
-   * structs.
-   */
+  /** Rule adapter to apply the transformation to Projections. */
   public static class JoinCondition2 extends HivePointLookupOptimizerRule {
     public JoinCondition2(int minNumORClauses) {
       super(operand(Project.class, any()), minNumORClauses);
