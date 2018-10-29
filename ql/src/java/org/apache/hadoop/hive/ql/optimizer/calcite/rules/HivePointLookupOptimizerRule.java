@@ -166,8 +166,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           RexNode condition) {
 
     // 1. We try to transform possible candidates
-    RexTransformIntoInClause transformIntoInClause = new RexTransformIntoInClause(rexBuilder, node,
-            minNumORClauses);
+    RexTransformIntoInClause transformIntoInClause = new RexTransformIntoInClause(rexBuilder, minNumORClauses);
     RexNode newCondition = transformIntoInClause.apply(condition);
 
     // 2. We merge IN expressions
@@ -191,11 +190,9 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
    */
   protected static class RexTransformIntoInClause extends RexShuttle {
     private final RexBuilder rexBuilder;
-    private final AbstractRelNode nodeOp;
     private final int minNumORClauses;
 
-    RexTransformIntoInClause(RexBuilder rexBuilder, AbstractRelNode nodeOp, int minNumORClauses) {
-      this.nodeOp = nodeOp;
+    RexTransformIntoInClause(RexBuilder rexBuilder, int minNumORClauses) {
       this.rexBuilder = rexBuilder;
       this.minNumORClauses = minNumORClauses;
     }
