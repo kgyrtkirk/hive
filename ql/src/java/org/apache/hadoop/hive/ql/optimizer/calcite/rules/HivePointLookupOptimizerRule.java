@@ -46,7 +46,6 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,7 +127,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
    */
   public static class JoinCondition2 extends HivePointLookupOptimizerRule {
     public JoinCondition2(int minNumORClauses) {
-      super(operand(HiveProject.class, any()), minNumORClauses);
+      super(operand(Project.class, any()), minNumORClauses);
     }
 
     @Override
