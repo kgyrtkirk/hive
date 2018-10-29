@@ -29,20 +29,6 @@ public class HiveChar extends HiveBaseChar
 
   public static final int MAX_CHAR_LENGTH = 255;
 
-  /**
-   * Creates a HiveChar for the value.
-   *
-   * If the value is not representable at char(length) returns null.
-   */
-  public static HiveChar create(String constValue, int length) {
-    HiveChar maxCharConst = new HiveChar(constValue, MAX_CHAR_LENGTH);
-    HiveChar charVal = new HiveChar(constValue, length);
-    if (maxCharConst.equals(charVal)) {
-      return charVal;
-    }
-    return null;
-  }
-
   public HiveChar() {
   }
 
@@ -57,7 +43,6 @@ public class HiveChar extends HiveBaseChar
   /**
    * Set char value, padding or truncating the value to the size of len parameter.
    */
-  @Override
   public void setValue(String val, int len) {
     super.setValue(HiveBaseChar.getPaddedValue(val, len), -1);
   }
@@ -74,18 +59,15 @@ public class HiveChar extends HiveBaseChar
     return value;
   }
 
-  @Override
   public int getCharacterLength() {
     String strippedValue = getStrippedValue();
     return strippedValue.codePointCount(0, strippedValue.length());
   }
 
-  @Override
   public String toString() {
     return getPaddedValue();
   }
 
-  @Override
   public int compareTo(HiveChar rhs) {
     if (rhs == this) {
       return 0;
@@ -93,7 +75,6 @@ public class HiveChar extends HiveBaseChar
     return this.getStrippedValue().compareTo(rhs.getStrippedValue());
   }
 
-  @Override
   public boolean equals(Object rhs) {
     if (rhs == this) {
       return true;
@@ -104,9 +85,7 @@ public class HiveChar extends HiveBaseChar
     return this.getStrippedValue().equals(((HiveChar) rhs).getStrippedValue());
   }
 
-  @Override
   public int hashCode() {
     return getStrippedValue().hashCode();
   }
-
 }

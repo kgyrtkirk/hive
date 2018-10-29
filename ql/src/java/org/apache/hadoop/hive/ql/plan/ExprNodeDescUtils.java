@@ -18,14 +18,18 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -34,7 +38,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -42,14 +45,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.util.ReflectionUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 
 public class ExprNodeDescUtils {
@@ -573,7 +571,7 @@ public class ExprNodeDescUtils {
 
 	/**
 	 * Get Map of ExprNodeColumnDesc HashCode to ExprNodeColumnDesc.
-	 *
+	 * 
 	 * @param exprDesc
 	 * @param hashCodeToColumnDescMap
 	 *            Assumption: If two ExprNodeColumnDesc have same hash code then
@@ -644,9 +642,7 @@ public class ExprNodeDescUtils {
     // We only do the minimum cast for decimals. Other types are assumed safe; fix if needed.
     // We also don't do anything for non-primitive children (maybe we should assert).
     if ((pti.getPrimitiveCategory() != PrimitiveCategory.DECIMAL)
-        || (!(childExpr.getTypeInfo() instanceof PrimitiveTypeInfo))) {
-      return pti;
-    }
+        || (!(childExpr.getTypeInfo() instanceof PrimitiveTypeInfo))) return pti;
     PrimitiveTypeInfo childTi = (PrimitiveTypeInfo)childExpr.getTypeInfo();
     // If the child is also decimal, no cast is needed (we hope - can target type be narrower?).
     return HiveDecimalUtils.getDecimalTypeForPrimitiveCategory(childTi);
@@ -656,7 +652,7 @@ public class ExprNodeDescUtils {
    * Build ExprNodeColumnDesc for the projections in the input operator from
    * sartpos to endpos(both included). Operator must have an associated
    * colExprMap.
-   *
+   * 
    * @param inputOp
    *          Input Hive Operator
    * @param startPos
@@ -688,7 +684,7 @@ public class ExprNodeDescUtils {
     }
 
     return exprColLst;
-  }
+  }  
 
   public static List<ExprNodeDesc> flattenExprList(List<ExprNodeDesc> sourceList) {
     ArrayList<ExprNodeDesc> result = new ArrayList<ExprNodeDesc>(sourceList.size());
@@ -1002,17 +998,4 @@ public class ExprNodeDescUtils {
     }
     return false;
   }
-
-  public static boolean isConstantStruct(ExprNodeDesc valueDesc) {
-    return valueDesc instanceof ExprNodeConstantDesc && valueDesc.getTypeInfo() instanceof StructTypeInfo;
-  }
-
-  public static boolean isStructUDF(ExprNodeDesc columnDesc) {
-    if (columnDesc instanceof ExprNodeGenericFuncDesc) {
-      ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) columnDesc;
-      return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFStruct);
-    }
-    return false;
-  }
-
 }
