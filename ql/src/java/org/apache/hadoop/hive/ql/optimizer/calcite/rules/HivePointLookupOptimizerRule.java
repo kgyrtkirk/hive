@@ -34,7 +34,7 @@ import org.apache.calcite.rel.AbstractRelNode;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
-import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
@@ -118,6 +118,35 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     }
   }
 
+  /**
+   * This optimization will take a Join or expression, and if its join condition contains
+   * an OR operator whose children are constant equality expressions, it will try
+   * to generate an IN clause (which is more efficient). If the OR operator contains
+   * AND operator children, the optimization might generate an IN clause that uses
+   * structs.
+   */
+  public static class JoinCondition2 extends HivePointLookupOptimizerRule {
+    public JoinCondition2(int minNumORClauses) {
+      super(operand(Project.class, any()), minNumORClauses);
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      //        final Project project = call.rel(0);
+      //        project.get
+      //        final RexBuilder rexBuilder = join.getCluster().getRexBuilder();
+      //        final RexNode condition = RexUtil.pullFactors(rexBuilder, join.getCondition());
+      //        analyzeCondition(call , rexBuilder, join, condition);
+    }
+
+    @Override
+    protected RelNode copyNode(AbstractRelNode node, RexNode newCondition) {
+      final Join join = (Join) node;
+      return join.copy(join.getTraitSet(), newCondition, join.getLeft(), join.getRight(), join.getJoinType(),
+          join.isSemiJoinDone());
+    }
+  }
+
   protected static final Logger LOG = LoggerFactory.getLogger(HivePointLookupOptimizerRule.class);
 
   // Minimum number of OR clauses needed to transform into IN clauses
@@ -180,7 +209,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         case OR:
           try {
             RexNode newNode = transformIntoInClauseCondition(rexBuilder,
-                nodeOp.getRowType(), call, minNumORClauses);
+                call, minNumORClauses);
             if (newNode != null) {
               return newNode;
             }
@@ -306,8 +335,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       }
     }
 
-    private RexNode transformIntoInClauseCondition(RexBuilder rexBuilder, RelDataType inputSchema,
-            RexNode condition, int minNumORClauses) throws SemanticException {
+    private RexNode transformIntoInClauseCondition(RexBuilder rexBuilder, RexNode condition,
+            int minNumORClauses) throws SemanticException {
       assert condition.getKind() == SqlKind.OR;
 
       ImmutableList<RexNode> operands = RexUtil.flattenOr(((RexCall) condition).getOperands());
