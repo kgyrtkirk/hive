@@ -252,11 +252,15 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       public boolean equals(Object o) {
         if (o instanceof RexInputRef2) {
           RexInputRef2 otherRef = (RexInputRef2) o;
-          return node.toString().equals(otherRef.toString());
+          return node.toString().equals(otherRef.node.toString());
         }
         return false;
       }
 
+      @Override
+      public String toString() {
+        return "ref for:" + node.toString();
+      }
     }
     /**
      * Represents a contraint.
