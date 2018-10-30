@@ -279,12 +279,12 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
      */
     static class Constraint {
 
-      private RexNode literal;
-      private RexNode inputRef;
+      private RexNode exprNode;
+      private RexNode constNode;
 
-      public Constraint(RexNode opB, RexNode opA) {
-        this.literal = opA;
-        this.inputRef = opB;
+      public Constraint(RexNode exprNode, RexNode constNode) {
+        this.exprNode = constNode;
+        this.constNode = exprNode;
       }
 
       /**
@@ -324,7 +324,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       }
 
       public RexNodeRef getKey() {
-        return new RexNodeRef(inputRef);
+        return new RexNodeRef(constNode);
       }
 
     }
@@ -384,7 +384,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           if (constraint == null) {
             throw new SemanticException("Unable to find constraint which was earlier added.");
           }
-          ret.add(constraint.literal);
+          ret.add(constraint.exprNode);
         }
         return ret;
       }
