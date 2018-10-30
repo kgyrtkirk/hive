@@ -17,14 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -50,18 +51,18 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 
 /**
- * This optimization attempts to identify and close expanded INs. 
- * 
+ * This optimization attempts to identify and close expanded INs.
+ *
  * Basically:
  * <pre>
  * (c) IN ( v1, v2, ...) &lt;=&gt; c1=v1 || c1=v2 || ...
@@ -230,19 +231,47 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       return node;
     }
 
+    static class RexInputRef2 {
+
+      private RexNode node;
+
+      public RexInputRef2(RexNode node) {
+        this.node = node;
+      }
+
+      public RexNode getRexNode() {
+        return node;
+      }
+
+      @Override
+      public int hashCode() {
+        return node.toString().hashCode();
+      }
+
+      @Override
+      public boolean equals(Object o) {
+        if (o instanceof RexInputRef2) {
+          RexInputRef2 otherRef = (RexInputRef2) o;
+          return node.toString().equals(otherRef.toString());
+        }
+        return false;
+      }
+
+    }
     /**
-     * Represents a simple contraint.
+     * Represents a contraint.
      *
      * Example: a=1
+     * substr(a,1,2) = concat('asd','xxx')
      */
     static class Constraint {
 
-      private RexLiteral literal;
-      private RexInputRef inputRef;
+      private RexNode literal;
+      private RexNode inputRef;
 
-      public Constraint(RexInputRef inputRef, RexLiteral literal) {
-        this.literal = literal;
-        this.inputRef = inputRef;
+      public Constraint(RexNode opB, RexNode opA) {
+        this.literal = opA;
+        this.inputRef = opB;
       }
 
       /**
@@ -262,21 +291,25 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           // dont try to compare nulls
           return null;
         }
-        if (opA instanceof RexLiteral && opB instanceof RexInputRef) {
-          RexLiteral rexLiteral = (RexLiteral) opA;
-          RexInputRef rexInputRef = (RexInputRef) opB;
-          return new Constraint(rexInputRef, rexLiteral);
+        if (isConstExpr(opA) && isColumnExpr(opB)) {
+          return new Constraint(opB, opA);
         }
-        if (opA instanceof RexInputRef && opB instanceof RexLiteral) {
-          RexLiteral rexLiteral = (RexLiteral) opB;
-          RexInputRef rexInputRef = (RexInputRef) opA;
-          return new Constraint(rexInputRef, rexLiteral);
+        if (isColumnExpr(opA) && isConstExpr(opB)) {
+          return new Constraint(opA, opB);
         }
         return null;
       }
 
-      public RexInputRef getKey() {
-        return inputRef;
+      private static boolean isColumnExpr(RexNode opB) {
+        return opB instanceof RexInputRef;
+      }
+
+      private static boolean isConstExpr(RexNode opA) {
+        return opA instanceof RexLiteral;
+      }
+
+      public RexInputRef2 getKey() {
+        return new RexInputRef2(inputRef);
       }
 
     }
@@ -294,16 +327,17 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
      */
     static class ConstraintGroup {
 
-      public static final Function<ConstraintGroup, Set<RexInputRef>> KEY_FUNCTION = new Function<ConstraintGroup, Set<RexInputRef>>() {
+      public static final Function<ConstraintGroup, Set<RexInputRef2>> KEY_FUNCTION =
+          new Function<ConstraintGroup, Set<RexInputRef2>>() {
 
         @Override
-        public Set<RexInputRef> apply(ConstraintGroup a) {
+            public Set<RexInputRef2> apply(ConstraintGroup a) {
           return a.key;
         }
       };
-      private Map<RexInputRef, Constraint> constraints = new HashMap<>();
+      private Map<RexInputRef2, Constraint> constraints = new HashMap<>();
       private RexNode originalRexNode;
-      private final Set<RexInputRef> key;
+      private final Set<RexInputRef2> key;
 
       public ConstraintGroup(RexNode rexNode) {
         originalRexNode = rexNode;
@@ -328,9 +362,9 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         key = constraints.keySet();
       }
 
-      public List<RexNode> getValuesInOrder(List<RexInputRef> columns) throws SemanticException {
+      public List<RexNode> getValuesInOrder(List<RexInputRef2> columns) throws SemanticException {
         List<RexNode> ret = new ArrayList<>();
-        for (RexInputRef rexInputRef : columns) {
+        for (RexInputRef2 rexInputRef : columns) {
           Constraint constraint = constraints.get(rexInputRef);
           if (constraint == null) {
             throw new SemanticException("Unable to find constraint which was earlier added.");
@@ -357,10 +391,10 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         allNodes.add(m);
       }
 
-      Multimap<Set<RexInputRef>, ConstraintGroup> assignmentGroups =
+      Multimap<Set<RexInputRef2>, ConstraintGroup> assignmentGroups =
           Multimaps.index(allNodes, ConstraintGroup.KEY_FUNCTION);
 
-      for (Entry<Set<RexInputRef>, Collection<ConstraintGroup>> sa : assignmentGroups.asMap().entrySet()) {
+      for (Entry<Set<RexInputRef2>, Collection<ConstraintGroup>> sa : assignmentGroups.asMap().entrySet()) {
         // skip opaque
         if (sa.getKey().size() == 0) {
           continue;
@@ -390,22 +424,27 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
     }
 
-    private RexNode buildInFor(Set<RexInputRef> set, Collection<ConstraintGroup> value) throws SemanticException {
+    private RexNode buildInFor(Set<RexInputRef2> set, Collection<ConstraintGroup> value) throws SemanticException {
 
-      List<RexInputRef> columns = new ArrayList<RexInputRef>();
+      List<RexInputRef2> columns = new ArrayList<>();
       columns.addAll(set);
       List<RexNode >operands = new ArrayList<>();
 
       operands.add(useStructIfNeeded(columns));
       for (ConstraintGroup node : value) {
         List<RexNode> values = node.getValuesInOrder(columns);
-        operands.add(useStructIfNeeded(values));
+        operands.add(useStructIfNeeded2(values));
       }
 
       return rexBuilder.makeCall(HiveIn.INSTANCE, operands);
     }
 
-    private RexNode useStructIfNeeded(List<? extends RexNode> columns) {
+    private RexNode useStructIfNeeded(List<RexInputRef2> columns) {
+      return useStructIfNeeded2(columns.stream().map(n -> n.getRexNode()).collect(Collectors.toList()));
+
+    }
+
+    private RexNode useStructIfNeeded2(List<? extends RexNode> columns) {
       // Create STRUCT clause
       if (columns.size() == 1) {
         return columns.get(0);
