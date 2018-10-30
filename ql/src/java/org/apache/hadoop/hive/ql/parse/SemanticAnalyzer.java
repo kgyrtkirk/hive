@@ -12256,7 +12256,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean needsTransform = needsTransform();
     //change the location of position alias process here
     processPositionAlias(ast);
-    processIns(ast);
     PlannerContext plannerCtx = pcf.create();
     if (!genResolvedParseTree(ast, plannerCtx)) {
       return;
@@ -13772,10 +13771,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } catch (HiveException e) {
       throw new SemanticException(e.getMessage(), e);
     }
-  }
-
-  public void processIns(ASTNode root) throws SemanticException {
-    new InToOrTranslator().processIns(root);
   }
 
   // Process the position alias in GROUPBY and ORDERBY
