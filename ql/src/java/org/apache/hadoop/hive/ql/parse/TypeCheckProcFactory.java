@@ -1343,7 +1343,7 @@ public class TypeCheckProcFactory {
       if (ExprNodeDescUtils.isStructUDF(desc)) {
         List<ExprNodeDesc> valueChilds = ((ExprNodeGenericFuncDesc) valueDesc).getChildren();
         for (ExprNodeDesc exprNodeDesc : valueChilds) {
-          if (!isConstantOrColumn(exprNodeDesc)) {
+          if (!isSafeExpression(exprNodeDesc)) {
             return null;
           }
         }
@@ -1361,14 +1361,21 @@ public class TypeCheckProcFactory {
         }
         return ret;
       }
-      if (isConstantOrColumn(desc)) {
+      if (isSafeExpression(desc)) {
         return Lists.newArrayList(desc);
       }
 
       return null;
     }
 
-    private boolean isConstantOrColumn(ExprNodeDesc desc) {
+    private boolean isSafeExpression(ExprNodeDesc desc) {
+      if (isConstantOrColumn2(desc)) {
+        return true;
+      }
+      return false;
+    }
+
+    private boolean isConstantOrColumn2(ExprNodeDesc desc) {
       return desc instanceof ExprNodeColumnDesc || desc instanceof ExprNodeConstantDesc;
     }
 
