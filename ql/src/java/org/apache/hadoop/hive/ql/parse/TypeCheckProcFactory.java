@@ -1372,6 +1372,17 @@ public class TypeCheckProcFactory {
       if (isConstantOrColumn2(desc)) {
         return true;
       }
+      if (desc instanceof ExprNodeGenericFuncDesc) {
+        ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) desc;
+        if (FunctionRegistry.isConsistentWithinQuery(exprNodeGenericFuncDesc.getGenericUDF())) {
+          for (ExprNodeDesc child : exprNodeGenericFuncDesc.getChildren()) {
+            if (!isSafeExpression(child)) {
+              return false;
+            }
+          }
+          return true;
+        }
+      }
       return false;
     }
 
