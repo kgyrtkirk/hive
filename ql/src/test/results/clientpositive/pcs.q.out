@@ -1549,9 +1549,6 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `ds`
-FROM `default`.`pcs_t1`
-WHERE (`ds` = '2000-04-08' OR `key` = 2) = TRUE AND `key` = 2 OR (`ds` = '2000-04-08' OR `key` = 2) = FALSE AND `key` = 3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1562,12 +1559,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
-            filterExpr: (((((ds = '2000-04-08') or (key = 2)) = true) and (key = 2)) or ((((ds = '2000-04-08') or (key = 2)) = false) and (key = 3))) (type: boolean)
+            filterExpr: (struct(key,((ds = '2000-04-08') or (key = 2)))) IN (const struct(2,true), const struct(3,false)) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (((((ds = '2000-04-08') or (key = 2)) = false) and (key = 3)) or ((((ds = '2000-04-08') or (key = 2)) = true) and (key = 2))) (type: boolean)
+              predicate: (struct(key,((ds = '2000-04-08') or (key = 2)))) IN (const struct(2,true), const struct(3,false)) (type: boolean)
               Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ds (type: string)
@@ -1595,7 +1592,6 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
-      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1785,9 +1781,6 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `ds`
-FROM `default`.`pcs_t1`
-WHERE `key` = 3 OR ((`ds` = '2000-04-08' OR `key` = 2) = TRUE AND `key` = 2 OR (`ds` = '2000-04-08' OR `key` = 2) = FALSE AND `key` = 3) AND `key` + 5 > 0
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1798,12 +1791,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
-            filterExpr: ((key = 3) or ((((((ds = '2000-04-08') or (key = 2)) = true) and (key = 2)) or ((((ds = '2000-04-08') or (key = 2)) = false) and (key = 3))) and ((key + 5) > 0))) (type: boolean)
+            filterExpr: ((key = 3) or ((struct(key,((ds = '2000-04-08') or (key = 2)))) IN (const struct(2,true), const struct(3,false)) and ((key + 5) > 0))) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (((((((ds = '2000-04-08') or (key = 2)) = true) and (key = 2)) or ((((ds = '2000-04-08') or (key = 2)) = false) and (key = 3))) and ((key + 5) > 0)) or (key = 3)) (type: boolean)
+              predicate: (((struct(key,((ds = '2000-04-08') or (key = 2)))) IN (const struct(2,true), const struct(3,false)) and ((key + 5) > 0)) or (key = 3)) (type: boolean)
               Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ds (type: string)
@@ -1831,7 +1824,6 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
-      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

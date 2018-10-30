@@ -314,7 +314,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       }
 
       private static boolean isColumnExpr(RexNode node) {
-        return !node.getType().isStruct() && HiveCalciteUtil.getInputRefs(node).size() == 1
+        return !node.getType().isStruct() && HiveCalciteUtil.getInputRefs(node).size() > 0
             && HiveCalciteUtil.isDeterministic(node);
       }
 
