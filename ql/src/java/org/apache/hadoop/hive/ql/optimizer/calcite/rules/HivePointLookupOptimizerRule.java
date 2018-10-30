@@ -38,8 +38,6 @@ import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexInputRef;
-import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
@@ -304,12 +302,14 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         return null;
       }
 
-      private static boolean isColumnExpr(RexNode opB) {
-        return opB instanceof RexInputRef;
+      private static boolean isColumnExpr(RexNode node) {
+        return !node.getType().isStruct() && HiveCalciteUtil.getInputRefs(node).size() == 1
+            && HiveCalciteUtil.isDeterministic(node);
       }
 
-      private static boolean isConstExpr(RexNode opA) {
-        return opA instanceof RexLiteral;
+      private static boolean isConstExpr(RexNode node) {
+        return !node.getType().isStruct() && HiveCalciteUtil.getInputRefs(node).size() == 0
+            && HiveCalciteUtil.isDeterministic(node);
       }
 
       public RexInputRef2 getKey() {

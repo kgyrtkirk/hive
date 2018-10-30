@@ -467,9 +467,6 @@ POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `ds`
-FROM `default`.`pcs_t1`
-WHERE `ds` = '2000-04-08' AND `key` + 2 = 3 OR `ds` = '2000-04-09' AND `key` + 2 = 4
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -480,23 +477,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
-            filterExpr: (((ds = '2000-04-08') and ((key + 2) = 3)) or ((ds = '2000-04-09') and ((key + 2) = 4))) (type: boolean)
+            filterExpr: ((struct((key + 2),ds)) IN (const struct(3,'2000-04-08'), const struct(4,'2000-04-09')) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (((ds = '2000-04-08') and ((key + 2) = 3)) or ((ds = '2000-04-09') and ((key + 2) = 4))) (type: boolean)
-              Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+              predicate: (struct((key + 2),ds)) IN (const struct(3,'2000-04-08'), const struct(4,'2000-04-09')) (type: boolean)
+              Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ds (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
