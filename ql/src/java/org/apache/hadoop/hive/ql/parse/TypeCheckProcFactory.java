@@ -18,7 +18,15 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import com.google.common.collect.Lists;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.commons.lang.StringUtils;
@@ -98,15 +106,7 @@ import org.apache.hive.common.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import com.google.common.collect.Lists;
 
 
 /**
@@ -1211,7 +1211,7 @@ public class TypeCheckProcFactory {
             }
             outputOpList.add(nullConst);
           }
-          if (!ctx.isCBOExecuted()) {
+          if (!ctx.isCBOExecuted() && false) {
             ArrayList<ExprNodeDesc> orOperands = rewriteInToOR(children);
             if (orOperands != null) {
               if (orOperands.size() == 1) {

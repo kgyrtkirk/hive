@@ -13775,22 +13775,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   public void processIns(ASTNode root) throws SemanticException {
-    Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
-    stack.push(root);
-
-    while (!stack.isEmpty()) {
-      ASTNode astNode = stack.pop();
-      
-      int type = astNode.getToken().getType();
-      if (type == HiveParser.KW_IN) {
-        
-      }
-      
-      for (int i = astNode.getChildren().size() - 1; i >= 0; i--) {
-        stack.push((ASTNode)astNode.getChildren().get(i));
-      }
-    }
-
+    new InToOrTranslator().processIns(root);
   }
 
   // Process the position alias in GROUPBY and ORDERBY
