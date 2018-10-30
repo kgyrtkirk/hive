@@ -1211,7 +1211,7 @@ public class TypeCheckProcFactory {
             }
             outputOpList.add(nullConst);
           }
-          if (!ctx.isCBOExecuted() && false) {
+          if (!ctx.isCBOExecuted()) {
             ArrayList<ExprNodeDesc> orOperands = rewriteInToOR(children);
             if (orOperands != null) {
               if (orOperands.size() == 1) {
