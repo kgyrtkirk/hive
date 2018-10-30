@@ -1339,12 +1339,14 @@ public class TypeCheckProcFactory {
     }
 
     private List<ExprNodeDesc> asListOfNodes(ExprNodeDesc desc) {
-      if (desc instanceof ExprNodeColumnDesc) {
-        return Lists.newArrayList(desc);
-      }
       ExprNodeDesc valueDesc = desc;
       if (ExprNodeDescUtils.isStructUDF(desc)) {
         List<ExprNodeDesc> valueChilds = ((ExprNodeGenericFuncDesc) valueDesc).getChildren();
+        for (ExprNodeDesc exprNodeDesc : valueChilds) {
+          if (!isConstantOrColumn(exprNodeDesc)) {
+            return null;
+          }
+        }
         return valueChilds;
       }
       if (ExprNodeDescUtils.isConstantStruct(valueDesc)) {
@@ -1359,11 +1361,15 @@ public class TypeCheckProcFactory {
         }
         return ret;
       }
-      if (valueDesc instanceof ExprNodeConstantDesc) {
-        return Lists.newArrayList(valueDesc);
+      if (isConstantOrColumn(desc)) {
+        return Lists.newArrayList(desc);
       }
 
       return null;
+    }
+
+    private boolean isConstantOrColumn(ExprNodeDesc desc) {
+      return desc instanceof ExprNodeColumnDesc || desc instanceof ExprNodeConstantDesc;
     }
 
     /**

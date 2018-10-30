@@ -477,12 +477,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
-            filterExpr: ((struct((key + 2),ds)) IN (const struct(3,'2000-04-08'), const struct(4,'2000-04-09')) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
+            filterExpr: ((struct(ds,(key + 2))) IN (const struct('2000-04-08',3), const struct('2000-04-09',4)) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (struct((key + 2),ds)) IN (const struct(3,'2000-04-08'), const struct(4,'2000-04-09')) (type: boolean)
+              predicate: (struct(ds,(key + 2))) IN (const struct('2000-04-08',3), const struct('2000-04-09',4)) (type: boolean)
               Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ds (type: string)
@@ -864,23 +864,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
-            filterExpr: (((ds = '2000-04-08') and ((key + key) = 1)) or ((ds = '2000-04-09') and ((key + key) = 2))) (type: boolean)
+            filterExpr: ((struct(ds,(key + key))) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09'))) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (((ds = '2000-04-08') and ((key + key) = 1)) or ((ds = '2000-04-09') and ((key + key) = 2))) (type: boolean)
-              Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+              predicate: (struct(ds,(key + key))) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) (type: boolean)
+              Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ds (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1317,13 +1317,18 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: pcs_t1
+          filterExpr: (const struct(10)) IN (const struct(10), const struct(11)) (type: boolean)
           Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
-          Select Operator
-            expressions: ds (type: string)
-            outputColumnNames: _col0
-            Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
-            ListSink
+          Filter Operator
+            isSamplingPred: false
+            predicate: (const struct(10)) IN (const struct(10), const struct(11)) (type: boolean)
+            Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ds (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+              ListSink
 
 PREHOOK: query: select ds from pcs_t1 where struct(case when ds='2000-04-08' then 10 else 20 end) in (struct(10),struct(11))
 PREHOOK: type: QUERY
@@ -1381,7 +1386,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (((ds = '2000-04-08') and (key = 1) and (rand(100) = 0.2)) or ((ds = '2000-04-09') and (key = 2) and (rand(100) = 0.3))) (type: boolean)
+              predicate: (struct(ds,key,rand(100))) IN (const struct('2000-04-08',1,0.2), const struct('2000-04-09',2,0.3)) (type: boolean)
               Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ds (type: string)
@@ -1409,7 +1414,6 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
-      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1543,12 +1547,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
-            filterExpr: (((((ds = '2000-04-08') or (key = 2)) = true) and (key = 2)) or ((((ds = '2000-04-08') or (key = 2)) = false) and (key = 3))) (type: boolean)
+            filterExpr: (struct(((ds = '2000-04-08') or (key = 2)),key)) IN (const struct(true,2), const struct(false,3)) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (((((ds = '2000-04-08') or (key = 2)) = false) and (key = 3)) or ((((ds = '2000-04-08') or (key = 2)) = true) and (key = 2))) (type: boolean)
+              predicate: (struct(((ds = '2000-04-08') or (key = 2)),key)) IN (const struct(true,2), const struct(false,3)) (type: boolean)
               Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ds (type: string)
@@ -1576,7 +1580,6 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
-      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1776,12 +1779,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
-            filterExpr: ((key = 3) or ((((((ds = '2000-04-08') or (key = 2)) = true) and (key = 2)) or ((((ds = '2000-04-08') or (key = 2)) = false) and (key = 3))) and ((key + 5) > 0))) (type: boolean)
+            filterExpr: ((key = 3) or ((struct(((ds = '2000-04-08') or (key = 2)),key)) IN (const struct(true,2), const struct(false,3)) and ((key + 5) > 0))) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (((((((ds = '2000-04-08') or (key = 2)) = true) and (key = 2)) or ((((ds = '2000-04-08') or (key = 2)) = false) and (key = 3))) and ((key + 5) > 0)) or (key = 3)) (type: boolean)
+              predicate: (((struct(((ds = '2000-04-08') or (key = 2)),key)) IN (const struct(true,2), const struct(false,3)) and ((key + 5) > 0)) or (key = 3)) (type: boolean)
               Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ds (type: string)
@@ -1809,7 +1812,6 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
-      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

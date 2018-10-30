@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -229,11 +230,21 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       return node;
     }
 
-    static class RexInputRef2 {
+    /**
+     * This class just wraps around a RexNode enables equals/hashCode based on toString.
+     *
+     * After CALCITE-2632 this might not be needed anymore */
+    static class RexNodeRef {
 
+      public static Comparator<RexNodeRef> COMPARATOR = new Comparator<RexNodeRef>() {
+        @Override
+        public int compare(RexNodeRef o1, RexNodeRef o2) {
+          return o1.node.toString().compareTo(o2.node.toString());
+        }
+      };
       private RexNode node;
 
-      public RexInputRef2(RexNode node) {
+      public RexNodeRef(RexNode node) {
         this.node = node;
       }
 
@@ -248,8 +259,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
       @Override
       public boolean equals(Object o) {
-        if (o instanceof RexInputRef2) {
-          RexInputRef2 otherRef = (RexInputRef2) o;
+        if (o instanceof RexNodeRef) {
+          RexNodeRef otherRef = (RexNodeRef) o;
           return node.toString().equals(otherRef.node.toString());
         }
         return false;
@@ -312,8 +323,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
             && HiveCalciteUtil.isDeterministic(node);
       }
 
-      public RexInputRef2 getKey() {
-        return new RexInputRef2(inputRef);
+      public RexNodeRef getKey() {
+        return new RexNodeRef(inputRef);
       }
 
     }
@@ -331,17 +342,17 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
      */
     static class ConstraintGroup {
 
-      public static final Function<ConstraintGroup, Set<RexInputRef2>> KEY_FUNCTION =
-          new Function<ConstraintGroup, Set<RexInputRef2>>() {
+      public static final Function<ConstraintGroup, Set<RexNodeRef>> KEY_FUNCTION =
+          new Function<ConstraintGroup, Set<RexNodeRef>>() {
 
         @Override
-            public Set<RexInputRef2> apply(ConstraintGroup a) {
+            public Set<RexNodeRef> apply(ConstraintGroup a) {
           return a.key;
         }
       };
-      private Map<RexInputRef2, Constraint> constraints = new HashMap<>();
+      private Map<RexNodeRef, Constraint> constraints = new HashMap<>();
       private RexNode originalRexNode;
-      private final Set<RexInputRef2> key;
+      private final Set<RexNodeRef> key;
 
       public ConstraintGroup(RexNode rexNode) {
         originalRexNode = rexNode;
@@ -366,9 +377,9 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         key = constraints.keySet();
       }
 
-      public List<RexNode> getValuesInOrder(List<RexInputRef2> columns) throws SemanticException {
+      public List<RexNode> getValuesInOrder(List<RexNodeRef> columns) throws SemanticException {
         List<RexNode> ret = new ArrayList<>();
-        for (RexInputRef2 rexInputRef : columns) {
+        for (RexNodeRef rexInputRef : columns) {
           Constraint constraint = constraints.get(rexInputRef);
           if (constraint == null) {
             throw new SemanticException("Unable to find constraint which was earlier added.");
@@ -395,10 +406,10 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         allNodes.add(m);
       }
 
-      Multimap<Set<RexInputRef2>, ConstraintGroup> assignmentGroups =
+      Multimap<Set<RexNodeRef>, ConstraintGroup> assignmentGroups =
           Multimaps.index(allNodes, ConstraintGroup.KEY_FUNCTION);
 
-      for (Entry<Set<RexInputRef2>, Collection<ConstraintGroup>> sa : assignmentGroups.asMap().entrySet()) {
+      for (Entry<Set<RexNodeRef>, Collection<ConstraintGroup>> sa : assignmentGroups.asMap().entrySet()) {
         // skip opaque
         if (sa.getKey().size() == 0) {
           continue;
@@ -428,10 +439,11 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
     }
 
-    private RexNode buildInFor(Set<RexInputRef2> set, Collection<ConstraintGroup> value) throws SemanticException {
+    private RexNode buildInFor(Set<RexNodeRef> set, Collection<ConstraintGroup> value) throws SemanticException {
 
-      List<RexInputRef2> columns = new ArrayList<>();
+      List<RexNodeRef> columns = new ArrayList<>();
       columns.addAll(set);
+      columns.sort(RexNodeRef.COMPARATOR);
       List<RexNode >operands = new ArrayList<>();
 
       operands.add(useStructIfNeeded(columns));
@@ -443,7 +455,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       return rexBuilder.makeCall(HiveIn.INSTANCE, operands);
     }
 
-    private RexNode useStructIfNeeded(List<RexInputRef2> columns) {
+    private RexNode useStructIfNeeded(List<RexNodeRef> columns) {
       return useStructIfNeeded2(columns.stream().map(n -> n.getRexNode()).collect(Collectors.toList()));
 
     }
