@@ -1320,7 +1320,7 @@ public class TypeCheckProcFactory {
     }
 
     private ExprNodeGenericFuncDesc buildEquals(ExprNodeDesc columnDesc, ExprNodeDesc valueDesc) {
-      return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPEqual(),
+      return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPEqual(), "=",
           Lists.newArrayList(columnDesc, valueDesc));
     }
 
@@ -1328,14 +1328,12 @@ public class TypeCheckProcFactory {
       if (values.size() == 1) {
         return values.get(0);
       } else {
-        return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPAnd(),
-            values);
+        return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPAnd(), "and", values);
       }
     }
 
     private ExprNodeGenericFuncDesc buildOr(List<ExprNodeDesc> values) {
-      return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPOr(),
-          values);
+      return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPOr(), "or", values);
     }
 
     private List<ExprNodeDesc> asListOfNodes(ExprNodeDesc desc) {
