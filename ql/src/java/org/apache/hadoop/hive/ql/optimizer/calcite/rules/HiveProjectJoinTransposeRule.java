@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
@@ -27,7 +26,6 @@ import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.rules.PushProjector;
-import org.apache.calcite.rel.rules.PushProjector.ExprCondition;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.tools.RelBuilderFactory;
@@ -57,22 +55,7 @@ public class HiveProjectJoinTransposeRule extends RelOptRule {
                 operand(RelNode.class, any()),
                 operand(RelNode.class, any()))),
         relBuilderFactory, "HiveProjectJoinTransposeRule");
-    this.preserveExprCondition = new xxx();
-  }
-
-  static class xxx implements ExprCondition {
-
-    @Override
-    public boolean apply(RexNode input) {
-      return !false;
-    }
-
-    @Override
-    public boolean test(RexNode expr) {
-      // TODO Auto-generated method stub
-      return !false;
-    }
-
+    this.preserveExprCondition = expr -> true;
   }
 
   @Override
@@ -90,7 +73,6 @@ public class HiveProjectJoinTransposeRule extends RelOptRule {
   //~ Methods ----------------------------------------------------------------
 
   // implement RelOptRule
-  @Override
   public void onMatch(RelOptRuleCall call) {
     Project origProj = call.rel(0);
     final Join join = call.rel(1);
