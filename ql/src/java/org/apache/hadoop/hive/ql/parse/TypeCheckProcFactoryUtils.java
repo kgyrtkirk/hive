@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -85,10 +84,6 @@ public class TypeCheckProcFactoryUtils {
     }
   }
 
-  private static ExprNodeGenericFuncDesc buildOr(List<ExprNodeDesc> values) {
-    return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPOr(), "or", values);
-  }
-
   private static List<ExprNodeDesc> asListOfNodes(ExprNodeDesc desc) {
     ExprNodeDesc valueDesc = desc;
     if (ExprNodeDescUtils.isStructUDF(desc)) {
@@ -106,7 +101,7 @@ public class TypeCheckProcFactoryUtils {
       StructTypeInfo structTypeInfo = (StructTypeInfo) valueConstDesc.getTypeInfo();
       ArrayList<TypeInfo> structFieldInfos = structTypeInfo.getAllStructFieldTypeInfos();
 
-      ArrayList ret = new ArrayList<>();
+      List<ExprNodeDesc> ret = new ArrayList<>();
       for (int i = 0; i < oldValues.size(); i++) {
         ret.add(new ExprNodeConstantDesc(structFieldInfos.get(i), oldValues.get(i)));
       }
