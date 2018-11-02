@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -115,10 +116,10 @@ public class TypeCheckProcFactoryUtils {
   }
 
   private static boolean isSafeExpression(ExprNodeDesc desc) {
-    //    TypeInfo typeInfo = desc.getTypeInfo();
-    //    if (typeInfo.getCategory() != Category.PRIMITIVE) {
-    //      return false;
-    //    }
+    TypeInfo typeInfo = desc.getTypeInfo();
+    if (typeInfo.getCategory() != Category.PRIMITIVE) {
+      return false;
+    }
     if (isConstantOrColumn(desc)) {
       return true;
     }
