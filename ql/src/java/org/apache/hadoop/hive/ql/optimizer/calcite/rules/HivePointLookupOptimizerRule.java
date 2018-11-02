@@ -32,7 +32,6 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.plan.RelOptUtil;
-import org.apache.calcite.rel.AbstractRelNode;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
@@ -81,12 +80,16 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       final Filter filter = call.rel(0);
       final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
       final RexNode condition = RexUtil.pullFactors(rexBuilder, filter.getCondition());
-      analyzeCondition(call , rexBuilder, filter, condition);
-    }
 
-    @Override protected RelNode copyNode(AbstractRelNode node, RexNode newCondition) {
-      final Filter filter  = (Filter) node;
-      return filter.copy(filter.getTraitSet(), filter.getInput(), newCondition);
+      RexNode newCondition = analyzeRexNode(rexBuilder, condition);
+
+      // If we could not transform anything, we bail out
+      if (newCondition.toString().equals(condition.toString())) {
+        return;
+      }
+      RelNode newNode = filter.copy(filter.getTraitSet(), filter.getInput(), newCondition);
+
+      call.transformTo(newNode);
     }
   }
 
@@ -101,23 +104,28 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       final Join join = call.rel(0);
       final RexBuilder rexBuilder = join.getCluster().getRexBuilder();
       final RexNode condition = RexUtil.pullFactors(rexBuilder, join.getCondition());
-      analyzeCondition(call , rexBuilder, join, condition);
-    }
 
-    @Override protected RelNode copyNode(AbstractRelNode node, RexNode newCondition) {
-      final Join join = (Join) node;
-      return join.copy(join.getTraitSet(),
-              newCondition,
-              join.getLeft(),
-              join.getRight(),
-              join.getJoinType(),
-              join.isSemiJoinDone());
+      RexNode newCondition = analyzeRexNode(rexBuilder, condition);
+
+      // If we could not transform anything, we bail out
+      if (newCondition.toString().equals(condition.toString())) {
+        return;
+      }
+
+      RelNode newNode = join.copy(join.getTraitSet(),
+          newCondition,
+          join.getLeft(),
+          join.getRight(),
+          join.getJoinType(),
+          join.isSemiJoinDone());
+
+      call.transformTo(newNode);
     }
   }
 
   /** Rule adapter to apply the transformation to Projections. */
-  public static class Projections extends HivePointLookupOptimizerRule {
-    public Projections(int minNumORClauses) {
+  public static class ProjectionExpressions extends HivePointLookupOptimizerRule {
+    public ProjectionExpressions(int minNumORClauses) {
       super(operand(Project.class, any()), minNumORClauses);
     }
 
@@ -145,10 +153,6 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
     }
 
-    @Override
-    protected RelNode copyNode(AbstractRelNode node, RexNode newCondition) {
-      return null;
-    }
   }
 
   protected static final Logger LOG = LoggerFactory.getLogger(HivePointLookupOptimizerRule.class);
@@ -156,30 +160,10 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
   // Minimum number of OR clauses needed to transform into IN clauses
   protected final int minNumORClauses;
 
-  protected abstract RelNode copyNode(AbstractRelNode node, RexNode newCondition);
-
   protected HivePointLookupOptimizerRule(
     RelOptRuleOperand operand, int minNumORClauses) {
     super(operand);
     this.minNumORClauses = minNumORClauses;
-  }
-
-  public void analyzeCondition(RelOptRuleCall call,
-          RexBuilder rexBuilder,
-          AbstractRelNode node,
-          RexNode condition) {
-
-    RexNode newCondition = analyzeRexNode(rexBuilder, condition);
-
-    // 3. If we could not transform anything, we bail out
-    if (newCondition.toString().equals(condition.toString())) {
-      return;
-    }
-
-    // 4. We create the Filter/Join with the new condition
-    RelNode newNode = copyNode(node, newCondition);
-
-    call.transformTo(newNode);
   }
 
   public RexNode analyzeRexNode(RexBuilder rexBuilder, RexNode condition) {
