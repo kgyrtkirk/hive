@@ -220,12 +220,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
      * After CALCITE-2632 this might not be needed anymore */
     static class RexNodeRef {
 
-      public static Comparator<RexNodeRef> COMPARATOR = new Comparator<RexNodeRef>() {
-        @Override
-        public int compare(RexNodeRef o1, RexNodeRef o2) {
-          return o1.node.toString().compareTo(o2.node.toString());
-        }
-      };
+      public static Comparator<RexNodeRef> COMPARATOR =
+          (RexNodeRef o1, RexNodeRef o2) -> o1.node.toString().compareTo(o2.node.toString());
       private RexNode node;
 
       public RexNodeRef(RexNode node) {
@@ -325,15 +321,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
      *
      */
     static class ConstraintGroup {
-
-      public static final Function<ConstraintGroup, Set<RexNodeRef>> KEY_FUNCTION =
-          new Function<ConstraintGroup, Set<RexNodeRef>>() {
-
-        @Override
-            public Set<RexNodeRef> apply(ConstraintGroup a) {
-          return a.key;
-        }
-      };
+      public static final Function<ConstraintGroup, Set<RexNodeRef>> KEY_FUNCTION = (ConstraintGroup a) -> a.key;
       private Map<RexNodeRef, Constraint> constraints = new HashMap<>();
       private RexNode originalRexNode;
       private final Set<RexNodeRef> key;
@@ -430,21 +418,17 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       columns.sort(RexNodeRef.COMPARATOR);
       List<RexNode >operands = new ArrayList<>();
 
-      operands.add(useStructIfNeeded(columns));
+      List<RexNode> columnNodes = columns.stream().map(n -> n.getRexNode()).collect(Collectors.toList());
+      operands.add(useStructIfNeeded(columnNodes));
       for (ConstraintGroup node : value) {
         List<RexNode> values = node.getValuesInOrder(columns);
-        operands.add(useStructIfNeeded2(values));
+        operands.add(useStructIfNeeded(values));
       }
 
       return rexBuilder.makeCall(HiveIn.INSTANCE, operands);
     }
 
-    private RexNode useStructIfNeeded(List<RexNodeRef> columns) {
-      return useStructIfNeeded2(columns.stream().map(n -> n.getRexNode()).collect(Collectors.toList()));
-
-    }
-
-    private RexNode useStructIfNeeded2(List<? extends RexNode> columns) {
+    private RexNode useStructIfNeeded(List<? extends RexNode> columns) {
       // Create STRUCT clause
       if (columns.size() == 1) {
         return columns.get(0);
