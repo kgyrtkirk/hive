@@ -1287,6 +1287,11 @@ public class TypeCheckProcFactory {
     }
 
     private static ArrayList<ExprNodeDesc> rewriteInToOR(ArrayList<ExprNodeDesc> inOperands) throws SemanticException {
+      new TypeCheckProcFactoryUtils();
+      return rewriteInToOR2(inOperands);
+    }
+
+    private static ArrayList<ExprNodeDesc> rewriteInToOR2(ArrayList<ExprNodeDesc> inOperands) throws SemanticException {
       ExprNodeDesc columnDesc = inOperands.get(0);
 
       ArrayList<ExprNodeDesc> orOperands = new ArrayList<>();
