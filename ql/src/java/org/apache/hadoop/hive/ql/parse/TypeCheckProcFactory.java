@@ -1212,7 +1212,7 @@ public class TypeCheckProcFactory {
             outputOpList.add(nullConst);
           }
           if (!ctx.isCBOExecuted()) {
-            ArrayList<ExprNodeDesc> orOperands = rewriteInToOR(children);
+            ArrayList<ExprNodeDesc> orOperands = TypeCheckProcFactoryUtils.rewriteInToOR(children);
             if (orOperands != null) {
               if (orOperands.size() == 1) {
                 orOperands.add(new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, false));
@@ -1284,113 +1284,6 @@ public class TypeCheckProcFactory {
       }
       assert (desc != null);
       return desc;
-    }
-
-    private static ArrayList<ExprNodeDesc> rewriteInToOR(ArrayList<ExprNodeDesc> inOperands) throws SemanticException {
-      new TypeCheckProcFactoryUtils();
-      return rewriteInToOR2(inOperands);
-    }
-
-    private static ArrayList<ExprNodeDesc> rewriteInToOR2(ArrayList<ExprNodeDesc> inOperands) throws SemanticException {
-      ExprNodeDesc columnDesc = inOperands.get(0);
-
-      ArrayList<ExprNodeDesc> orOperands = new ArrayList<>();
-      for (int i = 1; i < inOperands.size(); i++) {
-        ExprNodeDesc andExpr = buildEqualsArr(columnDesc, inOperands.get(i));
-        if (andExpr == null) {
-          return null;
-        }
-        orOperands.add(andExpr);
-      }
-      return orOperands;
-    }
-
-    private static ExprNodeDesc buildEqualsArr(ExprNodeDesc columnDesc, ExprNodeDesc exprNodeDesc)
-        throws SemanticException {
-      List<ExprNodeDesc> lNodes = asListOfNodes(columnDesc);
-      List<ExprNodeDesc> rNodes = asListOfNodes(exprNodeDesc);
-      if (lNodes == null || rNodes == null) {
-        // something went wrong
-        return null;
-      }
-      if(lNodes.size()!=rNodes.size()) {
-        throw new SemanticException(ErrorMsg.INCOMPATIBLE_STRUCT.getMsg(columnDesc + " and " + exprNodeDesc));
-      }
-
-      List<ExprNodeDesc> ret = new ArrayList<>();
-      for (int i = 0; i < lNodes.size(); i++) {
-        ret.add(buildEquals(lNodes.get(i), rNodes.get(i)));
-      }
-      return buildAnd(ret);
-    }
-
-    private static ExprNodeGenericFuncDesc buildEquals(ExprNodeDesc columnDesc, ExprNodeDesc valueDesc) {
-      return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPEqual(), "=",
-          Lists.newArrayList(columnDesc, valueDesc));
-    }
-
-    private static ExprNodeDesc buildAnd(List<ExprNodeDesc> values) {
-      if (values.size() == 1) {
-        return values.get(0);
-      } else {
-        return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPAnd(), "and", values);
-      }
-    }
-
-    private static ExprNodeGenericFuncDesc buildOr(List<ExprNodeDesc> values) {
-      return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPOr(), "or", values);
-    }
-
-    private static List<ExprNodeDesc> asListOfNodes(ExprNodeDesc desc) {
-      ExprNodeDesc valueDesc = desc;
-      if (ExprNodeDescUtils.isStructUDF(desc)) {
-        List<ExprNodeDesc> valueChilds = ((ExprNodeGenericFuncDesc) valueDesc).getChildren();
-        for (ExprNodeDesc exprNodeDesc : valueChilds) {
-          if (!isSafeExpression(exprNodeDesc)) {
-            return null;
-          }
-        }
-        return valueChilds;
-      }
-      if (ExprNodeDescUtils.isConstantStruct(valueDesc)) {
-        ExprNodeConstantDesc valueConstDesc = (ExprNodeConstantDesc) valueDesc;
-        List<Object> oldValues = (List<Object>) valueConstDesc.getValue();
-        StructTypeInfo structTypeInfo = (StructTypeInfo) valueConstDesc.getTypeInfo();
-        ArrayList<TypeInfo> structFieldInfos = structTypeInfo.getAllStructFieldTypeInfos();
-
-        ArrayList ret = new ArrayList<>();
-        for (int i = 0; i < oldValues.size(); i++) {
-          ret.add(new ExprNodeConstantDesc(structFieldInfos.get(i), oldValues.get(i)));
-        }
-        return ret;
-      }
-      if (isSafeExpression(desc)) {
-        return Lists.newArrayList(desc);
-      }
-
-      return null;
-    }
-
-    private static boolean isSafeExpression(ExprNodeDesc desc) {
-      if (isConstantOrColumn2(desc)) {
-        return true;
-      }
-      if (desc instanceof ExprNodeGenericFuncDesc) {
-        ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) desc;
-        if (FunctionRegistry.isConsistentWithinQuery(exprNodeGenericFuncDesc.getGenericUDF())) {
-          for (ExprNodeDesc child : exprNodeGenericFuncDesc.getChildren()) {
-            if (!isSafeExpression(child)) {
-              return false;
-            }
-          }
-          return true;
-        }
-      }
-      return false;
-    }
-
-    private static boolean isConstantOrColumn2(ExprNodeDesc desc) {
-      return desc instanceof ExprNodeColumnDesc || desc instanceof ExprNodeConstantDesc;
     }
 
     /**
