@@ -115,7 +115,11 @@ public class TypeCheckProcFactoryUtils {
   }
 
   private static boolean isSafeExpression(ExprNodeDesc desc) {
-    if (isConstantOrColumn2(desc)) {
+    //    TypeInfo typeInfo = desc.getTypeInfo();
+    //    if (typeInfo.getCategory() != Category.PRIMITIVE) {
+    //      return false;
+    //    }
+    if (isConstantOrColumn(desc)) {
       return true;
     }
     if (desc instanceof ExprNodeGenericFuncDesc) {
@@ -132,7 +136,7 @@ public class TypeCheckProcFactoryUtils {
     return false;
   }
 
-  private static boolean isConstantOrColumn2(ExprNodeDesc desc) {
+  private static boolean isConstantOrColumn(ExprNodeDesc desc) {
     return desc instanceof ExprNodeColumnDesc || desc instanceof ExprNodeConstantDesc;
   }
 
