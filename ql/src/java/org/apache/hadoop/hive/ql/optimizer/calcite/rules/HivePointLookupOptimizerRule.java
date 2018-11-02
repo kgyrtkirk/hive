@@ -321,7 +321,14 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
      *
      */
     static class ConstraintGroup {
-      public static final Function<ConstraintGroup, Set<RexNodeRef>> KEY_FUNCTION = (ConstraintGroup a) -> a.key;
+      public static final Function<ConstraintGroup, Set<RexNodeRef>> KEY_FUNCTION =
+          new Function<ConstraintGroup, Set<RexNodeRef>>() {
+
+            @Override
+            public Set<RexNodeRef> apply(ConstraintGroup cg) {
+              return cg.key;
+            }
+          };
       private Map<RexNodeRef, Constraint> constraints = new HashMap<>();
       private RexNode originalRexNode;
       private final Set<RexNodeRef> key;
