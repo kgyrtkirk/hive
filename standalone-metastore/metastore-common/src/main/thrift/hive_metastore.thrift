@@ -1147,7 +1147,9 @@ struct CurrentNotificationEventId {
 struct NotificationEventsCountRequest {
     1: required i64 fromEventId,
     2: required string dbName,
-    3: optional string catName
+    3: optional string catName,
+    4: optional i64 toEventId,
+    5: optional i64 limit
 }
 
 struct NotificationEventsCountResponse {
@@ -1341,6 +1343,7 @@ struct WMResourcePlan {
   2: optional WMResourcePlanStatus status;
   3: optional i32 queryParallelism;
   4: optional string defaultPoolPath;
+  5: optional string ns;
 }
 
 struct WMNullableResourcePlan {
@@ -1350,6 +1353,7 @@ struct WMNullableResourcePlan {
   5: optional bool isSetQueryParallelism;
   6: optional string defaultPoolPath;
   7: optional bool isSetDefaultPoolPath;
+  8: optional string ns;
 }
 
 struct WMPool {
@@ -1358,6 +1362,7 @@ struct WMPool {
   3: optional double allocFraction;
   4: optional i32 queryParallelism;
   5: optional string schedulingPolicy;
+  6: optional string ns;
 }
 
 
@@ -1368,6 +1373,7 @@ struct WMNullablePool {
   4: optional i32 queryParallelism;
   5: optional string schedulingPolicy;
   6: optional bool isSetSchedulingPolicy;
+  7: optional string ns;
 }
 
 struct WMTrigger {
@@ -1376,6 +1382,7 @@ struct WMTrigger {
   3: optional string triggerExpression;
   4: optional string actionExpression;
   5: optional bool isInUnmanaged;
+  6: optional string ns;
 }
 
 struct WMMapping {
@@ -1384,11 +1391,13 @@ struct WMMapping {
   3: required string entityName;
   4: optional string poolPath;
   5: optional i32 ordering;
+  6: optional string ns;
 }
 
 struct WMPoolTrigger {
   1: required string pool;
   2: required string trigger;
+  3: optional string ns;
 }
 
 struct WMFullResourcePlan {
@@ -1410,6 +1419,7 @@ struct WMCreateResourcePlanResponse {
 }
 
 struct WMGetActiveResourcePlanRequest {
+  1: optional string ns;
 }
 
 struct WMGetActiveResourcePlanResponse {
@@ -1418,6 +1428,7 @@ struct WMGetActiveResourcePlanResponse {
 
 struct WMGetResourcePlanRequest {
   1: optional string resourcePlanName;
+  2: optional string ns;
 }
 
 struct WMGetResourcePlanResponse {
@@ -1425,6 +1436,7 @@ struct WMGetResourcePlanResponse {
 }
 
 struct WMGetAllResourcePlanRequest {
+  1: optional string ns;
 }
 
 struct WMGetAllResourcePlanResponse {
@@ -1437,6 +1449,7 @@ struct WMAlterResourcePlanRequest {
   3: optional bool isEnableAndActivate;
   4: optional bool isForceDeactivate;
   5: optional bool isReplace;
+  6: optional string ns;
 }
 
 struct WMAlterResourcePlanResponse {
@@ -1445,6 +1458,7 @@ struct WMAlterResourcePlanResponse {
 
 struct WMValidateResourcePlanRequest {
   1: optional string resourcePlanName;
+  2: optional string ns;
 }
 
 struct WMValidateResourcePlanResponse {
@@ -1454,6 +1468,7 @@ struct WMValidateResourcePlanResponse {
 
 struct WMDropResourcePlanRequest {
   1: optional string resourcePlanName;
+  2: optional string ns;
 }
 
 struct WMDropResourcePlanResponse {
@@ -1476,6 +1491,7 @@ struct WMAlterTriggerResponse {
 struct WMDropTriggerRequest {
   1: optional string resourcePlanName;
   2: optional string triggerName;
+  3: optional string ns;
 }
 
 struct WMDropTriggerResponse {
@@ -1483,6 +1499,7 @@ struct WMDropTriggerResponse {
 
 struct WMGetTriggersForResourePlanRequest {
   1: optional string resourcePlanName;
+  2: optional string ns;
 }
 
 struct WMGetTriggersForResourePlanResponse {
@@ -1507,6 +1524,7 @@ struct WMAlterPoolResponse {
 struct WMDropPoolRequest {
   1: optional string resourcePlanName;
   2: optional string poolPath;
+  3: optional string ns;
 }
 
 struct WMDropPoolResponse {
@@ -1532,6 +1550,7 @@ struct WMCreateOrDropTriggerToPoolMappingRequest {
   2: optional string triggerName;
   3: optional string poolPath;
   4: optional bool drop;
+  5: optional string ns;
 }
 
 struct WMCreateOrDropTriggerToPoolMappingResponse {

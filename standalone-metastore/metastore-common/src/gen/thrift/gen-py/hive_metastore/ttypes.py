@@ -15814,6 +15814,8 @@ class NotificationEventsCountRequest:
    - fromEventId
    - dbName
    - catName
+   - toEventId
+   - limit
   """
 
   thrift_spec = (
@@ -15821,12 +15823,16 @@ class NotificationEventsCountRequest:
     (1, TType.I64, 'fromEventId', None, None, ), # 1
     (2, TType.STRING, 'dbName', None, None, ), # 2
     (3, TType.STRING, 'catName', None, None, ), # 3
+    (4, TType.I64, 'toEventId', None, None, ), # 4
+    (5, TType.I64, 'limit', None, None, ), # 5
   )
 
-  def __init__(self, fromEventId=None, dbName=None, catName=None,):
+  def __init__(self, fromEventId=None, dbName=None, catName=None, toEventId=None, limit=None,):
     self.fromEventId = fromEventId
     self.dbName = dbName
     self.catName = catName
+    self.toEventId = toEventId
+    self.limit = limit
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -15852,6 +15858,16 @@ class NotificationEventsCountRequest:
           self.catName = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.I64:
+          self.toEventId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I64:
+          self.limit = iprot.readI64()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -15874,6 +15890,14 @@ class NotificationEventsCountRequest:
       oprot.writeFieldBegin('catName', TType.STRING, 3)
       oprot.writeString(self.catName)
       oprot.writeFieldEnd()
+    if self.toEventId is not None:
+      oprot.writeFieldBegin('toEventId', TType.I64, 4)
+      oprot.writeI64(self.toEventId)
+      oprot.writeFieldEnd()
+    if self.limit is not None:
+      oprot.writeFieldBegin('limit', TType.I64, 5)
+      oprot.writeI64(self.limit)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -15890,6 +15914,8 @@ class NotificationEventsCountRequest:
     value = (value * 31) ^ hash(self.fromEventId)
     value = (value * 31) ^ hash(self.dbName)
     value = (value * 31) ^ hash(self.catName)
+    value = (value * 31) ^ hash(self.toEventId)
+    value = (value * 31) ^ hash(self.limit)
     return value
 
   def __repr__(self):
@@ -18326,6 +18352,7 @@ class WMResourcePlan:
    - status
    - queryParallelism
    - defaultPoolPath
+   - ns
   """
 
   thrift_spec = (
@@ -18334,13 +18361,15 @@ class WMResourcePlan:
     (2, TType.I32, 'status', None, None, ), # 2
     (3, TType.I32, 'queryParallelism', None, None, ), # 3
     (4, TType.STRING, 'defaultPoolPath', None, None, ), # 4
+    (5, TType.STRING, 'ns', None, None, ), # 5
   )
 
-  def __init__(self, name=None, status=None, queryParallelism=None, defaultPoolPath=None,):
+  def __init__(self, name=None, status=None, queryParallelism=None, defaultPoolPath=None, ns=None,):
     self.name = name
     self.status = status
     self.queryParallelism = queryParallelism
     self.defaultPoolPath = defaultPoolPath
+    self.ns = ns
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -18371,6 +18400,11 @@ class WMResourcePlan:
           self.defaultPoolPath = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.ns = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -18397,6 +18431,10 @@ class WMResourcePlan:
       oprot.writeFieldBegin('defaultPoolPath', TType.STRING, 4)
       oprot.writeString(self.defaultPoolPath)
       oprot.writeFieldEnd()
+    if self.ns is not None:
+      oprot.writeFieldBegin('ns', TType.STRING, 5)
+      oprot.writeString(self.ns)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -18412,6 +18450,7 @@ class WMResourcePlan:
     value = (value * 31) ^ hash(self.status)
     value = (value * 31) ^ hash(self.queryParallelism)
     value = (value * 31) ^ hash(self.defaultPoolPath)
+    value = (value * 31) ^ hash(self.ns)
     return value
 
   def __repr__(self):
@@ -18434,6 +18473,7 @@ class WMNullableResourcePlan:
    - isSetQueryParallelism
    - defaultPoolPath
    - isSetDefaultPoolPath
+   - ns
   """
 
   thrift_spec = (
@@ -18445,15 +18485,17 @@ class WMNullableResourcePlan:
     (5, TType.BOOL, 'isSetQueryParallelism', None, None, ), # 5
     (6, TType.STRING, 'defaultPoolPath', None, None, ), # 6
     (7, TType.BOOL, 'isSetDefaultPoolPath', None, None, ), # 7
+    (8, TType.STRING, 'ns', None, None, ), # 8
   )
 
-  def __init__(self, name=None, status=None, queryParallelism=None, isSetQueryParallelism=None, defaultPoolPath=None, isSetDefaultPoolPath=None,):
+  def __init__(self, name=None, status=None, queryParallelism=None, isSetQueryParallelism=None, defaultPoolPath=None, isSetDefaultPoolPath=None, ns=None,):
     self.name = name
     self.status = status
     self.queryParallelism = queryParallelism
     self.isSetQueryParallelism = isSetQueryParallelism
     self.defaultPoolPath = defaultPoolPath
     self.isSetDefaultPoolPath = isSetDefaultPoolPath
+    self.ns = ns
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -18494,6 +18536,11 @@ class WMNullableResourcePlan:
           self.isSetDefaultPoolPath = iprot.readBool()
         else:
           iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.STRING:
+          self.ns = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -18528,6 +18575,10 @@ class WMNullableResourcePlan:
       oprot.writeFieldBegin('isSetDefaultPoolPath', TType.BOOL, 7)
       oprot.writeBool(self.isSetDefaultPoolPath)
       oprot.writeFieldEnd()
+    if self.ns is not None:
+      oprot.writeFieldBegin('ns', TType.STRING, 8)
+      oprot.writeString(self.ns)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -18543,6 +18594,7 @@ class WMNullableResourcePlan:
     value = (value * 31) ^ hash(self.isSetQueryParallelism)
     value = (value * 31) ^ hash(self.defaultPoolPath)
     value = (value * 31) ^ hash(self.isSetDefaultPoolPath)
+    value = (value * 31) ^ hash(self.ns)
     return value
 
   def __repr__(self):
@@ -18564,6 +18616,7 @@ class WMPool:
    - allocFraction
    - queryParallelism
    - schedulingPolicy
+   - ns
   """
 
   thrift_spec = (
@@ -18573,14 +18626,16 @@ class WMPool:
     (3, TType.DOUBLE, 'allocFraction', None, None, ), # 3
     (4, TType.I32, 'queryParallelism', None, None, ), # 4
     (5, TType.STRING, 'schedulingPolicy', None, None, ), # 5
+    (6, TType.STRING, 'ns', None, None, ), # 6
   )
 
-  def __init__(self, resourcePlanName=None, poolPath=None, allocFraction=None, queryParallelism=None, schedulingPolicy=None,):
+  def __init__(self, resourcePlanName=None, poolPath=None, allocFraction=None, queryParallelism=None, schedulingPolicy=None, ns=None,):
     self.resourcePlanName = resourcePlanName
     self.poolPath = poolPath
     self.allocFraction = allocFraction
     self.queryParallelism = queryParallelism
     self.schedulingPolicy = schedulingPolicy
+    self.ns = ns
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -18616,6 +18671,11 @@ class WMPool:
           self.schedulingPolicy = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.ns = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -18646,6 +18706,10 @@ class WMPool:
       oprot.writeFieldBegin('schedulingPolicy', TType.STRING, 5)
       oprot.writeString(self.schedulingPolicy)
       oprot.writeFieldEnd()
+    if self.ns is not None:
+      oprot.writeFieldBegin('ns', TType.STRING, 6)
+      oprot.writeString(self.ns)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -18664,6 +18728,7 @@ class WMPool:
     value = (value * 31) ^ hash(self.allocFraction)
     value = (value * 31) ^ hash(self.queryParallelism)
     value = (value * 31) ^ hash(self.schedulingPolicy)
+    value = (value * 31) ^ hash(self.ns)
     return value
 
   def __repr__(self):
@@ -18686,6 +18751,7 @@ class WMNullablePool:
    - queryParallelism
    - schedulingPolicy
    - isSetSchedulingPolicy
+   - ns
   """
 
   thrift_spec = (
@@ -18696,15 +18762,17 @@ class WMNullablePool:
     (4, TType.I32, 'queryParallelism', None, None, ), # 4
     (5, TType.STRING, 'schedulingPolicy', None, None, ), # 5
     (6, TType.BOOL, 'isSetSchedulingPolicy', None, None, ), # 6
+    (7, TType.STRING, 'ns', None, None, ), # 7
   )
 
-  def __init__(self, resourcePlanName=None, poolPath=None, allocFraction=None, queryParallelism=None, schedulingPolicy=None, isSetSchedulingPolicy=None,):
+  def __init__(self, resourcePlanName=None, poolPath=None, allocFraction=None, queryParallelism=None, schedulingPolicy=None, isSetSchedulingPolicy=None, ns=None,):
     self.resourcePlanName = resourcePlanName
     self.poolPath = poolPath
     self.allocFraction = allocFraction
     self.queryParallelism = queryParallelism
     self.schedulingPolicy = schedulingPolicy
     self.isSetSchedulingPolicy = isSetSchedulingPolicy
+    self.ns = ns
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -18745,6 +18813,11 @@ class WMNullablePool:
           self.isSetSchedulingPolicy = iprot.readBool()
         else:
           iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.STRING:
+          self.ns = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -18779,6 +18852,10 @@ class WMNullablePool:
       oprot.writeFieldBegin('isSetSchedulingPolicy', TType.BOOL, 6)
       oprot.writeBool(self.isSetSchedulingPolicy)
       oprot.writeFieldEnd()
+    if self.ns is not None:
+      oprot.writeFieldBegin('ns', TType.STRING, 7)
+      oprot.writeString(self.ns)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -18798,6 +18875,7 @@ class WMNullablePool:
     value = (value * 31) ^ hash(self.queryParallelism)
     value = (value * 31) ^ hash(self.schedulingPolicy)
     value = (value * 31) ^ hash(self.isSetSchedulingPolicy)
+    value = (value * 31) ^ hash(self.ns)
     return value
 
   def __repr__(self):
@@ -18819,6 +18897,7 @@ class WMTrigger:
    - triggerExpression
    - actionExpression
    - isInUnmanaged
+   - ns
   """
 
   thrift_spec = (
@@ -18828,14 +18907,16 @@ class WMTrigger:
     (3, TType.STRING, 'triggerExpression', None, None, ), # 3
     (4, TType.STRING, 'actionExpression', None, None, ), # 4
     (5, TType.BOOL, 'isInUnmanaged', None, None, ), # 5
+    (6, TType.STRING, 'ns', None, None, ), # 6
   )
 
-  def __init__(self, resourcePlanName=None, triggerName=None, triggerExpression=None, actionExpression=None, isInUnmanaged=None,):
+  def __init__(self, resourcePlanName=None, triggerName=None, triggerExpression=None, actionExpression=None, isInUnmanaged=None, ns=None,):
     self.resourcePlanName = resourcePlanName
     self.triggerName = triggerName
     self.triggerExpression = triggerExpression
     self.actionExpression = actionExpression
     self.isInUnmanaged = isInUnmanaged
+    self.ns = ns
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -18871,6 +18952,11 @@ class WMTrigger:
           self.isInUnmanaged = iprot.readBool()
         else:
           iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.ns = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -18901,6 +18987,10 @@ class WMTrigger:
       oprot.writeFieldBegin('isInUnmanaged', TType.BOOL, 5)
       oprot.writeBool(self.isInUnmanaged)
       oprot.writeFieldEnd()
+    if self.ns is not None:
+      oprot.writeFieldBegin('ns', TType.STRING, 6)
+      oprot.writeString(self.ns)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -18919,6 +19009,7 @@ class WMTrigger:
     value = (value * 31) ^ hash(self.triggerExpression)
     value = (value * 31) ^ hash(self.actionExpression)
     value = (value * 31) ^ hash(self.isInUnmanaged)
+    value = (value * 31) ^ hash(self.ns)
     return value
 
   def __repr__(self):
@@ -18940,6 +19031,7 @@ class WMMapping:
    - entityName
    - poolPath
    - ordering
+   - ns
   """
 
   thrift_spec = (
@@ -18949,14 +19041,16 @@ class WMMapping:
     (3, TType.STRING, 'entityName', None, None, ), # 3
     (4, TType.STRING, 'poolPath', None, None, ), # 4
     (5, TType.I32, 'ordering', None, None, ), # 5
+    (6, TType.STRING, 'ns', None, None, ), # 6
   )
 
-  def __init__(self, resourcePlanName=None, entityType=None, entityName=None, poolPath=None, ordering=None,):
+  def __init__(self, resourcePlanName=None, entityType=None, entityName=None, poolPath=None, ordering=None, ns=None,):
     self.resourcePlanName = resourcePlanName
     self.entityType = entityType
     self.entityName = entityName
     self.poolPath = poolPath
     self.ordering = ordering
+    self.ns = ns
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -18992,6 +19086,11 @@ class WMMapping:
           self.ordering = iprot.readI32()
         else:
           iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.ns = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -19022,6 +19121,10 @@ class WMMapping:
       oprot.writeFieldBegin('ordering', TType.I32, 5)
       oprot.writeI32(self.ordering)
       oprot.writeFieldEnd()
+    if self.ns is not None:
+      oprot.writeFieldBegin('ns', TType.STRING, 6)
+      oprot.writeString(self.ns)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -19042,6 +19145,7 @@ class WMMapping:
     value = (value * 31) ^ hash(self.entityName)
     value = (value * 31) ^ hash(self.poolPath)
     value = (value * 31) ^ hash(self.ordering)
+    value = (value * 31) ^ hash(self.ns)
     return value
 
   def __repr__(self):
@@ -19060,17 +19164,20 @@ class WMPoolTrigger:
   Attributes:
    - pool
    - trigger
+   - ns
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'pool', None, None, ), # 1
     (2, TType.STRING, 'trigger', None, None, ), # 2
+    (3, TType.STRING, 'ns', None, None, ), # 3
   )
 
-  def __init__(self, pool=None, trigger=None,):
+  def __init__(self, pool=None, trigger=None, ns=None,):
     self.pool = pool
     self.trigger = trigger
+    self.ns = ns
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -19091,6 +19198,11 @@ class WMPoolTrigger:
           self.trigger = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.ns = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -19109,6 +19221,10 @@ class WMPoolTrigger:
       oprot.writeFieldBegin('trigger', TType.STRING, 2)
       oprot.writeString(self.trigger)
       oprot.writeFieldEnd()
+    if self.ns is not None:
+      oprot.writeFieldBegin('ns', TType.STRING, 3)
+      oprot.writeString(self.ns)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -19124,6 +19240,7 @@ class WMPoolTrigger:
     value = 17
     value = (value * 31) ^ hash(self.pool)
     value = (value * 31) ^ hash(self.trigger)
+    value = (value * 31) ^ hash(self.ns)
     return value
 
   def __repr__(self):
@@ -19421,9 +19538,18 @@ class WMCreateResourcePlanResponse:
     return not (self == other)
 
 class WMGetActiveResourcePlanRequest:
+  """
+  Attributes:
+   - ns
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'ns', None, None, ), # 1
   )
+
+  def __init__(self, ns=None,):
+    self.ns = ns
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -19434,6 +19560,11 @@ class WMGetActiveResourcePlanRequest:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.ns = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -19444,6 +19575,10 @@ class WMGetActiveResourcePlanRequest:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('WMGetActiveResourcePlanRequest')
+    if self.ns is not None:
+      oprot.writeFieldBegin('ns', TType.STRING, 1)
+      oprot.writeString(self.ns)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -19453,6 +19588,7 @@ class WMGetActiveResourcePlanRequest:
 
   def __hash__(self):
     value = 17
+    value = (value * 31) ^ hash(self.ns)
     return value
 
   def __repr__(self):
@@ -19536,15 +19672,18 @@ class WMGetResourcePlanRequest:
   """
   Attributes:
    - resourcePlanName
+   - ns
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'resourcePlanName', None, None, ), # 1
+    (2, TType.STRING, 'ns', None, None, ), # 2
   )
 
-  def __init__(self, resourcePlanName=None,):
+  def __init__(self, resourcePlanName=None, ns=None,):
     self.resourcePlanName = resourcePlanName
+    self.ns = ns
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -19558,6 +19697,11 @@ class WMGetResourcePlanRequest:
       if fid == 1:
         if ftype == TType.STRING:
           self.resourcePlanName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.ns = iprot.readString()
         else:
           iprot.skip(ftype)
       else:
@@ -19574,6 +19718,10 @@ class WMGetResourcePlanRequest:
       oprot.writeFieldBegin('resourcePlanName', TType.STRING, 1)
       oprot.writeString(self.resourcePlanName)
       oprot.writeFieldEnd()
+    if self.ns is not None:
+      oprot.writeFieldBegin('ns', TType.STRING, 2)
+      oprot.writeString(self.ns)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -19584,6 +19732,7 @@ class WMGetResourcePlanRequest:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.resourcePlanName)
+    value = (value * 31) ^ hash(self.ns)
     return value
 
   def __repr__(self):
@@ -19664,9 +19813,18 @@ class WMGetResourcePlanResponse:
     return not (self == other)
 
 class WMGetAllResourcePlanRequest:
+  """
+  Attributes:
+   - ns
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'ns', None, None, ), # 1
   )
+
+  def __init__(self, ns=None,):
+    self.ns = ns
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -19677,6 +19835,11 @@ class WMGetAllResourcePlanRequest:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.ns = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -19687,6 +19850,10 @@ class WMGetAllResourcePlanRequest:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('WMGetAllResourcePlanRequest')
+    if self.ns is not None:
+      oprot.writeFieldBegin('ns', TType.STRING, 1)
+      oprot.writeString(self.ns)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -19696,6 +19863,7 @@ class WMGetAllResourcePlanRequest:
 
   def __hash__(self):
     value = 17
+    value = (value * 31) ^ hash(self.ns)
     return value
 
   def __repr__(self):
@@ -19791,6 +19959,7 @@ class WMAlterResourcePlanRequest:
    - isEnableAndActivate
    - isForceDeactivate
    - isReplace
+   - ns
   """
 
   thrift_spec = (
@@ -19800,14 +19969,16 @@ class WMAlterResourcePlanRequest:
     (3, TType.BOOL, 'isEnableAndActivate', None, None, ), # 3
     (4, TType.BOOL, 'isForceDeactivate', None, None, ), # 4
     (5, TType.BOOL, 'isReplace', None, None, ), # 5
+    (6, TType.STRING, 'ns', None, None, ), # 6
   )
 
-  def __init__(self, resourcePlanName=None, resourcePlan=None, isEnableAndActivate=None, isForceDeactivate=None, isReplace=None,):
+  def __init__(self, resourcePlanName=None, resourcePlan=None, isEnableAndActivate=None, isForceDeactivate=None, isReplace=None, ns=None,):
     self.resourcePlanName = resourcePlanName
     self.resourcePlan = resourcePlan
     self.isEnableAndActivate = isEnableAndActivate
     self.isForceDeactivate = isForceDeactivate
     self.isReplace = isReplace
+    self.ns = ns
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -19844,6 +20015,11 @@ class WMAlterResourcePlanRequest:
           self.isReplace = iprot.readBool()
         else:
           iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.ns = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -19874,6 +20050,10 @@ class WMAlterResourcePlanRequest:
       oprot.writeFieldBegin('isReplace', TType.BOOL, 5)
       oprot.writeBool(self.isReplace)
       oprot.writeFieldEnd()
+    if self.ns is not None:
+      oprot.writeFieldBegin('ns', TType.STRING, 6)
+      oprot.writeString(self.ns)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -19888,6 +20068,7 @@ class WMAlterResourcePlanRequest:
     value = (value * 31) ^ hash(self.isEnableAndActivate)
     value = (value * 31) ^ hash(self.isForceDeactivate)
     value = (value * 31) ^ hash(self.isReplace)
+    value = (value * 31) ^ hash(self.ns)
     return value
 
   def __repr__(self):
@@ -19971,15 +20152,18 @@ class WMValidateResourcePlanRequest:
   """
   Attributes:
    - resourcePlanName
+   - ns
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'resourcePlanName', None, None, ), # 1
+    (2, TType.STRING, 'ns', None, None, ), # 2
   )
 
-  def __init__(self, resourcePlanName=None,):
+  def __init__(self, resourcePlanName=None, ns=None,):
     self.resourcePlanName = resourcePlanName
+    self.ns = ns
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -19993,6 +20177,11 @@ class WMValidateResourcePlanRequest:
       if fid == 1:
         if ftype == TType.STRING:
           self.resourcePlanName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.ns = iprot.readString()
         else:
           iprot.skip(ftype)
       else:
@@ -20009,6 +20198,10 @@ class WMValidateResourcePlanRequest:
       oprot.writeFieldBegin('resourcePlanName', TType.STRING, 1)
       oprot.writeString(self.resourcePlanName)
       oprot.writeFieldEnd()
+    if self.ns is not None:
+      oprot.writeFieldBegin('ns', TType.STRING, 2)
+      oprot.writeString(self.ns)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -20019,6 +20212,7 @@ class WMValidateResourcePlanRequest:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.resourcePlanName)
+    value = (value * 31) ^ hash(self.ns)
     return value
 
   def __repr__(self):
@@ -20130,15 +20324,18 @@ class WMDropResourcePlanRequest:
   """
   Attributes:
    - resourcePlanName
+   - ns
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'resourcePlanName', None, None, ), # 1
+    (2, TType.STRING, 'ns', None, None, ), # 2
   )
 
-  def __init__(self, resourcePlanName=None,):
+  def __init__(self, resourcePlanName=None, ns=None,):
     self.resourcePlanName = resourcePlanName
+    self.ns = ns
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -20152,6 +20349,11 @@ class WMDropResourcePlanRequest:
       if fid == 1:
         if ftype == TType.STRING:
           self.resourcePlanName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.ns = iprot.readString()
         else:
           iprot.skip(ftype)
       else:
@@ -20168,6 +20370,10 @@ class WMDropResourcePlanRequest:
       oprot.writeFieldBegin('resourcePlanName', TType.STRING, 1)
       oprot.writeString(self.resourcePlanName)
       oprot.writeFieldEnd()
+    if self.ns is not None:
+      oprot.writeFieldBegin('ns', TType.STRING, 2)
+      oprot.writeString(self.ns)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -20178,6 +20384,7 @@ class WMDropResourcePlanRequest:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.resourcePlanName)
+    value = (value * 31) ^ hash(self.ns)
     return value
 
   def __repr__(self):
@@ -20466,17 +20673,20 @@ class WMDropTriggerRequest:
   Attributes:
    - resourcePlanName
    - triggerName
+   - ns
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'resourcePlanName', None, None, ), # 1
     (2, TType.STRING, 'triggerName', None, None, ), # 2
+    (3, TType.STRING, 'ns', None, None, ), # 3
   )
 
-  def __init__(self, resourcePlanName=None, triggerName=None,):
+  def __init__(self, resourcePlanName=None, triggerName=None, ns=None,):
     self.resourcePlanName = resourcePlanName
     self.triggerName = triggerName
+    self.ns = ns
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -20497,6 +20707,11 @@ class WMDropTriggerRequest:
           self.triggerName = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.ns = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -20515,6 +20730,10 @@ class WMDropTriggerRequest:
       oprot.writeFieldBegin('triggerName', TType.STRING, 2)
       oprot.writeString(self.triggerName)
       oprot.writeFieldEnd()
+    if self.ns is not None:
+      oprot.writeFieldBegin('ns', TType.STRING, 3)
+      oprot.writeString(self.ns)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -20526,6 +20745,7 @@ class WMDropTriggerRequest:
     value = 17
     value = (value * 31) ^ hash(self.resourcePlanName)
     value = (value * 31) ^ hash(self.triggerName)
+    value = (value * 31) ^ hash(self.ns)
     return value
 
   def __repr__(self):
@@ -20589,15 +20809,18 @@ class WMGetTriggersForResourePlanRequest:
   """
   Attributes:
    - resourcePlanName
+   - ns
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'resourcePlanName', None, None, ), # 1
+    (2, TType.STRING, 'ns', None, None, ), # 2
   )
 
-  def __init__(self, resourcePlanName=None,):
+  def __init__(self, resourcePlanName=None, ns=None,):
     self.resourcePlanName = resourcePlanName
+    self.ns = ns
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -20611,6 +20834,11 @@ class WMGetTriggersForResourePlanRequest:
       if fid == 1:
         if ftype == TType.STRING:
           self.resourcePlanName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.ns = iprot.readString()
         else:
           iprot.skip(ftype)
       else:
@@ -20627,6 +20855,10 @@ class WMGetTriggersForResourePlanRequest:
       oprot.writeFieldBegin('resourcePlanName', TType.STRING, 1)
       oprot.writeString(self.resourcePlanName)
       oprot.writeFieldEnd()
+    if self.ns is not None:
+      oprot.writeFieldBegin('ns', TType.STRING, 2)
+      oprot.writeString(self.ns)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -20637,6 +20869,7 @@ class WMGetTriggersForResourePlanRequest:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.resourcePlanName)
+    value = (value * 31) ^ hash(self.ns)
     return value
 
   def __repr__(self):
@@ -20966,17 +21199,20 @@ class WMDropPoolRequest:
   Attributes:
    - resourcePlanName
    - poolPath
+   - ns
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'resourcePlanName', None, None, ), # 1
     (2, TType.STRING, 'poolPath', None, None, ), # 2
+    (3, TType.STRING, 'ns', None, None, ), # 3
   )
 
-  def __init__(self, resourcePlanName=None, poolPath=None,):
+  def __init__(self, resourcePlanName=None, poolPath=None, ns=None,):
     self.resourcePlanName = resourcePlanName
     self.poolPath = poolPath
+    self.ns = ns
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -20997,6 +21233,11 @@ class WMDropPoolRequest:
           self.poolPath = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.ns = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -21015,6 +21256,10 @@ class WMDropPoolRequest:
       oprot.writeFieldBegin('poolPath', TType.STRING, 2)
       oprot.writeString(self.poolPath)
       oprot.writeFieldEnd()
+    if self.ns is not None:
+      oprot.writeFieldBegin('ns', TType.STRING, 3)
+      oprot.writeString(self.ns)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -21026,6 +21271,7 @@ class WMDropPoolRequest:
     value = 17
     value = (value * 31) ^ hash(self.resourcePlanName)
     value = (value * 31) ^ hash(self.poolPath)
+    value = (value * 31) ^ hash(self.ns)
     return value
 
   def __repr__(self):
@@ -21329,6 +21575,7 @@ class WMCreateOrDropTriggerToPoolMappingRequest:
    - triggerName
    - poolPath
    - drop
+   - ns
   """
 
   thrift_spec = (
@@ -21337,13 +21584,15 @@ class WMCreateOrDropTriggerToPoolMappingRequest:
     (2, TType.STRING, 'triggerName', None, None, ), # 2
     (3, TType.STRING, 'poolPath', None, None, ), # 3
     (4, TType.BOOL, 'drop', None, None, ), # 4
+    (5, TType.STRING, 'ns', None, None, ), # 5
   )
 
-  def __init__(self, resourcePlanName=None, triggerName=None, poolPath=None, drop=None,):
+  def __init__(self, resourcePlanName=None, triggerName=None, poolPath=None, drop=None, ns=None,):
     self.resourcePlanName = resourcePlanName
     self.triggerName = triggerName
     self.poolPath = poolPath
     self.drop = drop
+    self.ns = ns
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -21374,6 +21623,11 @@ class WMCreateOrDropTriggerToPoolMappingRequest:
           self.drop = iprot.readBool()
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.ns = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -21400,6 +21654,10 @@ class WMCreateOrDropTriggerToPoolMappingRequest:
       oprot.writeFieldBegin('drop', TType.BOOL, 4)
       oprot.writeBool(self.drop)
       oprot.writeFieldEnd()
+    if self.ns is not None:
+      oprot.writeFieldBegin('ns', TType.STRING, 5)
+      oprot.writeString(self.ns)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -21413,6 +21671,7 @@ class WMCreateOrDropTriggerToPoolMappingRequest:
     value = (value * 31) ^ hash(self.triggerName)
     value = (value * 31) ^ hash(self.poolPath)
     value = (value * 31) ^ hash(self.drop)
+    value = (value * 31) ^ hash(self.ns)
     return value
 
   def __repr__(self):

@@ -686,10 +686,9 @@ public class ObjectStore implements RawStore, Configurable {
       debugLog("rolling back transaction: no open transactions: " + openTrasactionCalls);
       return;
     }
-    debugLog("Rollback transaction, isActive: " + currentTransaction.isActive());
+    debugLog("Rollback transaction, isActive: " + isActiveTransaction());
     try {
-      if (currentTransaction.isActive()
-          && transactionStatus != TXN_STATUS.ROLLBACK) {
+      if (isActiveTransaction() && transactionStatus != TXN_STATUS.ROLLBACK) {
         currentTransaction.rollback();
       }
     } finally {
@@ -1711,6 +1710,7 @@ public class ObjectStore implements RawStore, Configurable {
       for (MTable table : tables) {
         TableMeta metaData = new TableMeta(
             table.getDatabase().getName(), table.getTableName(), table.getTableType());
+        metaData.setCatName(catName);
         metaData.setComments(table.getParameters().get("comment"));
         metas.add(metaData);
       }
@@ -10260,14 +10260,60 @@ public class ObjectStore implements RawStore, Configurable {
       long fromEventId = rqst.getFromEventId();
       String inputDbName = rqst.getDbName();
       String catName = rqst.isSetCatName() ? rqst.getCatName() : getDefaultCatalog(conf);
-      String queryStr = "select count(eventId) from " + MNotificationLog.class.getName()
-                + " where eventId > fromEventId && dbName == inputDbName && catalogName == catName";
+      long toEventId;
+      String paramSpecs;
+      List<Object> paramVals = new ArrayList<Object>();
+
+      // We store a catalog name in lower case in metastore and also use the same way everywhere in
+      // hive.
+      assert catName.equals(catName.toLowerCase());
+
+      // Build the query to count events, part by part
+      String queryStr = "select count(eventId) from " + MNotificationLog.class.getName();
+      // count fromEventId onwards events
+      queryStr = queryStr + " where eventId > fromEventId";
+      paramSpecs = "java.lang.Long fromEventId";
+      paramVals.add(Long.valueOf(fromEventId));
+
+      // Input database name can be a database name or a *. In the first case we add a filter
+      // condition on dbName column, but not in the second case, since a * means all the
+      // databases. In case we support more elaborate database name patterns in future, we will
+      // have to apply a method similar to getNextNotification() method of MetaStoreClient.
+      if (!inputDbName.equals("*")) {
+        // dbName could be NULL in case of transaction related events, which also need to be
+        // counted.
+        queryStr = queryStr + " && (dbName == inputDbName || dbName == null)";
+        paramSpecs = paramSpecs + ", java.lang.String inputDbName";
+        // We store a database name in lower case in metastore.
+        paramVals.add(inputDbName.toLowerCase());
+      }
+
+      // catName could be NULL in case of transaction related events, which also need to be
+      // counted.
+      queryStr = queryStr + " && (catalogName == catName || catalogName == null)";
+      paramSpecs = paramSpecs +", java.lang.String catName";
+      paramVals.add(catName);
+
+      // count events upto toEventId if specified
+      if (rqst.isSetToEventId()) {
+        toEventId = rqst.getToEventId();
+        queryStr = queryStr + " && eventId <= toEventId";
+        paramSpecs = paramSpecs + ", java.lang.Long toEventId";
+        paramVals.add(Long.valueOf(toEventId));
+      }
+
       query = pm.newQuery(queryStr);
-      query.declareParameters("java.lang.Long fromEventId, java.lang.String inputDbName," +
-          " java.lang.String catName");
-      result = (Long) query.execute(fromEventId, inputDbName, catName);
+      query.declareParameters(paramSpecs);
+      result = (Long) query.executeWithArray(paramVals.toArray());
       commited = commitTransaction();
-      return new NotificationEventsCountResponse(result.longValue());
+
+      // Cap the event count by limit if specified.
+      long  eventCount = result.longValue();
+      if (rqst.isSetLimit() && eventCount > rqst.getLimit()) {
+        eventCount = rqst.getLimit();
+      }
+
+      return new NotificationEventsCountResponse(eventCount);
     } finally {
       rollbackAndCleanup(commited, query);
     }
@@ -11547,13 +11593,15 @@ public class ObjectStore implements RawStore, Configurable {
     } else {
       rp = new MWMResourcePlan(rpName, null, Status.DISABLED);
     }
+    rp.setNs(resourcePlan.getNs());
     try {
       openTransaction();
       pm.makePersistent(rp);
       if (copyFromName != null) {
-        MWMResourcePlan copyFrom = getMWMResourcePlan(copyFromName, false);
+        String ns = getNsOrDefault(resourcePlan.getNs());
+        MWMResourcePlan copyFrom = getMWMResourcePlan(copyFromName, ns, false);
         if (copyFrom == null) {
-          throw new NoSuchObjectException(copyFromName);
+          throw new NoSuchObjectException(copyFromName + " in " + ns);
         }
         copyRpContents(rp, copyFrom);
       } else {
@@ -11581,6 +11629,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   private void copyRpContents(MWMResourcePlan dest, MWMResourcePlan src) {
     dest.setQueryParallelism(src.getQueryParallelism());
+    dest.setNs(src.getNs());
     Map<String, MWMPool> pools = new HashMap<>();
     Map<String, Set<MWMPool>> triggersToPools = new HashMap<>();
     for (MWMPool copyPool : src.getPools()) {
@@ -11640,6 +11689,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     WMResourcePlan rp = new WMResourcePlan();
     rp.setName(mplan.getName());
+    rp.setNs(mplan.getNs());
     rp.setStatus(WMResourcePlanStatus.valueOf(mplan.getStatus().name()));
     if (mplan.getQueryParallelism() != null) {
       rp.setQueryParallelism(mplan.getQueryParallelism());
@@ -11678,6 +11728,7 @@ public class ObjectStore implements RawStore, Configurable {
     assert mPool.getQueryParallelism() != null;
     result.setQueryParallelism(mPool.getQueryParallelism());
     result.setSchedulingPolicy(mPool.getSchedulingPolicy());
+    result.setNs(mPool.getResourcePlan().getNs());
     return result;
   }
 
@@ -11690,15 +11741,24 @@ public class ObjectStore implements RawStore, Configurable {
     if (mMapping.getOrdering() != null) {
       result.setOrdering(mMapping.getOrdering());
     }
+    result.setNs(mMapping.getResourcePlan().getNs());
     return result;
   }
 
+  private final String getNsOrDefault(String ns) {
+    // This is only needed for old clients not setting NS in requests.
+    // Not clear how to handle this... this is properly a HS2 config but metastore needs its default
+    // value for backward compat, and we don't want it configurable separately because it's also
+    // used in upgrade scripts, were it cannot be configured.
+     return normalizeIdentifier(ns == null ? "default" : ns);
+  }
+
   @Override
-  public WMFullResourcePlan getResourcePlan(String name) throws NoSuchObjectException {
+  public WMFullResourcePlan getResourcePlan(String name, String ns) throws NoSuchObjectException {
     boolean commited = false;
     try {
       openTransaction();
-      WMFullResourcePlan fullRp = fullFromMResourcePlan(getMWMResourcePlan(name, false));
+      WMFullResourcePlan fullRp = fullFromMResourcePlan(getMWMResourcePlan(name, ns, false));
       commited = commitTransaction();
       return fullRp;
     } catch (InvalidOperationException e) {
@@ -11709,12 +11769,12 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private MWMResourcePlan getMWMResourcePlan(String name, boolean editCheck)
+  private MWMResourcePlan getMWMResourcePlan(String name, String ns, boolean editCheck)
       throws NoSuchObjectException, InvalidOperationException {
-    return getMWMResourcePlan(name, editCheck, true);
+    return getMWMResourcePlan(name, ns, editCheck, true);
   }
 
-  private MWMResourcePlan getMWMResourcePlan(String name, boolean editCheck, boolean mustExist)
+  private MWMResourcePlan getMWMResourcePlan(String name, String ns, boolean editCheck, boolean mustExist)
       throws NoSuchObjectException, InvalidOperationException {
     MWMResourcePlan resourcePlan;
     boolean commited = false;
@@ -11722,18 +11782,16 @@ public class ObjectStore implements RawStore, Configurable {
 
     name = normalizeIdentifier(name);
     try {
-      openTransaction();
-      query = pm.newQuery(MWMResourcePlan.class, "name == rpname");
-      query.declareParameters("java.lang.String rpname");
-      query.setUnique(true);
-      resourcePlan = (MWMResourcePlan) query.execute(name);
+      query = createGetResourcePlanQuery();
+      ns = getNsOrDefault(ns);
+      resourcePlan = (MWMResourcePlan) query.execute(name, ns);
       pm.retrieve(resourcePlan);
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, query);
     }
     if (mustExist && resourcePlan == null) {
-      throw new NoSuchObjectException("There is no resource plan named: " + name);
+      throw new NoSuchObjectException("There is no resource plan named: " + name + " in " + ns);
     }
     if (editCheck && resourcePlan != null
         && resourcePlan.getStatus() != MWMResourcePlan.Status.DISABLED) {
@@ -11742,15 +11800,24 @@ public class ObjectStore implements RawStore, Configurable {
     return resourcePlan;
   }
 
+  private Query createGetResourcePlanQuery() {
+    openTransaction();
+    Query query = pm.newQuery(MWMResourcePlan.class, "name == rpname && ns == nsname");
+    query.declareParameters("java.lang.String rpname, java.lang.String nsname");
+    query.setUnique(true);
+    return query;
+  }
+
   @Override
-  public List<WMResourcePlan> getAllResourcePlans() throws MetaException {
+  public List<WMResourcePlan> getAllResourcePlans(String ns) throws MetaException {
     List<WMResourcePlan> resourcePlans = new ArrayList();
     boolean commited = false;
     Query query = null;
     try {
       openTransaction();
-      query = pm.newQuery(MWMResourcePlan.class);
-      List<MWMResourcePlan> mplans = (List<MWMResourcePlan>) query.execute();
+      query = pm.newQuery(MWMResourcePlan.class, "ns == nsname");
+      query.declareParameters("java.lang.String nsname");
+      List<MWMResourcePlan> mplans = (List<MWMResourcePlan>) query.execute(getNsOrDefault(ns));
       pm.retrieveAll(mplans);
       commited = commitTransaction();
       if (mplans != null) {
@@ -11765,7 +11832,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public WMFullResourcePlan alterResourcePlan(String name, WMNullableResourcePlan changes,
+  public WMFullResourcePlan alterResourcePlan(String name, String ns, WMNullableResourcePlan changes,
       boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
     throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException, MetaException {
     name = name == null ? null : normalizeIdentifier(name);
@@ -11781,9 +11848,9 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       if (isReplace) {
-        result = handleAlterReplace(name, changes);
+        result = handleAlterReplace(name, ns, changes);
       } else {
-        result = handleSimpleAlter(name, changes, canActivateDisabled, canDeactivate);
+        result = handleSimpleAlter(name, ns, changes, canActivateDisabled, canDeactivate);
       }
 
       commited = commitTransaction();
@@ -11796,11 +11863,16 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private WMFullResourcePlan handleSimpleAlter(String name, WMNullableResourcePlan changes,
+  private WMFullResourcePlan handleSimpleAlter(String name, String ns, WMNullableResourcePlan changes,
       boolean canActivateDisabled, boolean canDeactivate)
           throws InvalidOperationException, NoSuchObjectException, MetaException {
-    MWMResourcePlan plan = name == null ? getActiveMWMResourcePlan()
-        : getMWMResourcePlan(name, !changes.isSetStatus());
+    MWMResourcePlan plan = name == null ? getActiveMWMResourcePlan(ns)
+        : getMWMResourcePlan(name, ns, !changes.isSetStatus());
+    boolean hasNsChange = changes.isSetNs() && !changes.getNs().equals(getNsOrDefault(plan.getNs()));
+    if (hasNsChange) {
+      throw new InvalidOperationException("Cannot change ns; from " + getNsOrDefault(plan.getNs())
+          + " to " + changes.getNs());
+    }
     boolean hasNameChange = changes.isSetName() && !changes.getName().equals(name);
     // Verify that field changes are consistent with what Hive does. Note: we could handle this.
     if (changes.isSetIsSetQueryParallelism()
@@ -11849,7 +11921,7 @@ public class ObjectStore implements RawStore, Configurable {
     return null;
   }
 
-  private WMFullResourcePlan handleAlterReplace(String name, WMNullableResourcePlan changes)
+  private WMFullResourcePlan handleAlterReplace(String name, String ns, WMNullableResourcePlan changes)
           throws InvalidOperationException, NoSuchObjectException, MetaException {
     // Verify that field changes are consistent with what Hive does. Note: we could handle this.
     if (changes.isSetQueryParallelism() || changes.isSetDefaultPoolPath()) {
@@ -11865,19 +11937,26 @@ public class ObjectStore implements RawStore, Configurable {
     if (name == null) {
       throw new InvalidOperationException("Invalid replace - no name specified");
     }
+    ns = getNsOrDefault(ns);
     MWMResourcePlan replacedPlan = isReplacingSpecific
-        ? getMWMResourcePlan(changes.getName(), false) : getActiveMWMResourcePlan();
-    MWMResourcePlan plan = getMWMResourcePlan(name, false);
+        ? getMWMResourcePlan(changes.getName(), ns, false) : getActiveMWMResourcePlan(ns);
+    MWMResourcePlan plan = getMWMResourcePlan(name, ns, false);
 
     if (replacedPlan.getName().equals(plan.getName())) {
       throw new InvalidOperationException("A plan cannot replace itself");
     }
+    String oldNs = getNsOrDefault(replacedPlan.getNs()), newNs = getNsOrDefault(plan.getNs());
+    if (!oldNs.equals(newNs)) {
+      throw new InvalidOperationException("Cannot change the namespace; replacing "
+          + oldNs + " with " + newNs);
+    }
+
     // We will inherit the name and status from the plan we are replacing.
     String newName = replacedPlan.getName();
     int i = 0;
     String copyName = generateOldPlanName(newName, i);
     while (true) {
-      MWMResourcePlan dup = getMWMResourcePlan(copyName, false, false);
+      MWMResourcePlan dup = getMWMResourcePlan(copyName, ns, false, false);
       if (dup == null) {
         break;
       }
@@ -11904,18 +11983,16 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public WMFullResourcePlan getActiveResourcePlan() throws MetaException {
+  public WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException {
     // Note: fullFromMResroucePlan needs to be called inside the txn, otherwise we could have
     //       deduplicated this with getActiveMWMResourcePlan.
     boolean commited = false;
     Query query = null;
     WMFullResourcePlan result = null;
     try {
-      openTransaction();
-      query = pm.newQuery(MWMResourcePlan.class, "status == activeStatus");
-      query.declareParameters("java.lang.String activeStatus");
-      query.setUnique(true);
-      MWMResourcePlan mResourcePlan = (MWMResourcePlan) query.execute(Status.ACTIVE.toString());
+      query = createActivePlanQuery();
+      MWMResourcePlan mResourcePlan = (MWMResourcePlan) query.execute(
+          Status.ACTIVE.toString(), getNsOrDefault(ns));
       if (mResourcePlan != null) {
         result = fullFromMResourcePlan(mResourcePlan);
       }
@@ -11926,22 +12003,28 @@ public class ObjectStore implements RawStore, Configurable {
     return result;
   }
 
-  private MWMResourcePlan getActiveMWMResourcePlan() throws MetaException {
+  private MWMResourcePlan getActiveMWMResourcePlan(String ns) throws MetaException {
     boolean commited = false;
     Query query = null;
     MWMResourcePlan result = null;
     try {
-      openTransaction();
-      query = pm.newQuery(MWMResourcePlan.class, "status == activeStatus");
-      query.declareParameters("java.lang.String activeStatus");
-      query.setUnique(true);
-      result = (MWMResourcePlan) query.execute(Status.ACTIVE.toString());
+      query = createActivePlanQuery();
+      result = (MWMResourcePlan) query.execute(
+          Status.ACTIVE.toString(), getNsOrDefault(ns));
       pm.retrieve(result);
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, query);
     }
     return result;
+  }
+
+  private Query createActivePlanQuery() {
+    openTransaction();
+    Query query = pm.newQuery(MWMResourcePlan.class, "status == activeStatus && ns == nsname");
+    query.declareParameters("java.lang.String activeStatus, java.lang.String nsname");
+    query.setUnique(true);
+    return query;
   }
 
   private WMFullResourcePlan switchStatus(String name, MWMResourcePlan mResourcePlan, String status,
@@ -11972,7 +12055,7 @@ public class ObjectStore implements RawStore, Configurable {
         doValidate = true;
         doActivate = (newStatus == Status.ACTIVE);
         if (doActivate && !canActivateDisabled) {
-          throw new InvalidOperationException("Resource plan " +name
+          throw new InvalidOperationException("Resource plan " + name
               + " is disabled and should be enabled before activation (or in the same command)");
         }
         break;
@@ -11997,7 +12080,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     if (doActivate) {
       // Deactivate currently active resource plan.
-      deactivateActiveResourcePlan();
+      deactivateActiveResourcePlan(mResourcePlan.getNs());
       mResourcePlan.setStatus(newStatus);
       return fullFromMResourcePlan(mResourcePlan);
     } else {
@@ -12006,14 +12089,13 @@ public class ObjectStore implements RawStore, Configurable {
     return null;
   }
 
-  private void deactivateActiveResourcePlan() {
+  private void deactivateActiveResourcePlan(String ns) {
     boolean commited = false;
     Query query = null;
     try {
-      openTransaction();
-      query = pm.newQuery(MWMResourcePlan.class, "status == \"ACTIVE\"");
-      query.setUnique(true);
-      MWMResourcePlan mResourcePlan = (MWMResourcePlan) query.execute();
+      query = createActivePlanQuery();
+      MWMResourcePlan mResourcePlan = (MWMResourcePlan) query.execute(
+          Status.ACTIVE.toString(), getNsOrDefault(ns));
       // We may not have an active resource plan in the start.
       if (mResourcePlan != null) {
         mResourcePlan.setStatus(Status.ENABLED);
@@ -12084,7 +12166,8 @@ public class ObjectStore implements RawStore, Configurable {
         poolData.found = true;
         if (!poolData.hasChildren) {
           response.addToErrors("Root has no children");
-        } else if (Math.abs(1.0 - poolData.totalChildrenAllocFraction) > 0.001) {
+          // TODO: change fractions to use decimal? somewhat brittle
+        } else if (Math.abs(1.0 - poolData.totalChildrenAllocFraction) > 0.00001) {
           response.addToErrors("Sum of root children pools' alloc fraction should be 1.0 got: " +
               poolData.totalChildrenAllocFraction + " for pool: " + entry.getKey());
         }
@@ -12093,7 +12176,8 @@ public class ObjectStore implements RawStore, Configurable {
         response.addToErrors("Pool does not exists but has children: " + entry.getKey());
       }
       if (poolData.hasChildren) {
-        if (!isRoot && 1.0 <= poolData.totalChildrenAllocFraction) {
+
+        if (!isRoot && (poolData.totalChildrenAllocFraction - 1.0) > 0.00001) {
           response.addToErrors("Sum of children pools' alloc fraction should be less than 1 got: "
               + poolData.totalChildrenAllocFraction + " for pool: " + entry.getKey());
         }
@@ -12105,39 +12189,36 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public WMValidateResourcePlanResponse validateResourcePlan(String name)
+  public WMValidateResourcePlanResponse validateResourcePlan(String name, String ns)
       throws NoSuchObjectException, InvalidObjectException, MetaException {
     name = normalizeIdentifier(name);
+    boolean committed = false;
     Query query = null;
     try {
-      query = pm.newQuery(MWMResourcePlan.class, "name == rpName");
-      query.declareParameters("java.lang.String rpName");
-      query.setUnique(true);
-      MWMResourcePlan mResourcePlan = (MWMResourcePlan) query.execute(name);
+      query = createGetResourcePlanQuery();
+      MWMResourcePlan mResourcePlan = (MWMResourcePlan) query.execute(name, ns);
       if (mResourcePlan == null) {
-        throw new NoSuchObjectException("Cannot find resourcePlan: " + name);
+        throw new NoSuchObjectException("Cannot find resourcePlan: " + name + " in " + ns);
       }
-      // Validate resource plan.
-      return getResourcePlanErrors(mResourcePlan);
+      WMValidateResourcePlanResponse result = getResourcePlanErrors(mResourcePlan);
+      committed = commitTransaction();
+      return result;
     } finally {
-      rollbackAndCleanup(true, query);
+      rollbackAndCleanup(committed, query);
     }
   }
 
   @Override
-  public void dropResourcePlan(String name) throws NoSuchObjectException, MetaException {
+  public void dropResourcePlan(String name, String ns) throws NoSuchObjectException, MetaException {
     name = normalizeIdentifier(name);
     boolean commited = false;
     Query query = null;
     try {
-      openTransaction();
-      query = pm.newQuery(MWMResourcePlan.class, "name == rpname");
-      query.declareParameters("java.lang.String rpname");
-      query.setUnique(true);
-      MWMResourcePlan resourcePlan = (MWMResourcePlan) query.execute(name);
-      pm.retrieve(resourcePlan);
+      query = createGetResourcePlanQuery();
+      MWMResourcePlan resourcePlan = (MWMResourcePlan) query.execute(name, getNsOrDefault(ns));
+      pm.retrieve(resourcePlan); // TODO: why do some codepaths call retrieve and some don't?
       if (resourcePlan == null) {
-        throw new NoSuchObjectException("There is no resource plan named: " + name);
+        throw new NoSuchObjectException("There is no resource plan named: " + name + " in " + ns);
       }
       if (resourcePlan.getStatus() == Status.ACTIVE) {
         throw new MetaException("Cannot drop an active resource plan");
@@ -12161,7 +12242,8 @@ public class ObjectStore implements RawStore, Configurable {
     boolean commited = false;
     try {
       openTransaction();
-      MWMResourcePlan resourcePlan = getMWMResourcePlan(trigger.getResourcePlanName(), true);
+      MWMResourcePlan resourcePlan = getMWMResourcePlan(
+          trigger.getResourcePlanName(), trigger.getNs(), true);
       MWMTrigger mTrigger = new MWMTrigger(resourcePlan,
           normalizeIdentifier(trigger.getTriggerName()), trigger.getTriggerExpression(),
           trigger.getActionExpression(), null,
@@ -12183,7 +12265,8 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      MWMResourcePlan resourcePlan = getMWMResourcePlan(trigger.getResourcePlanName(), true);
+      MWMResourcePlan resourcePlan = getMWMResourcePlan(
+          trigger.getResourcePlanName(), trigger.getNs(), true);
       MWMTrigger mTrigger = getTrigger(resourcePlan, trigger.getTriggerName());
       // Update the object.
       if (trigger.isSetTriggerExpression()) {
@@ -12225,7 +12308,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void dropWMTrigger(String resourcePlanName, String triggerName)
+  public void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
       throws NoSuchObjectException, InvalidOperationException, MetaException  {
     resourcePlanName = normalizeIdentifier(resourcePlanName);
     triggerName = normalizeIdentifier(triggerName);
@@ -12234,7 +12317,7 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      MWMResourcePlan resourcePlan = getMWMResourcePlan(resourcePlanName, true);
+      MWMResourcePlan resourcePlan = getMWMResourcePlan(resourcePlanName, ns, true);
       query = pm.newQuery(MWMTrigger.class, "resourcePlan == rp && name == triggerName");
       query.declareParameters("MWMResourcePlan rp, java.lang.String triggerName");
       if (query.deletePersistentAll(resourcePlan, triggerName) != 1) {
@@ -12247,7 +12330,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName)
+  public List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName, String ns)
       throws NoSuchObjectException, MetaException {
     List<WMTrigger> triggers = new ArrayList();
     boolean commited = false;
@@ -12256,7 +12339,7 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       MWMResourcePlan resourcePlan;
       try {
-        resourcePlan = getMWMResourcePlan(resourcePlanName, false);
+        resourcePlan = getMWMResourcePlan(resourcePlanName, ns, false);
       } catch (InvalidOperationException e) {
         // Should not happen, edit check is false.
         throw new RuntimeException(e);
@@ -12284,6 +12367,7 @@ public class ObjectStore implements RawStore, Configurable {
     trigger.setTriggerExpression(mTrigger.getTriggerExpression());
     trigger.setActionExpression(mTrigger.getActionExpression());
     trigger.setIsInUnmanaged(mTrigger.getIsInUnmanaged());
+    trigger.setNs(mTrigger.getResourcePlan().getNs());
     return trigger;
   }
 
@@ -12293,7 +12377,8 @@ public class ObjectStore implements RawStore, Configurable {
     boolean commited = false;
     try {
       openTransaction();
-      MWMResourcePlan resourcePlan = getMWMResourcePlan(pool.getResourcePlanName(), true);
+      MWMResourcePlan resourcePlan = getMWMResourcePlan(
+          pool.getResourcePlanName(), pool.getNs(), true);
 
       if (!poolParentExists(resourcePlan, pool.getPoolPath())) {
         throw new NoSuchObjectException("Pool path is invalid, the parent does not exist");
@@ -12320,7 +12405,8 @@ public class ObjectStore implements RawStore, Configurable {
     boolean commited = false;
     try {
       openTransaction();
-      MWMResourcePlan resourcePlan = getMWMResourcePlan(pool.getResourcePlanName(), true);
+      MWMResourcePlan resourcePlan = getMWMResourcePlan(
+          pool.getResourcePlanName(), pool.getNs(), true);
       MWMPool mPool = getPool(resourcePlan, poolPath);
       pm.retrieve(mPool);
       if (pool.isSetAllocFraction()) {
@@ -12417,20 +12503,20 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void dropWMPool(String resourcePlanName, String poolPath)
+  public void dropWMPool(String resourcePlanName, String poolPath, String ns)
       throws NoSuchObjectException, InvalidOperationException, MetaException {
     poolPath = normalizeIdentifier(poolPath);
     boolean commited = false;
     Query query = null;
     try {
       openTransaction();
-      MWMResourcePlan resourcePlan = getMWMResourcePlan(resourcePlanName, true);
+      MWMResourcePlan resourcePlan = getMWMResourcePlan(resourcePlanName, ns, true);
       if (resourcePlan.getDefaultPool() != null &&
           resourcePlan.getDefaultPool().getPath().equals(poolPath)) {
         throw new InvalidOperationException("Cannot drop default pool of a resource plan");
       }
       if (poolHasChildren(resourcePlan, poolPath)) {
-        throw new InvalidOperationException("Pool has children cannot drop.");
+        throw new InvalidOperationException("Cannot drop a pool that has child pools");
       }
       query = pm.newQuery(MWMPool.class, "resourcePlan == rp && path.startsWith(poolPath)");
       query.declareParameters("MWMResourcePlan rp, java.lang.String poolPath");
@@ -12475,7 +12561,8 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      MWMResourcePlan resourcePlan = getMWMResourcePlan(mapping.getResourcePlanName(), true);
+      MWMResourcePlan resourcePlan = getMWMResourcePlan(
+          mapping.getResourcePlanName(), mapping.getNs(), true);
       MWMPool pool = null;
       if (mapping.isSetPoolPath()) {
         pool = getPool(resourcePlan, mapping.getPoolPath());
@@ -12509,7 +12596,8 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      MWMResourcePlan resourcePlan = getMWMResourcePlan(mapping.getResourcePlanName(), true);
+      MWMResourcePlan resourcePlan = getMWMResourcePlan(
+          mapping.getResourcePlanName(), mapping.getNs(), true);
       query = pm.newQuery(MWMMapping.class,
           "resourcePlan == rp && entityType == type && entityName == name");
       query.declareParameters("MWMResourcePlan rp, java.lang.String type, java.lang.String name");
@@ -12524,12 +12612,12 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void createWMTriggerToPoolMapping(String resourcePlanName, String triggerName,
-      String poolPath) throws AlreadyExistsException, NoSuchObjectException,
+      String poolPath, String ns) throws AlreadyExistsException, NoSuchObjectException,
       InvalidOperationException, MetaException {
     boolean commited = false;
     try {
       openTransaction();
-      MWMResourcePlan resourcePlan = getMWMResourcePlan(resourcePlanName, true);
+      MWMResourcePlan resourcePlan = getMWMResourcePlan(resourcePlanName, ns, true);
       MWMPool pool = getPool(resourcePlan, poolPath);
       MWMTrigger trigger = getTrigger(resourcePlan, triggerName);
       pool.getTriggers().add(trigger);
@@ -12544,11 +12632,11 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void dropWMTriggerToPoolMapping(String resourcePlanName, String triggerName,
-      String poolPath) throws NoSuchObjectException, InvalidOperationException, MetaException {
+      String poolPath, String ns) throws NoSuchObjectException, InvalidOperationException, MetaException {
     boolean commited = false;
     try {
       openTransaction();
-      MWMResourcePlan resourcePlan = getMWMResourcePlan(resourcePlanName, true);
+      MWMResourcePlan resourcePlan = getMWMResourcePlan(resourcePlanName, ns, true);
       MWMPool pool = getPool(resourcePlan, poolPath);
       MWMTrigger trigger = getTrigger(resourcePlan, triggerName);
       pool.getTriggers().remove(trigger);
