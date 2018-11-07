@@ -805,6 +805,7 @@ explainOption
     : KW_EXTENDED
     | KW_FORMATTED
     | KW_DEPENDENCY
+    | KW_CBO KW_EXTENDED?
     | KW_LOGICAL
     | KW_AUTHORIZATION
     | KW_ANALYZE
@@ -1958,8 +1959,8 @@ createMaterializedViewStatement
 }
 @after { popMsg(state); }
     : KW_CREATE KW_MATERIALIZED KW_VIEW (ifNotExists)? name=tableName
-        rewriteDisabled? tableComment? tableRowFormat? tableFileFormat? tableLocation?
-        viewPartition? tablePropertiesPrefixed? KW_AS selectStatementWithCTE
+        rewriteDisabled? tableComment? viewPartition? tableRowFormat? tableFileFormat? tableLocation?
+        tablePropertiesPrefixed? KW_AS selectStatementWithCTE
     -> ^(TOK_CREATE_MATERIALIZED_VIEW $name
          ifNotExists?
          rewriteDisabled?

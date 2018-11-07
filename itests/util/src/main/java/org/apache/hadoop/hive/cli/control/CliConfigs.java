@@ -280,20 +280,37 @@ public class CliConfigs {
   }
 
   public static class TezPerfCliConfig extends AbstractCliConfig {
-    public TezPerfCliConfig() {
+    public TezPerfCliConfig(boolean useConstraints) {
       super(CorePerfCliDriver.class);
       try {
         setQueryDir("ql/src/test/queries/clientpositive/perf");
+
+        if (useConstraints) {
+          excludesFrom(testConfigProps, "tez.perf.constraints.disabled.query.files");
+        } else {
+          excludesFrom(testConfigProps, "tez.perf.disabled.query.files");
+        }
 
         excludesFrom(testConfigProps, "minimr.query.files");
         excludesFrom(testConfigProps, "minitez.query.files");
         excludesFrom(testConfigProps, "encrypted.query.files");
         excludesFrom(testConfigProps, "erasurecoding.only.query.files");
 
-        setResultsDir("ql/src/test/results/clientpositive/perf/tez");
+        excludeQuery("cbo_query44.q"); // TODO: Enable when we move to Calcite 1.18
+        excludeQuery("cbo_query45.q"); // TODO: Enable when we move to Calcite 1.18
+        excludeQuery("cbo_query67.q"); // TODO: Enable when we move to Calcite 1.18
+        excludeQuery("cbo_query70.q"); // TODO: Enable when we move to Calcite 1.18
+        excludeQuery("cbo_query86.q"); // TODO: Enable when we move to Calcite 1.18
+
         setLogDir("itests/qtest/target/qfile-results/clientpositive/tez");
 
-        setInitScript("q_perf_test_init.sql");
+        if (useConstraints) {
+          setInitScript("q_perf_test_init_constraints.sql");
+          setResultsDir("ql/src/test/results/clientpositive/perf/tez/constraints");
+        } else {
+          setInitScript("q_perf_test_init.sql");
+          setResultsDir("ql/src/test/results/clientpositive/perf/tez");
+        }
         setCleanupScript("q_perf_test_cleanup.sql");
 
         setHiveConfDir("data/conf/perf-reg/tez");

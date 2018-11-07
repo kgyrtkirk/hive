@@ -4698,24 +4698,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       GetPartitionsResponse response = null;
       Exception ex = null;
       try {
-        List<String> fieldList = null;
-        String paramkeyPattern = null;
-        String excludeParamKeyPattern = null;
-        if (request.isSetProjectionSpec()) {
-          GetPartitionsProjectionSpec partitionsProjectSpec = request.getProjectionSpec();
-          fieldList = partitionsProjectSpec.getFieldList();
-          if (partitionsProjectSpec.isSetIncludeParamKeyPattern()) {
-            paramkeyPattern = partitionsProjectSpec.getIncludeParamKeyPattern();
-          }
-          if (partitionsProjectSpec.isSetExcludeParamKeyPattern()) {
-            excludeParamKeyPattern = partitionsProjectSpec.getExcludeParamKeyPattern();
-          }
-        }
-        String dbName = parsedDbName[DB_NAME];
-        Table table = get_table_core(catName, dbName, tableName);
+        Table table = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
         List<Partition> partitions = getMS()
-            .getPartitionSpecsByFilterAndProjection(catName, dbName, tableName, fieldList, paramkeyPattern,
-                excludeParamKeyPattern);
+            .getPartitionSpecsByFilterAndProjection(table, request.getProjectionSpec(),
+                request.getFilterSpec());
         List<PartitionSpec> partitionSpecs =
             MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(table, partitions);
         response = new GetPartitionsResponse();
@@ -8214,7 +8200,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public WMGetResourcePlanResponse get_resource_plan(WMGetResourcePlanRequest request)
         throws NoSuchObjectException, MetaException, TException {
       try {
-        WMFullResourcePlan rp = getMS().getResourcePlan(request.getResourcePlanName());
+        WMFullResourcePlan rp = getMS().getResourcePlan(request.getResourcePlanName(), request.getNs());
         WMGetResourcePlanResponse resp = new WMGetResourcePlanResponse();
         resp.setResourcePlan(rp);
         return resp;
@@ -8229,7 +8215,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws MetaException, TException {
       try {
         WMGetAllResourcePlanResponse resp = new WMGetAllResourcePlanResponse();
-        resp.setResourcePlans(getMS().getAllResourcePlans());
+        resp.setResourcePlans(getMS().getAllResourcePlans(request.getNs()));
         return resp;
       } catch (MetaException e) {
         LOG.error("Exception while trying to retrieve resource plans", e);
@@ -8249,7 +8235,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // This method will only return full resource plan when activating one,
         // to give the caller the result atomically with the activation.
         WMFullResourcePlan fullPlanAfterAlter = getMS().alterResourcePlan(
-            request.getResourcePlanName(), request.getResourcePlan(),
+            request.getResourcePlanName(), request.getNs(), request.getResourcePlan(),
             request.isIsEnableAndActivate(), request.isIsForceDeactivate(), request.isIsReplace());
         if (fullPlanAfterAlter != null) {
           response.setFullResourcePlan(fullPlanAfterAlter);
@@ -8266,7 +8252,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         WMGetActiveResourcePlanRequest request) throws MetaException, TException {
       try {
         WMGetActiveResourcePlanResponse response = new WMGetActiveResourcePlanResponse();
-        response.setResourcePlan(getMS().getActiveResourcePlan());
+        response.setResourcePlan(getMS().getActiveResourcePlan(request.getNs()));
         return response;
       } catch (MetaException e) {
         LOG.error("Exception while trying to get active resource plan", e);
@@ -8278,7 +8264,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public WMValidateResourcePlanResponse validate_resource_plan(WMValidateResourcePlanRequest request)
         throws NoSuchObjectException, MetaException, TException {
       try {
-        return getMS().validateResourcePlan(request.getResourcePlanName());
+        return getMS().validateResourcePlan(request.getResourcePlanName(), request.getNs());
       } catch (MetaException e) {
         LOG.error("Exception while trying to validate resource plan", e);
         throw e;
@@ -8289,7 +8275,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public WMDropResourcePlanResponse drop_resource_plan(WMDropResourcePlanRequest request)
         throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
       try {
-        getMS().dropResourcePlan(request.getResourcePlanName());
+        getMS().dropResourcePlan(request.getResourcePlanName(), request.getNs());
         return new WMDropResourcePlanResponse();
       } catch (MetaException e) {
         LOG.error("Exception while trying to drop resource plan", e);
@@ -8325,7 +8311,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public WMDropTriggerResponse drop_wm_trigger(WMDropTriggerRequest request)
         throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
       try {
-        getMS().dropWMTrigger(request.getResourcePlanName(), request.getTriggerName());
+        getMS().dropWMTrigger(request.getResourcePlanName(), request.getTriggerName(), request.getNs());
         return new WMDropTriggerResponse();
       } catch (MetaException e) {
         LOG.error("Exception while trying to drop trigger.", e);
@@ -8339,7 +8325,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws NoSuchObjectException, MetaException, TException {
       try {
         List<WMTrigger> triggers =
-            getMS().getTriggersForResourcePlan(request.getResourcePlanName());
+            getMS().getTriggersForResourcePlan(request.getResourcePlanName(), request.getNs());
         WMGetTriggersForResourePlanResponse response = new WMGetTriggersForResourePlanResponse();
         response.setTriggers(triggers);
         return response;
@@ -8379,7 +8365,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public WMDropPoolResponse drop_wm_pool(WMDropPoolRequest request)
         throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
       try {
-        getMS().dropWMPool(request.getResourcePlanName(), request.getPoolPath());
+        getMS().dropWMPool(request.getResourcePlanName(), request.getPoolPath(), request.getNs());
         return new WMDropPoolResponse();
       } catch (MetaException e) {
         LOG.error("Exception while trying to drop WMPool", e);
@@ -8418,11 +8404,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         NoSuchObjectException, InvalidObjectException, MetaException, TException {
       try {
         if (request.isDrop()) {
-          getMS().dropWMTriggerToPoolMapping(
-              request.getResourcePlanName(), request.getTriggerName(), request.getPoolPath());
+          getMS().dropWMTriggerToPoolMapping(request.getResourcePlanName(),
+              request.getTriggerName(), request.getPoolPath(), request.getNs());
         } else {
-          getMS().createWMTriggerToPoolMapping(
-              request.getResourcePlanName(), request.getTriggerName(), request.getPoolPath());
+          getMS().createWMTriggerToPoolMapping(request.getResourcePlanName(),
+              request.getTriggerName(), request.getPoolPath(), request.getNs());
         }
         return new WMCreateOrDropTriggerToPoolMappingResponse();
       } catch (MetaException e) {

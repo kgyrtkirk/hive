@@ -707,7 +707,12 @@ public class Driver implements IDriver {
 
         try {
           perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
-          doAuthorization(queryState.getHiveOperation(), sem, command);
+          // Authorization check for kill query will be in KillQueryImpl
+          // As both admin or operation owner can perform the operation.
+          // Which is not directly supported in authorizer
+          if (queryState.getHiveOperation() != HiveOperation.KILL_QUERY) {
+            doAuthorization(queryState.getHiveOperation(), sem, command);
+          }
         } catch (AuthorizationException authExp) {
           console.printError("Authorization failed:" + authExp.getMessage()
               + ". Use SHOW GRANT to get more details.");
@@ -2545,10 +2550,6 @@ public class Driver implements IDriver {
         LOG.info("Completed executing command(queryId=" + queryId + "); Time taken: " + duration + " seconds");
       }
     }
-
-    if (console != null) {
-      console.printInfo("OK");
-    }
   }
 
   private long addWithOverflowCheck(long val1, long val2) {
@@ -2975,6 +2976,7 @@ public class Driver implements IDriver {
     this.operationId = opId;
   }
 
+  @Override
   public QueryState getQueryState() {
     return queryState;
   }

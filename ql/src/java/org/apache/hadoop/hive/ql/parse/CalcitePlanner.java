@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.Tree;
@@ -277,7 +278,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.joda.time.Interval;
 
-import javax.sql.DataSource;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -303,6 +303,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.sql.DataSource;
 
 
 public class CalcitePlanner extends SemanticAnalyzer {
@@ -528,7 +530,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
             this.ctx.setCboSucceeded(true);
             if (this.ctx.isExplainPlan()) {
               ExplainConfiguration explainConfig = this.ctx.getExplainConfig();
-              if (explainConfig.isExtended() || explainConfig.isFormatted()) {
+              if (explainConfig.isCbo()) {
+                if (explainConfig.isCboExtended()) {
+                  // Include join cost
+                  this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan, SqlExplainLevel.ALL_ATTRIBUTES));
+                } else {
+                  // Do not include join cost
+                  this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan));
+                }
+              } else if (explainConfig.isExtended() || explainConfig.isFormatted()) {
                 this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
               }
             }
@@ -1785,20 +1795,20 @@ public class CalcitePlanner extends SemanticAnalyzer {
         calcitePreCboPlan =
             hepPlan(calcitePreCboPlan, false, mdProvider.getMetadataProvider(), null,
                     HiveRemoveSqCountCheck.INSTANCE);
-        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
-                              "Calcite: Removing sq_count_check UDF ");
+        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Removing sq_count_check UDF ");
       }
-      //  4.1 Remove Projects between Joins so that JoinToMultiJoinRule can merge them to MultiJoin.
-      //    Don't run this rule if hive is to remove sq_count_check since that rule expects to have project b/w join.
-      calcitePreCboPlan = hepPlan(calcitePreCboPlan, true, mdProvider.getMetadataProvider(), executorProvider,
-          HepMatchOrder.BOTTOM_UP, HiveJoinProjectTransposeRule.LEFF_PROJECT_BTW_JOIN,
-          HiveJoinProjectTransposeRule.RIGHT_PROJECT_BTW_JOIN);
 
-      // 4.2 Apply join order optimizations: reordering MST algorithm
+
+      // 4. Apply join order optimizations: reordering MST algorithm
       //    If join optimizations failed because of missing stats, we continue with
       //    the rest of optimizations
       if (profilesCBO.contains(ExtendedCBOProfile.JOIN_REORDERING)) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+
+        //  Remove Projects between Joins so that JoinToMultiJoinRule can merge them to MultiJoin
+        calcitePreCboPlan = hepPlan(calcitePreCboPlan, true, mdProvider.getMetadataProvider(), executorProvider,
+                                    HepMatchOrder.BOTTOM_UP, HiveJoinProjectTransposeRule.LEFT_PROJECT_BTW_JOIN,
+                                    HiveJoinProjectTransposeRule.RIGHT_PROJECT_BTW_JOIN, HiveProjectMergeRule.INSTANCE);
         try {
           List<RelMetadataProvider> list = Lists.newArrayList();
           list.add(mdProvider.getMetadataProvider());
@@ -2057,6 +2067,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (conf.getBoolVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
         rules.add(new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses));
         rules.add(new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses));
+        rules.add(new HivePointLookupOptimizerRule.ProjectionExpressions(minNumORClauses));
       }
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_CONSTRAINTS_JOIN) &&
           profilesCBO.contains(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS)) {
@@ -2239,7 +2250,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
 
-        if (calcitePreMVRewritingPlan != basePlan) {
+        if (!RelOptUtil.toString(calcitePreMVRewritingPlan).equals(RelOptUtil.toString(basePlan))) {
           // A rewriting was produced, we will check whether it was part of an incremental rebuild
           // to try to replace INSERT OVERWRITE by INSERT
           if (mvRebuildMode == MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD &&
@@ -3335,6 +3346,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
       } catch (SemanticException e) {
         throw new CalciteSubquerySemanticException(e.getMessage());
+      }
+      if(isSubQuery) {
+        // since subqueries will later be rewritten into JOINs we want join reordering logic to trigger
+        profilesCBO.add(ExtendedCBOProfile.JOIN_REORDERING);
       }
       return isSubQuery;
     }

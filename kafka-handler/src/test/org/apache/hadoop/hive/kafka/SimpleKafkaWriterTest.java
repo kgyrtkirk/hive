@@ -30,15 +30,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -50,7 +47,7 @@ import java.util.stream.IntStream;
 /**
  * Test class for Kafka simple writer.
  */
-@RunWith(Parameterized.class) public class SimpleKafkaWriterTest {
+public class SimpleKafkaWriterTest {
   private static final Logger LOG = LoggerFactory.getLogger(SimpleKafkaWriterTest.class);
 
   private static final int RECORD_NUMBER = 17384;
@@ -63,17 +60,7 @@ import java.util.stream.IntStream;
         return new KafkaWritable(0, (long) number, value, KEY_BYTES);
       }).collect(Collectors.toList());
   private final Configuration conf = new Configuration();
-  private final KafkaOutputFormat.WriteSemantic writeSemantic;
   private KafkaConsumer<byte[], byte[]> consumer;
-
-  public SimpleKafkaWriterTest(KafkaOutputFormat.WriteSemantic writeSemantic) {
-    this.writeSemantic = writeSemantic;
-  }
-
-  @Parameterized.Parameters public static Iterable<Object[]> data() {
-    return Arrays.asList(new Object[][] {{KafkaOutputFormat.WriteSemantic.BEST_EFFORT},
-        {KafkaOutputFormat.WriteSemantic.AT_LEAST_ONCE}});
-  }
 
   @BeforeClass public static void setupCluster() throws Throwable {
     KAFKA_BROKER_RESOURCE.before();
@@ -110,9 +97,7 @@ import java.util.stream.IntStream;
 
   @Test(expected = IllegalStateException.class) public void testMissingBrokerString() {
     new SimpleKafkaWriter("t",
-        null,
-        writeSemantic.equals(KafkaOutputFormat.WriteSemantic.AT_LEAST_ONCE),
-        new Properties());
+        null, new Properties());
   }
 
   @Test public void testCheckWriterId() {
@@ -121,9 +106,7 @@ import java.util.stream.IntStream;
     SimpleKafkaWriter
         writer =
         new SimpleKafkaWriter("t",
-            null,
-            writeSemantic.equals(KafkaOutputFormat.WriteSemantic.AT_LEAST_ONCE),
-            properties);
+            null, properties);
     Assert.assertNotNull(writer.getWriterId());
   }
 
@@ -135,12 +118,7 @@ import java.util.stream.IntStream;
     properties.setProperty("metadata.max.age.ms", "100");
     properties.setProperty("max.block.ms", "1000");
     KafkaWritable record = new KafkaWritable(-1, -1, "value".getBytes(), null);
-    SimpleKafkaWriter writer = new SimpleKafkaWriter("t", null, false, properties);
-    writer.write(record);
-    writer.close(false);
-    Assert.assertEquals("Expect sent records not matching", 1, writer.getSentRecords());
-    Assert.assertEquals("Expect lost records is not matching", 1, writer.getLostRecords());
-    writer = new SimpleKafkaWriter("t", null, true, properties);
+    SimpleKafkaWriter writer = new SimpleKafkaWriter("t", null, properties);
     Exception exception = null;
     try {
       writer.write(record);
@@ -160,9 +138,7 @@ import java.util.stream.IntStream;
     SimpleKafkaWriter
         writer =
         new SimpleKafkaWriter(topic,
-            null,
-            writeSemantic.equals(KafkaOutputFormat.WriteSemantic.AT_LEAST_ONCE),
-            properties);
+            null, properties);
     RECORDS_WRITABLES.forEach(kafkaRecordWritable -> {
       try {
         writer.write(kafkaRecordWritable);
