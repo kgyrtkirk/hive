@@ -35,5 +35,5 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cx2
 #### A masked pattern was here ####
 true
-NULL
+false
 NULL
