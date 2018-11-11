@@ -519,10 +519,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (date = '2008-04-08') (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: day(CAST( ds AS DATE)) (type: int)
@@ -552,6 +552,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: day(CAST( ds AS DATE)) (type: int)
@@ -566,10 +567,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (date = '2008-04-08') (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: day(CAST( ds AS DATE)) (type: int)
@@ -672,6 +673,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: day(CAST( ds AS DATE)) (type: int)
@@ -686,10 +688,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (date = '2008-04-08') (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: day(CAST( ds AS DATE)) (type: int)
@@ -945,10 +947,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (date = '2008-04-08') (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: CAST( day(CAST( ds AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
@@ -978,6 +980,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: CAST( UDFToShort(day(CAST( ds AS DATE))) AS decimal(10,0)) (type: decimal(10,0))
@@ -992,10 +995,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (date = '2008-04-08') (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: CAST( day(CAST( ds AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
@@ -4933,10 +4936,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (date = '2008-04-08') (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: day(CAST( ds AS DATE)) (type: int)
@@ -4971,6 +4974,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: day(CAST( ds AS DATE)) (type: int)
