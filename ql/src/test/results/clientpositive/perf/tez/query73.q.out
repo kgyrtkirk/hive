@@ -120,11 +120,7 @@ Stage-0
                             <-Map 13 [SIMPLE_EDGE] vectorized
                               SHUFFLE [RS_122]
                                 PartitionCols:_col0
-<<<<<<< HEAD
-                                Select Operator [SEL_121] (rows=85 width=4)
-=======
-                                Select Operator [SEL_121] (rows=56 width=102)
->>>>>>> asf/master
+                                Select Operator [SEL_121] (rows=56 width=4)
                                   Output:["_col0"]
                                   Filter Operator [FIL_120] (rows=56 width=102)
                                     predicate:((s_county) IN ('Mobile County', 'Maverick County', 'Huron County', 'Kittitas County') and s_store_sk is not null)
