@@ -337,6 +337,8 @@ public class RexNodeConverter {
       if (calciteOp.getKind() == SqlKind.CASE) {
         // If it is a case operator, we need to rewrite it
         childRexNodeLst = rewriteCaseChildren(func, childRexNodeLst);
+        // Adjust branch types by inserting explicit casts if the actual is ambigous
+        childRexNodeLst = adjustCaseBranchTypes(childRexNodeLst, retType);
       } else if (HiveExtractDate.ALL_FUNCTIONS.contains(calciteOp)) {
         // If it is a extract operator, we need to rewrite it
         childRexNodeLst = rewriteExtractDateChildren(calciteOp, childRexNodeLst);
@@ -469,6 +471,34 @@ public class RexNodeConverter {
               newChildRexNodeLst.get(newChildRexNodeLst.size()-1).getType()));
     }
     return newChildRexNodeLst;
+  }
+
+  /**
+   * Adds explicit casts if Calcite's type system could not resolve the CASE branches to a common type.
+   *
+   * Calcite is more stricter than hive w.r.t type conversions.
+   * If a CASE has branches with string/int/boolean branch types; there is no common type.
+   */
+  private List<RexNode> adjustCaseBranchTypes(List<RexNode> nodes, RelDataType retType) {
+    List<RelDataType> branchTypes = new ArrayList<>();
+    for (int i = 1; i < nodes.size(); i += 2) {
+      branchTypes.add(nodes.get(i).getType());
+    }
+    RelDataType commonType = cluster.getTypeFactory().leastRestrictive(branchTypes);
+    if (commonType != null) {
+      // conversion is possible; not changes are neccessary
+      return nodes;
+    }
+    List<RexNode> newNodes = new ArrayList<>();
+    for (int i = 0; i < nodes.size(); i++) {
+      RexNode node = nodes.get(i);
+      if (i % 2 == 1) {
+        newNodes.add(cluster.getRexBuilder().makeCast(retType, node));
+      } else {
+        newNodes.add(node);
+      }
+    }
+    return newNodes;
   }
 
   private List<RexNode> rewriteExtractDateChildren(SqlOperator op, List<RexNode> childRexNodeLst)
