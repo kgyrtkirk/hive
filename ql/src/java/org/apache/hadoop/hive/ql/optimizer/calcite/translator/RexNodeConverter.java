@@ -364,6 +364,8 @@ public class RexNodeConverter {
         // This allows to be further reduced to OR, if possible
         calciteOp = SqlStdOperatorTable.CASE;
         childRexNodeLst = rewriteCoalesceChildren(func, childRexNodeLst);
+        // Adjust branch types by inserting explicit casts if the actual is ambigous
+        childRexNodeLst = adjustCaseBranchTypes(childRexNodeLst, retType);
       } else if (calciteOp == HiveToDateSqlOperator.INSTANCE) {
         childRexNodeLst = rewriteToDateChildren(childRexNodeLst);
       }
