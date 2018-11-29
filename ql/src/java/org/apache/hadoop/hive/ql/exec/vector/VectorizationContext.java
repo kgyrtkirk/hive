@@ -659,6 +659,7 @@ import com.google.common.annotations.VisibleForTesting;
     private final int initialOutputCol;
     private int outputColCount = 0;
     private boolean reuseScratchColumns = true;
+    private boolean dontReuseTrackedScratchColumns = false;
 
     protected OutputColumnManager(int initialOutputCol) {
       this.initialOutputCol = initialOutputCol;
@@ -703,7 +704,7 @@ import com.google.common.annotations.VisibleForTesting;
               scratchDataTypePhysicalVariations[i] == dataTypePhysicalVariation)) {
           continue;
         }
-        if (scratchColumnTrackWasUsed[i]) {
+        if (dontReuseTrackedScratchColumns && scratchColumnTrackWasUsed[i]) {
           continue;
         }
         //Use i
@@ -768,25 +769,13 @@ import com.google.common.annotations.VisibleForTesting;
       this.reuseScratchColumns = reuseColumns;
     }
 
-    public void freeMarkedScratchColumns() {
-      if (markedScratchColumns == null) {
-        throw new RuntimeException("Illegal call");
-      }
-      for (int i = 0; i < markedScratchColumns.length; i++) {
-        if (markedScratchColumns[i]) {
-          scratchColumnTrackWasUsed[i] = false;
-        }
-      }
-      markedScratchColumns = null;
+    public void clearScratchColumnWasUsedTracking() {
+      Arrays.fill(scratchColumnTrackWasUsed, false);
     }
 
-    public void markScratchColumns() {
-      if (markedScratchColumns != null) {
-        throw new RuntimeException("Illegal call");
-      }
-      markedScratchColumns = Arrays.copyOf(scratchColumnTrackWasUsed, scratchColumnTrackWasUsed.length);
+    public void setDontReuseTrackedScratchColumns(boolean dontReuseTrackedScratchColumns) {
+      this.dontReuseTrackedScratchColumns = dontReuseTrackedScratchColumns;
     }
-
   }
 
   public int allocateScratchColumn(TypeInfo typeInfo) throws HiveException {
@@ -797,12 +786,12 @@ import com.google.common.annotations.VisibleForTesting;
     return ocm.currentScratchColumns();
   }
 
-  public void markActualScratchColumns() {
-    ocm.markScratchColumns();
+  public void clearScratchColumnWasUsedTracking() {
+    ocm.clearScratchColumnWasUsedTracking();
   }
 
-  public void freeMarkedScratchColumns() {
-    ocm.freeMarkedScratchColumns();
+  public void setDontReuseTrackedScratchColumns(boolean dontReuseTrackedScratchColumns) {
+    ocm.setDontReuseTrackedScratchColumns(dontReuseTrackedScratchColumns);
   }
 
   private VectorExpression getFilterOnBooleanColumnExpression(ExprNodeColumnDesc exprDesc,
