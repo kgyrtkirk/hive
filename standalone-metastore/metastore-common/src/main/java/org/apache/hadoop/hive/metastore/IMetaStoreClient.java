@@ -59,6 +59,8 @@ import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
@@ -2926,6 +2928,32 @@ public interface IMetaStoreClient {
       throws NoSuchTxnException, TxnAbortedException, TException;
 
   /**
+   * Like commitTxn but it will atomically store as well a key and a value. This
+   * can be useful for example to know if the transaction corresponding to
+   * txnid has been committed by later querying with DESCRIBE EXTENDED TABLE.
+   * TABLE_PARAMS from the metastore must already have a row with the TBL_ID
+   * corresponding to the table in the parameters and PARAM_KEY the same as key
+   * in the parameters. The way to update this table is with an ALTER command
+   * to overwrite/create the table properties.
+   * @param txnid id of transaction to be committed.
+   * @param tableId id of the table to associate the key/value with
+   * @param key key to be committed. It must start with "_meta". The reason
+   *            for this is to prevent important keys being updated, like owner.
+   * @param value value to be committed.
+   * @throws NoSuchTxnException if the requested transaction does not exist.
+   * This can result fro the transaction having timed out and been deleted by
+   * the compactor.
+   * @throws TxnAbortedException if the requested transaction has been
+   * aborted.  This can result from the transaction timing out.
+   * @throws IllegalStateException if not exactly one row corresponding to
+   * tableId and key are found in TABLE_PARAMS while updating.
+   * @throws TException
+   */
+  void commitTxnWithKeyValue(long txnid, long tableId,
+      String key, String value) throws NoSuchTxnException,
+      TxnAbortedException, TException;
+
+  /**
    * Commit a transaction.  This will also unlock any locks associated with
    * this transaction.
    * @param rqst Information containing the txn info and write event information
@@ -3514,22 +3542,22 @@ public interface IMetaStoreClient {
   void createResourcePlan(WMResourcePlan resourcePlan, String copyFromName)
       throws InvalidObjectException, MetaException, TException;
 
-  WMFullResourcePlan getResourcePlan(String resourcePlanName)
+  WMFullResourcePlan getResourcePlan(String resourcePlanName, String ns)
     throws NoSuchObjectException, MetaException, TException;
 
-  List<WMResourcePlan> getAllResourcePlans()
+  List<WMResourcePlan> getAllResourcePlans(String ns)
       throws NoSuchObjectException, MetaException, TException;
 
-  void dropResourcePlan(String resourcePlanName)
+  void dropResourcePlan(String resourcePlanName, String ns)
       throws NoSuchObjectException, MetaException, TException;
 
-  WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMNullableResourcePlan resourcePlan,
+  WMFullResourcePlan alterResourcePlan(String resourcePlanName, String ns, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
 
-  WMFullResourcePlan getActiveResourcePlan() throws MetaException, TException;
+  WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException, TException;
 
-  WMValidateResourcePlanResponse validateResourcePlan(String resourcePlanName)
+  WMValidateResourcePlanResponse validateResourcePlan(String resourcePlanName, String ns)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
 
   void createWMTrigger(WMTrigger trigger)
@@ -3538,10 +3566,10 @@ public interface IMetaStoreClient {
   void alterWMTrigger(WMTrigger trigger)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
 
-  void dropWMTrigger(String resourcePlanName, String triggerName)
+  void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
       throws NoSuchObjectException, MetaException, TException;
 
-  List<WMTrigger> getTriggersForResourcePlan(String resourcePlan)
+  List<WMTrigger> getTriggersForResourcePlan(String resourcePlan, String ns)
       throws NoSuchObjectException, MetaException, TException;
 
   void createWMPool(WMPool pool)
@@ -3550,7 +3578,7 @@ public interface IMetaStoreClient {
   void alterWMPool(WMNullablePool pool, String poolPath)
       throws NoSuchObjectException, InvalidObjectException, TException;
 
-  void dropWMPool(String resourcePlanName, String poolPath)
+  void dropWMPool(String resourcePlanName, String poolPath, String ns)
       throws TException;
 
   void createOrUpdateWMMapping(WMMapping mapping, boolean isUpdate)
@@ -3560,7 +3588,7 @@ public interface IMetaStoreClient {
       throws TException;
 
   void createOrDropTriggerToPoolMapping(String resourcePlanName, String triggerName,
-      String poolPath, boolean shouldDrop) throws AlreadyExistsException, NoSuchObjectException,
+      String poolPath, boolean shouldDrop, String ns) throws AlreadyExistsException, NoSuchObjectException,
       InvalidObjectException, MetaException, TException;
 
   /**
@@ -3758,4 +3786,23 @@ public interface IMetaStoreClient {
 
   /** Reads runtime statistics. */
   List<RuntimeStat> getRuntimeStats(int maxWeight, int maxCreateTime) throws TException;
+
+  /**
+   * Generic Partition request API, providing different ways of filtering and controlling output.
+   *
+   * The API entry point is getPartitionsWithSpecs(), which is based on a single
+   * request/response object model.
+   *
+   * The request (GetPartitionsRequest) defines any filtering that should be done for partitions
+   * as well as the list of fields that should be returned (this is called ProjectionSpec).
+   * Projection is simply a list of dot separated strings which represent the fields which should
+   * be returned. Projection may also include whitelist or blacklist of parameters to include in
+   * the partition. When both blacklist and whitelist are present, the blacklist supersedes the
+   * whitelist in case of conflicts.
+   *
+   * Partition filter spec is the generalization of various types of partition filtering.
+   * Partitions can be filtered by names, by values or by partition expressions.
+   */
+  GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request) throws TException;
+
 }

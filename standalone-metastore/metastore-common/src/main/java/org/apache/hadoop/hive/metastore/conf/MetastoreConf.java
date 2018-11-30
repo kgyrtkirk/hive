@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.conf;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +75,8 @@ public class MetastoreConf {
   @VisibleForTesting
   static final String RUNTIME_STATS_CLEANER_TASK_CLASS =
       "org.apache.hadoop.hive.metastore.RuntimeStatsCleanerTask";
+  static final String PARTITION_MANAGEMENT_TASK_CLASS =
+    "org.apache.hadoop.hive.metastore.PartitionManagementTask";
   @VisibleForTesting
   static final String EVENT_CLEANER_TASK_CLASS =
       "org.apache.hadoop.hive.metastore.events.EventCleanerTask";
@@ -145,6 +148,9 @@ public class MetastoreConf {
       ConfVars.REPLDIR,
       ConfVars.THRIFT_URIS,
       ConfVars.SERVER_PORT,
+      ConfVars.THRIFT_BIND_HOST,
+      ConfVars.THRIFT_ZOOKEEPER_CLIENT_PORT,
+      ConfVars.THRIFT_ZOOKEEPER_NAMESPACE,
       ConfVars.THRIFT_CONNECTION_RETRIES,
       ConfVars.THRIFT_FAILURE_RETRIES,
       ConfVars.CLIENT_CONNECT_RETRY_DELAY,
@@ -392,6 +398,10 @@ public class MetastoreConf {
             "tables or partitions to be compacted once they are determined to need compaction.\n" +
             "It will also increase the background load on the Hadoop cluster as more MapReduce jobs\n" +
             "will be running in the background."),
+    COMPACTOR_MINOR_STATS_COMPRESSION(
+        "metastore.compactor.enable.stats.compression",
+        "metastore.compactor.enable.stats.compression", true,
+        "Can be used to disable compression and ORC indexes for files produced by minor compaction."),
     CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName",
         "javax.jdo.option.ConnectionDriverName", "org.apache.derby.jdbc.EmbeddedDriver",
         "Driver class name for a JDBC metastore"),
@@ -510,11 +520,20 @@ public class MetastoreConf {
             "Alternatively, configure hive.metastore.transactional.event.listeners to ensure both are invoked in same JDO transaction."),
     EVENT_MESSAGE_FACTORY("metastore.event.message.factory",
         "hive.metastore.event.message.factory",
-        "org.apache.hadoop.hive.metastore.messaging.json.JSONMessageFactory",
+        "org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder",
         "Factory class for making encoding and decoding messages in the events generated."),
+    EVENT_NOTIFICATION_PARAMETERS_EXCLUDE_PATTERNS("metastore.notification.parameters.exclude.patterns",
+        "hive.metastore.notification.parameters.exclude.patterns", "",
+        "List of comma-separated regexes that are used to reduced the size of HMS Notification messages."
+            + " The regexes are matched against each key of parameters map in Table or Partition object"
+            + "present in HMS Notification. Any key-value pair whose key is matched with any regex will"
+            +" be removed from Parameters map during Serialization of Table/Partition object."),
     EVENT_DB_LISTENER_TTL("metastore.event.db.listener.timetolive",
         "hive.metastore.event.db.listener.timetolive", 86400, TimeUnit.SECONDS,
         "time after which events will be removed from the database listener queue"),
+    EVENT_DB_LISTENER_CLEAN_INTERVAL("metastore.event.db.listener.clean.interval",
+            "hive.metastore.event.db.listener.clean.interval", 7200, TimeUnit.SECONDS,
+            "sleep interval between each run for cleanup of events from the database listener queue"),
     EVENT_DB_NOTIFICATION_API_AUTH("metastore.metastore.event.db.notification.api.auth",
         "hive.metastore.event.db.notification.api.auth", true,
         "Should metastore do authorization against database notification related APIs such as get_next_notification.\n" +
@@ -638,6 +657,58 @@ public class MetastoreConf {
     METRICS_REPORTERS("metastore.metrics.reporters", "metastore.metrics.reporters", "json,jmx",
         new StringSetValidator("json", "jmx", "console", "hadoop"),
         "A comma separated list of metrics reporters to start"),
+    MSCK_PATH_VALIDATION("msck.path.validation", "hive.msck.path.validation", "throw",
+      new StringSetValidator("throw", "skip", "ignore"), "The approach msck should take with HDFS " +
+      "directories that are partition-like but contain unsupported characters. 'throw' (an " +
+      "exception) is the default; 'skip' will skip the invalid directories and still repair the" +
+      " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)"),
+    MSCK_REPAIR_BATCH_SIZE("msck.repair.batch.size",
+      "hive.msck.repair.batch.size", 3000,
+      "Batch size for the msck repair command. If the value is greater than zero,\n "
+        + "it will execute batch wise with the configured batch size. In case of errors while\n"
+        + "adding unknown partitions the batch size is automatically reduced by half in the subsequent\n"
+        + "retry attempt. The default value is 3000 which means it will execute in the batches of 3000."),
+    MSCK_REPAIR_BATCH_MAX_RETRIES("msck.repair.batch.max.retries", "hive.msck.repair.batch.max.retries", 4,
+      "Maximum number of retries for the msck repair command when adding unknown partitions.\n "
+        + "If the value is greater than zero it will retry adding unknown partitions until the maximum\n"
+        + "number of attempts is reached or batch size is reduced to 0, whichever is earlier.\n"
+        + "In each retry attempt it will reduce the batch size by a factor of 2 until it reaches zero.\n"
+        + "If the value is set to zero it will retry until the batch size becomes zero as described above."),
+    MSCK_REPAIR_ENABLE_PARTITION_RETENTION("msck.repair.enable.partition.retention",
+      "msck.repair.enable.partition.retention", false,
+      "If 'partition.retention.period' table property is set, this flag determines whether MSCK REPAIR\n" +
+      "command should handle partition retention. If enabled, and if a specific partition's age exceeded\n" +
+      "retention period the partition will be dropped along with data"),
+
+
+    // Partition management task params
+    PARTITION_MANAGEMENT_TASK_FREQUENCY("metastore.partition.management.task.frequency",
+      "metastore.partition.management.task.frequency",
+      300, TimeUnit.SECONDS, "Frequency at which timer task runs to do automatic partition management for tables\n" +
+      "with table property 'discover.partitions'='true'. Partition management include 2 pieces. One is partition\n" +
+      "discovery and other is partition retention period. When 'discover.partitions'='true' is set, partition\n" +
+      "management will look for partitions in table location and add partitions objects for it in metastore.\n" +
+      "Similarly if partition object exists in metastore and partition location does not exist, partition object\n" +
+      "will be dropped. The second piece in partition management is retention period. When 'discover.partition'\n" +
+      "is set to true and if 'partition.retention.period' table property is defined, partitions that are older\n" +
+      "than the specified retention period will be automatically dropped from metastore along with the data."),
+    PARTITION_MANAGEMENT_TABLE_TYPES("metastore.partition.management.table.types",
+      "metastore.partition.management.table.types", "MANAGED_TABLE,EXTERNAL_TABLE",
+      "Comma separated list of table types to use for partition management"),
+    PARTITION_MANAGEMENT_TASK_THREAD_POOL_SIZE("metastore.partition.management.task.thread.pool.size",
+      "metastore.partition.management.task.thread.pool.size", 5,
+      "Partition management uses thread pool on to which tasks are submitted for discovering and retaining the\n" +
+      "partitions. This determines the size of the thread pool."),
+    PARTITION_MANAGEMENT_CATALOG_NAME("metastore.partition.management.catalog.name",
+      "metastore.partition.management.catalog.name", "hive",
+      "Automatic partition management will look for tables under the specified catalog name"),
+    PARTITION_MANAGEMENT_DATABASE_PATTERN("metastore.partition.management.database.pattern",
+      "metastore.partition.management.database.pattern", "*",
+      "Automatic partition management will look for tables using the specified database pattern"),
+    PARTITION_MANAGEMENT_TABLE_PATTERN("metastore.partition.management.table.pattern",
+      "metastore.partition.management.table.pattern", "*",
+      "Automatic partition management will look for tables using the specified table pattern"),
+
     MULTITHREADED("javax.jdo.option.Multithreaded", "javax.jdo.option.Multithreaded", true,
         "Set this to true if multiple threads access metastore through JDO concurrently."),
     MAX_OPEN_TXNS("metastore.max.open.txns", "hive.max.open.txns", 100000,
@@ -648,12 +719,12 @@ public class MetastoreConf {
         "javax.jdo.option.NonTransactionalRead", true,
         "Reads outside of transactions"),
     NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES("metastore.notification.sequence.lock.max.retries",
-        "hive.notification.sequence.lock.max.retries", 5,
+        "hive.notification.sequence.lock.max.retries", 10,
         "Number of retries required to acquire a lock when getting the next notification sequential ID for entries "
             + "in the NOTIFICATION_LOG table."),
     NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL(
         "metastore.notification.sequence.lock.retry.sleep.interval",
-        "hive.notification.sequence.lock.retry.sleep.interval", 500, TimeUnit.MILLISECONDS,
+        "hive.notification.sequence.lock.retry.sleep.interval", 10, TimeUnit.SECONDS,
         "Sleep interval between retries to acquire a notification lock as described part of property "
             + NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES.name()),
     ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS("metastore.orm.retrieveMapNullsAsEmptyStrings",
@@ -786,7 +857,7 @@ public class MetastoreConf {
     TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
         EVENT_CLEANER_TASK_CLASS + "," + RUNTIME_STATS_CLEANER_TASK_CLASS + "," +
         "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask" + "," +
-            "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask",
+          "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask",
         "Comma separated list of tasks that will be started in separate threads.  These will " +
             "always be started, regardless of whether the metastore is running in embedded mode " +
             "or in server mode.  They must implement " + METASTORE_TASK_THREAD_CLASS),
@@ -795,7 +866,8 @@ public class MetastoreConf {
             ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS + "," +
             ACID_COMPACTION_HISTORY_SERVICE_CLASS + "," +
             ACID_WRITE_SET_SERVICE_CLASS + "," +
-            MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS,
+            MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS + "," +
+            PARTITION_MANAGEMENT_TASK_CLASS,
         "Command separated list of tasks that will be started in separate threads.  These will be" +
             " started only when the metastore is running as a separate service.  They must " +
             "implement " + METASTORE_TASK_THREAD_CLASS),
@@ -809,13 +881,50 @@ public class MetastoreConf {
         "Number of retries while opening a connection to metastore"),
     THRIFT_FAILURE_RETRIES("metastore.failure.retries", "hive.metastore.failure.retries", 1,
         "Number of retries upon failure of Thrift metastore calls"),
+    THRIFT_BIND_HOST("metastore.thrift.bind.host", "hive.metastore.thrift.bind.host", "",
+        "Bind host on which to run the metastore thrift service."),
     THRIFT_URIS("metastore.thrift.uris", "hive.metastore.uris", "",
-        "Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore."),
+        "URIs Used by metastore client to connect to remotemetastore\n." +
+                "If dynamic service discovery mode is set, the URIs are used to connect to the" +
+                " corresponding service discovery servers e.g. a zookeeper. Otherwise they are " +
+                "used as URIs for remote metastore."),
+    THRIFT_SERVICE_DISCOVERY_MODE("metastore.service.discovery.mode",
+            "hive.metastore.service.discovery.mode",
+            "",
+            "Specifies which dynamic service discovery method to use. Currently we support only " +
+                    "\"zookeeper\" to specify ZooKeeper based service discovery."),
+    THRIFT_ZOOKEEPER_CLIENT_PORT("metastore.zookeeper.client.port",
+            "hive.metastore.zookeeper.client.port", "2181",
+            "The port of ZooKeeper servers to talk to.\n" +
+                    "If the list of Zookeeper servers specified in hive.metastore.thrift.uris" +
+                    " does not contain port numbers, this value is used."),
+    THRIFT_ZOOKEEPER_SESSION_TIMEOUT("metastore.zookeeper.session.timeout",
+            "hive.metastore.zookeeper.session.timeout", 120000L, TimeUnit.MILLISECONDS,
+            new TimeValidator(TimeUnit.MILLISECONDS),
+            "ZooKeeper client's session timeout (in milliseconds). The client is disconnected\n" +
+                    "if a heartbeat is not sent in the timeout."),
+    THRIFT_ZOOKEEPER_CONNECTION_TIMEOUT("metastore.zookeeper.connection.timeout",
+            "hive.metastore.zookeeper.connection.timeout", 15L, TimeUnit.SECONDS,
+            new TimeValidator(TimeUnit.SECONDS),
+            "ZooKeeper client's connection timeout in seconds. " +
+                    "Connection timeout * hive.metastore.zookeeper.connection.max.retries\n" +
+                    "with exponential backoff is when curator client deems connection is lost to zookeeper."),
+    THRIFT_ZOOKEEPER_NAMESPACE("metastore.zookeeper.namespace",
+            "hive.metastore.zookeeper.namespace", "hive_metastore",
+            "The parent node under which all ZooKeeper nodes for metastores are created."),
+    THRIFT_ZOOKEEPER_CONNECTION_MAX_RETRIES("metastore.zookeeper.connection.max.retries",
+            "hive.metastore.zookeeper.connection.max.retries", 3,
+            "Max number of times to retry when connecting to the ZooKeeper server."),
+    THRIFT_ZOOKEEPER_CONNECTION_BASESLEEPTIME("metastore.zookeeper.connection.basesleeptime",
+            "hive.metastore.zookeeper.connection.basesleeptime", 1000L, TimeUnit.MILLISECONDS,
+            new TimeValidator(TimeUnit.MILLISECONDS),
+            "Initial amount of time (in milliseconds) to wait between retries\n" +
+                    "when connecting to the ZooKeeper server when using ExponentialBackoffRetry policy."),
     THRIFT_URI_SELECTION("metastore.thrift.uri.selection", "hive.metastore.uri.selection", "RANDOM",
         new StringSetValidator("RANDOM", "SEQUENTIAL"),
         "Determines the selection mechanism used by metastore client to connect to remote " +
         "metastore.  SEQUENTIAL implies that the first valid metastore from the URIs specified " +
-        "as part of hive.metastore.uris will be picked.  RANDOM implies that the metastore " +
+        "through hive.metastore.uris will be picked.  RANDOM implies that the metastore " +
         "will be picked randomly"),
     TIMEDOUT_TXN_REAPER_START("metastore.timedout.txn.reaper.start",
         "hive.timedout.txn.reaper.start", 100, TimeUnit.SECONDS,
@@ -1406,6 +1515,28 @@ public class MetastoreConf {
   }
 
   /**
+   * Get values from comma-separated config, to an array after extracting individual values.
+   * @param conf Configuration to retrieve it from
+   * @param var variable to retrieve
+   * @return Array of String, containing each value from the comma-separated config,
+   *  or default value if value not in config file
+   */
+  public static String[] getTrimmedStringsVar(Configuration conf, ConfVars var) {
+    assert var.defaultVal.getClass() == String.class;
+    String[] result = conf.getTrimmedStrings(var.varname, (String[]) null);
+    if (result != null) {
+      return result;
+    }
+    if (var.hiveName != null) {
+      result = conf.getTrimmedStrings(var.hiveName, (String[]) null);
+      if (result != null) {
+        return result;
+      }
+    }
+    return org.apache.hadoop.util.StringUtils.getTrimmedStrings((String) var.getDefaultVal());
+  }
+
+  /**
    * Set the variable as a boolean
    * @param conf configuration file to set it in
    * @param var variable to set
@@ -1670,6 +1801,17 @@ public class MetastoreConf {
    */
   public static boolean isEmbeddedMetaStore(String msUri) {
     return (msUri == null) || msUri.trim().isEmpty();
+  }
+
+  public static ZooKeeperHiveHelper getZKConfig(Configuration conf) {
+    return new ZooKeeperHiveHelper(MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS),
+            MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_CLIENT_PORT),
+            MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_NAMESPACE),
+            (int) MetastoreConf.getTimeVar(conf, ConfVars.THRIFT_ZOOKEEPER_SESSION_TIMEOUT,
+                    TimeUnit.MILLISECONDS),
+            (int) MetastoreConf.getTimeVar(conf, ConfVars.THRIFT_ZOOKEEPER_CONNECTION_BASESLEEPTIME,
+                    TimeUnit.MILLISECONDS),
+            MetastoreConf.getIntVar(conf, ConfVars.THRIFT_ZOOKEEPER_CONNECTION_MAX_RETRIES));
   }
 
   /**

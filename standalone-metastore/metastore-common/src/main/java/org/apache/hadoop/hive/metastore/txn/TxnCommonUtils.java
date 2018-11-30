@@ -41,6 +41,7 @@ public class TxnCommonUtils {
    * @return a valid txn list.
    */
   public static ValidTxnList createValidReadTxnList(GetOpenTxnsResponse txns, long currentTxn) {
+    assert currentTxn <= txns.getTxn_high_water_mark();
     /*
      * The highWaterMark should be min(currentTxn,txns.getTxn_high_water_mark()) assuming currentTxn>0
      * otherwise if currentTxn=7 and 8 commits before 7, then 7 will see result of 8 which
@@ -88,7 +89,7 @@ public class TxnCommonUtils {
    * {@link org.apache.hadoop.hive.common.ValidTxnWriteIdList}.  This assumes that the caller intends to
    * read the files, and thus treats both open and aborted transactions as invalid.
    * @param currentTxnId current txn ID for which we get the valid write ids list
-   * @param list valid write ids list from the metastore
+   * @param validIds valid write ids list from the metastore
    * @return a valid write IDs list for the whole transaction.
    */
   public static ValidTxnWriteIdList createValidTxnWriteIdList(Long currentTxnId,

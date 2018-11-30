@@ -618,6 +618,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_SCHEDULING_POLICY", "SCHEDULING_POLICY");
     xlateMap.put("KW_PATH", "PATH");
     xlateMap.put("KW_AST", "AST");
+    xlateMap.put("KW_TRANSACTIONAL", "TRANSACTIONAL");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -804,6 +805,7 @@ explainOption
     : KW_EXTENDED
     | KW_FORMATTED
     | KW_DEPENDENCY
+    | KW_CBO KW_EXTENDED?
     | KW_LOGICAL
     | KW_AUTHORIZATION
     | KW_ANALYZE
@@ -1091,7 +1093,7 @@ databaseComment
 createTableStatement
 @init { pushMsg("create table statement", state); }
 @after { popMsg(state); }
-    : KW_CREATE (temp=KW_TEMPORARY)? (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=tableName
+    : KW_CREATE (temp=KW_TEMPORARY)? (trans=KW_TRANSACTIONAL)? (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=tableName
       (  like=KW_LIKE likeName=tableName
          tableRowFormat?
          tableFileFormat?
@@ -1108,7 +1110,7 @@ createTableStatement
          tablePropertiesPrefixed?
          (KW_AS selectStatementWithCTE)?
       )
-    -> ^(TOK_CREATETABLE $name $temp? $ext? ifNotExists?
+    -> ^(TOK_CREATETABLE $name $temp? $trans? $ext? ifNotExists?
          ^(TOK_LIKETABLE $likeName?)
          columnNameTypeOrConstraintList?
          tableComment?
@@ -1957,8 +1959,8 @@ createMaterializedViewStatement
 }
 @after { popMsg(state); }
     : KW_CREATE KW_MATERIALIZED KW_VIEW (ifNotExists)? name=tableName
-        rewriteDisabled? tableComment? tableRowFormat? tableFileFormat? tableLocation?
-        viewPartition? tablePropertiesPrefixed? KW_AS selectStatementWithCTE
+        rewriteDisabled? tableComment? viewPartition? tableRowFormat? tableFileFormat? tableLocation?
+        tablePropertiesPrefixed? KW_AS selectStatementWithCTE
     -> ^(TOK_CREATE_MATERIALIZED_VIEW $name
          ifNotExists?
          rewriteDisabled?
@@ -2998,8 +3000,8 @@ whenNotMatchedClause
 @init { pushMsg("WHEN NOT MATCHED clause", state); }
 @after { popMsg(state); }
    :
-  KW_WHEN KW_NOT KW_MATCHED (KW_AND expression)? KW_THEN KW_INSERT KW_VALUES valueRowConstructor ->
-    ^(TOK_NOT_MATCHED ^(TOK_INSERT valueRowConstructor) expression?)
+  KW_WHEN KW_NOT KW_MATCHED (KW_AND expression)? KW_THEN KW_INSERT (targetCols=columnParenthesesList)? KW_VALUES valueRowConstructor ->
+    ^(TOK_NOT_MATCHED ^(TOK_INSERT $targetCols? valueRowConstructor) expression?)
   ;
 whenMatchedAndClause
 @init { pushMsg("WHEN MATCHED AND clause", state); }

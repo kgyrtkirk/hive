@@ -85,15 +85,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
 @Category(MetastoreUnitTest.class)
@@ -358,6 +366,72 @@ public class TestObjectStore {
     objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, value2);
     objectStore.dropTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
     objectStore.dropDatabase(db1.getCatalogName(), DB1);
+  }
+
+  /**
+   * Test the concurrent drop of same partition would leak transaction.
+   * https://issues.apache.org/jira/browse/HIVE-16839
+   *
+   * Note: the leak happens during a race condition, this test case tries
+   * to simulate the race condition on best effort, it have two threads trying
+   * to drop the same set of partitions
+   */
+  @Test
+  public void testConcurrentDropPartitions() throws MetaException, InvalidObjectException {
+    Database db1 = new DatabaseBuilder()
+      .setName(DB1)
+      .setDescription("description")
+      .setLocation("locationurl")
+      .build(conf);
+    objectStore.createDatabase(db1);
+    StorageDescriptor sd = createFakeSd("location");
+    HashMap<String, String> tableParams = new HashMap<>();
+    tableParams.put("EXTERNAL", "false");
+    FieldSchema partitionKey1 = new FieldSchema("Country", ColumnType.STRING_TYPE_NAME, "");
+    FieldSchema partitionKey2 = new FieldSchema("State", ColumnType.STRING_TYPE_NAME, "");
+    Table tbl1 =
+      new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, Arrays.asList(partitionKey1, partitionKey2),
+        tableParams, null, null, "MANAGED_TABLE");
+    objectStore.createTable(tbl1);
+    HashMap<String, String> partitionParams = new HashMap<>();
+    partitionParams.put("PARTITION_LEVEL_PRIVILEGE", "true");
+
+    // Create some partitions
+    List<List<String>> partNames = new LinkedList<>();
+    for (char c = 'A'; c < 'Z'; c++) {
+      String name = "" + c;
+      partNames.add(Arrays.asList(name, name));
+    }
+    for (List<String> n : partNames) {
+      Partition p = new Partition(n, DB1, TABLE1, 111, 111, sd, partitionParams);
+      p.setCatName(DEFAULT_CATALOG_NAME);
+      objectStore.addPartition(p);
+    }
+
+    int numThreads = 2;
+    ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+    for (int i = 0; i < numThreads; i++) {
+      executorService.execute(
+        () -> {
+          for (List<String> p : partNames) {
+            try {
+              objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, p);
+              System.out.println("Dropping partition: " + p.get(0));
+            } catch (Exception e) {
+              throw new RuntimeException(e);
+            }
+          }
+        }
+      );
+    }
+
+    executorService.shutdown();
+    try {
+      executorService.awaitTermination(30, TimeUnit.SECONDS);
+    } catch (InterruptedException ex) {
+      Assert.assertTrue("Got interrupted.", false);
+    }
+    Assert.assertTrue("Expect no active transactions.", !objectStore.isActiveTransaction());
   }
 
   /**
@@ -756,8 +830,8 @@ public class TestObjectStore {
     localConf.set(key1, value1);
     objectStore = new ObjectStore();
     objectStore.setConf(localConf);
-    Assert.assertEquals(value, objectStore.getProp().getProperty(key));
-    Assert.assertNull(objectStore.getProp().getProperty(key1));
+    Assert.assertEquals(value, PersistenceManagerProvider.getProperty(key));
+    Assert.assertNull(PersistenceManagerProvider.getProperty(key1));
   }
 
   /**
@@ -867,7 +941,7 @@ public class TestObjectStore {
             EventMessage.EventType.CREATE_DATABASE.toString(),
             "CREATE DATABASE DB initial"));
 
-    ExecutorService executorService = Executors.newFixedThreadPool(NUM_THREADS);
+    ExecutorService executorService = newFixedThreadPool(NUM_THREADS);
     for (int i = 0; i < NUM_THREADS; i++) {
       final int n = i;
 
@@ -909,6 +983,53 @@ public class TestObjectStore {
       Assert.assertTrue(previousId + 1 == event.getEventId());
       previousId = event.getEventId();
     }
+  }
+
+  /**
+   * This test calls ObjectStore.setConf methods from multiple threads. Each threads uses its
+   * own instance of ObjectStore to simulate thread-local objectstore behaviour.
+   * @throws Exception
+   */
+  @Test
+  public void testConcurrentPMFInitialize() throws Exception {
+    final String dataSourceProp = "datanucleus.connectionPool.maxPoolSize";
+    // Barrier is used to ensure that all threads start race at the same time
+    final int numThreads = 10;
+    final int numIteration = 50;
+    final CyclicBarrier barrier = new CyclicBarrier(numThreads);
+    final AtomicInteger counter = new AtomicInteger(0);
+    ExecutorService executor = newFixedThreadPool(numThreads);
+    List<Future<Void>> results = new ArrayList<>(numThreads);
+    for (int i = 0; i < numThreads; i++) {
+      final Random random = new Random();
+      Configuration conf = MetastoreConf.newMetastoreConf();
+      MetaStoreTestUtils.setConfForStandloneMode(conf);
+      results.add(executor.submit(new Callable<Void>() {
+        @Override
+        public Void call() throws Exception {
+          // each thread gets its own ObjectStore to simulate threadLocal store
+          ObjectStore objectStore = new ObjectStore();
+          barrier.await();
+          for (int j = 0; j < numIteration; j++) {
+            // set connectionPool to a random value to increase the likelihood of pmf
+            // re-initialization
+            int randomNumber = random.nextInt(100);
+            if (randomNumber % 2 == 0) {
+              objectStore.setConf(conf);
+            } else {
+              Assert.assertNotNull(objectStore.getPersistenceManager());
+            }
+            counter.getAndIncrement();
+          }
+          return null;
+        }
+      }));
+    }
+    for (Future<Void> future : results) {
+      future.get(120, TimeUnit.SECONDS);
+    }
+    Assert.assertEquals("Unexpected number of setConf calls", numIteration * numThreads,
+        counter.get());
   }
 
   private void createTestCatalog(String catName) throws MetaException {

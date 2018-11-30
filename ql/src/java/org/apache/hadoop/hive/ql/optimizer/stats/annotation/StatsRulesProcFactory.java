@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -113,7 +114,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import scala.math.Numeric;
 
 public class StatsRulesProcFactory {
 
@@ -297,7 +297,7 @@ public class StatsRulesProcFactory {
           // result in number of rows getting more than the input rows in
           // which case stats need not be updated
           if (newNumRows <= parentStats.getNumRows()) {
-            updateStats(st, newNumRows, true, fop, aspCtx.getAffectedColumns());
+            StatsUtils.updateStats(st, newNumRows, true, fop, aspCtx.getAffectedColumns());
           }
 
           if (LOG.isDebugEnabled()) {
@@ -307,7 +307,7 @@ public class StatsRulesProcFactory {
 
           // update only the basic statistics in the absence of column statistics
           if (newNumRows <= parentStats.getNumRows()) {
-            updateStats(st, newNumRows, false, fop);
+            StatsUtils.updateStats(st, newNumRows, false, fop);
           }
 
           if (LOG.isDebugEnabled()) {
@@ -358,9 +358,9 @@ public class StatsRulesProcFactory {
               // Ndv is reduced in a conservative manner - only taking affected columns
               // (which might be a subset of the actual *real* affected columns due to current limitation)
               // Goal is to not let a situation in which ndv-s asre underestimated happen.
-              updateStats(aspCtx.getAndExprStats(), newNumRows, true, op, aspCtx.getAffectedColumns());
+              StatsUtils.updateStats(aspCtx.getAndExprStats(), newNumRows, true, op, aspCtx.getAffectedColumns());
             } else {
-              updateStats(aspCtx.getAndExprStats(), newNumRows, false, op);
+              StatsUtils.updateStats(aspCtx.getAndExprStats(), newNumRows, false, op);
             }
           }
         } else if (udf instanceof GenericUDFOPOr) {
@@ -1381,7 +1381,10 @@ public class StatsRulesProcFactory {
               }
             } else {
               // Case 3: column stats, hash aggregation, NO grouping sets
-              cardinality = Math.min(parentNumRows / 2, StatsUtils.safeMult(ndvProduct, parallelism));
+              cardinality = Math.min(parentNumRows/2, StatsUtils.safeMult(ndvProduct, parallelism));
+              long orgParentNumRows = StatsUtils.safeMult(getParentNumRows(gop, gop.getConf().getKeys(), conf),
+                                                          parallelism);
+              cardinality = Math.min(cardinality, orgParentNumRows);
 
               if (LOG.isDebugEnabled()) {
                 LOG.debug("[Case 3] STATS-" + gop.toString() + ": cardinality: " + cardinality);
@@ -1397,7 +1400,7 @@ public class StatsRulesProcFactory {
               }
             } else {
               // Case 5: column stats, NO hash aggregation, NO grouping sets
-              cardinality = parentNumRows;
+              cardinality = Math.min(parentNumRows, getParentNumRows(gop, gop.getConf().getKeys(), conf));
 
               if (LOG.isDebugEnabled()) {
                 LOG.debug("[Case 5] STATS-" + gop.toString() + ": cardinality: " + cardinality);
@@ -1408,8 +1411,8 @@ public class StatsRulesProcFactory {
 
           // in reduce side GBY, we don't know if the grouping set was present or not. so get it
           // from map side GBY
-          GroupByOperator mGop = OperatorUtils.findSingleOperatorUpstream(parent, GroupByOperator.class);
-          if (mGop != null) {
+          GroupByOperator mGop = OperatorUtils.findMapSideGb(gop);
+          if(mGop != null) {
             containsGroupingSet = mGop.getConf().isGroupingSetsPresent();
           }
 
@@ -1424,6 +1427,15 @@ public class StatsRulesProcFactory {
           } else {
             // Case 9: column stats, NO grouping sets
             cardinality = Math.min(parentNumRows, ndvProduct);
+            // to get to the source number of rows we should be using original group by
+            GroupByOperator gOpStats = mGop;
+            if(gOpStats == null) {
+              // it could be NULL in case the plan has single group by (instead of merge and final)
+              // e.g. autogather stats
+              gOpStats = gop;
+            }
+            long orgParentNumRows = getParentNumRows(gOpStats, gOpStats.getConf().getKeys(), conf);
+            cardinality = Math.min(orgParentNumRows, cardinality);
 
             if (LOG.isDebugEnabled()) {
               LOG.debug("[Case 9] STATS-" + gop.toString() + ": cardinality: " + cardinality);
@@ -1432,7 +1444,7 @@ public class StatsRulesProcFactory {
         }
 
         // update stats, but don't update NDV as it will not change
-        updateStats(stats, cardinality, true, gop);
+        StatsUtils.updateStats(stats, cardinality, true, gop);
       } else {
 
         // NO COLUMN STATS
@@ -1469,7 +1481,7 @@ public class StatsRulesProcFactory {
             }
           }
 
-          updateStats(stats, cardinality, false, gop);
+          StatsUtils.updateStats(stats, cardinality, false, gop);
         }
       }
 
@@ -1500,7 +1512,7 @@ public class StatsRulesProcFactory {
           // only if the column stats is available, update the data size from
           // the column stats
           if (!stats.getColumnStatsState().equals(Statistics.State.NONE)) {
-            updateStats(stats, stats.getNumRows(), true, gop);
+            StatsUtils.updateStats(stats, stats.getNumRows(), true, gop);
           }
         }
 
@@ -1508,7 +1520,7 @@ public class StatsRulesProcFactory {
         // be full aggregation query like count(*) in which case number of
         // rows will be 1
         if (colExprMap.isEmpty()) {
-          updateStats(stats, 1, true, gop);
+          StatsUtils.updateStats(stats, 1, true, gop);
         }
       }
 
@@ -1519,6 +1531,17 @@ public class StatsRulesProcFactory {
         LOG.debug("[0] STATS-" + gop.toString() + ": " + stats.extendedToString());
       }
       return null;
+    }
+
+    private long getParentNumRows(GroupByOperator op, List<ExprNodeDesc> gbyKeys, HiveConf conf) {
+      if(gbyKeys == null || gbyKeys.isEmpty()) {
+        return op.getParentOperators().get(0).getStatistics().getNumRows();
+      }
+      Operator<? extends OperatorDesc> parent = OperatorUtils.findSourceRS(op, gbyKeys);
+      if(parent != null) {
+        return parent.getStatistics().getNumRows();
+      }
+      return op.getParentOperators().get(0).getStatistics().getNumRows();
     }
 
     /**
@@ -1752,7 +1775,7 @@ public class StatsRulesProcFactory {
         // these ndvs are later used to compute unmatched rows and num of nulls for outer joins
         List<Long> ndvsUnmatched= Lists.newArrayList();
         long denom = 1;
-        long denomUnmatched = 1;
+        long distinctUnmatched = 1;
         if (inferredRowCount == -1) {
           // failed to infer PK-FK relationship for row count estimation fall-back on default logic
           // compute denominator  max(V(R,y1), V(S,y1)) * max(V(R,y2), V(S,y2))
@@ -1774,12 +1797,12 @@ public class StatsRulesProcFactory {
 
           if (numAttr > 1 && conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_CORRELATED_MULTI_KEY_JOINS)) {
             denom = Collections.max(distinctVals);
-            denomUnmatched = denom - ndvsUnmatched.get(distinctVals.indexOf(denom));
+            distinctUnmatched = denom - ndvsUnmatched.get(distinctVals.indexOf(denom));
           } else {
             // To avoid denominator getting larger and aggressively reducing
             // number of rows, we will ease out denominator.
             denom = StatsUtils.addWithExpDecay(distinctVals);
-            denomUnmatched = denom - StatsUtils.addWithExpDecay(ndvsUnmatched);
+            distinctUnmatched = denom - StatsUtils.addWithExpDecay(ndvsUnmatched);
           }
         }
 
@@ -1810,22 +1833,32 @@ public class StatsRulesProcFactory {
         // update join statistics
         stats.setColumnStats(outColStats);
 
-        long interimRowCount = inferredRowCount != -1 ? inferredRowCount
-          : computeRowCountAssumingInnerJoin(rowCounts, denom, jop);
-        // final row computation will consider join type
-        long joinRowCount = inferredRowCount != -1 ? inferredRowCount
-          : computeFinalRowCount(rowCounts, interimRowCount, jop);
-
-        // the idea is to measure unmatche rows in outer joins by figuring out how many rows didn't match
-        // mismatched rows are figured using denomUnmatched which is the difference of denom used for computing
-        // join cardinality minus the ndv which wasn't used. This number (mismatched rows) is then subtracted from
-        /// join cardinality to get the rows which didn't match
-        long unMatchedRows = Math.abs(computeRowCountAssumingInnerJoin(rowCounts, denomUnmatched, jop) - joinRowCount);
-        if(denomUnmatched == 0) {
-          // if unmatched denominator is zero we take it as all rows will match
-          unMatchedRows = 0;
+        long joinRowCount;
+        long leftUnmatchedRows = 0L;
+        long rightUnmatchedRows = 0L;
+        if (inferredRowCount != -1) {
+          joinRowCount = inferredRowCount;
+        } else {
+          long innerJoinRowCount = computeRowCountAssumingInnerJoin(rowCounts, denom, jop);
+          // the idea is to measure unmatched rows in outer joins by figuring out how many rows didn't match
+          if (jop.getConf().getConds().length == 1) {
+            // TODO: Consider more than one condition
+            JoinCondDesc joinCond = jop.getConf().getConds()[0];
+            if (joinCond.getType() == JoinDesc.LEFT_OUTER_JOIN) {
+              leftUnmatchedRows = calculateUnmatchedRowsForOuter(conf, rowCountParents.get(0), joinKeys.get(0), joinStats.get(0), distinctUnmatched);
+            } else if (joinCond.getType() == JoinDesc.RIGHT_OUTER_JOIN) {
+              rightUnmatchedRows = calculateUnmatchedRowsForOuter(conf, rowCountParents.get(1), joinKeys.get(1), joinStats.get(1), distinctUnmatched);
+            } else if (joinCond.getType() == JoinDesc.FULL_OUTER_JOIN) {
+              leftUnmatchedRows = calculateUnmatchedRowsForOuter(conf, rowCountParents.get(0), joinKeys.get(0), joinStats.get(0), distinctUnmatched);
+              rightUnmatchedRows = calculateUnmatchedRowsForOuter(conf, rowCountParents.get(1), joinKeys.get(1), joinStats.get(1), distinctUnmatched);
+            }
+          }
+          // final row computation will consider join type
+          joinRowCount = computeFinalRowCount(rowCounts, StatsUtils.safeAdd(innerJoinRowCount, StatsUtils.safeAdd(leftUnmatchedRows, rightUnmatchedRows)), jop);
         }
-        updateColStats(conf, stats, unMatchedRows, joinRowCount, jop, rowCountParents);
+
+        // update column statistics
+        updateColStats(conf, stats, leftUnmatchedRows, rightUnmatchedRows, joinRowCount, jop, rowCountParents);
 
         // evaluate filter expression and update statistics
         if (joinRowCount != -1 && jop.getConf().getNoOuterJoin() &&
@@ -1847,7 +1880,7 @@ public class StatsRulesProcFactory {
           // result in number of rows getting more than the input rows in
           // which case stats need not be updated
           if (newNumRows <= joinRowCount) {
-            updateStats(stats, newNumRows, true, jop);
+            StatsUtils.updateStats(stats, newNumRows, true, jop);
           }
         }
 
@@ -1937,7 +1970,7 @@ public class StatsRulesProcFactory {
               aspCtx, jop.getSchema().getColumnNames(), jop, wcStats.getNumRows());
           // update only the basic statistics in the absence of column statistics
           if (newNumRows <= joinRowCount) {
-            updateStats(wcStats, newNumRows, false, jop);
+            StatsUtils.updateStats(wcStats, newNumRows, false, jop);
           }
         }
 
@@ -1949,6 +1982,38 @@ public class StatsRulesProcFactory {
         }
       }
       return null;
+    }
+
+    private long calculateUnmatchedRowsForOuter(HiveConf conf, long inputRowCount,
+        List<String> joinKeys, Statistics statistics, long distinctUnmatched) {
+      // Extract the ndv from each of the columns involved in the join
+      List<Long> distinctVals = new ArrayList<>();
+      for (String col: joinKeys) {
+        ColStatistics cs = statistics.getColumnStatisticsFromColName(col);
+        if (cs != null) {
+          distinctVals.add(cs.getCountDistint());
+        }
+      }
+      // Compute the number of distinct values based on configuration property
+      long distinctVal;
+      if (distinctVals.isEmpty()) {
+        distinctVal = 2L;
+      } else {
+        if (joinKeys.size() > 1 && conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_CORRELATED_MULTI_KEY_JOINS)) {
+          distinctVal = Collections.max(distinctVals);
+        } else {
+          distinctVal = StatsUtils.addWithExpDecay(distinctVals);
+        }
+      }
+      // If we have a greater number of unmatched values than number of distinct values,
+      // we just return the number of rows in the input as we can assume there are no
+      // matches
+      if (distinctUnmatched >= distinctVal) {
+        return inputRowCount;
+      }
+      // Otherwise, divide the number of input rows by the number of distinct values
+      // and divide by the number of distinct values unmatched
+      return StatsUtils.safeMult(inputRowCount / distinctVal, distinctUnmatched);
     }
 
     private long inferPKFKRelationship(int numAttr, List<Operator<? extends OperatorDesc>> parents,
@@ -2112,21 +2177,29 @@ public class StatsRulesProcFactory {
       // corresponding branch since only that branch will factor is the reduction
       if (multiParentOp instanceof JoinOperator) {
         JoinOperator jop = ((JoinOperator) multiParentOp);
-        isSelComputed = true;
         // check for two way join
         if (jop.getConf().getConds().length == 1) {
-          switch (jop.getConf().getCondsList().get(0).getType()) {
-          case JoinDesc.LEFT_OUTER_JOIN:
-            selMultiParent *= getSelectivitySimpleTree(multiParentOp.getParentOperators().get(0));
-            break;
-          case JoinDesc.RIGHT_OUTER_JOIN:
-            selMultiParent *= getSelectivitySimpleTree(multiParentOp.getParentOperators().get(1));
-            break;
-          default:
-            // for rest of the join type we will take min of the reduction.
+          isSelComputed = true;
+          int type = jop.getConf().getCondsList().get(0).getType();
+          if (jop.getConf().getJoinKeys()[0].length == 0 || type == JoinDesc.FULL_OUTER_JOIN) {
+            // This is just a cartesian product or a full outer join, we will take the max
             float selMultiParentLeft = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(0));
             float selMultiParentRight = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(1));
-            selMultiParent = Math.min(selMultiParentLeft, selMultiParentRight);
+            selMultiParent = Math.max(selMultiParentLeft, selMultiParentRight);
+          } else {
+            switch (type) {
+            case JoinDesc.LEFT_OUTER_JOIN:
+              selMultiParent = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(0));
+              break;
+            case JoinDesc.RIGHT_OUTER_JOIN:
+              selMultiParent = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(1));
+              break;
+            default:
+              // for rest of the join type we will take min of the reduction.
+              float selMultiParentLeft = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(0));
+              float selMultiParentRight = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(1));
+              selMultiParent = Math.min(selMultiParentLeft, selMultiParentRight);
+            }
           }
         }
       }
@@ -2222,8 +2295,8 @@ public class StatsRulesProcFactory {
       return false;
     }
 
-    private void updateNumNulls(ColStatistics colStats, long unmatchedRows, long newNumRows,
-        long pos, CommonJoinOperator<? extends JoinDesc> jop) {
+    private void updateNumNulls(ColStatistics colStats, long leftUnmatchedRows, long rightUnmatchedRows,
+        long newNumRows, long pos, CommonJoinOperator<? extends JoinDesc> jop) {
 
       if (!(jop.getConf().getConds().length == 1)) {
         // TODO: handle multi joins
@@ -2236,33 +2309,28 @@ public class StatsRulesProcFactory {
       JoinCondDesc joinCond = jop.getConf().getConds()[0];
       switch (joinCond.getType()) {
       case JoinDesc.LEFT_OUTER_JOIN:
-        //if this column is coming from right input only then we update num nulls
-        if (pos == joinCond.getRight()
-            && unmatchedRows != newNumRows) {
+        if (pos == joinCond.getRight()) {
           if (isJoinKey(colStats.getColumnName(), jop.getConf().getJoinKeys())) {
-            newNumNulls = Math.min(newNumRows, (unmatchedRows));
+            newNumNulls = Math.min(newNumRows, leftUnmatchedRows);
           } else {
-            newNumNulls = Math.min(newNumRows, oldNumNulls + (unmatchedRows));
+            newNumNulls = Math.min(newNumRows, oldNumNulls + leftUnmatchedRows);
           }
         }
         break;
       case JoinDesc.RIGHT_OUTER_JOIN:
-        if (pos == joinCond.getLeft()
-            && unmatchedRows != newNumRows) {
-
+        if (pos == joinCond.getLeft()) {
           if (isJoinKey(colStats.getColumnName(), jop.getConf().getJoinKeys())) {
-            newNumNulls = Math.min(newNumRows, ( unmatchedRows));
+            newNumNulls = Math.min(newNumRows, rightUnmatchedRows);
           } else {
-            // TODO: oldNumNulls should be scaled instead of taken as it is
-            newNumNulls = Math.min(newNumRows, oldNumNulls + (unmatchedRows));
+            newNumNulls = Math.min(newNumRows, oldNumNulls + rightUnmatchedRows);
           }
         }
         break;
       case JoinDesc.FULL_OUTER_JOIN:
         if (isJoinKey(colStats.getColumnName(), jop.getConf().getJoinKeys())) {
-          newNumNulls = Math.min(newNumRows, (unmatchedRows));
+          newNumNulls = Math.min(newNumRows, leftUnmatchedRows + rightUnmatchedRows);
         } else {
-          newNumNulls = Math.min(newNumRows, oldNumNulls + (unmatchedRows));
+          newNumNulls = Math.min(newNumRows, oldNumNulls + leftUnmatchedRows + rightUnmatchedRows);
         }
         break;
 
@@ -2274,10 +2342,8 @@ public class StatsRulesProcFactory {
       colStats.setNumNulls(newNumNulls);
     }
 
-    private void updateColStats(HiveConf conf, Statistics stats, long interimNumRows,
-        long newNumRows,
-        CommonJoinOperator<? extends JoinDesc> jop,
-        Map<Integer, Long> rowCountParents) {
+    private void updateColStats(HiveConf conf, Statistics stats, long leftUnmatchedRows, long rightUnmatchedRows,
+        long newNumRows, CommonJoinOperator<? extends JoinDesc> jop, Map<Integer, Long> rowCountParents) {
 
       if (newNumRows < 0) {
         LOG.debug("STATS-" + jop.toString() + ": Overflow in number of rows. "
@@ -2316,7 +2382,7 @@ public class StatsRulesProcFactory {
         }
 
         cs.setCountDistint(newDV);
-        updateNumNulls(cs, interimNumRows, newNumRows, pos, jop);
+        updateNumNulls(cs, leftUnmatchedRows, rightUnmatchedRows, newNumRows, pos, jop);
       }
       stats.setColumnStats(colStats);
       long newDataSize = StatsUtils
@@ -2467,6 +2533,7 @@ public class StatsRulesProcFactory {
         return denom;
       }
     }
+
     private long getDenominator(List<Long> distinctVals) {
 
       if (distinctVals.isEmpty()) {
@@ -2533,7 +2600,7 @@ public class StatsRulesProcFactory {
         // if limit is greater than available rows then do not update
         // statistics
         if (limit <= parentStats.getNumRows()) {
-          updateStats(stats, limit, true, lop);
+          StatsUtils.updateStats(stats, limit, true, lop);
         }
         stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, lop);
         lop.setStatistics(stats);
@@ -2758,72 +2825,6 @@ public class StatsRulesProcFactory {
 
   public static NodeProcessor getDefaultRule() {
     return new DefaultStatsRule();
-  }
-
-  /**
-   * Update the basic statistics of the statistics object based on the row number
-   * @param stats
-   *          - statistics to be updated
-   * @param newNumRows
-   *          - new number of rows
-   * @param useColStats
-   *          - use column statistics to compute data size
-   */
-  static void updateStats(Statistics stats, long newNumRows,
-      boolean useColStats, Operator<? extends OperatorDesc> op) {
-    updateStats(stats, newNumRows, useColStats, op, Collections.EMPTY_SET);
-  }
-
-  static void updateStats(Statistics stats, long newNumRows,
-      boolean useColStats, Operator<? extends OperatorDesc> op,
-      Set<String> affectedColumns) {
-
-    if (newNumRows < 0) {
-      LOG.debug("STATS-" + op.toString() + ": Overflow in number of rows. "
-          + newNumRows + " rows will be set to Long.MAX_VALUE");
-      newNumRows = StatsUtils.getMaxIfOverflow(newNumRows);
-    }
-    if (newNumRows == 0) {
-      LOG.debug("STATS-" + op.toString() + ": Equals 0 in number of rows. "
-          + newNumRows + " rows will be set to 1");
-      newNumRows = 1;
-    }
-
-    long oldRowCount = stats.getNumRows();
-    double ratio = (double) newNumRows / (double) oldRowCount;
-    stats.setNumRows(newNumRows);
-
-    if (useColStats) {
-      List<ColStatistics> colStats = stats.getColumnStats();
-      for (ColStatistics cs : colStats) {
-        long oldNumNulls = cs.getNumNulls();
-        long oldDV = cs.getCountDistint();
-        long newNumNulls = Math.round(ratio * oldNumNulls);
-        cs.setNumNulls(newNumNulls);
-        if (affectedColumns.contains(cs.getColumnName())) {
-          long newDV = oldDV;
-
-          // if ratio is greater than 1, then number of rows increases. This can happen
-          // when some operators like GROUPBY duplicates the input rows in which case
-          // number of distincts should not change. Update the distinct count only when
-          // the output number of rows is less than input number of rows.
-          if (ratio <= 1.0) {
-            newDV = (long) Math.ceil(ratio * oldDV);
-          }
-          cs.setCountDistint(newDV);
-          oldDV = newDV;
-        }
-        if (oldDV > newNumRows) {
-          cs.setCountDistint(newNumRows);
-        }
-      }
-      stats.setColumnStats(colStats);
-      long newDataSize = StatsUtils.getDataSizeFromColumnStats(newNumRows, colStats);
-      stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
-    } else {
-      long newDataSize = (long) (ratio * stats.getDataSize());
-      stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
-    }
   }
 
   static boolean satisfyPrecondition(Statistics stats) {

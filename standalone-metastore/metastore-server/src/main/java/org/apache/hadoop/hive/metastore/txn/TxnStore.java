@@ -41,6 +41,10 @@ import java.util.Set;
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
 public interface TxnStore extends Configurable {
+  /**
+   * Prefix for key when committing with a key/value.
+   */
+  public static final String TXN_KEY_START = "_meta";
 
   enum MUTEX_KEY {
     Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock,
@@ -351,6 +355,16 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.ReadOnly
   List<CompactionInfo> findReadyToClean() throws MetaException;
+
+  /**
+   * Returns the smallest txnid that could be seen in open state across all active transactions in
+   * the system or {@code NEXT_TXN_ID.NTXN_NEXT} if there are no active transactions, i.e. the
+   * smallest txnid that can be seen as unresolved in the whole system.  Even if a transaction
+   * is opened concurrently with this call it cannot have an id less than what this method returns.
+   * @return transaction ID
+   */
+  @RetrySemantics.ReadOnly
+  long findMinOpenTxnId() throws MetaException;
 
   /**
    * This will remove an entry from the queue after

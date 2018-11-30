@@ -23,6 +23,7 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -60,6 +61,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -80,6 +82,11 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultiset;
+
+import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.AUTOPARALLEL;
+import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.FIXED;
+import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFORM;
+import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNSET;
 
 /**
  * Shared computation optimizer.
@@ -408,6 +415,8 @@ public class SharedWorkOptimizer extends Transform {
                 continue;
               }
 
+              deduplicateReduceTraits(retainableRsOp.getConf(), discardableRsOp.getConf());
+
               // We can merge
               Operator<?> lastRetainableOp = sr.retainableOps.get(sr.retainableOps.size() - 1);
               Operator<?> lastDiscardableOp = sr.discardableOps.get(sr.discardableOps.size() - 1);
@@ -508,6 +517,58 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
+    if(pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_REUSE_MAPJOIN_CACHE)) {
+      // Try to reuse cache for broadcast side in mapjoin operators that
+      // share same input.
+      // First we group together all the mapjoin operators that share same
+      // reduce sink operator.
+      final Multimap<Operator<?>, MapJoinOperator> parentToMapJoinOperators =
+          ArrayListMultimap.create();
+      final Set<Operator<?>> visitedOperators = new HashSet<>();
+      for (Entry<Operator<?>, Collection<Operator<?>>> e :
+          optimizerCache.operatorToWorkOperators.asMap().entrySet()) {
+        if (visitedOperators.contains(e.getKey())) {
+          // Already visited this work, we move on
+          continue;
+        }
+        for (Operator<?> op : e.getValue()) {
+          if (op instanceof MapJoinOperator) {
+            MapJoinOperator mapJoinOp = (MapJoinOperator) op;
+            // Only allowed for mapjoin operator
+            if (!mapJoinOp.getConf().isBucketMapJoin() &&
+                !mapJoinOp.getConf().isDynamicPartitionHashJoin()) {
+              parentToMapJoinOperators.put(
+                  obtainBroadcastInput(mapJoinOp).getParentOperators().get(0), mapJoinOp);
+            }
+          }
+          visitedOperators.add(op);
+        }
+      }
+      // For each group, set the cache key accordingly if there is more than one operator
+      // and input RS operator are equal
+      for (Collection<MapJoinOperator> c : parentToMapJoinOperators.asMap().values()) {
+        Map<ReduceSinkOperator, String> rsOpToCacheKey = new HashMap<>();
+        for (MapJoinOperator mapJoinOp : c) {
+          ReduceSinkOperator rsOp = obtainBroadcastInput(mapJoinOp);
+          String cacheKey = null;
+          for (Entry<ReduceSinkOperator, String> e: rsOpToCacheKey.entrySet()) {
+            if (compareOperator(pctx, rsOp, e.getKey())) {
+              cacheKey = e.getValue();
+              break;
+            }
+          }
+          if (cacheKey == null) {
+            // Either it is the first map join operator or there was no equivalent RS,
+            // hence generate cache key
+            cacheKey = MapJoinDesc.generateCacheKey(mapJoinOp.getOperatorId());
+            rsOpToCacheKey.put(rsOp, cacheKey);
+          }
+          // Set in the conf of the map join operator
+          mapJoinOp.getConf().setCacheKey(cacheKey);
+        }
+      }
+    }
+
     // If we are running tests, we are going to verify that the contents of the cache
     // correspond with the contents of the plan, and otherwise we fail.
     // This check always run when we are running in test mode, independently on whether
@@ -532,6 +593,15 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     return pctx;
+  }
+
+  /**
+   * Obtain the RS input for a mapjoin operator.
+   */
+  private static ReduceSinkOperator obtainBroadcastInput(MapJoinOperator mapJoinOp) {
+    return mapJoinOp.getParentOperators().get(0) instanceof ReduceSinkOperator ?
+        (ReduceSinkOperator) mapJoinOp.getParentOperators().get(0) :
+        (ReduceSinkOperator) mapJoinOp.getParentOperators().get(1);
   }
 
   /**
@@ -1062,7 +1132,7 @@ public class SharedWorkOptimizer extends Transform {
         op1Conf.getTag() == op2Conf.getTag() &&
         StringUtils.equals(op1Conf.getOrder(), op2Conf.getOrder()) &&
         op1Conf.getTopN() == op2Conf.getTopN() &&
-        op1Conf.isAutoParallel() == op2Conf.isAutoParallel()) {
+        canDeduplicateReduceTraits(op1Conf, op2Conf)) {
         return true;
       } else {
         return false;
@@ -1410,6 +1480,113 @@ public class SharedWorkOptimizer extends Transform {
         optimizerCache.putIfWorkExists(newOp, tsOp);
       }
     }
+  }
+
+  static boolean canDeduplicateReduceTraits(ReduceSinkDesc retainable, ReduceSinkDesc discardable) {
+    return deduplicateReduceTraits(retainable, discardable, false);
+  }
+
+  static boolean deduplicateReduceTraits(ReduceSinkDesc retainable, ReduceSinkDesc discardable) {
+    return deduplicateReduceTraits(retainable, discardable, true);
+  }
+
+  private static boolean deduplicateReduceTraits(ReduceSinkDesc retainable,
+      ReduceSinkDesc discardable, boolean apply) {
+
+    final EnumSet<ReduceSinkDesc.ReducerTraits> retainableTraits = retainable.getReducerTraits();
+    final EnumSet<ReduceSinkDesc.ReducerTraits> discardableTraits = discardable.getReducerTraits();
+
+    final boolean x1 = retainableTraits.contains(UNSET);
+    final boolean f1 = retainableTraits.contains(FIXED);
+    final boolean u1 = retainableTraits.contains(UNIFORM);
+    final boolean a1 = retainableTraits.contains(AUTOPARALLEL);
+    final int n1 = retainable.getNumReducers();
+
+    final boolean x2 = discardableTraits.contains(UNSET);
+    final boolean f2 = discardableTraits.contains(FIXED);
+    final boolean u2 = discardableTraits.contains(UNIFORM);
+    final boolean a2 = discardableTraits.contains(AUTOPARALLEL);
+    final int n2 = discardable.getNumReducers();
+
+    boolean dedup = false;
+    boolean x3 = false;
+    boolean f3 = false;
+    boolean u3 = false;
+    boolean a3 = false;
+    int n3 = n1;
+
+    // NOTE: UNSET is exclusive from other traits, so FIXED is.
+
+    if (x1 || x2) {
+      // UNSET + X = X
+      dedup = true;
+      n3 = Math.max(n1, n2);
+      x3 = x1 && x2;
+      f3 = f1 || f2;
+      u3 = u1 || u2;
+      a3 = a1 || a2;
+    } else if (f1 || f2) {
+      if (f1 && f2) {
+        // FIXED(x) + FIXED(x) = FIXED(x)
+        // FIXED(x) + FIXED(y) = no deduplication (where x != y)
+        if (n1 == n2) {
+          dedup = true;
+          f3 = true;
+        }
+      } else {
+        // FIXED(x) + others = FIXED(x)
+        dedup = true;
+        f3 = true;
+        if (f1) {
+          n3 = n1;
+        } else {
+          n3 = n2;
+        }
+      }
+    } else {
+      if (u1 && u2) {
+        // UNIFORM(x) + UNIFORM(y) = UNIFORM(max(x, y))
+        dedup = true;
+        u3 = true;
+        n3 = Math.max(n1, n2);
+      }
+      if (a1 && a2) {
+        // AUTOPARALLEL(x) + AUTOPARALLEL(y) = AUTOPARALLEL(max(x, y))
+        dedup = true;
+        a3 = true;
+        n3 = Math.max(n1, n2);
+      }
+    }
+
+    // Gether the results into the retainable object
+    if (apply && dedup) {
+      retainable.setNumReducers(n3);
+
+      if (x3) {
+        retainableTraits.add(UNSET);
+      } else {
+        retainableTraits.remove(UNSET);
+      }
+
+      if (f3) {
+        retainableTraits.add(FIXED);
+      } else {
+        retainableTraits.remove(FIXED);
+      }
+
+      if (u3) {
+        retainableTraits.add(UNIFORM);
+      } else {
+        retainableTraits.remove(UNIFORM);
+      }
+
+      if (a3) {
+        retainableTraits.add(AUTOPARALLEL);
+      } else {
+        retainableTraits.remove(AUTOPARALLEL);
+      }
+    }
+    return dedup;
   }
 
   private static class SharedResult {

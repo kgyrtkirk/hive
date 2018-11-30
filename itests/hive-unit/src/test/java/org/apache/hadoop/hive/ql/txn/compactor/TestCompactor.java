@@ -713,15 +713,15 @@ public class TestCompactor {
       Path resultFile = null;
       for (int i = 0; i < names.length; i++) {
         names[i] = stat[i].getPath().getName();
-        if (names[i].equals("delta_0000001_0000004")) {
+        if (names[i].equals("delta_0000001_0000004_v0000009")) {
           resultFile = stat[i].getPath();
         }
       }
       Arrays.sort(names);
       String[] expected = new String[]{"delta_0000001_0000002",
-        "delta_0000001_0000004", "delta_0000003_0000004", "delta_0000005_0000006"};
+        "delta_0000001_0000004_v0000009", "delta_0000003_0000004", "delta_0000005_0000006"};
       if (!Arrays.deepEquals(expected, names)) {
-        Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names));
+        Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names) + ",stat=" + toString(stat));
       }
       checkExpectedTxnsPresent(null, new Path[]{resultFile}, columnNamesProperty, columnTypesProperty,
         0, 1L, 4L, 1);
@@ -767,7 +767,7 @@ public class TestCompactor {
         Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
       }
       String name = stat[0].getPath().getName();
-      Assert.assertEquals(name, "base_0000004");
+      Assert.assertEquals("base_0000004_v0000009", name);
       checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L, 1);
     } finally {
       if (connection != null) {
@@ -858,13 +858,13 @@ public class TestCompactor {
     Path resultDelta = null;
     for (int i = 0; i < names.length; i++) {
       names[i] = stat[i].getPath().getName();
-      if (names[i].equals("delta_0000001_0000004")) {
+      if (names[i].equals("delta_0000001_0000004_v0000009")) {
         resultDelta = stat[i].getPath();
       }
     }
     Arrays.sort(names);
     String[] expected = new String[]{"delta_0000001_0000002",
-      "delta_0000001_0000004", "delta_0000003_0000004"};
+      "delta_0000001_0000004_v0000009", "delta_0000003_0000004"};
     if (!Arrays.deepEquals(expected, names)) {
       Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names));
     }
@@ -947,7 +947,7 @@ public class TestCompactor {
       Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
     }
     String name = stat[0].getPath().getName();
-    if (!name.equals("base_0000004")) {
+    if (!name.equals("base_0000004_v0000009")) {
       Assert.fail("majorCompactAfterAbort name " + name + " not equals to base_0000004");
     }
     checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L, 1);
@@ -1312,7 +1312,7 @@ public class TestCompactor {
       Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
     }
     String name = stat[0].getPath().getName();
-    Assert.assertEquals(name, "base_0000004");
+    Assert.assertEquals("base_0000004_v0000009", name);
     checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 1, 1L, 4L, 2);
     if (connection1 != null) {
       connection1.close();
@@ -1368,12 +1368,12 @@ public class TestCompactor {
     Path minorCompactedDelta = null;
     for (int i = 0; i < deltas.length; i++) {
       deltas[i] = stat[i].getPath().getName();
-      if (deltas[i].equals("delta_0000001_0000003")) {
+      if (deltas[i].equals("delta_0000001_0000003_v0000006")) {
         minorCompactedDelta = stat[i].getPath();
       }
     }
     Arrays.sort(deltas);
-    String[] expectedDeltas = new String[]{"delta_0000001_0000001_0000", "delta_0000001_0000003",
+    String[] expectedDeltas = new String[]{"delta_0000001_0000001_0000", "delta_0000001_0000003_v0000006",
       "delta_0000002_0000002_0000"};
     if (!Arrays.deepEquals(expectedDeltas, deltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeltas) + ", found: " + Arrays.toString(deltas));
@@ -1388,12 +1388,12 @@ public class TestCompactor {
     Path minorCompactedDeleteDelta = null;
     for (int i = 0; i < deleteDeltas.length; i++) {
       deleteDeltas[i] = deleteDeltaStat[i].getPath().getName();
-      if (deleteDeltas[i].equals("delete_delta_0000001_0000003")) {
+      if (deleteDeltas[i].equals("delete_delta_0000001_0000003_v0000006")) {
         minorCompactedDeleteDelta = deleteDeltaStat[i].getPath();
       }
     }
     Arrays.sort(deleteDeltas);
-    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000001_0000003", "delete_delta_0000003_0000003_0000"};
+    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000001_0000003_v0000006", "delete_delta_0000003_0000003_0000"};
     if (!Arrays.deepEquals(expectedDeleteDeltas, deleteDeltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeleteDeltas) + ", found: " + Arrays.toString(deleteDeltas));
     }
@@ -1446,12 +1446,12 @@ public class TestCompactor {
     Path minorCompactedDelta = null;
     for (int i = 0; i < deltas.length; i++) {
       deltas[i] = stat[i].getPath().getName();
-      if (deltas[i].equals("delta_0000001_0000002")) {
+      if (deltas[i].equals("delta_0000001_0000002_v0000005")) {
         minorCompactedDelta = stat[i].getPath();
       }
     }
     Arrays.sort(deltas);
-    String[] expectedDeltas = new String[]{"delta_0000001_0000001_0000", "delta_0000001_0000002",
+    String[] expectedDeltas = new String[]{"delta_0000001_0000001_0000", "delta_0000001_0000002_v0000005",
       "delta_0000002_0000002_0000"};
     if (!Arrays.deepEquals(expectedDeltas, deltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeltas) + ", found: " + Arrays.toString(deltas));
@@ -1466,12 +1466,12 @@ public class TestCompactor {
     Path minorCompactedDeleteDelta = null;
     for (int i = 0; i < deleteDeltas.length; i++) {
       deleteDeltas[i] = deleteDeltaStat[i].getPath().getName();
-      if (deleteDeltas[i].equals("delete_delta_0000001_0000002")) {
+      if (deleteDeltas[i].equals("delete_delta_0000001_0000002_v0000005")) {
         minorCompactedDeleteDelta = deleteDeltaStat[i].getPath();
       }
     }
     Arrays.sort(deleteDeltas);
-    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000001_0000002"};
+    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000001_0000002_v0000005"};
     if (!Arrays.deepEquals(expectedDeleteDeltas, deleteDeltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeleteDeltas) + ", found: " + Arrays.toString(deleteDeltas));
     }
@@ -1537,13 +1537,13 @@ public class TestCompactor {
     Path resultFile = null;
     for (int i = 0; i < names.length; i++) {
       names[i] = stat[i].getPath().getName();
-      if (names[i].equals("delta_0000001_0000004")) {
+      if (names[i].equals("delta_0000001_0000004_v0000009")) {
         resultFile = stat[i].getPath();
       }
     }
     Arrays.sort(names);
     String[] expected = new String[]{"delta_0000001_0000002",
-      "delta_0000001_0000004", "delta_0000003_0000004", "delta_0000005_0000006"};
+      "delta_0000001_0000004_v0000009", "delta_0000003_0000004", "delta_0000005_0000006"};
     if (!Arrays.deepEquals(expected, names)) {
       Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names));
     }
@@ -1557,12 +1557,12 @@ public class TestCompactor {
     Path minorCompactedDeleteDelta = null;
     for (int i = 0; i < deleteDeltas.length; i++) {
       deleteDeltas[i] = deleteDeltaStat[i].getPath().getName();
-      if (deleteDeltas[i].equals("delete_delta_0000001_0000004")) {
+      if (deleteDeltas[i].equals("delete_delta_0000001_0000004_v0000009")) {
         minorCompactedDeleteDelta = deleteDeltaStat[i].getPath();
       }
     }
     Arrays.sort(deleteDeltas);
-    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000001_0000004"};
+    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000001_0000004_v0000009"};
     if (!Arrays.deepEquals(expectedDeleteDeltas, deleteDeltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeleteDeltas) + ", found: " + Arrays.toString(deleteDeltas));
     }
@@ -1584,6 +1584,7 @@ public class TestCompactor {
    */
   @Test
   public void testTableProperties() throws Exception {
+    conf.setVar(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE, "root.user1");
     String tblName1 = "ttp1"; // plain acid table
     String tblName2 = "ttp2"; // acid table with customized tblproperties
     executeStatementOnDriver("drop table if exists " + tblName1, driver);
@@ -1596,7 +1597,8 @@ public class TestCompactor {
       "'transactional'='true'," +
       "'compactor.mapreduce.map.memory.mb'='2048'," + // 2048 MB memory for compaction map job
       "'compactorthreshold.hive.compactor.delta.num.threshold'='4'," +  // minor compaction if more than 4 delta dirs
-      "'compactorthreshold.hive.compactor.delta.pct.threshold'='0.47'" + // major compaction if more than 47%
+      "'compactorthreshold.hive.compactor.delta.pct.threshold'='0.47'," + // major compaction if more than 47%
+      "'compactor.hive.compactor.job.queue'='root.user2'" + // Override the system wide compactor queue for this table
       ")", driver);
 
     // Insert 5 rows to both tables
@@ -1641,6 +1643,7 @@ public class TestCompactor {
     t.run();
     JobConf job = t.getMrJob();
     Assert.assertEquals(2048, job.getMemoryForMapTask());  // 2048 comes from tblproperties
+    Assert.assertEquals("root.user2", job.getQueueName()); // Queue name comes from table properties
     // Compact ttp1
     stop = new AtomicBoolean(true);
     t = new Worker();
@@ -1651,6 +1654,7 @@ public class TestCompactor {
     t.run();
     job = t.getMrJob();
     Assert.assertEquals(1024, job.getMemoryForMapTask());  // 1024 is the default value
+    Assert.assertEquals("root.user1", job.getQueueName()); // The system wide compaction queue name
     // Clean up
     runCleaner(conf);
     rsp = txnHandler.showCompact(new ShowCompactRequest());
@@ -1674,7 +1678,6 @@ public class TestCompactor {
     //make sure 2700 is not the default so that we are testing if tblproperties indeed propagate
     Assert.assertNotEquals("Unexpected default compression size", 2700,
       OrcConf.BUFFER_SIZE.getDefaultValue());
-
 
     // Insert one more row - this should trigger hive.compactor.delta.pct.threshold to be reached for ttp2
     executeStatementOnDriver("insert into " + tblName1 + " values (6, 'f')", driver);
@@ -1702,7 +1705,8 @@ public class TestCompactor {
     executeStatementOnDriver("alter table " + tblName2 + " compact 'major'" +
       " with overwrite tblproperties (" +
       "'compactor.mapreduce.map.memory.mb'='3072'," +
-      "'tblprops.orc.compress.size'='3141')", driver);
+      "'tblprops.orc.compress.size'='3141'," +
+      "'compactor.hive.compactor.job.queue'='root.user2')", driver);
 
     rsp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(4, rsp.getCompacts().size());
@@ -1722,6 +1726,7 @@ public class TestCompactor {
     job = t.getMrJob();
     Assert.assertEquals(3072, job.getMemoryForMapTask());
     Assert.assertTrue(job.get("hive.compactor.table.props").contains("orc.compress.size4:3141"));
+    Assert.assertEquals("root.user2", job.getQueueName());
     /*createReader(FileSystem fs, Path path) throws IOException {
      */
     //we just ran Major compaction so we should have a base_x in tblName2 that has the new files
@@ -1962,5 +1967,16 @@ public class TestCompactor {
     AtomicBoolean looped = new AtomicBoolean();
     t.init(stop, looped);
     t.run();
+  }
+  private static String toString(FileStatus[] stat) {
+    StringBuilder sb = new StringBuilder("stat{");
+    if(stat == null) {
+      return sb.toString();
+    }
+    for(FileStatus f : stat) {
+      sb.append(f.getPath()).append(",");
+    }
+    sb.setCharAt(sb.length() - 1, '}');
+    return sb.toString();
   }
 }

@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -135,7 +136,7 @@ public class SessionState {
   protected ClassLoader parentLoader;
 
   // Session-scope compile lock.
-  private final ReentrantLock compileLock = new ReentrantLock();
+  private final ReentrantLock compileLock = new ReentrantLock(true);
 
   /**
    * current configuration.
@@ -423,6 +424,8 @@ public class SessionState {
     resourceDownloader = new ResourceDownloader(conf,
         HiveConf.getVar(conf, ConfVars.DOWNLOADED_RESOURCES_DIR));
     killQuery = new NullKillQuery();
+
+    ShimLoader.getHadoopShims().setHadoopSessionContext(getSessionId());
   }
 
   public Map<String, String> getHiveVariables() {
@@ -499,6 +502,7 @@ public class SessionState {
    * it's not coupled to the executing thread.  Since tests run against Derby which often wedges
    * under concurrent access, tests must use a single thead and simulate concurrent access.
    * For example, {@code TestDbTxnManager2}
+   * @return previous {@link HiveTxnManager} or null
    */
   @VisibleForTesting
   public HiveTxnManager setTxnMgr(HiveTxnManager mgr) {
@@ -1816,7 +1820,7 @@ public class SessionState {
         }
         Class<?> clazz = Class.forName(realStoreImpl);
         if (ObjectStore.class.isAssignableFrom(clazz)) {
-          ObjectStore.unCacheDataNucleusClassLoaders();
+          PersistenceManagerProvider.clearOutPmfClassLoaderCache();
         }
       }
     } catch (Exception e) {
@@ -2063,7 +2067,7 @@ public class SessionState {
   }
 
   public String getNewSparkSessionId() {
-    return Long.toString(this.sparkSessionId.getAndIncrement());
+    return getSessionId() + "_" + Long.toString(this.sparkSessionId.getAndIncrement());
   }
 }
 
