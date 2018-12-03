@@ -278,9 +278,7 @@ public class TestVectorizationContext {
     VectorExpression childExpr1 = ve.getChildExpressions()[0];
     VectorExpression childExpr2 = ve.getChildExpressions()[1];
     System.out.println(ve.toString());
-    // TODO: HIVE-20985 disabled output column reuse
-    //assertEquals(6, ve.getOutputColumnNum());
-    assertEquals(10, ve.getOutputColumnNum());
+    assertEquals(6, ve.getOutputColumnNum());
 
     assertTrue(childExpr1 instanceof LongColSubtractLongColumn);
     assertEquals(1, childExpr1.getChildExpressions().length);
@@ -291,11 +289,8 @@ public class TestVectorizationContext {
     assertTrue(childExpr2 instanceof LongColMultiplyLongColumn);
     assertEquals(1, childExpr2.getChildExpressions().length);
     assertTrue(childExpr2.getChildExpressions()[0] instanceof LongColModuloLongColumn);
-    // TODO: HIVE-20985 disabled output column reuse
-    //assertEquals(8, childExpr2.getOutputColumnNum());
-    //assertEquals(6, childExpr2.getChildExpressions()[0].getOutputColumnNum());
-    assertEquals(9, childExpr2.getOutputColumnNum());
-    assertEquals(8, childExpr2.getChildExpressions()[0].getOutputColumnNum());
+    assertEquals(8, childExpr2.getOutputColumnNum());
+    assertEquals(6, childExpr2.getChildExpressions()[0].getOutputColumnNum());
   }
 
   @Test
@@ -735,9 +730,7 @@ public class TestVectorizationContext {
 
     ve = vc.getVectorExpression(isNullExpr, VectorExpressionDescriptor.Mode.PROJECTION);
     assertEquals(ve.getClass(), IsNull.class);
-    // TODO: HIVE-20985 disabled output column reuse
-    //assertEquals(3, ve.getOutputColumnNum());
-    assertEquals(4, ve.getOutputColumnNum());
+    assertEquals(3, ve.getOutputColumnNum());
     assertEquals(ve.getChildExpressions()[0].getClass(), LongColGreaterLongScalar.class);
   }
 
