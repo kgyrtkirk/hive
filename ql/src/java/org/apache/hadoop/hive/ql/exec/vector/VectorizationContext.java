@@ -798,10 +798,18 @@ import com.google.common.annotations.VisibleForTesting;
     return ocm.currentScratchColumns();
   }
 
+  /**
+   * Marks all actual scratch columns.
+   *
+   * They can be decomissioned with {@link #freeMarkedScratchColumns()}.
+   */
   public void markActualScratchColumns() {
     ocm.markScratchColumns();
   }
 
+  /**
+   * Frees up actually marked scract columns.
+   */
   public void freeMarkedScratchColumns() {
     ocm.freeMarkedScratchColumns();
   }
@@ -1404,8 +1412,9 @@ import com.google.common.annotations.VisibleForTesting;
                    || arg0Type(expr).equals("double")
                    || arg0Type(expr).equals("float"))) {
       return true;
-    } else
-        return gudf instanceof GenericUDFBetween && (mode == VectorExpressionDescriptor.Mode.PROJECTION);
+    } else {
+      return gudf instanceof GenericUDFBetween && (mode == VectorExpressionDescriptor.Mode.PROJECTION);
+    }
   }
 
   public static boolean isCastToIntFamily(Class<? extends UDF> udfClass) {
