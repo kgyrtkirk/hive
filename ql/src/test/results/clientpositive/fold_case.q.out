@@ -18,10 +18,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: (key = '238') (type: boolean)
+            filterExpr: (key = '238') is true (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = '238') (type: boolean)
+              predicate: (key = '238') is true (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
@@ -75,10 +75,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: (not NVL((key = '238'),false)) (type: boolean)
+            filterExpr: (key = '238') is not true (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (not NVL((key = '238'),false)) (type: boolean)
+              predicate: (key = '238') is not true (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
@@ -208,10 +208,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: (key = '238') (type: boolean)
+            filterExpr: (key = '238') is true (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = '238') (type: boolean)
+              predicate: (key = '238') is true (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
@@ -321,10 +321,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: (key = '238') (type: boolean)
+            filterExpr: (key = '238') is true (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = '238') (type: boolean)
+              predicate: (key = '238') is true (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
@@ -378,13 +378,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: (not NVL((key = '238'),false)) (type: boolean)
+            filterExpr: (key = '238') is not true (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (not NVL((key = '238'),false)) (type: boolean)
+              predicate: (key = '238') is not true (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: CASE WHEN ((key = '238')) THEN (null) ELSE (false) END (type: boolean)
+                expressions: ((key = '238') is true and null) (type: boolean)
                 outputColumnNames: _col0
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -467,10 +467,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: CASE WHEN ((key = '238')) THEN (null) ELSE (true) END (type: boolean)
+            filterExpr: (key = '238') is not true (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: CASE WHEN ((key = '238')) THEN (null) ELSE (true) END (type: boolean)
+              predicate: (key = '238') is not true (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
