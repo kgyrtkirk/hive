@@ -44,10 +44,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: lineitem
-            filterExpr: ((DATE'1996-03-30' = to_date(CAST( l_shipdate AS TIMESTAMP))) and (l_shipmode = 'RAIL')) (type: boolean)
+            filterExpr: (NVL((DATE'1996-03-30' = to_date(CAST( l_shipdate AS TIMESTAMP))),false) and (l_shipmode = 'RAIL') is true) (type: boolean)
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((DATE'1996-03-30' = to_date(CAST( l_shipdate AS TIMESTAMP))) and (l_shipmode = 'RAIL')) (type: boolean)
+              predicate: ((l_shipmode = 'RAIL') is true and NVL((DATE'1996-03-30' = to_date(CAST( l_shipdate AS TIMESTAMP))),false)) (type: boolean)
               Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: l_orderkey (type: int), (UDFToDouble(l_partkey) / 1000000.0D) (type: double)
@@ -109,13 +109,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: (key = '238') (type: boolean)
+            filterExpr: (key = '238') is true (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = '238') (type: boolean)
+              predicate: (key = '238') is true (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: '238' (type: string)
+                expressions: key (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -151,18 +151,18 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: (key) IN ('238', '94') (type: boolean)
+            filterExpr: (key) IN ('238', '94') is true (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key) IN ('238', '94') (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key) IN ('238', '94') is true (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -193,13 +193,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: (key = '238') (type: boolean)
+            filterExpr: (key = '238') is true (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key = '238') (type: boolean)
+              predicate: (key = '238') is true (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: '238' (type: string)
+                expressions: key (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -235,18 +235,18 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: CASE WHEN ((key <> '238')) THEN ((key = '238')) WHEN ((key = '23')) THEN ((key = '238')) ELSE (null) END (type: boolean)
+            filterExpr: (((key <> '238') or (key = '23')) is true and (key = '238') is true) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: CASE WHEN ((key <> '238')) THEN ((key = '238')) WHEN ((key = '23')) THEN ((key = '238')) ELSE (null) END (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              predicate: (((key <> '238') or (key = '23')) is true and (key = '238') is true) (type: boolean)
+              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
