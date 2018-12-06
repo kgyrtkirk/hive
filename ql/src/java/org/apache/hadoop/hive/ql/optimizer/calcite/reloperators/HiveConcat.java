@@ -18,18 +18,24 @@
 
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
+import org.apache.calcite.sql.SqlFunction;
+import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.SqlSpecialOperator;
+import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.InferTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 
-public class HiveConcat extends SqlSpecialOperator {
-  public static final SqlSpecialOperator INSTANCE = new HiveConcat();
+public class HiveConcat extends SqlFunction {
+  public static final SqlOperator INSTANCE = new HiveConcat();
 
   private HiveConcat() {
-    super("||", SqlKind.OTHER_FUNCTION, 30, true, ReturnTypes.VARCHAR_2000,
-        InferTypes.RETURN_TYPE, null
-    );
+    super("concat",
+        SqlKind.OTHER_FUNCTION,
+        ReturnTypes.VARCHAR_2000,
+        InferTypes.RETURN_TYPE,
+        null,
+        SqlFunctionCategory.USER_DEFINED_FUNCTION);
   }
+
 }
 

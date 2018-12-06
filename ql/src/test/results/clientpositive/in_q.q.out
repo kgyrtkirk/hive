@@ -1,0 +1,123 @@
+PREHOOK: query: create temporary table t3 (receipt_required_flag string, inspection_required_flag string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3
+POSTHOOK: query: create temporary table t3 (receipt_required_flag string, inspection_required_flag string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3
+PREHOOK: query: explain extended select  CASE
+WHEN concat(concat(coalesce(t3.receipt_required_flag, 'N'), '~'), coalesce(t3.inspection_required_flag, 'N')) = 'N~N' THEN '2'
+WHEN concat(concat(coalesce(t3.receipt_required_flag, 'N'), '~'), coalesce(t3.inspection_required_flag, 'N')) = 'Y~N' THEN '3'
+WHEN concat(concat(coalesce(t3.receipt_required_flag, 'N'), '~'), coalesce(t3.inspection_required_flag, 'N')) = 'Y~Y' THEN '4'
+END from t3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select  CASE
+WHEN concat(concat(coalesce(t3.receipt_required_flag, 'N'), '~'), coalesce(t3.inspection_required_flag, 'N')) = 'N~N' THEN '2'
+WHEN concat(concat(coalesce(t3.receipt_required_flag, 'N'), '~'), coalesce(t3.inspection_required_flag, 'N')) = 'Y~N' THEN '3'
+WHEN concat(concat(coalesce(t3.receipt_required_flag, 'N'), '~'), coalesce(t3.inspection_required_flag, 'N')) = 'Y~Y' THEN '4'
+END from t3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CASE WHEN CONCAT(CONCAT(CASE WHEN `receipt_required_flag` IS NOT NULL THEN `receipt_required_flag` ELSE 'N' END, '~'), CASE WHEN `inspection_required_flag` IS NOT NULL THEN `inspection_required_flag` ELSE 'N' END) = 'N~N' THEN '2' WHEN CONCAT(CONCAT(CASE WHEN `receipt_required_flag` IS NOT NULL THEN `receipt_required_flag` ELSE 'N' END, '~'), CASE WHEN `inspection_required_flag` IS NOT NULL THEN `inspection_required_flag` ELSE 'N' END) = 'Y~N' THEN '3' WHEN CONCAT(CONCAT(CASE WHEN `receipt_required_flag` IS NOT NULL THEN `receipt_required_flag` ELSE 'N' END, '~'), CASE WHEN `inspection_required_flag` IS NOT NULL THEN `inspection_required_flag` ELSE 'N' END) = 'Y~Y' THEN '4' ELSE NULL END AS `_o__c0`
+FROM `default`.`t3`
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t3
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            GatherStats: false
+            Select Operator
+              expressions: CASE WHEN ((concat(concat(CASE WHEN (receipt_required_flag is not null) THEN (receipt_required_flag) ELSE ('N') END, '~'), CASE WHEN (inspection_required_flag is not null) THEN (inspection_required_flag) ELSE ('N') END) = 'N~N')) THEN ('2') WHEN ((concat(concat(CASE WHEN (receipt_required_flag is not null) THEN (receipt_required_flag) ELSE ('N') END, '~'), CASE WHEN (inspection_required_flag is not null) THEN (inspection_required_flag) ELSE ('N') END) = 'Y~N')) THEN ('3') WHEN ((concat(concat(CASE WHEN (receipt_required_flag is not null) THEN (receipt_required_flag) ELSE ('N') END, '~'), CASE WHEN (inspection_required_flag is not null) THEN (inspection_required_flag) ELSE ('N') END) = 'Y~Y')) THEN ('4') ELSE (null) END (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+#### A masked pattern was here ####
+                NumFilesPerFileSink: 1
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+#### A masked pattern was here ####
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    properties:
+                      columns _col0
+                      columns.types string
+                      escape.delim \
+                      hive.serialization.extend.additional.nesting.levels true
+                      serialization.escape.crlf true
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                TotalFiles: 1
+                GatherStats: false
+                MultiFileSpray: false
+      Execution mode: vectorized
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: aaca0885-c7bf-49eb-a568-6243f5504d8a
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"inspection_required_flag":"true","receipt_required_flag":"true"}}
+              bucket_count -1
+              bucketing_version 2
+              column.name.delimiter ,
+              columns receipt_required_flag,inspection_required_flag
+              columns.comments 
+              columns.types string:string
+#### A masked pattern was here ####
+              name default.t3
+              numFiles 0
+              numRows 0
+              rawDataSize 0
+              serialization.ddl struct t3 { string receipt_required_flag, string inspection_required_flag}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 0
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"inspection_required_flag":"true","receipt_required_flag":"true"}}
+                bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
+                columns receipt_required_flag,inspection_required_flag
+                columns.comments 
+                columns.types string:string
+#### A masked pattern was here ####
+                name default.t3
+                numFiles 0
+                numRows 0
+                rawDataSize 0
+                serialization.ddl struct t3 { string receipt_required_flag, string inspection_required_flag}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.t3
+            name: default.t3
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
