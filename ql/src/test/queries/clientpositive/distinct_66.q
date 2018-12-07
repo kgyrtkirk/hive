@@ -67,4 +67,8 @@ c65 int,
 c66 int
 );
 
-select distinct * from widetable;
+
+insert into widetable (c66) values (1),(1),(2);
+create table res0 as select distinct * from widetable;
+select 'expected 2',count(*) from res0;
+
