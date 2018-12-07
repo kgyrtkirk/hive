@@ -12844,7 +12844,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (errMsg == null) {
         errMsg = "Error in parsing ";
       }
-//      throw new SemanticException(errMsg);
+      throw new SemanticException(errMsg);
     }
     if (desc instanceof ExprNodeColumnListDesc) {
       throw new SemanticException("TOK_ALLCOLREF is not supported in current context");
