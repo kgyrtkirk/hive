@@ -416,7 +416,11 @@ STAGE PLANS:
             alias: hbase_pushdown
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
+<<<<<<< HEAD
               predicate: (key < '90') is not true (type: boolean)
+=======
+              predicate: (not COALESCE((key < '90'),false)) (type: boolean)
+>>>>>>> asf/master
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
