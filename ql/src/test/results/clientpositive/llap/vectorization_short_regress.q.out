@@ -2236,15 +2236,9 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-<<<<<<< HEAD
-                          projectedOutputColumnNums: [1, 3, 0, 13, 16, 14, 18]
-                          selectExpressions: CastLongToDouble(col 1:smallint) -> 13:double, DoubleColMultiplyDoubleColumn(col 14:double, col 15:double)(children: CastLongToDouble(col 1:smallint) -> 14:double, CastLongToDouble(col 1:smallint) -> 15:double) -> 16:double, CastLongToDouble(col 0:tinyint) -> 14:double, DoubleColMultiplyDoubleColumn(col 15:double, col 17:double)(children: CastLongToDouble(col 0:tinyint) -> 15:double, CastLongToDouble(col 0:tinyint) -> 17:double) -> 18:double
-                      Statistics: Num rows: 455 Data size: 9548 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                           projectedOutputColumnNums: [1, 3, 0, 14, 17, 18, 21]
                           selectExpressions: CastLongToDouble(col 1:smallint) -> 14:double, DoubleColMultiplyDoubleColumn(col 15:double, col 16:double)(children: CastLongToDouble(col 1:smallint) -> 15:double, CastLongToDouble(col 1:smallint) -> 16:double) -> 17:double, CastLongToDouble(col 0:tinyint) -> 18:double, DoubleColMultiplyDoubleColumn(col 19:double, col 20:double)(children: CastLongToDouble(col 0:tinyint) -> 19:double, CastLongToDouble(col 0:tinyint) -> 20:double) -> 21:double
-                      Statistics: Num rows: 2503 Data size: 52344 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
+                      Statistics: Num rows: 455 Data size: 9548 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col4), sum(_col3), count(_col0), sum(_col1), sum(_col6), sum(_col5), count(_col2), count()
                         Group By Vectorization:
@@ -2309,15 +2303,9 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-<<<<<<< HEAD
-                      projectedOutputColumnNums: [0, 9, 10, 16, 4, 18, 19, 17, 14, 8, 20]
-                      selectExpressions: LongColModuloLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 9:int, FuncPowerDoubleToDouble(col 11:double)(children: DoubleColDivideLongColumn(col 10:double, col 14:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 11:double)(children: DoubleColDivideLongColumn(col 10:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 10:double) -> 11:double) -> 10:double, IfExprNullCondExpr(col 12:boolean, null, col 13:bigint)(children: LongColEqualLongScalar(col 3:bigint, val 1) -> 12:boolean, LongColSubtractLongScalar(col 3:bigint, val 1) -> 13:bigint) -> 14:bigint) -> 11:double) -> 10:double, DecimalScalarDivideDecimalColumn(val -1.389, col 15:decimal(5,0))(children: CastLongToDecimal(col 0:smallint) -> 15:decimal(5,0)) -> 16:decimal(10,9), DoubleColDivideDoubleColumn(col 11:double, col 17:double)(children: CastLongToDouble(col 14:int)(children: LongColModuloLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 14:int) -> 11:double, CastLongToDouble(col 4:bigint) -> 17:double) -> 18:double, LongColUnaryMinus(col 14:int)(children: LongColModuloLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 14:int) -> 19:int, DoubleColDivideLongColumn(col 11:double, col 7:bigint)(children: DoubleColSubtractDoubleColumn(col 5:double, col 17:double)(children: DoubleColDivideLongColumn(col 11:double, col 7:bigint)(children: DoubleColMultiplyDoubleColumn(col 6:double, col 6:double) -> 11:double) -> 17:double) -> 11:double) -> 17:double, LongColUnaryMinus(col 20:int)(children: LongColUnaryMinus(col 14:int)(children: LongColModuloLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 14:int) -> 20:int) -> 14:int, LongColSubtractLongScalar(col 8:bigint, val -89010) -> 20:bigint
-                  Statistics: Num rows: 227 Data size: 39728 Basic stats: COMPLETE Column stats: COMPLETE
-=======
                       projectedOutputColumnNums: [0, 9, 17, 19, 4, 23, 25, 29, 32, 8, 33]
                       selectExpressions: LongColModuloLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 9:int, FuncPowerDoubleToDouble(col 16:double)(children: DoubleColDivideLongColumn(col 12:double, col 15:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 11:double)(children: DoubleColDivideLongColumn(col 10:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 10:double) -> 11:double) -> 12:double, IfExprNullCondExpr(col 13:boolean, null, col 14:bigint)(children: LongColEqualLongScalar(col 3:bigint, val 1) -> 13:boolean, LongColSubtractLongScalar(col 3:bigint, val 1) -> 14:bigint) -> 15:bigint) -> 16:double) -> 17:double, DecimalScalarDivideDecimalColumn(val -1.389, col 18:decimal(5,0))(children: CastLongToDecimal(col 0:smallint) -> 18:decimal(5,0)) -> 19:decimal(10,9), DoubleColDivideDoubleColumn(col 21:double, col 22:double)(children: CastLongToDouble(col 20:int)(children: LongColModuloLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 20:int) -> 21:double, CastLongToDouble(col 4:bigint) -> 22:double) -> 23:double, LongColUnaryMinus(col 24:int)(children: LongColModuloLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 24:int) -> 25:int, DoubleColDivideLongColumn(col 28:double, col 7:bigint)(children: DoubleColSubtractDoubleColumn(col 5:double, col 27:double)(children: DoubleColDivideLongColumn(col 26:double, col 7:bigint)(children: DoubleColMultiplyDoubleColumn(col 6:double, col 6:double) -> 26:double) -> 27:double) -> 28:double) -> 29:double, LongColUnaryMinus(col 31:int)(children: LongColUnaryMinus(col 30:int)(children: LongColModuloLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 30:int) -> 31:int) -> 32:int, LongColSubtractLongScalar(col 8:bigint, val -89010) -> 33:bigint
-                  Statistics: Num rows: 1251 Data size: 218912 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
+                  Statistics: Num rows: 227 Data size: 39728 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: double), _col3 (type: decimal(10,9)), _col4 (type: bigint), _col5 (type: double), _col6 (type: int), _col7 (type: double), _col8 (type: int), _col9 (type: bigint), _col10 (type: bigint)
                     sort order: +++++++++++
