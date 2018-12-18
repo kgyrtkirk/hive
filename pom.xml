@@ -221,12 +221,10 @@
 
   <repositories>
    <!-- This needs to be removed before checking in-->
-  <repositories>
      <repository>
        <id>calcite-aux-repo</id>
        <url>https://www.rxd.hu/misc/calcite-aux/</url>
      </repository>
-  </repositories>
 
     <repository>
       <id>calcite</id>
