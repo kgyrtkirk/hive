@@ -376,17 +376,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-<<<<<<< HEAD
             filterExpr: (key = '238') is not true (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = '238') is not true (type: boolean)
-=======
-            filterExpr: (not COALESCE((key = '238'),false)) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (not COALESCE((key = '238'),false)) (type: boolean)
->>>>>>> asf/master
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -508,17 +501,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-<<<<<<< HEAD
             filterExpr: (key = '11') is not true (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = '11') is not true (type: boolean)
-=======
-            filterExpr: (not COALESCE((key = '11'),false)) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (not COALESCE((key = '11'),false)) (type: boolean)
->>>>>>> asf/master
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
