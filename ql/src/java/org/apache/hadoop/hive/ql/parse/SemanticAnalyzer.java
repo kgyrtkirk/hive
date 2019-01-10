@@ -396,7 +396,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       HiveParser.TOK_ORDERBY, HiveParser.TOK_WINDOWSPEC, HiveParser.TOK_CLUSTERBY,
       HiveParser.TOK_DISTRIBUTEBY, HiveParser.TOK_SORTBY);
 
-  private String invalidQueryMaterializationReason;
+  private String invalidResultCacheReason;
+  private String invalidAutomaticRewritingMaterializationReason;
 
   private static final CommonToken SELECTDI_TOKEN =
       new ImmutableCommonToken(HiveParser.TOK_SELECTDI, "TOK_SELECTDI");
@@ -543,7 +544,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return ctx.getOpContext();
   }
 
-  public String genPartValueString(String partColType, String partVal) throws SemanticException {
+  public static String genPartValueString(String partColType, String partVal) throws SemanticException {
     String returnVal = partVal;
     if (partColType.equals(serdeConstants.STRING_TYPE_NAME) ||
         partColType.contains(serdeConstants.VARCHAR_TYPE_NAME) ||
@@ -7437,6 +7438,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         partitionColumnNames = viewDesc.getPartColNames();
         fileSinkColInfos = new ArrayList<>();
         destTableIsTemporary = false;
+        destTableIsMaterialization = false;
       }
 
       if (isLocal) {
@@ -7495,9 +7497,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         viewDesc.setPartCols(new ArrayList<>(partitionColumns));
       }
 
-      destTableIsTransactional = tblDesc != null && AcidUtils.isTransactionalTable(tblDesc);
-      destTableIsFullAcid = tblDesc != null && AcidUtils.isFullAcidTable(tblDesc);
-
       boolean isDestTempFile = true;
       if (!ctx.isMRTmpFileURI(destinationPath.toUri().toString())) {
         idToTableNameMap.put(String.valueOf(destTableId), destinationPath.toUri().toString());
@@ -7542,7 +7541,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         tableDescriptor = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
       }
 
-      boolean isDfsDir = (destType.intValue() == QBMetaData.DEST_DFS_FILE);
+      boolean isDfsDir = (destType == QBMetaData.DEST_DFS_FILE);
+
+      try {
+        destinationTable = tblDesc != null ? tblDesc.toTable(conf) : viewDesc != null ? viewDesc.toTable(conf) : null;
+      } catch (HiveException e) {
+        throw new SemanticException(e);
+      }
+
+      destTableIsFullAcid = AcidUtils.isFullAcidTable(destinationTable);
 
       if (isPartitioned) {
         // Create a SELECT that may reorder the columns if needed
@@ -7563,12 +7570,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             new SelectDesc(columnExprs, colNames), new RowSchema(rowResolver
                 .getColumnInfos()), input), rowResolver);
         input.setColumnExprMap(colExprMap);
-
-        try {
-          destinationTable = tblDesc != null ? tblDesc.toTable(conf) : viewDesc.toTable(conf);
-        } catch (HiveException e) {
-          throw new SemanticException(e);
-        }
 
         // If this is a partitioned CTAS or MV statement, we are going to create a LoadTableDesc
         // object. Although the table does not exist in metastore, we will swamp the CreateTableTask
@@ -7622,7 +7623,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Unknown destination type: " + destType);
     }
 
-    if (!(destType.intValue() == QBMetaData.DEST_DFS_FILE && qb.getIsQuery())) {
+    if (!(destType == QBMetaData.DEST_DFS_FILE && qb.getIsQuery())) {
       input = genConversionSelectOperator(dest, qb, input, tableDescriptor, dpCtx);
     }
 
@@ -7661,8 +7662,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     canBeMerged &= !destTableIsFullAcid;
 
     // Generate the partition columns from the parent input
-    if (destType.intValue() == QBMetaData.DEST_TABLE
-        || destType.intValue() == QBMetaData.DEST_PARTITION) {
+    if (destType == QBMetaData.DEST_TABLE || destType == QBMetaData.DEST_PARTITION) {
       genPartnCols(dest, input, qb, tableDescriptor, destinationTable, rsCtx);
     }
 
@@ -7704,14 +7704,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // and it is an insert overwrite or insert into table
     if (conf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
         && conf.getBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER)
+        && destinationTable != null && !destinationTable.isNonNative()
+        && !destTableIsTemporary && !destTableIsMaterialization
         && ColumnStatsAutoGatherContext.canRunAutogatherStats(fso)) {
-      // TODO: Column stats autogather does not work for CTAS statements
-      if (destType.intValue() == QBMetaData.DEST_TABLE && !destinationTable.isNonNative()) {
-        genAutoColumnStatsGatheringPipeline(qb, destinationTable, partSpec, input, qb.getParseInfo()
-            .isInsertIntoTable(destinationTable.getDbName(), destinationTable.getTableName()));
-      } else if (destType.intValue() == QBMetaData.DEST_PARTITION && !destinationTable.isNonNative()) {
-        genAutoColumnStatsGatheringPipeline(qb, destinationTable, destinationPartition.getSpec(), input, qb
-            .getParseInfo().isInsertIntoTable(destinationTable.getDbName(), destinationTable.getTableName()));
+      if (destType == QBMetaData.DEST_TABLE) {
+        genAutoColumnStatsGatheringPipeline(qb, destinationTable, partSpec, input,
+            qb.getParseInfo().isInsertIntoTable(destinationTable.getDbName(), destinationTable.getTableName()),
+            false);
+      } else if (destType == QBMetaData.DEST_PARTITION) {
+        genAutoColumnStatsGatheringPipeline(qb, destinationTable, destinationPartition.getSpec(), input,
+            qb.getParseInfo().isInsertIntoTable(destinationTable.getDbName(), destinationTable.getTableName()),
+            false);
+      } else if (destType == QBMetaData.DEST_LOCAL_FILE || destType == QBMetaData.DEST_DFS_FILE) {
+        // CTAS or CMV statement
+        genAutoColumnStatsGatheringPipeline(qb, destinationTable, null, input,
+            false, true);
       }
     }
     return output;
@@ -8066,13 +8073,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
 
-  private void genAutoColumnStatsGatheringPipeline(QB qb, Table table,
-                                                   Map<String, String> partSpec, Operator curr, boolean isInsertInto) throws SemanticException {
+  private void genAutoColumnStatsGatheringPipeline(QB qb, Table table, Map<String, String> partSpec,
+      Operator curr, boolean isInsertInto, boolean useTableValueConstructor)
+      throws SemanticException {
     LOG.info("Generate an operator pipeline to autogather column stats for table " + table.getTableName()
         + " in query " + ctx.getCmd());
     ColumnStatsAutoGatherContext columnStatsAutoGatherContext = null;
     columnStatsAutoGatherContext = new ColumnStatsAutoGatherContext(this, conf, curr, table, partSpec, isInsertInto, ctx);
-    columnStatsAutoGatherContext.insertAnalyzePipeline();
+    if (useTableValueConstructor) {
+      // Table does not exist, use table value constructor to simulate
+      columnStatsAutoGatherContext.insertTableValuesAnalyzePipeline();
+    } else {
+      // Table already exists
+      columnStatsAutoGatherContext.insertAnalyzePipeline();
+    }
     columnStatsAutoGatherContexts.add(columnStatsAutoGatherContext);
   }
 
@@ -13716,6 +13730,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
+      if (createVwDesc.isMaterialized() && createVwDesc.isRewriteEnabled()) {
+        if (!ctx.isCboSucceeded()) {
+          String msg = "Cannot enable automatic rewriting for materialized view.";
+          if (ctx.getCboInfo() != null) {
+            msg += " " + ctx.getCboInfo();
+          }
+          throw new SemanticException(msg);
+        }
+        if (!isValidAutomaticRewritingMaterialization()) {
+          throw new SemanticException("Cannot enable automatic rewriting for materialized view. " +
+              getInvalidAutomaticRewritingMaterializationReason());
+        }
+      }
+
       // ALTER VIEW AS SELECT requires the view must exist
       if (createVwDesc.getIsAlterViewAs() && oldView == null) {
         String viewNotExistErrorMsg =
@@ -14964,7 +14992,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private QueryResultsCache.QueryInfo createCacheQueryInfoForQuery(QueryResultsCache.LookupInfo lookupInfo) {
-    long queryTime = SessionState.get().getQueryCurrentTimestamp().getTime();
+    long queryTime = SessionState.get().getQueryCurrentTimestamp().toEpochMilli();
     return new QueryResultsCache.QueryInfo(queryTime, lookupInfo, queryState.getHiveOperation(),
         resultSchema, getTableAccessInfo(), getColumnAccessInfo(), inputs);
   }
@@ -15033,8 +15061,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return false;
     }
 
-    if (!isValidQueryMaterialization()) {
-      LOG.info("Not eligible for results caching - {}", getInvalidQueryMaterializationReason());
+    if (!isValidQueryCaching()) {
+      LOG.info("Not eligible for results caching - {}", getInvalidResultCacheReason());
       QueryResultsCache.incrementMetric(MetricsConstant.QC_INVALID_FOR_CACHING);
       return false;
     }
@@ -15130,17 +15158,31 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     public String colTypes;
   }
 
-  public String getInvalidQueryMaterializationReason() {
-    return invalidQueryMaterializationReason;
+  public String getInvalidAutomaticRewritingMaterializationReason() {
+    return invalidAutomaticRewritingMaterializationReason;
   }
 
-  public void setInvalidQueryMaterializationReason(
+  public void setInvalidAutomaticRewritingMaterializationReason(
+      String invalidAutomaticRewritingMaterializationReason) {
+    this.invalidAutomaticRewritingMaterializationReason =
+        invalidAutomaticRewritingMaterializationReason;
+  }
+
+  public boolean isValidAutomaticRewritingMaterialization() {
+    return (invalidAutomaticRewritingMaterializationReason == null);
+  }
+
+  public String getInvalidResultCacheReason() {
+    return invalidResultCacheReason;
+  }
+
+  public void setInvalidResultCacheReason(
       String invalidQueryMaterializationReason) {
-    this.invalidQueryMaterializationReason = invalidQueryMaterializationReason;
+    this.invalidResultCacheReason = invalidQueryMaterializationReason;
   }
 
-  public boolean isValidQueryMaterialization() {
-    return (invalidQueryMaterializationReason == null);
+  public boolean isValidQueryCaching() {
+    return (invalidResultCacheReason == null);
   }
 
   protected enum MaterializationRebuildMode {
