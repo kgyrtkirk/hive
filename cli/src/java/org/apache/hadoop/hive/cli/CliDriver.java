@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.common.cli.EscapeCRLFHelper;
 import org.apache.hadoop.hive.common.cli.ShellCmdExecutor;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.io.FetchConverter;
+import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.Validator;
@@ -78,6 +79,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
@@ -236,9 +238,13 @@ public class CliDriver {
           out.println(cmd);
         }
 
+        // Set HDFS CallerContext to queryId and reset back to sessionId after the query is done
+        ShimLoader.getHadoopShims().setHadoopQueryContext(qp.getQueryState().getQueryId());
         ret = qp.run(cmd).getResponseCode();
+
         if (ret != 0) {
           qp.close();
+          ShimLoader.getHadoopShims().setHadoopSessionContext(ss.getSessionId());
           return ret;
         }
 
@@ -276,6 +282,7 @@ public class CliDriver {
         }
 
         qp.close();
+        ShimLoader.getHadoopShims().setHadoopSessionContext(ss.getSessionId());
 
         if (out instanceof FetchConverter) {
           ((FetchConverter) out).fetchFinished();
@@ -716,8 +723,8 @@ public class CliDriver {
     CliSessionState ss = new CliSessionState(new HiveConf(SessionState.class));
     ss.in = System.in;
     try {
-      ss.out = new PrintStream(System.out, true, "UTF-8");
-      ss.info = new PrintStream(System.err, true, "UTF-8");
+      ss.out = new SessionStream(System.out, true, "UTF-8");
+      ss.info = new SessionStream(System.err, true, "UTF-8");
       ss.err = new CachingPrintStream(System.err, true, "UTF-8");
     } catch (UnsupportedEncodingException e) {
       return 3;

@@ -20,9 +20,13 @@ package org.apache.hadoop.hive.metastore;
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.SocketAddress;
 import java.net.Socket;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +35,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
@@ -42,6 +47,8 @@ import org.slf4j.LoggerFactory;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
 public class MetaStoreTestUtils {
+  private static Map<Integer, Thread> map = new HashMap<>();
+
   private static final Logger LOG = LoggerFactory.getLogger(MetaStoreTestUtils.class);
   private static final String TMP_DIR = System.getProperty("test.tmp.dir");
   public static final int RETRY_COUNT = 10;
@@ -75,7 +82,20 @@ public class MetaStoreTestUtils {
     }, "MetaStoreThread-" + port);
     thread.setDaemon(true);
     thread.start();
-    MetaStoreTestUtils.loopUntilHMSReady(port);
+    map.put(port,thread);
+    String msHost = MetastoreConf.getVar(conf, ConfVars.THRIFT_BIND_HOST);
+    MetaStoreTestUtils.loopUntilHMSReady(msHost, port);
+    String serviceDiscMode = MetastoreConf.getVar(conf, ConfVars.THRIFT_SERVICE_DISCOVERY_MODE);
+    if (serviceDiscMode != null && serviceDiscMode.equalsIgnoreCase("zookeeper")) {
+      MetaStoreTestUtils.loopUntilZKReady(conf, msHost, port);
+    }
+  }
+
+  public static void close(final int port){
+    Thread thread = map.get(port);
+    if(thread != null){
+      thread.stop();
+    }
   }
 
   public static int startMetaStoreWithRetry(final HadoopThriftAuthBridge bridge) throws Exception {
@@ -133,8 +153,11 @@ public class MetaStoreTestUtils {
           MetastoreConf.setVar(conf, ConfVars.CONNECT_URL_KEY, jdbcUrl);
         }
 
-        // Setting metastore instance specific metastore uri
-        MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + metaStorePort);
+        // Setting metastore instance specific metastore uri, if dynamic metastore service
+        // discovery is not enabled.
+        if (MetastoreConf.getVar(conf, ConfVars.THRIFT_SERVICE_DISCOVERY_MODE).trim().isEmpty()) {
+          MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + metaStorePort);
+        }
         MetaStoreTestUtils.startMetaStore(metaStorePort, bridge, conf);
 
         // Creating warehouse dir, if not exists
@@ -161,13 +184,19 @@ public class MetaStoreTestUtils {
    * A simple connect test to make sure that the metastore is up
    * @throws Exception
    */
-  private static void loopUntilHMSReady(int port) throws Exception {
+  private static void loopUntilHMSReady(String msHost, int port) throws Exception {
     int retries = 0;
     Exception exc = null;
     while (true) {
       try {
         Socket socket = new Socket();
-        socket.connect(new InetSocketAddress(port), 5000);
+        SocketAddress sockAddr;
+        if (msHost == null) {
+          sockAddr = new InetSocketAddress(port);
+        } else {
+          sockAddr = new InetSocketAddress(msHost, port);
+        }
+        socket.connect(sockAddr, 5000);
         socket.close();
         return;
       } catch (Exception e) {
@@ -185,6 +214,41 @@ public class MetaStoreTestUtils {
     LOG.info(MetaStoreTestUtils.getAllThreadStacksAsString());
     throw exc;
   }
+
+  /**
+   * A simple connect test to make sure that the metastore URI is available in the ZooKeeper
+   * @throws Exception
+   */
+  private static void loopUntilZKReady(Configuration conf, String msHost, int port)
+          throws Exception {
+    ZooKeeperHiveHelper zkHelper = MetastoreConf.getZKConfig(conf);
+    String uri;
+    if (msHost != null && !msHost.trim().isEmpty()) {
+      uri = msHost;
+    } else {
+      uri = InetAddress.getLocalHost().getHostName();
+    }
+    uri = uri + ":" + port;
+    int retries = 0;
+    while (true) {
+      try {
+        List<String> serverUris = zkHelper.getServerUris();
+        // URI of the metastore server should be same as expected.
+        if (!serverUris.equals(Collections.singletonList(uri))) {
+            throw new Exception("Expected metastore URI " + uri + " but got " + serverUris);
+        }
+        return;
+      } catch (Exception e) {
+        if (retries++ > 60) { //give up
+          // Metastore URI is not visible from the ZooKeeper yet.
+          LOG.error("Unable to get metastore URI from the ZooKeeper: " + e.getMessage());
+          throw e;
+        }
+        Thread.sleep(1000);
+      }
+    }
+  }
+
 
   private static String getAllThreadStacksAsString() {
     Map<Thread, StackTraceElement[]> threadStacks = Thread.getAllStackTraces();

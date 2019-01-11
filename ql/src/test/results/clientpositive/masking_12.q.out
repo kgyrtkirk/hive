@@ -25,9 +25,15 @@ POSTHOOK: Lineage: v0.value SIMPLE [(masking_test_n5)masking_test_n5.FieldSchema
 PREHOOK: query: explain
 select * from `v0`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n5
+PREHOOK: Input: default@v0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from `v0`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n5
+POSTHOOK: Input: default@v0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -108,10 +114,18 @@ PREHOOK: query: explain
 select * from `v1_n9`
 limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_subq_n1
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v1_n9
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from `v1_n9`
 limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_subq_n1
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v1_n9
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -147,6 +161,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0
+<<<<<<< HEAD
           Statistics: Num rows: 237 Data size: 902 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
@@ -154,6 +169,19 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+=======
+          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), UDFToDouble(_col0) (type: double)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+>>>>>>> asf/master
 
   Stage: Stage-2
     Map Reduce
@@ -161,32 +189,55 @@ STAGE PLANS:
           TableScan
             alias: src
             filterExpr: key is not null (type: boolean)
+<<<<<<< HEAD
             Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+            properties:
+              insideView TRUE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
             Filter Operator
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
+<<<<<<< HEAD
                 expressions: key (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                expressions: key (type: string), UDFToDouble(key) (type: double)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                 Reduce Output Operator
-                  key expressions: UDFToDouble(_col0) (type: double)
+                  key expressions: _col1 (type: double)
                   sort order: +
+<<<<<<< HEAD
                   Map-reduce partition columns: UDFToDouble(_col0) (type: double)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Map-reduce partition columns: _col1 (type: double)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
                   value expressions: _col0 (type: string)
           TableScan
             Reduce Output Operator
-              key expressions: UDFToDouble(_col0) (type: double)
+              key expressions: _col1 (type: double)
               sort order: +
+<<<<<<< HEAD
               Map-reduce partition columns: UDFToDouble(_col0) (type: double)
               Statistics: Num rows: 237 Data size: 902 Basic stats: COMPLETE Column stats: NONE
+=======
+              Map-reduce partition columns: _col1 (type: double)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
               value expressions: _col0 (type: int)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
+<<<<<<< HEAD
             0 UDFToDouble(_col0) (type: double)
             1 UDFToDouble(_col0) (type: double)
           outputColumnNames: _col0, _col1
@@ -202,6 +253,27 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+=======
+            0 _col1 (type: double)
+            1 _col1 (type: double)
+          outputColumnNames: _col0, _col2
+          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: string), _col2 (type: int)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+            Group By Operator
+              keys: _col0 (type: string), _col1 (type: int)
+              mode: hash
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+>>>>>>> asf/master
 
   Stage: Stage-1
     Map Reduce
@@ -307,9 +379,17 @@ POSTHOOK: Lineage: masking_test_view.key SIMPLE [(masking_test_n5)masking_test_n
 PREHOOK: query: explain
 select key from `masking_test_view`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n5
+PREHOOK: Input: default@masking_test_view
+PREHOOK: Input: default@v0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key from `masking_test_view`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n5
+POSTHOOK: Input: default@masking_test_view
+POSTHOOK: Input: default@v0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -362,9 +442,17 @@ POSTHOOK: Input: default@v0
 PREHOOK: query: explain
 select `v0`.value from `v0` join `masking_test_view` on `v0`.key = `masking_test_view`.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n5
+PREHOOK: Input: default@masking_test_view
+PREHOOK: Input: default@v0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select `v0`.value from `v0` join `masking_test_view` on `v0`.key = `masking_test_view`.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n5
+POSTHOOK: Input: default@masking_test_view
+POSTHOOK: Input: default@v0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

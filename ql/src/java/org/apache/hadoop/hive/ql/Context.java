@@ -105,6 +105,7 @@ public class Context {
   protected String cboInfo;
   protected boolean cboSucceeded;
   protected String optimizedSql;
+  protected String calcitePlan;
   protected String cmd = "";
   private TokenRewriteStream tokenRewriteStream;
   // Holds the qualified name to tokenRewriteStream for the views
@@ -701,14 +702,13 @@ public class Context {
    */
   public Path getExternalTmpPath(Path path) {
     URI extURI = path.toUri();
-    if (extURI.getScheme().equals("viewfs")) {
+    if ("viewfs".equals(extURI.getScheme())) {
       // if we are on viewfs we don't want to use /tmp as tmp dir since rename from /tmp/..
       // to final /user/hive/warehouse/ will fail later, so instead pick tmp dir
       // on same namespace as tbl dir.
       return getExtTmpPathRelTo(path.getParent());
     }
-    return new Path(getExternalScratchDir(extURI), EXT_PREFIX +
-        nextPathId());
+    return new Path(getExternalScratchDir(extURI), EXT_PREFIX + nextPathId());
   }
 
   /**
@@ -1019,6 +1019,14 @@ public class Context {
 
   public void setCboSucceeded(boolean cboSucceeded) {
     this.cboSucceeded = cboSucceeded;
+  }
+
+  public String getCalcitePlan() {
+    return this.calcitePlan;
+  }
+
+  public void setCalcitePlan(String calcitePlan) {
+    this.calcitePlan = calcitePlan;
   }
 
   public Table getMaterializedTable(String cteName) {

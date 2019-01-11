@@ -32,12 +32,16 @@ SELECT
 from str_str_orc
 GROUP BY str2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT
    str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
 from str_str_orc
 GROUP BY str2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -56,14 +60,19 @@ STAGE PLANS:
             TableScan Vectorization:
                 native: true
             Select Operator
-              expressions: str2 (type: string), UDFToInteger(COALESCE(str1,0)) (type: int)
+              expressions: str2 (type: string), UDFToInteger(CASE WHEN (str1 is not null) THEN (str1) ELSE ('0') END) (type: int)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [1, 5]
+<<<<<<< HEAD
                   selectExpressions: CastStringToLong(col 4:string)(children: VectorCoalesce(columns [0, 3])(children: col 0:string, ConstantVectorExpression(val 0) -> 3:string) -> 4:string) -> 5:int
               Statistics: Num rows: 5 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  selectExpressions: CastStringToLong(col 4:string)(children: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string) -> 5:int
+              Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
               Group By Operator
                 aggregations: sum(_col1)
                 Group By Vectorization:
@@ -149,10 +158,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -171,14 +184,19 @@ STAGE PLANS:
             TableScan Vectorization:
                 native: true
             Select Operator
-              expressions: COALESCE(str1,0) (type: string)
+              expressions: CASE WHEN (str1 is not null) THEN (str1) ELSE ('0') END (type: string)
               outputColumnNames: _col0
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [4]
+<<<<<<< HEAD
                   selectExpressions: VectorCoalesce(columns [0, 3])(children: col 0:string, ConstantVectorExpression(val 0) -> 3:string) -> 4:string
               Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  selectExpressions: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string
+              Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
               File Output Operator
                 compressed: false
                 File Sink Vectorization:
@@ -227,12 +245,16 @@ SELECT
 from str_str_orc
 GROUP BY str2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT
    str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
 from str_str_orc
 GROUP BY str2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -251,14 +273,19 @@ STAGE PLANS:
             TableScan Vectorization:
                 native: true
             Select Operator
-              expressions: str2 (type: string), UDFToInteger(COALESCE(str1,0)) (type: int)
+              expressions: str2 (type: string), UDFToInteger(CASE WHEN (str1 is not null) THEN (str1) ELSE ('0') END) (type: int)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [1, 5]
+<<<<<<< HEAD
                   selectExpressions: CastStringToLong(col 4:string)(children: VectorCoalesce(columns [0, 3])(children: col 0:string, ConstantVectorExpression(val 0) -> 3:string) -> 4:string) -> 5:int
               Statistics: Num rows: 5 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  selectExpressions: CastStringToLong(col 4:string)(children: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string) -> 5:int
+              Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
               Group By Operator
                 aggregations: sum(_col1)
                 Group By Vectorization:
@@ -344,10 +371,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -366,14 +397,19 @@ STAGE PLANS:
             TableScan Vectorization:
                 native: true
             Select Operator
-              expressions: COALESCE(str1,0) (type: string)
+              expressions: CASE WHEN (str1 is not null) THEN (str1) ELSE ('0') END (type: string)
               outputColumnNames: _col0
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [4]
+<<<<<<< HEAD
                   selectExpressions: VectorCoalesce(columns [0, 3])(children: col 0:string, ConstantVectorExpression(val 0) -> 3:string) -> 4:string
               Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  selectExpressions: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string
+              Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
               File Output Operator
                 compressed: false
                 File Sink Vectorization:

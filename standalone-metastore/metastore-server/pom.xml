@@ -234,6 +234,11 @@
       <artifactId>postgresql</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-test</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -469,7 +474,7 @@
               <descriptors>
                 <descriptor>src/assembly/bin.xml</descriptor>
               </descriptors>
-              <tarLongFileMode>gnu</tarLongFileMode>
+              <tarLongFileMode>posix</tarLongFileMode>
             </configuration>
           </execution>
         </executions>
@@ -620,16 +625,13 @@
           <execution>
             <phase>prepare-package</phase>
             <goals>
-              <goal>exec</goal>
+              <goal>java</goal>
             </goals>
           </execution>
         </executions>
         <configuration>
-          <executable>java</executable>
+          <mainClass>org.apache.hadoop.hive.metastore.conf.ConfTemplatePrinter</mainClass>
           <arguments>
-            <argument>-classpath</argument>
-            <classpath/>
-            <argument>org.apache.hadoop.hive.metastore.conf.ConfTemplatePrinter</argument>
             <argument>
               ${project.build.directory}/generated-sources/conf/metastore-site.xml.template
             </argument>

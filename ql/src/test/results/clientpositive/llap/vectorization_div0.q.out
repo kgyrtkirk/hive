@@ -2,10 +2,14 @@ PREHOOK: query: explain vectorization expression
 select cint, cint / 0 as cint_div, ctinyint, ctinyint / 0 as ctinyint_div, cbigint, cbigint / 0 as cbigint_div, cdouble, cdouble / 0.0 as cdouble_div
 from alltypesorc order by cint, ctinyint, cbigint, cdouble limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select cint, cint / 0 as cint_div, ctinyint, ctinyint / 0 as ctinyint_div, cbigint, cbigint / 0 as cbigint_div, cdouble, cdouble / 0.0 as cdouble_div
 from alltypesorc order by cint, ctinyint, cbigint, cdouble limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -36,8 +40,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [2, 14, 0, 15, 3, 16, 5, 13]
-                        selectExpressions: DoubleColDivideDoubleScalar(col 13:double, val 0.0)(children: CastLongToDouble(col 2:int) -> 13:double) -> 14:double, DoubleColDivideDoubleScalar(col 13:double, val 0.0)(children: CastLongToDouble(col 0:tinyint) -> 13:double) -> 15:double, DoubleColDivideDoubleScalar(col 13:double, val 0.0)(children: CastLongToDouble(col 3:bigint) -> 13:double) -> 16:double, DoubleColDivideDoubleScalar(col 5:double, val 0.0) -> 13:double
+                        projectedOutputColumnNums: [2, 14, 0, 16, 3, 18, 5, 19]
+                        selectExpressions: DoubleColDivideDoubleScalar(col 13:double, val 0.0)(children: CastLongToDouble(col 2:int) -> 13:double) -> 14:double, DoubleColDivideDoubleScalar(col 15:double, val 0.0)(children: CastLongToDouble(col 0:tinyint) -> 15:double) -> 16:double, DoubleColDivideDoubleScalar(col 17:double, val 0.0)(children: CastLongToDouble(col 3:bigint) -> 17:double) -> 18:double, DoubleColDivideDoubleScalar(col 5:double, val 0.0) -> 19:double
                     Statistics: Num rows: 12288 Data size: 613400 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int), _col2 (type: tinyint), _col4 (type: bigint), _col6 (type: double)
@@ -215,10 +219,14 @@ PREHOOK: query: explain vectorization expression
 select (cbigint - 988888L) as s1, cdouble / (cbigint - 988888L) as s2, 1.2 / (cbigint - 988888L) as s3 
 from alltypesorc where cbigint > 0 and cbigint < 100000000 order by s1, s2, s3 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select (cbigint - 988888L) as s1, cdouble / (cbigint - 988888L) as s2, 1.2 / (cbigint - 988888L) as s3 
 from alltypesorc where cbigint > 0 and cbigint < 100000000 order by s1, s2, s3 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -257,8 +265,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [13, 16, 18]
-                          selectExpressions: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 13:bigint, DoubleColDivideDoubleColumn(col 5:double, col 15:double)(children: CastLongToDouble(col 14:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 14:bigint) -> 15:double) -> 16:double, DecimalScalarDivideDecimalColumn(val 1.2, col 17:decimal(19,0))(children: CastLongToDecimal(col 14:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 14:bigint) -> 17:decimal(19,0)) -> 18:decimal(22,21)
+                          projectedOutputColumnNums: [13, 16, 19]
+                          selectExpressions: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 13:bigint, DoubleColDivideDoubleColumn(col 5:double, col 15:double)(children: CastLongToDouble(col 14:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 14:bigint) -> 15:double) -> 16:double, DecimalScalarDivideDecimalColumn(val 1.2, col 18:decimal(19,0))(children: CastLongToDecimal(col 17:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 17:bigint) -> 18:decimal(19,0)) -> 19:decimal(22,21)
                       Statistics: Num rows: 1365 Data size: 174720 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint), _col1 (type: double), _col2 (type: decimal(22,21))
@@ -435,10 +443,14 @@ PREHOOK: query: explain vectorization expression
 select (cdouble + 200.0) as s1, cbigint / (cdouble + 200.0) as s2, (cdouble + 200.0) / (cdouble + 200.0) as s3, cbigint / (cdouble + 200.0) as s4, 3 / (cdouble + 200.0) as s5, 1.2 / (cdouble + 200.0) as s6
 from alltypesorc where cdouble >= -500 and cdouble < -199 order by s1, s2, s3, s4, s5, s6 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select (cdouble + 200.0) as s1, cbigint / (cdouble + 200.0) as s2, (cdouble + 200.0) / (cdouble + 200.0) as s3, cbigint / (cdouble + 200.0) as s4, 3 / (cdouble + 200.0) as s5, 1.2 / (cdouble + 200.0) as s6
 from alltypesorc where cdouble >= -500 and cdouble < -199 order by s1, s2, s3, s4, s5, s6 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -477,8 +489,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [13, 16, 17, 18, 15, 19]
-                          selectExpressions: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 13:double, DoubleColDivideDoubleColumn(col 14:double, col 15:double)(children: CastLongToDouble(col 3:bigint) -> 14:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 16:double, DoubleColDivideDoubleColumn(col 14:double, col 15:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 17:double, DoubleColDivideDoubleColumn(col 14:double, col 15:double)(children: CastLongToDouble(col 3:bigint) -> 14:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 18:double, DoubleScalarDivideDoubleColumn(val 3.0, col 14:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double) -> 15:double, DoubleScalarDivideDoubleColumn(val 1.2, col 14:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double) -> 19:double
+                          projectedOutputColumnNums: [13, 16, 19, 22, 24, 26]
+                          selectExpressions: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 13:double, DoubleColDivideDoubleColumn(col 14:double, col 15:double)(children: CastLongToDouble(col 3:bigint) -> 14:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 16:double, DoubleColDivideDoubleColumn(col 17:double, col 18:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 17:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 18:double) -> 19:double, DoubleColDivideDoubleColumn(col 20:double, col 21:double)(children: CastLongToDouble(col 3:bigint) -> 20:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 21:double) -> 22:double, DoubleScalarDivideDoubleColumn(val 3.0, col 23:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 23:double) -> 24:double, DoubleScalarDivideDoubleColumn(val 1.2, col 25:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 25:double) -> 26:double
                       Statistics: Num rows: 1365 Data size: 65520 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: double), _col1 (type: double), _col2 (type: double), _col3 (type: double), _col4 (type: double), _col5 (type: double)
@@ -655,10 +667,14 @@ PREHOOK: query: explain vectorization expression
 select cint, cbigint, ctinyint, (cint / (cint - 528534767)) as c1, (cbigint / (cbigint - 1018195815)) as c2, (ctinyint / ctinyint) as c3, (cint % (cint - 528534767)) as c4, (cbigint % (cbigint - 1018195815)) as c5, (ctinyint % ctinyint) as c6
 from alltypesorc where cint > 500000000 or cdouble > 1000000000 or ctinyint = 0 order by cint, cbigint, ctinyint, c1, c2, c3, c4, c5, c6 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select cint, cbigint, ctinyint, (cint / (cint - 528534767)) as c1, (cbigint / (cbigint - 1018195815)) as c2, (ctinyint / ctinyint) as c3, (cint % (cint - 528534767)) as c4, (cbigint % (cbigint - 1018195815)) as c5, (ctinyint % ctinyint) as c6
 from alltypesorc where cint > 500000000 or cdouble > 1000000000 or ctinyint = 0 order by cint, cbigint, ctinyint, c1, c2, c3, c4, c5, c6 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -697,8 +713,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [2, 3, 0, 16, 17, 18, 19, 20, 14]
-                          selectExpressions: DoubleColDivideDoubleColumn(col 13:double, col 15:double)(children: CastLongToDouble(col 2:int) -> 13:double, CastLongToDouble(col 14:int)(children: LongColSubtractLongScalar(col 2:int, val 528534767) -> 14:int) -> 15:double) -> 16:double, DoubleColDivideDoubleColumn(col 13:double, col 15:double)(children: CastLongToDouble(col 3:bigint) -> 13:double, CastLongToDouble(col 14:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 1018195815) -> 14:bigint) -> 15:double) -> 17:double, DoubleColDivideDoubleColumn(col 13:double, col 15:double)(children: CastLongToDouble(col 0:tinyint) -> 13:double, CastLongToDouble(col 0:tinyint) -> 15:double) -> 18:double, LongColModuloLongColumn(col 2:int, col 14:int)(children: LongColSubtractLongScalar(col 2:int, val 528534767) -> 14:int) -> 19:int, LongColModuloLongColumn(col 3:bigint, col 14:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 1018195815) -> 14:bigint) -> 20:bigint, LongColModuloLongColumn(col 0:tinyint, col 0:tinyint) -> 14:tinyint
+                          projectedOutputColumnNums: [2, 3, 0, 16, 20, 23, 25, 27, 28]
+                          selectExpressions: DoubleColDivideDoubleColumn(col 13:double, col 15:double)(children: CastLongToDouble(col 2:int) -> 13:double, CastLongToDouble(col 14:int)(children: LongColSubtractLongScalar(col 2:int, val 528534767) -> 14:int) -> 15:double) -> 16:double, DoubleColDivideDoubleColumn(col 17:double, col 19:double)(children: CastLongToDouble(col 3:bigint) -> 17:double, CastLongToDouble(col 18:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 1018195815) -> 18:bigint) -> 19:double) -> 20:double, DoubleColDivideDoubleColumn(col 21:double, col 22:double)(children: CastLongToDouble(col 0:tinyint) -> 21:double, CastLongToDouble(col 0:tinyint) -> 22:double) -> 23:double, LongColModuloLongColumn(col 2:int, col 24:int)(children: LongColSubtractLongScalar(col 2:int, val 528534767) -> 24:int) -> 25:int, LongColModuloLongColumn(col 3:bigint, col 26:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 1018195815) -> 26:bigint) -> 27:bigint, LongColModuloLongColumn(col 0:tinyint, col 0:tinyint) -> 28:tinyint
                       Statistics: Num rows: 4191 Data size: 217720 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: tinyint), _col3 (type: double), _col4 (type: double), _col5 (type: double), _col6 (type: int), _col7 (type: bigint), _col8 (type: tinyint)

@@ -45,11 +45,17 @@ SELECT *
 FROM test1_n2 LEFT OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n2 LEFT OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -136,6 +142,9 @@ ON (test1_n2.value=test2_n0.value
   AND test1_n2.key between 100 and 102
   AND test2_n0.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n2 LEFT OUTER JOIN test2_n0
@@ -143,6 +152,9 @@ ON (test1_n2.value=test2_n0.value
   AND test1_n2.key between 100 and 102
   AND test2_n0.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -155,15 +167,26 @@ STAGE PLANS:
             alias: test1_n2
             Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
+<<<<<<< HEAD
               expressions: key (type: int), value (type: int), col_1 (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+              expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
               Reduce Output Operator
                 key expressions: _col1 (type: int)
                 sort order: +
                 Map-reduce partition columns: _col1 (type: int)
+<<<<<<< HEAD
                 Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: int), _col2 (type: string)
+=======
+                Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: boolean)
+>>>>>>> asf/master
           TableScan
             alias: test2_n0
             filterExpr: key BETWEEN 100 AND 102 (type: boolean)
@@ -186,11 +209,12 @@ STAGE PLANS:
           condition map:
                Left Outer Join 0 to 1
           filter predicates:
-            0 {VALUE._col0 BETWEEN 100 AND 102}
+            0 {VALUE._col2}
             1 
           keys:
             0 _col1 (type: int)
             1 _col1 (type: int)
+<<<<<<< HEAD
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           Statistics: Num rows: 6 Data size: 952 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
@@ -200,6 +224,21 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+=======
+          outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6
+          Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+>>>>>>> asf/master
 
   Stage: Stage-0
     Fetch Operator
@@ -238,12 +277,18 @@ FROM test1_n2 LEFT OUTER JOIN test2_n0
 ON (test1_n2.key between 100 and 102
   AND test2_n0.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n2 LEFT OUTER JOIN test2_n0
 ON (test1_n2.key between 100 and 102
   AND test2_n0.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -256,6 +301,7 @@ STAGE PLANS:
             alias: test1_n2
             Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
+<<<<<<< HEAD
               expressions: key (type: int), value (type: int), col_1 (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
@@ -263,6 +309,15 @@ STAGE PLANS:
                 sort order: 
                 Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+=======
+              expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: boolean)
+>>>>>>> asf/master
           TableScan
             alias: test2_n0
             filterExpr: key BETWEEN 100 AND 102 (type: boolean)
@@ -283,11 +338,12 @@ STAGE PLANS:
           condition map:
                Left Outer Join 0 to 1
           filter predicates:
-            0 {VALUE._col0 BETWEEN 100 AND 102}
+            0 {VALUE._col3}
             1 
           keys:
             0 
             1 
+<<<<<<< HEAD
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           Statistics: Num rows: 6 Data size: 1142 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
@@ -297,6 +353,21 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+=======
+          outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6
+          Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+>>>>>>> asf/master
 
   Stage: Stage-0
     Fetch Operator
@@ -332,11 +403,17 @@ SELECT *
 FROM test1_n2 RIGHT OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value AND true)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n2 RIGHT OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value AND true)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -420,11 +497,17 @@ SELECT *
 FROM test1_n2 LEFT OUTER JOIN test2_n0
 ON (test1_n2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n2 LEFT OUTER JOIN test2_n0
 ON (test1_n2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -437,6 +520,7 @@ STAGE PLANS:
             alias: test1_n2
             Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
+<<<<<<< HEAD
               expressions: key (type: int), value (type: int), col_1 (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
@@ -444,6 +528,15 @@ STAGE PLANS:
                 sort order: 
                 Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+=======
+              expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: boolean)
+>>>>>>> asf/master
           TableScan
             alias: test2_n0
             Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
@@ -460,11 +553,12 @@ STAGE PLANS:
           condition map:
                Left Outer Join 0 to 1
           filter predicates:
-            0 {VALUE._col0 BETWEEN 100 AND 102}
+            0 {VALUE._col3}
             1 
           keys:
             0 
             1 
+<<<<<<< HEAD
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
@@ -474,6 +568,21 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+=======
+          outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6
+          Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+>>>>>>> asf/master
 
   Stage: Stage-0
     Fetch Operator
@@ -516,6 +625,9 @@ ON (test1_n2.value=test2_n0.value
   OR test1_n2.key between 100 and 102
   OR test2_n0.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n2 LEFT OUTER JOIN test2_n0
@@ -523,6 +635,9 @@ ON (test1_n2.value=test2_n0.value
   OR test1_n2.key between 100 and 102
   OR test2_n0.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -535,6 +650,7 @@ STAGE PLANS:
             alias: test1_n2
             Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
+<<<<<<< HEAD
               expressions: key (type: int), value (type: int), col_1 (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
@@ -542,6 +658,15 @@ STAGE PLANS:
                 sort order: 
                 Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+=======
+              expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: boolean)
+>>>>>>> asf/master
           TableScan
             alias: test2_n0
             Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
@@ -560,6 +685,7 @@ STAGE PLANS:
           keys:
             0 
             1 
+<<<<<<< HEAD
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
           Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
@@ -570,6 +696,22 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+=======
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+          residual filter predicates: {((_col1 = _col5) or _col3 or _col4 BETWEEN 100 AND 102)}
+          Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+>>>>>>> asf/master
 
   Stage: Stage-0
     Fetch Operator
@@ -616,12 +758,18 @@ FROM test1_n2 LEFT OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value
   OR test1_n2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n2 LEFT OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value
   OR test1_n2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -634,6 +782,7 @@ STAGE PLANS:
             alias: test1_n2
             Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
+<<<<<<< HEAD
               expressions: key (type: int), value (type: int), col_1 (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
@@ -641,6 +790,15 @@ STAGE PLANS:
                 sort order: 
                 Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+=======
+              expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: boolean)
+>>>>>>> asf/master
           TableScan
             alias: test2_n0
             Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
@@ -659,6 +817,7 @@ STAGE PLANS:
           keys:
             0 
             1 
+<<<<<<< HEAD
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102)}
           Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
@@ -669,6 +828,22 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+=======
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+          residual filter predicates: {((_col1 = _col5) or _col3)}
+          Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+>>>>>>> asf/master
 
   Stage: Stage-0
     Fetch Operator
@@ -713,12 +888,18 @@ FROM test1_n2 LEFT OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value
   OR test2_n0.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n2 LEFT OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value
   OR test2_n0.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -805,6 +986,9 @@ ON (test1_n2.value=test2_n0.value
   AND (test1_n2.key between 100 and 102
     OR test2_n0.key between 100 and 102))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n2 LEFT OUTER JOIN test2_n0
@@ -812,6 +996,9 @@ ON (test1_n2.value=test2_n0.value
   AND (test1_n2.key between 100 and 102
     OR test2_n0.key between 100 and 102))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -824,15 +1011,26 @@ STAGE PLANS:
             alias: test1_n2
             Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
+<<<<<<< HEAD
               expressions: key (type: int), value (type: int), col_1 (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+              expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
               Reduce Output Operator
                 key expressions: _col1 (type: int)
                 sort order: +
                 Map-reduce partition columns: _col1 (type: int)
+<<<<<<< HEAD
                 Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: int), _col2 (type: string)
+=======
+                Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: boolean)
+>>>>>>> asf/master
           TableScan
             alias: test2_n0
             Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
@@ -853,6 +1051,7 @@ STAGE PLANS:
           keys:
             0 _col1 (type: int)
             1 _col1 (type: int)
+<<<<<<< HEAD
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
           Statistics: Num rows: 8 Data size: 859 Basic stats: COMPLETE Column stats: COMPLETE
@@ -863,6 +1062,22 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+=======
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+          residual filter predicates: {(_col3 or _col4 BETWEEN 100 AND 102)}
+          Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+>>>>>>> asf/master
 
   Stage: Stage-0
     Fetch Operator
@@ -902,12 +1117,18 @@ FROM test1_n2 LEFT OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value
       OR test1_n2.key=test2_n0.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT col_1, col_2
 FROM test1_n2 LEFT OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value
       OR test1_n2.key=test2_n0.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -999,6 +1220,9 @@ ON (test1_n2.value=test2_n0.value
   OR test1_n2.key between 100 and 102
   OR test2_n0.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n2 RIGHT OUTER JOIN test2_n0
@@ -1006,6 +1230,9 @@ ON (test1_n2.value=test2_n0.value
   OR test1_n2.key between 100 and 102
   OR test2_n0.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1029,6 +1256,7 @@ STAGE PLANS:
             alias: test2_n0
             Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
+<<<<<<< HEAD
               expressions: key (type: int), value (type: int), col_2 (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1036,6 +1264,15 @@ STAGE PLANS:
                 sort order: 
                 Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+=======
+              expressions: key (type: int), value (type: int), col_2 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: boolean)
+>>>>>>> asf/master
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1043,6 +1280,7 @@ STAGE PLANS:
           keys:
             0 
             1 
+<<<<<<< HEAD
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
           Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1053,6 +1291,22 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+=======
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+          residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102 or _col6)}
+          Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+>>>>>>> asf/master
 
   Stage: Stage-0
     Fetch Operator
@@ -1099,12 +1353,18 @@ FROM test1_n2 RIGHT OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value
   OR test1_n2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n2 RIGHT OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value
   OR test1_n2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1193,12 +1453,18 @@ FROM test1_n2 RIGHT OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value
   OR test2_n0.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n2 RIGHT OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value
   OR test2_n0.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1222,6 +1488,7 @@ STAGE PLANS:
             alias: test2_n0
             Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
+<<<<<<< HEAD
               expressions: key (type: int), value (type: int), col_2 (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1229,6 +1496,15 @@ STAGE PLANS:
                 sort order: 
                 Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+=======
+              expressions: key (type: int), value (type: int), col_2 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: boolean)
+>>>>>>> asf/master
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1236,6 +1512,7 @@ STAGE PLANS:
           keys:
             0 
             1 
+<<<<<<< HEAD
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           residual filter predicates: {((_col1 = _col4) or _col3 BETWEEN 100 AND 102)}
           Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1246,6 +1523,22 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+=======
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+          residual filter predicates: {((_col1 = _col4) or _col6)}
+          Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+>>>>>>> asf/master
 
   Stage: Stage-0
     Fetch Operator
@@ -1287,6 +1580,9 @@ ON (test1_n2.value=test2_n0.value
   AND (test1_n2.key between 100 and 102
     OR test2_n0.key between 100 and 102))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n2 RIGHT OUTER JOIN test2_n0
@@ -1294,6 +1590,9 @@ ON (test1_n2.value=test2_n0.value
   AND (test1_n2.key between 100 and 102
     OR test2_n0.key between 100 and 102))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1319,15 +1618,26 @@ STAGE PLANS:
             alias: test2_n0
             Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
+<<<<<<< HEAD
               expressions: key (type: int), value (type: int), col_2 (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+              expressions: key (type: int), value (type: int), col_2 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
               Reduce Output Operator
                 key expressions: _col1 (type: int)
                 sort order: +
                 Map-reduce partition columns: _col1 (type: int)
+<<<<<<< HEAD
                 Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: int), _col2 (type: string)
+=======
+                Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: boolean)
+>>>>>>> asf/master
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1335,6 +1645,7 @@ STAGE PLANS:
           keys:
             0 _col1 (type: int)
             1 _col1 (type: int)
+<<<<<<< HEAD
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
           Statistics: Num rows: 8 Data size: 856 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1345,6 +1656,22 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+=======
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+          residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col6)}
+          Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+>>>>>>> asf/master
 
   Stage: Stage-0
     Fetch Operator
@@ -1383,6 +1710,9 @@ ON (test1_n2.value=test2_n0.value
   OR test1_n2.key between 100 and 102
   OR test2_n0.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n2 FULL OUTER JOIN test2_n0
@@ -1390,6 +1720,9 @@ ON (test1_n2.value=test2_n0.value
   OR test1_n2.key between 100 and 102
   OR test2_n0.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1483,12 +1816,18 @@ FROM test1_n2 FULL OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value
   OR test1_n2.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n2 FULL OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value
   OR test1_n2.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1580,12 +1919,18 @@ FROM test1_n2 FULL OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value
   OR test2_n0.key between 100 and 102)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n2 FULL OUTER JOIN test2_n0
 ON (test1_n2.value=test2_n0.value
   OR test2_n0.key between 100 and 102)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1674,6 +2019,9 @@ ON (test1_n2.value=test2_n0.value
   AND (test1_n2.key between 100 and 102
     OR test2_n0.key between 100 and 102))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1_n2 FULL OUTER JOIN test2_n0
@@ -1681,6 +2029,9 @@ ON (test1_n2.value=test2_n0.value
   AND (test1_n2.key between 100 and 102
     OR test2_n0.key between 100 and 102))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1766,7 +2117,7 @@ NULL	NULL	NULL	105	NULL	None
 101	2	Car	102	2	Del
 99	2	Mat	102	2	Del
 NULL	NULL	NULL	104	3	Fli
-Warning: Shuffle Join JOIN[17][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[18][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
 FROM (
@@ -1787,6 +2138,9 @@ FULL OUTER JOIN (
   ) sq2
 ON (sq1.value1 is null or sq2.value4 is null and sq2.value3 != sq1.value2)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_n2
+PREHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
 FROM (
@@ -1807,6 +2161,9 @@ FULL OUTER JOIN (
   ) sq2
 ON (sq1.value1 is null or sq2.value4 is null and sq2.value3 != sq1.value2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_n2
+POSTHOOK: Input: default@test2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-4
@@ -1834,15 +2191,26 @@ STAGE PLANS:
             alias: test2_n0
             Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
+<<<<<<< HEAD
               expressions: key (type: int), value (type: int), col_2 (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+              expressions: key (type: int), value (type: int), col_2 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
               Reduce Output Operator
                 key expressions: _col1 (type: int)
                 sort order: +
                 Map-reduce partition columns: _col1 (type: int)
+<<<<<<< HEAD
                 Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: int), _col2 (type: string)
+=======
+                Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: boolean)
+>>>>>>> asf/master
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1850,6 +2218,7 @@ STAGE PLANS:
           keys:
             0 _col1 (type: int)
             1 _col1 (type: int)
+<<<<<<< HEAD
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
           Statistics: Num rows: 8 Data size: 856 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1859,6 +2228,21 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+=======
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+          residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col6)}
+          Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+>>>>>>> asf/master
 
   Stage: Stage-2
     Map Reduce
@@ -1898,15 +2282,26 @@ STAGE PLANS:
             alias: test1_n2
             Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
+<<<<<<< HEAD
               expressions: key (type: int), value (type: int), col_1 (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+              expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
               Reduce Output Operator
                 key expressions: _col1 (type: int)
                 sort order: +
                 Map-reduce partition columns: _col1 (type: int)
+<<<<<<< HEAD
                 Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col0 (type: int), _col2 (type: string)
+=======
+                Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: boolean)
+>>>>>>> asf/master
           TableScan
             alias: test2_n0
             Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1927,6 +2322,7 @@ STAGE PLANS:
           keys:
             0 _col1 (type: int)
             1 _col1 (type: int)
+<<<<<<< HEAD
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
           Statistics: Num rows: 8 Data size: 859 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1936,6 +2332,21 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+=======
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+          residual filter predicates: {(_col3 or _col4 BETWEEN 100 AND 102)}
+          Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+>>>>>>> asf/master
 
   Stage: Stage-0
     Fetch Operator
@@ -1943,7 +2354,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[17][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[18][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: SELECT *
 FROM (
   SELECT test1_n2.key AS key1, test1_n2.value AS value1, test1_n2.col_1 AS col_1,

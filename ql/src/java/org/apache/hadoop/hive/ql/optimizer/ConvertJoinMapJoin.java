@@ -68,6 +68,8 @@ import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -89,6 +91,7 @@ import com.google.common.math.DoubleMath;
 public class ConvertJoinMapJoin implements NodeProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(ConvertJoinMapJoin.class.getName());
+  private static final int DEFAULT_MAX_EXECUTORS_PER_QUERY_CONTAINER_MODE = 3;
   public float hashTableLoadFactor;
   private long maxJoinMemory;
   private HashMapDataStructureType hashMapDataStructure;
@@ -347,17 +350,52 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
 
   public long computeOnlineDataSizeGeneric(Statistics statistics, long overHeadPerRow, long overHeadPerSlot) {
-
     long onlineDataSize = 0;
     long numRows = statistics.getNumRows();
     if (numRows <= 0) {
       numRows = 1;
     }
     long worstCaseNeededSlots = 1L << DoubleMath.log2(numRows / hashTableLoadFactor, RoundingMode.UP);
-    onlineDataSize += statistics.getDataSize();
+    onlineDataSize += statistics.getDataSize() - hashTableDataSizeAdjustment(numRows, statistics.getColumnStats());
     onlineDataSize += overHeadPerRow * statistics.getNumRows();
     onlineDataSize += overHeadPerSlot * worstCaseNeededSlots;
     return onlineDataSize;
+  }
+
+  /**
+   * In data calculation logic, we include some overhead due to java object refs, etc.
+   * However, this overhead may be different when storing values in hashtable for mapjoin.
+   * Hence, we calculate a size adjustment to the original data size for a given input.
+   */
+  private static long hashTableDataSizeAdjustment(long numRows, List<ColStatistics> colStats) {
+    long result = 0;
+
+    if (numRows <= 0 || colStats == null || colStats.isEmpty()) {
+      return result;
+    }
+
+    for (ColStatistics cs : colStats) {
+      if (cs != null) {
+        String colTypeLowerCase = cs.getColumnType().toLowerCase();
+        long nonNullCount = cs.getNumNulls() > 0 ? numRows - cs.getNumNulls() + 1 : numRows;
+        double overhead = 0;
+        if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
+            || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
+            || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
+          overhead = JavaDataModel.get().lengthForStringOfLength(0);
+        } else if (colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)) {
+          overhead = JavaDataModel.get().lengthForByteArrayOfSize(0);
+        } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||
+            colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME) ||
+            colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME) ||
+            colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
+          overhead = JavaDataModel.get().object();
+        }
+        result = StatsUtils.safeAdd(StatsUtils.safeMult(nonNullCount, overhead), result);
+      }
+    }
+
+    return result;
   }
 
   @VisibleForTesting
@@ -366,7 +404,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
                                                 LlapClusterStateForCompile llapInfo) {
     long maxSize = conf.getLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
     final double overSubscriptionFactor = conf.getFloatVar(ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR);
-    final int maxSlotsPerQuery = conf.getIntVar(ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY);
+    final int maxSlotsPerQuery = getMaxSlotsPerQuery(conf, llapInfo);
     final long memoryCheckInterval = conf.getLongVar(ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL);
     final float inflationFactor = conf.getFloatVar(ConfVars.HIVE_HASH_TABLE_INFLATION_FACTOR);
     final MemoryMonitorInfo memoryMonitorInfo;
@@ -402,6 +440,18 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       LOG.info("Memory monitor info set to : {}", memoryMonitorInfo);
     }
     return memoryMonitorInfo;
+  }
+
+  private int getMaxSlotsPerQuery(HiveConf conf, LlapClusterStateForCompile llapInfo) {
+    int maxExecutorsPerQuery = conf.getIntVar(ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY);
+    if (maxExecutorsPerQuery == -1) {
+      if (llapInfo == null) {
+        maxExecutorsPerQuery = DEFAULT_MAX_EXECUTORS_PER_QUERY_CONTAINER_MODE;
+      } else {
+        maxExecutorsPerQuery = Math.min(Math.max(1, llapInfo.getNumExecutorsPerNode() / 3), 8);
+      }
+    }
+    return maxExecutorsPerQuery;
   }
 
   @SuppressWarnings("unchecked")
@@ -1416,7 +1466,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
             parentOp.getOpTraits().getNumBuckets() : numBuckets;
       }
 
-      if (parentOp instanceof ReduceSinkOperator) {
+      if (!useOpTraits && parentOp instanceof ReduceSinkOperator) {
         ReduceSinkOperator rs = (ReduceSinkOperator) parentOp;
         estimatedBuckets = (estimatedBuckets < rs.getConf().getNumReducers()) ?
             rs.getConf().getNumReducers() : estimatedBuckets;

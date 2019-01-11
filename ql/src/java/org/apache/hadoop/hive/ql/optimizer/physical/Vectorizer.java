@@ -232,7 +232,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.mapred.InputFormat;
@@ -480,7 +479,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(GenericUDFCase.class);
     supportedGenericUDFs.add(GenericUDFWhen.class);
     supportedGenericUDFs.add(GenericUDFCoalesce.class);
-    supportedGenericUDFs.add(GenericUDFNvl.class);
     supportedGenericUDFs.add(GenericUDFElt.class);
     supportedGenericUDFs.add(GenericUDFInitCap.class);
     supportedGenericUDFs.add(GenericUDFInBloomFilter.class);
@@ -714,7 +712,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     public DummyVectorOperator(VectorizationContext vContext) {
       super();
-      this.conf = (DummyRootVectorDesc) new DummyRootVectorDesc();
+      this.conf = new DummyRootVectorDesc();
       this.vContext = vContext;
     }
 
@@ -2133,7 +2131,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     private void vectorizeTableScanOperatorInPlace(TableScanOperator tableScanOperator,
         VectorTaskColumnInfo vectorTaskColumnInfo) {
 
-      TableScanDesc tableScanDesc = (TableScanDesc) tableScanOperator.getConf();
+      TableScanDesc tableScanDesc = tableScanOperator.getConf();
       VectorTableScanDesc vectorTableScanDesc = new VectorTableScanDesc();
       tableScanDesc.setVectorDesc(vectorTableScanDesc);
 
@@ -2815,7 +2813,7 @@ public class Vectorizer implements PhysicalPlanResolver {
           HiveConf.ConfVars.HIVE_VECTORIZATION_PTF_ENABLED.varname + " IS false)");
       return false;
     }
-    PTFDesc ptfDesc = (PTFDesc) op.getConf();
+    PTFDesc ptfDesc = op.getConf();
     boolean isMapSide = ptfDesc.isMapSide();
     if (isMapSide) {
       setOperatorIssue("PTF Mapper not supported");
@@ -3623,6 +3621,9 @@ public class Vectorizer implements PhysicalPlanResolver {
      *
      * Value expressions include keys? YES.
      */
+    boolean supportsValueTypes = true;  // Assume.
+    HashSet<String> notSupportedValueTypes = new HashSet<String>();
+
     int[] bigTableValueColumnMap = new int[allBigTableValueExpressions.length];
     String[] bigTableValueColumnNames = new String[allBigTableValueExpressions.length];
     TypeInfo[] bigTableValueTypeInfos = new TypeInfo[allBigTableValueExpressions.length];
@@ -3637,7 +3638,13 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       ExprNodeDesc exprNode = bigTableExprs.get(i);
       bigTableValueColumnNames[i] = exprNode.toString();
-      bigTableValueTypeInfos[i] = exprNode.getTypeInfo();
+      TypeInfo typeInfo = exprNode.getTypeInfo();
+      if (!(typeInfo instanceof PrimitiveTypeInfo)) {
+        supportsValueTypes = false;
+        Category category = typeInfo.getCategory();
+        notSupportedValueTypes.add(category.toString());
+      }
+      bigTableValueTypeInfos[i] = typeInfo;
     }
     if (bigTableValueExpressionsList.size() == 0) {
       slimmedBigTableValueExpressions = null;
@@ -3880,6 +3887,10 @@ public class Vectorizer implements PhysicalPlanResolver {
     if (!supportsKeyTypes) {
       vectorDesc.setNotSupportedKeyTypes(new ArrayList(notSupportedKeyTypes));
     }
+    vectorDesc.setSupportsValueTypes(supportsValueTypes);
+    if (!supportsValueTypes) {
+      vectorDesc.setNotSupportedValueTypes(new ArrayList(notSupportedValueTypes));
+    }
 
     // Check common conditions for both Optimized and Fast Hash Tables.
     boolean result = true;    // Assume.
@@ -3889,7 +3900,8 @@ public class Vectorizer implements PhysicalPlanResolver {
         !oneMapJoinCondition ||
         hasNullSafes ||
         !smallTableExprVectorizes ||
-        outerJoinHasNoKeys) {
+        outerJoinHasNoKeys ||
+        !supportsValueTypes) {
       result = false;
     }
 
@@ -4659,6 +4671,10 @@ public class Vectorizer implements PhysicalPlanResolver {
     List<ExprNodeDesc> colList = selectDesc.getColList();
     int index = 0;
     final int size = colList.size();
+
+    // this will mark all actual computed columns
+    vContext.markActualScratchColumns();
+
     VectorExpression[] vectorSelectExprs = new VectorExpression[size];
     int[] projectedOutputColumns = new int[size];
     for (int i = 0; i < size; i++) {
@@ -4679,7 +4695,12 @@ public class Vectorizer implements PhysicalPlanResolver {
     // at least one of its children is DECIMAL_64. Some expressions like x % y for example only accepts DECIMAL
     // for x and y (at this time there is only DecimalColModuloDecimalColumn so both x and y has to be DECIMAL).
     // The following method introduces a cast if x or y is DECIMAL_64 and parent expression (x % y) is DECIMAL.
-    fixDecimalDataTypePhysicalVariations(vContext, vectorSelectExprs);
+    try {
+      fixDecimalDataTypePhysicalVariations(vContext, vectorSelectExprs);
+    } finally {
+      vContext.freeMarkedScratchColumns();
+    }
+
 
     vectorSelectDesc.setSelectExpressions(vectorSelectExprs);
     vectorSelectDesc.setProjectedOutputColumns(projectedOutputColumns);

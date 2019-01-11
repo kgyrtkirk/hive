@@ -22,6 +22,11 @@ and ctr1.ctr_customer_sk = c_customer_sk
 order by c_customer_id
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_returns
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 with customer_total_return as
 (select sr_customer_sk as ctr_customer_sk
@@ -46,6 +51,11 @@ and ctr1.ctr_customer_sk = c_customer_sk
 order by c_customer_id
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -73,14 +83,24 @@ Stage-0
               Select Operator [SEL_49] (rows=816091 width=100)
                 Output:["_col0"]
                 Filter Operator [FIL_48] (rows=816091 width=324)
+<<<<<<< HEAD
                   predicate:(_col2 > _col7)
                   Merge Join Operator [MERGEJOIN_134] (rows=2448274 width=324)
                     Conds:RS_45._col1=RS_158._col1(Inner),Output:["_col2","_col6","_col7"]
+=======
+                  predicate:(_col2 > _col6)
+                  Merge Join Operator [MERGEJOIN_134] (rows=2448274 width=324)
+                    Conds:RS_45._col1=RS_158._col1(Inner),Output:["_col2","_col5","_col6"]
+>>>>>>> asf/master
                   <-Reducer 5 [SIMPLE_EDGE]
                     SHUFFLE [RS_45]
                       PartitionCols:_col1
                       Merge Join Operator [MERGEJOIN_132] (rows=2369298 width=213)
+<<<<<<< HEAD
                         Conds:RS_42._col0=RS_153._col0(Inner),Output:["_col1","_col2","_col6"]
+=======
+                        Conds:RS_42._col0=RS_153._col0(Inner),Output:["_col1","_col2","_col5"]
+>>>>>>> asf/master
                       <-Map 12 [SIMPLE_EDGE] vectorized
                         SHUFFLE [RS_153]
                           PartitionCols:_col0
@@ -98,7 +118,11 @@ Stage-0
                           <-Map 11 [SIMPLE_EDGE] vectorized
                             SHUFFLE [RS_150]
                               PartitionCols:_col0
+<<<<<<< HEAD
                               Select Operator [SEL_149] (rows=35 width=90)
+=======
+                              Select Operator [SEL_149] (rows=35 width=4)
+>>>>>>> asf/master
                                 Output:["_col0"]
                                 Filter Operator [FIL_148] (rows=35 width=90)
                                   predicate:((s_state = 'NM') and s_store_sk is not null)
@@ -130,7 +154,11 @@ Stage-0
                                       <-Map 10 [SIMPLE_EDGE] vectorized
                                         SHUFFLE [RS_143]
                                           PartitionCols:_col0
+<<<<<<< HEAD
                                           Select Operator [SEL_142] (rows=652 width=8)
+=======
+                                          Select Operator [SEL_142] (rows=652 width=4)
+>>>>>>> asf/master
                                             Output:["_col0"]
                                             Filter Operator [FIL_141] (rows=652 width=8)
                                               predicate:((d_year = 2000) and d_date_sk is not null)

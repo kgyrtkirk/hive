@@ -770,6 +770,12 @@
       <version>${powermock.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava-testlib</artifactId>
+      <version>${guava.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -902,6 +908,19 @@
             </goals>
             <configuration>
               <classifier>core</classifier>
+            </configuration>
+          </execution>
+          <execution>
+            <id>fallbackauthorizer-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <classifier>fallbackauthorizer</classifier>
+              <includes>
+                <include>org/apache/hadoop/hive/ql/security/authorization/plugin/fallback/*.class</include>
+              </includes>
             </configuration>
           </execution>
         </executions>

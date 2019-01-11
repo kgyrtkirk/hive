@@ -57,6 +57,11 @@ select s.key, s.count from (
   select key, count(1) as count from src5_n3 where key < 10 group by key
 )s
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src2_n6
+PREHOOK: Input: default@src3_n2
+PREHOOK: Input: default@src4_n0
+PREHOOK: Input: default@src5_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select s.key, s.count from (
   select key, count from src2_n6  where key < 10
@@ -68,6 +73,11 @@ select s.key, s.count from (
   select key, count(1) as count from src5_n3 where key < 10 group by key
 )s
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src2_n6
+POSTHOOK: Input: default@src3_n2
+POSTHOOK: Input: default@src4_n0
+POSTHOOK: Input: default@src5_n3
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `count`
 FROM `default`.`src2_n6`
 WHERE `key` < 10
@@ -127,7 +137,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
@@ -149,7 +159,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                 bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
@@ -369,7 +379,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
@@ -391,7 +401,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                 bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
@@ -417,7 +427,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
@@ -439,7 +449,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                 bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
@@ -465,7 +475,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
@@ -487,7 +497,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                 bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
@@ -582,6 +592,11 @@ select s.key, s.count from (
   select a.key as key, b.count as count from src4_n0 a join src5_n3 b on a.key=b.key where a.key < 10
 )s
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src2_n6
+PREHOOK: Input: default@src3_n2
+PREHOOK: Input: default@src4_n0
+PREHOOK: Input: default@src5_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select s.key, s.count from (
   select key, count from src2_n6  where key < 10
@@ -591,6 +606,11 @@ select s.key, s.count from (
   select a.key as key, b.count as count from src4_n0 a join src5_n3 b on a.key=b.key where a.key < 10
 )s
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src2_n6
+POSTHOOK: Input: default@src3_n2
+POSTHOOK: Input: default@src4_n0
+POSTHOOK: Input: default@src5_n3
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `count`
 FROM `default`.`src2_n6`
 WHERE `key` < 10
@@ -667,7 +687,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
@@ -689,7 +709,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                 bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
@@ -715,7 +735,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
@@ -737,7 +757,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                 bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
@@ -927,7 +947,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
@@ -949,7 +969,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                 bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
@@ -975,7 +995,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
@@ -997,7 +1017,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                 bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
@@ -1081,6 +1101,11 @@ select s.key, s.count from (
   select a.key as key, count(1) as count from src4_n0 a join src5_n3 b on a.key=b.key where a.key < 10 group by a.key
 )s
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src2_n6
+PREHOOK: Input: default@src3_n2
+PREHOOK: Input: default@src4_n0
+PREHOOK: Input: default@src5_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select s.key, s.count from (
   select key, count from src2_n6  where key < 10
@@ -1090,6 +1115,11 @@ select s.key, s.count from (
   select a.key as key, count(1) as count from src4_n0 a join src5_n3 b on a.key=b.key where a.key < 10 group by a.key
 )s
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src2_n6
+POSTHOOK: Input: default@src3_n2
+POSTHOOK: Input: default@src4_n0
+POSTHOOK: Input: default@src5_n3
+#### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `count`
 FROM `default`.`src2_n6`
 WHERE `key` < 10
@@ -1167,7 +1197,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
@@ -1189,7 +1219,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                 bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
@@ -1215,7 +1245,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
@@ -1237,7 +1267,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                 bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
@@ -1498,7 +1528,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
@@ -1520,7 +1550,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                 bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,
@@ -1546,7 +1576,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
               bucket_count -1
               bucketing_version 2
               column.name.delimiter ,
@@ -1568,7 +1598,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"count":"true","key":"true"}}
                 bucket_count -1
                 bucketing_version 2
                 column.name.delimiter ,

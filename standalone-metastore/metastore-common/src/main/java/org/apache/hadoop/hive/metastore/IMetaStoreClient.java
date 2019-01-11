@@ -59,6 +59,8 @@ import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
@@ -114,6 +116,7 @@ import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
@@ -127,6 +130,8 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
+import org.apache.hadoop.hive.metastore.api.OptionalCompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.thrift.TException;
@@ -2852,6 +2857,15 @@ public interface IMetaStoreClient {
   long openTxn(String user) throws TException;
 
   /**
+   * Initiate a transaction with given type.
+   * @param user User who is opening this transaction.
+   * @param txnType Type of needed transaction.
+   * @return transaction identifier
+   * @throws TException
+   */
+  long openTxn(String user, TxnType txnType) throws TException;
+
+  /**
    * Initiate a transaction at the target cluster.
    * @param replPolicy The replication policy to uniquely identify the source cluster.
    * @param srcTxnIds The list of transaction ids at the source cluster
@@ -2924,6 +2938,32 @@ public interface IMetaStoreClient {
    */
   void commitTxn(long txnid)
       throws NoSuchTxnException, TxnAbortedException, TException;
+
+  /**
+   * Like commitTxn but it will atomically store as well a key and a value. This
+   * can be useful for example to know if the transaction corresponding to
+   * txnid has been committed by later querying with DESCRIBE EXTENDED TABLE.
+   * TABLE_PARAMS from the metastore must already have a row with the TBL_ID
+   * corresponding to the table in the parameters and PARAM_KEY the same as key
+   * in the parameters. The way to update this table is with an ALTER command
+   * to overwrite/create the table properties.
+   * @param txnid id of transaction to be committed.
+   * @param tableId id of the table to associate the key/value with
+   * @param key key to be committed. It must start with "_meta". The reason
+   *            for this is to prevent important keys being updated, like owner.
+   * @param value value to be committed.
+   * @throws NoSuchTxnException if the requested transaction does not exist.
+   * This can result fro the transaction having timed out and been deleted by
+   * the compactor.
+   * @throws TxnAbortedException if the requested transaction has been
+   * aborted.  This can result from the transaction timing out.
+   * @throws IllegalStateException if not exactly one row corresponding to
+   * tableId and key are found in TABLE_PARAMS while updating.
+   * @throws TException
+   */
+  void commitTxnWithKeyValue(long txnid, long tableId,
+      String key, String value) throws NoSuchTxnException,
+      TxnAbortedException, TException;
 
   /**
    * Commit a transaction.  This will also unlock any locks associated with
@@ -3514,22 +3554,22 @@ public interface IMetaStoreClient {
   void createResourcePlan(WMResourcePlan resourcePlan, String copyFromName)
       throws InvalidObjectException, MetaException, TException;
 
-  WMFullResourcePlan getResourcePlan(String resourcePlanName)
+  WMFullResourcePlan getResourcePlan(String resourcePlanName, String ns)
     throws NoSuchObjectException, MetaException, TException;
 
-  List<WMResourcePlan> getAllResourcePlans()
+  List<WMResourcePlan> getAllResourcePlans(String ns)
       throws NoSuchObjectException, MetaException, TException;
 
-  void dropResourcePlan(String resourcePlanName)
+  void dropResourcePlan(String resourcePlanName, String ns)
       throws NoSuchObjectException, MetaException, TException;
 
-  WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMNullableResourcePlan resourcePlan,
+  WMFullResourcePlan alterResourcePlan(String resourcePlanName, String ns, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
 
-  WMFullResourcePlan getActiveResourcePlan() throws MetaException, TException;
+  WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException, TException;
 
-  WMValidateResourcePlanResponse validateResourcePlan(String resourcePlanName)
+  WMValidateResourcePlanResponse validateResourcePlan(String resourcePlanName, String ns)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
 
   void createWMTrigger(WMTrigger trigger)
@@ -3538,10 +3578,10 @@ public interface IMetaStoreClient {
   void alterWMTrigger(WMTrigger trigger)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
 
-  void dropWMTrigger(String resourcePlanName, String triggerName)
+  void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
       throws NoSuchObjectException, MetaException, TException;
 
-  List<WMTrigger> getTriggersForResourcePlan(String resourcePlan)
+  List<WMTrigger> getTriggersForResourcePlan(String resourcePlan, String ns)
       throws NoSuchObjectException, MetaException, TException;
 
   void createWMPool(WMPool pool)
@@ -3550,7 +3590,7 @@ public interface IMetaStoreClient {
   void alterWMPool(WMNullablePool pool, String poolPath)
       throws NoSuchObjectException, InvalidObjectException, TException;
 
-  void dropWMPool(String resourcePlanName, String poolPath)
+  void dropWMPool(String resourcePlanName, String poolPath, String ns)
       throws TException;
 
   void createOrUpdateWMMapping(WMMapping mapping, boolean isUpdate)
@@ -3560,7 +3600,7 @@ public interface IMetaStoreClient {
       throws TException;
 
   void createOrDropTriggerToPoolMapping(String resourcePlanName, String triggerName,
-      String poolPath, boolean shouldDrop) throws AlreadyExistsException, NoSuchObjectException,
+      String poolPath, boolean shouldDrop, String ns) throws AlreadyExistsException, NoSuchObjectException,
       InvalidObjectException, MetaException, TException;
 
   /**
@@ -3758,4 +3798,80 @@ public interface IMetaStoreClient {
 
   /** Reads runtime statistics. */
   List<RuntimeStat> getRuntimeStats(int maxWeight, int maxCreateTime) throws TException;
+
+  /**
+   * Generic Partition request API, providing different ways of filtering and controlling output.
+   *
+   * The API entry point is getPartitionsWithSpecs(), which is based on a single
+   * request/response object model.
+   *
+   * The request (GetPartitionsRequest) defines any filtering that should be done for partitions
+   * as well as the list of fields that should be returned (this is called ProjectionSpec).
+   * Projection is simply a list of dot separated strings which represent the fields which should
+   * be returned. Projection may also include whitelist or blacklist of parameters to include in
+   * the partition. When both blacklist and whitelist are present, the blacklist supersedes the
+   * whitelist in case of conflicts.
+   *
+   * Partition filter spec is the generalization of various types of partition filtering.
+   * Partitions can be filtered by names, by values or by partition expressions.
+   */
+  GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request) throws TException;
+
+  /**
+   * Get the next compaction job to do.
+   * @param workerId id of the worker requesting.
+   * @return next compaction job encapsulated in a {@link CompactionInfoStruct}.
+   * @throws MetaException
+   * @throws TException
+   */
+  OptionalCompactionInfoStruct findNextCompact(String workerId) throws MetaException, TException;
+
+  /**
+   * Set the compaction highest write id.
+   * @param cr compaction job being done.
+   * @param txnId transaction id.
+   * @throws TException
+   */
+  void updateCompactorState(CompactionInfoStruct cr, long txnId) throws TException;
+
+  /**
+   * Get columns.
+   * @param cr compaction job.
+   * @return
+   * @throws TException
+   */
+  List<String> findColumnsWithStats(CompactionInfoStruct cr) throws TException;
+
+  /**
+   * Mark a finished compaction as cleaned.
+   * @param cr compaction job.
+   * @throws MetaException
+   * @throws TException
+   */
+  void markCleaned(CompactionInfoStruct cr) throws MetaException, TException;
+
+  /**
+   * Mark a finished compaction as compacted.
+   * @param cr compaction job.
+   * @throws MetaException
+   * @throws TException
+   */
+  void markCompacted(CompactionInfoStruct cr) throws MetaException, TException;
+
+  /**
+   * Mark a finished compaction as failed.
+   * @param cr compaction job.
+   * @throws MetaException
+   * @throws TException
+   */
+  void markFailed(CompactionInfoStruct cr) throws MetaException, TException;
+
+  /**
+   * Set the hadoop id for a compaction.
+   * @param jobId mapreduce job id that will do the compaction.
+   * @param cqId compaction id.
+   * @throws MetaException
+   * @throws TException
+   */
+  void setHadoopJobid(String jobId, long cqId) throws MetaException, TException;
 }

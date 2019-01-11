@@ -25,9 +25,15 @@ POSTHOOK: Output: default@insert_into3b
 PREHOOK: query: EXPLAIN FROM src INSERT INTO TABLE insert_into3a SELECT * ORDER BY key, value LIMIT 50
                  INSERT INTO TABLE insert_into3b SELECT * ORDER BY key, value LIMIT 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into3a
+PREHOOK: Output: default@insert_into3b
 POSTHOOK: query: EXPLAIN FROM src INSERT INTO TABLE insert_into3a SELECT * ORDER BY key, value LIMIT 50
                  INSERT INTO TABLE insert_into3b SELECT * ORDER BY key, value LIMIT 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into3a
+POSTHOOK: Output: default@insert_into3b
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -52,7 +58,12 @@ STAGE PLANS:
               Reduce Output Operator
                 key expressions: _col0 (type: string), _col1 (type: string)
                 sort order: ++
+<<<<<<< HEAD
                 Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                TopN Hash Memory Usage: 0.1
+>>>>>>> asf/master
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
@@ -156,7 +167,12 @@ STAGE PLANS:
             Reduce Output Operator
               key expressions: _col0 (type: string), _col1 (type: string)
               sort order: ++
+<<<<<<< HEAD
               Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
+>>>>>>> asf/master
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
@@ -272,9 +288,15 @@ POSTHOOK: Input: default@insert_into3b
 PREHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE insert_into3a SELECT * LIMIT 10
                  INSERT INTO TABLE insert_into3b SELECT * LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_into3a
+PREHOOK: Output: default@insert_into3b
 POSTHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE insert_into3a SELECT * LIMIT 10
                  INSERT INTO TABLE insert_into3b SELECT * LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_into3a
+POSTHOOK: Output: default@insert_into3b
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -301,7 +323,12 @@ STAGE PLANS:
                 Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
+<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+                  Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
+>>>>>>> asf/master
                   value expressions: _col0 (type: string), _col1 (type: string)
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -408,7 +435,12 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
+<<<<<<< HEAD
               Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
+=======
+              Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
+>>>>>>> asf/master
               value expressions: _col0 (type: string), _col1 (type: string)
       Execution mode: vectorized
       Reduce Operator Tree:

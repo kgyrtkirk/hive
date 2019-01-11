@@ -123,10 +123,14 @@ PREHOOK: query: explain vectorization expression
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
 hex(cbinary), cdecimal FROM parquet_types_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_types_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
 hex(cbinary), cdecimal FROM parquet_types_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_types_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -181,9 +185,13 @@ POSTHOOK: Input: default@parquet_types_n2
 PREHOOK: query: explain vectorization expression
 SELECT cchar, LENGTH(cchar), cvarchar, LENGTH(cvarchar), cdecimal, SIGN(cdecimal) FROM parquet_types_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_types_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 SELECT cchar, LENGTH(cchar), cvarchar, LENGTH(cvarchar), cdecimal, SIGN(cdecimal) FROM parquet_types_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_types_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -245,6 +253,8 @@ FROM parquet_types_n2
 GROUP BY ctinyint
 ORDER BY ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_types_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 SELECT ctinyint,
   MAX(cint),
@@ -257,6 +267,8 @@ FROM parquet_types_n2
 GROUP BY ctinyint
 ORDER BY ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_types_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -354,8 +366,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [0, 1, 2, 3, 10, 11, 9]
-                      selectExpressions: DoubleColDivideLongColumn(col 4:double, col 5:bigint) -> 10:double, FuncPowerDoubleToDouble(col 12:double)(children: DoubleColDivideLongColumn(col 11:double, col 8:bigint)(children: DoubleColSubtractDoubleColumn(col 6:double, col 12:double)(children: DoubleColDivideLongColumn(col 11:double, col 8:bigint)(children: DoubleColMultiplyDoubleColumn(col 7:double, col 7:double) -> 11:double) -> 12:double) -> 11:double) -> 12:double) -> 11:double
+                      projectedOutputColumnNums: [0, 1, 2, 3, 10, 15, 9]
+                      selectExpressions: DoubleColDivideLongColumn(col 4:double, col 5:bigint) -> 10:double, FuncPowerDoubleToDouble(col 14:double)(children: DoubleColDivideLongColumn(col 13:double, col 8:bigint)(children: DoubleColSubtractDoubleColumn(col 6:double, col 12:double)(children: DoubleColDivideLongColumn(col 11:double, col 8:bigint)(children: DoubleColMultiplyDoubleColumn(col 7:double, col 7:double) -> 11:double) -> 12:double) -> 13:double) -> 14:double) -> 15:double
                   Statistics: Num rows: 3 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: tinyint)
@@ -464,10 +476,14 @@ PREHOOK: query: explain vectorization expression
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
 hex(cbinary), cdecimal FROM parquet_type_nodict
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_type_nodict
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
 hex(cbinary), cdecimal FROM parquet_type_nodict
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_type_nodict
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -522,9 +538,13 @@ POSTHOOK: Input: default@parquet_type_nodict
 PREHOOK: query: explain vectorization expression
 SELECT cchar, LENGTH(cchar), cvarchar, LENGTH(cvarchar), cdecimal, SIGN(cdecimal) FROM parquet_type_nodict
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_type_nodict
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 SELECT cchar, LENGTH(cchar), cvarchar, LENGTH(cvarchar), cdecimal, SIGN(cdecimal) FROM parquet_type_nodict
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_type_nodict
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -576,8 +596,12 @@ vwxyz	5	abcdede	7	12.83	1
 wxyza	5	abcde	5	73.04	1
 PREHOOK: query: explain vectorization select max(t), min(t) from parquet_type_nodict
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_type_nodict
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select max(t), min(t) from parquet_type_nodict
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_type_nodict
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

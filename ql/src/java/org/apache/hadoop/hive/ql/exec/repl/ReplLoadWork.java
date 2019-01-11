@@ -29,6 +29,9 @@ import org.apache.hadoop.hive.ql.exec.Task;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Iterator;
+import java.util.List;
+import static org.apache.hadoop.hive.ql.exec.repl.ExternalTableCopyTaskBuilder.DirCopyWork;
 
 @Explain(displayName = "Replication Load Operator", explainLevels = { Explain.Level.USER,
     Explain.Level.DEFAULT,
@@ -37,13 +40,14 @@ public class ReplLoadWork implements Serializable {
   final String dbNameToLoadIn;
   final String tableNameToLoadIn;
   final String dumpDirectory;
-  private final transient BootstrapEventsIterator bootstrapIterator;
   private final ConstraintEventsIterator constraintsIterator;
-  private final transient IncrementalLoadEventsIterator incrementalIterator;
   private int loadTaskRunCount = 0;
   private DatabaseEvent.State state = null;
+  private final transient BootstrapEventsIterator bootstrapIterator;
+  private final transient IncrementalLoadEventsIterator incrementalIterator;
   private final transient IncrementalLoadTasksBuilder incrementalLoad;
   private transient Task<? extends Serializable> rootTask;
+  private final transient Iterator<DirCopyWork> pathsToCopyIterator;
 
   /*
   these are sessionState objects that are copied over to work to allow for parallel execution.
@@ -53,7 +57,8 @@ public class ReplLoadWork implements Serializable {
   final LineageState sessionStateLineageState;
 
   public ReplLoadWork(HiveConf hiveConf, String dumpDirectory, String dbNameToLoadIn,
-      String tableNameToLoadIn, LineageState lineageState, boolean isIncrementalDump) throws IOException {
+      String tableNameToLoadIn, LineageState lineageState, boolean isIncrementalDump, Long eventTo,
+      List<DirCopyWork> pathsToCopyIterator) throws IOException {
     this.tableNameToLoadIn = tableNameToLoadIn;
     sessionStateLineageState = lineageState;
     this.dumpDirectory = dumpDirectory;
@@ -63,19 +68,16 @@ public class ReplLoadWork implements Serializable {
       incrementalIterator = new IncrementalLoadEventsIterator(dumpDirectory, hiveConf);
       this.bootstrapIterator = null;
       this.constraintsIterator = null;
-      incrementalLoad = new IncrementalLoadTasksBuilder(dbNameToLoadIn, tableNameToLoadIn, dumpDirectory,
-              incrementalIterator, hiveConf);
+      incrementalLoad =
+          new IncrementalLoadTasksBuilder(dbNameToLoadIn, tableNameToLoadIn, dumpDirectory,
+              incrementalIterator, hiveConf, eventTo);
     } else {
       this.bootstrapIterator = new BootstrapEventsIterator(dumpDirectory, dbNameToLoadIn, hiveConf);
       this.constraintsIterator = new ConstraintEventsIterator(dumpDirectory, hiveConf);
       incrementalIterator = null;
       incrementalLoad = null;
     }
-  }
-
-  public ReplLoadWork(HiveConf hiveConf, String dumpDirectory, String dbNameOrPattern,
-      LineageState lineageState) throws IOException {
-    this(hiveConf, dumpDirectory, dbNameOrPattern, null, lineageState, false);
+    this.pathsToCopyIterator = pathsToCopyIterator.iterator();
   }
 
   public BootstrapEventsIterator iterator() {
@@ -120,5 +122,9 @@ public class ReplLoadWork implements Serializable {
 
   public void setRootTask(Task<? extends Serializable> rootTask) {
     this.rootTask = rootTask;
+  }
+
+  public Iterator<DirCopyWork> getPathsToCopyIterator() {
+    return pathsToCopyIterator;
   }
 }

@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.exec.persistence.MatchTracker;
 import org.apache.hadoop.hive.ql.exec.persistence.ObjectContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.UnwrapRowContainer;
+import org.apache.hadoop.hive.ql.exec.spark.SmallTableCache;
 import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.exec.tez.LlapObjectCache;
 import org.apache.hadoop.hive.ql.exec.tez.LlapObjectSubCache;
@@ -183,7 +184,16 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     // On Tez only: The hash map might already be cached in the container we run
     // the task in. On MR: The cache is a no-op.
     String queryId = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVEQUERYID);
-    cacheKey = "HASH_MAP_" + this.getOperatorId() + "_container";
+    // The cacheKey may have already been defined in the MapJoin conf spec
+    // as part of the Shared Work Optimization if it can be reused among
+    // multiple mapjoin operators. In that case, we take that key from conf
+    // and append this.getClass().getName() to disambiguate between different
+    // classes that may be using the same source data, e.g.
+    // VectorMapJoinInnerGenerateResultOperator and VectorMapJoinLeftSemiLongOperator.
+    // If the cacheKey is not defined in the conf, then we generate it.
+    cacheKey = conf.getCacheKey() == null ?
+        MapJoinDesc.generateCacheKey(this.getOperatorId()) :
+        conf.getCacheKey() + "_" + this.getClass().getName();
     cache = ObjectCacheFactory.getCache(hconf, queryId, false);
     loader = getHashTableLoader(hconf);
 
@@ -728,6 +738,21 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
   @Override
   public void closeOp(boolean abort) throws HiveException {
+
+    // Call the small table cache cache method, this way when a task finishes, we still keep the small table around
+    // for at least 30 seconds, which gives any tasks scheduled in the future a chance to re-use the small table.
+    if (HiveConf.getVar(hconf, ConfVars.HIVE_EXECUTION_ENGINE).equals("spark") &&
+            SparkUtilities.isDedicatedCluster(hconf)) {
+
+      for (byte pos = 0; pos < mapJoinTables.length; pos++) {
+        if (pos != conf.getPosBigTable()) {
+          MapJoinTableContainer container = mapJoinTables[pos];
+          if (container != null && container.getKey() != null) {
+            SmallTableCache.cache(container.getKey(), container);
+          }
+        }
+      }
+    }
 
     if (isFullOuterMapJoin) {
 

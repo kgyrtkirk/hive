@@ -58,6 +58,8 @@ select
   interval '1 2:3:4' day to second, interval_day_time(str2)
 from vector_interval_1 order by str1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   str1,
@@ -65,6 +67,8 @@ select
   interval '1 2:3:4' day to second, interval_day_time(str2)
 from vector_interval_1 order by str1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -165,6 +169,8 @@ select
   interval '1-2' year to month - interval_year_month(str1)
 from vector_interval_1 order by dt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   dt,
@@ -176,6 +182,8 @@ select
   interval '1-2' year to month - interval_year_month(str1)
 from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -200,9 +208,15 @@ STAGE PLANS:
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
+<<<<<<< HEAD
                   projectedOutputColumnNums: [1, 7, 6, 9, 8]
                   selectExpressions: IntervalYearMonthColAddIntervalYearMonthColumn(col 5:interval_year_month, col 6:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 5:interval_year_month, CastStringToIntervalYearMonth(col 2:string) -> 6:interval_year_month) -> 7:interval_year_month, IntervalYearMonthScalarAddIntervalYearMonthColumn(val 14, col 5:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 5:interval_year_month) -> 6:interval_year_month, IntervalYearMonthColSubtractIntervalYearMonthColumn(col 5:interval_year_month, col 8:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 5:interval_year_month, CastStringToIntervalYearMonth(col 2:string) -> 8:interval_year_month) -> 9:interval_year_month, IntervalYearMonthScalarSubtractIntervalYearMonthColumn(val 14, col 5:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 5:interval_year_month) -> 8:interval_year_month
               Statistics: Num rows: 2 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+=======
+                  projectedOutputColumnNums: [1, 7, 9, 12, 14]
+                  selectExpressions: IntervalYearMonthColAddIntervalYearMonthColumn(col 5:interval_year_month, col 6:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 5:interval_year_month, CastStringToIntervalYearMonth(col 2:string) -> 6:interval_year_month) -> 7:interval_year_month, IntervalYearMonthScalarAddIntervalYearMonthColumn(val 14, col 8:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 8:interval_year_month) -> 9:interval_year_month, IntervalYearMonthColSubtractIntervalYearMonthColumn(col 10:interval_year_month, col 11:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 10:interval_year_month, CastStringToIntervalYearMonth(col 2:string) -> 11:interval_year_month) -> 12:interval_year_month, IntervalYearMonthScalarSubtractIntervalYearMonthColumn(val 14, col 13:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 13:interval_year_month) -> 14:interval_year_month
+              Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
               Reduce Output Operator
                 key expressions: _col0 (type: date)
                 sort order: +
@@ -284,6 +298,8 @@ select
   interval '1 2:3:4' day to second - interval_day_time(str2)
 from vector_interval_1 order by dt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   dt,
@@ -295,6 +311,8 @@ select
   interval '1 2:3:4' day to second - interval_day_time(str2)
 from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -319,9 +337,15 @@ STAGE PLANS:
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
+<<<<<<< HEAD
                   projectedOutputColumnNums: [1, 7, 6, 9, 8]
                   selectExpressions: IntervalDayTimeColAddIntervalDayTimeColumn(col 5:interval_day_time, col 6:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 5:interval_day_time, CastStringToIntervalDayTime(col 3:string) -> 6:interval_day_time) -> 7:interval_day_time, IntervalDayTimeScalarAddIntervalDayTimeColumn(val 1 02:03:04.000000000, col 5:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 5:interval_day_time) -> 6:interval_day_time, IntervalDayTimeColSubtractIntervalDayTimeColumn(col 5:interval_day_time, col 8:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 5:interval_day_time, CastStringToIntervalDayTime(col 3:string) -> 8:interval_day_time) -> 9:interval_day_time, IntervalDayTimeScalarSubtractIntervalDayTimeColumn(val 1 02:03:04.000000000, col 5:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 5:interval_day_time) -> 8:interval_day_time
               Statistics: Num rows: 2 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+=======
+                  projectedOutputColumnNums: [1, 7, 9, 12, 14]
+                  selectExpressions: IntervalDayTimeColAddIntervalDayTimeColumn(col 5:interval_day_time, col 6:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 5:interval_day_time, CastStringToIntervalDayTime(col 3:string) -> 6:interval_day_time) -> 7:interval_day_time, IntervalDayTimeScalarAddIntervalDayTimeColumn(val 1 02:03:04.000000000, col 8:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 8:interval_day_time) -> 9:interval_day_time, IntervalDayTimeColSubtractIntervalDayTimeColumn(col 10:interval_day_time, col 11:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 10:interval_day_time, CastStringToIntervalDayTime(col 3:string) -> 11:interval_day_time) -> 12:interval_day_time, IntervalDayTimeScalarSubtractIntervalDayTimeColumn(val 1 02:03:04.000000000, col 13:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 13:interval_day_time) -> 14:interval_day_time
+              Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
               Reduce Output Operator
                 key expressions: _col0 (type: date)
                 sort order: +
@@ -409,6 +433,8 @@ select
   dt - interval_day_time(str2)
 from vector_interval_1 order by dt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   dt,
@@ -426,6 +452,8 @@ select
   dt - interval_day_time(str2)
 from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -450,9 +478,15 @@ STAGE PLANS:
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
+<<<<<<< HEAD
                   projectedOutputColumnNums: [1, 5, 7, 6, 9, 8, 11, 12, 14, 15, 16, 17, 18]
                   selectExpressions: DateColAddIntervalYearMonthScalar(col 1:date, val 1-2) -> 5:date, DateColAddIntervalYearMonthColumn(col 1:date, col 6:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 6:interval_year_month) -> 7:date, IntervalYearMonthScalarAddDateColumn(val 1-2, col 1:interval_year_month) -> 6:date, IntervalYearMonthColAddDateColumn(col 8:interval_year_month, col 1:date)(children: CastStringToIntervalYearMonth(col 2:string) -> 8:interval_year_month) -> 9:date, DateColSubtractIntervalYearMonthScalar(col 1:date, val 1-2) -> 8:date, DateColSubtractIntervalYearMonthColumn(col 1:date, col 10:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 10:interval_year_month) -> 11:date, DateColAddIntervalDayTimeScalar(col 1:date, val 1 02:03:04.000000000) -> 12:timestamp, DateColAddIntervalDayTimeColumn(col 1:date, col 13:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 13:interval_day_time) -> 14:timestamp, IntervalDayTimeScalarAddDateColumn(val 1 02:03:04.000000000, col 1:date) -> 15:timestamp, IntervalDayTimeColAddDateColumn(col 13:interval_day_time, col 1:date)(children: CastStringToIntervalDayTime(col 3:string) -> 13:interval_day_time) -> 16:timestamp, DateColSubtractIntervalDayTimeScalar(col 1:date, val 1 02:03:04.000000000) -> 17:timestamp, DateColSubtractIntervalDayTimeColumn(col 1:date, col 13:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 13:interval_day_time) -> 18:timestamp
               Statistics: Num rows: 2 Data size: 848 Basic stats: COMPLETE Column stats: NONE
+=======
+                  projectedOutputColumnNums: [1, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22]
+                  selectExpressions: DateColAddIntervalYearMonthScalar(col 1:date, val 1-2) -> 5:date, DateColAddIntervalYearMonthColumn(col 1:date, col 6:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 6:interval_year_month) -> 7:date, IntervalYearMonthScalarAddDateColumn(val 1-2, col 1:interval_year_month) -> 8:date, IntervalYearMonthColAddDateColumn(col 9:interval_year_month, col 1:date)(children: CastStringToIntervalYearMonth(col 2:string) -> 9:interval_year_month) -> 10:date, DateColSubtractIntervalYearMonthScalar(col 1:date, val 1-2) -> 11:date, DateColSubtractIntervalYearMonthColumn(col 1:date, col 12:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 12:interval_year_month) -> 13:date, DateColAddIntervalDayTimeScalar(col 1:date, val 1 02:03:04.000000000) -> 14:timestamp, DateColAddIntervalDayTimeColumn(col 1:date, col 15:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 15:interval_day_time) -> 16:timestamp, IntervalDayTimeScalarAddDateColumn(val 1 02:03:04.000000000, col 1:date) -> 17:timestamp, IntervalDayTimeColAddDateColumn(col 18:interval_day_time, col 1:date)(children: CastStringToIntervalDayTime(col 3:string) -> 18:interval_day_time) -> 19:timestamp, DateColSubtractIntervalDayTimeScalar(col 1:date, val 1 02:03:04.000000000) -> 20:timestamp, DateColSubtractIntervalDayTimeColumn(col 1:date, col 21:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 21:interval_day_time) -> 22:timestamp
+              Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
               Reduce Output Operator
                 key expressions: _col0 (type: date)
                 sort order: +
@@ -552,6 +586,8 @@ select
   ts - interval_day_time(str2)
 from vector_interval_1 order by ts
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   ts,
@@ -569,6 +605,8 @@ select
   ts - interval_day_time(str2)
 from vector_interval_1 order by ts
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -593,9 +631,15 @@ STAGE PLANS:
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
+<<<<<<< HEAD
                   projectedOutputColumnNums: [0, 5, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18]
                   selectExpressions: TimestampColAddIntervalYearMonthScalar(col 0:timestamp, val 1-2) -> 5:timestamp, TimestampColAddIntervalYearMonthColumn(col 0:timestamp, col 6:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 6:interval_year_month) -> 7:timestamp, IntervalYearMonthScalarAddTimestampColumn(val 1-2, col 0:interval_year_month) -> 8:timestamp, IntervalYearMonthColAddTimestampColumn(col 6:interval_year_month, col 0:timestamp)(children: CastStringToIntervalYearMonth(col 2:string) -> 6:interval_year_month) -> 9:timestamp, TimestampColSubtractIntervalYearMonthScalar(col 0:timestamp, val 1-2) -> 10:timestamp, TimestampColSubtractIntervalYearMonthColumn(col 0:timestamp, col 6:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 6:interval_year_month) -> 11:timestamp, TimestampColAddIntervalDayTimeScalar(col 0:timestamp, val 1 02:03:04.000000000) -> 12:timestamp, TimestampColAddIntervalDayTimeColumn(col 0:timestamp, col 13:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 13:interval_day_time) -> 14:timestamp, IntervalDayTimeScalarAddTimestampColumn(val 1 02:03:04.000000000, col 0:timestamp) -> 15:timestamp, IntervalDayTimeColAddTimestampColumn(col 13:interval_day_time, col 0:timestamp)(children: CastStringToIntervalDayTime(col 3:string) -> 13:interval_day_time) -> 16:timestamp, TimestampColSubtractIntervalDayTimeScalar(col 0:timestamp, val 1 02:03:04.000000000) -> 17:timestamp, TimestampColSubtractIntervalDayTimeColumn(col 0:timestamp, col 13:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 13:interval_day_time) -> 18:timestamp
               Statistics: Num rows: 2 Data size: 816 Basic stats: COMPLETE Column stats: NONE
+=======
+                  projectedOutputColumnNums: [0, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22]
+                  selectExpressions: TimestampColAddIntervalYearMonthScalar(col 0:timestamp, val 1-2) -> 5:timestamp, TimestampColAddIntervalYearMonthColumn(col 0:timestamp, col 6:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 6:interval_year_month) -> 7:timestamp, IntervalYearMonthScalarAddTimestampColumn(val 1-2, col 0:interval_year_month) -> 8:timestamp, IntervalYearMonthColAddTimestampColumn(col 9:interval_year_month, col 0:timestamp)(children: CastStringToIntervalYearMonth(col 2:string) -> 9:interval_year_month) -> 10:timestamp, TimestampColSubtractIntervalYearMonthScalar(col 0:timestamp, val 1-2) -> 11:timestamp, TimestampColSubtractIntervalYearMonthColumn(col 0:timestamp, col 12:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 12:interval_year_month) -> 13:timestamp, TimestampColAddIntervalDayTimeScalar(col 0:timestamp, val 1 02:03:04.000000000) -> 14:timestamp, TimestampColAddIntervalDayTimeColumn(col 0:timestamp, col 15:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 15:interval_day_time) -> 16:timestamp, IntervalDayTimeScalarAddTimestampColumn(val 1 02:03:04.000000000, col 0:timestamp) -> 17:timestamp, IntervalDayTimeColAddTimestampColumn(col 18:interval_day_time, col 0:timestamp)(children: CastStringToIntervalDayTime(col 3:string) -> 18:interval_day_time) -> 19:timestamp, TimestampColSubtractIntervalDayTimeScalar(col 0:timestamp, val 1 02:03:04.000000000) -> 20:timestamp, TimestampColSubtractIntervalDayTimeColumn(col 0:timestamp, col 21:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 21:interval_day_time) -> 22:timestamp
+              Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> asf/master
               Reduce Output Operator
                 key expressions: _col0 (type: timestamp)
                 sort order: +
@@ -686,6 +730,8 @@ select
   ts - timestamp '2001-01-01 01:02:03'
 from vector_interval_1 order by ts
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   ts,
@@ -694,6 +740,8 @@ select
   ts - timestamp '2001-01-01 01:02:03'
 from vector_interval_1 order by ts
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -793,6 +841,8 @@ select
   dt - date '2001-01-01'
 from vector_interval_1 order by dt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   dt,
@@ -801,6 +851,8 @@ select
   dt - date '2001-01-01'
 from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -903,6 +955,8 @@ select
   date '2001-01-01' - ts
 from vector_interval_1 order by dt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
   dt,
@@ -914,6 +968,8 @@ select
   date '2001-01-01' - ts
 from vector_interval_1 order by dt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_interval_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true

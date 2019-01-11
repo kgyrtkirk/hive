@@ -42,6 +42,10 @@ order by item_sk
         ,d_date
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 WITH web_v1 as (
 select
@@ -86,6 +90,10 @@ order by item_sk
         ,d_date
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -145,7 +153,11 @@ Stage-0
                                       <-Map 7 [SIMPLE_EDGE] vectorized
                                         SHUFFLE [RS_92]
                                           PartitionCols:_col0
+<<<<<<< HEAD
                                           Select Operator [SEL_89] (rows=317 width=102)
+=======
+                                          Select Operator [SEL_89] (rows=317 width=98)
+>>>>>>> asf/master
                                             Output:["_col0","_col1"]
                                             Filter Operator [FIL_88] (rows=317 width=102)
                                               predicate:(d_date_sk is not null and d_month_seq BETWEEN 1212 AND 1223)

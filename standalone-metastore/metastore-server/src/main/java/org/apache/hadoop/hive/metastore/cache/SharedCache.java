@@ -210,7 +210,7 @@ public class SharedCache {
       }
     }
 
-    boolean cachePartitions(List<Partition> parts, SharedCache sharedCache) {
+    boolean cachePartitions(Iterable<Partition> parts, SharedCache sharedCache) {
       try {
         tableLock.writeLock().lock();
         for (Partition part : parts) {
@@ -292,11 +292,14 @@ public class SharedCache {
         tableLock.writeLock().lock();
         PartitionWrapper wrapper =
             partitionCache.remove(CacheUtils.buildPartitionCacheKey(partVal));
+        if (wrapper == null) {
+          return null;
+        }
         isPartitionCacheDirty.set(true);
+        part = CacheUtils.assemble(wrapper, sharedCache);
         if (wrapper.getSdHash() != null) {
           sharedCache.decrSd(wrapper.getSdHash());
         }
-        part = CacheUtils.assemble(wrapper, sharedCache);
         // Remove col stats
         String partialKey = CacheUtils.buildPartitionCacheKey(partVal);
         Iterator<Entry<String, ColumnStatisticsObj>> iterator =
@@ -461,7 +464,11 @@ public class SharedCache {
     public void removeTableColStats(String colName) {
       try {
         tableLock.writeLock().lock();
-        tableColStatsCache.remove(colName);
+        if (colName == null) {
+          tableColStatsCache.clear();
+        } else {
+          tableColStatsCache.remove(colName);
+        }
         isTableColStatsCacheDirty.set(true);
       } finally {
         tableLock.writeLock().unlock();
@@ -1167,6 +1174,10 @@ public class SharedCache {
       }
       TableWrapper tblWrapper =
           tableCache.remove(CacheUtils.buildTableKey(catName, dbName, tblName));
+      if (tblWrapper == null) {
+        //in case of retry, ignore second try.
+        return;
+      }
       byte[] sdHash = tblWrapper.getSdHash();
       if (sdHash != null) {
         decrSd(sdHash);
@@ -1404,7 +1415,7 @@ public class SharedCache {
   }
 
   public void addPartitionsToCache(String catName, String dbName, String tblName,
-      List<Partition> parts) {
+      Iterable<Partition> parts) {
     try {
       cacheLock.readLock().lock();
       TableWrapper tblWrapper = tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));

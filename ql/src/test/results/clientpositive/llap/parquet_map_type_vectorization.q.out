@@ -97,9 +97,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain vectorization expression select stringMap, intMap, doubleMap, stringMap['k2'], intMap[456],
 doubleMap[123.123], stringMap[stringIndex], intMap[intIndex], doubleMap[doubleIndex] from parquet_map_type limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization expression select stringMap, intMap, doubleMap, stringMap['k2'], intMap[456],
 doubleMap[123.123], stringMap[stringIndex], intMap[intIndex], doubleMap[doubleIndex] from parquet_map_type limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -186,9 +190,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain vectorization expression select sum(intMap[123]), sum(doubleMap[123.123]), stringMap['k1']
 from parquet_map_type where stringMap['k1'] like 'v100%' group by stringMap['k1'] order by stringMap['k1'] limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain vectorization expression select sum(intMap[123]), sum(doubleMap[123.123]), stringMap['k1']
 from parquet_map_type where stringMap['k1'] like 'v100%' group by stringMap['k1'] order by stringMap['k1'] limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -227,8 +235,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [8, 9, 10]
-                          selectExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k1) -> 8:string, VectorUDFMapIndexLongScalar(col 2:map<int,int>, key: 123) -> 9:int, VectorUDFMapIndexDecimalScalar(col 3:map<double,double>, key: 123.123) -> 10:double
+                          projectedOutputColumnNums: [9, 10, 11]
+                          selectExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k1) -> 9:string, VectorUDFMapIndexLongScalar(col 2:map<int,int>, key: 123) -> 10:int, VectorUDFMapIndexDecimalScalar(col 3:map<double,double>, key: 123.123) -> 11:double
                       Statistics: Num rows: 511 Data size: 995378 Basic stats: COMPLETE Column stats: NONE
                       Top N Key Operator
                         sort order: +
@@ -237,15 +245,15 @@ STAGE PLANS:
                         top n: 10
                         Top N Key Vectorization:
                             className: VectorTopNKeyOperator
-                            keyExpressions: col 8:string
+                            keyExpressions: col 9:string
                             native: true
                         Group By Operator
                           aggregations: sum(_col1), sum(_col2)
                           Group By Vectorization:
-                              aggregators: VectorUDAFSumLong(col 9:int) -> bigint, VectorUDAFSumDouble(col 10:double) -> double
+                              aggregators: VectorUDAFSumLong(col 10:int) -> bigint, VectorUDAFSumDouble(col 11:double) -> double
                               className: VectorGroupByOperator
                               groupByMode: HASH
-                              keyExpressions: col 8:string
+                              keyExpressions: col 9:string
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0, 1]

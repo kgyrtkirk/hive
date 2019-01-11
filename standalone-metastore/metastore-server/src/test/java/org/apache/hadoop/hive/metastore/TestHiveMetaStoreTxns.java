@@ -22,17 +22,29 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 /**
@@ -52,6 +64,7 @@ public class TestHiveMetaStoreTxns {
 
   private final Configuration conf = MetastoreConf.newMetastoreConf();
   private IMetaStoreClient client;
+  private Connection conn;
 
   @Test
   public void testTxns() throws Exception {
@@ -84,60 +97,94 @@ public class TestHiveMetaStoreTxns {
   }
 
   @Test
-  public void testTxnRange() throws Exception {
-    ValidTxnList validTxns = client.getValidTxns();
-    Assert.assertEquals(ValidTxnList.RangeResponse.NONE,
-        validTxns.isTxnRangeValid(1L, 3L));
-    List<Long> tids = client.openTxns("me", 5).getTxn_ids();
+  public void testTxNWithKeyValue() throws Exception {
+    Statement stm = conn.createStatement();
 
-    HeartbeatTxnRangeResponse rsp = client.heartbeatTxnRange(1, 5);
-    Assert.assertEquals(0, rsp.getNosuch().size());
-    Assert.assertEquals(0, rsp.getAborted().size());
+    String dbName = "mydbKeyValue";
+    String tblName = "mytable";
 
-    client.rollbackTxn(1L);
-    client.commitTxn(2L);
-    client.commitTxn(3L);
-    client.commitTxn(4L);
-    validTxns = client.getValidTxns();
-    System.out.println("validTxns = " + validTxns);
-    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
-        validTxns.isTxnRangeValid(2L, 2L));
-    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
-        validTxns.isTxnRangeValid(2L, 3L));
-    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
-        validTxns.isTxnRangeValid(2L, 4L));
-    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
-        validTxns.isTxnRangeValid(3L, 4L));
+    Database db = new DatabaseBuilder().setName(dbName).build(conf);
+    db.unsetCatalogName();
+    Table tbl = new TableBuilder().setDbName(dbName).setTableName(tblName)
+        .addCol("id", "int").addCol("name", "string")
+        .setType(TableType.MANAGED_TABLE.name()).build(conf);
 
-    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
-        validTxns.isTxnRangeValid(1L, 4L));
-    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
-        validTxns.isTxnRangeValid(2L, 5L));
-    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
-        validTxns.isTxnRangeValid(1L, 2L));
-    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
-        validTxns.isTxnRangeValid(4L, 5L));
+    try {
+      client.createDatabase(db);
+      client.createTable(tbl);
+      tbl = client.getTable(dbName, tblName);
 
-    Assert.assertEquals(ValidTxnList.RangeResponse.NONE,
-        validTxns.isTxnRangeValid(1L, 1L));
-    Assert.assertEquals(ValidTxnList.RangeResponse.NONE,
-        validTxns.isTxnRangeValid(5L, 10L));
+      stm.executeUpdate(
+          "INSERT INTO TABLE_PARAMS(TBL_ID, PARAM_KEY)" + " VALUES(" + tbl.getId() + String.format(", '%smykey')", TxnStore.TXN_KEY_START));
 
-    validTxns = new ValidReadTxnList("10:5:4,5,6:");
-    Assert.assertEquals(ValidTxnList.RangeResponse.NONE,
-        validTxns.isTxnRangeValid(4,6));
-    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
-        validTxns.isTxnRangeValid(7, 10));
-    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
-        validTxns.isTxnRangeValid(7, 11));
-    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
-        validTxns.isTxnRangeValid(3, 6));
-    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
-        validTxns.isTxnRangeValid(4, 7));
-    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
-        validTxns.isTxnRangeValid(1, 12));
-    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
-        validTxns.isTxnRangeValid(1, 3));
+      List<Long> tids = client.openTxns("me", 1).getTxn_ids();
+      Assert.assertEquals(1L, (long) tids.get(0));
+      client.commitTxnWithKeyValue(1, tbl.getId(), TxnStore.TXN_KEY_START + "mykey", "myvalue");
+      ValidTxnList validTxns = client.getValidTxns(1);
+      Assert.assertTrue(validTxns.isTxnValid(1));
+
+      ResultSet rs = stm.executeQuery("SELECT TBL_ID, PARAM_KEY, PARAM_VALUE"
+          + " FROM TABLE_PARAMS WHERE TBL_ID = " + tbl.getId());
+
+      Assert.assertTrue(rs.next());
+      Assert.assertEquals(rs.getLong(1), tbl.getId());
+      Assert.assertEquals(rs.getString(2),  TxnStore.TXN_KEY_START + "mykey");
+      Assert.assertEquals(rs.getString(3), "myvalue");
+    } finally {
+      client.dropTable(dbName, tblName);
+      client.dropDatabase(dbName);
+      stm.execute("DELETE FROM TABLE_PARAMS WHERE TBL_ID = " + tbl.getId() + String.format(
+          " AND PARAM_KEY = '%smykey'", TxnStore.TXN_KEY_START));
+    }
+  }
+
+  @Test
+  public void testTxNWithKeyValueNoTableId() throws Exception {
+    List<Long> tids = client.openTxns("me", 1).getTxn_ids();
+    Assert.assertEquals(1L, (long) tids.get(0));
+    try {
+      client.commitTxnWithKeyValue(1, 10, TxnStore.TXN_KEY_START + "mykey",
+          "myvalue");
+      Assert.fail("Should have raised exception");
+    } catch (IllegalStateException e) {
+      Assert.assertTrue(e.getMessage().contains("key=" + TxnStore.TXN_KEY_START + "mykey"));
+      Assert.assertTrue(e.getMessage().contains("value=myvalue"));
+      Assert.assertTrue(e.getMessage().contains("Only one row should have been affected but"));
+    }
+    ValidTxnList validTxns = client.getValidTxns(1);
+    Assert.assertTrue(validTxns.isTxnValid(1));
+  }
+
+  @Test
+  public void testTxNWithKeyWrongPrefix() throws Exception {
+    String dbName = "mydbKeyValueWrongPrefix";
+    String tblName = "mytable";
+    List<Long> tids = client.openTxns("me", 1).getTxn_ids();
+    Assert.assertEquals(1L, (long) tids.get(0));
+    try {
+      Database db = new DatabaseBuilder().setName(dbName).build(conf);
+      db.unsetCatalogName();
+      client.createDatabase(db);
+
+      Table tbl = new TableBuilder().setDbName(dbName).setTableName(tblName)
+          .addCol("id", "int").addCol("name", "string")
+          .setType(TableType.MANAGED_TABLE.name()).build(conf);
+      client.createTable(tbl);
+      tbl = client.getTable(dbName, tblName);
+
+      client.commitTxnWithKeyValue(1, tbl.getId(), "mykey",
+          "myvalue");
+      Assert.fail("Should have raised exception");
+    } catch (IllegalArgumentException e) {
+      Assert.assertTrue(e.getMessage().contains("key=mykey"));
+      Assert.assertTrue(e.getMessage().contains("value=myvalue"));
+      Assert.assertTrue(e.getMessage().contains("key should start with"));
+    } finally {
+      client.dropTable(dbName, tblName);
+      client.dropDatabase(dbName);
+    }
+    ValidTxnList validTxns = client.getValidTxns(1);
+    Assert.assertTrue(validTxns.isTxnValid(1));
   }
 
   @Test
@@ -252,16 +299,28 @@ public class TestHiveMetaStoreTxns {
     Assert.assertTrue(sawFive);
   }
 
+  @Test
+  public void testOpenTxnWithType() throws Exception {
+    long txnId = client.openTxn("me", TxnType.DEFAULT);
+    client.commitTxn(txnId);
+    ValidTxnList validTxns = client.getValidTxns();
+    Assert.assertTrue(validTxns.isTxnValid(txnId));
+  }
+
   @Before
   public void setUp() throws Exception {
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     TxnDbUtil.setConfValues(conf);
     TxnDbUtil.prepDb(conf);
     client = new HiveMetaStoreClient(conf);
+    String connectionStr = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
+
+    conn = DriverManager.getConnection(connectionStr);
   }
 
   @After
   public void tearDown() throws Exception {
+    conn.close();
     TxnDbUtil.cleanDb(conf);
   }
 }
