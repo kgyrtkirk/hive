@@ -127,7 +127,7 @@
     <avatica.version>1.12.0</avatica.version>
     <avro.version>1.8.2</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
-    <calcite.version>1.18.0</calcite.version>
+    <calcite.version>1.18.0-tx1</calcite.version>
     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
     <datanucleus-core.version>4.1.17</datanucleus-core.version>
     <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
@@ -221,6 +221,24 @@
 
   <repositories>
    <!-- This needs to be removed before checking in-->
+     <repository>
+       <id>calcite-aux-repo</id>
+       <url>https://www.rxd.hu/misc/calcite-aux/</url>
+     </repository>
+
+    <repository>
+      <id>calcite</id>
+      <name>calcite-1.18</name>
+      <url>https://repository.apache.org/content/repositories/orgapachecalcite-1050/</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
     <repository>
       <id>datanucleus</id>
       <name>datanucleus maven repository</name>
