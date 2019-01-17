@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
@@ -28,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.thrift.TException;
@@ -155,7 +157,13 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         if (ci.runAs == null) {
           ci.runAs = findUserToRunAs(sd.getLocation(), t);
         }
-        long compactorTxnId = msc.openTxns(ci.runAs, 1).getTxn_ids().get(0);
+        /**
+         * we cannot have Worker use HiveTxnManager (which is on ThreadLocal) since
+         * then the Driver would already have the an open txn but then this txn would have
+         * multiple statements in it (for query based compactor) which is not supported (and since
+         * this case some of the statements are DDL, even in the future will not be allowed in a
+         * multi-stmt txn. {@link Driver#setCompactionWriteIds(ValidWriteIdList, long)} */
+        long compactorTxnId = msc.openTxn(ci.runAs, TxnType.COMPACTION);
 
         heartbeater = new CompactionHeartbeater(compactorTxnId, fullTableName, conf);
         heartbeater.start();
