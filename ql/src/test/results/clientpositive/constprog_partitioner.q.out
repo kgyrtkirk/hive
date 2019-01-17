@@ -40,21 +40,12 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: string)
-<<<<<<< HEAD
-                outputColumnNames: _col1
-                Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col1 (type: string)
-=======
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string)
->>>>>>> asf/master
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -62,13 +53,8 @@ STAGE PLANS:
           keys:
             0 
             1 
-<<<<<<< HEAD
-          outputColumnNames: _col2
-          Statistics: Num rows: 4 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
-=======
           outputColumnNames: _col1
-          Statistics: Num rows: 250000 Data size: 5551000 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+          Statistics: Num rows: 4 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: 100 (type: int), 101 (type: int), _col1 (type: string)
             outputColumnNames: _col0, _col1, _col2
