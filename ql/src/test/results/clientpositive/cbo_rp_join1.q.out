@@ -36,44 +36,24 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-<<<<<<< HEAD
-              expressions: key (type: int), value (type: int)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: int), value (type: int), (key = 40) (type: boolean)
+              outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 sort order: 
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: int), _col1 (type: int)
-=======
-              expressions: key (type: int), value (type: int), (key = 40) (type: boolean)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                sort order: 
-                Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: boolean)
->>>>>>> asf/master
           TableScan
             alias: b
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-<<<<<<< HEAD
-              expressions: key (type: int), value (type: int)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: int), value (type: int), (key = 40) (type: boolean)
+              outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 sort order: 
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: int), _col1 (type: int)
-=======
-              expressions: key (type: int), value (type: int), (key = 40) (type: boolean)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                sort order: 
-                Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: boolean)
->>>>>>> asf/master
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -84,13 +64,8 @@ STAGE PLANS:
           keys:
             0 
             1 
-<<<<<<< HEAD
-          outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
-=======
           outputColumnNames: _col0, _col1, _col3, _col4
-          Statistics: Num rows: 1 Data size: 441 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+          Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: hash(_col0,_col1,_col3,_col4) (type: int)
             outputColumnNames: _col0
@@ -168,44 +143,24 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-<<<<<<< HEAD
-              expressions: key (type: int), value (type: int)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: int), value (type: int), (key = 40) (type: boolean), (value = 40) (type: boolean)
+              outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 sort order: 
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: int), _col1 (type: int)
-=======
-              expressions: key (type: int), value (type: int), (key = 40) (type: boolean), (value = 40) (type: boolean)
-              outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                sort order: 
-                Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: boolean), _col3 (type: boolean)
->>>>>>> asf/master
           TableScan
             alias: b
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-<<<<<<< HEAD
-              expressions: key (type: int), value (type: int)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: int), value (type: int), (key = 40) (type: boolean)
+              outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 sort order: 
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: int), _col1 (type: int)
-=======
-              expressions: key (type: int), value (type: int), (key = 40) (type: boolean)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                sort order: 
-                Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: boolean)
->>>>>>> asf/master
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -216,13 +171,8 @@ STAGE PLANS:
           keys:
             0 
             1 
-<<<<<<< HEAD
-          outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
-=======
           outputColumnNames: _col0, _col1, _col4, _col5
-          Statistics: Num rows: 1 Data size: 441 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+          Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: hash(_col0,_col1,_col4,_col5) (type: int)
             outputColumnNames: _col0
@@ -300,44 +250,24 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-<<<<<<< HEAD
-              expressions: key (type: int), value (type: int)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: int), value (type: int), (key = 40) (type: boolean)
+              outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 sort order: 
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: int), _col1 (type: int)
-=======
-              expressions: key (type: int), value (type: int), (key = 40) (type: boolean)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                sort order: 
-                Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: boolean)
->>>>>>> asf/master
           TableScan
             alias: b
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-<<<<<<< HEAD
-              expressions: key (type: int), value (type: int)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: int), value (type: int), (key = 40) (type: boolean)
+              outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 sort order: 
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: int), _col1 (type: int)
-=======
-              expressions: key (type: int), value (type: int), (key = 40) (type: boolean)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                sort order: 
-                Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: boolean)
->>>>>>> asf/master
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -348,13 +278,8 @@ STAGE PLANS:
           keys:
             0 
             1 
-<<<<<<< HEAD
-          outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
-=======
           outputColumnNames: _col0, _col1, _col3, _col4
-          Statistics: Num rows: 1 Data size: 441 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+          Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: hash(_col0,_col1,_col3,_col4) (type: int)
             outputColumnNames: _col0
@@ -432,44 +357,24 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-<<<<<<< HEAD
-              expressions: key (type: int), value (type: int)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: int), value (type: int), (key > 40) (type: boolean), (value > 50) (type: boolean), (key = value) (type: boolean)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 sort order: 
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: int), _col1 (type: int)
-=======
-              expressions: key (type: int), value (type: int), (key > 40) (type: boolean), (value > 50) (type: boolean), (key = value) (type: boolean)
-              outputColumnNames: _col0, _col1, _col2, _col3, _col4
-              Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                sort order: 
-                Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean)
->>>>>>> asf/master
           TableScan
             alias: b
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-<<<<<<< HEAD
-              expressions: key (type: int), value (type: int)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: int), value (type: int), (key > 40) (type: boolean), (value > 50) (type: boolean), (key = value) (type: boolean)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 sort order: 
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: int), _col1 (type: int)
-=======
-              expressions: key (type: int), value (type: int), (key > 40) (type: boolean), (value > 50) (type: boolean), (key = value) (type: boolean)
-              outputColumnNames: _col0, _col1, _col2, _col3, _col4
-              Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                sort order: 
-                Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean)
->>>>>>> asf/master
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -480,13 +385,8 @@ STAGE PLANS:
           keys:
             0 
             1 
-<<<<<<< HEAD
-          outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
-=======
           outputColumnNames: _col0, _col1, _col5, _col6
-          Statistics: Num rows: 1 Data size: 441 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
+          Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: hash(_col0,_col1,_col5,_col6) (type: int)
             outputColumnNames: _col0
