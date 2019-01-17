@@ -51,7 +51,7 @@ STAGE PLANS:
               Select Operator
                 expressions: UDFToDouble(key) (type: double)
                 outputColumnNames: _col0
-                Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 166 Data size: 1328 Basic stats: COMPLETE Column stats: COMPLETE
                 HashTable Sink Operator
                   keys:
                     0 (UDFToDouble(_col2) + UDFToDouble(_col0)) (type: double)
