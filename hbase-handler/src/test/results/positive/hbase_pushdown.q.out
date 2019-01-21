@@ -305,13 +305,8 @@ STAGE PLANS:
             alias: hbase_pushdown
             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-<<<<<<< HEAD
-              predicate: (not NVL((key = 90),false)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-=======
               predicate: (not COALESCE((key = 90),false)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
->>>>>>> asf/master
+              Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
