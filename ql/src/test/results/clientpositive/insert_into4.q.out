@@ -52,12 +52,8 @@ STAGE PLANS:
                 Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
->>>>>>> asf/master
                   value expressions: _col0 (type: string), _col1 (type: string)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -190,12 +186,8 @@ STAGE PLANS:
                 Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-<<<<<<< HEAD
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
->>>>>>> asf/master
                   value expressions: _col0 (type: string), _col1 (type: string)
       Execution mode: vectorized
       Reduce Operator Tree:
