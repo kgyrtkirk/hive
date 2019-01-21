@@ -83,12 +83,8 @@ STAGE PLANS:
             Reduce Output Operator
               key expressions: _col0 (type: string), _col1 (type: string)
               sort order: ++
-<<<<<<< HEAD
               Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-=======
-              Statistics: Num rows: 1 Data size: 116030 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
->>>>>>> asf/master
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
