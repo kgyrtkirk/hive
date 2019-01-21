@@ -154,11 +154,7 @@ Stage-0
                                     <-Reducer 9 [SIMPLE_EDGE]
                                       SHUFFLE [RS_29]
                                         PartitionCols:_col0
-<<<<<<< HEAD
-                                        Merge Join Operator [MERGEJOIN_129] (rows=462000 width=104)
-=======
                                         Merge Join Operator [MERGEJOIN_129] (rows=462007 width=104)
->>>>>>> asf/master
                                           Conds:RS_146._col1=RS_153._col0(Left Outer),Output:["_col0","_col1","_col3"]
                                         <-Map 8 [SIMPLE_EDGE] vectorized
                                           SHUFFLE [RS_146]
