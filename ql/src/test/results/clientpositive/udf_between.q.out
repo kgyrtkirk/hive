@@ -28,10 +28,10 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          filterExpr: ((100.0D <= (UDFToDouble(key) + 100.0D)) and ((UDFToDouble(key) + 100.0D) <= 200.0D)) (type: boolean)
+          filterExpr: (UDFToDouble(key) + 100.0D) BETWEEN 100.0D AND 200.0D (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (((UDFToDouble(key) + 100.0D) <= 200.0D) and (100.0D <= (UDFToDouble(key) + 100.0D))) (type: boolean)
+            predicate: (UDFToDouble(key) + 100.0D) BETWEEN 100.0D AND 200.0D (type: boolean)
             Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -256,15 +256,15 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t
-          filterExpr: (((i >= 8) and (i <= 9)) or ((i >= 9) and (i <= 10))) (type: boolean)
+          filterExpr: (i BETWEEN 8 AND 9 or i BETWEEN 9 AND 10) (type: boolean)
           Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (((i >= 8) and (i <= 9)) or ((i >= 9) and (i <= 10))) (type: boolean)
-            Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+            predicate: (i BETWEEN 8 AND 9 or i BETWEEN 9 AND 10) (type: boolean)
+            Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: i (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT * FROM t	where	i between 8 and 9
@@ -302,15 +302,15 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t
-          filterExpr: (((i >= 6) and (i <= 7)) or ((i >= 9) and (i <= 10))) (type: boolean)
+          filterExpr: (i BETWEEN 6 AND 7 or i BETWEEN 9 AND 10) (type: boolean)
           Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (((i >= 6) and (i <= 7)) or ((i >= 9) and (i <= 10))) (type: boolean)
-            Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+            predicate: (i BETWEEN 6 AND 7 or i BETWEEN 9 AND 10) (type: boolean)
+            Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: i (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT * FROM t	where	i between 6 and 7

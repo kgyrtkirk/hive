@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -46,10 +47,10 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hbase.shaded.com.google.common.graph.MutableValueGraph;
 import org.apache.hadoop.hbase.shaded.com.google.common.graph.ValueGraphBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePointLookupOptimizerRule.RexTransformIntoInClause.RexNodeRef;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.powermock.core.IdentityHashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -204,7 +205,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         case AND:
           MutableValueGraph<RexNodeRef, RexCall> g =
               buildComparisionGraph(call.getOperands(), SqlKind.LESS_THAN_OR_EQUAL);
-          Set<RexNode> replacedNodes = new IdentityHashSet<>();
+          Set<RexNode> replacedNodes = new HashSet<>();
           List<RexNode> newBetweenOperands = new ArrayList<>();
           for (RexNodeRef n : g.nodes()) {
             Set<RexNodeRef> pred = g.predecessors(n);
@@ -216,7 +217,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
               replacedNodes.add(g.removeEdge(p, n));
               replacedNodes.add(g.removeEdge(n, s));
 
-              newBetweenOperands.add(rexBuilder.makeCall(SqlStdOperatorTable.BETWEEN,
+              newBetweenOperands.add(rexBuilder.makeCall(HiveBetween.INSTANCE,
                   rexBuilder.makeLiteral(false), n.node, p.node, s.node));
             }
           }
