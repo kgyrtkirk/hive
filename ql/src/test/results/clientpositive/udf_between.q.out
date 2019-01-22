@@ -204,17 +204,47 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 238	val_238
-PREHOOK: query: explain
-SELECT * FROM src	where	key between 80 and 90
-			or	key between 90 and 100
+PREHOOK: query: create table t(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: insert into t values (0),(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values (0),(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.i SCRIPT []
+PREHOOK: query: SELECT * FROM t	where	i between 8 and 9
+		or	i between 9 and 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t	where	i between 8 and 9
+		or	i between 9 and 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+8
+9
+10
+PREHOOK: query: explain
+SELECT * FROM t	where	i between 8 and 9
+		or	i between 9 and 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-SELECT * FROM src	where	key between 80 and 90
-			or	key between 90 and 100
+SELECT * FROM t	where	i between 8 and 9
+		or	i between 9 and 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -225,61 +255,42 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: src
-          filterExpr: (((UDFToDouble(key) >= 80.0D) and (UDFToDouble(key) <= 90.0D)) or ((UDFToDouble(key) >= 90.0D) and (UDFToDouble(key) <= 100.0D))) (type: boolean)
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          alias: t
+          filterExpr: (((i >= 8) and (i <= 9)) or ((i >= 9) and (i <= 10))) (type: boolean)
+          Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (((UDFToDouble(key) >= 80.0D) and (UDFToDouble(key) <= 90.0D)) or ((UDFToDouble(key) >= 90.0D) and (UDFToDouble(key) <= 100.0D))) (type: boolean)
-            Statistics: Num rows: 110 Data size: 1168 Basic stats: COMPLETE Column stats: NONE
+            predicate: (((i >= 8) and (i <= 9)) or ((i >= 9) and (i <= 10))) (type: boolean)
+            Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 110 Data size: 1168 Basic stats: COMPLETE Column stats: NONE
+              expressions: i (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
-PREHOOK: query: SELECT * FROM src	where	key between 80 and 90
-			or	key between 90 and 100
+PREHOOK: query: SELECT * FROM t	where	i between 8 and 9
+		or	i between 9 and 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: default@t
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM src	where	key between 80 and 90
-			or	key between 90 and 100
+POSTHOOK: query: SELECT * FROM t	where	i between 8 and 9
+		or	i between 9 and 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: default@t
 #### A masked pattern was here ####
-86	val_86
-98	val_98
-82	val_82
-92	val_92
-83	val_83
-84	val_84
-100	val_100
-96	val_96
-95	val_95
-98	val_98
-85	val_85
-87	val_87
-90	val_90
-95	val_95
-80	val_80
-90	val_90
-83	val_83
-100	val_100
-97	val_97
-84	val_84
-90	val_90
-97	val_97
+8
+9
+10
 PREHOOK: query: explain
-SELECT * FROM src	where	key between 70 and 80
-			or	key between 90 and 100
+SELECT * FROM t	where	i between 6 and 7
+		or	i between 9 and 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-SELECT * FROM src	where	key between 70 and 80
-			or	key between 90 and 100
+SELECT * FROM t	where	i between 6 and 7
+		or	i between 9 and 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -290,49 +301,80 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: src
-          filterExpr: (((UDFToDouble(key) >= 70.0D) and (UDFToDouble(key) <= 80.0D)) or ((UDFToDouble(key) >= 90.0D) and (UDFToDouble(key) <= 100.0D))) (type: boolean)
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          alias: t
+          filterExpr: (((i >= 6) and (i <= 7)) or ((i >= 9) and (i <= 10))) (type: boolean)
+          Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (((UDFToDouble(key) >= 70.0D) and (UDFToDouble(key) <= 80.0D)) or ((UDFToDouble(key) >= 90.0D) and (UDFToDouble(key) <= 100.0D))) (type: boolean)
-            Statistics: Num rows: 110 Data size: 1168 Basic stats: COMPLETE Column stats: NONE
+            predicate: (((i >= 6) and (i <= 7)) or ((i >= 9) and (i <= 10))) (type: boolean)
+            Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 110 Data size: 1168 Basic stats: COMPLETE Column stats: NONE
+              expressions: i (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
-PREHOOK: query: SELECT * FROM src	where	key between 70 and 80
-			or	key between 90 and 100
+PREHOOK: query: SELECT * FROM t	where	i between 6 and 7
+		or	i between 9 and 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: default@t
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM src	where	key between 70 and 80
-			or	key between 90 and 100
+POSTHOOK: query: SELECT * FROM t	where	i between 6 and 7
+		or	i between 9 and 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: default@t
 #### A masked pattern was here ####
-98	val_98
-92	val_92
-72	val_72
-100	val_100
-96	val_96
-95	val_95
-98	val_98
-77	val_77
-72	val_72
-90	val_90
-95	val_95
-78	val_78
-76	val_76
-76	val_76
-74	val_74
-70	val_70
-80	val_80
-90	val_90
-70	val_70
-70	val_70
-100	val_100
-97	val_97
-90	val_90
-97	val_97
+6
+7
+9
+10
+PREHOOK: query: explain
+SELECT * FROM t	where	i not between 6 and 7 
+		and	i not between 9 and 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+SELECT * FROM t	where	i not between 6 and 7 
+		and	i not between 9 and 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t
+          filterExpr: (((i < 6) or (i > 7)) and ((i < 9) or (i > 10))) (type: boolean)
+          Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: (((i < 6) or (i > 7)) and ((i < 9) or (i > 10))) (type: boolean)
+            Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: i (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+              ListSink
+
+PREHOOK: query: SELECT * FROM t	where	i not between 6 and 7 
+		and	i not between 9 and 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t	where	i not between 6 and 7 
+		and	i not between 9 and 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+0
+1
+2
+3
+4
+5
+8
+11
