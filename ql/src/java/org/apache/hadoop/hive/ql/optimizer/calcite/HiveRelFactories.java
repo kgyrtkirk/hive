@@ -19,10 +19,12 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
@@ -40,6 +42,7 @@ import org.apache.calcite.rel.core.RelFactories.SortFactory;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
@@ -52,6 +55,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
+import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 import com.google.common.collect.ImmutableList;
 
@@ -120,6 +125,22 @@ public class HiveRelFactories {
     public RelNode createFilter(RelNode child, RexNode condition) {
       RelOptCluster cluster = child.getCluster();
       HiveFilter filter = new HiveFilter(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, condition);
+
+      HivePlannerContext hpc = ((HivePlannerContext) cluster.getPlanner().getContext());
+      StatsSource ss = hpc.getStatsSource();
+
+      if (ss.canProvideStatsFor(HiveFilter.class)) {
+        Optional<OperatorStats> os = ss.lookup(filter);
+        if (os.isPresent()) {
+          long outputRecords = os.get().getOutputRecords();
+          HiveFilter.StatEnhancedHiveFilter newFilter =
+              new HiveFilter.StatEnhancedHiveFilter(cluster, TraitsUtil.getDefaultTraitSet(cluster), child,
+              condition, outputRecords);
+
+          String ss1 = RelOptUtil.toString(newFilter, SqlExplainLevel.ALL_ATTRIBUTES);
+          return newFilter;
+        }
+      }
       return filter;
     }
   }

@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter.StatEnhancedHiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 public class HiveRelMdRowCount extends RelMdRowCount {
@@ -72,6 +73,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
     super();
   }
 
+  @Override
   public Double getRowCount(Join join, RelMetadataQuery mq) {
     // Try to infer from constraints first
     final Pair<PKFKRelationInfo, RexNode> constraintBasedResult =
@@ -143,6 +145,15 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       }
     }
     return rowCount;
+  }
+
+  @Override
+  public Double getRowCount(Filter rel, RelMetadataQuery mq) {
+    if (rel instanceof StatEnhancedHiveFilter) {
+      return rel.getRows();
+    } else {
+      return super.getRowCount(rel, mq);
+    }
   }
 
   static class PKFKRelationInfo {
