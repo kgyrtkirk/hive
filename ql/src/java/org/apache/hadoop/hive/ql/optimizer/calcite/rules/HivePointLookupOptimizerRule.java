@@ -203,54 +203,9 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         RexCall call = (RexCall) node;
         switch (call.getKind()) {
         case AND:
-          MutableValueGraph<RexNodeRef, RexCall> g =
-              buildComparisionGraph(call.getOperands(), SqlKind.LESS_THAN_OR_EQUAL);
-          Set<RexNode> replacedNodes = new HashSet<>();
-          List<RexNode> newBetweenOperands = new ArrayList<>();
-          for (RexNodeRef n : g.nodes()) {
-            Set<RexNodeRef> pred = g.predecessors(n);
-            Set<RexNodeRef> succ = g.successors(n);
-            if (pred.size() > 0 && succ.size() > 0) {
-              RexNodeRef p = pred.iterator().next();
-              RexNodeRef s = succ.iterator().next();
-              // mark old comparision nodes for removal
-              replacedNodes.add(g.removeEdge(p, n));
-              replacedNodes.add(g.removeEdge(n, s));
-
-              newBetweenOperands.add(rexBuilder.makeCall(HiveBetween.INSTANCE,
-                  rexBuilder.makeLiteral(false), n.node, p.node, s.node));
-            }
-          }
-          if (replacedNodes.isEmpty()) {
-            // no effect
-            return node;
-          }
-          List<RexNode> newOperands = new ArrayList<>();
-          for (RexNode o : call.getOperands()) {
-            if (replacedNodes.contains(o)) {
-              continue;
-            }
-            newOperands.add(o);
-          }
-          newOperands.addAll(newBetweenOperands);
-
-          if (newOperands.size() == 1) {
-            return newOperands.get(0);
-          } else {
-            rexBuilder.makeCall(SqlStdOperatorTable.AND, newOperands);
-          }
-          break;
-        //        case OR:
-        //          try {
-        //            RexNode newNode = transformIntoInClauseCondition(rexBuilder,
-        //                call, minNumORClauses);
-        //            if (newNode != null) {
-        //              return newNode;
-        //            }
-        //          } catch (SemanticException e) {
-        //            LOG.error("Exception in HivePointLookupOptimizerRule", e);
-        //            return call;
-        //          }
+          return processComparisions(call, SqlKind.LESS_THAN_OR_EQUAL, false);
+        case OR:
+          return processComparisions(call, SqlKind.GREATER_THAN, true);
         default:
           break;
         }
@@ -258,10 +213,50 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       return node;
     }
 
-    static class CmpGraph {
+    private RexNode processComparisions(RexCall call, SqlKind forwardEdge, boolean invert) {
+      MutableValueGraph<RexNodeRef, RexCall> g =
+          buildComparisionGraph(call.getOperands(), forwardEdge);
+      Set<RexNode> replacedNodes = new HashSet<>();
+      List<RexNode> newBetweenOperands = new ArrayList<>();
+      for (RexNodeRef n : g.nodes()) {
+        Set<RexNodeRef> pred = g.predecessors(n);
+        Set<RexNodeRef> succ = g.successors(n);
+        if (pred.size() > 0 && succ.size() > 0) {
+          RexNodeRef p = pred.iterator().next();
+          RexNodeRef s = succ.iterator().next();
+          // mark old comparision nodes for removal
+          replacedNodes.add(g.removeEdge(p, n));
+          replacedNodes.add(g.removeEdge(n, s));
 
+          newBetweenOperands.add(rexBuilder.makeCall(HiveBetween.INSTANCE,
+              rexBuilder.makeLiteral(invert), n.node, p.node, s.node));
+        }
+      }
+      if (replacedNodes.isEmpty()) {
+        // no effect
+        return call;
+      }
+      List<RexNode> newOperands = new ArrayList<>();
+      for (RexNode o : call.getOperands()) {
+        if (replacedNodes.contains(o)) {
+          continue;
+        }
+        newOperands.add(o);
+      }
+      newOperands.addAll(newBetweenOperands);
+
+      if (newOperands.size() == 1) {
+        return newOperands.get(0);
+      } else {
+        return rexBuilder.makeCall(call.getOperator(), newOperands);
+      }
     }
-    // =>
+
+    /**
+     * Builds a graph of the given comparision type.
+     *
+     * The graph edges are annotated with the RexNodes representing the comparision.
+     */
     private MutableValueGraph<RexNodeRef, RexCall> buildComparisionGraph(List<RexNode> operands, SqlKind cmpForward) {
       MutableValueGraph<RexNodeRef, RexCall> g = ValueGraphBuilder.directed().build();
       for (RexNode node : operands) {
@@ -273,7 +268,6 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         if (kind == cmpForward) {
           RexNode opA = rexCall.getOperands().get(0);
           RexNode opB = rexCall.getOperands().get(1);
-
           g.putEdgeValue(new RexNodeRef(opA), new RexNodeRef(opB), rexCall);
         } else if (kind == cmpForward.reverse()) {
           RexNode opA = rexCall.getOperands().get(1);

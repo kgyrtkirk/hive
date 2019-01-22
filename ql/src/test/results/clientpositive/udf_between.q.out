@@ -88,15 +88,15 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          filterExpr: ((100.0D > (UDFToDouble(key) + 100.0D)) or ((UDFToDouble(key) + 100.0D) > 200.0D)) (type: boolean)
+          filterExpr: (UDFToDouble(key) + 100.0D) NOT BETWEEN 100.0D AND 200.0D (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (((UDFToDouble(key) + 100.0D) > 200.0D) or (100.0D > (UDFToDouble(key) + 100.0D))) (type: boolean)
-            Statistics: Num rows: 332 Data size: 3527 Basic stats: COMPLETE Column stats: NONE
+            predicate: (UDFToDouble(key) + 100.0D) NOT BETWEEN 100.0D AND 200.0D (type: boolean)
+            Statistics: Num rows: 445 Data size: 4727 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 332 Data size: 3527 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 445 Data size: 4727 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 20
                 Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
@@ -349,15 +349,15 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t
-          filterExpr: (((i < 6) or (i > 7)) and ((i < 9) or (i > 10))) (type: boolean)
+          filterExpr: (i NOT BETWEEN 6 AND 7 and i NOT BETWEEN 9 AND 10) (type: boolean)
           Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (((i < 6) or (i > 7)) and ((i < 9) or (i > 10))) (type: boolean)
-            Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            predicate: (i NOT BETWEEN 6 AND 7 and i NOT BETWEEN 9 AND 10) (type: boolean)
+            Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: i (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT * FROM t	where	i not between 6 and 7 
