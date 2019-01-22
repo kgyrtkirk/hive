@@ -43,8 +43,11 @@ import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.hadoop.hbase.shaded.com.google.common.graph.GraphBuilder;
+import org.apache.hadoop.hbase.shaded.com.google.common.graph.MutableGraph;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePointLookupOptimizerRule.RexTransformIntoInClause.RexNodeRef;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -174,9 +177,83 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     // 2. We merge IN expressions
     RexMergeInClause mergeInClause = new RexMergeInClause(rexBuilder);
     newCondition = mergeInClause.apply(newCondition);
+
+    // 3. Close BETWEEN expressions if possible
+    RexTranformIntoBetween t = new RexTranformIntoBetween(rexBuilder);
+    newCondition = t.apply(newCondition);
     return newCondition;
   }
 
+  /**
+   * Transforms OR clauses into IN clauses, when possible.
+   */
+  protected static class RexTranformIntoBetween extends RexShuttle {
+    private final RexBuilder rexBuilder;
+
+    RexTranformIntoBetween(RexBuilder rexBuilder) {
+      this.rexBuilder = rexBuilder;
+    }
+
+    @Override
+    public RexNode visitCall(RexCall inputCall) {
+      RexNode node = super.visitCall(inputCall);
+      if (node instanceof RexCall) {
+        RexCall call = (RexCall) node;
+        switch (call.getKind()) {
+        case AND:
+          MutableGraph<RexNodeRef> g = buildComparisionGraph(call, SqlKind.LESS_THAN_OR_EQUAL);
+          for (RexNodeRef n : g.nodes()) {
+            Set<RexNodeRef> pred = g.predecessors(n);
+            Set<RexNodeRef> succ = g.successors(n);
+            if (pred.size() > 0 && succ.size() > 0) {
+              RexNodeRef p = pred.iterator().next();
+              RexNodeRef s = succ.iterator().next();
+              g.removeEdge(p, n);
+              g.removeEdge(n, s);
+            }
+          }
+
+          break;
+        //        case OR:
+        //          try {
+        //            RexNode newNode = transformIntoInClauseCondition(rexBuilder,
+        //                call, minNumORClauses);
+        //            if (newNode != null) {
+        //              return newNode;
+        //            }
+        //          } catch (SemanticException e) {
+        //            LOG.error("Exception in HivePointLookupOptimizerRule", e);
+        //            return call;
+        //          }
+        default:
+          break;
+        }
+      }
+      return node;
+    }
+
+    // =>
+    private MutableGraph<RexNodeRef> buildComparisionGraph(RexCall parentCall, SqlKind cmpForward) {
+      MutableGraph<RexNodeRef> g = GraphBuilder.directed().build();
+      for (RexNode node : parentCall.getOperands()) {
+        if(!(node instanceof RexCall) ) {
+          continue;
+        }
+        RexCall rexCall = (RexCall) node;
+        SqlKind kind = rexCall.getKind();
+        if (kind == cmpForward) {
+          RexNode opA = rexCall.getOperands().get(0);
+          RexNode opB = rexCall.getOperands().get(1);
+          g.putEdge(new RexNodeRef(opA), new RexNodeRef(opB));
+        } else if (kind == cmpForward.reverse()) {
+          RexNode opA = rexCall.getOperands().get(1);
+          RexNode opB = rexCall.getOperands().get(0);
+          g.putEdge(new RexNodeRef(opA), new RexNodeRef(opB));
+        }
+      }
+      return g;
+    }
+  }
 
   /**
    * Transforms OR clauses into IN clauses, when possible.
