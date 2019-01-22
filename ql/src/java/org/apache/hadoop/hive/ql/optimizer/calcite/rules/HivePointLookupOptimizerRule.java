@@ -43,12 +43,13 @@ import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
-import org.apache.hadoop.hbase.shaded.com.google.common.graph.GraphBuilder;
-import org.apache.hadoop.hbase.shaded.com.google.common.graph.MutableGraph;
+import org.apache.hadoop.hbase.shaded.com.google.common.graph.MutableValueGraph;
+import org.apache.hadoop.hbase.shaded.com.google.common.graph.ValueGraphBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePointLookupOptimizerRule.RexTransformIntoInClause.RexNodeRef;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.powermock.core.IdentityHashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -201,18 +202,42 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         RexCall call = (RexCall) node;
         switch (call.getKind()) {
         case AND:
-          MutableGraph<RexNodeRef> g = buildComparisionGraph(call, SqlKind.LESS_THAN_OR_EQUAL);
+          MutableValueGraph<RexNodeRef, RexCall> g =
+              buildComparisionGraph(call.getOperands(), SqlKind.LESS_THAN_OR_EQUAL);
+          Set<RexNode> replacedNodes = new IdentityHashSet<>();
+          List<RexNode> newBetweenOperands = new ArrayList<>();
           for (RexNodeRef n : g.nodes()) {
             Set<RexNodeRef> pred = g.predecessors(n);
             Set<RexNodeRef> succ = g.successors(n);
             if (pred.size() > 0 && succ.size() > 0) {
               RexNodeRef p = pred.iterator().next();
               RexNodeRef s = succ.iterator().next();
-              g.removeEdge(p, n);
-              g.removeEdge(n, s);
+              // mark old comparision nodes for removal
+              replacedNodes.add(g.removeEdge(p, n));
+              replacedNodes.add(g.removeEdge(n, s));
+
+              newBetweenOperands.add(rexBuilder.makeCall(SqlStdOperatorTable.BETWEEN,
+                  rexBuilder.makeLiteral(false), n.node, p.node, s.node));
             }
           }
+          if (replacedNodes.isEmpty()) {
+            // no effect
+            return node;
+          }
+          List<RexNode> newOperands = new ArrayList<>();
+          for (RexNode o : call.getOperands()) {
+            if (replacedNodes.contains(o)) {
+              continue;
+            }
+            newOperands.add(o);
+          }
+          newOperands.addAll(newBetweenOperands);
 
+          if (newOperands.size() == 1) {
+            return newOperands.get(0);
+          } else {
+            rexBuilder.makeCall(SqlStdOperatorTable.AND, newOperands);
+          }
           break;
         //        case OR:
         //          try {
@@ -232,10 +257,13 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       return node;
     }
 
+    static class CmpGraph {
+
+    }
     // =>
-    private MutableGraph<RexNodeRef> buildComparisionGraph(RexCall parentCall, SqlKind cmpForward) {
-      MutableGraph<RexNodeRef> g = GraphBuilder.directed().build();
-      for (RexNode node : parentCall.getOperands()) {
+    private MutableValueGraph<RexNodeRef, RexCall> buildComparisionGraph(List<RexNode> operands, SqlKind cmpForward) {
+      MutableValueGraph<RexNodeRef, RexCall> g = ValueGraphBuilder.directed().build();
+      for (RexNode node : operands) {
         if(!(node instanceof RexCall) ) {
           continue;
         }
@@ -244,11 +272,12 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         if (kind == cmpForward) {
           RexNode opA = rexCall.getOperands().get(0);
           RexNode opB = rexCall.getOperands().get(1);
-          g.putEdge(new RexNodeRef(opA), new RexNodeRef(opB));
+
+          g.putEdgeValue(new RexNodeRef(opA), new RexNodeRef(opB), rexCall);
         } else if (kind == cmpForward.reverse()) {
           RexNode opA = rexCall.getOperands().get(1);
           RexNode opB = rexCall.getOperands().get(0);
-          g.putEdge(new RexNodeRef(opA), new RexNodeRef(opB));
+          g.putEdgeValue(new RexNodeRef(opA), new RexNodeRef(opB), rexCall);
         }
       }
       return g;
