@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,8 +44,12 @@ import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.hadoop.hbase.shaded.com.google.common.graph.MutableValueGraph;
+import org.apache.hadoop.hbase.shaded.com.google.common.graph.ValueGraphBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePointLookupOptimizerRule.RexTransformIntoInClause.RexNodeRef;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -174,9 +179,105 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     // 2. We merge IN expressions
     RexMergeInClause mergeInClause = new RexMergeInClause(rexBuilder);
     newCondition = mergeInClause.apply(newCondition);
+
+    // 3. Close BETWEEN expressions if possible
+    RexTranformIntoBetween t = new RexTranformIntoBetween(rexBuilder);
+    newCondition = t.apply(newCondition);
     return newCondition;
   }
 
+  /**
+   * Transforms OR clauses into IN clauses, when possible.
+   */
+  protected static class RexTranformIntoBetween extends RexShuttle {
+    private final RexBuilder rexBuilder;
+
+    RexTranformIntoBetween(RexBuilder rexBuilder) {
+      this.rexBuilder = rexBuilder;
+    }
+
+    @Override
+    public RexNode visitCall(RexCall inputCall) {
+      RexNode node = super.visitCall(inputCall);
+      if (node instanceof RexCall) {
+        RexCall call = (RexCall) node;
+        switch (call.getKind()) {
+        case AND:
+          return processComparisions(call, SqlKind.LESS_THAN_OR_EQUAL, false);
+        case OR:
+          return processComparisions(call, SqlKind.GREATER_THAN, true);
+        default:
+          break;
+        }
+      }
+      return node;
+    }
+
+    private RexNode processComparisions(RexCall call, SqlKind forwardEdge, boolean invert) {
+      MutableValueGraph<RexNodeRef, RexCall> g =
+          buildComparisionGraph(call.getOperands(), forwardEdge);
+      Set<RexNode> replacedNodes = new HashSet<>();
+      List<RexNode> newBetweenOperands = new ArrayList<>();
+      for (RexNodeRef n : g.nodes()) {
+        Set<RexNodeRef> pred = g.predecessors(n);
+        Set<RexNodeRef> succ = g.successors(n);
+        if (pred.size() > 0 && succ.size() > 0) {
+          RexNodeRef p = pred.iterator().next();
+          RexNodeRef s = succ.iterator().next();
+          // mark old comparision nodes for removal
+          replacedNodes.add(g.removeEdge(p, n));
+          replacedNodes.add(g.removeEdge(n, s));
+
+          newBetweenOperands.add(rexBuilder.makeCall(HiveBetween.INSTANCE,
+              rexBuilder.makeLiteral(invert), n.node, p.node, s.node));
+        }
+      }
+      if (replacedNodes.isEmpty()) {
+        // no effect
+        return call;
+      }
+      List<RexNode> newOperands = new ArrayList<>();
+      for (RexNode o : call.getOperands()) {
+        if (replacedNodes.contains(o)) {
+          continue;
+        }
+        newOperands.add(o);
+      }
+      newOperands.addAll(newBetweenOperands);
+
+      if (newOperands.size() == 1) {
+        return newOperands.get(0);
+      } else {
+        return rexBuilder.makeCall(call.getOperator(), newOperands);
+      }
+    }
+
+    /**
+     * Builds a graph of the given comparision type.
+     *
+     * The graph edges are annotated with the RexNodes representing the comparision.
+     */
+    private MutableValueGraph<RexNodeRef, RexCall> buildComparisionGraph(List<RexNode> operands, SqlKind cmpForward) {
+      MutableValueGraph<RexNodeRef, RexCall> g = ValueGraphBuilder.directed().build();
+      for (RexNode node : operands) {
+        if(!(node instanceof RexCall) ) {
+          continue;
+        }
+        RexCall rexCall = (RexCall) node;
+        SqlKind kind = rexCall.getKind();
+        if (kind == cmpForward) {
+          RexNode opA = rexCall.getOperands().get(0);
+          RexNode opB = rexCall.getOperands().get(1);
+          g.putEdgeValue(new RexNodeRef(opA), new RexNodeRef(opB), rexCall);
+        } else if (kind == cmpForward.reverse()) {
+          RexNode opA = rexCall.getOperands().get(1);
+          RexNode opB = rexCall.getOperands().get(0);
+          g.putEdgeValue(new RexNodeRef(opA), new RexNodeRef(opB), rexCall);
+        }
+      }
+      return g;
+    }
+  }
 
   /**
    * Transforms OR clauses into IN clauses, when possible.
