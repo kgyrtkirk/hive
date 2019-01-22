@@ -16,3 +16,19 @@ SELECT * FROM src where 'b' between 'a' AND 'c' LIMIT 1;
 
 explain SELECT * FROM src where 2 between 2 AND '3' LIMIT 1;
 SELECT * FROM src where 2 between 2 AND '3' LIMIT 1;
+
+
+explain
+SELECT * FROM src	where	key between 80 and 90
+			or	key between 90 and 100;
+
+SELECT * FROM src	where	key between 80 and 90
+			or	key between 90 and 100;
+
+explain
+SELECT * FROM src	where	key between 70 and 80
+			or	key between 90 and 100;
+
+SELECT * FROM src	where	key between 70 and 80
+			or	key between 90 and 100;
+

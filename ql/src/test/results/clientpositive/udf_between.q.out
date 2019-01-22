@@ -28,10 +28,10 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          filterExpr: (UDFToDouble(key) + 100.0D) BETWEEN 100.0D AND 200.0D (type: boolean)
+          filterExpr: ((100.0D <= (UDFToDouble(key) + 100.0D)) and ((UDFToDouble(key) + 100.0D) <= 200.0D)) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (UDFToDouble(key) + 100.0D) BETWEEN 100.0D AND 200.0D (type: boolean)
+            predicate: (((UDFToDouble(key) + 100.0D) <= 200.0D) and (100.0D <= (UDFToDouble(key) + 100.0D))) (type: boolean)
             Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -88,15 +88,15 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          filterExpr: (not (UDFToDouble(key) + 100.0D) BETWEEN 100.0D AND 200.0D) (type: boolean)
+          filterExpr: ((100.0D > (UDFToDouble(key) + 100.0D)) or ((UDFToDouble(key) + 100.0D) > 200.0D)) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (not (UDFToDouble(key) + 100.0D) BETWEEN 100.0D AND 200.0D) (type: boolean)
-            Statistics: Num rows: 445 Data size: 4727 Basic stats: COMPLETE Column stats: NONE
+            predicate: (((UDFToDouble(key) + 100.0D) > 200.0D) or (100.0D > (UDFToDouble(key) + 100.0D))) (type: boolean)
+            Statistics: Num rows: 332 Data size: 3527 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 445 Data size: 4727 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 332 Data size: 3527 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 20
                 Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
@@ -204,3 +204,135 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 238	val_238
+PREHOOK: query: explain
+SELECT * FROM src	where	key between 80 and 90
+			or	key between 90 and 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+SELECT * FROM src	where	key between 80 and 90
+			or	key between 90 and 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (((UDFToDouble(key) >= 80.0D) and (UDFToDouble(key) <= 90.0D)) or ((UDFToDouble(key) >= 90.0D) and (UDFToDouble(key) <= 100.0D))) (type: boolean)
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: (((UDFToDouble(key) >= 80.0D) and (UDFToDouble(key) <= 90.0D)) or ((UDFToDouble(key) >= 90.0D) and (UDFToDouble(key) <= 100.0D))) (type: boolean)
+            Statistics: Num rows: 110 Data size: 1168 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 110 Data size: 1168 Basic stats: COMPLETE Column stats: NONE
+              ListSink
+
+PREHOOK: query: SELECT * FROM src	where	key between 80 and 90
+			or	key between 90 and 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM src	where	key between 80 and 90
+			or	key between 90 and 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+86	val_86
+98	val_98
+82	val_82
+92	val_92
+83	val_83
+84	val_84
+100	val_100
+96	val_96
+95	val_95
+98	val_98
+85	val_85
+87	val_87
+90	val_90
+95	val_95
+80	val_80
+90	val_90
+83	val_83
+100	val_100
+97	val_97
+84	val_84
+90	val_90
+97	val_97
+PREHOOK: query: explain
+SELECT * FROM src	where	key between 70 and 80
+			or	key between 90 and 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+SELECT * FROM src	where	key between 70 and 80
+			or	key between 90 and 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (((UDFToDouble(key) >= 70.0D) and (UDFToDouble(key) <= 80.0D)) or ((UDFToDouble(key) >= 90.0D) and (UDFToDouble(key) <= 100.0D))) (type: boolean)
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: (((UDFToDouble(key) >= 70.0D) and (UDFToDouble(key) <= 80.0D)) or ((UDFToDouble(key) >= 90.0D) and (UDFToDouble(key) <= 100.0D))) (type: boolean)
+            Statistics: Num rows: 110 Data size: 1168 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 110 Data size: 1168 Basic stats: COMPLETE Column stats: NONE
+              ListSink
+
+PREHOOK: query: SELECT * FROM src	where	key between 70 and 80
+			or	key between 90 and 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM src	where	key between 70 and 80
+			or	key between 90 and 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+98	val_98
+92	val_92
+72	val_72
+100	val_100
+96	val_96
+95	val_95
+98	val_98
+77	val_77
+72	val_72
+90	val_90
+95	val_95
+78	val_78
+76	val_76
+76	val_76
+74	val_74
+70	val_70
+80	val_80
+90	val_90
+70	val_70
+70	val_70
+100	val_100
+97	val_97
+90	val_90
+97	val_97
