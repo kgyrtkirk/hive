@@ -36,12 +36,6 @@ EXPLAIN SELECT cstring1 || '_'|| cstring2, substring(cstring2, 2, 3) as concat ,
 
 explain extended select count(*) from (select `__time` from druid_table_alltypesorc limit 1) as src ;
 
-explain
-SELECT `__time`
-FROM druid_table_alltypesorc
-WHERE (`__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00')
-    OR (`__time` BETWEEN '1968-02-01 00:00:00' AND '1970-04-01 00:00:00') ORDER BY `__time` ASC LIMIT 10;
-
 SELECT `__time`
 FROM druid_table_alltypesorc
 WHERE (`__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00')
