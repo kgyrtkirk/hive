@@ -368,6 +368,9 @@ public class RexNodeConverter {
         childRexNodeLst = adjustCaseBranchTypes(childRexNodeLst, retType);
       } else if (calciteOp == HiveToDateSqlOperator.INSTANCE) {
         childRexNodeLst = rewriteToDateChildren(childRexNodeLst);
+      } else if (calciteOp.getKind() == SqlKind.BETWEEN) {
+        calciteOp = SqlStdOperatorTable.AND;
+        childRexNodeLst = rewriteBetweenToAndOps(childRexNodeLst);
       }
       expr = cluster.getRexBuilder().makeCall(retType, calciteOp, childRexNodeLst);
     } else {
@@ -625,6 +628,17 @@ public class RexNodeConverter {
     // Add the last child as the ELSE element
     convertedChildList.add(childRexNodeLst.get(i));
     return convertedChildList;
+  }
+
+  private List<RexNode> rewriteBetweenToAndOps(List<RexNode> childRexNodeLst) {
+    boolean invert = childRexNodeLst.get(0).isAlwaysTrue();
+    List<RexNode> operands = new ArrayList<>();
+    RexNode op = childRexNodeLst.get(1);
+    RexNode rangeL = childRexNodeLst.get(2);
+    RexNode rangeH = childRexNodeLst.get(3);
+    operands.add(cluster.getRexBuilder().makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, rangeL, op));
+    operands.add(cluster.getRexBuilder().makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, op, rangeH));
+    return operands;
   }
 
   private static boolean checkForStatefulFunctions(List<ExprNodeDesc> list) {
