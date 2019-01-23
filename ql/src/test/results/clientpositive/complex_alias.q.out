@@ -148,6 +148,7 @@ STAGE PLANS:
           TableScan
             alias: agg1
 <<<<<<< HEAD
+<<<<<<< HEAD
             filterExpr: col0 is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -160,6 +161,13 @@ STAGE PLANS:
               predicate: (col0 = col0) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+            filterExpr: (col0 = col0) (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (col0 = col0) (type: boolean)
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> asf/master
               Select Operator
                 expressions: '42' (type: string), col0 (type: int)
                 outputColumnNames: _col0, _col1
@@ -179,6 +187,7 @@ STAGE PLANS:
           TableScan
             alias: agg1
 <<<<<<< HEAD
+<<<<<<< HEAD
             filterExpr: col0 is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -191,6 +200,13 @@ STAGE PLANS:
               predicate: (col0 = col0) (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+            filterExpr: (col0 = col0) (type: boolean)
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (col0 = col0) (type: boolean)
+              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> asf/master
               Select Operator
                 expressions: '41' (type: string), col0 (type: int)
                 outputColumnNames: _col0, _col1

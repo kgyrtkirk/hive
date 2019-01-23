@@ -83,8 +83,13 @@ STAGE PLANS:
           TableScan
             alias: c1
 <<<<<<< HEAD
+<<<<<<< HEAD
             filterExpr: (a1 is not null or a2 is not null) (type: boolean)
             Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+=======
+            filterExpr: CASE WHEN (a1 is not null) THEN (a1 is not null) ELSE (a2 is not null) END (type: boolean)
+            Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> asf/master
             Filter Operator
               predicate: (a1 is not null or a2 is not null) (type: boolean)
               Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
@@ -102,11 +107,15 @@ STAGE PLANS:
                 expressions: a1 (type: string), a2 (type: string), CASE WHEN (a1 is not null) THEN (a1) ELSE (a2) END (type: string)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
+<<<<<<< HEAD
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+>>>>>>> asf/master
                 Reduce Output Operator
                   key expressions: _col2 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col2 (type: string)
+<<<<<<< HEAD
 <<<<<<< HEAD
                   Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string), _col1 (type: string)
@@ -114,6 +123,14 @@ STAGE PLANS:
             alias: c2
             filterExpr: (b1 is not null or b2 is not null) (type: boolean)
             Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+=======
+                  Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: string), _col1 (type: string)
+          TableScan
+            alias: c2
+            filterExpr: CASE WHEN (b1 is not null) THEN (b1 is not null) ELSE (b2 is not null) END (type: boolean)
+            Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> asf/master
             Filter Operator
               predicate: (b1 is not null or b2 is not null) (type: boolean)
               Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
@@ -135,16 +152,23 @@ STAGE PLANS:
                 expressions: b1 (type: string), b2 (type: string), CASE WHEN (b1 is not null) THEN (b1) ELSE (b2) END (type: string)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
+<<<<<<< HEAD
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+>>>>>>> asf/master
                 Reduce Output Operator
                   key expressions: _col2 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col2 (type: string)
 <<<<<<< HEAD
+<<<<<<< HEAD
                   Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
 =======
                   Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+                  Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> asf/master
                   value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -155,6 +179,7 @@ STAGE PLANS:
             1 _col2 (type: string)
           outputColumnNames: _col0, _col1, _col3, _col4
 <<<<<<< HEAD
+<<<<<<< HEAD
           Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string), _col4 (type: string)
@@ -164,6 +189,8 @@ STAGE PLANS:
               compressed: false
               Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
 =======
+=======
+>>>>>>> asf/master
           Statistics: Num rows: 1 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string), _col4 (type: string)
@@ -172,7 +199,10 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               Statistics: Num rows: 1 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
+<<<<<<< HEAD
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+>>>>>>> asf/master
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -217,8 +247,13 @@ STAGE PLANS:
           TableScan
             alias: c1
 <<<<<<< HEAD
+<<<<<<< HEAD
             filterExpr: (a1 is not null or a2 is not null) (type: boolean)
             Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+=======
+            filterExpr: CASE WHEN (a1 is not null) THEN (a1 is not null) ELSE (a2 is not null) END (type: boolean)
+            Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> asf/master
             Filter Operator
               predicate: (a1 is not null or a2 is not null) (type: boolean)
               Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
@@ -236,11 +271,15 @@ STAGE PLANS:
                 expressions: a1 (type: string), a2 (type: string), CASE WHEN (a1 is not null) THEN (a1) ELSE (a2) END (type: string)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
+<<<<<<< HEAD
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+>>>>>>> asf/master
                 Reduce Output Operator
                   key expressions: _col2 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col2 (type: string)
+<<<<<<< HEAD
 <<<<<<< HEAD
                   Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string), _col1 (type: string)
@@ -248,6 +287,14 @@ STAGE PLANS:
             alias: c2
             filterExpr: (b1 is not null or b2 is not null) (type: boolean)
             Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+=======
+                  Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: string), _col1 (type: string)
+          TableScan
+            alias: c2
+            filterExpr: CASE WHEN (b1 is not null) THEN (b1 is not null) ELSE (b2 is not null) END (type: boolean)
+            Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> asf/master
             Filter Operator
               predicate: (b1 is not null or b2 is not null) (type: boolean)
               Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
@@ -269,16 +316,23 @@ STAGE PLANS:
                 expressions: b1 (type: string), b2 (type: string), CASE WHEN (b1 is not null) THEN (b1) ELSE (b2) END (type: string)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
+<<<<<<< HEAD
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+>>>>>>> asf/master
                 Reduce Output Operator
                   key expressions: _col2 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col2 (type: string)
 <<<<<<< HEAD
+<<<<<<< HEAD
                   Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
 =======
                   Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+                  Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> asf/master
                   value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
         Join Operator
@@ -289,6 +343,7 @@ STAGE PLANS:
             1 _col2 (type: string)
           outputColumnNames: _col0, _col1, _col3, _col4
 <<<<<<< HEAD
+<<<<<<< HEAD
           Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string), _col4 (type: string)
@@ -298,6 +353,8 @@ STAGE PLANS:
               compressed: false
               Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
 =======
+=======
+>>>>>>> asf/master
           Statistics: Num rows: 1 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string), _col4 (type: string)
@@ -306,7 +363,10 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               Statistics: Num rows: 1 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
+<<<<<<< HEAD
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+>>>>>>> asf/master
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

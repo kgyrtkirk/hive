@@ -210,6 +210,7 @@ STAGE PLANS:
           TableScan
             alias: ax
 <<<<<<< HEAD
+<<<<<<< HEAD
             filterExpr: (((s = 'a') and (t = 'a         ')) or (null and (t = 'bb        '))) is null (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -222,6 +223,13 @@ STAGE PLANS:
               predicate: (((s = 'a') and (t = 'a         ')) or ((s = null) and (t = 'bb        '))) is null (type: boolean)
               Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+            filterExpr: (((s = 'a') and (t = 'a         ')) or ((s = null) and (t = 'bb        '))) is null (type: boolean)
+            Statistics: Num rows: 3 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (((s = 'a') and (t = 'a         ')) or ((s = null) and (t = 'bb        '))) is null (type: boolean)
+              Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> asf/master
               Select Operator
                 Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator

@@ -289,6 +289,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Select Operator
 <<<<<<< HEAD
+<<<<<<< HEAD
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: bigint)
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 7 Data size: 70 Basic stats: COMPLETE Column stats: NONE
@@ -312,6 +313,13 @@ STAGE PLANS:
           Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 3
+=======
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: bigint), 'AAA' (type: string)
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+          Limit
+            Number of rows: 3
+>>>>>>> asf/master
             Statistics: Num rows: 3 Data size: 297 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false

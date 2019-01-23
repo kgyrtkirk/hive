@@ -175,6 +175,7 @@ STAGE PLANS:
           TableScan
             alias: src
 <<<<<<< HEAD
+<<<<<<< HEAD
             filterExpr: (key = '238') is true (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -187,6 +188,13 @@ STAGE PLANS:
               predicate: (key = '238') (type: boolean)
               Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+            filterExpr: (key = '238') (type: boolean)
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (key = '238') (type: boolean)
+              Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> asf/master
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
@@ -227,6 +235,7 @@ STAGE PLANS:
           TableScan
             alias: src
 <<<<<<< HEAD
+<<<<<<< HEAD
             filterExpr: (key = '238') is true (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -239,6 +248,13 @@ STAGE PLANS:
               predicate: (key = '238') (type: boolean)
               Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+            filterExpr: (key = '238') (type: boolean)
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (key = '238') (type: boolean)
+              Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> asf/master
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
@@ -349,6 +365,7 @@ STAGE PLANS:
           TableScan
             alias: src
 <<<<<<< HEAD
+<<<<<<< HEAD
             filterExpr: (key = '238') is true (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -361,6 +378,13 @@ STAGE PLANS:
               predicate: (key = '238') (type: boolean)
               Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+            filterExpr: (key = '238') (type: boolean)
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (key = '238') (type: boolean)
+              Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> asf/master
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
@@ -401,6 +425,7 @@ STAGE PLANS:
           TableScan
             alias: src
 <<<<<<< HEAD
+<<<<<<< HEAD
             filterExpr: (key = '238') is not true (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -413,6 +438,13 @@ STAGE PLANS:
               predicate: (not COALESCE((key = '238'),false)) (type: boolean)
               Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+            filterExpr: (not COALESCE((key = '238'),false)) (type: boolean)
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (not COALESCE((key = '238'),false)) (type: boolean)
+              Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> asf/master
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
@@ -534,6 +566,7 @@ STAGE PLANS:
           TableScan
             alias: src
 <<<<<<< HEAD
+<<<<<<< HEAD
             filterExpr: (key = '11') is not true (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -546,6 +579,13 @@ STAGE PLANS:
               predicate: (not COALESCE((key = '11'),false)) (type: boolean)
               Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+            filterExpr: (not COALESCE((key = '11'),false)) (type: boolean)
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (not COALESCE((key = '11'),false)) (type: boolean)
+              Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> asf/master
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0

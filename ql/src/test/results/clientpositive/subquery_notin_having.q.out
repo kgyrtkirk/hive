@@ -147,7 +147,10 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 333 Data size: 31635 Basic stats: COMPLETE Column stats: COMPLETE
+<<<<<<< HEAD
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+>>>>>>> asf/master
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -381,7 +384,10 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 Statistics: Num rows: 3 Data size: 318 Basic stats: COMPLETE Column stats: COMPLETE
+<<<<<<< HEAD
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+>>>>>>> asf/master
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -690,7 +696,10 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 6 Data size: 636 Basic stats: COMPLETE Column stats: COMPLETE
+<<<<<<< HEAD
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+>>>>>>> asf/master
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1012,7 +1021,10 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+<<<<<<< HEAD
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+>>>>>>> asf/master
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1215,7 +1227,10 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+<<<<<<< HEAD
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
+=======
+>>>>>>> asf/master
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
