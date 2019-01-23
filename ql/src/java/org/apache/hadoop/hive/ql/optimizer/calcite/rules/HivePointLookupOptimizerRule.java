@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -213,23 +213,43 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       return node;
     }
 
+    /**
+     * Represents a replacement candidate.
+     */
+    static class BetweenCandidate {
+
+      private final RexNode newNode;
+      private final RexNode[] oldNodes;
+      // keeps track if this candidate was already used during replacement
+      private boolean used;
+
+      public BetweenCandidate(RexNode newNode, RexNode... oldNodes) {
+        this.newNode = newNode;
+        this.oldNodes = oldNodes;
+      }
+    }
+
     private RexNode processComparisions(RexCall call, SqlKind forwardEdge, boolean invert) {
       MutableValueGraph<RexNodeRef, RexCall> g =
           buildComparisionGraph(call.getOperands(), forwardEdge);
-      Set<RexNode> replacedNodes = new HashSet<>();
-      List<RexNode> newBetweenOperands = new ArrayList<>();
+      Map<RexNode, BetweenCandidate> replacedNodes = new IdentityHashMap<>();
       for (RexNodeRef n : g.nodes()) {
         Set<RexNodeRef> pred = g.predecessors(n);
         Set<RexNodeRef> succ = g.successors(n);
         if (pred.size() > 0 && succ.size() > 0) {
           RexNodeRef p = pred.iterator().next();
           RexNodeRef s = succ.iterator().next();
-          // mark old comparision nodes for removal
-          replacedNodes.add(g.removeEdge(p, n));
-          replacedNodes.add(g.removeEdge(n, s));
 
-          newBetweenOperands.add(rexBuilder.makeCall(HiveBetween.INSTANCE,
-              rexBuilder.makeLiteral(invert), n.node, p.node, s.node));
+          RexNode between = rexBuilder.makeCall(HiveBetween.INSTANCE,
+              rexBuilder.makeLiteral(invert), n.node, p.node, s.node);
+          BetweenCandidate bc = new BetweenCandidate(
+              between,
+              g.removeEdge(p, n),
+              g.removeEdge(n, s));
+
+          for (RexNode node : bc.oldNodes) {
+            replacedNodes.put(node, bc);
+          }
         }
       }
       if (replacedNodes.isEmpty()) {
@@ -238,12 +258,16 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       }
       List<RexNode> newOperands = new ArrayList<>();
       for (RexNode o : call.getOperands()) {
-        if (replacedNodes.contains(o)) {
-          continue;
+        BetweenCandidate candidate = replacedNodes.get(o);
+        if (candidate == null) {
+          newOperands.add(o);
+        } else {
+          if (!candidate.used) {
+            newOperands.add(candidate.newNode);
+            candidate.used = true;
+          }
         }
-        newOperands.add(o);
       }
-      newOperands.addAll(newBetweenOperands);
 
       if (newOperands.size() == 1) {
         return newOperands.get(0);

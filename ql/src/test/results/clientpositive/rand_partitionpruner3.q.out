@@ -8,9 +8,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
+<<<<<<< HEAD
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS VARCHAR(65536)) AS `ds`, `hr`
 FROM `default`.`srcpart`
 WHERE RAND(1) < 0.1 AND `ds` = '2008-04-08' AND `hr` LIKE '%2' AND `key` <= 50 AND `key` >= 10
+=======
+>>>>>>> kgyrtkirk/HIVE-21143-between-oc
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -25,7 +28,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((UDFToDouble(key) <= 50.0D) and (UDFToDouble(key) >= 10.0D) and (rand(1) < 0.1D)) (type: boolean)
+              predicate: ((rand(1) < 0.1D) and UDFToDouble(key) BETWEEN 10.0D AND 50.0D) (type: boolean)
               Statistics: Num rows: 18 Data size: 191 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), '2008-04-08' (type: string), hr (type: string)
@@ -140,9 +143,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
+<<<<<<< HEAD
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS VARCHAR(65536)) AS `ds`, `hr`
 FROM `default`.`srcpart`
 WHERE `ds` = '2008-04-08' AND `hr` LIKE '%2' AND `key` <= 50 AND `key` >= 10
+=======
+>>>>>>> kgyrtkirk/HIVE-21143-between-oc
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -153,12 +159,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            filterExpr: ((UDFToDouble(key) <= 50.0D) and (UDFToDouble(key) >= 10.0D)) (type: boolean)
+            filterExpr: ((ds = '2008-04-08') and UDFToDouble(key) BETWEEN 10.0D AND 50.0D and (hr like '%2')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((UDFToDouble(key) <= 50.0D) and (UDFToDouble(key) >= 10.0D)) (type: boolean)
+              predicate: UDFToDouble(key) BETWEEN 10.0D AND 50.0D (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), '2008-04-08' (type: string), hr (type: string)
