@@ -25,5 +25,5 @@ FROM druid_t1
 WHERE floor_hour(`__time`)
     BETWEEN CAST('2010-02-01 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
         AND CAST('2010-02-03 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
-order by __time;
+order by `__time`;
 ;
