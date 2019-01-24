@@ -19,8 +19,11 @@ PREHOOK: query: insert into druid_t1 values
 	(cast('2010-02-01 00:00:01 America/Los_Angeles' as timestamp with local time zone), 'v2', 2),
 	(cast('2010-02-01 23:00:01 America/Los_Angeles' as timestamp with local time zone), 'v3', 3),
 	(cast('2010-02-02 23:59:59 America/Los_Angeles' as timestamp with local time zone), 'v4', 4),
-	(cast('2010-02-03 00:00:01 America/Los_Angeles' as timestamp with local time zone), 'x5', 5),
-	(cast('2010-03-01 00:00:01 America/Los_Angeles' as timestamp with local time zone), 'x6', 6)
+	(cast('2010-02-03 00:00:01 America/Los_Angeles' as timestamp with local time zone), 'v5', 5),
+	(cast('2010-02-03 00:59:59 America/Los_Angeles' as timestamp with local time zone), 'v5', 6),
+	(cast('2010-02-03 01:00:00 America/Los_Angeles' as timestamp with local time zone), 'x5', 7),
+	(cast('2010-02-03 01:00:01 America/Los_Angeles' as timestamp with local time zone), 'x5', 8),
+	(cast('2010-03-01 00:00:01 America/Los_Angeles' as timestamp with local time zone), 'x6', 9)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@druid_t1
@@ -29,8 +32,11 @@ POSTHOOK: query: insert into druid_t1 values
 	(cast('2010-02-01 00:00:01 America/Los_Angeles' as timestamp with local time zone), 'v2', 2),
 	(cast('2010-02-01 23:00:01 America/Los_Angeles' as timestamp with local time zone), 'v3', 3),
 	(cast('2010-02-02 23:59:59 America/Los_Angeles' as timestamp with local time zone), 'v4', 4),
-	(cast('2010-02-03 00:00:01 America/Los_Angeles' as timestamp with local time zone), 'x5', 5),
-	(cast('2010-03-01 00:00:01 America/Los_Angeles' as timestamp with local time zone), 'x6', 6)
+	(cast('2010-02-03 00:00:01 America/Los_Angeles' as timestamp with local time zone), 'v5', 5),
+	(cast('2010-02-03 00:59:59 America/Los_Angeles' as timestamp with local time zone), 'v5', 6),
+	(cast('2010-02-03 01:00:00 America/Los_Angeles' as timestamp with local time zone), 'x5', 7),
+	(cast('2010-02-03 01:00:01 America/Los_Angeles' as timestamp with local time zone), 'x5', 8),
+	(cast('2010-03-01 00:00:01 America/Los_Angeles' as timestamp with local time zone), 'x6', 9)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@druid_t1
@@ -38,8 +44,8 @@ PREHOOK: query: EXPLAIN
 SELECT *
 FROM druid_t1
 WHERE floor_hour(`__time`)
-    BETWEEN CAST('2010-02-01 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
-        AND CAST('2010-02-03 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
+    BETWEEN CAST('2010-02-01 00:00:00 America/Los_Angeles' AS TIMESTAMP WITH LOCAL TIME ZONE)
+        AND CAST('2010-02-03 00:00:00 America/Los_Angeles' AS TIMESTAMP WITH LOCAL TIME ZONE)
 order by `__time`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_t1
@@ -48,8 +54,8 @@ POSTHOOK: query: EXPLAIN
 SELECT *
 FROM druid_t1
 WHERE floor_hour(`__time`)
-    BETWEEN CAST('2010-02-01 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
-        AND CAST('2010-02-03 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
+    BETWEEN CAST('2010-02-01 00:00:00 America/Los_Angeles' AS TIMESTAMP WITH LOCAL TIME ZONE)
+        AND CAST('2010-02-03 00:00:00 America/Los_Angeles' AS TIMESTAMP WITH LOCAL TIME ZONE)
 order by `__time`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_t1
@@ -108,3 +114,26 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: SELECT *
+FROM druid_t1
+WHERE floor_hour(`__time`)
+    BETWEEN CAST('2010-02-01 00:00:00 America/Los_Angeles' AS TIMESTAMP WITH LOCAL TIME ZONE)
+        AND CAST('2010-02-03 00:00:00 America/Los_Angeles' AS TIMESTAMP WITH LOCAL TIME ZONE)
+order by `__time`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_t1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT *
+FROM druid_t1
+WHERE floor_hour(`__time`)
+    BETWEEN CAST('2010-02-01 00:00:00 America/Los_Angeles' AS TIMESTAMP WITH LOCAL TIME ZONE)
+        AND CAST('2010-02-03 00:00:00 America/Los_Angeles' AS TIMESTAMP WITH LOCAL TIME ZONE)
+order by `__time`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_t1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2010-02-01 00:00:01.0 US/Pacific	v2	2
+2010-02-01 23:00:01.0 US/Pacific	v3	3
+2010-02-02 23:59:59.0 US/Pacific	v4	4
+2010-02-03 00:00:01.0 US/Pacific	v5	5
+2010-02-03 00:59:59.0 US/Pacific	v5	6
