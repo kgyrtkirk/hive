@@ -1666,6 +1666,7 @@ STAGE PLANS:
           alias: partint
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           filterExpr: hr NOT BETWEEN 12 AND 14 (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
 =======
@@ -1676,6 +1677,10 @@ STAGE PLANS:
           filterExpr: (not hr BETWEEN 12 AND 14) (type: boolean)
           Statistics: Num rows: 500 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
 >>>>>>> asf/master
+=======
+          filterExpr: hr NOT BETWEEN 12 AND 14 (type: boolean)
+          Statistics: Num rows: 500 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> kgyrtkirk/HIVE-21143-between-oc
           Select Operator
             expressions: key (type: string), value (type: string), hr (type: int)
             outputColumnNames: _col0, _col1, _col2

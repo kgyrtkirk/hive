@@ -78,6 +78,9 @@ STAGE PLANS:
           alias: partition_test_partitioned
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> kgyrtkirk/HIVE-21143-between-oc
           filterExpr: UDFToDouble(dt) BETWEEN 100.0D AND 102.0D (type: boolean)
           Statistics: Num rows: 75 Data size: 548 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
@@ -89,6 +92,7 @@ STAGE PLANS:
           Filter Operator
             predicate: ((UDFToDouble(dt) <= 102.0D) and (UDFToDouble(dt) >= 100.0D)) (type: boolean)
             Statistics: Num rows: 8 Data size: 2872 Basic stats: COMPLETE Column stats: PARTIAL
+<<<<<<< HEAD
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
 =======
           filterExpr: ((UDFToDouble(dt) >= 100.0D) and (UDFToDouble(dt) <= 102.0D)) (type: boolean)
@@ -96,6 +100,8 @@ STAGE PLANS:
           Filter Operator
             predicate: ((UDFToDouble(dt) <= 102.0D) and (UDFToDouble(dt) >= 100.0D)) (type: boolean)
             Statistics: Num rows: 8 Data size: 2872 Basic stats: COMPLETE Column stats: PARTIAL
+=======
+>>>>>>> kgyrtkirk/HIVE-21143-between-oc
 >>>>>>> asf/master
             Select Operator
               expressions: key (type: string), value (type: string), dt (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint)
@@ -218,12 +224,16 @@ STAGE PLANS:
           alias: partition_test_partitioned
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> kgyrtkirk/HIVE-21143-between-oc
           filterExpr: UDFToDouble(dt) BETWEEN 100.0D AND 102.0D (type: boolean)
           Statistics: Num rows: 75 Data size: 548 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: UDFToDouble(dt) BETWEEN 100.0D AND 102.0D (type: boolean)
             Statistics: Num rows: 8 Data size: 58 Basic stats: COMPLETE Column stats: NONE
 =======
+<<<<<<< HEAD
           filterExpr: ((UDFToDouble(dt) >= 100.0D) and (UDFToDouble(dt) <= 102.0D)) (type: boolean)
           Statistics: Num rows: 75 Data size: 26925 Basic stats: COMPLETE Column stats: PARTIAL
           Filter Operator
@@ -231,6 +241,8 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 2872 Basic stats: COMPLETE Column stats: PARTIAL
 >>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
 =======
+=======
+>>>>>>> kgyrtkirk/HIVE-21143-between-oc
           filterExpr: ((UDFToDouble(dt) >= 100.0D) and (UDFToDouble(dt) <= 102.0D)) (type: boolean)
           Statistics: Num rows: 75 Data size: 26925 Basic stats: COMPLETE Column stats: PARTIAL
           Filter Operator
