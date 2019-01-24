@@ -181,8 +181,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     newCondition = mergeInClause.apply(newCondition);
 
     // 3. Close BETWEEN expressions if possible
-//    RexTranformIntoBetween t = new RexTranformIntoBetween(rexBuilder);
-  //  newCondition = t.apply(newCondition);
+    RexTranformIntoBetween t = new RexTranformIntoBetween(rexBuilder);
+    newCondition = t.apply(newCondition);
     return newCondition;
   }
 

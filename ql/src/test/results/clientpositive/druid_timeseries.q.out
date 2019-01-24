@@ -31,7 +31,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames $f0
             druid.fieldTypes bigint
-            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"all","filter":{"type":"or","fields":[{"type":"and","fields":[{"type":"bound","dimension":"__time","lower":"2010-01-01T00:00:00.000Z","lowerStrict":false,"ordering":"lexicographic","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}},{"type":"bound","dimension":"__time","upper":"2012-03-01T00:00:00.000Z","upperStrict":false,"ordering":"lexicographic","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}}]},{"type":"bound","dimension":"added","upper":"0.0","upperStrict":false,"ordering":"numeric"}]},"aggregations":[{"type":"count","name":"$f0"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":false}}
+            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"all","filter":{"type":"or","fields":[{"type":"bound","dimension":"__time","lower":"2010-01-01T00:00:00.000Z","lowerStrict":false,"upper":"2012-03-01T00:00:00.000Z","upperStrict":false,"ordering":"lexicographic","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}},{"type":"bound","dimension":"added","upper":"0.0","upperStrict":false,"ordering":"numeric"}]},"aggregations":[{"type":"count","name":"$f0"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":false}}
             druid.query.type timeseries
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -499,7 +499,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames timestamp,$f1,$f2
             druid.fieldTypes timestamp with local time zone,float,double
-            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":{"type":"period","period":"PT1H","timeZone":"US/Pacific"},"aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["2010-01-01T08:00:00.000Z/2014-01-01T09:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
+            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":{"type":"period","period":"PT1H","timeZone":"US/Pacific"},"aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["2010-01-01T08:00:00.000Z/2014-01-01T08:00:00.001Z"],"context":{"skipEmptyBuckets":true}}
             druid.query.type timeseries
           Statistics: Num rows: 1 Data size: 52 Basic stats: COMPLETE Column stats: NONE
           Select Operator
@@ -547,7 +547,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames timestamp,$f1,$f2
             druid.fieldTypes timestamp with local time zone,float,double
-            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":{"type":"period","period":"PT1H","timeZone":"US/Pacific"},"aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["2010-01-01T08:00:00.000Z/2014-01-01T09:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
+            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":{"type":"period","period":"PT1H","timeZone":"US/Pacific"},"aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["2010-01-01T08:00:00.000Z/2014-01-01T08:00:00.001Z"],"context":{"skipEmptyBuckets":true}}
             druid.query.type timeseries
           Statistics: Num rows: 1 Data size: 52 Basic stats: COMPLETE Column stats: NONE
           Select Operator
