@@ -130,7 +130,7 @@ public class HiveRelFactories {
       StatsSource ss = hpc.getStatsSource();
 
       if (ss.canProvideStatsFor(HiveFilter.class)) {
-        Optional<OperatorStats> os = ss.lookup(filter);
+        Optional<OperatorStats> os = ss.lookup(null/*filter*/);
         if (os.isPresent()) {
           long outputRecords = os.get().getOutputRecords();
           HiveFilter.StatEnhancedHiveFilter newFilter =

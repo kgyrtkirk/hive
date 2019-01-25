@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/**
-=======
 /*
->>>>>>> asf/master
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,47 +20,29 @@ package org.apache.hadoop.hive.ql.plan.mapping;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-<<<<<<< HEAD
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.DriverFactory;
-import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.ReOptimizeDriver;
-import org.apache.hadoop.hive.ql.exec.FilterOperator;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
-import org.apache.hadoop.hive.ql.parse.ParseException;
-import org.apache.hadoop.hive.ql.plan.Statistics;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
-=======
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
->>>>>>> asf/master
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.apache.hive.testutils.HiveTestEnvSetup;
-<<<<<<< HEAD
-=======
 import org.junit.After;
->>>>>>> asf/master
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -82,15 +60,9 @@ public class TestReOptimization {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-<<<<<<< HEAD
-    IDriver driver = createDriver();
-    dropTables(driver);
-    String cmds[] = {
-=======
     IDriver driver = createDriver("");
     dropTables(driver);
     String[] cmds = {
->>>>>>> asf/master
         // @formatter:off
         "create table tu(id_uv int,id_uw int,u int)",
         "create table tv(id_uv int,v int)",
@@ -109,14 +81,6 @@ public class TestReOptimization {
 
   @AfterClass
   public static void afterClass() throws Exception {
-<<<<<<< HEAD
-    IDriver driver = createDriver();
-    dropTables(driver);
-  }
-
-  public static void dropTables(IDriver driver) throws Exception {
-    String tables[] = { "tu", "tv", "tw" };
-=======
     IDriver driver = createDriver("");
     dropTables(driver);
   }
@@ -128,51 +92,22 @@ public class TestReOptimization {
 
   public static void dropTables(IDriver driver) throws Exception {
     String[] tables = new String[] {"tu", "tv", "tw" };
->>>>>>> asf/master
     for (String t : tables) {
       int ret = driver.run("drop table if exists " + t).getResponseCode();
       assertEquals("Checking command success", 0, ret);
     }
   }
 
-<<<<<<< HEAD
-  private PlanMapper getMapperForQuery(IDriver driver, String query) {
-    int ret;
-    try {
-      ret = driver.run(query).getResponseCode();
-    } catch (CommandNeedRetryException e) {
-      throw new RuntimeException("remove this exception");
-    }
-    assertEquals("Checking command success", 0, ret);
-    PlanMapper pm0 = ((ReOptimizeDriver) driver).getContext().getPlanMapper();
-=======
   private PlanMapper getMapperForQuery(IDriver driver, String query) throws CommandProcessorResponse {
     CommandProcessorResponse res = driver.run(query);
     if (res.getResponseCode() != 0) {
       throw res;
     }
     PlanMapper pm0 = driver.getContext().getPlanMapper();
->>>>>>> asf/master
     return pm0;
   }
 
   @Test
-<<<<<<< HEAD
-  public void testStatsAreSetInReopt() throws ParseException {
-    IDriver driver = createDriver();
-    String query = "select assert_true_oom(${hiveconf:zzz} > sum(u*v)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
-
-    PlanMapper pm = getMapperForQuery(driver, query);
-    Iterator<LinkGroup> itG = pm.iterateGroups();
-    int checkedOperators = 0;
-    // FIXME: introduce the Operator trimmer mapper!
-    while (itG.hasNext()) {
-      LinkGroup g = itG.next();
-      List<FilterOperator> fos = g.getAll(FilterOperator.class);
-      List<OperatorStats> oss = g.getAll(OperatorStats.class);
-      // FIXME: oss seems to contain duplicates
-      //      List<HiveFilter> hf = g.getAll(HiveFilter.class);
-=======
   public void testStatsAreSetInReopt() throws Exception {
     IDriver driver = createDriver("overlay,reoptimize");
     String query = "select assert_true_oom(${hiveconf:zzz} > sum(u*v))"
@@ -187,7 +122,6 @@ public class TestReOptimization {
       List<FilterOperator> fos = g.getAll(FilterOperator.class);
       List<OperatorStats> oss = g.getAll(OperatorStats.class);
       // FIXME: oss seems to contain duplicates
->>>>>>> asf/master
 
       if (fos.size() > 0 && oss.size() > 0) {
         fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
@@ -208,63 +142,6 @@ public class TestReOptimization {
   }
 
   @Test
-<<<<<<< HEAD
-  public void testReOptimizationCanSendBackStatsToCBO() throws ParseException {
-    disablePPD();
-    IDriver driver = createDriver();
-    // @formatter:off
-    String query="select assert_true_oom(${hiveconf:zzz} > sum(u*v*w)) from tu\n" +
-    "        join tv on (tu.id_uv=tv.id_uv)\n" +
-    "        join tw on (tu.id_uw=tw.id_uw)\n" +
-    "        where w>9 and u>1 and v>3";
-    // @formatter:on
-    PlanMapper pm = getMapperForQuery(driver, query);
-
-    Iterator<LinkGroup> itG = pm.iterateGroups();
-    int checkedOperators = 0;
-    // FIXME: introduce the Operator trimmer mapper!
-    while (itG.hasNext()) {
-      LinkGroup g = itG.next();
-      List<FilterOperator> fos = g.getAll(FilterOperator.class);
-      List<OperatorStats> oss = g.getAll(OperatorStats.class);
-      List<HiveFilter> hfs = g.getAll(HiveFilter.class);
-      // FIXME: oss seems to contain duplicates
-      //      List<HiveFilter> hf = g.getAll(HiveFilter.class);
-
-      if (fos.size() > 0 && oss.size() > 0 && hfs.size() > 0) {
-        fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
-
-        HiveFilter hf = hfs.get(0);
-        FilterOperator fo = fos.get(0);
-        OperatorStats os = oss.get(0);
-
-
-        Optional<OperatorStats> prevOs = driver.getContext().getRuntimeStatsSource().get().lookup(hf);
-
-        long cntFilter = RelMetadataQuery.instance().getRowCount(hf).longValue();
-        assertEquals(os.getOutputRecords(), fo.getStatistics().getNumRows());
-        assertEquals(os.getOutputRecords(), cntFilter);
-
-        checkedOperators++;
-      }
-    }
-    assertEquals(3, checkedOperators);
-
-  }
-
-  @Deprecated
-  private void disablePPD() {
-    // these things should be able to work with ppd on
-    HiveConf conf = env_setup.getTestCtx().hiveConf;
-    conf.set("hive.optimize.ppd", "false");
-    //    conf.set("hive.auto.convert.join", "false");
-  }
-
-  private static IDriver createDriver() {
-    HiveConf conf = env_setup.getTestCtx().hiveConf;
-
-    conf.set("hive.query.reexecution.strategy", "reoptimize");
-=======
   public void testReExecutedIfMapJoinError() throws Exception {
 
     IDriver driver = createDriver("overlay,reoptimize");
@@ -368,6 +245,56 @@ public class TestReOptimization {
 
   }
 
+  @Test
+  public void testReOptimizationCanSendBackStatsToCBO() throws Exception {
+    disablePPD();
+    IDriver driver = createDriver("overlay,reoptimize");
+    // @formatter:off
+    String query="select assert_true_oom(${hiveconf:zzz} > sum(u*v*w)) from tu\n" +
+    "        join tv on (tu.id_uv=tv.id_uv)\n" +
+    "        join tw on (tu.id_uw=tw.id_uw)\n" +
+    "        where w>9 and u>1 and v>3";
+    // @formatter:on
+    PlanMapper pm = getMapperForQuery(driver, query);
+
+    Iterator<EquivGroup> itG = pm.iterateGroups();
+    int checkedOperators = 0;
+    // FIXME: introduce the Operator trimmer mapper!
+    while (itG.hasNext()) {
+      EquivGroup g = itG.next();
+      List<FilterOperator> fos = g.getAll(FilterOperator.class);
+      List<OperatorStats> oss = g.getAll(OperatorStats.class);
+      List<HiveFilter> hfs = g.getAll(HiveFilter.class);
+      // FIXME: oss seems to contain duplicates
+      //      List<HiveFilter> hf = g.getAll(HiveFilter.class);
+
+      if (fos.size() > 0 && oss.size() > 0 && hfs.size() > 0) {
+        fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
+
+        HiveFilter hf = hfs.get(0);
+        FilterOperator fo = fos.get(0);
+        OperatorStats os = oss.get(0);
+
+        Optional<OperatorStats> prevOs = driver.getContext().getStatsSource().lookup(null/*hf*/);
+
+        long cntFilter = RelMetadataQuery.instance().getRowCount(hf).longValue();
+        assertEquals(os.getOutputRecords(), fo.getStatistics().getNumRows());
+        assertEquals(os.getOutputRecords(), cntFilter);
+
+        checkedOperators++;
+      }
+    }
+    assertEquals(3, checkedOperators);
+
+  }
+
+  @Deprecated
+  private void disablePPD() {
+    // these things should be able to work with ppd on
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    conf.set("hive.optimize.ppd", "false");
+    //    conf.set("hive.auto.convert.join", "false");
+  }
 
   private static IDriver createDriver(String strategies) {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
@@ -376,7 +303,6 @@ public class TestReOptimization {
     conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, strategies);
     conf.setBoolVar(ConfVars.HIVE_EXPLAIN_USER, true);
->>>>>>> asf/master
     conf.set("zzz", "1");
     conf.set("reexec.overlay.zzz", "2000");
     //

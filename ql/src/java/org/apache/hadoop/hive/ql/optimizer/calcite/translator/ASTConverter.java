@@ -351,14 +351,11 @@ public class ASTConverter {
       TableScan f = (TableScan) r;
       s = new Schema(f);
       ast = ASTBuilder.table(f);
-<<<<<<< HEAD
       planMapper.link(ast, f);
-=======
     } else if (r instanceof HiveJdbcConverter) {
       HiveJdbcConverter f = (HiveJdbcConverter) r;
       s = new Schema(f);
       ast = ASTBuilder.table(f);
->>>>>>> asf/master
     } else if (r instanceof DruidQuery) {
       DruidQuery f = (DruidQuery) r;
       s = new Schema(f);
@@ -786,7 +783,7 @@ public class ASTConverter {
     }
 
     Schema(DruidQuery dq) {
-      HiveTableScan hts = (HiveTableScan) ((DruidQuery)dq).getTableScan();
+      HiveTableScan hts = (HiveTableScan) dq.getTableScan();
       String tabName = hts.getTableAlias();
       for (RelDataTypeField field : dq.getRowType().getFieldList()) {
         add(new ColumnInfo(tabName, field.getName()));

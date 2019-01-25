@@ -279,16 +279,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.joda.time.Interval;
-<<<<<<< HEAD
-import com.google.common.base.Function;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-=======
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -317,7 +307,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
->>>>>>> asf/master
 
 public class CalcitePlanner extends SemanticAnalyzer {
 
@@ -410,7 +399,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   public static RelOptPlanner createPlanner(HiveConf conf) {
-    return createPlanner(conf, new HashSet<RelNode>(), new HashSet<RelNode>(), new EmptyStatsSource());
+    return createPlanner(conf, new HashSet<RelNode>(), new HashSet<RelNode>(), EmptyStatsSource.INSTANCE);
   }
 
   private static RelOptPlanner createPlanner(
@@ -434,12 +423,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
     boolean heuristicMaterializationStrategy = HiveConf.getVar(conf,
         HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_SELECTION_STRATEGY).equals("heuristic");
     HivePlannerContext confContext = new HivePlannerContext(algorithmsConf, registry, calciteConfig,
-<<<<<<< HEAD
-        corrScalarRexSQWithAgg, scalarAggNoGbyNoWin, new HiveConfPlannerContext(isCorrelatedColumns), statsSource);
-=======
         corrScalarRexSQWithAgg, scalarAggNoGbyNoWin,
-        new HiveConfPlannerContext(isCorrelatedColumns, heuristicMaterializationStrategy));
->>>>>>> asf/master
+        new HiveConfPlannerContext(isCorrelatedColumns, heuristicMaterializationStrategy), statsSource);
     return HiveVolcanoPlanner.createPlanner(confContext);
   }
 
