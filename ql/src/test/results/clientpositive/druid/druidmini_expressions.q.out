@@ -134,7 +134,7 @@ STAGE PLANS:
                   properties:
                     druid.fieldNames vc
                     druid.fieldTypes timestamp with local time zone
-                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/1968-02-01T08:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1968-01-01T08:00:00.000Z/1970-04-01T08:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -186,3 +186,13 @@ WHERE ('1968-01-01 00:00:00' <= `__time` AND `__time` <= '1970-01-01 00:00:00')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
+1969-12-31 15:59:00.0 US/Pacific
