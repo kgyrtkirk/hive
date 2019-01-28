@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
@@ -277,7 +278,7 @@ public class TestReOptimization {
         FilterOperator fo = fos.get(0);
         OperatorStats os = oss.get(0);
 
-        Optional<OperatorStats> prevOs = driver.getContext().getStatsSource().lookup(null/*hf*/);
+        Optional<OperatorStats> prevOs = driver.getContext().getStatsSource().lookup(RelTreeSignature.of(hf));
 
         long cntFilter = RelMetadataQuery.instance().getRowCount(hf).longValue();
         assertEquals(os.getOutputRecords(), fo.getStatistics().getNumRows());

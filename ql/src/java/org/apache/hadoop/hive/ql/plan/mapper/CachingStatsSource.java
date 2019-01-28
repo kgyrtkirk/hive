@@ -24,22 +24,22 @@ import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
+import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableList;
 
 public class CachingStatsSource implements StatsSource {
 
 
   private final Cache<OpTreeSignature, OperatorStats> cache;
+  private final Cache<RelTreeSignature, OperatorStats> cache2;
 
   public CachingStatsSource(int cacheSize) {
     cache = CacheBuilder.newBuilder().maximumSize(cacheSize).build();
-  }
-
-  public void put(OpTreeSignature sig, OperatorStats opStat) {
-    cache.put(sig, opStat);
+    cache2 = CacheBuilder.newBuilder().maximumSize(cacheSize).build();
   }
 
   @Override
@@ -60,6 +60,22 @@ public class CachingStatsSource implements StatsSource {
     for (Entry<OpTreeSignature, OperatorStats> entry : map.entrySet()) {
       put(entry.getKey(), entry.getValue());
     }
+  }
+
+  private void put(OpTreeSignature sig, OperatorStats opStat) {
+    cache.put(sig, opStat);
+  }
+
+  @Override
+  public Optional<OperatorStats> lookup(RelTreeSignature of) {
+    throw new RuntimeException();
+  }
+
+  @Override
+  public void putAll2(ImmutableList<PersistedRuntimeStats> statMap) {
+    throw new RuntimeException();
+    // TODO Auto-generated method stub
+    //
   }
 
 }

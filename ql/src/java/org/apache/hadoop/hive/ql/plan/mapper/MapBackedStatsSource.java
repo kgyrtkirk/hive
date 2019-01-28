@@ -24,11 +24,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
+import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
+
+import com.google.common.collect.ImmutableList;
 
 public class MapBackedStatsSource implements StatsSource {
 
   private Map<OpTreeSignature, OperatorStats> map = new ConcurrentHashMap<>();
+  private Map<RelTreeSignature, OperatorStats> map2 = new ConcurrentHashMap<>();
 
   @Override
   public boolean canProvideStatsFor(Class<?> clazz) {
@@ -46,5 +50,22 @@ public class MapBackedStatsSource implements StatsSource {
   @Override
   public void putAll(Map<OpTreeSignature, OperatorStats> map) {
     this.map.putAll(map);
+  }
+
+  @Override
+  public Optional<OperatorStats> lookup(RelTreeSignature of) {
+    return Optional.ofNullable(map2.get(of));
+  }
+
+  @Override
+  public void putAll2(ImmutableList<PersistedRuntimeStats> statMap) {
+    for (PersistedRuntimeStats persistedRuntimeStats : statMap) {
+      if (persistedRuntimeStats.sig != null) {
+        map.put(persistedRuntimeStats.sig, persistedRuntimeStats.stat);
+      }
+      if (persistedRuntimeStats.rSig != null) {
+        map2.put(persistedRuntimeStats.rSig, persistedRuntimeStats.stat);
+      }
+    }
   }
 }

@@ -18,47 +18,20 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
-import java.util.Map;
-import java.util.Optional;
-
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
-import com.google.common.collect.ImmutableList;
+public class PersistedRuntimeStats {
 
-public final class EmptyStatsSource implements StatsSource {
+  public final OpTreeSignature sig;
+  public final OperatorStats stat;
+  public final RelTreeSignature rSig;
 
-  public static StatsSource INSTANCE = new EmptyStatsSource();
-
-  private EmptyStatsSource() {
-  }
-
-  @Override
-  public boolean canProvideStatsFor(Class<?> class1) {
-    return false;
-  }
-
-  @Override
-  public Optional<OperatorStats> lookup(OpTreeSignature treeSig) {
-    return Optional.empty();
-  }
-
-  @Override
-  public Optional<OperatorStats> lookup(RelTreeSignature of) {
-    return Optional.empty();
-  }
-
-  @Override
-  public void putAll(Map<OpTreeSignature, OperatorStats> map) {
-    throw new RuntimeException("This is an empty source!");
-  }
-
-  @Override
-  public void putAll2(ImmutableList<PersistedRuntimeStats> statMap) {
-    throw new RuntimeException();
-    // TODO Auto-generated method stub
-    //
+  public PersistedRuntimeStats(OpTreeSignature sig, OperatorStats stat, RelTreeSignature rSig) {
+    this.sig = sig;
+    this.stat = stat;
+    this.rSig = rSig;
   }
 
 }

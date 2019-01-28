@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
+import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
@@ -130,7 +131,7 @@ public class HiveRelFactories {
       StatsSource ss = hpc.getStatsSource();
 
       if (ss.canProvideStatsFor(HiveFilter.class)) {
-        Optional<OperatorStats> os = ss.lookup(null/*filter*/);
+        Optional<OperatorStats> os = ss.lookup(RelTreeSignature.of(filter));
         if (os.isPresent()) {
           long outputRecords = os.get().getOutputRecords();
           HiveFilter.StatEnhancedHiveFilter newFilter =

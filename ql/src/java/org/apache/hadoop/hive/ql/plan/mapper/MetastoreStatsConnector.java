@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
+import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.RuntimeStatsMap;
 import org.apache.hadoop.hive.ql.optimizer.signature.RuntimeStatsPersister;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
@@ -38,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Decorates a StatSource to be loaded and persisted in the metastore as well.
@@ -162,6 +164,18 @@ class MetastoreStatsConnector implements StatsSource {
     } else {
       LOG.info(msg + ": " + e.getMessage());
     }
+  }
+
+  @Override
+  public Optional<OperatorStats> lookup(RelTreeSignature of) {
+    throw new RuntimeException();
+  }
+
+  @Override
+  public void putAll2(ImmutableList<PersistedRuntimeStats> statMap) {
+    throw new RuntimeException();
+    // TODO Auto-generated method stub
+    //
   }
 
 }

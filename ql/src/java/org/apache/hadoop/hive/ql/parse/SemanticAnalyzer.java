@@ -3472,6 +3472,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new FilterDesc(filterCond, false), new RowSchema(
             inputRR.getColumnInfos()), input), inputRR);
 
+    ctx.getPlanMapper().link(condn, output);
+
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created Filter Plan for " + qb.getId() + " row schema: "
           + inputRR.toString());
