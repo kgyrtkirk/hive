@@ -267,7 +267,9 @@ public class TestReOptimization {
       List<HiveFilter> hfs = g.getAll(HiveFilter.class);
       // FIXME: oss seems to contain duplicates
       //      List<HiveFilter> hf = g.getAll(HiveFilter.class);
-
+      if (hfs.size() != 0) {
+        System.out.println("asd");
+      }
       if (fos.size() > 0 && oss.size() > 0 && hfs.size() > 0) {
         fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
 
