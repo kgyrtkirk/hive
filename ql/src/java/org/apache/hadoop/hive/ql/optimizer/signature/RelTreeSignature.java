@@ -61,4 +61,9 @@ public final class RelTreeSignature {
     RelTreeSignature other = (RelTreeSignature) obj;
     return sig.equals(other.sig);
   }
+
+  @Override
+  public int hashCode() {
+    return sig.hashCode();
+  }
 }

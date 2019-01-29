@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
@@ -37,6 +38,9 @@ public class MapBackedStatsSource implements StatsSource {
   @Override
   public boolean canProvideStatsFor(Class<?> clazz) {
     if (Operator.class.isAssignableFrom(clazz)) {
+      return true;
+    }
+    if (HiveFilter.class.isAssignableFrom(clazz)) {
       return true;
     }
     return false;

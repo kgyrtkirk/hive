@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctio
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter.HiveToken;
+import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
@@ -130,6 +131,8 @@ public class ASTConverter {
       ASTNode cond = where.getCondition().accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder()));
       hiveAST.where = ASTBuilder.where(cond);
       planMapper.link(cond, where);
+      // FIXME: ugly hack
+      planMapper.link(cond, RelTreeSignature.of(where));
     }
 
     /*
