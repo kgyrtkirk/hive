@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
@@ -490,6 +491,12 @@ public final class OpProcFactory {
         if (hasUnpushedPredicates) {
           ExprWalkerInfo unpushedPreds = mergeChildrenPred(nd, owi, null, false);
           return createFilter((Operator)nd, unpushedPreds, owi);
+        } else {
+          //FIXME
+          Operator<?> p = (Operator<?>) ((Operator) nd).getParentOperators().get(0);
+          OpWalkerInfo wi = (OpWalkerInfo) procCtx;
+          PlanMapper pm = wi.getParseContext().getContext().getPlanMapper();
+          pm.link(nd, p);
         }
       }
       return null;

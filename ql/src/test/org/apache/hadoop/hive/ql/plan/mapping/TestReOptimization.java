@@ -248,7 +248,8 @@ public class TestReOptimization {
 
   @Test
   public void testReOptimizationCanSendBackStatsToCBO() throws Exception {
-    disablePPD();
+    //    disablePPD();
+
     IDriver driver = createDriver("overlay,reoptimize");
     // @formatter:off
     String query="select assert_true_oom(${hiveconf:zzz} > sum(u*v*w)) from tu\n" +
@@ -281,7 +282,9 @@ public class TestReOptimization {
         Optional<OperatorStats> prevOs = driver.getContext().getStatsSource().lookup(RelTreeSignature.of(hf));
 
         long cntFilter = RelMetadataQuery.instance().getRowCount(hf).longValue();
-        assertEquals(os.getOutputRecords(), fo.getStatistics().getNumRows());
+        if (fo.getStatistics() != null) {
+          assertEquals(os.getOutputRecords(), fo.getStatistics().getNumRows());
+        }
         assertEquals(os.getOutputRecords(), cntFilter);
 
         checkedOperators++;
@@ -296,7 +299,7 @@ public class TestReOptimization {
     // these things should be able to work with ppd on
     HiveConf conf = env_setup.getTestCtx().hiveConf;
     conf.set("hive.optimize.ppd", "false");
-    //    conf.set("hive.auto.convert.join", "false");
+    //    conf.set("hive.ppd.remove.duplicatefilters", "false");
   }
 
   private static IDriver createDriver(String strategies) {

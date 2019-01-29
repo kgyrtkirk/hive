@@ -157,6 +157,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return configuration;
   }
   public List<Operator<? extends OperatorDesc>> getChildOperators() {
+    if (id.equals("7") && getName().equals("FIL")) {
+      int asdf = 1;
+    }
     return childOperators;
   }
 
