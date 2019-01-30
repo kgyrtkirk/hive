@@ -507,18 +507,8 @@ STAGE PLANS:
           Statistics: Num rows: 12500 Data size: 4612500 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
 <<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
             predicate: (_col2 + _col5) BETWEEN 100.0D AND 102.0D (type: boolean)
-            Statistics: Num rows: 1388 Data size: 26738 Basic stats: COMPLETE Column stats: NONE
-=======
-            predicate: (((_col2 + _col5) <= 102.0D) and ((_col2 + _col5) >= 100.0D)) (type: boolean)
             Statistics: Num rows: 1388 Data size: 512172 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
-            predicate: (((_col2 + _col5) <= 102.0D) and ((_col2 + _col5) >= 100.0D)) (type: boolean)
-            Statistics: Num rows: 1388 Data size: 512172 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
 =======
             predicate: (_col2 + _col5) BETWEEN 100.0D AND 102.0D (type: boolean)
             Statistics: Num rows: 1388 Data size: 512172 Basic stats: COMPLETE Column stats: COMPLETE
