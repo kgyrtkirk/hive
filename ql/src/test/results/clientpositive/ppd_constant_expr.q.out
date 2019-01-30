@@ -34,36 +34,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src1
-<<<<<<< HEAD
-<<<<<<< HEAD
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-            Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
-            Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
             Select Operator
               expressions: null (type: string), null (type: int), null (type: double)
               outputColumnNames: _col0, _col1, _col2
-<<<<<<< HEAD
-<<<<<<< HEAD
               Statistics: Num rows: 25 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 Statistics: Num rows: 25 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-              Statistics: Num rows: 25 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 25 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
-              Statistics: Num rows: 25 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 25 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -72,15 +50,7 @@ STAGE PLANS:
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: int), _col2 (type: double)
                 outputColumnNames: c1, c2, c3
-<<<<<<< HEAD
-<<<<<<< HEAD
                 Statistics: Num rows: 25 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                Statistics: Num rows: 25 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
-                Statistics: Num rows: 25 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
                 Group By Operator
                   aggregations: compute_stats(c1, 'hll'), compute_stats(c2, 'hll'), compute_stats(c3, 'hll')
                   mode: hash
@@ -235,35 +205,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src1
-<<<<<<< HEAD
-<<<<<<< HEAD
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-            Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
-            Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
             Select Operator
               expressions: null (type: string), null (type: int), null (type: double)
               outputColumnNames: _col0, _col1, _col2
-<<<<<<< HEAD
-<<<<<<< HEAD
               Statistics: Num rows: 25 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 Statistics: Num rows: 25 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-=======
->>>>>>> asf/master
-              Statistics: Num rows: 25 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 25 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
-<<<<<<< HEAD
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
->>>>>>> asf/master
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -272,15 +221,7 @@ STAGE PLANS:
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: int), _col2 (type: double)
                 outputColumnNames: c1, c2, c3
-<<<<<<< HEAD
-<<<<<<< HEAD
                 Statistics: Num rows: 25 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                Statistics: Num rows: 25 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
-                Statistics: Num rows: 25 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
                 Group By Operator
                   aggregations: compute_stats(c1, 'hll'), compute_stats(c2, 'hll'), compute_stats(c3, 'hll')
                   mode: hash
