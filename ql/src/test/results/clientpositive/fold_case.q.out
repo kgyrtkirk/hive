@@ -18,29 +18,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-<<<<<<< HEAD
-<<<<<<< HEAD
             filterExpr: (key = '238') is true (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = '238') is true (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-=======
-            filterExpr: (key = '238') (type: boolean)
-            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: (key = '238') (type: boolean)
-              Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
-            filterExpr: (key = '238') (type: boolean)
-            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: (key = '238') (type: boolean)
-              Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
+              Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -91,27 +75,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-<<<<<<< HEAD
-<<<<<<< HEAD
             filterExpr: (key = '238') is not true (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = '238') is not true (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-=======
-            filterExpr: (not COALESCE((key = '238'),false)) (type: boolean)
-            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: (not COALESCE((key = '238'),false)) (type: boolean)
               Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
-            filterExpr: (not COALESCE((key = '238'),false)) (type: boolean)
-            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: (not COALESCE((key = '238'),false)) (type: boolean)
-              Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
               Select Operator
                 Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
@@ -240,29 +208,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-<<<<<<< HEAD
-<<<<<<< HEAD
             filterExpr: (key = '238') is true (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = '238') is true (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-=======
-            filterExpr: (key = '238') (type: boolean)
-            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: (key = '238') (type: boolean)
-              Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
-            filterExpr: (key = '238') (type: boolean)
-            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: (key = '238') (type: boolean)
-              Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
+              Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -369,29 +321,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-<<<<<<< HEAD
-<<<<<<< HEAD
             filterExpr: (key = '238') is true (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = '238') is true (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-=======
-            filterExpr: (key = '238') (type: boolean)
-            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: (key = '238') (type: boolean)
-              Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
-            filterExpr: (key = '238') (type: boolean)
-            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: (key = '238') (type: boolean)
-              Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
+              Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -442,27 +378,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-<<<<<<< HEAD
-<<<<<<< HEAD
             filterExpr: (key = '238') is not true (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = '238') is not true (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-=======
-            filterExpr: (not COALESCE((key = '238'),false)) (type: boolean)
-            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: (not COALESCE((key = '238'),false)) (type: boolean)
               Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
-            filterExpr: (not COALESCE((key = '238'),false)) (type: boolean)
-            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: (not COALESCE((key = '238'),false)) (type: boolean)
-              Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
               Select Operator
                 expressions: ((key = '238') is true and null) (type: boolean)
                 outputColumnNames: _col0
@@ -547,27 +467,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-<<<<<<< HEAD
-<<<<<<< HEAD
             filterExpr: (key = '238') is not true (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = '238') is not true (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-=======
-            filterExpr: CASE WHEN ((key = '238')) THEN (null) ELSE (true) END (type: boolean)
-            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: CASE WHEN ((key = '238')) THEN (null) ELSE (true) END (type: boolean)
               Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
-            filterExpr: CASE WHEN ((key = '238')) THEN (null) ELSE (true) END (type: boolean)
-            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Filter Operator
-              predicate: CASE WHEN ((key = '238')) THEN (null) ELSE (true) END (type: boolean)
-              Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
               Select Operator
                 Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
