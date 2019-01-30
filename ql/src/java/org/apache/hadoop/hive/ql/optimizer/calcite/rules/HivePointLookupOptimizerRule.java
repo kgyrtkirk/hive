@@ -273,7 +273,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
         for (Edge<V, E> edge : node.edges) {
           if (edge.t.v.equals(n)) {
-            ret.add(edge.t.v);
+            ret.add(edge.s.v);
           }
         }
         return ret;
@@ -288,7 +288,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
         for (Edge<V, E> edge : node.edges) {
           if (edge.s.v.equals(n)) {
-            ret.add(edge.s.v);
+            ret.add(edge.t.v);
           }
         }
         return ret;
