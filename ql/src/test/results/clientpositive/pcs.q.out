@@ -1345,23 +1345,13 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: pcs_t1
-<<<<<<< HEAD
-<<<<<<< HEAD
           filterExpr: true is true (type: boolean)
-          Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
-=======
-          filterExpr: (ds = '2000-04-08') (type: boolean)
-          Statistics: Num rows: 20 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
-          filterExpr: (ds = '2000-04-08') (type: boolean)
-          Statistics: Num rows: 20 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
+          Statistics: Num rows: 20 Data size: 3840 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: ds (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: select ds from pcs_t1 where struct(case when ds='2000-04-08' then 10 else 20 end) in (struct(10),struct(11))
@@ -1588,53 +1578,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
-<<<<<<< HEAD
-<<<<<<< HEAD
             filterExpr: ((((ds = '2000-04-08') or key is not null) and (key = 2)) or (((ds = '2000-04-08') = false) and (key = 3))) (type: boolean)
-            Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
-=======
-            filterExpr: (struct(key,((ds = '2000-04-08') or (key = 2)))) IN (const struct(2,true), const struct(3,false)) (type: boolean)
             Statistics: Num rows: 60 Data size: 11280 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: ((((ds = '2000-04-08') = false) and (key = 3)) or (((ds = '2000-04-08') or key is not null) and (key = 2))) (type: boolean)
-              Statistics: Num rows: 45 Data size: 360 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 7 Data size: 1316 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: ds (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 45 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-=======
-            filterExpr: (struct(key,((ds = '2000-04-08') or (key = 2)))) IN (const struct(2,true), const struct(3,false)) (type: boolean)
-            Statistics: Num rows: 60 Data size: 11280 Basic stats: COMPLETE Column stats: PARTIAL
-            GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate: (struct(key,((ds = '2000-04-08') or (key = 2)))) IN (const struct(2,true), const struct(3,false)) (type: boolean)
-              Statistics: Num rows: 30 Data size: 5640 Basic stats: COMPLETE Column stats: PARTIAL
-              Select Operator
-                expressions: ds (type: string)
-                outputColumnNames: _col0
-                Statistics: Num rows: 30 Data size: 5520 Basic stats: COMPLETE Column stats: PARTIAL
-<<<<<<< HEAD
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
->>>>>>> asf/master
+                Statistics: Num rows: 7 Data size: 1288 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-<<<<<<< HEAD
-<<<<<<< HEAD
-                  Statistics: Num rows: 45 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-=======
-                  Statistics: Num rows: 30 Data size: 5520 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
-                  Statistics: Num rows: 30 Data size: 5520 Basic stats: COMPLETE Column stats: PARTIAL
->>>>>>> asf/master
+                  Statistics: Num rows: 7 Data size: 1288 Basic stats: COMPLETE Column stats: PARTIAL
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
