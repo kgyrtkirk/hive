@@ -722,7 +722,7 @@ POSTHOOK: Input: default@part_null
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-Warning: Shuffle Join JOIN[26][tables = [$hdt$_2, $hdt$_3]] in Work 'Reducer 7' is a cross product
+Warning: Shuffle Join JOIN[25][tables = [$hdt$_2, $hdt$_3]] in Work 'Reducer 7' is a cross product
 PREHOOK: query: explain select * from part_null where p_brand IN (select p_brand from part_null) AND p_brand NOT IN (select p_name from part_null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null
@@ -770,24 +770,21 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: p_name (type: string)
-                    outputColumnNames: _col0
+                  Filter Operator
+                    predicate: p_name is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-                    Filter Operator
-                      predicate: _col0 is not null (type: boolean)
+                    Group By Operator
+                      keys: p_name (type: string)
+                      mode: hash
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 1 Data size: 32560 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Map 5 
             Map Operator Tree:
@@ -923,7 +920,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[26][tables = [$hdt$_2, $hdt$_3]] in Work 'Reducer 7' is a cross product
+Warning: Shuffle Join JOIN[25][tables = [$hdt$_2, $hdt$_3]] in Work 'Reducer 7' is a cross product
 PREHOOK: query: select * from part_null where p_brand IN (select p_brand from part_null) AND p_brand NOT IN (select p_name from part_null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null
