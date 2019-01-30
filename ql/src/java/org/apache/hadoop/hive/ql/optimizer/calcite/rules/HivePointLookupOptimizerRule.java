@@ -413,6 +413,44 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
   }
 
   /**
+   * This class just wraps around a RexNode enables equals/hashCode based on toString.
+   *
+   * After CALCITE-2632 this might not be needed anymore */
+  static class RexNodeRef {
+
+    public static Comparator<RexNodeRef> COMPARATOR =
+        (RexNodeRef o1, RexNodeRef o2) -> o1.node.toString().compareTo(o2.node.toString());
+    private RexNode node;
+
+    public RexNodeRef(RexNode node) {
+      this.node = node;
+    }
+
+    public RexNode getRexNode() {
+      return node;
+    }
+
+    @Override
+    public int hashCode() {
+      return node.toString().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o instanceof RexNodeRef) {
+        RexNodeRef otherRef = (RexNodeRef) o;
+        return node.toString().equals(otherRef.node.toString());
+      }
+      return false;
+    }
+
+    @Override
+    public String toString() {
+      return "ref for:" + node.toString();
+    }
+  }
+
+  /**
    * Transforms OR clauses into IN clauses, when possible.
    */
   protected static class RexTransformIntoInClause extends RexShuttle {
@@ -448,43 +486,6 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       return node;
     }
 
-    /**
-     * This class just wraps around a RexNode enables equals/hashCode based on toString.
-     *
-     * After CALCITE-2632 this might not be needed anymore */
-    static class RexNodeRef {
-
-      public static Comparator<RexNodeRef> COMPARATOR =
-          (RexNodeRef o1, RexNodeRef o2) -> o1.node.toString().compareTo(o2.node.toString());
-      private RexNode node;
-
-      public RexNodeRef(RexNode node) {
-        this.node = node;
-      }
-
-      public RexNode getRexNode() {
-        return node;
-      }
-
-      @Override
-      public int hashCode() {
-        return node.toString().hashCode();
-      }
-
-      @Override
-      public boolean equals(Object o) {
-        if (o instanceof RexNodeRef) {
-          RexNodeRef otherRef = (RexNodeRef) o;
-          return node.toString().equals(otherRef.node.toString());
-        }
-        return false;
-      }
-
-      @Override
-      public String toString() {
-        return "ref for:" + node.toString();
-      }
-    }
     /**
      * Represents a contraint.
      *
