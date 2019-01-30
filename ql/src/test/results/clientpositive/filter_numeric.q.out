@@ -1665,18 +1665,8 @@ STAGE PLANS:
         TableScan
           alias: partint
 <<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
           filterExpr: hr NOT BETWEEN 12 AND 14 (type: boolean)
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-=======
-          filterExpr: (not hr BETWEEN 12 AND 14) (type: boolean)
           Statistics: Num rows: 500 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
-          filterExpr: (not hr BETWEEN 12 AND 14) (type: boolean)
-          Statistics: Num rows: 500 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
 =======
           filterExpr: hr NOT BETWEEN 12 AND 14 (type: boolean)
           Statistics: Num rows: 500 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
