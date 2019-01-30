@@ -79,7 +79,7 @@ STAGE PLANS:
                   properties:
                     druid.fieldNames __time,n,v
                     druid.fieldTypes timestamp with local time zone,string,int
-                    druid.query.json {"queryType":"scan","dataSource":"default.druid_t1","intervals":["2010-02-01T08:00:00.000Z/2010-02-03T09:00:00.000Z"],"columns":["__time","n","v"],"resultFormat":"compactedList"}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_t1","intervals":["2010-02-01T08:00:00.000Z/2010-02-03T08:00:00.001Z"],"columns":["__time","n","v"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -135,5 +135,3 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2010-02-01 00:00:01.0 US/Pacific	v2	2
 2010-02-01 23:00:01.0 US/Pacific	v3	3
 2010-02-02 23:59:59.0 US/Pacific	v4	4
-2010-02-03 00:00:01.0 US/Pacific	v5	5
-2010-02-03 00:59:59.0 US/Pacific	v5	6
