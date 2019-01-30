@@ -64,13 +64,19 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 
 /**
- * This optimization attempts to identify and close expanded INs.
+ * This optimization attempts to identify and close expanded INs and BETWEENs
  *
  * Basically:
  * <pre>
  * (c) IN ( v1, v2, ...) &lt;=&gt; c1=v1 || c1=v2 || ...
  * </pre>
  * If c is struct; then c=v1 is a group of anded equations.
+ *
+ * Similarily
+ * <pre>
+ * v1 <= c1 and c1 <= v2
+ * <pre>
+ * is rewritten to <p>c1 between v1 and v2</p>
  */
 public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
@@ -187,7 +193,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
   }
 
   /**
-   * Transforms OR clauses into IN clauses, when possible.
+   * Transforms inequality candidates into [NOT] BETWEEN calls.
+   *
    */
   protected static class RexTranformIntoBetween extends RexShuttle {
     private final RexBuilder rexBuilder;
