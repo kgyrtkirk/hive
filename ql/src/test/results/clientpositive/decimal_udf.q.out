@@ -991,35 +991,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-<<<<<<< HEAD
-<<<<<<< HEAD
           Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
->>>>>>> asf/master
           Select Operator
             expressions: null (type: double)
             outputColumnNames: _col0
-<<<<<<< HEAD
-<<<<<<< HEAD
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 1
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-=======
->>>>>>> asf/master
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
-            Limit
-              Number of rows: 1
-              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
-<<<<<<< HEAD
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
->>>>>>> asf/master
               ListSink
 
 PREHOOK: query: SELECT key / NULL FROM DECIMAL_UDF limit 1
