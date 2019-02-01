@@ -88,34 +88,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
           filterExpr: (UDFToDouble(key) + 100.0D) NOT BETWEEN 100.0D AND 200.0D (type: boolean)
-          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-          Filter Operator
-            predicate: (UDFToDouble(key) + 100.0D) NOT BETWEEN 100.0D AND 200.0D (type: boolean)
-            Statistics: Num rows: 445 Data size: 4727 Basic stats: COMPLETE Column stats: NONE
-=======
-          filterExpr: (not (UDFToDouble(key) + 100.0D) BETWEEN 100.0D AND 200.0D) (type: boolean)
-=======
-          filterExpr: (UDFToDouble(key) + 100.0D) NOT BETWEEN 100.0D AND 200.0D (type: boolean)
->>>>>>> kgyrtkirk/HIVE-21143-between-oc
           Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (UDFToDouble(key) + 100.0D) NOT BETWEEN 100.0D AND 200.0D (type: boolean)
             Statistics: Num rows: 445 Data size: 79210 Basic stats: COMPLETE Column stats: COMPLETE
-<<<<<<< HEAD
->>>>>>> kgyrtkirk/HIVE-17084-fetch-cs
-=======
-          filterExpr: (not (UDFToDouble(key) + 100.0D) BETWEEN 100.0D AND 200.0D) (type: boolean)
-          Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-          Filter Operator
-            predicate: (not (UDFToDouble(key) + 100.0D) BETWEEN 100.0D AND 200.0D) (type: boolean)
-            Statistics: Num rows: 445 Data size: 79210 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
-=======
->>>>>>> kgyrtkirk/HIVE-21143-between-oc
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
