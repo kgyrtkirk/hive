@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -241,7 +242,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       private final Map<V, Node<V, E>> nodes;
 
       public DiGraph() {
-        nodes = new HashMap<>();
+        nodes = new LinkedHashMap<>();
       }
 
       public void putEdgeValue(V s, V t, E e) {
