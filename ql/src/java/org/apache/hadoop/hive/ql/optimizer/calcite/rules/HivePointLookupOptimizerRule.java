@@ -22,10 +22,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -217,7 +217,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         final V v;
 
         public Node(V v) {
-          edges = new HashSet<>();
+          edges = new LinkedHashSet<>();
           this.v = v;
         }
 
@@ -266,7 +266,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       }
 
       public Set<V> predecessors(V n) {
-        Set<V> ret = new HashSet<>();
+        Set<V> ret = new LinkedHashSet<>();
         Node<V, E> node = nodes.get(n);
         if (node == null) {
           return ret;
@@ -281,7 +281,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       }
 
       public Set<V> successors(V n) {
-        Set<V> ret = new HashSet<>();
+        Set<V> ret = new LinkedHashSet<>();
         Node<V, E> node = nodes.get(n);
         if (node == null) {
           return ret;
