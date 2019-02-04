@@ -147,7 +147,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+<<<<<<< HEAD
             filterExpr: ((ds = '2008-04-08') and (hr like '%2') and UDFToDouble(key) BETWEEN 10.0D AND 50.0D) (type: boolean)
+=======
+            filterExpr: ((ds = '2008-04-08') and UDFToDouble(key) BETWEEN 10.0D AND 50.0D and (hr like '%2')) (type: boolean)
+>>>>>>> asf/master
             Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
