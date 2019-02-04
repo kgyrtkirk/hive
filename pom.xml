@@ -221,17 +221,6 @@
 
   <repositories>
    <!-- This needs to be removed before checking in-->
-
-    <repository>
-      <id>central</id>
-      <name>central</name>
-      <url>https://repo.maven.apache.org/maven2</url>
-      <layout>default</layout>
-      <releases>
-        <enabled>true</enabled>
-        <checksumPolicy>warn</checksumPolicy>
-      </releases>
-    </repository>
     <repository>
       <id>datanucleus</id>
       <name>datanucleus maven repository</name>
@@ -274,7 +263,7 @@
        <snapshots>
          <enabled>false</enabled>
        </snapshots>
-    </repository> 
+    </repository>
   </repositories>
 
   <dependencyManagement>
