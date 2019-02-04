@@ -691,13 +691,8 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col2, _col3, _col5
                 Statistics: Num rows: 5 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-<<<<<<< HEAD
                   predicate: (((_col3 < _col2) is not true or ((_col2 = 0L) or _col2 is null) is true or _col5 is not null or _col0 is null) and (_col0 is not null or ((_col2 = 0L) or _col2 is null) is true or _col5 is not null) and (_col5 is null or ((_col2 = 0L) or _col2 is null) is true)) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  predicate: CASE WHEN ((_col2 = 0L)) THEN (true) WHEN (_col2 is null) THEN (true) WHEN (_col5 is not null) THEN (false) WHEN (_col0 is null) THEN (null) WHEN ((_col3 < _col2)) THEN (false) ELSE (true) END (type: boolean)
                   Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> kgyrtkirk/HIVE-21143-between-oc
                   Select Operator
                     expressions: _col0 (type: int)
                     outputColumnNames: _col0
@@ -916,13 +911,8 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col2, _col3, _col5
                 Statistics: Num rows: 5 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-<<<<<<< HEAD
                   predicate: (((_col3 < _col2) is not true or ((_col2 = 0L) or _col2 is null) is true or _col5 is not null or _col0 is null) and (_col0 is not null or ((_col2 = 0L) or _col2 is null) is true or _col5 is not null) and (_col5 is null or ((_col2 = 0L) or _col2 is null) is true)) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                  predicate: CASE WHEN ((_col2 = 0L)) THEN (true) WHEN (_col2 is null) THEN (true) WHEN (_col5 is not null) THEN (false) WHEN (_col0 is null) THEN (null) WHEN ((_col3 < _col2)) THEN (false) ELSE (true) END (type: boolean)
                   Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> kgyrtkirk/HIVE-21143-between-oc
                   Select Operator
                     expressions: _col0 (type: int)
                     outputColumnNames: _col0
