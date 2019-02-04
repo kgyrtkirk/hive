@@ -189,11 +189,7 @@ HiveProject(_o__c0=[$0], _o__c1=[$1], _o__c2=[$2], _o__c3=[$3])
           HiveJoin(condition=[AND(AND(AND(=($1, $21), =($3, $26)), OR(AND($15, $16, $8), AND($17, $18, $9), AND($19, $20, $10))), OR(AND($30, $5), AND($31, $6), AND($32, $7)))], joinType=[inner], algorithm=[none], cost=[not available])
             HiveJoin(condition=[=($0, $11)], joinType=[inner], algorithm=[none], cost=[not available])
               HiveProject(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_web_page_sk=[$12], ws_order_number=[$17], ws_quantity=[$18], BETWEEN=[BETWEEN(false, $33, 100, 200)], BETWEEN6=[BETWEEN(false, $33, 150, 300)], BETWEEN7=[BETWEEN(false, $33, 50, 250)], BETWEEN8=[BETWEEN(false, $21, 100, 150)], BETWEEN9=[BETWEEN(false, $21, 50, 100)], BETWEEN10=[BETWEEN(false, $21, 150, 200)])
-<<<<<<< HEAD
                 HiveFilter(condition=[AND(OR(<=(100, $21), <=($21, 150), <=(50, $21), <=($21, 100), <=(150, $21), <=($21, 200)), OR(<=(100, $33), <=($33, 200), <=(150, $33), <=($33, 300), <=(50, $33), <=($33, 250)), IS NOT NULL($3), IS NOT NULL($17), IS NOT NULL($12), IS NOT NULL($0))])
-=======
-                HiveFilter(condition=[AND(OR(<=(100, $21), <=($21, 150), IS NOT NULL($21), <=($21, 200)), OR(<=(100, $33), <=($33, 200), IS NOT NULL($33), <=($33, 300), <=($33, 250)), IS NOT NULL($3), IS NOT NULL($17), IS NOT NULL($12), IS NOT NULL($0))])
->>>>>>> asf/master
                   HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
               HiveProject(d_date_sk=[$0])
                 HiveFilter(condition=[AND(=($6, 1998), IS NOT NULL($0))])
