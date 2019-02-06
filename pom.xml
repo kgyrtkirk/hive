@@ -221,6 +221,7 @@
 
   <repositories>
    <!-- This needs to be removed before checking in-->
+<!--
     <repository>
       <id>datanucleus</id>
       <name>datanucleus maven repository</name>
@@ -264,6 +265,7 @@
          <enabled>false</enabled>
        </snapshots>
     </repository>
+-->
   </repositories>
 
   <dependencyManagement>
