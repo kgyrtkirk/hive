@@ -55,6 +55,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -112,11 +113,10 @@ public class HiveConf extends Configuration {
   }
 
   public static class URLEncoderDecoder implements EncoderDecoder<String, String> {
-    private static final String UTF_8 = "UTF-8";
     @Override
     public String encode(String key) {
       try {
-        return URLEncoder.encode(key, UTF_8);
+        return URLEncoder.encode(key, StandardCharsets.UTF_8.name());
       } catch (UnsupportedEncodingException e) {
         return key;
       }
@@ -125,7 +125,7 @@ public class HiveConf extends Configuration {
     @Override
     public String decode(String value) {
       try {
-        return URLDecoder.decode(value, UTF_8);
+        return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
       } catch (UnsupportedEncodingException e) {
         return value;
       }
@@ -489,7 +489,16 @@ public class HiveConf extends Configuration {
         "Indicates if repl dump should include information about external tables. It should be \n"
           + "used in conjunction with 'hive.repl.dump.metadata.only' set to false. if 'hive.repl.dump.metadata.only' \n"
           + " is set to true then this config parameter has no effect as external table meta data is flushed \n"
-          + " always by default."),
+          + " always by default. If this config parameter is enabled on an on-going replication policy which is in\n"
+          + " incremental phase, then need to set 'hive.repl.bootstrap.external.tables' to true for the first \n"
+          + " repl dump to bootstrap all external tables."),
+    REPL_BOOTSTRAP_EXTERNAL_TABLES("hive.repl.bootstrap.external.tables", false,
+        "Indicates if repl dump should bootstrap the information about external tables along with incremental \n"
+          + "dump for replication. It is recommended to keep this config parameter as false always and should be \n"
+          + "set to true only via WITH clause of REPL DUMP command. It should be used in conjunction with \n"
+          + "'hive.repl.include.external.tables' when sets to true. If 'hive.repl.include.external.tables' is \n"
+          + "set to false, then this config parameter has no effect. It should be set to true only once for \n"
+          + "incremental repl dump on each existing replication policy after enabling external tables replication."),
     REPL_ENABLE_MOVE_OPTIMIZATION("hive.repl.enable.move.optimization", false,
           "If its set to true, REPL LOAD copies data files directly to the target table/partition location \n"
           + "instead of copying to staging directory first and then move to target location. This optimizes \n"
@@ -2452,7 +2461,7 @@ public class HiveConf extends Configuration {
         "entries/values can be specified using this config."),
     // statistics annotation fetches column statistics for all required columns which can
     // be very expensive sometimes
-    HIVE_STATS_FETCH_COLUMN_STATS("hive.stats.fetch.column.stats", false,
+    HIVE_STATS_FETCH_COLUMN_STATS("hive.stats.fetch.column.stats", true,
         "Annotation of operator tree with statistics information requires column statistics.\n" +
         "Column statistics are fetched from metastore. Fetching column statistics for each needed column\n" +
         "can be expensive when the number of columns is high. This flag can be used to disable fetching\n" +
@@ -2696,6 +2705,13 @@ public class HiveConf extends Configuration {
 
     HIVE_COMPACTOR_COMPACT_MM("hive.compactor.compact.insert.only", true,
         "Whether the compactor should compact insert-only tables. A safety switch."),
+    COMPACTOR_CRUD_QUERY_BASED("hive.compactor.crud.query.based", false,
+        "Means Major compaction on full CRUD tables is done as a query, "
+        + "and minor compaction will be disabled."),
+    SPLIT_GROUPING_MODE("hive.split.grouping.mode", "query", new StringSet("query", "compactor"), 
+        "This is set to compactor from within the query based compactor. This enables the Tez SplitGrouper "
+        + "to group splits based on their bucket number, so that all rows from different bucket files "
+        + " for the same bucket number can end up in the same bucket file after the compaction."),
     /**
      * @deprecated Use MetastoreConf.COMPACTOR_HISTORY_RETENTION_SUCCEEDED
      */
@@ -2745,6 +2761,11 @@ public class HiveConf extends Configuration {
     MERGE_CARDINALITY_VIOLATION_CHECK("hive.merge.cardinality.check", true,
       "Set to true to ensure that each SQL Merge statement ensures that for each row in the target\n" +
         "table there is at most 1 matching row in the source table per SQL Specification."),
+    MERGE_SPLIT_UPDATE("hive.merge.split.update", false,
+        "If true, SQL Merge statement will handle WHEN MATCHED UPDATE by splitting it into 2\n" +
+            "branches of a multi-insert, representing delete of existing row and an insert of\n" +
+            "the new version of the row.  Updating bucketing and partitioning columns should\n" +
+            "only be permitted if this is true."),
     OPTIMIZE_ACID_META_COLUMNS("hive.optimize.acid.meta.columns", true,
         "If true, don't decode Acid metadata columns from storage unless" +
         " they are needed."),
@@ -4434,7 +4455,7 @@ public class HiveConf extends Configuration {
             "How frequently to check for idle Spark sessions. Minimum value is 60 seconds."),
     NWAYJOINREORDER("hive.reorder.nway.joins", true,
       "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
-    HIVE_MERGE_NWAY_JOINS("hive.merge.nway.joins", true,
+    HIVE_MERGE_NWAY_JOINS("hive.merge.nway.joins", false,
       "Merge adjacent joins into a single n-way join"),
     HIVE_LOG_N_RECORDS("hive.log.every.n.records", 0L, new RangeValidator(0L, null),
       "If value is greater than 0 logs in fixed intervals of size n rather than exponentially."),

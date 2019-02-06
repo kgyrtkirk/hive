@@ -284,6 +284,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         //if the conversion is from non transactional to transactional table
         if (TxnUtils.isTransactionalTable(tblObj)) {
           replicationSpec.setMigratingToTxnTable();
+          // There won't be any writeId associated with statistics on source non-transactional
+          // table. We will need to associate a cooked up writeId on target for those. But that's
+          // not done yet. Till then we don't replicate statistics for ACID table even if it's
+          // available on the source.
+          tblObj.unsetColStats();
         }
         tblDesc = getBaseCreateTableDescFromTable(dbname, tblObj);
         if (TableType.valueOf(tblObj.getTableType()) == TableType.EXTERNAL_TABLE) {
@@ -302,7 +307,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean inReplicationScope = false;
     if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
       tblDesc.setReplicationSpec(replicationSpec);
-      StatsSetupConst.setBasicStatsState(tblDesc.getTblProps(), StatsSetupConst.FALSE);
+      // Statistics for a non-transactional table will be replicated separately. Don't bother
+      // with it here.
+      if (TxnUtils.isTransactionalTable(tblDesc.getTblProps())) {
+        StatsSetupConst.setBasicStatsState(tblDesc.getTblProps(), StatsSetupConst.FALSE);
+      }
       inReplicationScope = true;
       tblDesc.setReplWriteId(writeId);
     }
@@ -332,7 +341,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           getBaseAddPartitionDescFromPartition(fromPath, dbname, tblDesc, partition,
               replicationSpec, x.getConf());
       if (inReplicationScope){
-        StatsSetupConst.setBasicStatsState(partsDesc.getPartition(0).getPartParams(), StatsSetupConst.FALSE);
+        // Statistics for a non-transactional table will be replicated separately. Don't bother
+        // with it here.
+        if (TxnUtils.isTransactionalTable(tblDesc.getTblProps())) {
+          StatsSetupConst.setBasicStatsState(partsDesc.getPartition(0).getPartParams(), StatsSetupConst.FALSE);
+        }
       }
       partitionDescs.add(partsDesc);
     }
@@ -1181,22 +1194,26 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       Task t = createTableTask(tblDesc, x);
       table = createNewTableMetadataObject(tblDesc, true);
 
-      if (!replicationSpec.isMetadataOnly()) {
-        if (isPartitioned(tblDesc)) {
-          for (AddPartitionDesc addPartitionDesc : partitionDescs) {
-            addPartitionDesc.setReplicationSpec(replicationSpec);
+      if (isPartitioned(tblDesc)) {
+        for (AddPartitionDesc addPartitionDesc : partitionDescs) {
+          addPartitionDesc.setReplicationSpec(replicationSpec);
+          if (!replicationSpec.isMetadataOnly()) {
             t.addDependentTask(
-                addSinglePartition(tblDesc, table, wh, addPartitionDesc, replicationSpec, x,
-                    writeId, stmtId));
-            if (updatedMetadata != null) {
-              updatedMetadata.addPartition(table.getDbName(), table.getTableName(),
-                      addPartitionDesc.getPartition(0).getPartSpec());
-            }
+                    addSinglePartition(tblDesc, table, wh, addPartitionDesc, replicationSpec, x,
+                            writeId, stmtId));
+          } else {
+            t.addDependentTask(alterSinglePartition(tblDesc, table, wh, addPartitionDesc,
+                    replicationSpec, null, x));
           }
-        } else {
-          x.getLOG().debug("adding dependent CopyWork/MoveWork for table");
-          t.addDependentTask(loadTable(fromURI, table, replicationSpec.isReplace(), new Path(tblDesc.getLocation()), replicationSpec, x, writeId, stmtId));
+          if (updatedMetadata != null) {
+            updatedMetadata.addPartition(table.getDbName(), table.getTableName(),
+                    addPartitionDesc.getPartition(0).getPartSpec());
+          }
         }
+      } else if (!replicationSpec.isMetadataOnly()) {
+        x.getLOG().debug("adding dependent CopyWork/MoveWork for table");
+        t.addDependentTask(loadTable(fromURI, table, replicationSpec.isReplace(),
+                new Path(tblDesc.getLocation()), replicationSpec, x, writeId, stmtId));
       }
 
       if (dropTblTask != null) {

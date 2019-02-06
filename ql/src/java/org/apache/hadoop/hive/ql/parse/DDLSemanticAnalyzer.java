@@ -2197,6 +2197,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     String type = unescapeSQLString(ast.getChild(0).getText()).toLowerCase();
 
+    if (type.equalsIgnoreCase("minor") && HiveConf.getBoolVar(conf, ConfVars.COMPACTOR_CRUD_QUERY_BASED)) {
+      throw new SemanticException(
+          "Minor compaction is not currently supported for query based compaction (enabled by setting: "
+              + ConfVars.COMPACTOR_CRUD_QUERY_BASED + " to true).");
+    }
+
     if (!type.equals("minor") && !type.equals("major")) {
       throw new SemanticException(ErrorMsg.INVALID_COMPACTION_TYPE.getMsg());
     }
@@ -3593,7 +3599,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       // Compile internal query to capture underlying table partition dependencies
       StringBuilder cmd = new StringBuilder();
       cmd.append("SELECT * FROM ");
-      cmd.append(HiveUtils.unparseIdentifier(getDotName(qualified)));
+      cmd.append(HiveUtils.unparseIdentifier(qualified[0]));
+      cmd.append(".");
+      cmd.append(HiveUtils.unparseIdentifier(qualified[1]));
       cmd.append(" WHERE ");
       boolean firstOr = true;
       for (int i = 0; i < addPartitionDesc.getPartitionCount(); ++i) {

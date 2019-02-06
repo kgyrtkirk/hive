@@ -23,6 +23,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
@@ -97,6 +99,11 @@ public class FSTableEvent implements TableEvent {
         // If the conversion is from non transactional to transactional table
         if (AcidUtils.isTransactionalTable(table)) {
           replicationSpec().setMigratingToTxnTable();
+          // There won't be any writeId associated with statistics on source non-transactional
+          // table. We will need to associate a cooked up writeId on target for those. But that's
+          // not done yet. Till then we don't replicate statistics for ACID table even if it's
+          // available on the source.
+          table.getTTable().unsetColStats();
         }
         if (TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
           // since we have converted to an external table now after applying the migration rules the
@@ -116,9 +123,6 @@ public class FSTableEvent implements TableEvent {
         tableDesc.setExternal(true);
       }
       tableDesc.setReplicationSpec(replicationSpec());
-      if (table.getTableType() == TableType.EXTERNAL_TABLE) {
-        tableDesc.setExternal(true);
-      }
       return tableDesc;
     } catch (Exception e) {
       throw new SemanticException(e);
@@ -181,6 +185,17 @@ public class FSTableEvent implements TableEvent {
             Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues())).toString());
       }
       partsDesc.setReplicationSpec(replicationSpec());
+
+      // Right now, we do not have a way of associating a writeId with statistics for a table
+      // converted to a transactional table if it was non-transactional on the source. So, do not
+      // update statistics for converted tables even if available on the source.
+      if (partition.isSetColStats() && !replicationSpec().isMigratingToTxnTable()) {
+        ColumnStatistics colStats = partition.getColStats();
+        ColumnStatisticsDesc colStatsDesc = new ColumnStatisticsDesc(colStats.getStatsDesc());
+        colStatsDesc.setTableName(tblDesc.getTableName());
+        colStatsDesc.setDbName(tblDesc.getDatabaseName());
+        partDesc.setColStats(new ColumnStatistics(colStatsDesc, colStats.getStatsObj()));
+      }
       return partsDesc;
     } catch (Exception e) {
       throw new SemanticException(e);

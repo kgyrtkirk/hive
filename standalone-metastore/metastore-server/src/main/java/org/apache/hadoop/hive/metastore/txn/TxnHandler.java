@@ -1174,9 +1174,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               " and cur.ws_txnid=" + txnid + //make sure RHS of join only has rows we just inserted as
               // part of this commitTxn() op
               " and committed.ws_txnid <> " + txnid + //and LHS only has committed txns
-              //U+U and U+D is a conflict but D+D is not and we don't currently track I in WRITE_SET at all
-              " and (committed.ws_operation_type=" + quoteChar(OperationType.UPDATE.sqlConst) +
-              " OR cur.ws_operation_type=" + quoteChar(OperationType.UPDATE.sqlConst) + ")"));
+              //U+U and U+D and D+D is a conflict and we don't currently track I in WRITE_SET at all
+                //it may seem like D+D should not be in conflict but consider 2 multi-stmt txns
+                //where each does "delete X + insert X, where X is a row with the same PK.  This is
+                //equivalent to an update of X but won't be in conflict unless D+D is in conflict.
+                //The same happens when Hive splits U=I+D early so it looks like 2 branches of a
+                //multi-insert stmt (an Insert and a Delete branch).  It also 'feels'
+                // un-serializable to allow concurrent deletes
+              " and (committed.ws_operation_type IN(" + quoteChar(OperationType.UPDATE.sqlConst) +
+                ", " + quoteChar(OperationType.DELETE.sqlConst) +
+              ") AND cur.ws_operation_type IN(" + quoteChar(OperationType.UPDATE.sqlConst) + ", "
+                + quoteChar(OperationType.DELETE.sqlConst) + "))"));
           if (rs.next()) {
             //found a conflict
             String committedTxn = "[" + JavaUtils.txnIdToString(rs.getLong(1)) + "," + rs.getLong(2) + "]";
@@ -2028,7 +2036,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         ValidWriteIdList tblValidWriteIdList =
             validReaderWriteIdList.getTableValidWriteIdList(fullyQualifiedName);
         if (tblValidWriteIdList == null) {
-          LOG.warn("ValidWriteIdList for table {} not present in creation metadata, this should not happen");
+          LOG.warn("ValidWriteIdList for table {} not present in creation metadata, this should not happen", fullyQualifiedName);
           return null;
         }
         query.append(" AND (ctc_writeid > " + tblValidWriteIdList.getHighWatermark());
@@ -5013,7 +5021,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   private static synchronized DataSource setupJdbcConnectionPool(Configuration conf, int maxPoolSize, long getConnectionTimeoutMs) throws SQLException {
-    DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     if (dsp != null) {
       doRetryOnConnPool = dsp.mayReturnClosedConnection();
       return dsp.create(conf);

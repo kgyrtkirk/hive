@@ -150,6 +150,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvide
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptMaterializationValidator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -282,7 +283,6 @@ import org.joda.time.Interval;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.UndeclaredThrowableException;
 import java.math.BigDecimal;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayDeque;
@@ -534,10 +534,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
             this.ctx.setCboInfo("Plan optimized by CBO.");
             this.ctx.setCboSucceeded(true);
             if (this.ctx.isExplainPlan()) {
+              // Enrich explain with information derived from CBO
               ExplainConfiguration explainConfig = this.ctx.getExplainConfig();
               if (explainConfig.isCbo()) {
-                if (explainConfig.isCboExtended()) {
-                  // Include join cost
+                if (!explainConfig.isCboJoinCost()) {
+                  // Include cost as provided by Calcite
+                  newPlan.getCluster().invalidateMetadataQuery();
+                  RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(DefaultRelMetadataProvider.INSTANCE));
+                }
+                if (explainConfig.isFormatted()) {
+                  this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
+                } else if (explainConfig.isCboCost() || explainConfig.isCboJoinCost()) {
                   this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan, SqlExplainLevel.ALL_ATTRIBUTES));
                 } else {
                   // Do not include join cost
@@ -1674,8 +1681,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   private boolean isUselessCause(Throwable t) {
-    return t instanceof RuntimeException || t instanceof InvocationTargetException
-        || t instanceof UndeclaredThrowableException;
+    return t instanceof RuntimeException || t instanceof InvocationTargetException;
   }
 
   private RowResolver genRowResolver(Operator op, QB qb) {

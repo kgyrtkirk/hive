@@ -995,7 +995,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     return new int[] {aliasIndex, propsIndex, tsampleIndex, ssampleIndex};
   }
-  String findSimpleTableName(ASTNode tabref, int aliasIndex) {
+
+  String findSimpleTableName(ASTNode tabref, int aliasIndex) throws SemanticException {
     assert tabref.getType() == HiveParser.TOK_TABREF;
     ASTNode tableTree = (ASTNode) (tabref.getChild(0));
 
@@ -7972,8 +7973,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if ((dpCtx == null || dpCtx.getNumDPCols() == 0)) {
       output = new WriteEntity(dest_tab, determineWriteType(ltd, isNonNativeTable, dest));
       if (!outputs.add(output)) {
-        throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
-            .getMsg(dest_tab.getTableName()));
+        if(!((this instanceof MergeSemanticAnalyzer) &&
+            conf.getBoolVar(ConfVars.MERGE_SPLIT_UPDATE))) {
+          /**
+           * Merge stmt with early split update may create several (2) writes to the same
+           * table with the same {@link WriteType}, e.g. if original Merge stmt has both update and
+           * delete clauses, and update is split into insert + delete, in which case it's not an
+           * error*/
+          throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
+              .getMsg(dest_tab.getTableName()));
+        }
       }
     }
 
@@ -11842,7 +11851,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private static void walkASTAndQualifyNames(ASTNode ast,
-      Set<String> cteAlias, Context ctx, Hive db, Set<Integer> ignoredTokens, UnparseTranslator unparseTranslator) {
+      Set<String> cteAlias, Context ctx, Hive db, Set<Integer> ignoredTokens, UnparseTranslator unparseTranslator)
+      throws SemanticException {
     Queue<Node> queue = new LinkedList<>();
     queue.add(ast);
     while (!queue.isEmpty()) {
@@ -12609,7 +12619,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         sb.append(" FROM (");
         sb.append(expandedText);
         sb.append(") ");
-        sb.append(HiveUtils.unparseIdentifier(createVwDesc.getViewName(), conf));
+        sb.append(HiveUtils.unparseIdentifier(Utilities.getDbTableName(createVwDesc.getViewName())[1], conf));
         expandedText = sb.toString();
       }
     } else {
@@ -12643,7 +12653,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         sb.append(" FROM (");
         sb.append(expandedText);
         sb.append(") ");
-        sb.append(HiveUtils.unparseIdentifier(createVwDesc.getViewName(), conf));
+        sb.append(HiveUtils.unparseIdentifier(Utilities.getDbTableName(createVwDesc.getViewName())[1], conf));
         expandedText = sb.toString();
       }
 

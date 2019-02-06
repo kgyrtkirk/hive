@@ -340,9 +340,10 @@ struct GrantRevokeRoleResponse {
 struct Catalog {
   1: string name,                    // Name of the catalog
   2: optional string description,    // description of the catalog
-  3: string locationUri              // default storage location.  When databases are created in
-                                     // this catalog, if they do not specify a location, they will
-                                     // be placed in this location.
+  3: string locationUri,              // default storage location.  When databases are created in
+                                      // this catalog, if they do not specify a location, they will
+                                      // be placed in this location.
+  4: optional i32 createTime          // creation time of catalog in seconds since epoch
 }
 
 struct CreateCatalogRequest {
@@ -379,7 +380,8 @@ struct Database {
   5: optional PrincipalPrivilegeSet privileges,
   6: optional string ownerName,
   7: optional PrincipalType ownerType,
-  8: optional string catalogName
+  8: optional string catalogName,
+  9: optional i32 createTime               // creation time of database in seconds since epoch
 }
 
 // This object holds the information needed by SerDes
@@ -445,7 +447,8 @@ struct Table {
   18: optional string catName,          // Name of the catalog the table is in
   19: optional PrincipalType ownerType = PrincipalType.USER, // owner type of this table (default to USER for backward compatibility)
   20: optional i64 writeId=-1,
-  21: optional bool isStatsCompliant
+  21: optional bool isStatsCompliant,
+  22: optional ColumnStatistics colStats // column statistics for table
 }
 
 struct Partition {
@@ -459,7 +462,8 @@ struct Partition {
   8: optional PrincipalPrivilegeSet privileges,
   9: optional string catName,
   10: optional i64 writeId=-1,
-  11: optional bool isStatsCompliant
+  11: optional bool isStatsCompliant,
+  12: optional ColumnStatistics colStats // column statistics for partition
 }
 
 struct PartitionWithoutSD {
@@ -821,6 +825,17 @@ struct PartitionValuesRow {
 
 struct PartitionValuesResponse {
   1: required list<PartitionValuesRow> partitionValues;
+}
+
+struct GetPartitionsByNamesRequest {
+  1: required string db_name,
+  2: required string tbl_name,
+  3: optional list<string> names,
+  4: optional bool get_col_stats
+}
+
+struct GetPartitionsByNamesResult {
+  1: required list<Partition> partitions
 }
 
 enum FunctionType {
@@ -1324,7 +1339,8 @@ struct GetTableRequest {
   2: required string tblName,
   3: optional ClientCapabilities capabilities,
   4: optional string catName,
-  6: optional string validWriteIdList
+  6: optional string validWriteIdList,
+  7: optional bool getColumnStats
 }
 
 struct GetTableResult {
@@ -2099,6 +2115,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // get partitions give a list of partition names
   list<Partition> get_partitions_by_names(1:string db_name 2:string tbl_name 3:list<string> names)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  GetPartitionsByNamesResult get_partitions_by_names_req(1:GetPartitionsByNamesRequest req)
+                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // changes the partition to the new partition object. partition is identified from the part values
   // in the new_part
